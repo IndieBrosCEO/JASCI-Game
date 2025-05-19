@@ -1,0 +1,39 @@
+Core Gameplay Mechanics:
+Menu screen, save games, loading saves.
+Action Types: Expand action types to include reloading or interacting with objects.
+World & Environment:
+Maps & Navigation: Implement multiple areas with distinct layouts and load maps in chunks.
+Named Locations: Consider including named locations such as Fallbrook Police Station, FOAK Headquarters, or Earth First Headquarters.
+Line of Sight & Fog of War: Implement a system where players only see what’s within their range of vision.
+Lighting System: Add torches, lanterns, and darkness to affect visibility.
+Weather System: Implement a weather system that affects gameplay.
+Traps: Add mines and traps that can be disarmed.
+Hovering over a tile should display the name of the tiles on each of the layers
+Characters & NPCs:
+Player Character: Include attributes, stats, and inventory for the player character.
+NPCs: Include friendly, neutral, and hostile characters.
+Factions: Incorporate factions like the California National Guard, Earth First, or Fallbrook Police Department.
+Dialogue System: Implement a system for talking to NPCs, making choices, and receiving quests/info.
+Persuasion/Intimidation: Add mechanics for influencing NPCs using skills like intimidation and persuasion.
+Combat System:
+Melee Combat: Implement variables for attacker and defender, weapon types, targeted body parts, blocking, dodging, and damage calculation.
+Ranged Combat: Include variables for attacker and defender, weapon types, range, mode of fire, cover, and movement.
+Thrown Combat: Add variables for attacker and defender, thrown weapon types, range, cover, and movement.
+Armor: Implement different types of armor with defense and damage mitigation values.
+Healing: Implement different levels of medical treatment with varying degrees of effectiveness.
+Campaign Management:
+XP System: Award XP for killing creatures, solving quests, disarming traps, picking locks, hacking computers, and completing challenges.
+Leveling Up: Implement a system for leveling up characters, gaining skill points, and increasing stats.
+Events: Include good and bad events that can occur during the game, such as cargo pods, ambushes, or psychic pulses.
+Locations: Flesh out locations with detailed descriptions, cultures, and current situations.
+Items and Equipment:
+Weapons: Implement a variety of weapons with different damage types, rates of fire, and magazine sizes.
+Ammunition: Include different types of ammunition for ranged weapons.
+Food and Water: Implement a system for tracking food and water consumption and the effects of starvation and dehydration.
+Medical Supplies: Add medical supplies that can be used to improve medical checks and accelerate healing.
+Monsters and Men:
+Challenge Ratings: Use a challenge rating system to indicate the difficulty of monsters.
+Creatures: Include a variety of creatures with different stats, attributes, and abilities, such as Grummies, Grunts, Civilian Militia, Zombies, Mutant Moose, Mutant Coyotes, and Bio-Munchers.
+Bugs
+Windows don't break or open correctly
+Some tiles don't fit with the style
