@@ -201,6 +201,11 @@ const gameState = {
     //Inventory
     inventoryOpen: false,
     inventoryCursor: 0,
+
+    // Tile cache for rendering optimization
+    tileCache: null,
+    brElementsCache: null,
+    renderScheduled: false,
 };
 
 
@@ -260,8 +265,19 @@ function loadExternalMap() {
 // Toggle roof layer visibility.
 function toggleRoof() {
     gameState.showRoof = !gameState.showRoof;
-    renderMapLayers();
+    scheduleRender(); // Replaced renderMapLayers
     logToConsole("Roof layer toggled " + (gameState.showRoof ? "on" : "off"));
+}
+
+// New function to schedule rendering with requestAnimationFrame
+function scheduleRender() {
+    if (!gameState.renderScheduled) {
+        gameState.renderScheduled = true;
+        requestAnimationFrame(() => {
+            renderMapLayers(); // The actual rendering call
+            gameState.renderScheduled = false; // Reset the flag after rendering
+        });
+    }
 }
 
 // Render each layer separately into a container with id="mapContainer".
@@ -269,44 +285,91 @@ function toggleRoof() {
 // After drawing everything, we update the highlight.
 function renderMapLayers() {
     const container = document.getElementById("mapContainer");
-    container.innerHTML = "";
     const H = gameState.layers.landscape.length;
     const W = gameState.layers.landscape[0].length;
 
+    let isInitialRender = false;
+    if (!gameState.tileCache || gameState.tileCache.length !== H || (gameState.tileCache[0] && gameState.tileCache[0].length !== W)) {
+        isInitialRender = true;
+        container.innerHTML = ""; // Clear container only on full re-render
+        gameState.tileCache = Array(H).fill(null).map(() => Array(W).fill(null));
+        gameState.brElementsCache = Array(H).fill(null); // Cache for <br> elements
+    }
+
+    const fragment = isInitialRender ? document.createDocumentFragment() : null;
+
     for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
-            const span = document.createElement("span");
-            span.className = "tile";
-            span.dataset.x = x;
-            span.dataset.y = y;
-
-            // pick the topmost tile-ID
-            let tileId = gameState.layers.landscape[y][x];
-            if (gameState.layers.building[y][x]) tileId = gameState.layers.building[y][x];
-            if (gameState.layers.item[y][x]) tileId = gameState.layers.item[y][x];
-            if (gameState.showRoof && gameState.layers.roof[y][x])
-                tileId = gameState.layers.roof[y][x];
-
-            // draw player if here and *not* covered by roof
-            if (x === gameState.playerPos.x
-                && y === gameState.playerPos.y
-                && !(gameState.showRoof && gameState.layers.roof[y][x])) {
-                span.textContent = "☻";
-                span.style.color = "green";
+            // Determine the actual tile ID from layers
+            let actualTileId = gameState.layers.landscape[y][x];
+            if (gameState.layers.building[y][x]) actualTileId = gameState.layers.building[y][x];
+            if (gameState.layers.item[y][x]) actualTileId = gameState.layers.item[y][x];
+            if (gameState.showRoof && gameState.layers.roof[y][x]) {
+                actualTileId = gameState.layers.roof[y][x];
             }
-            // else draw the chosen tile
-            else if (tileId) {
-                const def = gameState.tilePalette[tileId];
+
+            // Determine target display properties
+            let targetSprite = "";
+            let targetColor = "";
+            let targetDisplayId = actualTileId; // This will be "PLAYER" if player is here
+
+            const isPlayerCurrentlyOnTile = (x === gameState.playerPos.x && y === gameState.playerPos.y &&
+                                           !(gameState.showRoof && gameState.layers.roof[y][x]));
+
+            if (isPlayerCurrentlyOnTile) {
+                targetSprite = "☻";
+                targetColor = "green";
+                targetDisplayId = "PLAYER"; // Special ID for player
+            } else if (actualTileId) {
+                const def = gameState.tilePalette[actualTileId];
                 if (def) {
-                    span.textContent = def.sprite;
-                    span.style.color = def.color;
+                    targetSprite = def.sprite;
+                    targetColor = def.color;
+                }
+            } // Else, it's an empty tile, sprite and color remain ""
+
+            if (isInitialRender) {
+                const span = document.createElement("span");
+                span.className = "tile";
+                span.dataset.x = x;
+                span.dataset.y = y;
+                span.textContent = targetSprite;
+                span.style.color = targetColor;
+
+                gameState.tileCache[y][x] = {
+                    span: span,
+                    displayedId: targetDisplayId, // What's effectively displayed (PLAYER or a tile ID)
+                    sprite: targetSprite,
+                    color: targetColor
+                };
+                fragment.appendChild(span);
+            } else {
+                const cachedCell = gameState.tileCache[y][x];
+                const span = cachedCell.span;
+
+                // Compare with cached state
+                if (cachedCell.displayedId !== targetDisplayId ||
+                    cachedCell.sprite !== targetSprite ||
+                    cachedCell.color !== targetColor) {
+
+                    span.textContent = targetSprite;
+                    span.style.color = targetColor;
+
+                    cachedCell.displayedId = targetDisplayId;
+                    cachedCell.sprite = targetSprite;
+                    cachedCell.color = targetColor;
                 }
             }
-
-            container.appendChild(span);
         }
-        // if you still want line-breaks between rows
-        container.appendChild(document.createElement("br"));
+        if (isInitialRender) {
+            const br = document.createElement("br");
+            gameState.brElementsCache[y] = br; // Store br in cache
+            fragment.appendChild(br);
+        }
+    }
+
+    if (isInitialRender) {
+        container.appendChild(fragment);
     }
 
     // *** highlight the currently selected interactable tile(s) ***
@@ -341,11 +404,16 @@ function updateMapHighlight() {
 
 // Collision checking: Look at the building and item layers.
 function getCollisionTileAt(x, y) {
-    // anything in item or building blocks
-    const lsp = gameState.layers.landscape[y][x];
-    const itm = gameState.layers.item[y][x];
     const bld = gameState.layers.building[y][x];
-    return lsp || itm || bld || "";
+    if (bld && gameState.tilePalette[bld]) return bld; // Check building first
+
+    const itm = gameState.layers.item[y][x];
+    if (itm && gameState.tilePalette[itm]) return itm; // Then item
+
+    const lsp = gameState.layers.landscape[y][x];
+    if (lsp && gameState.tilePalette[lsp]) return lsp; // Finally landscape
+
+    return ""; // If all are empty or invalid
 }
 
 /**************************************************************
@@ -356,7 +424,7 @@ function generateInitialMap() {
     loadExternalMap()
         .then(layersData => {
             gameState.layers = layersData;
-            renderMapLayers();
+            scheduleRender(); // Replaced renderMapLayers
         })
         .catch(error => {
             console.error("Failed to load external map:", error);
@@ -402,7 +470,7 @@ function endTurn() {
     updateHealthCrisis();
     gameState.currentTurn++;
     startTurn();
-    renderMapLayers();
+    scheduleRender(); // Replaced renderMapLayers
     updateTurnUI();
 }
 
@@ -451,7 +519,7 @@ function move(direction) {
     gameState.movementPointsRemaining--;
     logToConsole(`Moved to (${newPos.x}, ${newPos.y}). Moves left: ${gameState.movementPointsRemaining}`);
     updateTurnUI();
-    renderMapLayers();
+    scheduleRender(); // Replaced renderMapLayers
     detectInteractableItems();
     showInteractableItems();
 }
@@ -651,7 +719,7 @@ function performAction(action, it) {
         logToConsole(`${action}ing ${gameState.tilePalette[id].name}`);
     }
     // redraw...
-    renderMapLayers();
+    scheduleRender(); // Replaced renderMapLayers
     detectInteractableItems();
     showInteractableItems();
     updateMapHighlight();
@@ -1194,7 +1262,7 @@ function startGame() {
     renderCharacterInfo();
     gameState.gameStarted = true;
     updateInventoryUI();
-    generateInitialMap();
+    generateInitialMap(); // This will call scheduleRender internally
     initializeHealth();
     detectInteractableItems();
     showInteractableItems();
@@ -1203,6 +1271,6 @@ function startGame() {
 
 document.addEventListener('DOMContentLoaded', () => {
     renderTables();
-    generateInitialMap();
+    generateInitialMap(); // This will call scheduleRender internally
     document.addEventListener('keydown', handleKeyDown);
 });
