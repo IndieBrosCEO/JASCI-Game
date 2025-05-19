@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\mapMaker"
+    "\\mapMaker",
+    "\\Maps"
   ],
+  "SelectedNode": "\\Maps\\Swamp_House_Boat.json",
   "PreviewInSolutionExplorer": false
 }
