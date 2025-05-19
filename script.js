@@ -314,7 +314,7 @@ function renderMapLayers() {
             let targetDisplayId = actualTileId; // This will be "PLAYER" if player is here
 
             const isPlayerCurrentlyOnTile = (x === gameState.playerPos.x && y === gameState.playerPos.y &&
-                                           !(gameState.showRoof && gameState.layers.roof[y][x]));
+                !(gameState.showRoof && gameState.layers.roof[y][x]));
 
             if (isPlayerCurrentlyOnTile) {
                 targetSprite = "☻";
