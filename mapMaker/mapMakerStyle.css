@@ -1,0 +1,115 @@
+/* mapMakerStyle.css */
+
+:root {
+    /* will be set dynamically from JS */
+    --cols: 20;
+}
+
+body {
+    font-family: monospace;
+    background-color: #000;
+    color: #fff;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#controls {
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+    #controls label {
+        margin-right: 10px;
+    }
+
+/* Tool buttons */
+#toolContainer {
+    margin: 10px 0;
+}
+
+.toolBtn {
+    padding: 5px 10px;
+    margin-right: 5px;
+    background-color: #444;
+    border: none;
+    cursor: pointer;
+    font-family: monospace;
+}
+
+    .toolBtn.selected {
+        background-color: #666;
+    }
+
+/* Palette */
+#paletteContainer {
+    margin: 10px 0;
+}
+
+.palette {
+    display: inline-block;
+    margin-right: 5px;
+    padding: 5px;
+    border: 1px solid #444;
+    background-color: #222;
+    font-size: 18px;
+    line-height: 1.2;
+    cursor: pointer;
+}
+
+    .palette.selected {
+        background-color: #555;
+    }
+
+/* Grid: dynamic columns */
+#grid {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 30px);
+    gap: 1px;
+    border: 1px solid #444;
+    margin-top: 20px;
+}
+
+.cell {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    border: 1px solid #444;
+    font-size: 18px;
+    line-height: 30px;
+    cursor: pointer;
+    background-color: #111;
+}
+
+/* Prevent text dragging/selection */
+#grid,
+#grid .cell {
+    -webkit-user-select: none; /* Safari/Chrome */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+ */
+    user-select: none; /* Standard */
+}
+
+/* 1) Stamp preview: make preview cells semi-transparent */
+.cell.preview {
+    opacity: 0.4; /* uses CSS opacity property to set transparency :contentReference[oaicite:0]{index=0} */
+}
+
+/* Buttons */
+button {
+    font-family: monospace;
+    padding: 5px 10px;
+    background-color: #444;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+    button:hover {
+        background-color: #555;
+    }

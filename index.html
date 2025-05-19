@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JASCI TRPG Adventure</title>
+    <style>
+        /* Base styles */
+        body {
+            font-family: monospace;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        input, button {
+            background-color: #444;
+            color: #fff;
+            border: none;
+            padding: 5px;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        /* Stats & Skills */
+        .stats, .skills {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+        }
+
+        .selected {
+            background-color: #ff0; /* High-contrast yellow */
+            color: black;
+        }
+
+        .highlight {
+            border: 2px solid red;
+        }
+
+        .flashing {
+            animation: flash 1s infinite;
+        }
+
+        @keyframes flash {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Three-column layout */
+        #game-container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Left column: Character Creator/Info */
+        #left-panel {
+            width: 300px;
+            background-color: #222;
+            color: #fff;
+            padding: 10px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        /* Middle column: Map and Console */
+        #middle-panel {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-sizing: border-box;
+        }
+
+        #console {
+            height: 100px;
+            overflow-y: auto;
+            background: #111;
+            color: #0f0;
+            padding: 5px;
+            font-family: monospace;
+        }
+
+        /* Right column: Game Controls */
+        #right-panel {
+            width: 350px;
+            background-color: #222;
+            padding: 10px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        table, th, td {
+            border: 1px solid #555;
+        }
+
+        th, td {
+            padding: 4px;
+            text-align: left;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Map container: let it size to your grid of spans + <br> */
+        #mapContainer {
+            flex-grow: 1;
+            position: relative;
+            background-color: #000;
+            /* remove hard-coded px sizes so text can wrap naturally */
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre; /* respect spaces/newlines */
+            line-height: 1em; /* one line per row */
+            overflow: auto; /* scroll if too big */
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Layers are simply stacked on top of each other, but each spans + <br> handle layout */
+        .mapLayer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* clicks pass through to underlying tiles if you want */
+        }
+
+        /* Each tile is one character wide & high, inline-block so multiple wrap into rows */
+        .tile {
+            display: inline-block;
+            width: 1ch; /* exactly one “0” width */
+            height: 1em; /* exactly one line height */
+            font-size: 1em;
+            text-align: center;
+            vertical-align: top;
+            pointer-events: auto; /* if you want to click on tiles */
+        }
+
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Left Column: Character Creator / Character Info -->
+        <div id="left-panel">
+            <div id="character-creator">
+                <h2>Character Creator</h2>
+                <label>Character Name:</label>
+                <input type="text" id="charName" value="Name Here"><br>
+                <label>Level:</label>
+                <span id="level">1</span><br>
+                <label>XP:</label>
+                <span id="xp">0</span><br>
+                <h3>Stats</h3>
+                <div id="statsBody"></div>
+                <h3>Skills (Skill Points: <span id="skillPoints">30</span>)</h3>
+                <div id="skillsBody"></div>
+                <button onclick="startGame()">Start Game</button>
+            </div>
+            <div id="character-info-panel" class="hidden">
+                <h2>Character Info</h2>
+                <div id="characterInfo">
+                    <!-- Rendered via JS -->
+                </div>
+            </div>
+
+        </div>
+        <!-- Middle Column: Map and Console -->
+        <div id="middle-panel">
+            <!-- New container for layered map rendering -->
+            <div id="mapContainer"></div>
+            <div id="console"></div>
+        </div>
+        <!-- Right Column: Game Controls -->
+        <div id="right-panel">
+            <h2>Game Controls</h2>
+            <!-- New: Toggle Roof Button -->
+            <button onclick="toggleRoof()">Toggle Roof</button>
+            <!-- Turn Status UI -->
+            <div id="turnStatus">
+                <div id="movementPointsUI">Moves Left: </div>
+                <div id="actionPointsUI">Actions Left: </div>
+            </div>
+            <!-- Health Status -->
+            <h3>Health Status</h3>
+            <table id="healthTable">
+                <thead>
+                    <tr>
+                        <th>Body Part</th>
+                        <th>HP</th>
+                        <th>Armor</th>
+                        <th>Crisis Timer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dynamically generated -->
+                </tbody>
+            </table>
+            <!-- Interactable Items and Actions -->
+            <h3>Interactable Items</h3>
+            <div id="itemList"></div>
+            <h3>Actions</h3>
+            <div id="actionList"></div>
+            <h3>Hand Slots</h3>
+            <div id="handSlots"></div>
+            <h3>Inventory (Slots: <span id="invCapacity"></span>)</h3>
+            <div id="inventoryList"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

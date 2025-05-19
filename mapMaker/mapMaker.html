@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Map Maker with Layers & Containers</title>
+    <link rel="stylesheet" href="mapMakerStyle.css">
+</head>
+<body>
+    <h1>Map Maker with Layers & Containers</h1>
+
+    <div id="controls">
+        <!-- 1. Dimension inputs -->
+        <label>
+            Width: <input type="number" id="inputWidth" value="20" min="1" />
+        </label>
+        <label>
+            Height: <input type="number" id="inputHeight" value="15" min="1" />
+        </label>
+        <button id="resizeBtn">Resize Map</button>
+
+        <hr />
+
+        <!-- 2. Layer selector + visibility -->
+        <label for="layerSelect">Edit Layer:</label>
+        <select id="layerSelect">
+            <option value="landscape">Landscape</option>
+            <option value="building">Building</option>
+            <option value="item">Item</option>
+            <option value="roof">Roof</option>
+        </select>
+        <div id="visibilityToggles">
+            <label><input type="checkbox" id="vis_landscape" checked> Landscape</label>
+            <label><input type="checkbox" id="vis_building" checked> Building</label>
+            <label><input type="checkbox" id="vis_item" checked> Item</label>
+            <label><input type="checkbox" id="vis_roof" checked> Roof</label>
+        </div>
+
+        <hr />
+
+        <!-- 3. Tool buttons -->
+        <div id="toolContainer">
+            <button class="toolBtn" data-tool="brush">Brush</button>
+            <button class="toolBtn" data-tool="fill">Fill</button>
+            <button class="toolBtn" data-tool="line">Line</button>
+            <button class="toolBtn" data-tool="rect">Rect</button>
+            <button class="toolBtn" data-tool="stamp">Stamp</button> <!-- new -->
+        </div>
+
+        <hr />
+
+        <!-- 4. Tile palette -->
+        <div id="paletteContainer"></div>
+
+        <hr />
+
+        <!-- 5. Export / Load -->
+        <button id="exportBtn">Export Map JSON</button>
+        <input type="file" id="mapFileInput" accept=".json" />
+        <button id="loadBtn">Load Map</button>
+    </div>
+
+    <!-- 6. The grid -->
+    <div id="grid"></div>
+
+    <script src="mapMaker.js"></script>
+</body>
+</html>
