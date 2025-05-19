@@ -1,3 +1,69 @@
+// script.js - Minimal Menu System
+
+function showMenuScreen() {
+    const menuScreen = document.getElementById('menu-screen');
+    const gameContainer = document.getElementById('game-container');
+    const characterCreator = document.getElementById('character-creator');
+
+    if (menuScreen) menuScreen.classList.remove('hidden');
+    if (gameContainer) gameContainer.classList.add('hidden');
+    if (characterCreator) characterCreator.classList.add('hidden');
+}
+
+function hideMenuScreen() {
+    const menuScreen = document.getElementById('menu-screen');
+    const gameContainer = document.getElementById('game-container');
+
+    if (menuScreen) menuScreen.classList.add('hidden');
+    if (gameContainer) gameContainer.classList.remove('hidden');
+    // Note: character-creator visibility is handled by characterCreatorFlow or startGame
+}
+
+function characterCreatorFlow() {
+    const menuScreen = document.getElementById('menu-screen');
+    const characterCreator = document.getElementById('character-creator');
+    const gameContainer = document.getElementById('game-container');
+
+    if (menuScreen) menuScreen.classList.add('hidden');
+    if (characterCreator) characterCreator.classList.remove('hidden');
+    if (gameContainer) gameContainer.classList.add('hidden'); // Ensure game container is hidden
+    
+    // console.log("Character creator opened."); // Optional: for debugging
+}
+
+function loadGame() {
+    console.log("Load Game clicked (placeholder)"); // Using console.log for minimal script
+    alert("Load Game functionality is not yet implemented.");
+}
+
+function showSettings() {
+    console.log("Settings clicked (placeholder)"); // Using console.log for minimal script
+    alert("Settings functionality is not yet implemented.");
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const newGameBtn = document.getElementById('new-game-btn');
+    const loadGameBtn = document.getElementById('load-game-btn');
+    const settingsBtn = document.getElementById('settings-btn');
+
+    if (newGameBtn) {
+        newGameBtn.addEventListener('click', characterCreatorFlow);
+    }
+    if (loadGameBtn) {
+        loadGameBtn.addEventListener('click', loadGame);
+    }
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', showSettings);
+    }
+
+    showMenuScreen(); // Show menu by default
+    renderTables(); // Prepare character creator tables
+    updateInventoryUI(); // Initialize inventory display
+});
+
+// End of Minimal Menu System code. Original script content follows.
+// Make sure the original script's own DOMContentLoaded is commented out.
+
 ﻿/**************************************************************
  * Global State & Constants
  **************************************************************/
@@ -1201,8 +1267,10 @@ function startGame() {
     startTurn();
 }
 
+/*
 document.addEventListener('DOMContentLoaded', () => {
     renderTables();
     generateInitialMap();
     document.addEventListener('keydown', handleKeyDown);
 });
+*/

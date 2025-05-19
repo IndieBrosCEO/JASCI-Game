@@ -1,0 +1,147 @@
+/* Base styles */
+body {
+    margin: 0; 
+    font-family: monospace; 
+    background-color: #000; 
+    color: #fff; 
+    padding: 0; /* Adjusted from 20px for full viewport menu */ 
+    overflow: hidden; /* Prevent scrollbars from menu */ 
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #444; 
+    color: #fff; 
+    border: 1px solid #666; 
+    padding: 8px; 
+    cursor: pointer; 
+    font-family: monospace;
+}
+
+button:hover {
+    background-color: #555;
+}
+
+#menu-screen {
+    width: 100vw; 
+    height: 100vh; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 20px;
+}
+
+#menu-screen button {
+    padding: 15px 30px; 
+    font-size: 1.5em; 
+    background-color: #2c5b2c; /* Retro green */ 
+    color: #fff; 
+    border: 2px solid #3a8a3a; 
+    border-radius: 5px;
+}
+
+#menu-screen button:hover {
+    background-color: #3a8a3a;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#game-container {
+    display: flex; 
+    flex-direction: row; 
+    gap: 10px; /* Reduced gap */ 
+    height: 100vh; 
+    box-sizing: border-box; 
+    padding: 10px; /* Padding for game view */
+}
+
+#left-panel {
+    width: 250px; /* Reduced width */ 
+    background-color: #222; 
+    color: #fff; 
+    padding: 10px; 
+    overflow-y: auto; 
+    box-sizing: border-box;
+}
+
+#middle-panel {
+    flex-grow: 1; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    box-sizing: border-box;
+}
+
+#mapContainer {
+    flex-grow: 1; 
+    position: relative; 
+    background-color: #000; 
+    font-family: 'Courier New', Courier, monospace; 
+    white-space: pre; 
+    line-height: 1em; 
+    overflow: auto; 
+    padding: 10px; 
+    box-sizing: border-box; 
+    border: 1px solid #333;
+}
+
+#console {
+    height: 100px; 
+    overflow-y: auto; 
+    background: #111; 
+    color: #0f0; 
+    padding: 5px; 
+    font-family: monospace; 
+    border: 1px solid #333;
+}
+
+#right-panel {
+    width: 300px; /* Reduced width */ 
+    background-color: #222; 
+    padding: 10px; 
+    overflow-y: auto; 
+    box-sizing: border-box;
+}
+
+table {
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-bottom: 10px;
+}
+
+table, th, td {
+    border: 1px solid #555;
+}
+
+th, td {
+    padding: 4px; 
+    text-align: left;
+}
+
+.selected {
+    background-color: #ff0; 
+    color: black;
+} /* For selected items in lists */
+
+.tile {
+    display: inline-block; 
+    width: 1ch; 
+    height: 1em; 
+    font-size: 1em; 
+    text-align: center; 
+    vertical-align: top; 
+    pointer-events: auto;
+} /* Basic tile style */
+
+.flashing {
+    animation: flash 1s infinite;
+} /* For map highlight */
+
+@keyframes flash {
+    0% { opacity: 1; } 
+    50% { opacity: 0; } 
+    100% { opacity: 1; }
+}
