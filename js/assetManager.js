@@ -94,7 +94,7 @@ class AssetManager {
                         console.warn(`User items.json for ${filename} was not an array. Skipping merge.`);
                     }
                 } else if (filename === 'npcs.json') {
-                     if (Array.isArray(parsedJson)) {
+                    if (Array.isArray(parsedJson)) {
                         parsedJson.forEach(npc => {
                             if (this.npcsById[npc.id]) {
                                 console.warn(`AssetManager: User NPC ID ${npc.id} from npcs.json already exists. Overwriting.`);
@@ -132,7 +132,7 @@ class AssetManager {
             // return this.tilesets[tilesetId];
             // For now, assuming tileset.json is the default tileset itself or an object with an id
             if (this.tilesets && this.tilesets.id === tilesetId) {
-                 return this.tilesets;
+                return this.tilesets;
             }
             // If tilesets.json is an array of tilesets, you might search by id:
             // return this.tilesets.find(ts => ts.id === tilesetId);
@@ -150,44 +150,52 @@ class AssetManager {
     }
 
     async loadMap(mapId) {
+        console.log(`AssetManager.loadMap: Called with mapId = "${mapId}" (Type: ${typeof mapId})`);
         let mapJsonData;
         let loadedFromPath = '';
-        let mapUrl;
 
         // Try fetching from user assets first
-        mapUrl = `/user_assets/maps/${mapId}.json?t=${Date.now()}`;
+        const userMapPath = `/user_assets/maps/${mapId}.json?t=${Date.now()}`;
+        console.log(`AssetManager.loadMap: Attempting to load user map from: ${userMapPath}`);
         try {
-            const response = await fetch(mapUrl);
+            const response = await fetch(userMapPath);
             if (response.ok) {
                 mapJsonData = await response.json();
-                loadedFromPath = mapUrl;
-                console.log(`User map '${mapId}' data fetched from ${mapUrl}.`);
+                loadedFromPath = userMapPath;
+                console.log(`AssetManager.loadMap: User map '${mapId}' data fetched successfully from ${userMapPath}.`);
             } else if (response.status !== 404) {
-                throw new Error(`HTTP error! status: ${response.status} for user map ${mapId} at ${mapUrl}`);
+                // Create an error object that includes the response status if possible
+                const error = new Error(`HTTP error! status: ${response.status} for user map ${mapId} at ${userMapPath}`);
+                error.response = response; // Attach response for more details in catch
+                throw error;
             }
             // If 404, mapJsonData remains undefined, proceed to base path
         } catch (error) {
-            console.warn(`Attempt to load user map ${mapId} from ${mapUrl} failed or file not found: ${error.message}. Trying base assets...`);
+            console.log(`AssetManager.loadMap: User map not loaded or failed. Error: ${error.message}. Falling back to base map.`);
+            // No need to re-throw, just proceed to base map loading
         }
 
         // Fallback to base assets if user map not found or failed to load
         if (!mapJsonData) {
-            mapUrl = `/Maps/${mapId}.json?t=${Date.now()}`; // Changed base map path
+            const baseMapPath = `/Maps/${mapId}.json?t=${Date.now()}`;
+            console.log(`AssetManager.loadMap: Attempting to load base map from: ${baseMapPath}`);
             try {
-                const response = await fetch(mapUrl);
+                const response = await fetch(baseMapPath);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status} for base map ${mapId} at ${mapUrl}`);
+                    const error = new Error(`HTTP error! status: ${response.status} for base map ${mapId} at ${baseMapPath}`);
+                    error.response = response;
+                    throw error;
                 }
                 mapJsonData = await response.json();
-                loadedFromPath = mapUrl;
-                console.log(`Base map '${mapId}' data fetched from ${mapUrl}.`);
+                loadedFromPath = baseMapPath;
+                console.log(`AssetManager.loadMap: Base map '${mapId}' data fetched successfully from ${baseMapPath}.`);
             } catch (error) {
-                console.error(`Failed to load map '${mapId}' from base asset path '${mapUrl}': ${error.message}`);
+                console.error(`AssetManager.loadMap: Base map fetch failed for '${baseMapPath}'. Error: ${error.message}, Status: ${error.response ? error.response.status : 'N/A'}`);
                 this.currentMap = null;
                 return false; // Indicate failure
             }
         }
-        
+
         if (!mapJsonData) {
             console.error(`Map data for '${mapId}' could not be loaded from any path.`);
             this.currentMap = null;
@@ -215,9 +223,9 @@ class AssetManager {
                 width = landscapeLayer[0].length;
                 console.log(`Map dimensions for '${mapId}' inferred from landscape layer: ${width}x${height}`);
             } else {
-                 console.warn(`Map dimensions could not be inferred from landscape layer for map '${mapId}'. Using 0x0.`);
-                 width = 0;
-                 height = 0;
+                console.warn(`Map dimensions could not be inferred from landscape layer for map '${mapId}'. Using 0x0.`);
+                width = 0;
+                height = 0;
             }
         } else if (width === undefined || height === undefined) {
             // This case handles if mapJsonData.layers or mapJsonData.layers.landscape is missing when width/height are missing
@@ -225,7 +233,7 @@ class AssetManager {
             width = 0;
             height = 0;
         }
-        
+
         processedMapData.dimensions = { width, height };
         processedMapData.layers = mapJsonData.layers || {}; // Ensure layers object exists
         processedMapData.portals = mapJsonData.portals || [];
@@ -378,7 +386,7 @@ class AssetManager {
                         // Check if this object is already in results to prevent duplicates if searching multiple types
                         // and an object somehow got miscategorized or if IDs overlap (though not expected with current structure)
                         if (!results.includes(npc)) { // Simple check, could be more performant for very large N
-                           results.push(npc);
+                            results.push(npc);
                         }
                     }
                 }

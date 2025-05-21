@@ -132,11 +132,11 @@ async function handleMapSelectionChange(mapId) {
         currentMapData = loadedMap;
         gameState.layers = currentMapData.layers; // Sync gameState.layers
         // Reset player position or load from map data if available in currentMapData
-        gameState.playerPos = currentMapData.startPos || { x: 2, y: 2 }; 
-        
+        gameState.playerPos = currentMapData.startPos || { x: 2, y: 2 };
+
         // Ensure tileCache is invalidated or resized for the new map
         gameState.tileCache = null; // Force re-creation of cache in renderMapLayers
-        
+
         scheduleRender();
         detectInteractableItems();
         showInteractableItems();
@@ -149,7 +149,7 @@ async function handleMapSelectionChange(mapId) {
         }
         currentMapData = null;
         // Clear layers to prevent rendering a stale map
-        gameState.layers = { landscape: [], building: [], item: [], roof: [] }; 
+        gameState.layers = { landscape: [], building: [], item: [], roof: [] };
         // Also clear the map display area
         const container = document.getElementById("mapContainer");
         if (container) container.innerHTML = "<p style='color:red;'>Error: Map could not be loaded.</p>";
@@ -237,7 +237,7 @@ async function setupMapSelector(assetManagerInstance) {
         console.error("Failed to load or process user map index:", error);
         // Non-critical, user maps might just not appear
     }
-    
+
     // The onchange is already set in HTML: onchange="handleMapSelectionChange(this.value)"
     // No need to add event listener here if it's hardcoded in HTML.
     // If it weren't, it would be:
@@ -301,7 +301,7 @@ function loadExternalMap() {
 // Toggle roof layer visibility.
 function toggleRoof() {
     gameState.showRoof = !gameState.showRoof;
-    scheduleRender(); 
+    scheduleRender();
     logToConsole("Roof layer toggled " + (gameState.showRoof ? "on" : "off"));
 }
 
@@ -321,8 +321,19 @@ function scheduleRender() {
 // After drawing everything, we update the highlight.
 function renderMapLayers() {
     const container = document.getElementById("mapContainer");
+
+    // Define isInitialRender
+    let isInitialRender = false;
+    if (!gameState.tileCache ||
+        !currentMapData || !currentMapData.dimensions || // Ensure currentMapData and dimensions exist
+        gameState.tileCache.length !== currentMapData.dimensions.height ||
+        (gameState.tileCache[0] && gameState.tileCache[0].length !== currentMapData.dimensions.width)) {
+        isInitialRender = true;
+    }
+
     if (!currentMapData || !currentMapData.dimensions || !currentMapData.layers) {
-        container.innerHTML = "<p>No map loaded or map data is invalid.</p>";
+        if (isInitialRender) container.innerHTML = "<p>No map loaded or map data is invalid.</p>";
+        else console.warn("renderMapLayers called with no currentMapData but not initialRender. Map display might be stale.");
         gameState.tileCache = null; // Clear cache if no map
         return;
     }
@@ -331,21 +342,20 @@ function renderMapLayers() {
     const W = currentMapData.dimensions.width;
 
     if (H === 0 || W === 0) {
-        container.innerHTML = "<p>Map dimensions are zero. Cannot render.</p>";
+        if (isInitialRender) container.innerHTML = "<p>Map dimensions are zero. Cannot render.</p>";
+        else console.warn("renderMapLayers called with zero dimensions but not initialRender. Map display might be stale.");
         gameState.tileCache = null;
         return;
     }
-    
-    let isInitialRenderOrResize = false;
-    if (!gameState.tileCache || gameState.tileCache.length !== H || (gameState.tileCache[0] && gameState.tileCache[0].length !== W)) {
-        isInitialRenderOrResize = true;
+
+    // Use the correctly defined isInitialRender
+    if (isInitialRender) {
         container.innerHTML = ""; // Clear container for full re-render or resize
         gameState.tileCache = Array(H).fill(null).map(() => Array(W).fill(null));
         // gameState.brElementsCache is not strictly needed if we always clear and rebuild spans.
-        // If performance becomes an issue, it could be re-added.
     }
 
-    const fragment = isInitialRenderOrResize ? document.createDocumentFragment() : null;
+    const fragment = isInitialRender ? document.createDocumentFragment() : null;
 
     for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
@@ -381,7 +391,7 @@ function renderMapLayers() {
                 }
             } // Else, it's an empty tile, sprite and color remain ""
 
-            if (isInitialRenderOrResize) {
+            if (isInitialRender) {
                 const span = document.createElement("span");
                 span.className = "tile";
                 span.dataset.x = x;
@@ -414,14 +424,14 @@ function renderMapLayers() {
                 }
             }
         }
-        if (isInitialRender) {
+        if (isInitialRender) { // Corrected from isInitialRenderOrResize
             const br = document.createElement("br");
-            gameState.brElementsCache[y] = br; // Store br in cache
+            // gameState.brElementsCache[y] = br; // brElementsCache is not currently used
             fragment.appendChild(br);
         }
     }
 
-    if (isInitialRender) {
+    if (isInitialRender) { // Corrected from isInitialRenderOrResize
         container.appendChild(fragment);
     }
 
@@ -476,7 +486,7 @@ function getCollisionTileAt(x, y) {
 
     const lsp = lspLayer?.[y]?.[x];
     if (lsp && assetManager.tilesets[lsp]) return lsp;
-    
+
     return ""; // If all are empty or invalid
 }
 
@@ -657,7 +667,7 @@ function selectItem(idx) {
 function getActionsForItem(it) {
     const tileDef = assetManager.tilesets[it.id]; // Use assetManager.tilesets
     if (!tileDef) return ["Cancel"];
-    
+
     const tags = tileDef.tags || [];
     const actions = ["Cancel"];
 
@@ -792,7 +802,7 @@ function performAction(action, it) {
         logToConsole(`Error: No building tile found at ${x},${y} to perform action.`);
         return;
     }
-    
+
     const tileName = assetManager.tilesets[id]?.name || id; // Use name from tileset
 
     if (action === "Open" && DOOR_OPEN_MAP[targetTileId]) {
@@ -811,7 +821,7 @@ function performAction(action, it) {
         logToConsole(`${action}ing ${tileName}`);
     }
     // redraw...
-    scheduleRender(); 
+    scheduleRender();
     detectInteractableItems();
     showInteractableItems();
     updateMapHighlight();
@@ -1550,7 +1560,7 @@ async function initialize() { // Made async
                 }
             }
         }
-        
+
         if (initialMapId) {
             console.log(`Loading initial map: ${initialMapId}`);
             currentMapData = await assetManager.loadMap(initialMapId);
@@ -1562,12 +1572,12 @@ async function initialize() { // Made async
                 console.error(`Failed to load initial map: ${initialMapId}`);
                 const errorDisplay = document.getElementById('errorMessageDisplay');
                 if (errorDisplay) errorDisplay.textContent = `Failed to load initial map: ${initialMapId}.`;
-                 // Keep gameState.layers empty or show error on map
+                // Keep gameState.layers empty or show error on map
                 gameState.layers = { landscape: [], building: [], item: [], roof: [] };
             }
         } else {
             console.warn("No initial map selected or map selector is empty. No map loaded at startup.");
-             gameState.layers = { landscape: [], building: [], item: [], roof: [] };
+            gameState.layers = { landscape: [], building: [], item: [], roof: [] };
         }
 
         renderTables(); // For character creator (might be hidden initially)
@@ -1587,7 +1597,7 @@ async function initialize() { // Made async
             alert("A critical error occurred during game initialization. Please try refreshing. Details in console.");
         }
     }
-    
+
     document.addEventListener('keydown', handleKeyDown);
 }
 /**************************************************************
@@ -1604,7 +1614,7 @@ function startGame() {
         const mapSelector = document.getElementById('mapSelector');
         let initialMapId = mapSelector?.value;
         if (mapSelector && (!initialMapId || mapSelector.options[mapSelector.selectedIndex]?.disabled)) {
-            initialMapId = ""; 
+            initialMapId = "";
             for (let i = 0; i < mapSelector.options.length; i++) {
                 if (mapSelector.options[i].value && !mapSelector.options[i].disabled) {
                     initialMapId = mapSelector.options[i].value;
@@ -1651,7 +1661,7 @@ function startGame() {
     } else {
         logToConsole(`Using ${gameState.inventory.container.name}. Capacity: ${gameState.inventory.container.maxSlots} slots.`);
     }
-    
+
     // Add clothing items from definitions
     const clothingToAdd = ["simple_shirt", "baseball_cap", "basic_vest", "durable_pants", "wide_brim_hat", "small_backpack_wearable"];
     clothingToAdd.forEach(itemId => {
@@ -1661,18 +1671,18 @@ function startGame() {
             // For simplicity, if addItem can handle raw definitions, that's fine too.
             // Assuming Item constructor can take the definition object:
             const newItem = new Item(
-                itemDef.name, 
-                itemDef.description, 
-                itemDef.size, 
-                itemDef.type, 
-                itemDef.canEquip, 
-                itemDef.layer, 
-                itemDef.coverage, 
-                itemDef.insulation, 
-                itemDef.armorValue, 
+                itemDef.name,
+                itemDef.description,
+                itemDef.size,
+                itemDef.type,
+                itemDef.canEquip,
+                itemDef.layer,
+                itemDef.coverage,
+                itemDef.insulation,
+                itemDef.armorValue,
                 itemDef.isClothing
             );
-            addItem(newItem); 
+            addItem(newItem);
         } else {
             console.warn(`Clothing item definition not found for ID: ${itemId}`);
         }
@@ -1687,9 +1697,9 @@ function startGame() {
     gameState.gameStarted = true;
     updateInventoryUI();
     // generateInitialMap(); // This is replaced by map loading via AssetManager in initialize or here
-    if(currentMapData) scheduleRender(); // Render if map is loaded
+    if (currentMapData) scheduleRender(); // Render if map is loaded
     initializeHealth();
-    if(currentMapData) { // Only run these if a map is loaded
+    if (currentMapData) { // Only run these if a map is loaded
         detectInteractableItems();
         showInteractableItems();
     }
