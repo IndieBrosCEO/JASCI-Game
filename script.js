@@ -208,7 +208,47 @@ const gameState = {
     renderScheduled: false,
 };
 
+/**************************************************************
+ * Clothing System Constants and Initialization
+ **************************************************************/
+const ClothingLayers = {
+    HEAD_BOTTOM: "head_bottom",
+    HEAD_TOP: "head_top",
+    TORSO_BOTTOM: "torso_bottom",
+    TORSO_TOP: "torso_top",
+    LEFT_ARM_BOTTOM: "left_arm_bottom",
+    LEFT_ARM_TOP: "left_arm_top",
+    RIGHT_ARM_BOTTOM: "right_arm_bottom",
+    RIGHT_ARM_TOP: "right_arm_top",
+    LEGS_BOTTOM: "legs_bottom",
+    LEGS_TOP: "legs_top",
+    FEET_BOTTOM: "feet_bottom",
+    FEET_TOP: "feet_top",
+    BACKPACK: "backpack",
+    WAIST: "waist"
+};
 
+// Initialize player object and wornClothing if they don't exist
+if (!gameState.player) {
+    gameState.player = {};
+}
+
+gameState.player.wornClothing = {
+    [ClothingLayers.HEAD_BOTTOM]: null,
+    [ClothingLayers.HEAD_TOP]: null,
+    [ClothingLayers.TORSO_BOTTOM]: null,
+    [ClothingLayers.TORSO_TOP]: null,
+    [ClothingLayers.LEFT_ARM_BOTTOM]: null,
+    [ClothingLayers.LEFT_ARM_TOP]: null,
+    [ClothingLayers.RIGHT_ARM_BOTTOM]: null,
+    [ClothingLayers.RIGHT_ARM_TOP]: null,
+    [ClothingLayers.LEGS_BOTTOM]: null,
+    [ClothingLayers.LEGS_TOP]: null,
+    [ClothingLayers.FEET_BOTTOM]: null,
+    [ClothingLayers.FEET_TOP]: null,
+    [ClothingLayers.BACKPACK]: null,
+    [ClothingLayers.WAIST]: null
+};
 
 /**************************************************************
  * Utility & Helper Functions
@@ -825,6 +865,27 @@ function renderCharacterInfo() {
         <h3>Skills</h3>
         ${skillsHtml}
     `;
+
+    // Add Worn Clothing section to Character Info Panel
+    let wornHtml = '<h3>Worn Clothing</h3>';
+    let hasWornItemsCharPanel = false;
+    if (gameState.player && gameState.player.wornClothing) {
+        for (const layer in gameState.player.wornClothing) {
+            const item = gameState.player.wornClothing[layer];
+            if (item) {
+                hasWornItemsCharPanel = true;
+                const layerDisplayNameKey = Object.keys(ClothingLayers).find(key => ClothingLayers[key] === layer);
+                // Format display name: replace underscores with spaces and capitalize words
+                let formattedLayerName = (layerDisplayNameKey || layer).replace(/_/g, ' ');
+                formattedLayerName = formattedLayerName.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.substring(1)).join(' ');
+                wornHtml += `<div><em>${formattedLayerName}:</em> ${item.name}</div>`;
+            }
+        }
+    }
+    if (!hasWornItemsCharPanel) {
+        wornHtml += '<div>— Not wearing anything —</div>';
+    }
+    characterInfo.innerHTML += wornHtml; // Append to existing info
 }
 
 /**************************************************************
@@ -836,25 +897,33 @@ const InventorySizes = {
 };
 
 // 2) Inventory container constructor
-function InventoryContainer(sizeLabel) {
+function InventoryContainer(name, sizeLabel) {
+    this.name = name;
     this.sizeLabel = sizeLabel;
     this.maxSlots = InventorySizes[sizeLabel];
     this.items = [];
 }
 
 // 3) Item constructor
-function Item(name, description, size, type, canEquip = false) {
+function Item(name, description, size, type, canEquip = false, layer = null, coverage = [], insulation = 0, armorValue = 0, isClothing = false) {
     this.name = name;
     this.description = description;
     this.size = size;
     this.type = type;
-    this.canEquip = canEquip;
-    this.equipped = false;
+    this.canEquip = canEquip; // This existing property might distinguish weapons/tools vs. clothing
+    this.equipped = false; // Existing property
+
+    // New properties for clothing
+    this.layer = layer;           // e.g., ClothingLayers.TORSO_TOP
+    this.coverage = coverage;     // e.g., ["torso", "leftArm", "rightArm"]
+    this.insulation = insulation;
+    this.armorValue = armorValue;
+    this.isClothing = isClothing; // true if the item is wearable clothing
 }
 
 // 4) Attach to gameState
 gameState.inventory = {
-    container: new InventoryContainer("M"),
+    container: new InventoryContainer("Backpack", "M"),
     handSlots: [null, null],
     open: false,
     cursor: 0
@@ -896,19 +965,34 @@ function removeItem(itemName) {
 // 8) Equip / Unequip
 function equipItem(itemName, handIndex) {
     const inv = gameState.inventory.container.items;
-    const idx = inv.findIndex(i => i.name === itemName && i.canEquip);
-    if (idx === -1) {
-        logToConsole(`Can't equip ${itemName}.`);
+    const itemIndex = inv.findIndex(i => i.name === itemName); // Find by name first
+
+    if (itemIndex === -1) {
+        logToConsole(`Item "${itemName}" not found in inventory.`);
         return;
     }
+    const item = inv[itemIndex];
+
+    if (item.isClothing) {
+        logToConsole(`${item.name} is clothing. Use the 'Wear' action (usually 'f' on an inventory item) instead of equipping to a hand slot.`);
+        return;
+    }
+
+    if (!item.canEquip) { // Now check canEquip for non-clothing items
+        logToConsole(`Cannot equip "${itemName}" to a hand slot. It's not flagged as 'canEquip'.`);
+        return;
+    }
+
     if (gameState.inventory.handSlots[handIndex]) {
-        logToConsole(`Hand slot ${handIndex + 1} occupied.`);
+        logToConsole(`Hand slot ${handIndex + 1} is already occupied by ${gameState.inventory.handSlots[handIndex].name}.`);
         return;
     }
-    const item = inv.splice(idx, 1)[0];
-    item.equipped = true;
-    gameState.inventory.handSlots[handIndex] = item;
-    logToConsole(`Equipped ${item.name}.`);
+
+    // Item is found, not clothing, can be equipped, and slot is free
+    const equippedItem = inv.splice(itemIndex, 1)[0];
+    equippedItem.equipped = true; // Mark as equipped in general sense
+    gameState.inventory.handSlots[handIndex] = equippedItem;
+    logToConsole(`Equipped ${equippedItem.name} to hand slot ${handIndex + 1}.`);
     updateInventoryUI();
 }
 
@@ -929,24 +1013,136 @@ function unequipItem(handIndex) {
     updateInventoryUI();
 }
 
+/**************************************************************
+ * Clothing Equip/Unequip Functions
+ **************************************************************/
+function equipClothing(itemName) {
+    const inv = gameState.inventory.container.items;
+    const itemIndex = inv.findIndex(i => i.name === itemName);
+
+    if (itemIndex === -1) {
+        logToConsole(`Error: Item "${itemName}" not found in inventory.`);
+        return;
+    }
+
+    const item = inv[itemIndex];
+
+    if (!item.isClothing) {
+        logToConsole(`Error: "${itemName}" is not clothing and cannot be worn.`);
+        return;
+    }
+
+    if (!item.layer || !Object.values(ClothingLayers).includes(item.layer)) {
+        logToConsole(`Error: "${itemName}" has an invalid or missing clothing layer: ${item.layer}`);
+        return;
+    }
+
+    const targetLayer = item.layer;
+    if (gameState.player.wornClothing[targetLayer]) {
+        logToConsole(`Layer ${targetLayer} is already occupied by ${gameState.player.wornClothing[targetLayer].name}.`);
+        return;
+    }
+
+    // Remove item from inventory
+    inv.splice(itemIndex, 1);
+
+    // Add to wornClothing
+    gameState.player.wornClothing[targetLayer] = item;
+    item.equipped = true;
+
+    logToConsole(`Equipped ${itemName} to ${targetLayer}.`);
+    updateInventoryUI();
+    renderCharacterInfo(); // Update character info (e.g., to show armor changes later)
+}
+
+function unequipClothing(clothingLayer) {
+    if (!clothingLayer || !gameState.player.wornClothing.hasOwnProperty(clothingLayer)) {
+        logToConsole(`Error: Invalid clothing layer "${clothingLayer}".`);
+        return;
+    }
+
+    const item = gameState.player.wornClothing[clothingLayer];
+
+    if (!item) {
+        logToConsole(`No item to unequip from ${clothingLayer}.`);
+        return;
+    }
+
+    if (!canAddItem(item)) {
+        logToConsole(`Not enough inventory space to unequip ${item.name}.`);
+        return;
+    }
+
+    // Add item back to inventory
+    gameState.inventory.container.items.push(item);
+    // gameState.inventory.container.items.sort((a, b) => a.name.localeCompare(b.name)); // Optional: sort inventory
+
+    // Remove from wornClothing
+    gameState.player.wornClothing[clothingLayer] = null;
+    item.equipped = false;
+
+    logToConsole(`Unequipped ${item.name} from ${clothingLayer}.`);
+    updateInventoryUI();
+    renderCharacterInfo(); // Update character info
+}
+
 // 9) Update the DOM
 function updateInventoryUI() {
-    // Capacity
-    const used = gameState.inventory.container.items
-        .reduce((sum, i) => sum + i.size, 0);
-    const cap = gameState.inventory.container.maxSlots;
-    document.getElementById("invCapacity").textContent = `Inv: ${used}/${cap}`;
-
-    // Hand slots
-    const hs = document.getElementById("handSlots");
-    hs.innerHTML = "";
+    // Equipped Hand Items
+    const equippedHandItemsDiv = document.getElementById("equippedHandItems");
+    equippedHandItemsDiv.innerHTML = "";
     gameState.inventory.handSlots.forEach((it, i) => {
         const d = document.createElement("div");
+        const handName = i === 0 ? "Left Hand" : "Right Hand";
         d.textContent = it
-            ? `Hand ${i + 1}: ${it.name} (Equipped)`
-            : `Hand ${i + 1}: Empty`;
-        hs.appendChild(d);
+            ? `${handName}: ${it.name}`
+            : `${handName}: Empty`;
+        equippedHandItemsDiv.appendChild(d);
     });
+
+    // Equipped Containers
+    const equippedContainersDiv = document.getElementById("equippedContainers");
+    equippedContainersDiv.innerHTML = "";
+    const mainContainer = gameState.inventory.container;
+    const usedSlots = mainContainer.items.reduce((sum, i) => sum + i.size, 0);
+    const containerDisplay = document.createElement("div");
+    containerDisplay.textContent = `${mainContainer.name}: ${usedSlots}/${mainContainer.maxSlots}`;
+    equippedContainersDiv.appendChild(containerDisplay);
+
+    // Main Inventory Capacity (within the H3 tag)
+    const invCapacitySpan = document.getElementById("invCapacity");
+    if (invCapacitySpan) {
+        invCapacitySpan.textContent = `${usedSlots}/${mainContainer.maxSlots}`;
+    }
+
+    // Old handSlots div is no longer managed here directly by this function for equipped items.
+    // If handSlots div is intended for something else, its update logic would be separate.
+    // For now, let's clear it if it's not meant to show equipped items anymore.
+    const oldHandSlotsDiv = document.getElementById("handSlots");
+    if (oldHandSlotsDiv) {
+        oldHandSlotsDiv.innerHTML = ""; // Explicitly clear the old handSlots div content
+    }
+
+    // Worn Clothing List in Right Panel
+    const wornItemsList = document.getElementById("wornClothingList");
+    if (wornItemsList) {
+        wornItemsList.innerHTML = ""; // Clear old list
+        let hasWornItems = false;
+        for (const layer in gameState.player.wornClothing) {
+            const item = gameState.player.wornClothing[layer];
+            if (item) {
+                hasWornItems = true;
+                const itemDiv = document.createElement("div");
+                const layerDisplayNameKey = Object.keys(ClothingLayers).find(key => ClothingLayers[key] === layer);
+                const layerDisplayName = layerDisplayNameKey ? layerDisplayNameKey.replace(/_/g, ' ') : layer.replace(/_/g, ' ');
+                itemDiv.textContent = `${layerDisplayName}: ${item.name}`;
+                wornItemsList.appendChild(itemDiv);
+            }
+        }
+        if (!hasWornItems) {
+            wornItemsList.textContent = "— Not wearing anything —";
+        }
+    }
 }
 
 // 10) Render inventory when open
@@ -971,12 +1167,23 @@ function renderInventoryMenu() {
 // 11) Toggle panel
 function toggleInventoryMenu() {
     gameState.inventory.open = !gameState.inventory.open;
-    const panel = document.getElementById("inventoryPanel");
+    // Assuming 'inventoryList' is the main panel to show/hide for the inventory items.
+    // The prompt mentions 'inventoryPanel', but the HTML structure uses 'inventoryList' for items.
+    // Let's target 'inventoryList' visibility, or a more encompassing parent if needed.
+    // For now, let's assume the 'inventoryList' itself is what needs to be toggled.
+    // If there's a larger 'inventoryPanel' div that contains 'inventoryList' and other controls,
+    // that would be the target for toggling 'hidden'.
+    // Given the current HTML, 'inventoryList' is where items are rendered.
+    const inventoryListDiv = document.getElementById("inventoryList");
+
     if (gameState.inventory.open) {
-        panel.classList.remove("hidden");
+        inventoryListDiv.classList.remove("hidden"); // Show the list
+        inventoryListDiv.style.display = 'block'; // Or use a class that sets display
         renderInventoryMenu();
     } else {
-        panel.classList.add("hidden");
+        inventoryListDiv.classList.add("hidden"); // Hide the list
+        inventoryListDiv.style.display = 'none'; // Or use a class
+        clearInventoryHighlight(); // Clear highlights when closing
     }
 }
 
@@ -985,7 +1192,20 @@ function interactInventoryItem() {
     const idx = gameState.inventory.cursor;
     const item = gameState.inventory.container.items[idx];
     if (!item) return;
-    logToConsole(`You look at your ${item.name}: ${item.description}`);
+
+    if (item.isClothing) {
+        if (!item.equipped) { // Only allow equipping if not already equipped
+            logToConsole(`Attempting to wear ${item.name}...`);
+            equipClothing(item.name); // Directly attempt to wear
+        } else {
+            // This case should ideally not happen if equipped items are not in the browsable inventory.
+            // If it does, it implies the item is marked equipped but still in general inventory.
+            logToConsole(`${item.name} is marked as equipped but is in inventory. This may be an error or unimplemented state.`);
+        }
+    } else {
+        // Default action for non-clothing items: look at description
+        logToConsole(`You look at your ${item.name}: ${item.description}`);
+    }
 }
 
 // 13) Clear highlight when closing
@@ -1010,12 +1230,35 @@ function initializeHealth() {
     renderHealthTable();
 }
 
+// Helper function to get total armor for a body part from worn clothing
+function getArmorForBodyPart(bodyPartName) {
+    let totalArmor = 0;
+    if (!gameState.player || !gameState.player.wornClothing) {
+        return 0; // No player or no worn clothing defined
+    }
+
+    for (const layer in gameState.player.wornClothing) {
+        const item = gameState.player.wornClothing[layer];
+        if (item && item.isClothing && item.coverage && item.coverage.includes(bodyPartName)) {
+            totalArmor += item.armorValue || 0;
+        }
+    }
+    return totalArmor;
+}
+
 // Apply damage to a specified body part
 function applyDamage(bodyPart, damage) {
     if (!gameState.health || !gameState.health[bodyPart]) return;
     let part = gameState.health[bodyPart];
-    part.current = Math.max(part.current - damage, 0);
-    logToConsole(`${bodyPart} took ${damage} damage. HP: ${part.current}/${part.max}`);
+
+    const effectiveArmor = getArmorForBodyPart(bodyPart);
+    const reducedDamage = Math.max(0, damage - effectiveArmor);
+
+    logToConsole(`Original damage to ${bodyPart}: ${damage}, Armor: ${effectiveArmor}, Reduced damage: ${reducedDamage}`);
+
+    part.current = Math.max(part.current - reducedDamage, 0);
+    logToConsole(`${bodyPart} HP: ${part.current}/${part.max} after taking ${reducedDamage} damage.`);
+
     if (part.current === 0 && part.crisisTimer === 0) {
         part.crisisTimer = 3;
         logToConsole(`${bodyPart} is in crisis! Treat within 3 turns or die.`);
@@ -1081,13 +1324,15 @@ function applyTreatment(bodyPart, treatmentType, restType, medicineBonus) {
 function renderHealthTable() {
     const healthTableBody = document.querySelector("#healthTable tbody");
     healthTableBody.innerHTML = "";
-    for (let part in gameState.health) {
-        let { current, max, armor, crisisTimer } = gameState.health[part];
+    for (let partNameKey in gameState.health) { // partNameKey will be "head", "torso", etc.
+        let { current, max, crisisTimer } = gameState.health[partNameKey]; // Original armor property is no longer used from here
+        let effectiveArmor = getArmorForBodyPart(partNameKey); // Calculate armor dynamically
+
         let row = document.createElement("tr");
         row.innerHTML = `
-            <td>${formatBodyPartName(part)}</td>
+            <td>${formatBodyPartName(partNameKey)}</td>
             <td>${current}/${max}</td>
-            <td>${armor}</td>
+            <td>${effectiveArmor}</td> 
             <td>${crisisTimer > 0 ? crisisTimer : "—"}</td>
         `;
         if (current === 0) {
@@ -1244,16 +1489,136 @@ function startGame() {
     const characterCreator = document.getElementById('character-creator');
     const characterInfoPanel = document.getElementById('character-info-panel');
     const gameControls = document.getElementById('game-controls');
-    const backpack = new Item(
-        "Backpack",
-        "Expands capacity to XL (24 slots)",
-        0,
-        "container",
-        false
+    // gameState.inventory.container is already created with a name "Backpack"
+    // If a specific "Backpack" item that modifies capacity needs to be added, it would be done here.
+    // For example, if there's an actual Item object for "Backpack":
+    // const backpackItem = new Item("Backpack Item", "A sturdy backpack.", 1, "containerModifier");
+    // addItem(backpackItem); // This would use the addItem logic if it affects inventory directly
+
+    // The prompt implies gameState.inventory.container *is* the backpack.
+    // If its properties (like maxSlots) are meant to be changed by a "Backpack" item, that logic would be here.
+    // For now, the container itself is named "Backpack" and has its initial size.
+    // If finding a "Backpack" item in the world should *change* gameState.inventory.container.maxSlots,
+    // that's a separate mechanic.
+
+    // Example of how a backpack item might be used to upgrade the main container:
+    // This is a conceptual addition, as the prompt focuses on UI for the existing container.
+    const foundBackpackItem = new Item(
+        "Large Backpack", // This is an item *in* the game world
+        "A large backpack that upgrades your carrying capacity.",
+        0, // Size it takes up if it were in another container before equipping
+        "containerUpgrade", // A new type to signify it upgrades capacity
+        false, // Not equippable in hands (this means it cannot go into handSlots)
+        null, [], 0, 0, false // Default clothing properties for non-clothing item
     );
-    gameState.inventory.container.items.push(backpack);
-    gameState.inventory.container.maxSlots = InventorySizes.XL;
-    logToConsole("You’ve equipped a Backpack! Capacity is now XL (24 slots).");
+    // Simulate finding and "equipping" this upgrade
+    if (foundBackpackItem.type === "containerUpgrade") {
+        gameState.inventory.container.name = "Large Backpack"; // Update name
+        gameState.inventory.container.sizeLabel = "XL"; // Update size label
+        gameState.inventory.container.maxSlots = InventorySizes.XL; // Update max slots
+        logToConsole("You've upgraded to a Large Backpack! Capacity is now XL (24 slots).");
+    } else {
+        // Default initialization message if no specific upgrade item is found/processed at start
+        logToConsole(`Using ${gameState.inventory.container.name}. Capacity: ${gameState.inventory.container.maxSlots} slots.`);
+    }
+
+    // Add test clothing items to inventory
+
+    // Simple Shirt (as TORSO_BOTTOM)
+    let simpleShirt = new Item(
+        "Simple Shirt",
+        "A basic shirt.",
+        1, // size
+        "clothing", // type
+        false, // canEquip (hand slot)
+        ClothingLayers.TORSO_BOTTOM, // layer (changed to BOTTOM for variety)
+        ["torso"], // coverage
+        1, // insulation
+        0, // armorValue
+        true // isClothing
+    );
+    addItem(simpleShirt);
+
+    // Baseball Cap (existing)
+    let baseballCap = new Item( // Renamed from testHat to be more specific
+        "Baseball Cap",
+        "A simple cap to keep the sun out of your eyes.",
+        1, // size
+        "clothing", // type
+        false, // canEquip (to hand)
+        ClothingLayers.HEAD_TOP, // layer
+        ["head"], // coverage
+        0.5, // insulation
+        0, // armorValue
+        true // isClothing
+    );
+    addItem(baseballCap);
+
+    // Basic Vest (ensure it's TORSO_TOP if shirt is TORSO_BOTTOM)
+    let basicVest = new Item( // Renamed from vest to be more specific
+        "Basic Vest",
+        "A simple vest providing some torso protection.",
+        2, // size
+        "clothing", // type
+        false, // canEquip
+        ClothingLayers.TORSO_TOP, // layer
+        ["torso"], // coverage
+        0, // insulation
+        5, // armorValue (as used in prior tests)
+        true // isClothing
+    );
+    addItem(basicVest);
+
+    // NEW ITEMS FROM PROMPT:
+
+    // Durable Pants
+    let pants = new Item(
+        "Durable Pants",
+        "Sturdy pants for everyday wear.",
+        2,                               // size
+        "clothing",                      // type
+        false,                           // canEquip (hand slot)
+        ClothingLayers.LEGS_BOTTOM,      // layer
+        ["leftLeg", "rightLeg"],         // coverage
+        1,                               // insulation
+        1,                               // armorValue
+        true                             // isClothing
+    );
+    addItem(pants);
+
+    // Wide-Brimmed Hat
+    let wideBrimmedHat = new Item( // Renamed from hat to be more specific
+        "Wide-Brimmed Hat",
+        "Offers good sun protection.",
+        1,                               // size
+        "clothing",                      // type
+        false,                           // canEquip
+        ClothingLayers.HEAD_TOP,         // layer (will compete with Baseball Cap for the slot)
+        ["head"],                        // coverage
+        1,                               // insulation
+        0,                               // armorValue
+        true                             // isClothing
+    );
+    addItem(wideBrimmedHat);
+
+    // Small Backpack (Wearable)
+    let smallBackpackItem = new Item(
+        "Small Backpack (Wearable)",
+        "A wearable backpack that occupies the backpack clothing slot.",
+        2,                               // size (when in inventory)
+        "clothing",                      // type (using 'clothing' to engage the layer system)
+        false,                           // canEquip
+        ClothingLayers.BACKPACK,         // layer
+        [],                              // coverage (no direct body part coverage unless specified)
+        0,                               // insulation
+        0,                               // armorValue
+        true                             // isClothing
+    );
+    addItem(smallBackpackItem);
+
+    // Note: To test applyDamage effectively, items with armor would need to be equipped.
+    // This can be done manually via inventory. The player can equip them.
+
 
     if (characterCreator) characterCreator.classList.add('hidden');
     if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
