@@ -1,0 +1,12 @@
+[
+  {
+    "id": "large_backpack_upgrade",
+    "name": "Large Backpack",
+    "description": "A large backpack that upgrades your carrying capacity.",
+    "size": 0,
+    "type": "containerUpgrade",
+    "canEquip": false,
+    "isClothing": false,
+    "tags": ["backpack", "upgrade"]
+  }
+]

@@ -28,6 +28,7 @@
                 <h2>Character Info</h2>
                 <div id="characterInfo"></div>
             </div>
+            <div id="errorMessageDisplay" style="color: red; margin-top: 10px;"></div>
         </div>
 
         <!-- Middle Column -->
@@ -40,6 +41,10 @@
         <div id="right-panel">
             <h2>Game Controls</h2>
             <button onclick="toggleRoof()">Toggle Roof</button>
+            <div>
+                <label for="mapSelector">Select Map:</label>
+                <select id="mapSelector" onchange="handleMapSelectionChange(this.value)"></select>
+            </div>
             <div id="turnStatus">
                 <div id="movementPointsUI">Moves Left: </div>
                 <div id="actionPointsUI">Actions Left: </div>
@@ -75,6 +80,7 @@
         </div>
     </div>
 
+    <script src="js/assetManager.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
