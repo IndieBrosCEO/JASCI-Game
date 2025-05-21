@@ -1,152 +1,20 @@
 ﻿/**************************************************************
  * Global State & Constants
  **************************************************************/
+const assetManager = new AssetManager();
+let currentMapData = null; // To hold the map data from assetManager
+
 const gameState = {
     // Instead of a single 'map', we now have separate layers.
-    // Each is a 2D array of tile IDs.
+    // These will be populated from currentMapData.layers when a map is loaded.
     layers: {
         landscape: [],
         building: [],
         item: [],
         roof: []
     },
-    // The tilePalette maps tile IDs to Unicode sprites, colors, and an array of tags.
-    tilePalette: {
-        // ───────────────────────────────────────────────────────────────────────────────
-        // Landscape Tiles
-        // ───────────────────────────────────────────────────────────────────────────────
-        "MB": { sprite: "▒", name: "Map Boundary", color: "white", tags: ["landscape", "impassable"] },
-        "DI": { sprite: ".", name: "Dirt", color: "brown", tags: ["landscape", "floor"] },
-        "GR": { sprite: ",", name: "Grass", color: "green", tags: ["landscape", "floor"] },
-        "MU": { sprite: ",", name: "Mud", color: "brown", tags: ["landscape", "floor"] },
-        "TGR": { sprite: "W", name: "Tall Grass", color: "green", tags: ["landscape", "floor"] },
-        "MSH": { sprite: "w", name: "Marsh", color: "#2e4b36", tags: ["landscape", "floor"] },
-        "BOG": { sprite: "~", name: "Bog", color: "darkgreen", tags: ["landscape", "floor"] },
-        "SA": { sprite: ":", name: "Sand", color: "khaki", tags: ["landscape", "floor"] },
-        "GV": { sprite: ";", name: "Gravel", color: "lightgray", tags: ["landscape", "floor"] },
-        "WS": { sprite: "~", name: "Shallow Water", color: "blue", tags: ["landscape", "water", "floor"] },
-        "WD": { sprite: "~", name: "Deep Water", color: "darkblue", tags: ["landscape", "water", "floor", "impassable"] },
-        "AR": { sprite: "=", name: "Asphalt Road", color: "gray", tags: ["landscape", "floor"] },
-        "DR": { sprite: ":", name: "Dirt Road", color: "sienna", tags: ["landscape", "floor"] },
-        "TRK": { sprite: "|", name: "Tree Trunk", color: "brown", tags: ["landscape", "vegetation", "impassable"] },
-        "BSH": { sprite: "*", name: "Bush", color: "green", tags: ["landscape", "vegetation"] },
-        "BLK": { sprite: "O", name: "Boulder", color: "lightgray", tags: ["landscape", "impassable"] },
-        "SPK": { sprite: "^", name: "Spikes", color: "gray", tags: ["landscape", "item"] },
-        "MH": { sprite: "o", name: "Manhole", color: "darkgray", tags: ["landscape", "floor"] },
-
-        // ───────────────────────────────────────────────────────────────────────────────
-        // Building Floors
-        // ───────────────────────────────────────────────────────────────────────────────
-        "FL": { sprite: "+", name: "Tile Flooring", color: "#d3d3d3", tags: ["floor", "building"] },
-        "WF": { sprite: "-", name: "Wood Flooring", color: "brown", tags: ["floor", "wood", "building"] },
-        "CT": { sprite: "░", name: "Carpet Floor", color: "#808080", tags: ["floor", "building"] },
-
-        // ───────────────────────────────────────────────────────────────────────────────
-        // Building Walls (Wood)
-        // ───────────────────────────────────────────────────────────────────────────────
-        "WWH": { sprite: "═", name: "Wood Wall Hz", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-        "WWV": { sprite: "║", name: "Wood Wall Vt", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-        "WWCTL": { sprite: "╔", name: "Wood Wall Corner TL", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-        "WWCTR": { sprite: "╗", name: "Wood Wall Corner TR", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-        "WWCBL": { sprite: "╚", name: "Wood Wall Corner BL", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-        "WWCBR": { sprite: "╝", name: "Wood Wall Corner BR", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-        "WWTE": { sprite: "╠", name: "Wood Wall T–East", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-        "WWTW": { sprite: "╣", name: "Wood Wall T–West", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-        "WWTS": { sprite: "╦", name: "Wood Wall T–South", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-        "WWTN": { sprite: "╩", name: "Wood Wall T–North", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-        "WWC": { sprite: "╬", name: "Wood Wall Cross", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-
-        // ───────────────────────────────────────────────────────────────────────────────
-        // Building Walls (Metal)
-        // ───────────────────────────────────────────────────────────────────────────────
-        "MWH": { sprite: "═", name: "Metal Wall Hz", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-        "MWV": { sprite: "║", name: "Metal Wall Vt", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-        "MWCTL": { sprite: "╔", name: "Metal Wall Corner TL", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-        "MWCTR": { sprite: "╗", name: "Metal Wall Corner TR", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-        "MWCBL": { sprite: "╚", name: "Metal Wall Corner BL", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-        "MWCBR": { sprite: "╝", name: "Metal Wall Corner BR", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-        "MWTE": { sprite: "╠", name: "Metal Wall T–East", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-        "MWTW": { sprite: "╣", name: "Metal Wall T–West", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-        "MWTS": { sprite: "╦", name: "Metal Wall T–South", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-        "MWTN": { sprite: "╩", name: "Metal Wall T–North", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-        "MWC": { sprite: "╬", name: "Metal Wall Cross", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-
-        // ───────────────────────────────────────────────────────────────────────────────
-        // Doors (Wood & Metal)
-        // ───────────────────────────────────────────────────────────────────────────────
-        "WDH": { sprite: "─", name: "Wood Door Hz", color: "brown", tags: ["door", "wood", "closed", "impassable", "interactive", "breakable", "building"] },
-        "WDV": { sprite: "│", name: "Wood Door Vt", color: "brown", tags: ["door", "wood", "closed", "impassable", "interactive", "breakable", "building"] },
-        "WOH": { sprite: "┄", name: "Wood Door Hz Open", color: "brown", tags: ["door", "wood", "open", "interactive", "breakable", "building"] },
-        "WOV": { sprite: "┆", name: "Wood Door Vt Open", color: "brown", tags: ["door", "wood", "open", "interactive", "breakable", "building"] },
-        "WDB": { sprite: ">", name: "Wood Door Broken", color: "brown", tags: ["door", "wood", "broken", "interactive", "building"] },
-
-        "MDH": { sprite: "─", name: "Metal Door Hz", color: "gray", tags: ["door", "metal", "closed", "impassable", "interactive", "breakable", "building"] },
-        "MDV": { sprite: "│", name: "Metal Door Vt", color: "gray", tags: ["door", "metal", "closed", "impassable", "interactive", "breakable", "building"] },
-        "MOH": { sprite: "┄", name: "Metal Door Hz Open", color: "gray", tags: ["door", "metal", "open", "interactive", "breakable", "building"] },
-        "MOV": { sprite: "┆", name: "Metal Door Vt Open", color: "gray", tags: ["door", "metal", "open", "interactive", "breakable", "building"] },
-        "MDB": { sprite: ">", name: "Metal Door Broken", color: "gray", tags: ["door", "metal", "broken", "interactive", "building"] },
-
-        // ───────────────────────────────────────────────────────────────────────────────
-        // Windows
-        // ───────────────────────────────────────────────────────────────────────────────
-        "WinCH": { sprite: "─", name: "Window Hz Closed", color: "cyan", tags: ["window", "closed", "impassable", "interactive", "breakable", "building"] },
-        "WinCV": { sprite: "│", name: "Window Vt Closed", color: "cyan", tags: ["window", "closed", "impassable", "interactive", "breakable", "building"] },
-        "WinOH": { sprite: "┄", name: "Window Hz Open", color: "cyan", tags: ["window", "open", "interactive", "breakable", "building"] },
-        "WinOV": { sprite: "┆", name: "Window Vt Open", color: "cyan", tags: ["window", "open", "interactive", "breakable", "building"] },
-        "WinB": { sprite: ">", name: "Window Broken", color: "cyan", tags: ["window", "broken", "interactive", "building"] },
-
-        // ───────────────────────────────────────────────────────────────────────────────
-        // Roof Tiles
-        // ───────────────────────────────────────────────────────────────────────────────
-        "RW": { sprite: "#", name: "Roof (Wood)", color: "brown", tags: ["roof", "impassable"] },
-        "RM": { sprite: "#", name: "Roof (Metal)", color: "gray", tags: ["roof", "impassable"] },
-        "TRF": { sprite: "Y", name: "Tree Leaves", color: "green", tags: ["roof", "vegetation",] },
-
-        // ───────────────────────────────────────────────────────────────────────────────
-        // Items & Furniture
-        // ───────────────────────────────────────────────────────────────────────────────
-        "CN": { sprite: "∩", name: "Counter", color: "#d3d3d3", tags: ["building", "impassable"] },
-        "CB": { sprite: "□", name: "Cabinet", color: "brown", tags: ["container", "building", "interactive"] },
-        "SN": { sprite: "⊡", name: "Sink", color: "silver", tags: ["building", "interactive"] },
-
-        "DR": { sprite: "π", name: "Drawer", color: "brown", tags: ["container", "interactive", "item"] },
-        "GC": { sprite: "Æ", name: "Gun Case", color: "olive", tags: ["container", "interactive", "item"] },
-        "TC": { sprite: "u", name: "Trash Can", color: "gray", tags: ["container", "interactive", "item"] },
-        "SF": { sprite: "#", name: "Safe", color: "gray", tags: ["container", "interactive", "item"] },
-
-        "RF": { sprite: "║", name: "Refrigerator", color: "lightgray", tags: ["container", "item", "interactive", "impassable"] },
-        "ST": { sprite: "▣", name: "Stove/Oven", color: "gray", tags: ["container", "item", "interactive", "impassable"] },
-        "MW": { sprite: "≋", name: "Microwave", color: "gray", tags: ["container", "item", "interactive"] },
-
-        "SF2": { sprite: "≡", name: "Sofa", color: "maroon", tags: ["item", "interactive"] },
-        "CH": { sprite: "╥", name: "Armchair", color: "maroon", tags: ["item", "interactive"] },
-        "TB": { sprite: "☐", name: "Coffee Table", color: "brown", tags: ["item", "impassable"] },
-        "TV": { sprite: "▢", name: "Television", color: "gray", tags: ["item", "interactive"] },
-        "STL": { sprite: "⌠", name: "Bookshelf", color: "#deb887", tags: ["item", "interactive", "container", "impassable"] },
-
-        "BD": { sprite: "╬", name: "Bed", color: "red", tags: ["building", "interactive"] },
-        "NK": { sprite: "▦", name: "Nightstand", color: "brown", tags: ["item", "interactive", "container"] },
-        "DRS": { sprite: "∥", name: "Dresser", color: "brown", tags: ["item", "interactive", "container"] },
-        "DSK": { sprite: "⌂", name: "Desk", color: "gray", tags: ["item", "interactive", "container"] },
-        "CR": { sprite: "≔", name: "Chair", color: "brown", tags: ["item", "interactive"] },
-
-        "TW": { sprite: "‖", name: "Toilet", color: "white", tags: ["item", "interactive"] },
-        "SH": { sprite: "╱", name: "Shower", color: "blue", tags: ["item", "interactive"] },
-        "BTB": { sprite: "◯", name: "Bathtub", color: "white", tags: ["item", "interactive"] },
-
-        "FLR": { sprite: "⌧", name: "Floor Lamp", color: "yellow", tags: ["item", "interactive"] },
-        "PL": { sprite: "#", name: "Potted Plant", color: "green", tags: ["item"] },
-
-        "CP": { sprite: "⌨", name: "Computer", color: "darkgray", tags: ["item", "interactive"] },
-        "PR": { sprite: "⋈", name: "Printer", color: "gray", tags: ["item", "interactive"] },
-        "WM": { sprite: "≋", name: "Washer", color: "white", tags: ["item", "interactive", "impassable"] },
-        "DRY": { sprite: "≡", name: "Dryer", color: "white", tags: ["item", "interactive", "impassable"] },
-
-        "FT": { sprite: "♣", name: "Fireplace", color: "red", tags: ["building", "interactive"] },
-    },
-
     // Player positioning and game status
-    playerPos: { x: 2, y: 2 },
+    playerPos: { x: 2, y: 2 }, // Will be updated when a map is loaded
     gameStarted: false,
 
     // Turn-based properties
@@ -253,6 +121,132 @@ gameState.player.wornClothing = {
 /**************************************************************
  * Utility & Helper Functions
  **************************************************************/
+async function handleMapSelectionChange(mapId) {
+    if (!mapId || !assetManager) {
+        console.warn("Map selection change triggered with invalid mapId or missing assetManager.");
+        return;
+    }
+    console.log(`Map selected via UI: ${mapId}`);
+    const loadedMap = await assetManager.loadMap(mapId);
+    if (loadedMap) {
+        currentMapData = loadedMap;
+        gameState.layers = currentMapData.layers; // Sync gameState.layers
+        // Reset player position or load from map data if available in currentMapData
+        gameState.playerPos = currentMapData.startPos || { x: 2, y: 2 }; 
+        
+        // Ensure tileCache is invalidated or resized for the new map
+        gameState.tileCache = null; // Force re-creation of cache in renderMapLayers
+        
+        scheduleRender();
+        detectInteractableItems();
+        showInteractableItems();
+        logToConsole(`Map ${currentMapData.name} loaded.`);
+    } else {
+        logToConsole(`Failed to load map: ${mapId}`);
+        const errorDisplay = document.getElementById('errorMessageDisplay');
+        if (errorDisplay) {
+            errorDisplay.textContent = `Failed to load map: ${mapId}. Check console for details.`;
+        }
+        currentMapData = null;
+        // Clear layers to prevent rendering a stale map
+        gameState.layers = { landscape: [], building: [], item: [], roof: [] }; 
+        // Also clear the map display area
+        const container = document.getElementById("mapContainer");
+        if (container) container.innerHTML = "<p style='color:red;'>Error: Map could not be loaded.</p>";
+        // scheduleRender(); // Render the cleared state
+    }
+}
+
+async function setupMapSelector(assetManagerInstance) {
+    const mapSelector = document.getElementById('mapSelector');
+    if (!mapSelector) {
+        console.error("Map selector element #mapSelector not found.");
+        const errorDisplay = document.getElementById('errorMessageDisplay');
+        if (errorDisplay) errorDisplay.textContent = "UI Error: Map selector not found.";
+        return;
+    }
+
+    // Fetch Base Map Index
+    const baseMapIndexUrl = `/assets/maps/mapIndex.json?t=${Date.now()}`;
+    let baseMapIndex = [];
+    try {
+        const response = await fetch(baseMapIndexUrl);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} for base mapIndex.json`);
+        }
+        baseMapIndex = await response.json();
+        assetManagerInstance.setMapIndexData(baseMapIndex); // Set base map index in AssetManager
+        console.log("Base map index loaded and set in AssetManager.");
+    } catch (error) {
+        console.error("Failed to load base map index:", error);
+        const errorDisplay = document.getElementById('errorMessageDisplay');
+        if (errorDisplay) errorDisplay.textContent = "Error loading base map list. Some maps may be unavailable.";
+        // Proceeding without base maps, user maps might still load
+    }
+
+    // Clear existing options
+    mapSelector.innerHTML = '';
+
+    // Populate with base map options
+    baseMapIndex.forEach(mapInfo => {
+        const option = document.createElement('option');
+        option.value = mapInfo.id;
+        option.textContent = mapInfo.name;
+        mapSelector.appendChild(option);
+    });
+    console.log("Base map options populated.");
+
+    // Fetch and Populate User Map Index
+    const userMapIndexUrl = `/user_assets/maps/mapIndex.json?t=${Date.now()}`;
+    let userMapIndex = [];
+    try {
+        const userResponse = await fetch(userMapIndexUrl);
+        if (userResponse.ok) {
+            userMapIndex = await userResponse.json();
+            if (userMapIndex && userMapIndex.length > 0) {
+                console.log("User map index found, adding to selector.");
+                if (baseMapIndex.length > 0 && userMapIndex.length > 0) { // Add separator only if both exist
+                    const separator = document.createElement('option');
+                    separator.disabled = true;
+                    separator.textContent = '--- User Maps ---';
+                    mapSelector.appendChild(separator);
+                }
+                userMapIndex.forEach(mapInfo => {
+                    const option = document.createElement('option');
+                    option.value = mapInfo.id;
+                    option.textContent = `[User] ${mapInfo.name}`;
+                    mapSelector.appendChild(option);
+                });
+                console.log("User maps added to selector.");
+                // If baseMapIndex was empty, userMapIndex becomes the main source for map names in AssetManager
+                if (baseMapIndex.length === 0) {
+                    assetManagerInstance.setMapIndexData(userMapIndex);
+                } else {
+                    // Optionally, merge userMapIndex into mapIndexData in AssetManager if needed for name lookups
+                    // For now, setMapIndexData overwrites. If names for user maps are only in userMapIndex,
+                    // and base maps were loaded first, AssetManager might not have user map names unless set again.
+                    // This could be refined: assetManager.addMapIndexData(userMapIndex)
+                }
+            }
+        } else if (userResponse.status === 404) {
+            console.log("User map index file (/user_assets/maps/mapIndex.json) not found, skipping.");
+        } else {
+            throw new Error(`HTTP error! status: ${userResponse.status} for user mapIndex.json`);
+        }
+    } catch (error) {
+        console.error("Failed to load or process user map index:", error);
+        // Non-critical, user maps might just not appear
+    }
+    
+    // The onchange is already set in HTML: onchange="handleMapSelectionChange(this.value)"
+    // No need to add event listener here if it's hardcoded in HTML.
+    // If it weren't, it would be:
+    // mapSelector.addEventListener('change', (event) => handleMapSelectionChange(event.target.value));
+
+    console.log("Map selector setup complete.");
+}
+
+
 function logToConsole(message) {
     console.log(message);
     const consoleElement = document.getElementById("console");
@@ -265,8 +259,9 @@ function logToConsole(message) {
 }
 function isPassable(tileId) {
     if (!tileId) return true;
-    const tags = gameState.tilePalette[tileId]?.tags || [];
-    // impassable unless it’s also movable
+    const tileData = assetManager.tilesets[tileId];
+    if (!tileData) return true; // Treat unknown tile IDs as passable for now, or log warning
+    const tags = tileData.tags || [];
     return !tags.includes("impassable");
 }
 
@@ -286,26 +281,27 @@ function createEmptyGrid(width, height, defaultTile = "") {
     return grid;
 }
 
-// Load an external map from 'Maps/testMap.json' using Fetch.
+// Load an external map from 'Maps/testMap.json' using Fetch. (REMOVING/COMMENTING OUT)
+/*
 function loadExternalMap() {
-    return fetch('Maps/beachHouse.json')
+    return fetch('Maps/beachHouse.json') // Example map
         .then(response => {
             if (!response.ok) throw new Error("Network error");
             return response.json();
         })
         .then(data => {
-            // Validate that data.layers exists.
             if (data && data.layers) {
-                return data.layers;
+                return data.layers; // This structure might differ from AssetManager's processedMapData
             } else {
                 throw new Error("Invalid map data.");
             }
         });
 }
+*/
 // Toggle roof layer visibility.
 function toggleRoof() {
     gameState.showRoof = !gameState.showRoof;
-    scheduleRender(); // Replaced renderMapLayers
+    scheduleRender(); 
     logToConsole("Roof layer toggled " + (gameState.showRoof ? "on" : "off"));
 }
 
@@ -325,27 +321,40 @@ function scheduleRender() {
 // After drawing everything, we update the highlight.
 function renderMapLayers() {
     const container = document.getElementById("mapContainer");
-    const H = gameState.layers.landscape.length;
-    const W = gameState.layers.landscape[0].length;
-
-    let isInitialRender = false;
-    if (!gameState.tileCache || gameState.tileCache.length !== H || (gameState.tileCache[0] && gameState.tileCache[0].length !== W)) {
-        isInitialRender = true;
-        container.innerHTML = ""; // Clear container only on full re-render
-        gameState.tileCache = Array(H).fill(null).map(() => Array(W).fill(null));
-        gameState.brElementsCache = Array(H).fill(null); // Cache for <br> elements
+    if (!currentMapData || !currentMapData.dimensions || !currentMapData.layers) {
+        container.innerHTML = "<p>No map loaded or map data is invalid.</p>";
+        gameState.tileCache = null; // Clear cache if no map
+        return;
     }
 
-    const fragment = isInitialRender ? document.createDocumentFragment() : null;
+    const H = currentMapData.dimensions.height;
+    const W = currentMapData.dimensions.width;
+
+    if (H === 0 || W === 0) {
+        container.innerHTML = "<p>Map dimensions are zero. Cannot render.</p>";
+        gameState.tileCache = null;
+        return;
+    }
+    
+    let isInitialRenderOrResize = false;
+    if (!gameState.tileCache || gameState.tileCache.length !== H || (gameState.tileCache[0] && gameState.tileCache[0].length !== W)) {
+        isInitialRenderOrResize = true;
+        container.innerHTML = ""; // Clear container for full re-render or resize
+        gameState.tileCache = Array(H).fill(null).map(() => Array(W).fill(null));
+        // gameState.brElementsCache is not strictly needed if we always clear and rebuild spans.
+        // If performance becomes an issue, it could be re-added.
+    }
+
+    const fragment = isInitialRenderOrResize ? document.createDocumentFragment() : null;
 
     for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
             // Determine the actual tile ID from layers
-            let actualTileId = gameState.layers.landscape[y][x];
-            if (gameState.layers.building[y][x]) actualTileId = gameState.layers.building[y][x];
-            if (gameState.layers.item[y][x]) actualTileId = gameState.layers.item[y][x];
-            if (gameState.showRoof && gameState.layers.roof[y][x]) {
-                actualTileId = gameState.layers.roof[y][x];
+            let actualTileId = currentMapData.layers.landscape?.[y]?.[x] || "";
+            if (currentMapData.layers.building?.[y]?.[x]) actualTileId = currentMapData.layers.building[y][x];
+            if (currentMapData.layers.item?.[y]?.[x]) actualTileId = currentMapData.layers.item[y][x];
+            if (gameState.showRoof && currentMapData.layers.roof?.[y]?.[x]) {
+                actualTileId = currentMapData.layers.roof[y][x];
             }
 
             // Determine target display properties
@@ -354,21 +363,25 @@ function renderMapLayers() {
             let targetDisplayId = actualTileId; // This will be "PLAYER" if player is here
 
             const isPlayerCurrentlyOnTile = (x === gameState.playerPos.x && y === gameState.playerPos.y &&
-                !(gameState.showRoof && gameState.layers.roof[y][x]));
+                !(gameState.showRoof && currentMapData.layers.roof?.[y]?.[x]));
 
             if (isPlayerCurrentlyOnTile) {
                 targetSprite = "☻";
                 targetColor = "green";
                 targetDisplayId = "PLAYER"; // Special ID for player
             } else if (actualTileId) {
-                const def = gameState.tilePalette[actualTileId];
+                const def = assetManager.tilesets[actualTileId]; // Use assetManager.tilesets
                 if (def) {
                     targetSprite = def.sprite;
                     targetColor = def.color;
+                } else {
+                    // console.warn(`Tile ID ${actualTileId} not found in tileset.`);
+                    targetSprite = '?'; // Placeholder for unknown tile
+                    targetColor = 'magenta';
                 }
             } // Else, it's an empty tile, sprite and color remain ""
 
-            if (isInitialRender) {
+            if (isInitialRenderOrResize) {
                 const span = document.createElement("span");
                 span.className = "tile";
                 span.dataset.x = x;
@@ -426,50 +439,60 @@ function updateMapHighlight() {
     const idx = gameState.selectedItemIndex;
     if (idx < 0 || idx >= gameState.interactableItems.length) return;
 
-    // 3) Pull out x/y (either from `.x/.y` or, if you ever mix in worldContainers, from `.position`)
+    // 3) Pull out x/y
     const it = gameState.interactableItems[idx];
-    const x = (it.x !== undefined) ? it.x
-        : (it.position ? it.position.x : undefined);
-    const y = (it.y !== undefined) ? it.y
-        : (it.position ? it.position.y : undefined);
+    const x = it.x; // Assuming interactableItems always have x, y
+    const y = it.y;
 
     if (typeof x !== 'number' || typeof y !== 'number') return;
 
     // 4) Find and flash the matching span
-    const span = document.querySelector(`.tile[data-x="${x}"][data-y="${y}"]`);
-    if (span) span.classList.add('flashing');
+    // Ensure tileCache exists and has the span
+    const cachedCell = gameState.tileCache?.[y]?.[x];
+    if (cachedCell && cachedCell.span) {
+        cachedCell.span.classList.add('flashing');
+    } else {
+        // Fallback if cache is not populated or span is missing (less efficient)
+        const span = document.querySelector(`.tile[data-x="${x}"][data-y="${y}"]`);
+        if (span) span.classList.add('flashing');
+    }
 }
 
 
 
 // Collision checking: Look at the building and item layers.
 function getCollisionTileAt(x, y) {
-    const bld = gameState.layers.building[y][x];
-    if (bld && gameState.tilePalette[bld]) return bld; // Check building first
+    if (!currentMapData || !currentMapData.layers) return "";
 
-    const itm = gameState.layers.item[y][x];
-    if (itm && gameState.tilePalette[itm]) return itm; // Then item
+    const bldLayer = currentMapData.layers.building;
+    const itmLayer = currentMapData.layers.item;
+    const lspLayer = currentMapData.layers.landscape;
 
-    const lsp = gameState.layers.landscape[y][x];
-    if (lsp && gameState.tilePalette[lsp]) return lsp; // Finally landscape
+    const bld = bldLayer?.[y]?.[x];
+    if (bld && assetManager.tilesets[bld]) return bld;
 
+    const itm = itmLayer?.[y]?.[x];
+    if (itm && assetManager.tilesets[itm]) return itm;
+
+    const lsp = lspLayer?.[y]?.[x];
+    if (lsp && assetManager.tilesets[lsp]) return lsp;
+    
     return ""; // If all are empty or invalid
 }
 
-/**************************************************************
- * generateInitialMap
- * Now loads the external map (testMap.json) from the Maps folder.
- **************************************************************/
+// generateInitialMap is being replaced by logic in initialize()
+/*
 function generateInitialMap() {
     loadExternalMap()
         .then(layersData => {
-            gameState.layers = layersData;
-            scheduleRender(); // Replaced renderMapLayers
+            gameState.layers = layersData; // This direct assignment might be problematic if structure differs
+            scheduleRender(); 
         })
         .catch(error => {
             console.error("Failed to load external map:", error);
         });
 }
+*/
 
 /**************************************************************
  * Turn-Based & Movement Functions
@@ -523,8 +546,12 @@ function move(direction) {
         logToConsole("No movement points remaining. End your turn (press 't').");
         return;
     }
-    const width = gameState.layers.landscape[0].length;
-    const height = gameState.layers.landscape.length;
+    if (!currentMapData || !currentMapData.dimensions) {
+        logToConsole("Cannot move: Map data not loaded.");
+        return;
+    }
+    const width = currentMapData.dimensions.width;
+    const height = currentMapData.dimensions.height;
     const originalPos = { ...gameState.playerPos };
     const newPos = { ...gameState.playerPos };
     switch (direction) {
@@ -568,18 +595,29 @@ function move(direction) {
  * Interaction & Action Functions
  **************************************************************/
 function detectInteractableItems() {
-    const R = 1;
+    const R = 1; // Radius
     const { x: px, y: py } = gameState.playerPos;
-    const layers = ["item", "building"];
     gameState.interactableItems = [];
 
-    for (let y = Math.max(0, py - R); y <= Math.min(gameState.layers.landscape.length - 1, py + R); y++) {
-        for (let x = Math.max(0, px - R); x <= Math.min(gameState.layers.landscape[0].length - 1, px + R); x++) {
-            // look in each layer in priority order
-            let tileId = layers.map(l => gameState.layers[l][y][x]).find(id => id);
+    if (!currentMapData || !currentMapData.layers || !currentMapData.dimensions) return;
+
+    const mapHeight = currentMapData.dimensions.height;
+    const mapWidth = currentMapData.dimensions.width;
+
+    for (let y = Math.max(0, py - R); y <= Math.min(mapHeight - 1, py + R); y++) {
+        for (let x = Math.max(0, px - R); x <= Math.min(mapWidth - 1, px + R); x++) {
+            let tileId = null;
+            // Check item layer first, then building layer for interactables
+            if (currentMapData.layers.item?.[y]?.[x]) {
+                tileId = currentMapData.layers.item[y][x];
+            } else if (currentMapData.layers.building?.[y]?.[x]) {
+                tileId = currentMapData.layers.building[y][x];
+            }
+
             if (!tileId) continue;
-            const tags = gameState.tilePalette[tileId]?.tags || [];
-            if (tags.includes("interactive")) {
+
+            const tileDef = assetManager.tilesets[tileId];
+            if (tileDef && tileDef.tags && tileDef.tags.includes("interactive")) {
                 gameState.interactableItems.push({ x, y, id: tileId });
             }
         }
@@ -591,8 +629,7 @@ function showInteractableItems() {
 
     gameState.interactableItems.forEach((it, idx) => {
         const div = document.createElement("div");
-        // Look up the human‐friendly name:
-        const tileDef = gameState.tilePalette[it.id] || { name: it.id };
+        const tileDef = assetManager.tilesets[it.id] || { name: it.id }; // Use assetManager.tilesets
         div.textContent = `${idx + 1}. ${tileDef.name}`;
 
         // Highlight the currently selected
@@ -618,7 +655,10 @@ function selectItem(idx) {
 
 // Get a list of possible actions based on the interactable item type
 function getActionsForItem(it) {
-    const tags = gameState.tilePalette[it.id]?.tags || [];
+    const tileDef = assetManager.tilesets[it.id]; // Use assetManager.tilesets
+    if (!tileDef) return ["Cancel"];
+    
+    const tags = tileDef.tags || [];
     const actions = ["Cancel"];
 
     if (tags.includes("door") || tags.includes("window")) {
@@ -741,25 +781,37 @@ const DOOR_BREAK_MAP = {
 
 function performAction(action, it) {
     const { x, y, id } = it;
-    const B = gameState.layers.building;
-    let target = B[y][x];
-    if (action === "Open" && DOOR_OPEN_MAP[target]) {
-        B[y][x] = DOOR_OPEN_MAP[target];
-        logToConsole(`Opened ${gameState.tilePalette[id].name}`);
+    if (!currentMapData || !currentMapData.layers.building) {
+        logToConsole("Error: Building layer not found in current map data.");
+        return;
     }
-    else if (action === "Close" && DOOR_CLOSE_MAP[target]) {
-        B[y][x] = DOOR_CLOSE_MAP[target];
-        logToConsole(`Closed ${gameState.tilePalette[id].name}`);
+    const B = currentMapData.layers.building; // Use currentMapData.layers
+    let targetTileId = B[y]?.[x]; // Safely access tile ID
+
+    if (!targetTileId) {
+        logToConsole(`Error: No building tile found at ${x},${y} to perform action.`);
+        return;
     }
-    else if (action === "Break Down" && DOOR_BREAK_MAP[target]) {
-        B[y][x] = DOOR_BREAK_MAP[target];
-        logToConsole(`Broke ${gameState.tilePalette[id].name}`);
+    
+    const tileName = assetManager.tilesets[id]?.name || id; // Use name from tileset
+
+    if (action === "Open" && DOOR_OPEN_MAP[targetTileId]) {
+        B[y][x] = DOOR_OPEN_MAP[targetTileId];
+        logToConsole(`Opened ${tileName}`);
+    }
+    else if (action === "Close" && DOOR_CLOSE_MAP[targetTileId]) {
+        B[y][x] = DOOR_CLOSE_MAP[targetTileId];
+        logToConsole(`Closed ${tileName}`);
+    }
+    else if (action === "Break Down" && DOOR_BREAK_MAP[targetTileId]) {
+        B[y][x] = DOOR_BREAK_MAP[targetTileId];
+        logToConsole(`Broke ${tileName}`);
     }
     else if (action === "Inspect" || action === "Loot") {
-        logToConsole(`${action}ing ${gameState.tilePalette[id].name}`);
+        logToConsole(`${action}ing ${tileName}`);
     }
     // redraw...
-    scheduleRender(); // Replaced renderMapLayers
+    scheduleRender(); 
     detectInteractableItems();
     showInteractableItems();
     updateMapHighlight();
@@ -1476,11 +1528,67 @@ function handleKeyDown(event) {
 }
 
 // Initial setup on DOM content load
-function initialize() {
-    renderTables();
-    generateInitialMap();
+async function initialize() { // Made async
+    try {
+        await assetManager.loadDefinitions();
+        console.log("Asset definitions loaded.");
+
+        await setupMapSelector(assetManager); // Populate map selector UI
+        console.log("Map selector setup complete.");
+
+        // Load the initially selected map
+        const mapSelector = document.getElementById('mapSelector');
+        let initialMapId = mapSelector?.value;
+
+        // If the default selected option is disabled (e.g. a separator) or has no value, find the first valid one
+        if (mapSelector && (!initialMapId || mapSelector.options[mapSelector.selectedIndex]?.disabled)) {
+            initialMapId = ""; // Reset
+            for (let i = 0; i < mapSelector.options.length; i++) {
+                if (mapSelector.options[i].value && !mapSelector.options[i].disabled) {
+                    initialMapId = mapSelector.options[i].value;
+                    break;
+                }
+            }
+        }
+        
+        if (initialMapId) {
+            console.log(`Loading initial map: ${initialMapId}`);
+            currentMapData = await assetManager.loadMap(initialMapId);
+            if (currentMapData) {
+                gameState.layers = currentMapData.layers;
+                gameState.playerPos = currentMapData.startPos || { x: 2, y: 2 }; // Default if no startPos
+                console.log("Initial map loaded:", currentMapData.name);
+            } else {
+                console.error(`Failed to load initial map: ${initialMapId}`);
+                const errorDisplay = document.getElementById('errorMessageDisplay');
+                if (errorDisplay) errorDisplay.textContent = `Failed to load initial map: ${initialMapId}.`;
+                 // Keep gameState.layers empty or show error on map
+                gameState.layers = { landscape: [], building: [], item: [], roof: [] };
+            }
+        } else {
+            console.warn("No initial map selected or map selector is empty. No map loaded at startup.");
+             gameState.layers = { landscape: [], building: [], item: [], roof: [] };
+        }
+
+        renderTables(); // For character creator (might be hidden initially)
+        scheduleRender(); // Initial render of the map (or empty state)
+        updateInventoryUI(); // Initialize inventory display
+        // initializeHealth(); // Moved to startGame
+        // detectInteractableItems(); // Moved to startGame or after map load
+        // showInteractableItems(); // Moved to startGame or after map load
+        // startTurn(); // Moved to startGame
+
+    } catch (error) {
+        console.error("Error during game initialization:", error);
+        const errorDisplay = document.getElementById('errorMessageDisplay');
+        if (errorDisplay) {
+            errorDisplay.textContent = "A critical error occurred during game initialization. Please try refreshing. Details in console.";
+        } else {
+            alert("A critical error occurred during game initialization. Please try refreshing. Details in console.");
+        }
+    }
+    
     document.addEventListener('keydown', handleKeyDown);
-    updateInventoryUI();
 }
 /**************************************************************
  * Start Game
@@ -1488,154 +1596,104 @@ function initialize() {
 function startGame() {
     const characterCreator = document.getElementById('character-creator');
     const characterInfoPanel = document.getElementById('character-info-panel');
-    const gameControls = document.getElementById('game-controls');
-    // gameState.inventory.container is already created with a name "Backpack"
-    // If a specific "Backpack" item that modifies capacity needs to be added, it would be done here.
-    // For example, if there's an actual Item object for "Backpack":
-    // const backpackItem = new Item("Backpack Item", "A sturdy backpack.", 1, "containerModifier");
-    // addItem(backpackItem); // This would use the addItem logic if it affects inventory directly
+    // const gameControls = document.getElementById('game-controls'); // This ID does not exist in index.html right-panel is used.
 
-    // The prompt implies gameState.inventory.container *is* the backpack.
-    // If its properties (like maxSlots) are meant to be changed by a "Backpack" item, that logic would be here.
-    // For now, the container itself is named "Backpack" and has its initial size.
-    // If finding a "Backpack" item in the world should *change* gameState.inventory.container.maxSlots,
-    // that's a separate mechanic.
+    // Ensure currentMapData is loaded, if not, try to load default from selector
+    if (!currentMapData) {
+        console.warn("startGame called but no map data loaded. Attempting to load from selector.");
+        const mapSelector = document.getElementById('mapSelector');
+        let initialMapId = mapSelector?.value;
+        if (mapSelector && (!initialMapId || mapSelector.options[mapSelector.selectedIndex]?.disabled)) {
+            initialMapId = ""; 
+            for (let i = 0; i < mapSelector.options.length; i++) {
+                if (mapSelector.options[i].value && !mapSelector.options[i].disabled) {
+                    initialMapId = mapSelector.options[i].value;
+                    break;
+                }
+            }
+        }
 
-    // Example of how a backpack item might be used to upgrade the main container:
-    // This is a conceptual addition, as the prompt focuses on UI for the existing container.
-    const foundBackpackItem = new Item(
-        "Large Backpack", // This is an item *in* the game world
-        "A large backpack that upgrades your carrying capacity.",
-        0, // Size it takes up if it were in another container before equipping
-        "containerUpgrade", // A new type to signify it upgrades capacity
-        false, // Not equippable in hands (this means it cannot go into handSlots)
-        null, [], 0, 0, false // Default clothing properties for non-clothing item
-    );
-    // Simulate finding and "equipping" this upgrade
-    if (foundBackpackItem.type === "containerUpgrade") {
-        gameState.inventory.container.name = "Large Backpack"; // Update name
-        gameState.inventory.container.sizeLabel = "XL"; // Update size label
-        gameState.inventory.container.maxSlots = InventorySizes.XL; // Update max slots
-        logToConsole("You've upgraded to a Large Backpack! Capacity is now XL (24 slots).");
+        if (initialMapId) {
+            // This needs to be async, or startGame needs to handle a promise.
+            // For now, let's log and proceed, map might load shortly after if initialize calls it.
+            // Ideally, startGame waits for map load if called when currentMapData is null.
+            // This part might be redundant if initialize always loads a map.
+            assetManager.loadMap(initialMapId).then(mapData => {
+                if (mapData) {
+                    currentMapData = mapData;
+                    gameState.layers = currentMapData.layers;
+                    gameState.playerPos = currentMapData.startPos || { x: 2, y: 2 };
+                    scheduleRender(); // Render after map is loaded
+                    detectInteractableItems();
+                    showInteractableItems();
+                    logToConsole(`Map ${currentMapData.name} loaded in startGame.`);
+                } else {
+                    logToConsole(`Failed to load map ${initialMapId} in startGame.`);
+                }
+            });
+        } else {
+            logToConsole("No map selected in startGame, map display might be empty.");
+        }
     } else {
-        // Default initialization message if no specific upgrade item is found/processed at start
-        logToConsole(`Using ${gameState.inventory.container.name}. Capacity: ${gameState.inventory.container.maxSlots} slots.`);
+        // Map is already loaded, ensure layers and playerPos are synced
+        gameState.layers = currentMapData.layers;
+        gameState.playerPos = currentMapData.startPos || { x: 2, y: 2 };
     }
 
-    // Add test clothing items to inventory
 
-    // Simple Shirt (as TORSO_BOTTOM)
-    let simpleShirt = new Item(
-        "Simple Shirt",
-        "A basic shirt.",
-        1, // size
-        "clothing", // type
-        false, // canEquip (hand slot)
-        ClothingLayers.TORSO_BOTTOM, // layer (changed to BOTTOM for variety)
-        ["torso"], // coverage
-        1, // insulation
-        0, // armorValue
-        true // isClothing
-    );
-    addItem(simpleShirt);
-
-    // Baseball Cap (existing)
-    let baseballCap = new Item( // Renamed from testHat to be more specific
-        "Baseball Cap",
-        "A simple cap to keep the sun out of your eyes.",
-        1, // size
-        "clothing", // type
-        false, // canEquip (to hand)
-        ClothingLayers.HEAD_TOP, // layer
-        ["head"], // coverage
-        0.5, // insulation
-        0, // armorValue
-        true // isClothing
-    );
-    addItem(baseballCap);
-
-    // Basic Vest (ensure it's TORSO_TOP if shirt is TORSO_BOTTOM)
-    let basicVest = new Item( // Renamed from vest to be more specific
-        "Basic Vest",
-        "A simple vest providing some torso protection.",
-        2, // size
-        "clothing", // type
-        false, // canEquip
-        ClothingLayers.TORSO_TOP, // layer
-        ["torso"], // coverage
-        0, // insulation
-        5, // armorValue (as used in prior tests)
-        true // isClothing
-    );
-    addItem(basicVest);
-
-    // NEW ITEMS FROM PROMPT:
-
-    // Durable Pants
-    let pants = new Item(
-        "Durable Pants",
-        "Sturdy pants for everyday wear.",
-        2,                               // size
-        "clothing",                      // type
-        false,                           // canEquip (hand slot)
-        ClothingLayers.LEGS_BOTTOM,      // layer
-        ["leftLeg", "rightLeg"],         // coverage
-        1,                               // insulation
-        1,                               // armorValue
-        true                             // isClothing
-    );
-    addItem(pants);
-
-    // Wide-Brimmed Hat
-    let wideBrimmedHat = new Item( // Renamed from hat to be more specific
-        "Wide-Brimmed Hat",
-        "Offers good sun protection.",
-        1,                               // size
-        "clothing",                      // type
-        false,                           // canEquip
-        ClothingLayers.HEAD_TOP,         // layer (will compete with Baseball Cap for the slot)
-        ["head"],                        // coverage
-        1,                               // insulation
-        0,                               // armorValue
-        true                             // isClothing
-    );
-    addItem(wideBrimmedHat);
-
-    // Small Backpack (Wearable)
-    let smallBackpackItem = new Item(
-        "Small Backpack (Wearable)",
-        "A wearable backpack that occupies the backpack clothing slot.",
-        2,                               // size (when in inventory)
-        "clothing",                      // type (using 'clothing' to engage the layer system)
-        false,                           // canEquip
-        ClothingLayers.BACKPACK,         // layer
-        [],                              // coverage (no direct body part coverage unless specified)
-        0,                               // insulation
-        0,                               // armorValue
-        true                             // isClothing
-    );
-    addItem(smallBackpackItem);
-
-    // Note: To test applyDamage effectively, items with armor would need to be equipped.
-    // This can be done manually via inventory. The player can equip them.
+    // Logic for item creation (using assetManager to get item definitions)
+    const backpackUpgradeDef = assetManager.getItem("large_backpack_upgrade");
+    if (backpackUpgradeDef && backpackUpgradeDef.type === "containerUpgrade") {
+        gameState.inventory.container.name = backpackUpgradeDef.name;
+        gameState.inventory.container.sizeLabel = "XL"; // Assuming XL, or get from itemDef
+        gameState.inventory.container.maxSlots = InventorySizes.XL;
+        logToConsole(`You've upgraded to a ${backpackUpgradeDef.name}! Capacity is now XL (24 slots).`);
+    } else {
+        logToConsole(`Using ${gameState.inventory.container.name}. Capacity: ${gameState.inventory.container.maxSlots} slots.`);
+    }
+    
+    // Add clothing items from definitions
+    const clothingToAdd = ["simple_shirt", "baseball_cap", "basic_vest", "durable_pants", "wide_brim_hat", "small_backpack_wearable"];
+    clothingToAdd.forEach(itemId => {
+        const itemDef = assetManager.getItem(itemId); // All items (incl clothing) are in itemsById
+        if (itemDef) {
+            // Create a new Item instance if your addItem expects an Item object
+            // For simplicity, if addItem can handle raw definitions, that's fine too.
+            // Assuming Item constructor can take the definition object:
+            const newItem = new Item(
+                itemDef.name, 
+                itemDef.description, 
+                itemDef.size, 
+                itemDef.type, 
+                itemDef.canEquip, 
+                itemDef.layer, 
+                itemDef.coverage, 
+                itemDef.insulation, 
+                itemDef.armorValue, 
+                itemDef.isClothing
+            );
+            addItem(newItem); 
+        } else {
+            console.warn(`Clothing item definition not found for ID: ${itemId}`);
+        }
+    });
 
 
     if (characterCreator) characterCreator.classList.add('hidden');
     if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
-    if (gameControls) gameControls.classList.remove('hidden');
+    // if (gameControls) gameControls.classList.remove('hidden'); // As noted, this ID isn't in use
 
     renderCharacterInfo();
     gameState.gameStarted = true;
     updateInventoryUI();
-    generateInitialMap(); // This will call scheduleRender internally
+    // generateInitialMap(); // This is replaced by map loading via AssetManager in initialize or here
+    if(currentMapData) scheduleRender(); // Render if map is loaded
     initializeHealth();
-    detectInteractableItems();
-    showInteractableItems();
+    if(currentMapData) { // Only run these if a map is loaded
+        detectInteractableItems();
+        showInteractableItems();
+    }
     startTurn();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    renderTables();
-    generateInitialMap(); // This will call scheduleRender internally
-    document.addEventListener('keydown', handleKeyDown);
-});
+document.addEventListener('DOMContentLoaded', initialize); // Changed to call new async initialize

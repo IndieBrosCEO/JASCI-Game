@@ -1,4 +1,5 @@
 // mapMaker.js
+const assetManager = new AssetManager();
 
 // --- 1) Initial grid size & CSS var ---
 let gridWidth = parseInt(document.getElementById("inputWidth").value, 10) || 20;
@@ -6,140 +7,7 @@ let gridHeight = parseInt(document.getElementById("inputHeight").value, 10) || 1
 document.documentElement.style.setProperty("--cols", gridWidth);
 
 // --- 2) Tile Palette ---
-const tilePalette = {
-    // ───────────────────────────────────────────────────────────────────────────────
-    // Landscape Tiles
-    // ───────────────────────────────────────────────────────────────────────────────
-    "MB": { sprite: "▒", name: "Map Boundary", color: "white", tags: ["landscape", "impassable"] },
-    "DI": { sprite: ".", name: "Dirt", color: "brown", tags: ["landscape", "floor"] },
-    "GR": { sprite: ",", name: "Grass", color: "green", tags: ["landscape", "floor"] },
-    "MU": { sprite: ",", name: "Mud", color: "brown", tags: ["landscape", "floor"] },
-    "TGR": { sprite: "W", name: "Tall Grass", color: "green", tags: ["landscape", "floor"] },
-    "MSH": { sprite: "w", name: "Marsh", color: "#2e4b36", tags: ["landscape", "floor"] },
-    "BOG": { sprite: "~", name: "Bog", color: "darkgreen", tags: ["landscape", "floor"] },
-    "SA": { sprite: ":", name: "Sand", color: "khaki", tags: ["landscape", "floor"] },
-    "GV": { sprite: ";", name: "Gravel", color: "lightgray", tags: ["landscape", "floor"] },
-    "WS": { sprite: "~", name: "Shallow Water", color: "blue", tags: ["landscape", "water", "floor"] },
-    "WD": { sprite: "~", name: "Deep Water", color: "darkblue", tags: ["landscape", "water", "floor"] },
-    "AR": { sprite: "=", name: "Asphalt Road", color: "gray", tags: ["landscape", "floor"] },
-    "DR": { sprite: ":", name: "Dirt Road", color: "sienna", tags: ["landscape", "floor"] },
-    "TRK": { sprite: "|", name: "Tree Trunk", color: "brown", tags: ["landscape", "vegetation", "impassable"] },
-    "BSH": { sprite: "*", name: "Bush", color: "green", tags: ["landscape", "vegetation"] },
-    "BLK": { sprite: "O", name: "Boulder", color: "lightgray", tags: ["landscape", "impassable"] },
-    "SPK": { sprite: "^", name: "Spikes", color: "gray", tags: ["landscape", "item"] },
-    "MH": { sprite: "o", name: "Manhole", color: "darkgray", tags: ["landscape", "floor"] },
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // Building Floors
-    // ───────────────────────────────────────────────────────────────────────────────
-    "FL": { sprite: "+", name: "Tile Flooring", color: "#d3d3d3", tags: ["floor", "building"] },
-    "WF": { sprite: "-", name: "Wood Flooring", color: "brown", tags: ["floor", "wood", "building"] },
-    "CT": { sprite: "░", name: "Carpet Floor", color: "#808080", tags: ["floor", "building"] },
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // Building Walls (Wood)
-    // ───────────────────────────────────────────────────────────────────────────────
-    "WWH": { sprite: "═", name: "Wood Wall Hz", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-    "WWV": { sprite: "║", name: "Wood Wall Vt", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-    "WWCTL": { sprite: "╔", name: "Wood Wall Corner TL", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-    "WWCTR": { sprite: "╗", name: "Wood Wall Corner TR", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-    "WWCBL": { sprite: "╚", name: "Wood Wall Corner BL", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-    "WWCBR": { sprite: "╝", name: "Wood Wall Corner BR", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-    "WWTE": { sprite: "╠", name: "Wood Wall T–East", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-    "WWTW": { sprite: "╣", name: "Wood Wall T–West", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-    "WWTS": { sprite: "╦", name: "Wood Wall T–South", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-    "WWTN": { sprite: "╩", name: "Wood Wall T–North", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-    "WWC": { sprite: "╬", name: "Wood Wall Cross", color: "brown", tags: ["wall", "wood", "impassable", "building"] },
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // Building Walls (Metal)
-    // ───────────────────────────────────────────────────────────────────────────────
-    "MWH": { sprite: "═", name: "Metal Wall Hz", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-    "MWV": { sprite: "║", name: "Metal Wall Vt", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-    "MWCTL": { sprite: "╔", name: "Metal Wall Corner TL", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-    "MWCTR": { sprite: "╗", name: "Metal Wall Corner TR", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-    "MWCBL": { sprite: "╚", name: "Metal Wall Corner BL", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-    "MWCBR": { sprite: "╝", name: "Metal Wall Corner BR", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-    "MWTE": { sprite: "╠", name: "Metal Wall T–East", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-    "MWTW": { sprite: "╣", name: "Metal Wall T–West", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-    "MWTS": { sprite: "╦", name: "Metal Wall T–South", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-    "MWTN": { sprite: "╩", name: "Metal Wall T–North", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-    "MWC": { sprite: "╬", name: "Metal Wall Cross", color: "gray", tags: ["wall", "metal", "impassable", "building"] },
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // Doors (Wood & Metal)
-    // ───────────────────────────────────────────────────────────────────────────────
-    "WDH": { sprite: "─", name: "Wood Door Hz", color: "brown", tags: ["door", "wood", "impassable", "interactive", "building"] },
-    "WDV": { sprite: "│", name: "Wood Door Vt", color: "brown", tags: ["door", "wood", "impassable", "interactive", "building"] },
-    "WOH": { sprite: "┄", name: "Wood Door Hz Open", color: "brown", tags: ["door", "wood", "interactive", "building"] },
-    "WOV": { sprite: "┆", name: "Wood Door Vt Open", color: "brown", tags: ["door", "wood", "interactive", "building"] },
-    "WDB": { sprite: ">", name: "Wood Door Broken", color: "brown", tags: ["door", "wood", "interactive", "building"] },
-
-    "MDH": { sprite: "─", name: "Metal Door Hz", color: "gray", tags: ["door", "metal", "impassable", "interactive", "building"] },
-    "MDV": { sprite: "│", name: "Metal Door Vt", color: "gray", tags: ["door", "metal", "impassable", "interactive", "building"] },
-    "MOH": { sprite: "┄", name: "Metal Door Hz Open", color: "gray", tags: ["door", "metal", "interactive", "building"] },
-    "MOV": { sprite: "┆", name: "Metal Door Vt Open", color: "gray", tags: ["door", "metal", "interactive", "building"] },
-    "MDB": { sprite: ">", name: "Metal Door Broken", color: "gray", tags: ["door", "metal", "interactive", "building"] },
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // Windows
-    // ───────────────────────────────────────────────────────────────────────────────
-    "WinCH": { sprite: "─", name: "Window Hz Closed", color: "cyan", tags: ["window", "building", "impassable"] },
-    "WinCV": { sprite: "│", name: "Window Vt Closed", color: "cyan", tags: ["window", "building", "impassable"] },
-    "WinOH": { sprite: "┄", name: "Window Hz Open", color: "cyan", tags: ["window", "building"] },
-    "WinOV": { sprite: "┆", name: "Window Vt Open", color: "cyan", tags: ["window", "building"] },
-    "WinB": { sprite: ">", name: "Window Broken", color: "cyan", tags: ["window", "building"] },
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // Roof Tiles
-    // ───────────────────────────────────────────────────────────────────────────────
-    "RW": { sprite: "#", name: "Roof (Wood)", color: "brown", tags: ["roof", "impassable"] },
-    "RM": { sprite: "#", name: "Roof (Metal)", color: "gray", tags: ["roof", "impassable"] },
-    "TRF": { sprite: "Y", name: "Tree Leaves", color: "green", tags: ["roof", "vegetation",] },
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // Items & Furniture
-    // ───────────────────────────────────────────────────────────────────────────────
-    "CN": { sprite: "∩", name: "Counter", color: "#d3d3d3", tags: ["building", "impassable"] },
-    "CB": { sprite: "□", name: "Cabinet", color: "brown", tags: ["container", "building", "interactive"] },
-    "SN": { sprite: "⊡", name: "Sink", color: "silver", tags: ["building", "interactive"] },
-
-    "DR": { sprite: "π", name: "Drawer", color: "brown", tags: ["container", "interactive", "item"] },
-    "GC": { sprite: "Æ", name: "Gun Case", color: "olive", tags: ["container", "interactive", "item"] },
-    "TC": { sprite: "u", name: "Trash Can", color: "gray", tags: ["container", "interactive", "item"] },
-    "SF": { sprite: "#", name: "Safe", color: "gray", tags: ["container", "interactive", "item"] },
-
-    "RF": { sprite: "║", name: "Refrigerator", color: "lightgray", tags: ["container", "item", "interactive", "impassable"] },
-    "ST": { sprite: "▣", name: "Stove/Oven", color: "gray", tags: ["container", "item", "interactive", "impassable"] },
-    "MW": { sprite: "≋", name: "Microwave", color: "gray", tags: ["container", "item", "interactive"] },
-
-    "SF2": { sprite: "≡", name: "Sofa", color: "maroon", tags: ["item", "interactive"] },
-    "CH": { sprite: "╥", name: "Armchair", color: "maroon", tags: ["item", "interactive"] },
-    "TB": { sprite: "☐", name: "Coffee Table", color: "brown", tags: ["item", "impassable"] },
-    "TV": { sprite: "▢", name: "Television", color: "gray", tags: ["item", "interactive"] },
-    "STL": { sprite: "⌠", name: "Bookshelf", color: "#deb887", tags: ["item", "interactive", "container", "impassable"] },
-
-    "BD": { sprite: "╬", name: "Bed", color: "red", tags: ["building", "interactive"] },
-    "NK": { sprite: "▦", name: "Nightstand", color: "brown", tags: ["item", "interactive", "container"] },
-    "DRS": { sprite: "∥", name: "Dresser", color: "brown", tags: ["item", "interactive", "container"] },
-    "DSK": { sprite: "⌂", name: "Desk", color: "gray", tags: ["item", "interactive", "container"] },
-    "CR": { sprite: "≔", name: "Chair", color: "brown", tags: ["item", "interactive"] },
-
-    "TW": { sprite: "‖", name: "Toilet", color: "white", tags: ["item", "interactive"] },
-    "SH": { sprite: "╱", name: "Shower", color: "blue", tags: ["item", "interactive"] },
-    "BTB": { sprite: "◯", name: "Bathtub", color: "white", tags: ["item", "interactive"] },
-
-    "FLR": { sprite: "⌧", name: "Floor Lamp", color: "yellow", tags: ["item", "interactive"] },
-    "PL": { sprite: "#", name: "Potted Plant", color: "green", tags: ["item"] },
-
-    "CP": { sprite: "⌨", name: "Computer", color: "darkgray", tags: ["item", "interactive"] },
-    "PR": { sprite: "⋈", name: "Printer", color: "gray", tags: ["item", "interactive"] },
-    "WM": { sprite: "≋", name: "Washer", color: "white", tags: ["item", "interactive", "impassable"] },
-    "DRY": { sprite: "≡", name: "Dryer", color: "white", tags: ["item", "interactive", "impassable"] },
-
-    "FT": { sprite: "♣", name: "Fireplace", color: "red", tags: ["building", "interactive"] },
-};
-
+// const tilePalette = { ... }; // REMOVED
 
 // --- Auto-tiling lookup (mask → variant ID) ---
 const autoTileMap = {
@@ -248,18 +116,41 @@ function buildPalette() {
     er.onclick = () => { currentTileId = ""; updatePalette(); };
     paletteContainer.appendChild(er);
 
-    Object.entries(tilePalette).forEach(([id, t]) => {
-        const allowed = (currentLayer === "landscape")
-            ? t.tags.includes("landscape")
-            : t.tags.includes(currentLayer);
-        if (!allowed) return;
-        const d = document.createElement("div");
-        d.className = "palette"; d.dataset.tileId = id;
-        d.textContent = t.sprite; d.style.color = t.color;
-        d.title = `${t.name} (${id})`;
-        d.onclick = () => { currentTileId = id; updatePalette(); };
-        paletteContainer.appendChild(d);
-    });
+    if (assetManager.tilesets && Object.keys(assetManager.tilesets).length > 0) {
+        Object.entries(assetManager.tilesets).forEach(([id, t]) => {
+            const allowed = (currentLayer === "landscape")
+                ? t.tags.includes("landscape")
+                : t.tags.includes(currentLayer);
+            // Additional filter: only include tiles suitable for the current layer type,
+            // e.g. don't show "item" layer tiles if currentLayer is "building"
+            let typeMatch = false;
+            if (currentLayer === "landscape" && t.tags.includes("landscape")) typeMatch = true;
+            else if (currentLayer === "building" && (t.tags.includes("building") || t.tags.includes("floor") || t.tags.includes("wall") || t.tags.includes("door") || t.tags.includes("window"))) typeMatch = true;
+            else if (currentLayer === "item" && t.tags.includes("item")) typeMatch = true;
+            else if (currentLayer === "roof" && t.tags.includes("roof")) typeMatch = true;
+            
+            // A broader rule: if a tile is tagged with the current layer name, allow it.
+            // This makes landscape tiles appear only on landscape, item tiles on item layer, etc.
+            if (!t.tags.includes(currentLayer) && !(currentLayer === 'building' && (t.tags.includes('floor') || t.tags.includes('wall') || t.tags.includes('door') || t.tags.includes('window')))) {
+                 // More refined check: if currentLayer is 'building', also allow 'floor', 'wall', 'door', 'window' tagged tiles.
+                if(!(currentLayer === 'landscape' && t.tags.includes('landscape'))){ // ensure landscape tiles only show on landscape
+                     // return; // Skip if not directly tagged for the layer, unless it's a general building component
+                }
+            }
+
+
+            if (!allowed) return; // Original filter based on broad category (landscape vs. others)
+
+            const d = document.createElement("div");
+            d.className = "palette"; d.dataset.tileId = id;
+            d.textContent = t.sprite; d.style.color = t.color;
+            d.title = `${t.name} (${id})`;
+            d.onclick = () => { currentTileId = id; updatePalette(); };
+            paletteContainer.appendChild(d);
+        });
+    } else {
+        paletteContainer.innerHTML = "<p>No tiles loaded. Check definitions.</p>";
+    }
     updatePalette();
 }
 function updatePalette() {
@@ -287,26 +178,39 @@ function renderMergedGrid() {
     for (let y = 0; y < gridHeight; y++) {
         for (let x = 0; x < gridWidth; x++) {
             let id = "";
-            if (layerVisibility.landscape && layers.landscape[y][x]) id = layers.landscape[y][x];
-            if (layerVisibility.building && layers.building[y][x]) id = layers.building[y][x];
-            if (layerVisibility.item && layers.item[y][x]) id = layers.item[y][x];
-            if (layerVisibility.roof && layers.roof[y][x]) id = layers.roof[y][x];
+            // Determine the topmost visible tile ID
+            if (layerVisibility.landscape && layers.landscape?.[y]?.[x]) id = layers.landscape[y][x];
+            if (layerVisibility.building && layers.building?.[y]?.[x]) id = layers.building[y][x];
+            if (layerVisibility.item && layers.item?.[y]?.[x]) id = layers.item[y][x];
+            if (layerVisibility.roof && layers.roof?.[y]?.[x]) id = layers.roof[y][x];
 
             const c = document.createElement("div");
             c.className = "cell"; c.dataset.x = x; c.dataset.y = y;
-            if (id && tilePalette[id]) {
-                c.textContent = tilePalette[id].sprite;
-                c.style.color = tilePalette[id].color;
+            
+            const tileDef = assetManager.tilesets[id]; // Use assetManager.tilesets
+            if (id && tileDef) {
+                c.textContent = tileDef.sprite;
+                c.style.color = tileDef.color;
+            } else if (id) { // Tile ID exists in layer data but not in tileset
+                c.textContent = '?'; // Show placeholder for unknown tile
+                c.style.color = 'magenta'; 
+                // console.warn(`Tile ID '${id}' at [${x},${y}] not found in loaded tilesets.`);
             }
+
 
             // stamp preview
             if (currentTool === "stamp" && stampData && previewPos) {
                 const dx = x - previewPos.x, dy = y - previewPos.y;
                 if (dx >= 0 && dy >= 0 && dx < stampData.w && dy < stampData.h) {
                     const pid = stampData.data[dy][dx];
-                    if (pid && tilePalette[pid]) {
-                        c.textContent = tilePalette[pid].sprite;
-                        c.style.color = tilePalette[pid].color;
+                    const stampTileDef = assetManager.tilesets[pid]; // Use assetManager.tilesets
+                    if (pid && stampTileDef) {
+                        c.textContent = stampTileDef.sprite;
+                        c.style.color = stampTileDef.color;
+                        c.classList.add("preview");
+                    } else if (pid) { // Stamp data has ID not in tileset
+                        c.textContent = '!'; 
+                        c.style.color = 'orange';
                         c.classList.add("preview");
                     }
                 }
@@ -442,12 +346,31 @@ document.getElementById("layerSelect").onchange = () => { buildPalette(); render
     document.getElementById("vis_" + l).onchange = () => renderMergedGrid();
 });
 document.getElementById("exportBtn").onclick = () => {
-    const data = { width: gridWidth, height: gridHeight, layers };
+    let mapId = prompt("Enter a filename/ID for the map (e.g., 'myNewMap')", "map");
+    if (!mapId) return; // User cancelled
+    mapId = mapId.replace(/\.json$/i, "").replace(/\s+/g, '_'); // Remove .json if they added it and replace spaces with underscores
+
+    // Create a basic friendly name from the ID
+    const name = mapId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); 
+
+    const data = {
+        id: mapId,
+        name: name,
+        width: gridWidth,
+        height: gridHeight,
+        layers: layers,
+        // Optionally, include other metadata like npc_spawns, portals if the editor supports them
+        npc_spawns: layers.npc_spawns || [], // Example, assuming these might be added later
+        portals: layers.portals || [] 
+    };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "map.json";
-    a.click(); URL.revokeObjectURL(url);
+    a.href = url;
+    a.download = mapId + ".json";
+    a.click();
+    URL.revokeObjectURL(url);
+    console.log(`Exported map as ${mapId}.json`);
 };
 document.getElementById("loadBtn").onclick = () => {
     const fi = document.getElementById("mapFileInput");
@@ -456,20 +379,72 @@ document.getElementById("loadBtn").onclick = () => {
     reader.onload = ev => {
         try {
             const d = JSON.parse(ev.target.result);
-            ["landscape", "building", "item", "roof"].forEach(l => {
-                layers[l] = d.layers[l] || layers[l];
-            });
-            renderMergedGrid();
-            alert("Map loaded!");
+            if (d.width && d.height) {
+                gridWidth = parseInt(d.width, 10);
+                gridHeight = parseInt(d.height, 10);
+                document.getElementById("inputWidth").value = gridWidth;
+                document.getElementById("inputHeight").value = gridHeight;
+                document.documentElement.style.setProperty("--cols", gridWidth);
+            } else {
+                // Attempt to infer from landscape layer if width/height are missing
+                if (d.layers && d.layers.landscape && d.layers.landscape.length > 0) {
+                    gridHeight = d.layers.landscape.length;
+                    gridWidth = d.layers.landscape[0].length;
+                    document.getElementById("inputWidth").value = gridWidth;
+                    document.getElementById("inputHeight").value = gridHeight;
+                    document.documentElement.style.setProperty("--cols", gridWidth);
+                    console.warn("Map dimensions (width/height) missing from JSON, inferred from landscape layer.");
+                } else {
+                    alert("Map dimensions (width/height) are missing in the JSON file. Cannot reliably load.");
+                    return;
+                }
+            }
+            
+            // Initialize layers if they don't exist to prevent errors
+            layers.landscape = d.layers.landscape || createDefaultLandscape(gridWidth, gridHeight);
+            layers.building = d.layers.building || createEmptyGrid(gridWidth, gridHeight, "");
+            layers.item = d.layers.item || createEmptyGrid(gridWidth, gridHeight, "");
+            layers.roof = d.layers.roof || createEmptyGrid(gridWidth, gridHeight, "");
+            
+            // For future properties like npc_spawns, portals
+            layers.npc_spawns = d.npc_spawns || [];
+            layers.portals = d.portals || [];
+
+
+            // It's crucial to re-initialize the map (or at least parts of it)
+            // after changing gridWidth/gridHeight and layers.
+            // renderMergedGrid() alone might not be enough if underlying cell elements need recreation.
+            // Calling a slimmed-down init or a dedicated resize function is better.
+            // For now, directly calling render.
+            renderMergedGrid(); // Re-render with new dimensions and content
+            alert(`Map "${d.name || d.id || 'Unknown'}" loaded!`);
         } catch (err) {
             alert("Error parsing map: " + err);
+            console.error("Error parsing map file:", err);
         }
     };
     reader.readAsText(fi.files[0]);
 };
 
 // --- 11) Init on load ---
-function initMap() {
+async function initMap() {
+    try {
+        await assetManager.loadDefinitions();
+        console.log("Map Maker: Asset definitions loaded via AssetManager.");
+        // Ensure this.tilesets is populated for the palette
+        if (!assetManager.tilesets || Object.keys(assetManager.tilesets).length === 0) {
+            console.error("Map Maker: assetManager.tilesets is empty after loadDefinitions!");
+            const errorDiv = document.getElementById('errorMessageDisplayMapMaker');
+            if (errorDiv) errorDiv.textContent = "Error: Failed to load tile definitions. Palette will be empty.";
+            // Potentially return or throw error to prevent further execution if tilesets are critical
+        }
+    } catch (error) {
+        console.error("Map Maker: Error loading asset definitions:", error);
+        const errorDiv = document.getElementById('errorMessageDisplayMapMaker');
+        if (errorDiv) errorDiv.textContent = "Error loading definitions. Check console.";
+        // Handle error appropriately, maybe prevent editor init
+    }
+
     layers.landscape = createDefaultLandscape(gridWidth, gridHeight);
     layers.building = createEmptyGrid(gridWidth, gridHeight, "");
     layers.item = createEmptyGrid(gridWidth, gridHeight, "");
