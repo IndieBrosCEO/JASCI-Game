@@ -7,11 +7,11 @@
     "type": "clothing",
     "canEquip": false,
     "layer": "torso_bottom",
-    "coverage": ["torso"],
+    "coverage": [ "torso" ],
     "insulation": 1,
     "armorValue": 0,
     "isClothing": true,
-    "tags": ["shirt", "basic"]
+    "tags": [ "shirt", "basic" ]
   },
   {
     "id": "baseball_cap",
@@ -21,11 +21,11 @@
     "type": "clothing",
     "canEquip": false,
     "layer": "head_top",
-    "coverage": ["head"],
+    "coverage": [ "head" ],
     "insulation": 0.5,
     "armorValue": 0,
     "isClothing": true,
-    "tags": ["hat", "headwear"]
+    "tags": [ "hat", "headwear" ]
   },
   {
     "id": "basic_vest",
@@ -35,11 +35,11 @@
     "type": "clothing",
     "canEquip": false,
     "layer": "torso_top",
-    "coverage": ["torso"],
+    "coverage": [ "torso" ],
     "insulation": 0,
     "armorValue": 5,
     "isClothing": true,
-    "tags": ["vest", "armor"]
+    "tags": [ "vest", "armor" ]
   },
   {
     "id": "durable_pants",
@@ -49,11 +49,11 @@
     "type": "clothing",
     "canEquip": false,
     "layer": "legs_bottom",
-    "coverage": ["leftLeg", "rightLeg"],
+    "coverage": [ "leftLeg", "rightLeg" ],
     "insulation": 1,
     "armorValue": 1,
     "isClothing": true,
-    "tags": ["pants", "legwear"]
+    "tags": [ "pants", "legwear" ]
   },
   {
     "id": "wide_brim_hat",
@@ -63,11 +63,11 @@
     "type": "clothing",
     "canEquip": false,
     "layer": "head_top",
-    "coverage": ["head"],
+    "coverage": [ "head" ],
     "insulation": 1,
     "armorValue": 0,
     "isClothing": true,
-    "tags": ["hat", "sunhat"]
+    "tags": [ "hat", "sunhat" ]
   },
   {
     "id": "small_backpack_wearable",
@@ -81,6 +81,105 @@
     "insulation": 0,
     "armorValue": 0,
     "isClothing": true,
-    "tags": ["backpack", "wearable"]
+    "tags": [ "backpack", "wearable" ]
+  },
+  {
+    "id": "blue_jeans",
+    "name": "Blue Jeans",
+    "description": "Standard denim blue jeans.",
+    "size": 2,
+    "type": "clothing",
+    "canEquip": false,
+    "layer": "legs_bottom",
+    "coverage": [ "leftLeg", "rightLeg" ],
+    "insulation": 1.2,
+    "armorValue": 1,
+    "isClothing": true,
+    "tags": [ "pants", "legwear", "denim", "modern" ]
+  },
+  {
+    "id": "cotton_tshirt",
+    "name": "Cotton T-Shirt",
+    "description": "A comfortable cotton t-shirt.",
+    "size": 1,
+    "type": "clothing",
+    "canEquip": false,
+    "layer": "torso_bottom",
+    "coverage": [ "torso" ],
+    "insulation": 0.8,
+    "armorValue": 0,
+    "isClothing": true,
+    "tags": [ "shirt", "casual", "modern" ]
+  },
+  {
+    "id": "hooded_sweatshirt",
+    "name": "Hooded Sweatshirt",
+    "description": "A warm sweatshirt with a hood.",
+    "size": 2,
+    "type": "clothing",
+    "canEquip": false,
+    "layer": "torso_middle",
+    "coverage": [ "torso", "leftArm", "rightArm", "head" ],
+    "insulation": 2.5,
+    "armorValue": 0.5,
+    "isClothing": true,
+    "tags": [ "sweatshirt", "hoodie", "warm", "modern" ]
+  },
+  {
+    "id": "sturdy_work_boots",
+    "name": "Sturdy Work Boots",
+    "description": "Durable boots for protection and traction.",
+    "size": 2,
+    "type": "clothing",
+    "canEquip": false,
+    "layer": "feet",
+    "coverage": [ "leftFoot", "rightFoot" ],
+    "insulation": 1.0,
+    "armorValue": 1.5,
+    "isClothing": true,
+    "tags": [ "footwear", "boots", "workwear", "modern" ]
+  },
+  {
+    "id": "leather_gloves",
+    "name": "Leather Gloves",
+    "description": "Tough leather gloves for hand protection.",
+    "size": 1,
+    "type": "clothing",
+    "canEquip": false,
+    "layer": "hands",
+    "coverage": [ "leftHand", "rightHand" ],
+    "insulation": 0.7,
+    "armorValue": 0.8,
+    "isClothing": true,
+    "tags": [ "gloves", "handwear", "leather", "modern" ]
+  },
+  {
+    "id": "wool_beanie",
+    "name": "Wool Beanie",
+    "description": "A warm knitted beanie.",
+    "size": 1,
+    "type": "clothing",
+    "canEquip": false,
+    "layer": "head_top",
+    "coverage": [ "head" ],
+    "insulation": 1.5,
+    "armorValue": 0.1,
+    "isClothing": true,
+    "tags": [ "hat", "headwear", "beanie", "wool", "warm", "modern" ]
+  },
+  {
+    "id": "rain_poncho",
+    "name": "Rain Poncho",
+    "description": "A lightweight poncho to protect from rain.",
+    "size": 1,
+    "type": "clothing",
+    "canEquip": false,
+    "layer": "over_all",
+    "coverage": [ "torso", "leftArm", "rightArm", "head", "legs" ],
+    "insulation": 0.2,
+    "armorValue": 0,
+    "isClothing": true,
+    "waterResistance": 5,
+    "tags": [ "outerwear", "rainwear", "poncho", "modern" ]
   }
 ]

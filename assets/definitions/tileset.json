@@ -89,5 +89,7 @@
   "PR": { "sprite": "⋈", "name": "Printer", "color": "gray", "tags": ["item", "interactive"] },
   "WM": { "sprite": "≋", "name": "Washer", "color": "white", "tags": ["item", "interactive", "impassable"] },
   "DRY": { "sprite": "≡", "name": "Dryer", "color": "white", "tags": ["item", "interactive", "impassable"] },
-  "FT": { "sprite": "♣", "name": "Fireplace", "color": "red", "tags": ["building", "interactive"] }
+  "FT": { "sprite": "♣", "name": "Fireplace", "color": "red", "tags": ["building", "interactive"] },
+  "TSL": { "sprite": "≈", "name": "Tilled Soil", "color": "saddlebrown", "tags": ["landscape", "floor", "farmland", "plantable"] },
+  "WBD": { "sprite": "X", "name": "Wooden Barricade", "color": "burlywood", "tags": ["structure", "impassable", "wood", "cover", "breakable"] }
 }
