@@ -365,6 +365,48 @@ function getStatValue(statName, entity) {
     return 1;
 }
 
+// Calculates the modifier for a given stat.
+function getStatModifier(statName, entity) {
+    const statPoints = getStatValue(statName, entity);
+    return Math.floor(statPoints / 2) - 1;
+}
+
+// Calculates the modifier for a given skill.
+function getSkillModifier(skillName, entity) {
+    const skillToStatMap = {
+        "Animal Handling": "Charisma",
+        "Electronics": "Intelligence",
+        "Explosives": "Marksmanship", // Corrected
+        "Guns": "Marksmanship",
+        "Intimidation": "Charisma",   // Corrected
+        "Investigation": "Perception",
+        "Lockpick": "Dexterity",
+        "Medicine": "Intelligence",
+        "Melee Weapons": "Strength",
+        "Persuasion": "Charisma",
+        "Repair": "Intelligence",
+        "Sleight of Hand": "Dexterity",
+        "Stealth": "Dexterity",
+        "Survival": "Constitution",  // Corrected
+        "Unarmed": "Strength"
+    };
+
+    const skillPoints = getSkillValue(skillName, entity);
+    const correspondingStatName = skillToStatMap[skillName];
+
+    if (!correspondingStatName) {
+        console.error(`No stat mapping found for skill: ${skillName}. Defaulting to base skill calculation.`);
+        // It's important that getStatModifier is robust enough or that skills always have a mapping.
+        // If a skill truly has no corresponding stat, its modifier would just be skillPoints/10.
+        // However, the design implies all skills should map to a stat.
+        // For safety, if a mapping is missing, we could return just the skill point derived part.
+        return Math.floor(skillPoints / 10);
+    }
+
+    const correspondingStatModifier = getStatModifier(correspondingStatName, entity);
+    return Math.floor(skillPoints / 10) + correspondingStatModifier;
+}
+
 // Calculates the attack roll for an attacker.
 function calculateAttackRoll(attacker, weapon, targetBodyPart, actionContext = {}) {
     let skillName;
@@ -378,7 +420,7 @@ function calculateAttackRoll(attacker, weapon, targetBodyPart, actionContext = {
         skillName = "Unarmed"; // Default for unknown weapon types
     }
 
-    const skillValue = getSkillValue(skillName, attacker);
+    const skillModifier = getSkillModifier(skillName, attacker); // Changed from getSkillValue
     let baseRoll = rollDie(20);
 
     // Disadvantage for second attacks
@@ -387,13 +429,19 @@ function calculateAttackRoll(attacker, weapon, targetBodyPart, actionContext = {
     }
 
     let bodyPartModifier = 0;
-    if (targetBodyPart === "Arms/Legs") {
-        bodyPartModifier = -1;
-    } else if (targetBodyPart === "Head") {
-        bodyPartModifier = -4;
-    }
+    const lowerCaseTargetBodyPart = targetBodyPart.toLowerCase(); // Good practice for comparison
 
-    const totalAttackRoll = baseRoll + skillValue + bodyPartModifier + (actionContext.rangeModifier || 0);
+    if (lowerCaseTargetBodyPart === "head") {
+        bodyPartModifier = -4;
+    } else if (lowerCaseTargetBodyPart === "leftarm" ||
+        lowerCaseTargetBodyPart === "rightarm" ||
+        lowerCaseTargetBodyPart === "leftleg" ||
+        lowerCaseTargetBodyPart === "rightleg") {
+        bodyPartModifier = -1;
+    }
+    // Torso has a modifier of 0, so no explicit check needed if it's the default.
+
+    const totalAttackRoll = baseRoll + skillModifier + bodyPartModifier + (actionContext.rangeModifier || 0); // Changed skillValue to skillModifier
 
     // Criticals do not apply on disadvantaged rolls (e.g. second attack)
     const canCrit = !actionContext.isSecondAttack;
@@ -414,13 +462,13 @@ function calculateDefenseRoll(defender, defenseType, attackerWeapon, actionConte
 
     switch (defenseType) {
         case "Dodge":
-            baseDefenseValue = getStatValue("Dexterity", defender) + getSkillValue("Unarmed", defender);
+            baseDefenseValue = getStatModifier("Dexterity", defender) + getSkillModifier("Unarmed", defender); // Changed to getStatModifier and getSkillModifier
             break;
         case "BlockUnarmed":
-            baseDefenseValue = getStatValue("Constitution", defender) + getSkillValue("Unarmed", defender);
+            baseDefenseValue = getStatModifier("Constitution", defender) + getSkillModifier("Unarmed", defender); // Changed to getStatModifier and getSkillModifier
             break;
         case "BlockArmed":
-            baseDefenseValue = getSkillValue("Melee Weapons", defender);
+            baseDefenseValue = getSkillModifier("Melee Weapons", defender); // Changed to getSkillModifier
             // Check for dual wield bonus for player
             if (defender === gameState &&
                 gameState.inventory.handSlots[0] && gameState.inventory.handSlots[0].type && gameState.inventory.handSlots[0].type.includes("melee") &&
@@ -478,10 +526,10 @@ function initiateMeleeAttack(attackerGameState, target) {
 
     const attackerPrompt = document.getElementById('attackerPrompt');
     if (attackerPrompt) {
-        attackerPrompt.innerHTML = `Targeting ${target.name} with ${selectedWeapon ? selectedWeapon.name : 'Unarmed'}.<br>Select body part: (1) Head, (2) Torso, (3) Arms/Legs. (Esc to cancel)`;
+        attackerPrompt.innerHTML = `Targeting ${target.name} with ${selectedWeapon ? selectedWeapon.name : 'Unarmed'}.<br>Select body part: (1) Head, (2) Torso, (3) Left Arm, (4) Right Arm, (5) Left Leg, (6) Right Leg. (Esc to cancel)`;
     }
 
-    // logToConsole(`Targeting ${target.name} with ${selectedWeapon ? selectedWeapon.name : 'Unarmed'}. Select body part: (1) Head, (2) Torso, (3) Arms/Legs. (Esc to cancel)`);
+    // logToConsole(`Targeting ${target.name} with ${selectedWeapon ? selectedWeapon.name : 'Unarmed'}. Select body part: (1) Head, (2) Torso, (3) Left Arm, (4) Right Arm, (5) Left Leg, (6) Right Leg. (Esc to cancel)`);
     // The actual body part selection is now handled in handleKeyDown during 'attackerDeclare'
 }
 
@@ -501,15 +549,14 @@ function calculateAndApplyMeleeDamage(attacker, target, weapon, hitSuccess, atta
 
     if (weapon === null) { // Unarmed attack
         damageType = "Bludgeoning";
-        const unarmedSkillPoints = getSkillValue("Unarmed", attacker);
-        const unarmedSkillModifier = Math.floor(unarmedSkillPoints / 10);
+        const unarmedAttackModifier = getSkillModifier("Unarmed", attacker); // New line using getSkillModifier
 
-        if (unarmedSkillModifier > 0) { // Skill 10+
-            damageAmount = rollDie(unarmedSkillModifier);
-            logToConsole(`${attackerName} attacks unarmed (skill ${unarmedSkillPoints}, modifier ${unarmedSkillModifier}), rolls 1d${unarmedSkillModifier}, deals ${damageAmount} ${damageType} damage.`);
-        } else { // Unarmed skill 0-9, modifier is 0
-            damageAmount = Math.max(0, rollDie(2) - 1); // 1d2-1, resulting in 0 or 1 damage
-            logToConsole(`${attackerName} attacks unarmed (skill ${unarmedSkillPoints}, modifier 0), rolls 1d2-1, deals ${damageAmount} ${damageType} damage.`);
+        if (unarmedAttackModifier > 0) { // Check the actual modifier value
+            damageAmount = rollDie(unarmedAttackModifier); // Use the modifier for dice sides
+            logToConsole(`${attackerName} attacks unarmed (modifier ${unarmedAttackModifier}), rolls 1d${unarmedAttackModifier}, deals ${damageAmount} ${damageType} damage.`);
+        } else {
+            damageAmount = Math.max(0, rollDie(2) - 1);
+            logToConsole(`${attackerName} attacks unarmed (modifier ${unarmedAttackModifier}), rolls 1d2-1, deals ${damageAmount} ${damageType} damage.`);
         }
     } else { // Armed Melee attack
         damageType = weapon.damageType || "Physical";
@@ -561,7 +608,7 @@ function initiateRangedAttack(attackerGameState, target) {
 
     const attackerPrompt = document.getElementById('attackerPrompt');
     if (attackerPrompt) {
-        attackerPrompt.innerHTML = `Targeting ${target.name} with ${selectedWeapon.name}.<br>Select body part: (1) Head, (2) Torso, (3) Arms/Legs. (Esc to cancel)`;
+        attackerPrompt.innerHTML = `Targeting ${target.name} with ${selectedWeapon.name}.<br>Select body part: (1) Head, (2) Torso, (3) Left Arm, (4) Right Arm, (5) Left Leg, (6) Right Leg. (Esc to cancel)`;
     }
 }
 
@@ -645,20 +692,20 @@ function processAttack() {
 
 
     // Determine Hit
-    // attackResult.isCriticalHit (Nat 20) and attackResult.isCriticalMiss (Nat 1) are already determined by calculateAttackRoll
-    if (attackResult.isCriticalHit) { // Attacker Nat 20 (and not disadvantaged)
+    // Determine Hit - REORDERED LOGIC
+    if (attackResult.naturalRoll === 20) { // Attacker Nat 20
         hit = true;
-        outcomeMessage = `${attackerName} rolled a Natural 20! CRITICAL HIT!`;
-    } else if (attackResult.naturalRoll === 20) { // Attacker Nat 20 (even if disadvantaged, still an auto-hit as per new rule, though not a crit if disadvantaged)
-        hit = true;
-        outcomeMessage = `${attackerName} rolled a Natural 20! Automatic Hit!`;
+        // Message distinction for critical vs. non-critical Nat 20
+        outcomeMessage = attackResult.isCriticalHit
+            ? `${attackerName} rolled a Natural 20! CRITICAL HIT!`
+            : `${attackerName} rolled a Natural 20! Automatic Hit!`;
     } else if (attackResult.isCriticalMiss) { // Attacker Nat 1
         hit = false;
         outcomeMessage = `${attackerName} CRITICAL MISS! Attack fails.`;
-    } else if (defenseResult.isCriticalSuccess) { // Defender Nat 20
+    } else if (defenseResult.naturalRoll === 20) { // Defender Nat 20 (and attacker didn't Nat 20)
         hit = false;
         outcomeMessage = `Miss! ${defenderName} rolled a natural 20 on defense.`;
-    } else if (defenseResult.isCriticalFailure) { // Defender Nat 1
+    } else if (defenseResult.isCriticalFailure) { // Defender Nat 1 (and attacker didn't Nat 20, defender didn't Nat 20)
         hit = true;
         outcomeMessage = `Hit! ${defenderName} critically failed their defense (rolled a natural 1).`;
     } else if (attackResult.roll > defenseResult.roll) { // Standard comparison
@@ -680,29 +727,53 @@ function processAttack() {
         } else if (attackType === 'ranged') {
             calculateAndApplyRangedDamage(attacker, defender, weapon, bodyPart);
         }
-        // Check for defender defeat after damage application
-        // The bodyPart name needs to be normalized (e.g. "Arms/Legs" -> "leftArm" or "rightArm" or specific leg)
-        // This is currently an issue as applyDamage expects specific parts like "head", "torso"
-        // For now, let's assume bodyPart is one of the specific keys in health object.
-        // A more robust solution would map general targets like "Arms/Legs" to specific body parts.
-        const actualBodyPartKey = bodyPart.toLowerCase().replace(/s\/legs|s\/arms/g, 'arm'); // Simplistic mapping, needs improvement
-        // e.g. "arms/legs" could be one of 4 limbs. Randomly pick one for now?
-        let finalTargetPart = actualBodyPartKey;
-        if (actualBodyPartKey === "arm") finalTargetPart = Math.random() < 0.5 ? "leftarm" : "rightarm";
-        if (actualBodyPartKey === "leg") finalTargetPart = Math.random() < 0.5 ? "leftleg" : "rightleg";
 
-
-        if (defender.health && defender.health[finalTargetPart] && defender.health[finalTargetPart].current <= 0) {
-            logToConsole(`${defenderName}'s ${finalTargetPart} destroyed!`);
-            // Check if overall NPC is defeated (e.g. torso or head destroyed, or total HP logic)
-            if (finalTargetPart === "head" || finalTargetPart === "torso") {
-                logToConsole(`${defenderName} has been defeated!`);
+        // Defender Natural 1 on Headshot (Instant Death) - applied AFTER damage to ensure hit was processed
+        const targetedBodyPartNormalized = gameState.pendingCombatAction.bodyPart.toLowerCase(); // e.g. "head", "left arm"
+        if (targetedBodyPartNormalized === "head" && defenseResult.naturalRoll === 1) {
+            logToConsole(`${defenderName} was hit in the head and rolled a natural 1 on defense! Instant death!`);
+            if (defender.health && defender.health.head) { // Health keys are lowercase and no spaces e.g. "head"
+                defender.health.head.current = 0;
+            }
+            if (defender === gameState) { // Player is defender
+                gameOver(); // Call game over for player
+            } else { // NPC is defender
+                logToConsole(`${defenderName} has been defeated due to critical headshot!`);
                 gameState.npcs = gameState.npcs.filter(npc => npc !== defender); // Remove NPC
-                gameState.isInCombat = false;
-                gameState.combatPhase = null;
-                gameState.pendingCombatAction = {};
-                gameState.activeSubMenu = null;
+                // Check if any combat-active NPCs remain
+                if (!gameState.npcs.some(npc => npc.mapPos)) { // Simplified check; ideally NPCs have an isInCombat flag
+                    logToConsole("All hostile NPCs defeated. Combat ended.");
+                    gameState.isInCombat = false;
+                    gameState.combatPhase = null;
+                    gameState.pendingCombatAction = {};
+                    gameState.activeSubMenu = null;
+                }
                 scheduleRender(); // Re-render map
+            }
+            updateCombatUI(); // Update UI to reflect combat potentially ending or target defeated
+            return; // Stop further processing for this attack as target is dead.
+        }
+
+        // General Check for defender defeat after damage application (if not instant death headshot)
+        const finalTargetPartKey = bodyPart.toLowerCase().replace(/\s/g, ''); // e.g. "head", "leftarm"
+
+        if (defender.health && defender.health[finalTargetPartKey] && defender.health[finalTargetPartKey].current <= 0) {
+            logToConsole(`${defenderName}'s ${finalTargetPartKey} destroyed!`);
+            if (finalTargetPartKey === "head" || finalTargetPartKey === "torso") {
+                logToConsole(`${defenderName} has been defeated!`);
+                if (defender === gameState) {
+                    gameOver();
+                } else {
+                    gameState.npcs = gameState.npcs.filter(npc => npc !== defender);
+                    if (!gameState.npcs.some(npc => npc.mapPos)) { // Simplified check
+                        logToConsole("All hostile NPCs defeated. Combat ended.");
+                        gameState.isInCombat = false;
+                        gameState.combatPhase = null;
+                        gameState.pendingCombatAction = {};
+                        gameState.activeSubMenu = null;
+                    }
+                }
+                scheduleRender();
             }
         }
 
@@ -1858,10 +1929,10 @@ function initializeHealth() {
     gameState.health = {
         head: { max: 5, current: 5, armor: 0, crisisTimer: 0 },
         torso: { max: 8, current: 8, armor: 0, crisisTimer: 0 },
-        leftArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
-        rightArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
-        leftLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
-        rightLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
+        leftArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 }, // Was part of "Arms/Legs"
+        rightArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 }, // Was part of "Arms/Legs"
+        leftLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 },  // Was part of "Arms/Legs"
+        rightLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 }  // Was part of "Arms/Legs"
     };
     renderHealthTable();
 }
@@ -2021,13 +2092,10 @@ function formatBodyPartName(part) {
         head: "Head",
         torso: "Torso",
         leftArm: "L Arm",
-        leftHand: "L Hand",
         rightArm: "R Arm",
-        rightHand: "R Hand",
         leftLeg: "L Leg",
-        leftFoot: "L Foot",
-        rightLeg: "R Leg",
-        rightFoot: "R Foot"
+        rightLeg: "R Leg"
+        // Removed leftHand, rightHand, leftFoot, rightFoot as they are not primary targetable body parts in this system yet
     };
     return nameMap[part] || part;
 }
@@ -2052,8 +2120,11 @@ function handleKeyDown(event) {
             let selectedBodyPartName = null;
             if (event.key === '1') selectedBodyPartName = "Head";
             else if (event.key === '2') selectedBodyPartName = "Torso";
-            else if (event.key === '3') selectedBodyPartName = "Arms/Legs";
-            else if (event.key === 'Escape') { // Specific Escape for attackerDeclare
+            else if (event.key === '3') selectedBodyPartName = "Left Arm";
+            else if (event.key === '4') selectedBodyPartName = "Right Arm";
+            else if (event.key === '5') selectedBodyPartName = "Left Leg";
+            else if (event.key === '6') selectedBodyPartName = "Right Leg";
+            else if (event.key === 'Escape') {
                 logToConsole("Targeting cancelled.");
                 gameState.isInCombat = false;
                 gameState.combatPhase = null;
@@ -2062,44 +2133,53 @@ function handleKeyDown(event) {
                 updateCombatUI();
                 event.preventDefault();
                 return;
-            } else if (['1', '2', '3'].includes(event.key)) { // Specific keys for attackerDeclare
-                selectedBodyPartName = event.key === '1' ? "Head" : event.key === '2' ? "Torso" : "Arms/Legs";
+            } else if (['1', '2', '3', '4', '5', '6'].includes(event.key)) {
                 event.preventDefault(); // Consume the handled key
-                // The 'if (selectedBodyPartName)' block below will execute and then return.
             }
-            // If not 1,2,3 or Escape in this phase, deliberately do nothing here and fall through.
 
-            if (selectedBodyPartName) { // This logic only runs if '1', '2', or '3' was pressed.
+            if (selectedBodyPartName) {
                 gameState.pendingCombatAction.bodyPart = selectedBodyPartName;
                 logToConsole(`Player selected body part: ${selectedBodyPartName}`);
                 gameState.combatPhase = 'defenderDeclare';
                 updateCombatUI();
 
-                if (gameState.combatCurrentDefender !== gameState) { // If NPC is defending
-                    const pendingAttackType = gameState.pendingCombatAction.attackType;
-                    if (pendingAttackType === "melee") {
-                        if (getSkillValue("Unarmed", defender) >= 0) {
-                            gameState.npcDefenseChoice = "BlockUnarmed";
-                            logToConsole(`${defender.name} (NPC) chooses to Block Unarmed.`);
-                        } else {
-                            gameState.npcDefenseChoice = "Dodge";
-                            logToConsole(`${defender.name} (NPC) chooses to Dodge.`);
-                        }
-                    } else {
+                // NPC Defender Logic
+                if (gameState.combatCurrentDefender !== gameState) {
+                    const defenderNpc = gameState.combatCurrentDefender;
+                    const pendingAttackTypeByPlayer = gameState.pendingCombatAction.attackType;
+
+                    if (pendingAttackTypeByPlayer === "ranged") {
                         gameState.npcDefenseChoice = "Dodge";
-                        logToConsole(`${defender.name} (NPC) chooses to Dodge against ranged attack.`);
+                        logToConsole(`${defenderNpc.name} (NPC) chooses to Dodge against ranged attack.`);
+                    } else { // Melee attack by player
+                        let npcWeapon = null;
+                        if (defenderNpc.equippedWeaponId) {
+                            npcWeapon = assetManager.getItem(defenderNpc.equippedWeaponId);
+                        }
+
+                        if (npcWeapon && npcWeapon.type && npcWeapon.type.includes("melee")) {
+                            gameState.npcDefenseChoice = "BlockArmed";
+                            logToConsole(`${defenderNpc.name} (NPC) chooses to Block Armed with ${npcWeapon.name}.`);
+                        } else {
+                            const unarmedModifier = getSkillModifier("Unarmed", defenderNpc);
+                            const dexterityModifier = getStatModifier("Dexterity", defenderNpc);
+
+                            if (unarmedModifier > dexterityModifier) {
+                                gameState.npcDefenseChoice = "BlockUnarmed";
+                                logToConsole(`${defenderNpc.name} (NPC) chooses to Block Unarmed.`);
+                            } else {
+                                gameState.npcDefenseChoice = "Dodge";
+                                logToConsole(`${defenderNpc.name} (NPC) chooses to Dodge.`);
+                            }
+                        }
                     }
                     gameState.combatPhase = 'resolveRolls';
                     updateCombatUI();
                     processAttack();
                 }
-                keyProcessed = true; // Key was processed by this phase
+                keyProcessed = true;
             }
-            // If selectedBodyPartName was set, keyProcessed is true.
-            // If key was 'Escape', it returned.
-            // If key was not 1,2,3,Esc, selectedBodyPartName is null, keyProcessed is false, fall through.
-            if (keyProcessed) { // If 1,2,3 was pressed and processed.
-                event.preventDefault(); // Already done above for 1,2,3
+            if (keyProcessed) {
                 return;
             }
 
@@ -2112,14 +2192,20 @@ function handleKeyDown(event) {
                 updateCombatUI();
                 processAttack();
                 keyProcessed = true;
-            } else if (defenseChoiceKey === 'b') { // 'b' for BlockUnarmed - Specific key for defenderDeclare
-                gameState.playerDefenseChoice = "BlockUnarmed";
-                logToConsole("Player chooses to Block Unarmed.");
+            } else if (defenseChoiceKey === 'b') {
+                const primaryWeapon = gameState.inventory.handSlots[0];
+                if (primaryWeapon && primaryWeapon.type && primaryWeapon.type.includes("melee")) {
+                    gameState.playerDefenseChoice = "BlockArmed";
+                    logToConsole("Player chooses to Block Armed with " + primaryWeapon.name + ".");
+                } else {
+                    gameState.playerDefenseChoice = "BlockUnarmed";
+                    logToConsole("Player chooses to Block Unarmed.");
+                }
                 gameState.combatPhase = 'resolveRolls';
                 updateCombatUI();
                 processAttack();
                 keyProcessed = true;
-            } else if (event.key === 'Escape') { // Specific Escape for defenderDeclare
+            } else if (event.key === 'Escape') {
                 logToConsole("Defense choice cancelled by player. Defaulting to Dodge.");
                 gameState.playerDefenseChoice = "Dodge";
                 gameState.combatPhase = 'resolveRolls';
@@ -2127,17 +2213,13 @@ function handleKeyDown(event) {
                 processAttack();
                 keyProcessed = true;
             }
-            // If not 'd', 'b', or 'Escape' in this phase, deliberately do nothing and fall through.
-
             if (keyProcessed) {
                 event.preventDefault();
                 return;
             }
         }
 
-        // General key handling for keys pressed during combat that were NOT handled by specific phase logic above.
         if (event.key === 'Escape') {
-            // This is the general combat Escape if not caught by a more specific phase's Escape defined above.
             logToConsole("General combat Escape handler: Cancelling combat.");
             gameState.isInCombat = false;
             gameState.combatPhase = null;
@@ -2150,14 +2232,9 @@ function handleKeyDown(event) {
             return;
         }
 
-        // If the key was not handled by any specific combat phase logic (1,2,3,d,b,Esc in those phases)
-        // AND was not the general combat Escape key, then it's an unhandled key during general combat.
         logToConsole(`Combat active (Phase: ${gameState.combatPhase || 'N/A'}). Key '${event.key}' pressed. No specific action for this key in this phase. Non-combat game actions are blocked.`);
-
-        // Prevent any other default game actions (like movement, inventory, etc.) if in combat
-        // and the key wasn't handled by any combat logic above.
         event.preventDefault();
-        return; // Stop further processing, effectively blocking non-combat game actions.
+        return;
     }
 
     // Non-combat key handling starts here
@@ -2420,8 +2497,17 @@ function startGame() {
     if (dummyDefinition) {
         const dummyInstance = JSON.parse(JSON.stringify(dummyDefinition));
         dummyInstance.mapPos = { x: 10, y: 10 };
+        // Initialize health for the training dummy with the new structure
+        dummyInstance.health = {
+            head: { max: 20, current: 20, armor: 0, crisisTimer: 0 },
+            torso: { max: 30, current: 30, armor: 0, crisisTimer: 0 },
+            leftArm: { max: 15, current: 15, armor: 0, crisisTimer: 0 },
+            rightArm: { max: 15, current: 15, armor: 0, crisisTimer: 0 },
+            leftLeg: { max: 15, current: 15, armor: 0, crisisTimer: 0 },
+            rightLeg: { max: 15, current: 15, armor: 0, crisisTimer: 0 }
+        };
         gameState.npcs.push(dummyInstance);
-        logToConsole("Training Dummy placed at (10,10).");
+        logToConsole("Training Dummy placed at (10,10) with detailed health initialized.");
     } else {
         logToConsole("Error: Training Dummy NPC definition not found.");
     }

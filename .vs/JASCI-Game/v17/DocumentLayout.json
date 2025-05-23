@@ -56,7 +56,7 @@
               "RelativeDocumentMoniker": "script.js",
               "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\script.js",
               "RelativeToolTip": "script.js",
-              "ViewState": "AgIAAMcIAAAAAAAAAAAAwNsIAAArAAAAAAAAAA==",
+              "ViewState": "AgIAAPQJAAAAAAAAAAAAwA0KAAAlAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2025-03-15T08:37:22.461Z",
               "IsPinned": true,
@@ -70,7 +70,7 @@
               "RelativeDocumentMoniker": "index.html",
               "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\index.html",
               "RelativeToolTip": "index.html",
-              "ViewState": "AgIAADQAAAAAAAAAAAAswFAAAABEAAAAAAAAAA==",
+              "ViewState": "AgIAACIAAAAAAAAAAAAswEYAAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-04-30T23:43:24.927Z",
               "IsPinned": true,
@@ -98,8 +98,7 @@
               "RelativeToolTip": "assets\\definitions\\npcs.json",
               "ViewState": "AgIAAKkAAAAAAAAAAADgv74AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-05-22T00:55:33.354Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-22T00:55:33.354Z"
             },
             {
               "$type": "Document",
