@@ -1,0 +1,126 @@
+[
+  {
+    "id": "training_dummy",
+    "name": "Training Dummy",
+    "sprite": "D",
+    "color": "gray",
+    "health": {
+      "head": {
+        "max": 25,
+        "current": 25,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "torso": {
+        "max": 50,
+        "current": 50,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftArm": {
+        "max": 25,
+        "current": 25,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightArm": {
+        "max": 25,
+        "current": 25,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftLeg": {
+        "max": 25,
+        "current": 25,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightLeg": {
+        "max": 25,
+        "current": 25,
+        "armor": 0,
+        "crisisTimer": 0
+      }
+    },
+    "stats": {
+      "Strength": 1,
+      "Intelligence": 1,
+      "Dexterity": 1,
+      "Constitution": 1,
+      "Perception": 1,
+      "Willpower": 1,
+      "Charisma": 1,
+      "Marksmanship": 1
+    },
+    "skills": {
+      "Unarmed": 0,
+      "MeleeWeapons": 0,
+      "Guns": 0
+    },
+    "tags": [ "dummy", "target", "interactive" ]
+  },
+  {
+    "id": "hostile_scavenger",
+    "name": "Hostile Scavenger",
+    "sprite": "S",
+    "color": "darkred",
+    "health": {
+      "head": {
+        "max": 20,
+        "current": 20,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "torso": {
+        "max": 40,
+        "current": 40,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftArm": {
+        "max": 20,
+        "current": 20,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightArm": {
+        "max": 20,
+        "current": 20,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftLeg": {
+        "max": 20,
+        "current": 20,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightLeg": {
+        "max": 20,
+        "current": 20,
+        "armor": 0,
+        "crisisTimer": 0
+      }
+    },
+    "stats": {
+      "Strength": 3,
+      "Intelligence": 2,
+      "Dexterity": 3,
+      "Constitution": 3,
+      "Perception": 2,
+      "Willpower": 2,
+      "Charisma": 1,
+      "Marksmanship": 1
+    },
+    "skills": {
+      "Unarmed": 10,
+      "MeleeWeapons": 15,
+      "Guns": 5,
+      "Explosives": 0
+    },
+    "equippedWeaponId": "club",
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 3,
+    "tags": [ "hostile", "scavenger", "melee" ]
+  }
+]

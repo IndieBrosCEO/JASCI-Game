@@ -74,6 +74,13 @@ const gameState = {
     tileCache: null,
     brElementsCache: null,
     renderScheduled: false,
+
+    // NPCs
+    npcs: [],
+
+    // Combat Submenu and Pending Action
+    activeSubMenu: null, // e.g., 'selectBodyPart'
+    pendingCombatAction: {}, // Stores details of the action being built
 };
 
 /**************************************************************
@@ -266,6 +273,334 @@ function isPassable(tileId) {
 }
 
 /**************************************************************
+ * Game Mechanics & Dice Functions
+ **************************************************************/
+// Rolls a single die with a specified number of sides.
+function rollDie(sides) {
+    return Math.floor(Math.random() * sides) + 1;
+}
+
+// Parses a dice notation string (e.g., "2d6+3", "1d4", "3d8-1")
+// and returns an object { count: Number, sides: Number, modifier: Number }
+function parseDiceNotation(diceString) {
+    const regex = /(\d+)d(\d+)([+-]\d+)?/;
+    const match = diceString.match(regex);
+
+    if (!match) {
+        console.error(`Invalid dice notation: ${diceString}`);
+        return null; // Or throw an error
+    }
+
+    return {
+        count: parseInt(match[1], 10),
+        sides: parseInt(match[2], 10),
+        modifier: match[3] ? parseInt(match[3], 10) : 0
+    };
+}
+
+// Rolls dice based on parsed notation from parseDiceNotation.
+// Returns the total sum of the rolls plus the modifier.
+function rollDiceNotation(parsedNotation) {
+    if (!parsedNotation) return 0;
+
+    let total = 0;
+    for (let i = 0; i < parsedNotation.count; i++) {
+        total += rollDie(parsedNotation.sides);
+    }
+    total += parsedNotation.modifier;
+    return total;
+}
+
+// Gets the skill value for a given entity (player or NPC).
+// entity: The character object (gameState for player, or specific NPC object)
+function getSkillValue(skillName, entity) {
+    if (!entity) return 0;
+
+    let skillsSource;
+    if (entity === gameState) { // Check if the entity is the player (gameState)
+        skillsSource = gameState.skills; // Array of objects { name: "SkillName", points: X }
+    } else if (entity.skills) { // Check if the entity is an NPC with a skills object
+        skillsSource = entity.skills; // Expected to be an object like { "SkillName": X } or array
+    } else {
+        return 0; // No skills definition found for the entity
+    }
+
+    if (Array.isArray(skillsSource)) { // For player (gameState.skills)
+        const skill = skillsSource.find(s => s.name === skillName);
+        return skill ? skill.points : 0;
+    } else if (typeof skillsSource === 'object' && skillsSource !== null) { // For NPCs (entity.skills)
+        return skillsSource[skillName] || 0;
+    }
+    return 0;
+}
+
+// Gets the stat value for a given entity (player or NPC).
+// entity: The character object (gameState for player, or specific NPC object)
+function getStatValue(statName, entity) {
+    if (!entity) return 1; // Default to 1 if entity is undefined
+
+    let statsSource;
+    if (entity === gameState) { // Player
+        statsSource = gameState.stats; // Array of objects { name: "StatName", points: X }
+    } else if (entity.stats) { // NPC
+        statsSource = entity.stats; // Expected to be an object like { "StatName": X } or array
+    } else {
+        return 1; // No stats definition, return default
+    }
+
+    if (Array.isArray(statsSource)) { // For player (gameState.stats)
+        const stat = statsSource.find(s => s.name === statName);
+        return stat ? stat.points : 1;
+    } else if (typeof statsSource === 'object' && statsSource !== null) { // For NPCs (entity.stats)
+        return statsSource[statName] || 1; // Default to 1 if stat not found on NPC
+    }
+    return 1;
+}
+
+// Calculates the attack roll for an attacker.
+function calculateAttackRoll(attacker, weapon, targetBodyPart, actionContext = {}) {
+    let skillName;
+    if (!weapon || !weapon.type) { // Unarmed
+        skillName = "Unarmed";
+    } else if (weapon.type.includes("melee")) {
+        skillName = "Melee Weapons";
+    } else if (weapon.type.includes("firearm") || weapon.type.includes("ranged_other")) {
+        skillName = "Guns";
+    } else {
+        skillName = "Unarmed"; // Default for unknown weapon types
+    }
+
+    const skillValue = getSkillValue(skillName, attacker);
+    let baseRoll = rollDie(20);
+
+    // Disadvantage for second attacks
+    if (actionContext.isSecondAttack) {
+        baseRoll = Math.min(rollDie(20), rollDie(20));
+    }
+
+    let bodyPartModifier = 0;
+    if (targetBodyPart === "Arms/Legs") {
+        bodyPartModifier = -1;
+    } else if (targetBodyPart === "Head") {
+        bodyPartModifier = -4;
+    }
+
+    const totalAttackRoll = baseRoll + skillValue + bodyPartModifier + (actionContext.rangeModifier || 0);
+
+    // Criticals do not apply on disadvantaged rolls (e.g. second attack)
+    const canCrit = !actionContext.isSecondAttack;
+
+    return {
+        roll: totalAttackRoll,
+        naturalRoll: baseRoll,
+        isCriticalHit: canCrit && baseRoll === 20,
+        isCriticalMiss: canCrit && baseRoll === 1
+    };
+}
+
+// Calculates the defense roll for a defender.
+function calculateDefenseRoll(defender, defenseType, attackerWeapon, actionContext = {}) {
+    const baseRoll = rollDie(20);
+    let baseDefenseValue = 0;
+    let dualWieldBonus = 0;
+
+    switch (defenseType) {
+        case "Dodge":
+            baseDefenseValue = getStatValue("Dexterity", defender) + getSkillValue("Unarmed", defender);
+            break;
+        case "BlockUnarmed":
+            baseDefenseValue = getStatValue("Constitution", defender) + getSkillValue("Unarmed", defender);
+            break;
+        case "BlockArmed":
+            baseDefenseValue = getSkillValue("Melee Weapons", defender);
+            // Check for dual wield bonus for player
+            if (defender === gameState &&
+                gameState.inventory.handSlots[0] && gameState.inventory.handSlots[0].type && gameState.inventory.handSlots[0].type.includes("melee") &&
+                gameState.inventory.handSlots[1] && gameState.inventory.handSlots[1].type && gameState.inventory.handSlots[1].type.includes("melee") &&
+                getSkillValue("Melee Weapons", defender) >= 5) {
+                dualWieldBonus = 2;
+            }
+            // For NPCs, we'd need an 'isDualWielding' property or similar logic
+            // else if (defender.isDualWielding && getSkillValue("Melee Weapons", defender) >= 5) {
+            //    dualWieldBonus = 2;
+            // }
+            break;
+    }
+
+    const totalDefenseRoll = baseRoll + baseDefenseValue + dualWieldBonus;
+
+    return {
+        roll: totalDefenseRoll,
+        naturalRoll: baseRoll,
+        isCriticalSuccess: baseRoll === 20,
+        isCriticalFailure: baseRoll === 1
+    };
+}
+
+/**************************************************************
+ * Combat Flow Functions
+ **************************************************************/
+function initiateMeleeAttack(attackerGameState, target) {
+    if (attackerGameState.actionPointsRemaining <= 0) {
+        logToConsole("Not enough action points to attack.");
+        return;
+    }
+
+    let selectedWeapon = null;
+    if (attackerGameState.inventory.handSlots[0] && attackerGameState.inventory.handSlots[0].type && attackerGameState.inventory.handSlots[0].type.includes("melee")) {
+        selectedWeapon = attackerGameState.inventory.handSlots[0];
+    }
+
+    attackerGameState.activeSubMenu = 'selectBodyPart';
+    attackerGameState.pendingCombatAction = {
+        target: target,
+        weapon: selectedWeapon,
+        attackType: 'melee',
+        entity: attackerGameState // Storing the attacker (player)
+    };
+
+    logToConsole(`Targeting ${target.name} with ${selectedWeapon ? selectedWeapon.name : 'Unarmed'}. Select body part: (1) Head, (2) Torso, (3) Arms/Legs. (Esc to cancel)`);
+}
+
+// Calculates and applies melee damage to a target.
+function calculateAndApplyMeleeDamage(attacker, target, weapon, hitSuccess, attackNaturalRoll, defenseNaturalRoll, targetBodyPart) {
+    if (!hitSuccess) {
+        logToConsole("No damage as the attack missed.");
+        return;
+    }
+
+    let damageAmount = 0;
+    let damageType = "";
+
+    // Calculate Damage
+    if (weapon === null) { // Unarmed
+        damageType = "Bludgeoning";
+        const unarmedSkillPoints = getSkillValue("Unarmed", attacker); // attacker is gameState
+        const unarmedSkillModifier = Math.floor(unarmedSkillPoints / 10); // Each 10 points = +1 die size above d1 (d0 not possible)
+
+        if (unarmedSkillModifier > 0) { // e.g. 10 skill = 1d1, 20 skill = 1d2, 30 skill = 1d3
+            damageAmount = rollDie(unarmedSkillModifier);
+        } else { // Less than 10 skill points, 1d2-1 (0 or 1 damage)
+            damageAmount = Math.max(0, rollDie(2) - 1);
+        }
+        logToConsole(`Unarmed attack dealt ${damageAmount} ${damageType} damage.`);
+    } else { // Armed Melee
+        damageType = weapon.damageType || "Physical"; // Use weapon's damage type or default
+        const damageNotation = parseDiceNotation(weapon.damage);
+        damageAmount = rollDiceNotation(damageNotation);
+        logToConsole(`${weapon.name} dealt ${damageAmount} ${damageType} damage.`);
+    }
+
+    // Apply Damage to Target
+    applyDamage(target, targetBodyPart, damageAmount, damageType);
+}
+
+function initiateRangedAttack(attackerGameState, target) {
+    if (attackerGameState.actionPointsRemaining <= 0) {
+        logToConsole("Not enough action points for a ranged attack.");
+        return;
+    }
+
+    let selectedWeapon = null;
+    if (attackerGameState.inventory.handSlots[0] && attackerGameState.inventory.handSlots[0].type && attackerGameState.inventory.handSlots[0].type.includes("firearm")) {
+        selectedWeapon = attackerGameState.inventory.handSlots[0];
+    } else {
+        logToConsole("No ranged weapon (firearm) equipped in primary hand.");
+        return;
+    }
+
+    // Ammo Check (Placeholder)
+    logToConsole("Ammo check pending...");
+
+    attackerGameState.activeSubMenu = 'selectBodyPart';
+    attackerGameState.pendingCombatAction = {
+        target: target,
+        weapon: selectedWeapon,
+        attackType: 'ranged',
+        entity: attackerGameState
+    };
+
+    logToConsole(`Targeting ${target.name} with ${selectedWeapon.name}. Select body part: (1) Head, (2) Torso, (3) Arms/Legs. (Esc to cancel)`);
+}
+
+function processAttack(attackerGameState, completedPendingAction) {
+    if (attackerGameState.actionPointsRemaining <= 0) {
+        logToConsole("Not enough action points to complete the attack.");
+        attackerGameState.pendingCombatAction = {};
+        attackerGameState.activeSubMenu = null;
+        return;
+    }
+    attackerGameState.actionPointsRemaining--;
+    updateTurnUI();
+    logToConsole(`Action point spent. Remaining: ${attackerGameState.actionPointsRemaining}`);
+
+    const { target, weapon, attackType, bodyPart, entity } = completedPendingAction;
+
+    if (attackType === 'melee') {
+        const attackResult = calculateAttackRoll(entity, weapon, bodyPart, {});
+        logToConsole(`Player attacks ${target.name}'s ${bodyPart}: rolled ${attackResult.roll} (Natural: ${attackResult.naturalRoll})`);
+        const defenseResult = calculateDefenseRoll(target, "BlockUnarmed", weapon, {});
+        logToConsole(`${target.name} defends: rolled ${defenseResult.roll} (Natural: ${defenseResult.naturalRoll})`);
+
+        let hit = false;
+        let outcomeMessage = "";
+        if (attackResult.isCriticalHit) { hit = true; outcomeMessage = "Player CRITICAL HIT! Automatic success."; }
+        else if (attackResult.isCriticalMiss) { hit = false; outcomeMessage = "Player CRITICAL MISS! Attack fails."; }
+        else if (defenseResult.isCriticalSuccess && !attackResult.isCriticalHit) { hit = false; outcomeMessage = `Miss! ${target.name} rolled a natural 20 on defense.`; }
+        else if (defenseResult.isCriticalFailure && !attackResult.isCriticalHit) { hit = true; outcomeMessage = `Hit! ${target.name} critically failed their defense (rolled a natural 1).`; }
+        else if (attackResult.roll > defenseResult.roll) { hit = true; outcomeMessage = "Hit!"; }
+        else { hit = false; outcomeMessage = "Miss!"; }
+        logToConsole(outcomeMessage);
+
+        if (hit) {
+            calculateAndApplyMeleeDamage(entity, target, weapon, hit, attackResult.naturalRoll, defenseResult.naturalRoll, bodyPart);
+        }
+    } else if (attackType === 'ranged') {
+        const dx = target.mapPos.x - entity.playerPos.x;
+        const dy = target.mapPos.y - entity.playerPos.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        let rangeModifier = 0;
+        let rangeCategory = "Medium";
+        if (distance <= 1) { rangeModifier = 15; rangeCategory = "Point-blank"; }
+        else if (distance <= 3) { rangeModifier = 5; rangeCategory = "Close"; }
+        else if (distance <= 6) { rangeModifier = 0; rangeCategory = "Medium"; }
+        else if (distance <= 20) { rangeModifier = -5; rangeCategory = "Long"; }
+        else if (distance <= 60) { rangeModifier = -10; rangeCategory = "Very Long"; }
+        else { rangeModifier = -15; rangeCategory = "Extremely Long"; }
+        logToConsole(`Distance to target: ${distance.toFixed(1)} tiles (${rangeCategory} range). Range Modifier: ${rangeModifier}`);
+
+        const attackResult = calculateAttackRoll(entity, weapon, bodyPart, { rangeModifier: rangeModifier });
+        logToConsole(`Player attacks ${target.name}'s ${bodyPart} with ${weapon.name}: rolled ${attackResult.roll} (Natural: ${attackResult.naturalRoll})`);
+
+        let hit = false;
+        let outcomeMessage = "";
+        if (attackResult.isCriticalHit) { hit = true; outcomeMessage = "Player CRITICAL HIT on ranged attack!"; }
+        else if (attackResult.isCriticalMiss) { hit = false; outcomeMessage = "Player CRITICAL MISS on ranged attack! Attack fails."; }
+        else if (attackResult.roll > 0) { hit = true; outcomeMessage = "Ranged attack Hit!"; }
+        else { hit = false; outcomeMessage = "Ranged attack Miss!"; }
+        logToConsole(outcomeMessage);
+
+        if (hit) {
+            calculateAndApplyRangedDamage(entity, target, weapon, bodyPart);
+        }
+    }
+
+    attackerGameState.pendingCombatAction = {};
+    attackerGameState.activeSubMenu = null;
+}
+
+function calculateAndApplyRangedDamage(attacker, target, weapon, targetBodyPart) {
+    const damageType = weapon.damageType || "Ballistic";
+    const damageNotation = parseDiceNotation(weapon.damage);
+    const damageAmount = rollDiceNotation(damageNotation);
+
+    logToConsole(`${weapon.name} dealt ${damageAmount} ${damageType} damage to ${target.name}'s ${targetBodyPart}.`);
+    applyDamage(target, targetBodyPart, damageAmount, damageType);
+}
+
+
+/**************************************************************
  * New Map System Functions
  **************************************************************/
 // Create an empty grid with a default tile.
@@ -433,6 +768,38 @@ function renderMapLayers() {
 
     if (isInitialRender) { // Corrected from isInitialRenderOrResize
         container.appendChild(fragment);
+    }
+
+    // Render NPCs
+    if (gameState.npcs && gameState.npcs.length > 0 && gameState.tileCache) {
+        gameState.npcs.forEach(npc => {
+            if (npc.mapPos) {
+                const npcX = npc.mapPos.x;
+                const npcY = npc.mapPos.y;
+
+                // Check bounds
+                if (npcX >= 0 && npcX < W && npcY >= 0 && npcY < H) {
+                    // Check if tile is obscured by roof
+                    const roofObscures = gameState.showRoof && currentMapData.layers.roof?.[npcY]?.[npcX];
+                    // Check if player is on the same tile (player takes precedence)
+                    const playerIsHere = (npcX === gameState.playerPos.x && npcY === gameState.playerPos.y);
+
+                    if (!roofObscures && !playerIsHere) {
+                        const cachedCell = gameState.tileCache[npcY][npcX];
+                        if (cachedCell && cachedCell.span) {
+                            // Only update if NPC is different or wasn't there before
+                            const npcDisplayId = 'NPC_' + npc.id;
+                            if (cachedCell.displayedId !== npcDisplayId) {
+                                cachedCell.span.textContent = npc.sprite;
+                                cachedCell.span.style.color = npc.color;
+                                cachedCell.displayedId = npcDisplayId; // Mark tile as displaying this NPC
+                                // No need to update cachedCell.sprite/color as these are for the underlying tile/player
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     // *** highlight the currently selected interactable tile(s) ***
@@ -1308,25 +1675,60 @@ function getArmorForBodyPart(bodyPartName) {
     return totalArmor;
 }
 
-// Apply damage to a specified body part
-function applyDamage(bodyPart, damage) {
-    if (!gameState.health || !gameState.health[bodyPart]) return;
-    let part = gameState.health[bodyPart];
+// Apply damage to a specified body part of an entity (player or NPC)
+function applyDamage(entity, bodyPartName, damageAmount, damageType) {
+    const normalizedBodyPartName = bodyPartName.toLowerCase(); // Ensure this line is present and used
+    let part;
+    let entityName;
+    let isPlayer = (entity === gameState);
 
-    const effectiveArmor = getArmorForBodyPart(bodyPart);
-    const reducedDamage = Math.max(0, damage - effectiveArmor);
+    if (isPlayer) {
+        // Use normalizedBodyPartName for player health access
+        if (!gameState.health || !gameState.health[normalizedBodyPartName]) {
+            logToConsole(`Error: Player has no health data or no such body part: ${normalizedBodyPartName}`);
+            return;
+        }
+        part = gameState.health[normalizedBodyPartName];
+        entityName = "Player"; // Or use player character name if available
+        // Use normalizedBodyPartName for getArmorForBodyPart
+        const effectiveArmor = getArmorForBodyPart(normalizedBodyPartName);
+        const reducedDamage = Math.max(0, damageAmount - effectiveArmor);
 
-    logToConsole(`Original damage to ${bodyPart}: ${damage}, Armor: ${effectiveArmor}, Reduced damage: ${reducedDamage}`);
+        // Use original bodyPartName for user-facing logs if desired, but normalized for HP reporting.
+        logToConsole(`Original damage to Player's ${bodyPartName}: ${damageAmount}, Armor: ${effectiveArmor}, Reduced damage: ${reducedDamage}`);
+        part.current = Math.max(part.current - reducedDamage, 0);
+        logToConsole(`Player's ${normalizedBodyPartName} HP: ${part.current}/${part.max} after taking ${reducedDamage} ${damageType} damage.`);
 
-    part.current = Math.max(part.current - reducedDamage, 0);
-    logToConsole(`${bodyPart} HP: ${part.current}/${part.max} after taking ${reducedDamage} damage.`);
+        if (part.current === 0 && part.crisisTimer === 0) {
+            part.crisisTimer = 3;
+            // Using normalizedBodyPartName here for consistency in internal state logging
+            logToConsole(`Player's ${normalizedBodyPartName} is in crisis! Treat within 3 turns or die.`);
+        }
+        renderHealthTable(); // Always render for player
+    } else { // NPC
+        // Use normalizedBodyPartName for NPC health access
+        if (!entity.health || !entity.health[normalizedBodyPartName]) {
+            // Log both original and normalized for debugging if error persists
+            logToConsole(`Error: ${entity.name} has no health data or no such body part: ${normalizedBodyPartName} (original input: ${bodyPartName})`);
+            return;
+        }
+        part = entity.health[normalizedBodyPartName];
+        entityName = entity.name;
+        const effectiveArmor = 0; // NPCs currently have no armor
+        const reducedDamage = Math.max(0, damageAmount - effectiveArmor);
 
-    if (part.current === 0 && part.crisisTimer === 0) {
-        part.crisisTimer = 3;
-        logToConsole(`${bodyPart} is in crisis! Treat within 3 turns or die.`);
+        // Use original bodyPartName for user-facing logs, but normalized for HP reporting.
+        logToConsole(`Original damage to ${entityName}'s ${bodyPartName}: ${damageAmount}, Armor: ${effectiveArmor}, Reduced damage: ${reducedDamage}`);
+        part.current = Math.max(part.current - reducedDamage, 0);
+        logToConsole(`${entityName}'s ${normalizedBodyPartName} HP: ${part.current}/${part.max} after taking ${reducedDamage} ${damageType} damage.`);
+
+        if (part.current === 0) {
+            // Using normalizedBodyPartName here for consistency
+            logToConsole(`${entityName}'s ${normalizedBodyPartName} has been destroyed!`);
+        }
     }
-    renderHealthTable();
 }
+
 
 // Update crisis timers for body parts at the end of each turn
 function updateHealthCrisis() {
@@ -1434,6 +1836,32 @@ function gameOver() {
  **************************************************************/
 // Keydown event handler for movement and actions
 function handleKeyDown(event) {
+    if (gameState.activeSubMenu === 'selectBodyPart') {
+        let selectedBodyPartName = null;
+        if (event.key === '1') selectedBodyPartName = "Head";
+        else if (event.key === '2') selectedBodyPartName = "Torso";
+        else if (event.key === '3') selectedBodyPartName = "Arms/Legs";
+        else if (event.key === 'Escape') {
+            logToConsole("Targeting cancelled.");
+            gameState.pendingCombatAction = {};
+            gameState.activeSubMenu = null;
+            event.preventDefault();
+            return;
+        } else {
+            // Not a valid key for this submenu
+            event.preventDefault();
+            return;
+        }
+
+        if (selectedBodyPartName) {
+            gameState.pendingCombatAction.bodyPart = selectedBodyPartName;
+            logToConsole(`Selected body part: ${selectedBodyPartName}`);
+            processAttack(gameState, gameState.pendingCombatAction);
+        }
+        event.preventDefault();
+        return; // Submenu handled
+    }
+
     // 1) Inventory has top priority
     if (gameState.inventory.open) {
         switch (event.key) {
@@ -1521,6 +1949,18 @@ function handleKeyDown(event) {
             }
             event.preventDefault();
             break;
+        case 'r': // Initiate Ranged Combat
+            if (gameState.inventory.open || gameState.isActionMenuActive) {
+                return;
+            }
+            const rangedDummyTarget = gameState.npcs.find(npc => npc.id === "training_dummy");
+            if (rangedDummyTarget && rangedDummyTarget.mapPos) {
+                initiateRangedAttack(gameState, rangedDummyTarget);
+            } else {
+                logToConsole("Training Dummy not found for ranged attack or has no position.");
+            }
+            event.preventDefault();
+            break;
 
         case 'Escape':
             cancelActionSelection();
@@ -1533,6 +1973,24 @@ function handleKeyDown(event) {
                 selectAction(parseInt(event.key, 10) - 1);
                 event.preventDefault();
             }
+            break;
+        case 'c': // Initiate combat
+            if (gameState.inventory.open || gameState.isActionMenuActive) {
+                return;
+            }
+            const dummy = gameState.npcs.find(npc => npc.id === "training_dummy");
+            if (dummy && dummy.mapPos) { // Ensure dummy and its mapPos exist
+                const inRange = Math.abs(gameState.playerPos.x - dummy.mapPos.x) <= 1 &&
+                    Math.abs(gameState.playerPos.y - dummy.mapPos.y) <= 1;
+                if (inRange) {
+                    initiateMeleeAttack(gameState, dummy);
+                } else {
+                    logToConsole("Training Dummy is not in melee range.");
+                }
+            } else {
+                logToConsole("Training Dummy not found or has no position.");
+            }
+            event.preventDefault();
             break;
     }
 }
@@ -1688,6 +2146,16 @@ function startGame() {
         }
     });
 
+    // Load and place Training Dummy
+    const dummyDefinition = assetManager.npcsById["training_dummy"];
+    if (dummyDefinition) {
+        const dummyInstance = JSON.parse(JSON.stringify(dummyDefinition));
+        dummyInstance.mapPos = { x: 10, y: 10 };
+        gameState.npcs.push(dummyInstance);
+        logToConsole("Training Dummy placed at (10,10).");
+    } else {
+        logToConsole("Error: Training Dummy NPC definition not found.");
+    }
 
     if (characterCreator) characterCreator.classList.add('hidden');
     if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
