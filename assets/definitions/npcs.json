@@ -6,38 +6,38 @@
     "color": "gray",
     "health": {
       "head": {
-        "max": 25,
-        "current": 25,
+        "max": 5,
+        "current": 5,
         "armor": 0,
         "crisisTimer": 0
       },
       "torso": {
-        "max": 50,
-        "current": 50,
+        "max": 8,
+        "current": 8,
         "armor": 0,
         "crisisTimer": 0
       },
       "leftArm": {
-        "max": 25,
-        "current": 25,
+        "max": 7,
+        "current": 7,
         "armor": 0,
         "crisisTimer": 0
       },
       "rightArm": {
-        "max": 25,
-        "current": 25,
+        "max": 7,
+        "current": 7,
         "armor": 0,
         "crisisTimer": 0
       },
       "leftLeg": {
-        "max": 25,
-        "current": 25,
+        "max": 7,
+        "current": 7,
         "armor": 0,
         "crisisTimer": 0
       },
       "rightLeg": {
-        "max": 25,
-        "current": 25,
+        "max": 7,
+        "current": 7,
         "armor": 0,
         "crisisTimer": 0
       }
@@ -66,38 +66,38 @@
     "color": "darkred",
     "health": {
       "head": {
-        "max": 20,
-        "current": 20,
+        "max": 5,
+        "current": 5,
         "armor": 0,
         "crisisTimer": 0
       },
       "torso": {
-        "max": 40,
-        "current": 40,
+        "max": 8,
+        "current": 8,
         "armor": 0,
         "crisisTimer": 0
       },
       "leftArm": {
-        "max": 20,
-        "current": 20,
+        "max": 7,
+        "current": 7,
         "armor": 0,
         "crisisTimer": 0
       },
       "rightArm": {
-        "max": 20,
-        "current": 20,
+        "max": 7,
+        "current": 7,
         "armor": 0,
         "crisisTimer": 0
       },
       "leftLeg": {
-        "max": 20,
-        "current": 20,
+        "max": 7,
+        "current": 7,
         "armor": 0,
         "crisisTimer": 0
       },
       "rightLeg": {
-        "max": 20,
-        "current": 20,
+        "max": 7,
+        "current": 7,
         "armor": 0,
         "crisisTimer": 0
       }
@@ -122,5 +122,69 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 3,
     "tags": [ "hostile", "scavenger", "melee" ]
+  },
+  {
+    "id": "militia_man",
+    "name": "Militia Man",
+    "sprite": "M",
+    "color": "blue",
+    "health": {
+      "head": {
+        "max": 5,
+        "current": 5,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "torso": {
+        "max": 8,
+        "current": 8,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftArm": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightArm": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftLeg": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightLeg": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      }
+    },
+    "stats": {
+      "Strength": 3,
+      "Intelligence": 3,
+      "Dexterity": 3,
+      "Constitution": 3,
+      "Perception": 3,
+      "Willpower": 3,
+      "Charisma": 3,
+      "Marksmanship": 3
+    },
+    "skills": {
+      "Unarmed": 10,
+      "MeleeWeapons": 15,
+      "Guns": 10,
+      "Explosives": 0
+    },
+    "equippedWeaponId": "club",
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 3,
+    "tags": [ "hostile", "humanoid", "militia" ]
   }
 ]
