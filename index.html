@@ -53,9 +53,15 @@
                         <option value="LeftLeg">Left Leg</option>
                         <option value="RightLeg">Right Leg</option>
                     </select><br>
-                    <label for="combatActionDescription">Action Description:</label>
-                    <input type="text" id="combatActionDescription" placeholder="e.g., overhead swing"><br>
+                    <label for="combatFireModeSelect">Fire Mode:</label>
+                    <select id="combatFireModeSelect" class="hidden">
+                        <option value="single" selected>Single</option>
+                        <option value="burst">Burst</option>
+                        <option value="auto">Auto</option>
+                    </select><br>
                     <button id="confirmAttackButton">Confirm Attack</button>
+                    <button id="attemptGrappleButton" class="hidden">Attempt Grapple</button>
+                    <button id="reloadWeaponButton" class="hidden">Reload Weapon</button>
                 </div>
                 <div id="defenseDeclarationUI" class="hidden">
                     <h4>Choose Your Defense:</h4>
@@ -66,97 +72,9 @@
                     </select>
                     <!-- This can be shown/hidden based on "Block (Unarmed)" selection -->
                     <select id="combatBlockingLimbSelect" class="hidden">
-                        <option value="LeftArm">Left Arm</option>
+                        <option value="LeftArm" selected>Left Arm</option>
                         <option value="RightArm">Right Arm</option>
-                        <option value="LeftLeg">Left Leg</option> <!-- As per original rules, any limb for unarmed block -->
-                        <option value="RightLeg">Right Leg</option>
                     </select>
-                    <input type="text" id="combatDefenseDescription" placeholder="Describe your defense (optional)">
-                    <button id="confirmDefenseButton">Confirm Defense</button>
-                </div>
-                <div id="defenseDeclarationUI" class="hidden">
-                    <h4>Choose Your Defense:</h4>
-                    <select id="combatDefenseTypeSelect">
-                        <option value="Dodge">Dodge</option>
-                        <option value="BlockUnarmed">Block (Unarmed)</option>
-                        <option value="BlockArmed">Block (Armed)</option>
-                    </select>
-                    <!-- This can be shown/hidden based on "Block (Unarmed)" selection -->
-                    <select id="combatBlockingLimbSelect" class="hidden">
-                        <option value="LeftArm">Left Arm</option>
-                        <option value="RightArm">Right Arm</option>
-                        <option value="LeftLeg">Left Leg</option> <!-- As per original rules, any limb for unarmed block -->
-                        <option value="RightLeg">Right Leg</option>
-                    </select>
-                    <input type="text" id="combatDefenseDescription" placeholder="Describe your defense (optional)">
-                    <button id="confirmDefenseButton">Confirm Defense</button>
-                </div>
-                <div id="defenseDeclarationUI" class="hidden">
-                    <h4>Choose Your Defense:</h4>
-                    <select id="combatDefenseTypeSelect">
-                        <option value="Dodge">Dodge</option>
-                        <option value="BlockUnarmed">Block (Unarmed)</option>
-                        <option value="BlockArmed">Block (Armed)</option>
-                    </select>
-                    <!-- This can be shown/hidden based on "Block (Unarmed)" selection -->
-                    <select id="combatBlockingLimbSelect" class="hidden">
-                        <option value="LeftArm">Left Arm</option>
-                        <option value="RightArm">Right Arm</option>
-                        <option value="LeftLeg">Left Leg</option> <!-- As per original rules, any limb for unarmed block -->
-                        <option value="RightLeg">Right Leg</option>
-                    </select>
-                    <input type="text" id="combatDefenseDescription" placeholder="Describe your defense (optional)">
-                    <button id="confirmDefenseButton">Confirm Defense</button>
-                </div>
-                <div id="defenseDeclarationUI" class="hidden">
-                    <h4>Choose Your Defense:</h4>
-                    <select id="combatDefenseTypeSelect">
-                        <option value="Dodge">Dodge</option>
-                        <option value="BlockUnarmed">Block (Unarmed)</option>
-                        <option value="BlockArmed">Block (Armed)</option>
-                    </select>
-                    <!-- This can be shown/hidden based on "Block (Unarmed)" selection -->
-                    <select id="combatBlockingLimbSelect" class="hidden">
-                        <option value="LeftArm">Left Arm</option>
-                        <option value="RightArm">Right Arm</option>
-                        <option value="LeftLeg">Left Leg</option> <!-- As per original rules, any limb for unarmed block -->
-                        <option value="RightLeg">Right Leg</option>
-                    </select>
-                    <input type="text" id="combatDefenseDescription" placeholder="Describe your defense (optional)">
-                    <button id="confirmDefenseButton">Confirm Defense</button>
-                </div>
-                <div id="defenseDeclarationUI" class="hidden">
-                    <h4>Choose Your Defense:</h4>
-                    <select id="combatDefenseTypeSelect">
-                        <option value="Dodge">Dodge</option>
-                        <option value="BlockUnarmed">Block (Unarmed)</option>
-                        <option value="BlockArmed">Block (Armed)</option>
-                    </select>
-                    <!-- This can be shown/hidden based on "Block (Unarmed)" selection -->
-                    <select id="combatBlockingLimbSelect" class="hidden">
-                        <option value="LeftArm">Left Arm</option>
-                        <option value="RightArm">Right Arm</option>
-                        <option value="LeftLeg">Left Leg</option> <!-- As per original rules, any limb for unarmed block -->
-                        <option value="RightLeg">Right Leg</option>
-                    </select>
-                    <input type="text" id="combatDefenseDescription" placeholder="Describe your defense (optional)">
-                    <button id="confirmDefenseButton">Confirm Defense</button>
-                </div>
-                <div id="defenseDeclarationUI" class="hidden">
-                    <h4>Choose Your Defense:</h4>
-                    <select id="combatDefenseTypeSelect">
-                        <option value="Dodge">Dodge</option>
-                        <option value="BlockUnarmed">Block (Unarmed)</option>
-                        <option value="BlockArmed">Block (Armed)</option>
-                    </select>
-                    <!-- This can be shown/hidden based on "Block (Unarmed)" selection -->
-                    <select id="combatBlockingLimbSelect" class="hidden">
-                        <option value="LeftArm">Left Arm</option>
-                        <option value="RightArm">Right Arm</option>
-                        <option value="LeftLeg">Left Leg</option> <!-- As per original rules, any limb for unarmed block -->
-                        <option value="RightLeg">Right Leg</option>
-                    </select>
-                    <input type="text" id="combatDefenseDescription" placeholder="Describe your defense (optional)">
                     <button id="confirmDefenseButton">Confirm Defense</button>
                 </div>
                 <div id="defenderPrompt"></div>

@@ -494,11 +494,6 @@ function calculateDefenseRoll(defender, defenseType, attackerWeapon, actionConte
 }
 
 /**************************************************************
- * Combat Flow Functions
- **************************************************************
- A new comment to ensure the diff is not empty if all functions are removed.
- */
-/**************************************************************
  * New Map System Functions
  **************************************************************/
 // Create an empty grid with a default tile.
@@ -514,23 +509,6 @@ function createEmptyGrid(width, height, defaultTile = "") {
     return grid;
 }
 
-// Load an external map from 'Maps/testMap.json' using Fetch. (REMOVING/COMMENTING OUT)
-/*
-function loadExternalMap() {
-    return fetch('Maps/beachHouse.json') // Example map
-        .then(response => {
-            if (!response.ok) throw new Error("Network error");
-            return response.json();
-        })
-        .then(data => {
-            if (data && data.layers) {
-                return data.layers; // This structure might differ from AssetManager's processedMapData
-            } else {
-                throw new Error("Invalid map data.");
-            }
-        });
-}
-*/
 // Toggle roof layer visibility.
 function toggleRoof() {
     gameState.showRoof = !gameState.showRoof;
@@ -755,20 +733,6 @@ function getCollisionTileAt(x, y) {
     return ""; // If all are empty or invalid
 }
 
-// generateInitialMap is being replaced by logic in initialize()
-/*
-function generateInitialMap() {
-    loadExternalMap()
-        .then(layersData => {
-            gameState.layers = layersData; // This direct assignment might be problematic if structure differs
-            scheduleRender(); 
-        })
-        .catch(error => {
-            console.error("Failed to load external map:", error);
-        });
-}
-*/
-
 /**************************************************************
  * Turn-Based & Movement Functions
  **************************************************************/
@@ -859,6 +823,7 @@ function move(direction) {
     }
     gameState.playerPos = newPos;
     gameState.movementPointsRemaining--;
+    gameState.playerMovedThisTurn = true; // CRITICAL: Set player movement flag
     logToConsole(`Moved to (${newPos.x}, ${newPos.y}). Moves left: ${gameState.movementPointsRemaining}`);
     updateTurnUI();
     scheduleRender(); // Replaced renderMapLayers
@@ -1660,7 +1625,6 @@ function formatBodyPartName(part) {
         rightArm: "R Arm",
         leftLeg: "L Leg",
         rightLeg: "R Leg"
-        // Removed leftHand, rightHand, leftFoot, rightFoot as they are not primary targetable body parts in this system yet
     };
     return nameMap[part] || part;
 }
@@ -1761,8 +1725,8 @@ function handleKeyDown(event) {
         }
         if (event.key === 't' || event.key === 'T') {
             if (gameState.isInCombat && combatManager.initiativeTracker[combatManager.currentTurnIndex]?.entity === gameState) {
-                logToConsole("Player ends their turn.");
-                combatManager.nextTurn();
+                //logToConsole("Player attempts to end their turn via 't' key."); // Log moved to endPlayerTurn
+                combatManager.endPlayerTurn(); // Changed to use the new method
             } else if (gameState.isInCombat) {
                 logToConsole("Not your turn to end.");
             } else {
@@ -1871,10 +1835,7 @@ async function initialize() { // Made async
         renderTables(); // For character creator (might be hidden initially)
         scheduleRender(); // Initial render of the map (or empty state)
         updateInventoryUI(); // Initialize inventory display
-        // initializeHealth(); // Moved to startGame
-        // detectInteractableItems(); // Moved to startGame or after map load
-        // showInteractableItems(); // Moved to startGame or after map load
-        // startTurn(); // Moved to startGame
+
 
     } catch (error) {
         console.error("Error during game initialization:", error);
@@ -1911,6 +1872,53 @@ async function initialize() { // Made async
     } else {
         console.error("confirmAttackButton not found in the DOM during initialization.");
     }
+
+    const grappleButton = document.getElementById('attemptGrappleButton');
+    if (grappleButton) {
+        grappleButton.addEventListener('click', () => {
+            if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
+                combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
+                combatManager.gameState.combatPhase === 'playerAttackDeclare') {
+                combatManager.handleGrappleAttemptDeclaration();
+            } else {
+                if (!combatManager || !combatManager.gameState) {
+                    console.error("CombatManager or gameState not available for grapple attempt.");
+                } else if (!combatManager.gameState.isInCombat) {
+                    console.log("Attempt Grapple clicked, but not in combat.");
+                } else if (combatManager.gameState.combatCurrentAttacker !== combatManager.gameState) {
+                    console.log("Attempt Grapple clicked, but not player's turn.");
+                } else if (combatManager.gameState.combatPhase !== 'playerAttackDeclare') {
+                    console.log(`Attempt Grapple clicked, but phase is ${combatManager.gameState.combatPhase}, not playerAttackDeclare.`);
+                }
+            }
+        });
+    } else {
+        console.error("attemptGrappleButton not found in the DOM during initialization.");
+    }
+
+    const confirmDefenseBtn = document.getElementById('confirmDefenseButton');
+    if (confirmDefenseBtn) {
+        confirmDefenseBtn.addEventListener('click', () => {
+            if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
+                combatManager.gameState.combatCurrentDefender === combatManager.gameState && // Player is defending
+                combatManager.gameState.combatPhase === 'playerDefenseDeclare') {
+                combatManager.handleConfirmedDefenseDeclaration();
+            } else {
+                if (!combatManager || !combatManager.gameState) {
+                    console.error("CombatManager or gameState not available for defense confirmation.");
+                } else if (!combatManager.gameState.isInCombat) {
+                    console.log("Confirm Defense clicked, but not in combat.");
+                } else if (combatManager.gameState.combatCurrentDefender !== combatManager.gameState) {
+                    console.log("Confirm Defense clicked, but not player's turn to defend.");
+                } else if (combatManager.gameState.combatPhase !== 'playerDefenseDeclare') {
+                    console.log(`Confirm Defense clicked, but phase is ${combatManager.gameState.combatPhase}, not playerDefenseDeclare.`);
+                }
+            }
+        });
+    } else {
+        console.error("confirmDefenseButton not found in the DOM during initialization.");
+    }
+
 }
 /**************************************************************
  * Start Game
@@ -2036,65 +2044,6 @@ function startGame() {
     }
     startTurn();
 }
-
-//This function was moved to combatManager.js
-//function executeNpcCombatTurn(npc) {
-//    // For now, assume NPC always has 1 action point for this retaliatory attack
-//    // A more complex system would check npc.actionPointsRemaining or similar
-//    if (!npc || (npc.health && npc.health.torso && npc.health.torso.current <= 0) || (npc.health && npc.health.head && npc.health.head.current <= 0)) {
-//        logToConsole(`${npc ? npc.name : 'NPC'} is incapacitated and cannot attack.`);
-//        // Potentially end combat or switch turn if NPC was supposed to act
-//        gameState.combatPhase = null;
-//        updateCombatUI();
-//        return;
-//    }
-//
-//    const player = gameState; // Player is always the target for now
-//    let weaponToUse = null;
-//    let attackType = 'unarmed'; // Default to unarmed
-//
-//    if (npc.equippedWeaponId) {
-//        const equippedWeapon = assetManager.getItem(npc.equippedWeaponId);
-//        if (equippedWeapon) {
-//            weaponToUse = equippedWeapon;
-//            // Simple logic: if weapon type includes "melee", it's melee. If "firearm", it's ranged.
-//            if (equippedWeapon.type && equippedWeapon.type.includes("melee")) {
-//                attackType = 'melee';
-//            } else if (equippedWeapon.type && equippedWeapon.type.includes("firearm")) {
-//                attackType = 'ranged';
-//            }
-//            // Could add distance check here: if ranged weapon but player is adjacent, NPC might switch to melee or unarmed.
-//            // For now, if a weapon is equipped, use its primary type.
-//        }
-//    }
-//
-//    // If no weapon or weapon type couldn't be determined for an attack, default to unarmed melee
-//    if (attackType === 'unarmed' && !weaponToUse) { // Ensure it's explicitly unarmed if no weapon was suitable
-//        attackType = 'melee'; // Unarmed is a type of melee
-//        weaponToUse = null; // Explicitly null for unarmed
-//    }
-//
-//
-//    const targetBodyPart = "Torso"; // NPC always targets Torso for now
-//
-//    // Set combat state for NPC's attack
-//    gameState.combatCurrentAttacker = npc;
-//    gameState.combatCurrentDefender = player;
-//    gameState.pendingCombatAction = {
-//        target: player,
-//        weapon: weaponToUse,
-//        attackType: attackType,
-//        bodyPart: targetBodyPart,
-//        entity: npc // The NPC performing the action
-//    };
-//
-//    logToConsole(`${npc.name} targets Player's ${targetBodyPart} with ${weaponToUse ? weaponToUse.name : 'Unarmed'}.`);
-//
-//    // Transition to player's defense declaration
-//    gameState.combatPhase = 'defenderDeclare';
-//    updateCombatUI();
-//    logToConsole("Debug: executeNpcCombatTurn - Player defense prompt should be visible now.");
-//}
 
 
 document.addEventListener('DOMContentLoaded', initialize); // Changed to call new async initialize
