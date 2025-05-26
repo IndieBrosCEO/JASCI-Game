@@ -495,389 +495,9 @@ function calculateDefenseRoll(defender, defenseType, attackerWeapon, actionConte
 
 /**************************************************************
  * Combat Flow Functions
- **************************************************************/
-function initiateMeleeAttack(attackerGameState, target) {
-    if (attackerGameState.actionPointsRemaining <= 0) {
-        logToConsole("Not enough action points to attack.");
-        return;
-    }
-
-    let selectedWeapon = null;
-    if (attackerGameState.inventory.handSlots[0] && attackerGameState.inventory.handSlots[0].type && attackerGameState.inventory.handSlots[0].type.includes("melee")) {
-        selectedWeapon = attackerGameState.inventory.handSlots[0];
-    }
-
-    attackerGameState.activeSubMenu = 'selectBodyPart';
-    attackerGameState.pendingCombatAction = {
-        target: target,
-        weapon: selectedWeapon,
-        attackType: 'melee',
-        entity: attackerGameState // Storing the attacker (player)
-    };
-
-    // New Combat Flow
-    gameState.isInCombat = true;
-    gameState.combatCurrentAttacker = attackerGameState; // player
-    gameState.combatCurrentDefender = target;
-    gameState.combatPhase = 'attackerDeclare';
-
-    updateCombatUI();
-    logToConsole("Debug: initiateMeleeAttack - Player attacker prompt should be visible.");
-
-    const attackerPrompt = document.getElementById('attackerPrompt');
-    if (attackerPrompt) {
-        attackerPrompt.innerHTML = `Targeting ${target.name} with ${selectedWeapon ? selectedWeapon.name : 'Unarmed'}.<br>Select body part: (1) Head, (2) Torso, (3) Left Arm, (4) Right Arm, (5) Left Leg, (6) Right Leg. (Esc to cancel)`;
-    }
-
-    // logToConsole(`Targeting ${target.name} with ${selectedWeapon ? selectedWeapon.name : 'Unarmed'}. Select body part: (1) Head, (2) Torso, (3) Left Arm, (4) Right Arm, (5) Left Leg, (6) Right Leg. (Esc to cancel)`);
-    // The actual body part selection is now handled in handleKeyDown during 'attackerDeclare'
-}
-
-// Calculates and applies melee damage to a target.
-function calculateAndApplyMeleeDamage(attacker, target, weapon, hitSuccess, attackNaturalRoll, defenseNaturalRoll, targetBodyPart) {
-    if (!hitSuccess) {
-        logToConsole("No damage as the attack missed.");
-        if (document.getElementById('damageResult')) document.getElementById('damageResult').textContent = 'Damage: 0 (Miss)';
-        return;
-    }
-
-    let damageAmount = 0;
-    let damageType = "";
-
-    // Calculate Damage
-    const attackerName = (attacker === gameState) ? "Player" : attacker.name; // Determine attacker's name for logging
-
-    if (weapon === null) { // Unarmed attack
-        damageType = "Bludgeoning";
-        const unarmedAttackModifier = getSkillModifier("Unarmed", attacker); // New line using getSkillModifier
-
-        if (unarmedAttackModifier > 0) { // Check the actual modifier value
-            damageAmount = rollDie(unarmedAttackModifier); // Use the modifier for dice sides
-            logToConsole(`${attackerName} attacks unarmed (modifier ${unarmedAttackModifier}), rolls 1d${unarmedAttackModifier}, deals ${damageAmount} ${damageType} damage.`);
-        } else {
-            damageAmount = Math.max(0, rollDie(2) - 1);
-            logToConsole(`${attackerName} attacks unarmed (modifier ${unarmedAttackModifier}), rolls 1d2-1, deals ${damageAmount} ${damageType} damage.`);
-        }
-    } else { // Armed Melee attack
-        damageType = weapon.damageType || "Physical";
-        const damageNotation = parseDiceNotation(weapon.damage);
-        damageAmount = rollDiceNotation(damageNotation);
-        logToConsole(`${attackerName}'s ${weapon.name} dealt ${damageAmount} ${damageType} damage.`);
-    }
-
-    if (document.getElementById('damageResult')) document.getElementById('damageResult').textContent = `Damage: ${damageAmount} ${damageType}`;
-    // Apply Damage to Target
-    applyDamage(target, targetBodyPart, damageAmount, damageType); // This function handles logging HP changes
-    // The logToConsole call for applied damage was here, but applyDamage itself logs more detailed HP changes.
-    // logToConsole(`Applied ${damageAmount} ${damageType} to ${target.name}'s ${targetBodyPart}.`); 
-}
-
-function initiateRangedAttack(attackerGameState, target) {
-    if (attackerGameState.actionPointsRemaining <= 0) {
-        logToConsole("Not enough action points for a ranged attack.");
-        return;
-    }
-
-    let selectedWeapon = null;
-    if (attackerGameState.inventory.handSlots[0] && attackerGameState.inventory.handSlots[0].type && attackerGameState.inventory.handSlots[0].type.includes("firearm")) {
-        selectedWeapon = attackerGameState.inventory.handSlots[0];
-    } else {
-        logToConsole("No ranged weapon (firearm) equipped in primary hand.");
-        return;
-    }
-
-    // Ammo Check (Placeholder)
-    logToConsole("Ammo check pending...");
-
-    attackerGameState.activeSubMenu = 'selectBodyPart'; // This will be used by handleKeyDown
-    attackerGameState.pendingCombatAction = {
-        target: target,
-        weapon: selectedWeapon,
-        attackType: 'ranged',
-        entity: attackerGameState // Storing the attacker (player)
-    };
-
-    // New Combat Flow
-    gameState.isInCombat = true;
-    gameState.combatCurrentAttacker = attackerGameState; // player
-    gameState.combatCurrentDefender = target;
-    gameState.combatPhase = 'attackerDeclare';
-
-    updateCombatUI();
-    logToConsole("Debug: initiateRangedAttack - Player attacker prompt should be visible.");
-
-    const attackerPrompt = document.getElementById('attackerPrompt');
-    if (attackerPrompt) {
-        attackerPrompt.innerHTML = `Targeting ${target.name} with ${selectedWeapon.name}.<br>Select body part: (1) Head, (2) Torso, (3) Left Arm, (4) Right Arm, (5) Left Leg, (6) Right Leg. (Esc to cancel)`;
-    }
-}
-
-// processAttack is now called when gameState.combatPhase is 'resolveRolls'
-function processAttack() {
-    if (gameState.combatPhase !== 'resolveRolls') {
-        console.error("processAttack called at incorrect combat phase:", gameState.combatPhase);
-        return;
-    }
-
-    const attacker = gameState.combatCurrentAttacker;
-    const defender = gameState.combatCurrentDefender;
-    // gameState.pendingCombatAction should have been populated by 'attackerDeclare' phase
-    const { weapon, attackType, bodyPart } = gameState.pendingCombatAction;
-
-    // Deduct action points for the attacker
-    if (attacker === gameState) { // If player is the attacker
-        if (gameState.actionPointsRemaining <= 0) {
-            logToConsole("Not enough action points to complete the attack.");
-            gameState.isInCombat = false;
-            gameState.combatPhase = null;
-            gameState.pendingCombatAction = {};
-            gameState.activeSubMenu = null;
-            updateCombatUI();
-            return;
-        }
-        gameState.actionPointsRemaining--;
-        updateTurnUI();
-        logToConsole(`Action point spent. Remaining: ${gameState.actionPointsRemaining}`);
-    }
-    // TODO: Add AP deduction for NPCs if they also use action points.
-
-    let attackResult, defenseResult;
-    let hit = false;
-    let outcomeMessage = "";
-    const attackerName = (attacker === gameState) ? "Player" : attacker.name;
-    const defenderName = (defender === gameState) ? "Player" : defender.name;
-
-
-    // Attacker's Roll
-    let actionContext = {}; // For criticals, range, etc.
-    if (attacker === gameState && gameState.pendingCombatAction.isSecondAttack) { // Check if it's a second attack for player
-        actionContext.isSecondAttack = true;
-    }
-    // For NPCs, you'd need a similar flag if they can make multiple attacks with disadvantage
-
-    if (attackType === 'melee') {
-        attackResult = calculateAttackRoll(attacker, weapon, bodyPart, actionContext);
-        logToConsole(`${attackerName} attacks ${defenderName}'s ${bodyPart}: rolled ${attackResult.roll} (Natural: ${attackResult.naturalRoll})`);
-    } else if (attackType === 'ranged') {
-        const dx = defender.mapPos.x - (attacker === gameState ? attacker.playerPos.x : attacker.mapPos.x);
-        const dy = defender.mapPos.y - (attacker === gameState ? attacker.playerPos.y : attacker.mapPos.y);
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        let rangeModifier = 0;
-        if (distance <= 1) { rangeModifier = 15; }
-        else if (distance <= 3) { rangeModifier = 5; }
-        else if (distance <= 6) { rangeModifier = 0; }
-        else if (distance <= 20) { rangeModifier = -5; }
-        else if (distance <= 60) { rangeModifier = -10; }
-        else { rangeModifier = -15; }
-        actionContext.rangeModifier = rangeModifier;
-        attackResult = calculateAttackRoll(attacker, weapon, bodyPart, actionContext);
-        logToConsole(`${attackerName} attacks ${defenderName}'s ${bodyPart} with ${weapon ? weapon.name : 'Unarmed'}: rolled ${attackResult.roll} (Natural: ${attackResult.naturalRoll})`);
-    }
-
-    // Defender's Roll
-    let defenderDefenseTypeToUse;
-    if (defender === gameState) { // Player is defending
-        defenderDefenseTypeToUse = gameState.playerDefenseChoice || "Dodge"; // Use player's choice, default to Dodge if somehow not set
-        logToConsole(`Player is defending, using chosen defense: ${defenderDefenseTypeToUse}`);
-    } else { // NPC is defending
-        // NPC's choice was already set in handleKeyDown during 'attackerDeclare' phase and stored in gameState.npcDefenseChoice
-        defenderDefenseTypeToUse = gameState.npcDefenseChoice || "Dodge"; // Default to Dodge if somehow not set
-        logToConsole(`${defenderName} (NPC) is defending, using chosen defense: ${defenderDefenseTypeToUse}`);
-    }
-
-    defenseResult = calculateDefenseRoll(defender, defenderDefenseTypeToUse, weapon, {}); // Pass attacker's weapon
-    logToConsole(`${defenderName} defends with ${defenderDefenseTypeToUse}: rolled ${defenseResult.roll} (Natural: ${defenseResult.naturalRoll})`);
-    // Update UI with the specific defense type used
-    if (document.getElementById('defenseRollResult')) document.getElementById('defenseRollResult').textContent = `Defense Roll (${defenderDefenseTypeToUse}): ${defenseResult.roll} (Natural: ${defenseResult.naturalRoll}, ${defenderName})`;
-
-
-    // Determine Hit
-    // Determine Hit - REORDERED LOGIC
-    if (attackResult.naturalRoll === 20) { // Attacker Nat 20
-        hit = true;
-        // Message distinction for critical vs. non-critical Nat 20
-        outcomeMessage = attackResult.isCriticalHit
-            ? `${attackerName} rolled a Natural 20! CRITICAL HIT!`
-            : `${attackerName} rolled a Natural 20! Automatic Hit!`;
-    } else if (attackResult.isCriticalMiss) { // Attacker Nat 1
-        hit = false;
-        outcomeMessage = `${attackerName} CRITICAL MISS! Attack fails.`;
-    } else if (defenseResult.naturalRoll === 20) { // Defender Nat 20 (and attacker didn't Nat 20)
-        hit = false;
-        outcomeMessage = `Miss! ${defenderName} rolled a natural 20 on defense.`;
-    } else if (defenseResult.isCriticalFailure) { // Defender Nat 1 (and attacker didn't Nat 20, defender didn't Nat 20)
-        hit = true;
-        outcomeMessage = `Hit! ${defenderName} critically failed their defense (rolled a natural 1).`;
-    } else if (attackResult.roll > defenseResult.roll) { // Standard comparison
-        hit = true;
-        outcomeMessage = "Hit!";
-    } else { // Standard miss
-        hit = false;
-        outcomeMessage = "Miss!";
-    }
-
-    logToConsole(outcomeMessage);
-    if (document.getElementById('attackRollResult')) document.getElementById('attackRollResult').textContent = `Attack Roll: ${attackResult.roll} (Natural: ${attackResult.naturalRoll}, ${attackerName})`;
-    // Defense roll text is now set above, after calculating defenseResult, to include defense type
-
-    if (hit) {
-        gameState.combatPhase = 'applyDamage'; // Transition to apply damage phase
-        if (attackType === 'melee') {
-            calculateAndApplyMeleeDamage(attacker, defender, weapon, hit, attackResult.naturalRoll, defenseResult.naturalRoll, bodyPart);
-        } else if (attackType === 'ranged') {
-            calculateAndApplyRangedDamage(attacker, defender, weapon, bodyPart);
-        }
-
-        // Defender Natural 1 on Headshot (Instant Death) - applied AFTER damage to ensure hit was processed
-        const targetedBodyPartNormalized = gameState.pendingCombatAction.bodyPart.toLowerCase(); // e.g. "head", "left arm"
-        if (targetedBodyPartNormalized === "head" && defenseResult.naturalRoll === 1) {
-            logToConsole(`${defenderName} was hit in the head and rolled a natural 1 on defense! Instant death!`);
-            if (defender.health && defender.health.head) { // Health keys are lowercase and no spaces e.g. "head"
-                defender.health.head.current = 0;
-            }
-            if (defender === gameState) { // Player is defender
-                gameOver(); // Call game over for player
-            } else { // NPC is defender
-                logToConsole(`${defenderName} has been defeated due to critical headshot!`);
-                gameState.npcs = gameState.npcs.filter(npc => npc !== defender); // Remove NPC
-                // Check if any combat-active NPCs remain
-                if (!gameState.npcs.some(npc => npc.mapPos)) { // Simplified check; ideally NPCs have an isInCombat flag
-                    logToConsole("All hostile NPCs defeated. Combat ended.");
-                    gameState.isInCombat = false;
-                    gameState.combatPhase = null;
-                    gameState.pendingCombatAction = {};
-                    gameState.activeSubMenu = null;
-                }
-                scheduleRender(); // Re-render map
-            }
-            updateCombatUI(); // Update UI to reflect combat potentially ending or target defeated
-            return; // Stop further processing for this attack as target is dead.
-        }
-
-        // General Check for defender defeat after damage application (if not instant death headshot)
-        const finalTargetPartKey = bodyPart.toLowerCase().replace(/\s/g, ''); // e.g. "head", "leftarm"
-
-        if (defender.health && defender.health[finalTargetPartKey] && defender.health[finalTargetPartKey].current <= 0) {
-            logToConsole(`${defenderName}'s ${finalTargetPartKey} destroyed!`);
-            if (finalTargetPartKey === "head" || finalTargetPartKey === "torso") {
-                logToConsole(`${defenderName} has been defeated!`);
-                if (defender === gameState) {
-                    gameOver();
-                } else {
-                    gameState.npcs = gameState.npcs.filter(npc => npc !== defender);
-                    if (!gameState.npcs.some(npc => npc.mapPos)) { // Simplified check
-                        logToConsole("All hostile NPCs defeated. Combat ended.");
-                        gameState.isInCombat = false;
-                        gameState.combatPhase = null;
-                        gameState.pendingCombatAction = {};
-                        gameState.activeSubMenu = null;
-                    }
-                }
-                scheduleRender();
-            }
-        }
-
-    } else {
-        logToConsole("Attack missed. No damage dealt.");
-        if (document.getElementById('damageResult')) document.getElementById('damageResult').textContent = 'Damage: 0 (Miss)';
-        // Even on a miss, the action is consumed. Combat may continue or end.
-    }
-
-    // After attack resolution (hit or miss), clear pending action for the current attacker.
-    // gameState.pendingCombatAction = {}; // This might be too broad if we want NPC reactions based on this.
-    // For player, it's fine.
-    // gameState.activeSubMenu = null; // Clear submenu
-
-    // If not defeated, and if it's player's turn, they might have more AP for another action.
-    // If NPC's turn, they would act.
-    // For now, we'll assume one attack sequence and then UI updates.
-    // A more complex turn manager would handle the flow here.
-    if (gameState.isInCombat) { // If combat didn't end due to defeat
-        if (attacker === gameState && defender.health && (defender.health.torso?.current > 0 && defender.health.head?.current > 0)) { // Player attacked an NPC and NPC is still capable
-            logToConsole(`${defender.name} is retaliating!`);
-            // It's now NPC's turn to attack the player
-            // Note: executeNpcCombatTurn will set the correct attacker/defender/phase
-            executeNpcCombatTurn(defender); // 'defender' here is the NPC object that was targeted by player
-            return; // NPC turn is initiated, further UI updates will happen in executeNpcCombatTurn and subsequent player defense
-        } else {
-            // If NPC attacked, or if player attacked and NPC was defeated, or other conditions,
-            // then combat might end or player can take another action.
-            gameState.combatPhase = null; // Ready for a new action or end turn.
-            if (attacker === gameState) { // If player just attacked (and NPC was defeated or combat ended)
-                gameState.pendingCombatAction = {};
-                gameState.activeSubMenu = null;
-            }
-        }
-        // Clear player/NPC defense choices for the next round *after* this combat sequence resolution
-        gameState.playerDefenseChoice = null;
-        gameState.npcDefenseChoice = null;
-    }
-
-    updateCombatUI(); // Refresh UI at the end of attack processing
-}
-
-function updateCombatUI() {
-    const currentAttackerEl = document.getElementById('currentAttacker');
-    const currentDefenderEl = document.getElementById('currentDefender');
-    const attackerPromptEl = document.getElementById('attackerPrompt');
-    const defenderPromptEl = document.getElementById('defenderPrompt');
-    const attackRollResultEl = document.getElementById('attackRollResult');
-    const defenseRollResultEl = document.getElementById('defenseRollResult');
-    const damageResultEl = document.getElementById('damageResult');
-    const combatLogEl = document.getElementById('combatLog'); // Assuming this is the one from index.html
-
-    if (currentAttackerEl) currentAttackerEl.textContent = `Attacker: ${gameState.combatCurrentAttacker ? (gameState.combatCurrentAttacker === gameState ? 'Player' : gameState.combatCurrentAttacker.name) : '-'}`;
-    if (currentDefenderEl) currentDefenderEl.textContent = `Defender: ${gameState.combatCurrentDefender ? gameState.combatCurrentDefender.name : '-'}`;
-
-    // Clear prompts by default
-    if (attackerPromptEl) attackerPromptEl.innerHTML = '';
-    if (defenderPromptEl) defenderPromptEl.innerHTML = '';
-
-    // Reset results for a new combat round or if not in a phase that shows them
-    if (attackRollResultEl) attackRollResultEl.textContent = 'Attack Roll: -';
-    if (defenseRollResultEl) defenseRollResultEl.textContent = 'Defense Roll: -';
-    if (damageResultEl) damageResultEl.textContent = 'Damage: -';
-
-
-    if (gameState.isInCombat) {
-        if (gameState.combatPhase === 'attackerDeclare' && gameState.combatCurrentAttacker === gameState) {
-            // Attacker (Player) is declaring, prompt for body part (this is already handled in initiateMelee/RangedAttack)
-            // This specific prompt text might be redundant if set directly in initiate functions
-        } else if (gameState.combatPhase === 'defenderDeclare' && gameState.combatCurrentDefender === gameState) {
-            if (defenderPromptEl) defenderPromptEl.innerHTML = "Defend: (D)odge or (B)lock?";
-        }
-
-        // Display roll and damage results if they exist in gameState (to be added later)
-        // For example:
-        // if (gameState.lastAttackRoll && attackRollResultEl) attackRollResultEl.textContent = `Attack Roll: ${gameState.lastAttackRoll}`;
-        // if (gameState.lastDefenseRoll && defenseRollResultEl) defenseRollResultEl.textContent = `Defense Roll: ${gameState.lastDefenseRoll}`;
-        // if (gameState.lastDamageDealt && damageResultEl) damageResultEl.textContent = `Damage: ${gameState.lastDamageDealt}`;
-    } else {
-        // If not in combat, clear all combat UI fields
-        if (currentAttackerEl) currentAttackerEl.textContent = 'Attacker: -';
-        if (currentDefenderEl) currentDefenderEl.textContent = 'Defender: -';
-        if (attackerPromptEl) attackerPromptEl.innerHTML = '';
-        if (defenderPromptEl) defenderPromptEl.innerHTML = '';
-        if (attackRollResultEl) attackRollResultEl.textContent = 'Attack Roll: -';
-        if (defenseRollResultEl) defenseRollResultEl.textContent = 'Defense Roll: -';
-        if (damageResultEl) damageResultEl.textContent = 'Damage: -';
-        if (combatLogEl) combatLogEl.textContent = 'Combat Log:'; // Reset combat log
-    }
-}
-
-
-function calculateAndApplyRangedDamage(attacker, target, weapon, targetBodyPart) {
-    const damageType = weapon.damageType || "Ballistic";
-    const damageNotation = parseDiceNotation(weapon.damage);
-    const damageAmount = rollDiceNotation(damageNotation);
-
-    // logToConsole(`${weapon.name} dealt ${damageAmount} ${damageType} damage to ${target.name}'s ${targetBodyPart}.`);
-    if (document.getElementById('damageResult')) document.getElementById('damageResult').textContent = `Damage: ${damageAmount} ${damageType}`;
-    applyDamage(target, targetBodyPart, damageAmount, damageType); // This function handles logging HP changes
-    logToConsole(`Applied ${damageAmount} ${damageType} to ${target.name}'s ${targetBodyPart} with ${weapon.name}.`);
-}
-
-
+ **************************************************************
+ A new comment to ensure the diff is not empty if all functions are removed.
+ */
 /**************************************************************
  * New Map System Functions
  **************************************************************/
@@ -1953,61 +1573,6 @@ function getArmorForBodyPart(bodyPartName) {
     return totalArmor;
 }
 
-// Apply damage to a specified body part of an entity (player or NPC)
-function applyDamage(entity, bodyPartName, damageAmount, damageType) {
-    const normalizedBodyPartName = bodyPartName.toLowerCase(); // Ensure this line is present and used
-    let part;
-    let entityName;
-    let isPlayer = (entity === gameState);
-
-    if (isPlayer) {
-        // Use normalizedBodyPartName for player health access
-        if (!gameState.health || !gameState.health[normalizedBodyPartName]) {
-            logToConsole(`Error: Player has no health data or no such body part: ${normalizedBodyPartName}`);
-            return;
-        }
-        part = gameState.health[normalizedBodyPartName];
-        entityName = "Player"; // Or use player character name if available
-        // Use normalizedBodyPartName for getArmorForBodyPart
-        const effectiveArmor = getArmorForBodyPart(normalizedBodyPartName);
-        const reducedDamage = Math.max(0, damageAmount - effectiveArmor);
-
-        // Use original bodyPartName for user-facing logs if desired, but normalized for HP reporting.
-        logToConsole(`Original damage to Player's ${bodyPartName}: ${damageAmount}, Armor: ${effectiveArmor}, Reduced damage: ${reducedDamage}`);
-        part.current = Math.max(part.current - reducedDamage, 0);
-        logToConsole(`Player's ${normalizedBodyPartName} HP: ${part.current}/${part.max} after taking ${reducedDamage} ${damageType} damage.`);
-
-        if (part.current === 0 && part.crisisTimer === 0) {
-            part.crisisTimer = 3;
-            // Using normalizedBodyPartName here for consistency in internal state logging
-            logToConsole(`Player's ${normalizedBodyPartName} is in crisis! Treat within 3 turns or die.`);
-        }
-        renderHealthTable(); // Always render for player
-    } else { // NPC
-        // Use normalizedBodyPartName for NPC health access
-        if (!entity.health || !entity.health[normalizedBodyPartName]) {
-            // Log both original and normalized for debugging if error persists
-            logToConsole(`Error: ${entity.name} has no health data or no such body part: ${normalizedBodyPartName} (original input: ${bodyPartName})`);
-            return;
-        }
-        part = entity.health[normalizedBodyPartName];
-        entityName = entity.name;
-        const effectiveArmor = 0; // NPCs currently have no armor
-        const reducedDamage = Math.max(0, damageAmount - effectiveArmor);
-
-        // Use original bodyPartName for user-facing logs, but normalized for HP reporting.
-        logToConsole(`Original damage to ${entityName}'s ${bodyPartName}: ${damageAmount}, Armor: ${effectiveArmor}, Reduced damage: ${reducedDamage}`);
-        part.current = Math.max(part.current - reducedDamage, 0);
-        logToConsole(`${entityName}'s ${normalizedBodyPartName} HP: ${part.current}/${part.max} after taking ${reducedDamage} ${damageType} damage.`);
-
-        if (part.current === 0) {
-            // Using normalizedBodyPartName here for consistency
-            logToConsole(`${entityName}'s ${normalizedBodyPartName} has been destroyed!`);
-        }
-    }
-}
-
-
 // Update crisis timers for body parts at the end of each turn
 function updateHealthCrisis() {
     for (let partName in gameState.health) {
@@ -2111,133 +1676,40 @@ function gameOver() {
  **************************************************************/
 // Keydown event handler for movement and actions
 function handleKeyDown(event) {
-    if (gameState.isInCombat) {
-        const attacker = gameState.combatCurrentAttacker;
-        const defender = gameState.combatCurrentDefender;
-        let keyProcessed = false; // Flag to see if key was handled by a specific combat phase
-
-        if (gameState.combatPhase === 'attackerDeclare' && attacker === gameState) { // Player is attacker
-            let selectedBodyPartName = null;
-            if (event.key === '1') selectedBodyPartName = "Head";
-            else if (event.key === '2') selectedBodyPartName = "Torso";
-            else if (event.key === '3') selectedBodyPartName = "Left Arm";
-            else if (event.key === '4') selectedBodyPartName = "Right Arm";
-            else if (event.key === '5') selectedBodyPartName = "Left Leg";
-            else if (event.key === '6') selectedBodyPartName = "Right Leg";
-            else if (event.key === 'Escape') {
-                logToConsole("Targeting cancelled.");
-                gameState.isInCombat = false;
-                gameState.combatPhase = null;
-                gameState.pendingCombatAction = {};
-                gameState.activeSubMenu = null;
-                updateCombatUI();
-                event.preventDefault();
-                return;
-            } else if (['1', '2', '3', '4', '5', '6'].includes(event.key)) {
-                event.preventDefault(); // Consume the handled key
-            }
-
-            if (selectedBodyPartName) {
-                gameState.pendingCombatAction.bodyPart = selectedBodyPartName;
-                logToConsole(`Player selected body part: ${selectedBodyPartName}`);
-                gameState.combatPhase = 'defenderDeclare';
-                updateCombatUI();
-
-                // NPC Defender Logic
-                if (gameState.combatCurrentDefender !== gameState) {
-                    const defenderNpc = gameState.combatCurrentDefender;
-                    const pendingAttackTypeByPlayer = gameState.pendingCombatAction.attackType;
-
-                    if (pendingAttackTypeByPlayer === "ranged") {
-                        gameState.npcDefenseChoice = "Dodge";
-                        logToConsole(`${defenderNpc.name} (NPC) chooses to Dodge against ranged attack.`);
-                    } else { // Melee attack by player
-                        let npcWeapon = null;
-                        if (defenderNpc.equippedWeaponId) {
-                            npcWeapon = assetManager.getItem(defenderNpc.equippedWeaponId);
-                        }
-
-                        if (npcWeapon && npcWeapon.type && npcWeapon.type.includes("melee")) {
-                            gameState.npcDefenseChoice = "BlockArmed";
-                            logToConsole(`${defenderNpc.name} (NPC) chooses to Block Armed with ${npcWeapon.name}.`);
-                        } else {
-                            const unarmedModifier = getSkillModifier("Unarmed", defenderNpc);
-                            const dexterityModifier = getStatModifier("Dexterity", defenderNpc);
-
-                            if (unarmedModifier > dexterityModifier) {
-                                gameState.npcDefenseChoice = "BlockUnarmed";
-                                logToConsole(`${defenderNpc.name} (NPC) chooses to Block Unarmed.`);
-                            } else {
-                                gameState.npcDefenseChoice = "Dodge";
-                                logToConsole(`${defenderNpc.name} (NPC) chooses to Dodge.`);
-                            }
-                        }
-                    }
-                    gameState.combatPhase = 'resolveRolls';
-                    updateCombatUI();
-                    processAttack();
-                }
-                keyProcessed = true;
-            }
-            if (keyProcessed) {
-                return;
-            }
-
-        } else if (gameState.combatPhase === 'defenderDeclare' && defender === gameState) { // PLAYER IS DEFENDING
-            let defenseChoiceKey = event.key.toLowerCase();
-            if (defenseChoiceKey === 'd') {
-                gameState.playerDefenseChoice = "Dodge";
-                logToConsole("Player chooses to Dodge.");
-                gameState.combatPhase = 'resolveRolls';
-                updateCombatUI();
-                processAttack();
-                keyProcessed = true;
-            } else if (defenseChoiceKey === 'b') {
-                const primaryWeapon = gameState.inventory.handSlots[0];
-                if (primaryWeapon && primaryWeapon.type && primaryWeapon.type.includes("melee")) {
-                    gameState.playerDefenseChoice = "BlockArmed";
-                    logToConsole("Player chooses to Block Armed with " + primaryWeapon.name + ".");
-                } else {
-                    gameState.playerDefenseChoice = "BlockUnarmed";
-                    logToConsole("Player chooses to Block Unarmed.");
-                }
-                gameState.combatPhase = 'resolveRolls';
-                updateCombatUI();
-                processAttack();
-                keyProcessed = true;
-            } else if (event.key === 'Escape') {
-                logToConsole("Defense choice cancelled by player. Defaulting to Dodge.");
-                gameState.playerDefenseChoice = "Dodge";
-                gameState.combatPhase = 'resolveRolls';
-                updateCombatUI();
-                processAttack();
-                keyProcessed = true;
-            }
-            if (keyProcessed) {
-                event.preventDefault();
-                return;
-            }
+    // New logic for Escape key during combat UI declaration
+    if (gameState.isInCombat && gameState.combatPhase === 'playerAttackDeclare' && event.key === 'Escape') {
+        const attackDeclUI = document.getElementById('attackDeclarationUI');
+        if (attackDeclUI && !attackDeclUI.classList.contains('hidden')) {
+            attackDeclUI.classList.add('hidden');
+            logToConsole("Attack declaration cancelled.");
+            // Optionally, provide a way for player to re-open declaration or end turn.
+            // For now, just hiding it. Player can press 't' to end turn if they wish.
+            event.preventDefault();
+            return;
         }
+    }
+
+    if (gameState.isInCombat) {
+        // Most combat key handling is now through the UI or specific phases.
+        // Player defense choice (if UI were implemented) would be here.
+        // For now, NPC defense is automatic, and player defense defaults.
+        // The 't' (end turn) and general 'Escape' are primary combat-related keys here.
 
         if (event.key === 'Escape') {
-            logToConsole("General combat Escape handler: Cancelling combat.");
-            gameState.isInCombat = false;
-            gameState.combatPhase = null;
-            gameState.combatCurrentAttacker = null;
-            gameState.combatCurrentDefender = null;
-            gameState.pendingCombatAction = {};
-            gameState.activeSubMenu = null;
-            updateCombatUI();
+            logToConsole("Attempting to end combat with Escape key.");
+            combatManager.endCombat(); // Use CombatManager's method to end combat
             event.preventDefault();
             return;
         }
 
-        logToConsole(`Combat active (Phase: ${gameState.combatPhase || 'N/A'}). Key '${event.key}' pressed. No specific action for this key in this phase. Non-combat game actions are blocked.`);
-        event.preventDefault();
-        return;
+        // Other general combat keys could be handled here if necessary,
+        // but detailed phase-specific inputs (like old 1-6 for body parts) are removed.
+        // logToConsole(`Combat active (Phase: ${gameState.combatPhase || 'N/A'}). Key '${event.key}' pressed. Non-combat game actions are blocked.`);
+        // event.preventDefault(); // Be careful with overly broad preventDefault
+        // return; // Return to ensure no non-combat actions are processed.
     }
 
-    // Non-combat key handling starts here
+    // Non-combat key handling starts here (or if not returned by combat logic above)
     if (gameState.inventory.open) {
         switch (event.key) {
             case 'ArrowUp': case 'w':
@@ -2288,7 +1760,15 @@ function handleKeyDown(event) {
             event.preventDefault(); return;
         }
         if (event.key === 't' || event.key === 'T') {
-            endTurn();
+            if (gameState.isInCombat && combatManager.initiativeTracker[combatManager.currentTurnIndex]?.entity === gameState) {
+                logToConsole("Player ends their turn.");
+                combatManager.nextTurn();
+            } else if (gameState.isInCombat) {
+                logToConsole("Not your turn to end.");
+            } else {
+                // Original non-combat end turn functionality
+                endTurn();
+            }
             event.preventDefault(); return;
         }
     }
@@ -2302,10 +1782,11 @@ function handleKeyDown(event) {
             }
             event.preventDefault(); break;
         case 'r':
-            if (gameState.inventory.open || gameState.isInCombat) return;
-            const rangedDummyTarget = gameState.npcs.find(npc => npc.id === "training_dummy");
-            if (rangedDummyTarget && rangedDummyTarget.mapPos) {
-                initiateRangedAttack(gameState, rangedDummyTarget);
+            if (gameState.inventory.open || gameState.isInCombat) return; // Prevent if inventory open or already in combat
+            const rangedTarget = gameState.npcs.find(npc => npc.id === "training_dummy" && npc.mapPos);
+            if (rangedTarget) {
+                // Start combat handles setting up turns and UI
+                combatManager.startCombat([gameState, rangedTarget]);
             } else {
                 logToConsole("Training Dummy not found for ranged attack or has no position.");
             }
@@ -2324,22 +1805,25 @@ function handleKeyDown(event) {
             }
             break;
         case 'c':
-            if (gameState.inventory.open || gameState.isInCombat) return;
-            const dummy = gameState.npcs.find(npc => npc.id === "training_dummy");
-            if (dummy && dummy.mapPos) {
-                const inRange = Math.abs(gameState.playerPos.x - dummy.mapPos.x) <= 1 &&
-                    Math.abs(gameState.playerPos.y - dummy.mapPos.y) <= 1;
+            if (gameState.inventory.open || gameState.isInCombat) return; // Prevent if inventory open or already in combat
+            const meleeTarget = gameState.npcs.find(npc => npc.id === "training_dummy" && npc.mapPos);
+            if (meleeTarget) {
+                const inRange = Math.abs(gameState.playerPos.x - meleeTarget.mapPos.x) <= 1 &&
+                    Math.abs(gameState.playerPos.y - meleeTarget.mapPos.y) <= 1;
                 if (inRange) {
-                    initiateMeleeAttack(gameState, dummy);
+                    // Start combat handles setting up turns and UI
+                    combatManager.startCombat([gameState, meleeTarget]);
                 } else {
                     logToConsole("Training Dummy is not in melee range.");
                 }
             } else {
-                logToConsole("Training Dummy not found or has no position.");
+                logToConsole("Training Dummy not found for melee attack or has no position.");
             }
             event.preventDefault(); break;
     }
 }
+
+const combatManager = new CombatManager(gameState, assetManager);
 
 // Initial setup on DOM content load
 async function initialize() { // Made async
@@ -2403,6 +1887,30 @@ async function initialize() { // Made async
     }
 
     document.addEventListener('keydown', handleKeyDown);
+
+    const confirmButton = document.getElementById('confirmAttackButton');
+    if (confirmButton) {
+        confirmButton.addEventListener('click', () => {
+            // Check if combat is active, it's player's turn, and player is in attack declaration phase
+            if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
+                combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
+                combatManager.gameState.combatPhase === 'playerAttackDeclare') {
+                combatManager.handleConfirmedAttackDeclaration();
+            } else {
+                if (!combatManager || !combatManager.gameState) {
+                    console.error("CombatManager or gameState not available.");
+                } else if (!combatManager.gameState.isInCombat) {
+                    console.log("Confirm attack clicked, but not in combat.");
+                } else if (combatManager.gameState.combatCurrentAttacker !== combatManager.gameState) {
+                    console.log("Confirm attack clicked, but not player's turn.");
+                } else if (combatManager.gameState.combatPhase !== 'playerAttackDeclare') {
+                    console.log(`Confirm attack clicked, but phase is ${combatManager.gameState.combatPhase}, not playerAttackDeclare.`);
+                }
+            }
+        });
+    } else {
+        console.error("confirmAttackButton not found in the DOM during initialization.");
+    }
 }
 /**************************************************************
  * Start Game
@@ -2529,63 +2037,64 @@ function startGame() {
     startTurn();
 }
 
-function executeNpcCombatTurn(npc) {
-    // For now, assume NPC always has 1 action point for this retaliatory attack
-    // A more complex system would check npc.actionPointsRemaining or similar
-    if (!npc || (npc.health && npc.health.torso && npc.health.torso.current <= 0) || (npc.health && npc.health.head && npc.health.head.current <= 0)) {
-        logToConsole(`${npc ? npc.name : 'NPC'} is incapacitated and cannot attack.`);
-        // Potentially end combat or switch turn if NPC was supposed to act
-        gameState.combatPhase = null;
-        updateCombatUI();
-        return;
-    }
-
-    const player = gameState; // Player is always the target for now
-    let weaponToUse = null;
-    let attackType = 'unarmed'; // Default to unarmed
-
-    if (npc.equippedWeaponId) {
-        const equippedWeapon = assetManager.getItem(npc.equippedWeaponId);
-        if (equippedWeapon) {
-            weaponToUse = equippedWeapon;
-            // Simple logic: if weapon type includes "melee", it's melee. If "firearm", it's ranged.
-            if (equippedWeapon.type && equippedWeapon.type.includes("melee")) {
-                attackType = 'melee';
-            } else if (equippedWeapon.type && equippedWeapon.type.includes("firearm")) {
-                attackType = 'ranged';
-            }
-            // Could add distance check here: if ranged weapon but player is adjacent, NPC might switch to melee or unarmed.
-            // For now, if a weapon is equipped, use its primary type.
-        }
-    }
-
-    // If no weapon or weapon type couldn't be determined for an attack, default to unarmed melee
-    if (attackType === 'unarmed' && !weaponToUse) { // Ensure it's explicitly unarmed if no weapon was suitable
-        attackType = 'melee'; // Unarmed is a type of melee
-        weaponToUse = null; // Explicitly null for unarmed
-    }
-
-
-    const targetBodyPart = "Torso"; // NPC always targets Torso for now
-
-    // Set combat state for NPC's attack
-    gameState.combatCurrentAttacker = npc;
-    gameState.combatCurrentDefender = player;
-    gameState.pendingCombatAction = {
-        target: player,
-        weapon: weaponToUse,
-        attackType: attackType,
-        bodyPart: targetBodyPart,
-        entity: npc // The NPC performing the action
-    };
-
-    logToConsole(`${npc.name} targets Player's ${targetBodyPart} with ${weaponToUse ? weaponToUse.name : 'Unarmed'}.`);
-
-    // Transition to player's defense declaration
-    gameState.combatPhase = 'defenderDeclare';
-    updateCombatUI();
-    logToConsole("Debug: executeNpcCombatTurn - Player defense prompt should be visible now.");
-}
+//This function was moved to combatManager.js
+//function executeNpcCombatTurn(npc) {
+//    // For now, assume NPC always has 1 action point for this retaliatory attack
+//    // A more complex system would check npc.actionPointsRemaining or similar
+//    if (!npc || (npc.health && npc.health.torso && npc.health.torso.current <= 0) || (npc.health && npc.health.head && npc.health.head.current <= 0)) {
+//        logToConsole(`${npc ? npc.name : 'NPC'} is incapacitated and cannot attack.`);
+//        // Potentially end combat or switch turn if NPC was supposed to act
+//        gameState.combatPhase = null;
+//        updateCombatUI();
+//        return;
+//    }
+//
+//    const player = gameState; // Player is always the target for now
+//    let weaponToUse = null;
+//    let attackType = 'unarmed'; // Default to unarmed
+//
+//    if (npc.equippedWeaponId) {
+//        const equippedWeapon = assetManager.getItem(npc.equippedWeaponId);
+//        if (equippedWeapon) {
+//            weaponToUse = equippedWeapon;
+//            // Simple logic: if weapon type includes "melee", it's melee. If "firearm", it's ranged.
+//            if (equippedWeapon.type && equippedWeapon.type.includes("melee")) {
+//                attackType = 'melee';
+//            } else if (equippedWeapon.type && equippedWeapon.type.includes("firearm")) {
+//                attackType = 'ranged';
+//            }
+//            // Could add distance check here: if ranged weapon but player is adjacent, NPC might switch to melee or unarmed.
+//            // For now, if a weapon is equipped, use its primary type.
+//        }
+//    }
+//
+//    // If no weapon or weapon type couldn't be determined for an attack, default to unarmed melee
+//    if (attackType === 'unarmed' && !weaponToUse) { // Ensure it's explicitly unarmed if no weapon was suitable
+//        attackType = 'melee'; // Unarmed is a type of melee
+//        weaponToUse = null; // Explicitly null for unarmed
+//    }
+//
+//
+//    const targetBodyPart = "Torso"; // NPC always targets Torso for now
+//
+//    // Set combat state for NPC's attack
+//    gameState.combatCurrentAttacker = npc;
+//    gameState.combatCurrentDefender = player;
+//    gameState.pendingCombatAction = {
+//        target: player,
+//        weapon: weaponToUse,
+//        attackType: attackType,
+//        bodyPart: targetBodyPart,
+//        entity: npc // The NPC performing the action
+//    };
+//
+//    logToConsole(`${npc.name} targets Player's ${targetBodyPart} with ${weaponToUse ? weaponToUse.name : 'Unarmed'}.`);
+//
+//    // Transition to player's defense declaration
+//    gameState.combatPhase = 'defenderDeclare';
+//    updateCombatUI();
+//    logToConsole("Debug: executeNpcCombatTurn - Player defense prompt should be visible now.");
+//}
 
 
 document.addEventListener('DOMContentLoaded', initialize); // Changed to call new async initialize
