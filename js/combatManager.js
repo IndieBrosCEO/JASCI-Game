@@ -122,6 +122,9 @@ class CombatManager {
 
         // Explicitly hide and reset fire mode select when the prompt is shown initially
         const fireModeSelect = document.getElementById('combatFireModeSelect');
+        const attemptGrappleButton = document.getElementById('attemptGrappleButton');
+        const breakGrappleButton = document.getElementById('breakGrappleButton'); // New button
+
         if (fireModeSelect) {
             // Check the initially selected weapon again, as populateWeaponSelect might select one
             const weaponSelect = document.getElementById('combatWeaponSelect');
@@ -147,6 +150,42 @@ class CombatManager {
             }
             fireModeSelect.value = "single"; // Default to single
         }
+
+        // Grapple and Break Grapple button visibility
+        if (attemptGrappleButton && breakGrappleButton) {
+            const playerIsGrappled = this.gameState.statusEffects && this.gameState.statusEffects.isGrappled === true;
+            const defender = this.gameState.combatCurrentDefender;
+            const playerIsGrapplingDefender = defender && defender.statusEffects && defender.statusEffects.isGrappled === true && defender.statusEffects.grappledBy === 'player';
+
+            if (playerIsGrappled) {
+                breakGrappleButton.classList.remove('hidden');
+                attemptGrappleButton.classList.add('hidden'); // Can't attempt grapple if already grappled
+            } else {
+                breakGrappleButton.classList.add('hidden');
+                if (playerIsGrapplingDefender) {
+                    attemptGrappleButton.classList.add('hidden'); // Can't attempt new grapple if already grappling current defender
+                } else {
+                    // Show attempt grapple only if a weapon is not selected that hides it (e.g. firearm)
+                    const weaponSelect = document.getElementById('combatWeaponSelect');
+                    const selectedWeaponValue = weaponSelect.value;
+                    let weaponObject = null;
+                    if (selectedWeaponValue !== "unarmed") {
+                        const selectedOption = weaponSelect.options[weaponSelect.selectedIndex];
+                        if (selectedOption && selectedOption.dataset.itemData) {
+                            weaponObject = JSON.parse(selectedOption.dataset.itemData);
+                        } else {
+                            weaponObject = this.assetManager.getItem(selectedWeaponValue);
+                        }
+                    }
+                    if (weaponObject && weaponObject.type && weaponObject.type.includes("firearm")) {
+                        attemptGrappleButton.classList.add('hidden');
+                    } else {
+                        attemptGrappleButton.classList.remove('hidden');
+                    }
+                }
+            }
+        }
+
 
         this.gameState.combatPhase = 'playerAttackDeclare';
         document.getElementById('attackDeclarationUI').classList.remove('hidden');
@@ -542,11 +581,54 @@ class CombatManager {
             skillBasedModifier = getSkillModifier(skillName, attacker);
         }
 
-        let baseRoll = rollDie(20);
+        // Ensure statusEffects objects exist
+        if (!attacker.statusEffects) {
+            attacker.statusEffects = {};
+        }
+        // Defender is not directly available here, it's gameState.combatCurrentDefender
+        // However, the grapple state of the defender *by the attacker* is passed via actionContext.isGrappling
+        // We need to check the defender's general grappled state for the attacker's advantage
+        const defender = this.gameState.combatCurrentDefender; // Get the defender object
+        if (!defender.statusEffects) {
+            defender.statusEffects = {};
+        }
 
-        // Handle disadvantage for second attack if applicable (not part of current subtask but good to keep)
-        if (actionContext.isSecondAttack) {
+        let baseRoll;
+        const isSecondAttack = actionContext.isSecondAttack;
+
+        const attackerIsGrappled = attacker.statusEffects.isGrappled === true;
+        const attackerId = (attacker === this.gameState) ? "player" : (attacker.id || "npc");
+        const defenderIsGrappledByAttacker = defender.statusEffects.isGrappled === true && defender.statusEffects.grappledBy === attackerId;
+
+        let advantage = false;
+        let disadvantage = false;
+
+        if (attackerIsGrappled) {
+            disadvantage = true;
+            logToConsole("Attacker is grappled.");
+        }
+        if (defenderIsGrappledByAttacker) {
+            advantage = true;
+            logToConsole("Attacker is grappling the defender.");
+        }
+        if (isSecondAttack) {
+            disadvantage = true;
+            logToConsole("Second attack this turn.");
+        }
+
+        if (advantage && !disadvantage) {
+            baseRoll = Math.max(rollDie(20), rollDie(20));
+            logToConsole("Attacking with advantage.");
+        } else if (disadvantage && !advantage) {
             baseRoll = Math.min(rollDie(20), rollDie(20));
+            logToConsole("Attacking with disadvantage.");
+        } else {
+            baseRoll = rollDie(20);
+            if (advantage && disadvantage) {
+                logToConsole("Advantage and disadvantage cancel out. Normal roll.");
+            } else {
+                logToConsole("Normal roll.");
+            }
         }
 
         // Body part difficulty modifiers
@@ -558,7 +640,10 @@ class CombatManager {
         const totalAttackRoll = baseRoll + skillBasedModifier + bodyPartModifier + rangeModifier + attackModifierForFireMode + attackerMovementPenalty;
 
         // Determine if a critical hit/miss is possible
-        const canCrit = !(actionContext.isSecondAttack || actionContext.isBurst || actionContext.isAutomatic);
+        // Crits are not possible if there was advantage or disadvantage from grappling/second attack,
+        // or if it's a burst/automatic fire.
+        const hadAdvantageOrDisadvantage = (advantage && !disadvantage) || (disadvantage && !advantage);
+        const canCrit = !(hadAdvantageOrDisadvantage || actionContext.isBurst || actionContext.isAutomatic);
 
         return {
             roll: totalAttackRoll,
@@ -1174,7 +1259,7 @@ class CombatManager {
     }
 
     processGrapple() {
-        const attacker = this.gameState.combatCurrentAttacker; // Should be player (this.gameState)
+        const attacker = this.gameState.combatCurrentAttacker;
         const defender = this.gameState.combatCurrentDefender;
 
         if (!attacker || !defender) {
@@ -1197,12 +1282,12 @@ class CombatManager {
 
 
         // Opposed Unarmed skill rolls
-        // Using getSkillValue as per spec: rollDie(20) + getSkillValue("Unarmed", character)
-        const attackerRoll = rollDie(20) + getSkillValue("Unarmed", attacker);
-        const defenderRoll = rollDie(20) + getSkillValue("Unarmed", defender);
+        // Using getSkillModifier for grapple rolls
+        const attackerRoll = rollDie(20) + getSkillModifier("Unarmed", attacker);
+        const defenderRoll = rollDie(20) + getSkillModifier("Unarmed", defender);
 
-        logToConsole(`${attacker === this.gameState ? "Player" : attacker.name} grapple roll: ${attackerRoll} (d20 + ${getSkillValue("Unarmed", attacker)} Unarmed)`);
-        logToConsole(`${defender === this.gameState ? "Player" : defender.name} grapple defense roll: ${defenderRoll} (d20 + ${getSkillValue("Unarmed", defender)} Unarmed)`);
+        logToConsole(`${attacker === this.gameState ? "Player" : attacker.name} grapple roll: ${attackerRoll} (d20 + ${getSkillModifier("Unarmed", attacker)} Unarmed Mod)`);
+        logToConsole(`${defender === this.gameState ? "Player" : defender.name} grapple defense roll: ${defenderRoll} (d20 + ${getSkillModifier("Unarmed", defender)} Unarmed Mod)`);
 
         if (attackerRoll > defenderRoll) {
             // Ensure statusEffects object exists
@@ -1237,6 +1322,85 @@ class CombatManager {
         }
     }
 
+    handleBreakGrappleAttempt() {
+        if (this.gameState.actionPointsRemaining <= 0) {
+            logToConsole("No action points remaining to attempt to break grapple.");
+            return;
+        }
+        this.gameState.actionPointsRemaining--;
+        updateTurnUI();
+        logToConsole(`Action point spent for break grapple attempt. Remaining: ${this.gameState.actionPointsRemaining}`);
+
+        if (!this.gameState.statusEffects || !this.gameState.statusEffects.isGrappled || !this.gameState.statusEffects.grappledBy) {
+            logToConsole("Error: Player is not grappled or grappler ID is missing. Cannot break grapple.");
+            // This state should ideally not be reachable if button visibility is correct.
+            // Restore AP if it was an invalid action state
+            // this.gameState.actionPointsRemaining++; updateTurnUI(); // Decided against restoring AP for now.
+            this.promptPlayerAttackDeclaration(); // Go back to action choice
+            return;
+        }
+
+        const grapplerId = this.gameState.statusEffects.grappledBy;
+        if (grapplerId === "player") {
+            logToConsole("Error: Player cannot be grappled by themselves. Resetting grapple status.");
+            this.gameState.statusEffects.isGrappled = false;
+            this.gameState.statusEffects.grappledBy = null;
+            this.promptPlayerAttackDeclaration();
+            return;
+        }
+
+        const grapplerEntry = this.initiativeTracker.find(entry => !entry.isPlayer && entry.entity.id === grapplerId);
+
+        if (!grapplerEntry || !grapplerEntry.entity) {
+            logToConsole(`Grappler (ID: ${grapplerId}) not found in combat or defeated. Grapple broken by default.`);
+            this.gameState.statusEffects.isGrappled = false;
+            this.gameState.statusEffects.grappledBy = null;
+            // Proceed with player's turn
+            if (this.gameState.actionPointsRemaining > 0) {
+                this.promptPlayerAttackDeclaration();
+            } else if (this.gameState.movementPointsRemaining > 0) {
+                this.gameState.combatPhase = 'playerPostAction';
+                logToConsole("Grapple broken (grappler gone). You have movement points remaining or can end your turn.");
+            } else {
+                this.nextTurn();
+            }
+            return;
+        }
+
+        const grapplerEntity = grapplerEntry.entity;
+        const playerRoll = rollDie(20) + getSkillModifier("Unarmed", this.gameState);
+        const grapplerRoll = rollDie(20) + getSkillModifier("Unarmed", grapplerEntity);
+
+        logToConsole(`Player break grapple roll: ${playerRoll} (d20 + ${getSkillModifier("Unarmed", this.gameState)} Unarmed Mod)`);
+        logToConsole(`${grapplerEntity.name} resist grapple break roll: ${grapplerRoll} (d20 + ${getSkillModifier("Unarmed", grapplerEntity)} Unarmed Mod)`);
+
+        if (playerRoll > grapplerRoll) {
+            this.gameState.statusEffects.isGrappled = false;
+            this.gameState.statusEffects.grappledBy = null;
+            // Also clear the grappler's state that they are grappling the player
+            if (grapplerEntity.statusEffects) {
+                grapplerEntity.statusEffects.isGrapplingTarget = false; // Assuming such a flag might exist
+                // Or more generally, if an NPC is grappling, their target might be stored
+                // This part depends on how NPC grappling state is managed.
+                // For now, the player breaking free is the primary concern.
+            }
+            logToConsole("Successfully broke the grapple!");
+        } else {
+            logToConsole("Failed to break the grapple.");
+        }
+
+        // Determine next step for the player
+        if (this.gameState.actionPointsRemaining > 0) {
+            logToConsole("You have action points remaining.");
+            this.promptPlayerAttackDeclaration();
+        } else if (this.gameState.movementPointsRemaining > 0) {
+            logToConsole("Break grapple attempt resolved. You have movement points remaining or can end your turn.");
+            this.gameState.combatPhase = 'playerPostAction';
+        } else {
+            logToConsole("Break grapple attempt resolved. No action or movement points remaining.");
+            this.nextTurn();
+        }
+    }
 
     applyDamage(entity, bodyPartName, damageAmount, damageType) {
         const normalizedBodyPartName = bodyPartName.toLowerCase().replace(/\s/g, '');
@@ -1290,6 +1454,36 @@ class CombatManager {
         if (!playerEntry || (playerTarget.health.head.current <= 0 || playerTarget.health.torso.current <= 0)) {
             logToConsole(`${npc.name} has no valid player target or player is defeated. Ending NPC turn.`);
             this.nextTurn();
+            return;
+        }
+
+        // Ensure statusEffects exists on NPC
+        if (!npc.statusEffects) {
+            npc.statusEffects = {}; // Initialize if it doesn't exist
+        }
+
+        // Check if NPC is grappled by the player
+        if (npc.statusEffects.isGrappled === true && npc.statusEffects.grappledBy === 'player') {
+            logToConsole(`${npc.name} is grappled by Player and will attempt to break free.`);
+
+            const npcRoll = rollDie(20) + getSkillModifier("Unarmed", npc);
+            const playerRoll = rollDie(20) + getSkillModifier("Unarmed", this.gameState);
+
+            logToConsole(`${npc.name} break grapple roll: ${npcRoll} (d20 + ${getSkillModifier("Unarmed", npc)} Unarmed Mod)`);
+            logToConsole(`Player resist grapple break roll: ${playerRoll} (d20 + ${getSkillModifier("Unarmed", this.gameState)} Unarmed Mod)`);
+
+            if (npcRoll > playerRoll) {
+                npc.statusEffects.isGrappled = false;
+                npc.statusEffects.grappledBy = null;
+                // Also clear the player's status of grappling this NPC
+                if (this.gameState.statusEffects && this.gameState.statusEffects.grapplingTarget === npc.id) {
+                    this.gameState.statusEffects.grapplingTarget = null; // Or some other way to indicate player is no longer grappling
+                }
+                logToConsole(`${npc.name} broke free from the grapple!`);
+            } else {
+                logToConsole(`${npc.name} failed to break free from the grapple.`);
+            }
+            this.nextTurn(); // NPC's action is consumed by the break attempt
             return;
         }
 
