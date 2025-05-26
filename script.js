@@ -291,12 +291,27 @@ function rollDie(sides) {
 // Parses a dice notation string (e.g., "2d6+3", "1d4", "3d8-1")
 // and returns an object { count: Number, sides: Number, modifier: Number }
 function parseDiceNotation(diceString) {
+    if (typeof diceString !== 'string' || diceString.trim() === "") {
+        console.error("Invalid dice notation: input is not a non-empty string");
+        return null;
+    }
+    // Check for flat number (e.g., "1", "5")
+    if (/^\d+$/.test(diceString.trim())) {
+        const flatDamage = parseInt(diceString.trim(), 10);
+        // Represent as Xd1, so flatDamage * 1 = flatDamage
+        return {
+            count: flatDamage,
+            sides: 1,
+            modifier: 0
+        };
+    }
+
     const regex = /(\d+)d(\d+)([+-]\d+)?/;
-    const match = diceString.match(regex);
+    const match = diceString.trim().match(regex);
 
     if (!match) {
         console.error(`Invalid dice notation: ${diceString}`);
-        return null; // Or throw an error
+        return null;
     }
 
     return {
@@ -789,7 +804,7 @@ function startTurn() {
 // Allow the player to dash (double movement) if conditions are met
 function dash() {
     if (!gameState.hasDashed && gameState.actionPointsRemaining > 0) {
-        gameState.movementPointsRemaining = 12;
+        gameState.movementPointsRemaining += 6;
         gameState.hasDashed = true;
         gameState.actionPointsRemaining--;
         logToConsole(`Dashing activated. Moves now: ${gameState.movementPointsRemaining}, Actions left: ${gameState.actionPointsRemaining}`);
@@ -1230,20 +1245,15 @@ function InventoryContainer(name, sizeLabel) {
 }
 
 // 3) Item constructor
-function Item(name, description, size, type, canEquip = false, layer = null, coverage = [], insulation = 0, armorValue = 0, isClothing = false) {
-    this.name = name;
-    this.description = description;
-    this.size = size;
-    this.type = type;
-    this.canEquip = canEquip; // This existing property might distinguish weapons/tools vs. clothing
-    this.equipped = false; // Existing property
+function Item(itemDef) { // itemDef is the raw object from JSON
+    Object.assign(this, itemDef); // Copy all properties from itemDef to this instance
 
-    // New properties for clothing
-    this.layer = layer;           // e.g., ClothingLayers.TORSO_TOP
-    this.coverage = coverage;     // e.g., ["torso", "leftArm", "rightArm"]
-    this.insulation = insulation;
-    this.armorValue = armorValue;
-    this.isClothing = isClothing; // true if the item is wearable clothing
+    // Set instance-specific defaults or overrides after copying
+    this.equipped = false;
+    // Ensure other necessary instance-specific defaults are set if any.
+    // For example, if isClothing might not always be in itemDef and needs a default:
+    // this.isClothing = this.isClothing !== undefined ? this.isClothing : false;
+    // However, based on current itemDef structure, most flags like isClothing, canEquip should come from itemDef.
 }
 
 // 4) Attach to gameState
@@ -2057,25 +2067,14 @@ function startGame() {
     }
 
     // Add clothing items from definitions
-    const clothingToAdd = ["simple_shirt", "baseball_cap", "basic_vest", "durable_pants", "wide_brim_hat", "small_backpack_wearable"];
+    const clothingToAdd = ["basic_vest"];
     clothingToAdd.forEach(itemId => {
         const itemDef = assetManager.getItem(itemId); // All items (incl clothing) are in itemsById
         if (itemDef) {
             // Create a new Item instance if your addItem expects an Item object
             // For simplicity, if addItem can handle raw definitions, that's fine too.
             // Assuming Item constructor can take the definition object:
-            const newItem = new Item(
-                itemDef.name,
-                itemDef.description,
-                itemDef.size,
-                itemDef.type,
-                itemDef.canEquip,
-                itemDef.layer,
-                itemDef.coverage,
-                itemDef.insulation,
-                itemDef.armorValue,
-                itemDef.isClothing
-            );
+            const newItem = new Item(itemDef);
             addItem(newItem);
         } else {
             console.warn(`Clothing item definition not found for ID: ${itemId}`);
@@ -2084,42 +2083,44 @@ function startGame() {
 
     // Add weapons and ammunition
     const weaponsAndAmmoToAdd = [
-        // Pistol and Ammo
-        { id: "beretta_92f_9mm" },
-        { id: "ammo_9mm", quantity: 2 }, // Add 2 boxes of 9mm ammo
-
-        // Shotgun and Ammo
-        { id: "mossberg_12ga" },
-        { id: "ammo_12gauge_buckshot", quantity: 3 }, // Add 3 boxes of 12-gauge buckshot
-
-        // Rifle and Ammo
-        { id: "akm_ak47_762mmr" },
-        { id: "ammo_762mmr", quantity: 2 }, // Add 2 boxes of 7.62mmR ammo
-
-        // Sniper Rifle and Ammo
-        { id: "hk_psg1_762mm" },
-        { id: "ammo_762mm", quantity: 2 }, // Add 2 boxes of 7.62mm ammo
-
-        // Bow and Ammo
-        { id: "compound_bow" },
-        { id: "ammo_arrow", quantity: 2 }, // Add 2 bundles of arrows
-
-        // Crossbow and Ammo
-        { id: "crossbow" },
-        { id: "ammo_crossbow_bolt", quantity: 2 }, // Add 2 bundles of crossbow bolts
-
-        // Thrown Weapon
-        { id: "frag_grenade_thrown", quantity: 3 }, // Add 3 frag grenades
-
         // Melee Weapon
         { id: "knife_melee" },
 
+        // Pistol and Ammo
+        { id: "beretta_92f_9mm" },
+        { id: "ammo_9mm", quantity: 1 }, // Add 2 boxes of 9mm ammo
+
+        // Shotgun and Ammo
+        { id: "mossberg_12ga" },
+        { id: "ammo_12gauge_buckshot", quantity: 1 }, // Add 3 boxes of 12-gauge buckshot
+
+        // Rifle and Ammo
+        { id: "akm_ak47_762mmr" },
+        { id: "ammo_762mmr", quantity: 1 }, // Add 2 boxes of 7.62mmR ammo
+
+        // Sniper Rifle and Ammo
+        { id: "hk_psg1_762mm" },
+        { id: "ammo_762mm", quantity: 1 }, // Add 2 boxes of 7.62mm ammo
+
+
+        // Thrown Weapon
+        { id: "frag_grenade_thrown", quantity: 1 }, // Add 3 frag grenades
+
+
         // Rocket Launcher (no separate ammo item, it's self-contained)
-        { id: "m72a3_law_rocket_launcher", quantity: 2 }, // Add 2 rocket launchers
+        { id: "m72a3_law_rocket_launcher", quantity: 1 }, // Add 2 rocket launchers
 
         // Grenade Launcher and Ammo
         { id: "m79_grenade_launcher" },
-        { id: "ammo_40mm_grenade_frag", quantity: 3 } // Add 3 40mm grenades
+        { id: "ammo_40mm_grenade_frag", quantity: 1 }, // Add 3 40mm grenades
+
+        // Bow and Ammo
+        { id: "compound_bow" },
+        { id: "ammo_arrow", quantity: 1 }, // Add 2 bundles of arrows
+
+        // Crossbow and Ammo
+        { id: "crossbow" },
+        { id: "ammo_crossbow_bolt", quantity: 1 }, // Add 2 bundles of crossbow bolts
     ];
 
     weaponsAndAmmoToAdd.forEach(itemEntry => {
@@ -2127,19 +2128,7 @@ function startGame() {
         if (itemDef) {
             const quantity = itemEntry.quantity || 1; // Default to 1 if quantity not specified
             for (let i = 0; i < quantity; i++) {
-                const newItem = new Item(
-                    itemDef.name,
-                    itemDef.description,
-                    itemDef.size,
-                    itemDef.type,
-                    itemDef.canEquip,
-                    itemDef.layer, // Will be null for non-clothing
-                    itemDef.coverage, // Will be undefined or empty for non-clothing
-                    itemDef.insulation, // Will be 0 for non-clothing
-                    itemDef.armorValue, // Will be 0 for non-clothing
-                    itemDef.isClothing // Will be false for weapons/ammo
-                    // Potentially add other item-specific properties here if needed from itemDef
-                );
+                const newItem = new Item(itemDef);
                 // If it's ammunition, we might want to store its specific ammoType or quantity per item
                 if (itemDef.type === "ammunition") {
                     newItem.ammoType = itemDef.ammoType;
@@ -2152,25 +2141,32 @@ function startGame() {
         }
     });
 
-    // Load and place Training Dummy
+    // Load and place 8 Training Dummies in a 4×2 block starting at (10,10)
     const dummyDefinition = assetManager.npcsById["training_dummy"];
-    if (dummyDefinition) {
-        const dummyInstance = JSON.parse(JSON.stringify(dummyDefinition));
-        dummyInstance.mapPos = { x: 10, y: 10 };
-        // Initialize health for the training dummy with the new structure
-        dummyInstance.health = {
-            head: { max: 20, current: 20, armor: 0, crisisTimer: 0 },
-            torso: { max: 30, current: 30, armor: 0, crisisTimer: 0 },
-            leftArm: { max: 15, current: 15, armor: 0, crisisTimer: 0 },
-            rightArm: { max: 15, current: 15, armor: 0, crisisTimer: 0 },
-            leftLeg: { max: 15, current: 15, armor: 0, crisisTimer: 0 },
-            rightLeg: { max: 15, current: 15, armor: 0, crisisTimer: 0 }
-        };
-        gameState.npcs.push(dummyInstance);
-        logToConsole("Training Dummy placed at (10,10) with detailed health initialized.");
-    } else {
+    if (!dummyDefinition) {
         logToConsole("Error: Training Dummy NPC definition not found.");
+    } else {
+        const startX = 10;
+        const startY = 10;
+        const width = 2;   // how many across
+        const height = 2;  // how many down
+
+        for (let dy = 0; dy < height; dy++) {
+            for (let dx = 0; dx < width; dx++) {
+                // deep‐clone the definition
+                const dummyInstance = JSON.parse(JSON.stringify(dummyDefinition));
+                dummyInstance.mapPos = {
+                    x: startX + dx,
+                    y: startY + dy
+                };
+                gameState.npcs.push(dummyInstance);
+                logToConsole(
+                    `Training Dummy placed at (${dummyInstance.mapPos.x},${dummyInstance.mapPos.y}) with detailed health initialized.`
+                );
+            }
+        }
     }
+
 
     if (characterCreator) characterCreator.classList.add('hidden');
     if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');

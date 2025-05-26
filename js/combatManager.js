@@ -567,7 +567,7 @@ class CombatManager {
             skillName = "Guns";
             skillBasedModifier = getSkillModifier(skillName, attacker);
         } else if (weapon.type.includes("thrown")) {
-            skillName = "Strength (for thrown)";
+            skillName = "Strength";
             skillBasedModifier = getStatModifier("Strength", attacker);
         } else {
             skillName = "Unarmed";
@@ -602,8 +602,31 @@ class CombatManager {
 
     calculateDefenseRoll(defender, defenseType, attackerWeapon, coverBonus = 0, actionContext = {}) {
         if (defenseType === "None") {
-            return { roll: coverBonus, naturalRoll: 0, isCriticalSuccess: false, isCriticalFailure: false, coverBonusApplied: coverBonus, movementBonusApplied: 0, defenseSkillValue: 0 };
-        }
+            const baseRoll = rollDie(20);
+            let defenderMovementBonus = 0;
+
+            // Check if defender moved (consistent with existing logic for active defenses)
+            if (defender === this.gameState && this.gameState.playerMovedThisTurn) {
+                defenderMovementBonus = 2;
+            } else if (defender !== this.gameState && defender.movedThisTurn) {
+                // Ensure NPC 'movedThisTurn' property is checked; assume it exists on NPC objects if they can move.
+                // If 'defender.movedThisTurn' might be undefined, add a check:
+                // if (defender !== this.gameState && defender.movedThisTurn === true) {
+                defenderMovementBonus = 2;
+            }
+
+            const totalDefenseRoll = baseRoll + coverBonus + defenderMovementBonus;
+
+            return {
+                roll: totalDefenseRoll,
+                naturalRoll: baseRoll,
+                isCriticalSuccess: baseRoll === 20,
+                isCriticalFailure: baseRoll === 1,
+                coverBonusApplied: coverBonus,
+                movementBonusApplied: defenderMovementBonus,
+                defenseSkillValue: 0, // No skill involved for "None" type defense
+                defenseSkillName: "Passive" // Or any other suitable descriptor
+            };        }
         const baseRoll = rollDie(20);
         let baseDefenseValue = 0;
         let defenseSkillName = "";
@@ -765,6 +788,7 @@ class CombatManager {
 
         const attackerName = (attacker === this.gameState) ? "Player" : attacker.name;
         const defenderName = (defender === this.gameState) ? "Player" : defender.name;
+        let attackResult, defenseResult;
 
         if (attackType === 'ranged' && weapon) {
             let bulletsToConsume = 1;
@@ -804,10 +828,6 @@ class CombatManager {
                 logToConsole(`Warning: Attacker or defender map position undefined for melee range check. Attacker: ${attackerName}, Defender: ${defenderName}. Attack proceeds.`);
             }
         }
-
-        let attackResult, defenseResult;
-        const attackerName = (attacker === this.gameState) ? "Player" : attacker.name;
-        const defenderName = (defender === this.gameState) ? "Player" : defender.name;
 
         let numHits = 1;
         let coverBonus = 0;
