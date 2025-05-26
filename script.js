@@ -667,15 +667,48 @@ function renderMapLayers() {
                             const npcDisplayId = 'NPC_' + npc.id;
                             if (cachedCell.displayedId !== npcDisplayId) {
                                 cachedCell.span.textContent = npc.sprite;
-                                cachedCell.span.style.color = npc.color;
-                                cachedCell.displayedId = npcDisplayId; // Mark tile as displaying this NPC
-                                // No need to update cachedCell.sprite/color as these are for the underlying tile/player
+                                cachedCell.span.style.color = npc.color; // NPC's own color
+                                cachedCell.displayedId = npcDisplayId;
                             }
                         }
                     }
                 }
             }
         });
+    }
+
+    // Clear previous combat highlights before applying new ones or if combat ended
+    if (gameState.tileCache) {
+        for (let y = 0; y < H; y++) {
+            for (let x = 0; x < W; x++) {
+                const cell = gameState.tileCache[y][x];
+                if (cell && cell.span) {
+                    if (cell.span.dataset.isAttackerHighlighted === 'true' || cell.span.dataset.isDefenderHighlighted === 'true') {
+                        cell.span.style.backgroundColor = ''; // Reset background
+                        delete cell.span.dataset.isAttackerHighlighted;
+                        delete cell.span.dataset.isDefenderHighlighted;
+                    }
+                }
+            }
+        }
+    }
+
+    // Apply Attacker/Defender Highlights if in combat
+    if (gameState.isInCombat && gameState.tileCache) {
+        if (gameState.attackerMapPos) {
+            const attackerCell = gameState.tileCache[gameState.attackerMapPos.y]?.[gameState.attackerMapPos.x];
+            if (attackerCell && attackerCell.span) {
+                attackerCell.span.style.backgroundColor = 'rgba(255, 0, 0, 0.3)'; // Red tint for attacker
+                attackerCell.span.dataset.isAttackerHighlighted = 'true';
+            }
+        }
+        if (gameState.defenderMapPos) {
+            const defenderCell = gameState.tileCache[gameState.defenderMapPos.y]?.[gameState.defenderMapPos.x];
+            if (defenderCell && defenderCell.span) {
+                defenderCell.span.style.backgroundColor = 'rgba(0, 0, 255, 0.3)'; // Blue tint for defender
+                defenderCell.span.dataset.isDefenderHighlighted = 'true';
+            }
+        }
     }
 
     // *** highlight the currently selected interactable tile(s) ***
@@ -1441,12 +1474,32 @@ function updateInventoryUI() {
 function renderInventoryMenu() {
     const list = document.getElementById("inventoryList");
     list.innerHTML = "";
-    const items = gameState.inventory.container.items;
-    if (items.length === 0) {
+
+    const wornItemNames = new Set();
+    if (gameState.player && gameState.player.wornClothing) {
+        Object.values(gameState.player.wornClothing).forEach(wornItem => {
+            if (wornItem && wornItem.name) {
+                wornItemNames.add(wornItem.name);
+            }
+        });
+    }
+
+    // Filter out equipped clothing items from the main inventory display
+    gameState.inventory.currentlyDisplayedItems = gameState.inventory.container.items.filter(
+        item => !item.isClothing || !wornItemNames.has(item.name)
+    );
+
+    if (gameState.inventory.currentlyDisplayedItems.length === 0) {
         list.textContent = "— empty —";
         return;
     }
-    items.forEach((it, idx) => {
+
+    // Adjust cursor if it's out of bounds for the new filtered list
+    if (gameState.inventory.cursor >= gameState.inventory.currentlyDisplayedItems.length) {
+        gameState.inventory.cursor = Math.max(0, gameState.inventory.currentlyDisplayedItems.length - 1);
+    }
+
+    gameState.inventory.currentlyDisplayedItems.forEach((it, idx) => {
         const d = document.createElement("div");
         d.textContent = `${idx + 1}. ${it.name} (${it.size})`;
         if (idx === gameState.inventory.cursor) {
@@ -1459,44 +1512,64 @@ function renderInventoryMenu() {
 // 11) Toggle panel
 function toggleInventoryMenu() {
     gameState.inventory.open = !gameState.inventory.open;
-    // Assuming 'inventoryList' is the main panel to show/hide for the inventory items.
-    // The prompt mentions 'inventoryPanel', but the HTML structure uses 'inventoryList' for items.
-    // Let's target 'inventoryList' visibility, or a more encompassing parent if needed.
-    // For now, let's assume the 'inventoryList' itself is what needs to be toggled.
-    // If there's a larger 'inventoryPanel' div that contains 'inventoryList' and other controls,
-    // that would be the target for toggling 'hidden'.
-    // Given the current HTML, 'inventoryList' is where items are rendered.
     const inventoryListDiv = document.getElementById("inventoryList");
 
     if (gameState.inventory.open) {
-        inventoryListDiv.classList.remove("hidden"); // Show the list
-        inventoryListDiv.style.display = 'block'; // Or use a class that sets display
-        renderInventoryMenu();
+        inventoryListDiv.classList.remove("hidden");
+        inventoryListDiv.style.display = 'block';
+        renderInventoryMenu(); // This will now populate currentlyDisplayedItems
     } else {
-        inventoryListDiv.classList.add("hidden"); // Hide the list
-        inventoryListDiv.style.display = 'none'; // Or use a class
-        clearInventoryHighlight(); // Clear highlights when closing
+        inventoryListDiv.classList.add("hidden");
+        inventoryListDiv.style.display = 'none';
+        clearInventoryHighlight();
+        gameState.inventory.currentlyDisplayedItems = []; // Clear the temporary list
     }
 }
 
 // 12) “Use” selected item
 function interactInventoryItem() {
-    const idx = gameState.inventory.cursor;
-    const item = gameState.inventory.container.items[idx];
-    if (!item) return;
+    if (!gameState.inventory.currentlyDisplayedItems || gameState.inventory.currentlyDisplayedItems.length === 0) return;
 
-    if (item.isClothing) {
-        if (!item.equipped) { // Only allow equipping if not already equipped
-            logToConsole(`Attempting to wear ${item.name}...`);
-            equipClothing(item.name); // Directly attempt to wear
+    const idx = gameState.inventory.cursor;
+    if (idx < 0 || idx >= gameState.inventory.currentlyDisplayedItems.length) return;
+
+    const displayedItem = gameState.inventory.currentlyDisplayedItems[idx];
+    if (!displayedItem) return;
+
+    // Find the actual item in the main inventory container to ensure we act on the correct instance
+    // This is important because equipClothing/equipItem modify gameState.inventory.container.items
+    const actualItemInContainer = gameState.inventory.container.items.find(item => item.name === displayedItem.name);
+
+    if (!actualItemInContainer) {
+        logToConsole(`Error: Could not find ${displayedItem.name} in main inventory for interaction.`);
+        return;
+    }
+
+    if (actualItemInContainer.isClothing) {
+        // The 'equipped' property on items in `container.items` should always be false if it's clothing,
+        // as equipping moves it to `wornClothing`. If it's somehow true, it's an inconsistent state.
+        // We rely on `wornItemNames` in `renderInventoryMenu` to filter it out if it's truly worn.
+        // So, if it's in `currentlyDisplayedItems`, it means it's not currently worn.
+        logToConsole(`Attempting to wear ${actualItemInContainer.name}...`);
+        equipClothing(actualItemInContainer.name);
+    } else if (actualItemInContainer.canEquip) { // For non-clothing equippable items (weapons, tools)
+        // This part needs to be decided: how to choose hand slot? For now, default to first available.
+        let handSlotToEquip = -1;
+        if (!gameState.inventory.handSlots[0]) handSlotToEquip = 0;
+        else if (!gameState.inventory.handSlots[1]) handSlotToEquip = 1;
+
+        if (handSlotToEquip !== -1) {
+            logToConsole(`Attempting to equip ${actualItemInContainer.name} to hand ${handSlotToEquip + 1}...`);
+            equipItem(actualItemInContainer.name, handSlotToEquip);
         } else {
-            // This case should ideally not happen if equipped items are not in the browsable inventory.
-            // If it does, it implies the item is marked equipped but still in general inventory.
-            logToConsole(`${item.name} is marked as equipped but is in inventory. This may be an error or unimplemented state.`);
+            logToConsole(`Both hands are full. Cannot equip ${actualItemInContainer.name}.`);
         }
     } else {
-        // Default action for non-clothing items: look at description
-        logToConsole(`You look at your ${item.name}: ${item.description}`);
+        logToConsole(`You look at your ${actualItemInContainer.name}: ${actualItemInContainer.description}`);
+    }
+    // After action, re-render inventory as items might have moved
+    if (gameState.inventory.open) {
+        renderInventoryMenu();
     }
 }
 
@@ -1679,21 +1752,22 @@ function handleKeyDown(event) {
             case 'ArrowUp': case 'w':
                 if (gameState.inventory.cursor > 0) {
                     gameState.inventory.cursor--;
-                    renderInventoryMenu();
+                    renderInventoryMenu(); // Re-render to update selection highlight
                 }
                 event.preventDefault(); return;
             case 'ArrowDown': case 's':
-                if (gameState.inventory.cursor < gameState.inventory.container.items.length - 1) {
+                // Use currentlyDisplayedItems for correct length check
+                if (gameState.inventory.currentlyDisplayedItems && gameState.inventory.cursor < gameState.inventory.currentlyDisplayedItems.length - 1) {
                     gameState.inventory.cursor++;
-                    renderInventoryMenu();
+                    renderInventoryMenu(); // Re-render to update selection highlight
                 }
                 event.preventDefault(); return;
             case 'Enter': case 'f':
                 interactInventoryItem();
                 event.preventDefault(); return;
-            case 'i': case 'I':
+            case 'i': case 'I': // Toggle inventory also handled below if not open
                 toggleInventoryMenu();
-                clearInventoryHighlight();
+                // clearInventoryHighlight(); // toggleInventoryMenu handles this when closing
                 event.preventDefault(); return;
             default:
                 return;
@@ -2005,6 +2079,76 @@ function startGame() {
             addItem(newItem);
         } else {
             console.warn(`Clothing item definition not found for ID: ${itemId}`);
+        }
+    });
+
+    // Add weapons and ammunition
+    const weaponsAndAmmoToAdd = [
+        // Pistol and Ammo
+        { id: "beretta_92f_9mm" },
+        { id: "ammo_9mm", quantity: 2 }, // Add 2 boxes of 9mm ammo
+
+        // Shotgun and Ammo
+        { id: "mossberg_12ga" },
+        { id: "ammo_12gauge_buckshot", quantity: 3 }, // Add 3 boxes of 12-gauge buckshot
+
+        // Rifle and Ammo
+        { id: "akm_ak47_762mmr" },
+        { id: "ammo_762mmr", quantity: 2 }, // Add 2 boxes of 7.62mmR ammo
+
+        // Sniper Rifle and Ammo
+        { id: "hk_psg1_762mm" },
+        { id: "ammo_762mm", quantity: 2 }, // Add 2 boxes of 7.62mm ammo
+
+        // Bow and Ammo
+        { id: "compound_bow" },
+        { id: "ammo_arrow", quantity: 2 }, // Add 2 bundles of arrows
+
+        // Crossbow and Ammo
+        { id: "crossbow" },
+        { id: "ammo_crossbow_bolt", quantity: 2 }, // Add 2 bundles of crossbow bolts
+
+        // Thrown Weapon
+        { id: "frag_grenade_thrown", quantity: 3 }, // Add 3 frag grenades
+
+        // Melee Weapon
+        { id: "knife_melee" },
+
+        // Rocket Launcher (no separate ammo item, it's self-contained)
+        { id: "m72a3_law_rocket_launcher", quantity: 2 }, // Add 2 rocket launchers
+
+        // Grenade Launcher and Ammo
+        { id: "m79_grenade_launcher" },
+        { id: "ammo_40mm_grenade_frag", quantity: 3 } // Add 3 40mm grenades
+    ];
+
+    weaponsAndAmmoToAdd.forEach(itemEntry => {
+        const itemDef = assetManager.getItem(itemEntry.id);
+        if (itemDef) {
+            const quantity = itemEntry.quantity || 1; // Default to 1 if quantity not specified
+            for (let i = 0; i < quantity; i++) {
+                const newItem = new Item(
+                    itemDef.name,
+                    itemDef.description,
+                    itemDef.size,
+                    itemDef.type,
+                    itemDef.canEquip,
+                    itemDef.layer, // Will be null for non-clothing
+                    itemDef.coverage, // Will be undefined or empty for non-clothing
+                    itemDef.insulation, // Will be 0 for non-clothing
+                    itemDef.armorValue, // Will be 0 for non-clothing
+                    itemDef.isClothing // Will be false for weapons/ammo
+                    // Potentially add other item-specific properties here if needed from itemDef
+                );
+                // If it's ammunition, we might want to store its specific ammoType or quantity per item
+                if (itemDef.type === "ammunition") {
+                    newItem.ammoType = itemDef.ammoType;
+                    newItem.quantityPerBox = itemDef.quantity; // Assuming 'quantity' in JSON is per-box
+                }
+                addItem(newItem);
+            }
+        } else {
+            console.warn(`Weapon or ammo definition not found for ID: ${itemEntry.id}`);
         }
     });
 

@@ -43,21 +43,24 @@
       }
     },
     "stats": {
-      "Strength": 1,
+      "Strength": 3,
       "Intelligence": 1,
-      "Dexterity": 1,
-      "Constitution": 1,
-      "Perception": 1,
+      "Dexterity": 2,
+      "Constitution": 3,
+      "Perception": 2,
       "Willpower": 1,
       "Charisma": 1,
-      "Marksmanship": 1
+      "Marksmanship": 0
     },
     "skills": {
-      "Unarmed": 0,
-      "MeleeWeapons": 0,
+      "Unarmed": 10,
+      "MeleeWeapons": 20,
       "Guns": 0
     },
-    "tags": [ "dummy", "target", "interactive" ]
+    "equippedWeaponId": "club",
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 4,
+    "tags": [ "dummy", "target", "hostile", "melee" ]
   },
   {
     "id": "hostile_scavenger",
