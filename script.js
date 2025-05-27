@@ -1205,27 +1205,6 @@ function renderCharacterInfo() {
         <h3>Skills</h3>
         ${skillsHtml}
     `;
-
-    // Add Worn Clothing section to Character Info Panel
-    let wornHtml = '<h3>Worn Clothing</h3>';
-    let hasWornItemsCharPanel = false;
-    if (gameState.player && gameState.player.wornClothing) {
-        for (const layer in gameState.player.wornClothing) {
-            const item = gameState.player.wornClothing[layer];
-            if (item) {
-                hasWornItemsCharPanel = true;
-                const layerDisplayNameKey = Object.keys(ClothingLayers).find(key => ClothingLayers[key] === layer);
-                // Format display name: replace underscores with spaces and capitalize words
-                let formattedLayerName = (layerDisplayNameKey || layer).replace(/_/g, ' ');
-                formattedLayerName = formattedLayerName.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.substring(1)).join(' ');
-                wornHtml += `<div><em>${formattedLayerName}:</em> ${item.name}</div>`;
-            }
-        }
-    }
-    if (!hasWornItemsCharPanel) {
-        wornHtml += '<div>— Not wearing anything —</div>';
-    }
-    characterInfo.innerHTML += wornHtml; // Append to existing info
 }
 
 /**************************************************************
@@ -1233,7 +1212,7 @@ function renderCharacterInfo() {
  **************************************************************/
 // 1) Define container sizes
 const InventorySizes = {
-    XS: 3, S: 6, M: 12, L: 18, XL: 24, XXL: 36
+    XS: 3, S: 6, M: 12, L: 18, XL: 24, XXL: 36, XXXL: 48 // Added XXXL
 };
 
 // 2) Inventory container constructor
@@ -1718,6 +1697,43 @@ function gameOver() {
     // Further game-over logic here
 }
 
+function initiateCombatWithGroup(primaryTarget) {
+    if (!primaryTarget || !primaryTarget.mapPos) {
+        logToConsole("Invalid primary target for combat initiation.");
+        return;
+    }
+
+    const participants = [gameState, primaryTarget];
+    const groupingRadius = 10; // Tiles
+    const primaryTargetType = primaryTarget.id; // Assuming npc.id defines its type for grouping
+
+    gameState.npcs.forEach(npc => {
+        if (npc === primaryTarget || !npc.mapPos || !npc.health || npc.health.torso.current <= 0) {
+            return; // Skip self, unpositioned NPCs, or dead NPCs
+        }
+
+        // Grouping condition: same NPC id (type) and within radius
+        if (npc.id === primaryTargetType) {
+            const dx = Math.abs(npc.mapPos.x - primaryTarget.mapPos.x);
+            const dy = Math.abs(npc.mapPos.y - primaryTarget.mapPos.y);
+            const distance = Math.sqrt(dx * dx + dy * dy); // Euclidean distance
+
+            if (distance <= groupingRadius) {
+                if (!participants.find(p => p === npc)) { // Avoid adding duplicates
+                    participants.push(npc);
+                    logToConsole(`${npc.name} (type: ${npc.id}) is joining combat with ${primaryTarget.name}.`);
+                }
+            }
+        }
+    });
+
+    if (combatManager) {
+        combatManager.startCombat(participants);
+    } else {
+        logToConsole("Error: CombatManager not available to start combat.");
+    }
+}
+
 /**************************************************************
  * Event Handlers & Initialization
  **************************************************************/
@@ -1779,6 +1795,23 @@ function handleKeyDown(event) {
                 toggleInventoryMenu();
                 // clearInventoryHighlight(); // toggleInventoryMenu handles this when closing
                 event.preventDefault(); return;
+
+            // START NEW KEYBINDINGS FOR UNEQUIP
+            case 'u': // Unequip from Left Hand (slot 0)
+                logToConsole("Attempting to unequip item from Left Hand.");
+                unequipItem(0); // Calls the existing unequipItem function for hand slot 0
+                renderInventoryMenu(); // Re-render inventory to show changes
+                event.preventDefault();
+                return;
+
+            case 'j': // Unequip from Right Hand (slot 1)
+                logToConsole("Attempting to unequip item from Right Hand.");
+                unequipItem(1); // Calls the existing unequipItem function for hand slot 1
+                renderInventoryMenu(); // Re-render inventory to show changes
+                event.preventDefault();
+                return;
+            // END NEW KEYBINDINGS FOR UNEQUIP
+
             default:
                 return;
         }
@@ -1834,7 +1867,8 @@ function handleKeyDown(event) {
             const rangedTarget = gameState.npcs.find(npc => npc.id === "training_dummy" && npc.mapPos);
             if (rangedTarget) {
                 // Start combat handles setting up turns and UI
-                combatManager.startCombat([gameState, rangedTarget]);
+                // combatManager.startCombat([gameState, rangedTarget]); // Original
+                initiateCombatWithGroup(rangedTarget); // New
             } else {
                 logToConsole("Training Dummy not found for ranged attack or has no position.");
             }
@@ -1860,7 +1894,8 @@ function handleKeyDown(event) {
                     Math.abs(gameState.playerPos.y - meleeTarget.mapPos.y) <= 1;
                 if (inRange) {
                     // Start combat handles setting up turns and UI
-                    combatManager.startCombat([gameState, meleeTarget]);
+                    // combatManager.startCombat([gameState, meleeTarget]); // Original
+                    initiateCombatWithGroup(meleeTarget); // New
                 } else {
                     logToConsole("Training Dummy is not in melee range.");
                 }
@@ -2059,9 +2094,11 @@ function startGame() {
     const backpackUpgradeDef = assetManager.getItem("large_backpack_upgrade");
     if (backpackUpgradeDef && backpackUpgradeDef.type === "containerUpgrade") {
         gameState.inventory.container.name = backpackUpgradeDef.name;
-        gameState.inventory.container.sizeLabel = "XL"; // Assuming XL, or get from itemDef
-        gameState.inventory.container.maxSlots = InventorySizes.XL;
-        logToConsole(`You've upgraded to a ${backpackUpgradeDef.name}! Capacity is now XL (24 slots).`);
+        // Use the sizeLabel from the item definition, and InventorySizes to get the maxSlots
+        const sizeLabel = backpackUpgradeDef.containerSizeLabel || "M"; // Default to M if not specified
+        gameState.inventory.container.sizeLabel = sizeLabel;
+        gameState.inventory.container.maxSlots = InventorySizes[sizeLabel] || InventorySizes.M; // Default to M if label invalid
+        logToConsole(`You've upgraded to a ${backpackUpgradeDef.name}! Capacity is now ${sizeLabel} (${gameState.inventory.container.maxSlots} slots).`);
     } else {
         logToConsole(`Using ${gameState.inventory.container.name}. Capacity: ${gameState.inventory.container.maxSlots} slots.`);
     }

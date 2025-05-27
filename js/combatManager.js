@@ -626,7 +626,8 @@ class CombatManager {
                 movementBonusApplied: defenderMovementBonus,
                 defenseSkillValue: 0, // No skill involved for "None" type defense
                 defenseSkillName: "Passive" // Or any other suitable descriptor
-            };        }
+            };
+        }
         const baseRoll = rollDie(20);
         let baseDefenseValue = 0;
         let defenseSkillName = "";
@@ -1131,6 +1132,27 @@ class CombatManager {
             if (document.getElementById('damageResult')) document.getElementById('damageResult').textContent = 'Damage: 0 (Miss)';
         }
 
+        // ADD LOGIC FOR THROWN WEAPON REMOVAL HERE
+        if (hit && attackType === 'ranged' && weapon && weapon.type && weapon.type.includes("thrown")) {
+            // Check which handSlot holds the thrown item
+            let thrownItemHandIndex = -1;
+            if (this.gameState.inventory.handSlots[0] && this.gameState.inventory.handSlots[0].id === weapon.id) {
+                thrownItemHandIndex = 0;
+            } else if (this.gameState.inventory.handSlots[1] && this.gameState.inventory.handSlots[1].id === weapon.id) {
+                thrownItemHandIndex = 1;
+            }
+
+            if (thrownItemHandIndex !== -1) {
+                const thrownItemName = this.gameState.inventory.handSlots[thrownItemHandIndex].name;
+                this.gameState.inventory.handSlots[thrownItemHandIndex] = null;
+                logToConsole(`ACTION: ${attackerName} threw ${thrownItemName}. Item removed from hand slot ${thrownItemHandIndex + 1}.`);
+                // No direct call to updateInventoryUI() here as it's in script.js
+                // The change to handSlots will be reflected next time inventory UI is updated.
+            } else {
+                logToConsole(`ERROR: Could not find thrown weapon ${weapon.name} in hand slots to remove.`);
+            }
+        }
+
         if (this.gameState.isInCombat) {
             const defenderIsPlayer = defender === this.gameState;
             let defenderActuallyDefeated = false;
@@ -1466,6 +1488,43 @@ class CombatManager {
         return coverBonus;
     }
 
+    getCharactersInBlastRadius(impactTile, burstRadiusTiles) {
+        const affectedCharacters = [];
+        const { x: impactX, y: impactY } = impactTile;
+
+        // Check player
+        if (this.gameState && this.gameState.playerPos) {
+            const player = this.gameState; // Player is the gameState object itself
+            const { x: playerX, y: playerY } = player.playerPos;
+            // Using Manhattan distance for grid-based radius
+            const distanceToPlayer = Math.abs(playerX - impactX) + Math.abs(playerY - impactY);
+            if (distanceToPlayer <= burstRadiusTiles) {
+                // Ensure player is alive before adding
+                if (player.health && player.health.torso && player.health.torso.current > 0 && player.health.head && player.health.head.current > 0) {
+                    affectedCharacters.push(player);
+                }
+            }
+        }
+
+        // Check NPCs
+        if (this.gameState && this.gameState.npcs) {
+            this.gameState.npcs.forEach(npc => {
+                if (npc && npc.mapPos) {
+                    const { x: npcX, y: npcY } = npc.mapPos;
+                    const distanceToNpc = Math.abs(npcX - impactX) + Math.abs(npcY - impactY);
+                    if (distanceToNpc <= burstRadiusTiles) {
+                        // Ensure NPC is alive before adding
+                        if (npc.health && npc.health.torso && npc.health.torso.current > 0 && npc.health.head && npc.health.head.current > 0) {
+                            affectedCharacters.push(npc);
+                        }
+                    }
+                }
+            });
+        }
+        // Log details for debugging
+        // console.log(`Impact at (${impactX}, ${impactY}), radius ${burstRadiusTiles}. Affected:`, affectedCharacters.map(c => c === this.gameState ? 'Player' : c.name));
+        return affectedCharacters;
+    }
 
     applyDamage(attacker, entity, bodyPartName, damageAmount, damageType, weapon, bulletNum = 0, totalBullets = 0) {
         const normalizedBodyPartName = bodyPartName.toLowerCase().replace(/\s/g, '');
