@@ -1544,7 +1544,7 @@ class CombatManager {
                 return;
             }
             part = this.gameState.health[normalizedBodyPartName];
-            const effectiveArmor = getArmorForBodyPart(normalizedBodyPartName);
+            const effectiveArmor = window.getArmorForBodyPart(normalizedBodyPartName, entity);
             const reducedDamage = Math.max(0, damageAmount - effectiveArmor);
 
             logToConsole(`DAMAGE${bulletPrefix}: ${attackerName}'s ${weaponName} deals ${reducedDamage} ${damageType} to Player's ${normalizedBodyPartName} (Raw: ${damageAmount}, Armor: ${effectiveArmor}).`);

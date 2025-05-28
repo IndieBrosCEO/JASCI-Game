@@ -1255,6 +1255,146 @@ async function testCombatInitiation() {
 // To run all tests: runAllBasicConnectionTests()
 // Individual tests can also be run: testPlayerMovement(), testDoorInteraction(), etc.
 
+async function testPlayerTakesDamageWithArmor() {
+    logToConsole("--- Running Player Takes Damage With Armor Test ---");
+    let testPassed = true;
+    let originalLogToConsole = window.logToConsole;
+    let loggedMessages = [];
+
+    // Spy on logToConsole
+    window.logToConsole = (message) => {
+        loggedMessages.push(message);
+        originalLogToConsole(message); // Call the original function as well
+    };
+
+    // Prerequisites
+    if (!assetManager || !assetManager.getItem('basic_vest')) {
+        logToConsole("Player Damage w/ Armor Test FAIL: AssetManager or 'basic_vest' not available.");
+        window.logToConsole = originalLogToConsole; return false;
+    }
+    if (!gameState.inventory.container) {
+        logToConsole("Player Damage w/ Armor Test FAIL: Inventory container not initialized.");
+        if (typeof InventoryContainer === 'function') gameState.inventory.container = new InventoryContainer("TestBackpack", "M"); else { window.logToConsole = originalLogToConsole; return false; }
+    }
+    if (!gameState.player || !gameState.player.wornClothing) {
+        logToConsole("Player Damage w/ Armor Test FAIL: gameState.player.wornClothing not initialized.");
+        window.logToConsole = originalLogToConsole; return false;
+    }
+    if (!gameState.health) {
+        logToConsole("Player Damage w/ Armor Test FAIL: gameState.health not initialized.");
+        if(typeof window.initializeHealth === 'function') window.initializeHealth(gameState); else { window.logToConsole = originalLogToConsole; return false; }
+    }
+     if (!combatManager || typeof combatManager.applyDamage !== 'function') {
+        logToConsole("Player Damage w/ Armor Test FAIL: combatManager or applyDamage not available.");
+        window.logToConsole = originalLogToConsole; return false;
+    }
+
+
+    // Equip 'basic_vest'
+    const vestDef = assetManager.getItem('basic_vest');
+    if (!vestDef.armorValue) { // armorValue might be on the item definition itself
+         logToConsole("Player Damage w/ Armor Test FAIL: 'basic_vest' has no armorValue defined.");
+         window.logToConsole = originalLogToConsole; return false;
+    }
+    // Ensure vest is not already equipped on this layer for a clean test
+    if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
+        window.unequipClothing(vestDef.layer);
+    }
+    // Add vest to inventory if not there
+    if (!gameState.inventory.container.items.find(item => item.id === 'basic_vest')) {
+        window.addItem(new Item(vestDef));
+    }
+    window.equipClothing(vestDef.name);
+    logToConsole("Equipped 'basic_vest'. Worn clothing: " + JSON.stringify(gameState.player.wornClothing));
+
+
+    // Set initial HP
+    gameState.health.torso.current = gameState.health.torso.max;
+    const initialHp = gameState.health.torso.current;
+    const rawDamage = 5;
+    const expectedArmor = window.getArmorForBodyPart('torso', gameState);
+    const expectedDamageTaken = Math.max(0, rawDamage - expectedArmor);
+    const expectedHpAfterDamage = initialHp - expectedDamageTaken;
+
+    logToConsole(`Initial HP: ${initialHp}, Raw Damage: ${rawDamage}, Expected Armor: ${expectedArmor}, Expected Damage Taken: ${expectedDamageTaken}, Expected HP After: ${expectedHpAfterDamage}`);
+
+    // Dummy attacker for the applyDamage function
+    const dummyAttacker = { name: 'Test Dummy Attacker', id: 'test_dummy_attacker' }; 
+    // The weapon object can be minimal for this test, only name is used in the log currently
+    const testWeapon = { name: 'TestClub' }; 
+
+    combatManager.applyDamage(dummyAttacker, gameState, 'torso', rawDamage, 'Bludgeoning', testWeapon);
+
+    const actualHpAfterDamage = gameState.health.torso.current;
+    logToConsole(`Actual HP after damage: ${actualHpAfterDamage}`);
+
+    // Check HP
+    if (actualHpAfterDamage !== expectedHpAfterDamage) {
+        logToConsole(`Player Damage w/ Armor Test FAILED: HP mismatch. Expected ${expectedHpAfterDamage}, got ${actualHpAfterDamage}.`);
+        testPassed = false;
+    }
+
+    // Check log for correct armor reporting
+    const damageLogMessage = loggedMessages.find(msg => msg.includes("DAMAGE") && msg.includes("to Player's torso") && msg.includes(`Armor: ${expectedArmor}`));
+    if (!damageLogMessage) {
+        logToConsole(`Player Damage w/ Armor Test FAILED: Damage log message with correct armor value (Armor: ${expectedArmor}) not found.`);
+        testPassed = false;
+    } else {
+        logToConsole(`Damage log found: "${damageLogMessage}"`);
+    }
+    
+    if(testPassed) {
+        logToConsole("Player Takes Damage With Armor Test PASSED!");
+    }
+
+    // Cleanup
+    if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
+        window.unequipClothing(vestDef.layer);
+    }
+    gameState.health.torso.current = initialHp; // Restore HP
+    window.logToConsole = originalLogToConsole; // Restore original logToConsole
+
+    return testPassed;
+}
+
+// Modify runAllBasicConnectionTests to include this new test
+// This assumes runAllBasicConnectionTests is already defined from previous steps.
+if (typeof runAllBasicConnectionTests === 'function') {
+    const existingRunnerSource = runAllBasicConnectionTests.toString();
+    if (!existingRunnerSource.includes('testPlayerTakesDamageWithArmor')) {
+        const originalRunAllTests = runAllBasicConnectionTests;
+        runAllBasicConnectionTests = async function() {
+            let overallResult = await originalRunAllTests(); // Run previous tests
+            
+            logToConsole("--- Running Player Takes Damage With Armor Test (from wrapper) ---");
+            if (!await testPlayerTakesDamageWithArmor()) overallResult = false;
+            
+            // Re-log final status (if the original runner had one, this might be redundant or replace it)
+            // This part might need to be adjusted based on how the original runner logs.
+            // For now, let's assume the original runner had its own final log.
+            // We'll just add our test. If the original runner's final log is conditional,
+            // this new 'overallResult' should be the one determining the final message.
+            return overallResult; 
+        }
+        logToConsole("Extended runAllBasicConnectionTests with testPlayerTakesDamageWithArmor.");
+    }
+} else {
+    // If runAllBasicConnectionTests doesn't exist, create a basic one.
+    async function runAllBasicConnectionTests() {
+        logToConsole("===== STARTING PLAYER DAMAGE WITH ARMOR TEST (NEW RUNNER) =====");
+        let allPassed = true;
+        if (!await testPlayerTakesDamageWithArmor()) allPassed = false;
+        logToConsole("===== PLAYER DAMAGE WITH ARMOR TEST (NEW RUNNER) COMPLETE =====");
+        if (allPassed) {
+            logToConsole("Player Damage With Armor Test (New Runner) PASSED!");
+        } else {
+            logToConsole("Player Damage With Armor Test (New Runner) FAILED. Check logs.");
+        }
+        return allPassed;
+    }
+    logToConsole("Created new runAllBasicConnectionTests with testPlayerTakesDamageWithArmor.");
+}
+
 async function testEquipArmorAndUpdateUI() {
     logToConsole("--- Running Equip Armor & UI Update Test ---");
     let testPassed = true;
