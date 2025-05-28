@@ -4,7 +4,9 @@
     "\\assets",
     "\\assets\\definitions",
     "\\assets\\maps",
-    "\\js"
+    "\\js",
+    "\\Maps"
   ],
+  "SelectedNode": "\\js\\combatManager.js",
   "PreviewInSolutionExplorer": false
 }

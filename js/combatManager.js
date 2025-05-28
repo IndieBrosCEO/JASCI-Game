@@ -317,7 +317,7 @@ class CombatManager {
             defenderDisplay.textContent = `Defender: ${defenderName}`;
         }
 
-        scheduleRender();
+        window.mapRenderer.scheduleRender();
 
         if (currentEntry.isPlayer) {
             this.promptPlayerAttackDeclaration();
@@ -364,7 +364,7 @@ class CombatManager {
             defenseTypeSelect.removeEventListener('change', this.defenseTypeChangeListener);
             this.defenseTypeChangeListener = null;
         }
-        scheduleRender(); // To clear highlights
+        window.mapRenderer.scheduleRender(); // To clear highlights
     }
 
     handleConfirmedAttackDeclaration() {
@@ -1015,7 +1015,7 @@ class CombatManager {
                         part.isDestroyed = false;
                     }
                 }
-                if (defender === this.gameState) { this.endCombat(); gameOver(); return; }
+                if (defender === this.gameState) { this.endCombat(); window.gameOver(); return; }
                 else {
                     this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== defender);
                     this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== defender);
@@ -1023,7 +1023,7 @@ class CombatManager {
                         logToConsole("All NPCs defeated after instant death headshot.");
                         this.endCombat(); return;
                     }
-                    scheduleRender();
+                    window.mapRenderer.scheduleRender();
                     this.nextTurn();
                     return;
                 }
@@ -1117,7 +1117,7 @@ class CombatManager {
                 logToConsole(`CRITICAL DAMAGE: ${defenderName}'s ${finalTargetPartKey} destroyed!`);
                 if (finalTargetPartKey === "head" || finalTargetPartKey === "torso") {
                     logToConsole(`DEFEATED: ${defenderName} has fallen!`);
-                    if (defender === this.gameState) { this.endCombat(); gameOver(); return; }
+                    if (defender === this.gameState) { this.endCombat(); window.gameOver(); return; }
                     else {
                         this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== defender);
                         this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== defender);
@@ -1125,7 +1125,7 @@ class CombatManager {
                             this.endCombat(); return;
                         }
                     }
-                    scheduleRender();
+                    window.mapRenderer.scheduleRender();
                 }
             }
         } else {
@@ -1171,8 +1171,8 @@ class CombatManager {
                     logToConsole(`DEFEATED: ${defeatedName} succumbed to wounds.`);
                     this.initiativeTracker = this.initiativeTracker.filter(entry => entry.entity !== defender);
                     this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== defender);
-                    if (defenderIsPlayer) { this.endCombat(); gameOver(); return; }
-                    scheduleRender();
+                    if (defenderIsPlayer) { this.endCombat(); window.gameOver(); return; }
+                    window.mapRenderer.scheduleRender();
                 }
             }
 
@@ -1243,9 +1243,9 @@ class CombatManager {
                             logToConsole(`DEFEATED: ${defenderName} has fallen after off-hand attack!`);
                             this.initiativeTracker = this.initiativeTracker.filter(entry => entry.entity !== defender);
                             this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== defender);
-                            if (defender === this.gameState) { this.endCombat(); gameOver(); return; }
+                            if (defender === this.gameState) { this.endCombat(); window.gameOver(); return; }
                             if (!this.initiativeTracker.some(e => !e.isPlayer)) { this.endCombat(); return; }
-                            scheduleRender();
+                            window.mapRenderer.scheduleRender();
                         }
                     } else {
                         logToConsole(`RESULT: DUAL WIELD Miss! ${attackerName}'s off-hand ${offHandWeapon.name} fails to strike ${defenderName}.`);
@@ -1561,7 +1561,7 @@ class CombatManager {
                     logToConsole(`CRISIS: Player's ${normalizedBodyPartName} is critically injured! Treat within 3 turns.`);
                 }
             }
-            renderHealthTable();
+            window.renderHealthTable(entity);
         } else { // NPC victim
             if (!entity.health || !entity.health[normalizedBodyPartName]) {
                 logToConsole(`Error: ${entityName} health data missing for body part: ${normalizedBodyPartName}`);
@@ -1677,7 +1677,7 @@ class CombatManager {
             npc.movedThisTurn = true;
             logToConsole(`ACTION: ${npc.name} moves to (${npc.mapPos.x}, ${npc.mapPos.y}). MP Left: ${npc.currentMovementPoints}`);
             this.gameState.attackerMapPos = { ...npc.mapPos }; // Update attacker position for rendering
-            scheduleRender();
+            window.mapRenderer.scheduleRender();
         }
         return moved;
     }
@@ -1809,7 +1809,7 @@ class CombatManager {
             if (damageResultEl) damageResultEl.textContent = 'Damage: -';
             this.gameState.attackerMapPos = null; // Clear attacker position on combat end
             this.gameState.defenderMapPos = null; // Clear defender position on combat end
-            scheduleRender(); // Re-render to remove highlights
+            window.mapRenderer.scheduleRender(); // Re-render to remove highlights
         }
     }
 }

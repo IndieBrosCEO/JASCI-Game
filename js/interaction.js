@@ -1,5 +1,4 @@
 // js/interaction.js
-let assetManagerInstance = null;
 
 const DOOR_OPEN_MAP = {
     "WDH": "WOH", "WDV": "WOV", "MDH": "MOH", "MDV": "MOV",
@@ -84,10 +83,22 @@ function _performAction(action, it) {
 // --- Public API via window.interaction ---
 window.interaction = {
     initInteraction: function (assetMgr) {
-        assetManagerInstance = assetMgr;
+        console.log("Attempting to initialize Interaction system's assetManagerInstance.");
+        if (assetMgr) {
+            assetManagerInstance = assetMgr;
+            console.log("Interaction system's assetManagerInstance has been SET.", assetManagerInstance);
+            if (assetManagerInstance && typeof assetManagerInstance.getTileset === 'function') {
+                console.log("assetManagerInstance appears to be a valid AssetManager.");
+            } else {
+                console.error("assetManagerInstance was set, but it does NOT look like a valid AssetManager.", assetManagerInstance);
+            }
+        } else {
+            console.error("Interaction system initInteraction called WITHOUT an AssetManager. assetManagerInstance remains null.");
+        }
     },
 
     detectInteractableItems: function () {
+        console.log("detectInteractableItems called. Current assetManagerInstance:", assetManagerInstance);
         const R = 1;
         const { x: px, y: py } = gameState.playerPos; // Assumes gameState is global
         gameState.interactableItems = [];

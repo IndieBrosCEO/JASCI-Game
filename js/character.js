@@ -166,7 +166,12 @@ function getArmorForBodyPart(bodyPartName, character) {
     let totalArmor = 0;
     // gameState.js initializes gameState.player.wornClothing
     // So if 'character' is gameState, then character.player.wornClothing is the path.
-    const wornClothingSource = character.player && character.player.wornClothing ? character.player.wornClothing : character.wornClothing;
+    let wornClothingSource = null;
+    if (character === gameState && character.player) {
+        wornClothingSource = character.player.wornClothing;
+    } else if (character && character.wornClothing) {
+        wornClothingSource = character.wornClothing;
+    }
 
     if (!wornClothingSource) {
         return 0;
@@ -293,3 +298,15 @@ function gameOver(character) {
 // Making functions available for calling from HTML via script.js wrappers
 // or for direct use if modules were fully implemented.
 // No explicit exports needed due to current script loading model.
+
+window.updateSkill = updateSkill;
+window.updateStat = updateStat;
+window.renderTables = renderTables;
+window.renderCharacterStatsSkillsAndWornClothing = renderCharacterStatsSkillsAndWornClothing;
+window.initializeHealth = initializeHealth;
+window.getArmorForBodyPart = getArmorForBodyPart;
+window.updateHealthCrisis = updateHealthCrisis;
+window.applyTreatment = applyTreatment;
+window.renderHealthTable = renderHealthTable;
+window.formatBodyPartName = formatBodyPartName;
+window.gameOver = gameOver;

@@ -22,6 +22,7 @@ class AssetManager {
         this.tilesets = {};
         this.itemsById = {};
         this.npcsById = {};
+        let tempItemsById = {};
 
         const definitionFiles = ['tileset.json', 'items.json', 'npcs.json', 'clothing.json']; // Added clothing.json
 
@@ -37,17 +38,12 @@ class AssetManager {
                 if (filename === 'tileset.json') {
                     this.tilesets = parsedJson;
                 } else if (filename === 'items.json') {
-                    this.itemsById = Object.fromEntries(parsedJson.map(item => [item.id, item]));
+                    parsedJson.forEach(item => { tempItemsById[item.id] = item; });
                 } else if (filename === 'npcs.json') {
                     this.npcsById = Object.fromEntries(parsedJson.map(npc => [npc.id, npc]));
                 } else if (filename === 'clothing.json') {
                     if (Array.isArray(parsedJson)) {
-                        parsedJson.forEach(item => {
-                            if (this.itemsById[item.id]) {
-                                console.warn(`AssetManager: Item ID ${item.id} from clothing.json already exists in itemsById. Overwriting.`);
-                            }
-                            this.itemsById[item.id] = item;
-                        });
+                        parsedJson.forEach(item => { tempItemsById[item.id] = item; });
                     } else {
                         console.warn(`AssetManager: clothing.json for ${filename} was not an array. Skipping merge.`);
                     }
@@ -83,12 +79,7 @@ class AssetManager {
                     console.log("User tileset.json loaded, replacing base tileset.");
                 } else if (filename === 'items.json') {
                     if (Array.isArray(parsedJson)) {
-                        parsedJson.forEach(item => {
-                            if (this.itemsById[item.id]) {
-                                console.warn(`AssetManager: User item ID ${item.id} from items.json already exists. Overwriting.`);
-                            }
-                            this.itemsById[item.id] = item; // Add/override items
-                        });
+                        parsedJson.forEach(item => { tempItemsById[item.id] = item; });
                         console.log("User items.json loaded, items merged/overridden.");
                     } else {
                         console.warn(`User items.json for ${filename} was not an array. Skipping merge.`);
@@ -107,12 +98,7 @@ class AssetManager {
                     }
                 } else if (filename === 'clothing.json') {
                     if (Array.isArray(parsedJson)) {
-                        parsedJson.forEach(item => {
-                            if (this.itemsById[item.id]) {
-                                console.warn(`AssetManager: User item ID ${item.id} from clothing.json already exists in itemsById. Overwriting.`);
-                            }
-                            this.itemsById[item.id] = item;
-                        });
+                        parsedJson.forEach(item => { tempItemsById[item.id] = item; });
                         console.log("User clothing.json loaded, items merged/overridden into itemsById.");
                     } else {
                         console.warn(`User clothing.json for ${filename} was not an array. Skipping merge.`);
@@ -123,6 +109,7 @@ class AssetManager {
                 console.error(`Failed to load or process user definition file ${filename}:`, error);
             }
         }
+        this.itemsById = tempItemsById;
         console.log("User-generated content definition loading complete.");
     }
 

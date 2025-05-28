@@ -116,6 +116,21 @@ function calculateDefenseRoll(defender, defenseType, attackerWeapon, actionConte
     };
 }
 
+function handleMapSelectionChangeWrapper(mapId) {
+    if (window.mapRenderer && typeof window.mapRenderer.handleMapSelectionChange === 'function') {
+        // It's an async function, but the onchange attribute won't await it.
+        // This is usually fine for UI event handlers.
+        window.mapRenderer.handleMapSelectionChange(mapId);
+    } else {
+        console.error("window.mapRenderer.handleMapSelectionChange is not available.");
+        // Optionally, provide user feedback here if critical
+        const errorDisplay = document.getElementById('errorMessageDisplay');
+        if (errorDisplay) {
+            errorDisplay.textContent = "Error: Map changing function is not available.";
+        }
+    }
+}
+
 /**************************************************************
  * New Map System Functions
  **************************************************************/
@@ -173,7 +188,7 @@ function move(direction) {
         logToConsole("No movement points remaining. End your turn (press 't').");
         return;
     }
-    const currentMap = getCurrentMapData(); // Use getter from mapRenderer.js
+    const currentMap = window.mapRenderer.getCurrentMapData(); // Use getter from mapRenderer.js
     if (!currentMap || !currentMap.dimensions) {
         logToConsole("Cannot move: Map data not loaded.");
         return;
@@ -186,22 +201,22 @@ function move(direction) {
         case 'up':
         case 'w':
         case 'ArrowUp':
-            if (newPos.y > 0 && isPassable(getCollisionTileAt(newPos.x, newPos.y - 1))) newPos.y--;
+            if (newPos.y > 0 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x, newPos.y - 1))) newPos.y--;
             break;
         case 'down':
         case 's':
         case 'ArrowDown':
-            if (newPos.y < height - 1 && isPassable(getCollisionTileAt(newPos.x, newPos.y + 1))) newPos.y++;
+            if (newPos.y < height - 1 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x, newPos.y + 1))) newPos.y++;
             break;
         case 'left':
         case 'a':
         case 'ArrowLeft':
-            if (newPos.x > 0 && isPassable(getCollisionTileAt(newPos.x - 1, newPos.y))) newPos.x--;
+            if (newPos.x > 0 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x - 1, newPos.y))) newPos.x--;
             break;
         case 'right':
         case 'd':
         case 'ArrowRight':
-            if (newPos.x < width - 1 && isPassable(getCollisionTileAt(newPos.x + 1, newPos.y))) newPos.x++;
+            if (newPos.x < width - 1 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x + 1, newPos.y))) newPos.x++;
             break;
         default:
             return;
@@ -215,246 +230,26 @@ function move(direction) {
     gameState.playerMovedThisTurn = true; // CRITICAL: Set player movement flag
     logToConsole(`Moved to (${newPos.x}, ${newPos.y}). Moves left: ${gameState.movementPointsRemaining}`);
     updateTurnUI();
-    scheduleRender(); // Replaced renderMapLayers
-    detectInteractableItems();
-    showInteractableItems();
+    window.mapRenderer.scheduleRender(); // Replaced renderMapLayers
+    window.interaction.detectInteractableItems();
+    window.interaction.showInteractableItems();
 }
 
 /**************************************************************
  * Interaction & Action Functions
  **************************************************************/
-function detectInteractableItems() {
-    const R = 1; // Radius
-    const { x: px, y: py } = gameState.playerPos;
-    gameState.interactableItems = [];
-
-    const currentMap = getCurrentMapData(); // Use getter
-    if (!currentMap || !currentMap.layers || !currentMap.dimensions) return;
-
-    const mapHeight = currentMap.dimensions.height;
-    const mapWidth = currentMap.dimensions.width;
-
-    for (let y = Math.max(0, py - R); y <= Math.min(mapHeight - 1, py + R); y++) {
-        for (let x = Math.max(0, px - R); x <= Math.min(mapWidth - 1, px + R); x++) {
-            let tileId = null;
-            // Check item layer first, then building layer for interactables
-            if (currentMap.layers.item?.[y]?.[x]) {
-                tileId = currentMap.layers.item[y][x];
-            } else if (currentMap.layers.building?.[y]?.[x]) {
-                tileId = currentMap.layers.building[y][x];
-            }
-
-            if (!tileId) continue;
-
-            const tileDef = assetManager.tilesets[tileId];
-            if (tileDef && tileDef.tags && tileDef.tags.includes("interactive")) {
-                gameState.interactableItems.push({ x, y, id: tileId });
-            }
-        }
-    }
-}
-function showInteractableItems() {
-    const list = document.getElementById("itemList");
-    list.innerHTML = "";
-
-    gameState.interactableItems.forEach((it, idx) => {
-        const div = document.createElement("div");
-        const tileDef = assetManager.tilesets[it.id] || { name: it.id }; // Use assetManager.tilesets
-        div.textContent = `${idx + 1}. ${tileDef.name}`;
-
-        // Highlight the currently selected
-        if (idx === gameState.selectedItemIndex) {
-            div.classList.add("selected");
-        }
-
-        // Bind click to select
-        div.onclick = () => selectItem(idx);
-        list.appendChild(div);
-    });
-}
-
-
-// Select an interactable item by its number/index
-function selectItem(idx) {
-    if (idx >= 0 && idx < gameState.interactableItems.length) {
-        gameState.selectedItemIndex = idx;
-        showInteractableItems();
-        updateMapHighlight();   // if you also want to flash the map tile
-    }
-}
-
-// Get a list of possible actions based on the interactable item type
-function getActionsForItem(it) {
-    const tileDef = assetManager.tilesets[it.id]; // Use assetManager.tilesets
-    if (!tileDef) return ["Cancel"];
-
-    const tags = tileDef.tags || [];
-    const actions = ["Cancel"];
-
-    if (tags.includes("door") || tags.includes("window")) {
-        if (tags.includes("closed")) actions.push("Open");
-        if (tags.includes("open")) actions.push("Close");
-        if (tags.includes("breakable")) actions.push("Break Down");
-    }
-
-    if (tags.includes("container")) {
-        actions.push("Inspect", "Loot");
-    }
-
-    return actions;
-}
-// Select an action from the displayed action list
-function selectAction(number) {
-    const actionList = document.getElementById('actionList');
-    if (!actionList) return;
-    const actions = actionList.children;
-    if (number >= 0 && number < actions.length) {
-        gameState.selectedActionIndex = number;
-        Array.from(actions).forEach((action, index) => {
-            action.classList.toggle('selected', index === gameState.selectedActionIndex);
-        });
-    }
-}
-
-// Show the available actions for the selected item
-function interact() {
-    if (gameState.selectedItemIndex === -1
-        || gameState.selectedItemIndex >= gameState.interactableItems.length)
-        return;
-
-    const item = gameState.interactableItems[gameState.selectedItemIndex];
-    const actions = getActionsForItem(item);
-    const actionList = document.getElementById('actionList');
-    if (!actionList) return;
-
-    actionList.innerHTML = '';
-    gameState.selectedActionIndex = -1;
-    gameState.isActionMenuActive = true;
-
-    actions.forEach((action, index) => {
-        const el = document.createElement("div");
-        el.textContent = `${index + 1}. ${action}`;
-        el.classList.add("action-item");
-
-        // ← Remove the '+' here
-        el.onclick = () => selectAction(index);
-
-        actionList.appendChild(el);
-    });
-}
+// All interaction functions previously here (detectInteractableItems, showInteractableItems, 
+// selectItem, getActionsForItem, selectAction, interact, performAction, cancelActionSelection)
+// have been moved to js/interaction.js and are accessed via window.interaction.
 
 // Perform the action selected by the player
 function performSelectedAction() {
-    if (gameState.selectedActionIndex === -1) return;
-
-    const actionList = document.getElementById('actionList');
-    if (!actionList) return;
-
-    const selectedActionElement = actionList.children[gameState.selectedActionIndex];
-    if (!selectedActionElement) return;
-
-    const action = selectedActionElement.textContent.split('. ')[1];
-    const item = gameState.interactableItems[gameState.selectedItemIndex];
-    logToConsole(`Performing action: ${action} on ${item.id} at (${item.x}, ${item.y})`);
-
-    // If it's "Cancel", do it for free
-    if (action === "Cancel") {
-        performAction(action, item);
-    }
-    // Otherwise require an action point
-    else if (gameState.actionPointsRemaining > 0) {
-        gameState.actionPointsRemaining--;
-        updateTurnUI();
-        performAction(action, item);
+    // Ensure that the call is made to the performSelectedAction in js/interaction.js
+    if (window.interaction && typeof window.interaction.performSelectedAction === 'function') {
+        window.interaction.performSelectedAction();
     } else {
-        logToConsole("No actions left for this turn.");
+        console.error("window.interaction.performSelectedAction is not available.");
     }
-
-    cancelActionSelection();
-}
-
-// Closed → Open
-const DOOR_OPEN_MAP = {
-    "WDH": "WOH",
-    "WDV": "WOV",
-    "MDH": "MOH",
-    "MDV": "MOV",
-    "WinCH": "WinOH",
-    "WinCV": "WinOV"
-};
-
-// Open → Closed (automatically built from DOOR_OPEN_MAP)
-const DOOR_CLOSE_MAP = Object.fromEntries(
-    Object.entries(DOOR_OPEN_MAP).map(([closed, open]) => [open, closed])
-);
-
-// Any state → Broken
-const DOOR_BREAK_MAP = {
-    // Wood doors
-    "WDH": "WDB",
-    "WDV": "WDB",
-    "WOH": "WDB",
-    "WOV": "WDB",
-
-    // Metal doors
-    "MDH": "MDB",
-    "MDV": "MDB",
-    "MOH": "MDB",
-    "MOV": "MDB",
-
-    // Windows (both closed and open variants)
-    "WinCH": "WinB",
-    "WinCV": "WinB",
-    "WinOH": "WinB",
-    "WinOV": "WinB"
-};
-
-function performAction(action, it) {
-    const { x, y, id } = it;
-    const currentMap = getCurrentMapData(); // Use getter
-    if (!currentMap || !currentMap.layers.building) {
-        logToConsole("Error: Building layer not found in current map data.");
-        return;
-    }
-    const B = currentMap.layers.building;
-    let targetTileId = B[y]?.[x]; // Safely access tile ID
-
-    if (!targetTileId) {
-        logToConsole(`Error: No building tile found at ${x},${y} to perform action.`);
-        return;
-    }
-
-    const tileName = assetManager.tilesets[id]?.name || id; // Use name from tileset
-
-    if (action === "Open" && DOOR_OPEN_MAP[targetTileId]) {
-        B[y][x] = DOOR_OPEN_MAP[targetTileId];
-        logToConsole(`Opened ${tileName}`);
-    }
-    else if (action === "Close" && DOOR_CLOSE_MAP[targetTileId]) {
-        B[y][x] = DOOR_CLOSE_MAP[targetTileId];
-        logToConsole(`Closed ${tileName}`);
-    }
-    else if (action === "Break Down" && DOOR_BREAK_MAP[targetTileId]) {
-        B[y][x] = DOOR_BREAK_MAP[targetTileId];
-        logToConsole(`Broke ${tileName}`);
-    }
-    else if (action === "Inspect" || action === "Loot") {
-        logToConsole(`${action}ing ${tileName}`);
-    }
-    // redraw...
-    scheduleRender();
-    detectInteractableItems();
-    showInteractableItems();
-    updateMapHighlight();
-}
-
-
-// Cancel the current action selection
-function cancelActionSelection() {
-    gameState.isActionMenuActive = false;
-    const actionList = document.getElementById('actionList');
-    if (actionList) actionList.innerHTML = '';
-    updateMapHighlight();
 }
 
 /**************************************************************
@@ -497,17 +292,17 @@ function renderCharacterInfo() {
 
     // Call the function from character.js to render stats, skills, and worn clothing
     // gameState is passed as the 'character' object for the player.
-    renderCharacterStatsSkillsAndWornClothing(gameState, characterInfoElement);
+    window.renderCharacterStatsSkillsAndWornClothing(gameState, characterInfoElement);
 }
 
 // Wrapper functions for HTML onchange events
 function handleUpdateStat(name, value) {
-    updateStat(name, value, gameState); // from js/character.js
+    window.updateStat(name, value, gameState); // from js/character.js
     renderCharacterInfo(); // Re-render the relevant parts of character info
 }
 
 function handleUpdateSkill(name, value) {
-    updateSkill(name, value, gameState); // from js/character.js
+    window.updateSkill(name, value, gameState); // from js/character.js
     // No direct need to call renderCharacterInfo unless total skill points display needs update
     // The skill point display is updated directly by updateSkill.
 }
@@ -575,21 +370,21 @@ function handleKeyDown(event) {
             case 'ArrowUp': case 'w':
                 if (gameState.inventory.cursor > 0) {
                     gameState.inventory.cursor--;
-                    renderInventoryMenu(); // Re-render to update selection highlight
+                    window.renderInventoryMenu(); // Re-render to update selection highlight
                 }
                 event.preventDefault(); return;
             case 'ArrowDown': case 's':
                 // Use currentlyDisplayedItems for correct length check
                 if (gameState.inventory.currentlyDisplayedItems && gameState.inventory.cursor < gameState.inventory.currentlyDisplayedItems.length - 1) {
                     gameState.inventory.cursor++;
-                    renderInventoryMenu(); // Re-render to update selection highlight
+                    window.renderInventoryMenu(); // Re-render to update selection highlight
                 }
                 event.preventDefault(); return;
             case 'Enter': case 'f':
-                interactInventoryItem();
+                window.interactInventoryItem();
                 event.preventDefault(); return;
             case 'i': case 'I': // Toggle inventory also handled below if not open
-                toggleInventoryMenu();
+                window.toggleInventoryMenu();
                 // clearInventoryHighlight(); // toggleInventoryMenu handles this when closing
                 event.preventDefault(); return;
             default:
@@ -598,7 +393,7 @@ function handleKeyDown(event) {
     }
 
     if ((event.key === 'i' || event.key === 'I') && !gameState.inventory.open) {
-        toggleInventoryMenu();
+        window.toggleInventoryMenu();
         event.preventDefault(); return;
     }
 
@@ -612,7 +407,7 @@ function handleKeyDown(event) {
                 event.preventDefault(); return;
             default:
                 if (event.key >= '1' && event.key <= '9') {
-                    selectItem(parseInt(event.key, 10) - 1);
+                    window.interaction.selectItem(parseInt(event.key, 10) - 1);
                     event.preventDefault(); return;
                 }
         }
@@ -637,9 +432,9 @@ function handleKeyDown(event) {
     switch (event.key) {
         case 'f': case 'F':
             if (gameState.isActionMenuActive) {
-                performSelectedAction();
+                performSelectedAction(); // This now calls window.interaction.performSelectedAction
             } else if (gameState.selectedItemIndex !== -1) {
-                interact();
+                window.interaction.interact();
             }
             event.preventDefault(); break;
         case 'r':
@@ -654,14 +449,14 @@ function handleKeyDown(event) {
             event.preventDefault(); break;
         case 'Escape':
             if (gameState.isActionMenuActive) {
-                cancelActionSelection();
+                window.interaction.cancelActionSelection();
                 event.preventDefault();
             }
             break;
         case '1': case '2': case '3': case '4':
         case '5': case '6': case '7': case '8': case '9':
             if (gameState.isActionMenuActive) {
-                selectAction(parseInt(event.key, 10) - 1);
+                window.interaction.selectAction(parseInt(event.key, 10) - 1);
                 event.preventDefault();
             }
             break;
@@ -691,7 +486,8 @@ async function initialize() { // Made async
     try {
         await assetManager.loadDefinitions();
         console.log("Asset definitions loaded.");
-        initMapRenderer(assetManager); // Initialize mapRenderer with assetManager.
+        window.interaction.initInteraction(assetManager);
+        window.mapRenderer.initMapRenderer(assetManager); // Initialize mapRenderer with assetManager.
 
         // Initialize gameState.inventory.container now that InventoryContainer is defined (from js/inventory.js)
         if (typeof InventoryContainer === 'function') {
@@ -701,7 +497,7 @@ async function initialize() { // Made async
             console.error("InventoryContainer constructor not found. Inventory not initialized.");
         }
 
-        await setupMapSelector(); // This function is now in mapRenderer.js
+        await window.mapRenderer.setupMapSelector(); // This function is now in mapRenderer.js
         console.log("Map selector setup complete.");
 
         // Load the initially selected map
@@ -723,27 +519,27 @@ async function initialize() { // Made async
             console.log(`Loading initial map: ${initialMapId}`);
             const loadedMapData = await assetManager.loadMap(initialMapId);
             if (loadedMapData) {
-                initializeCurrentMap(loadedMapData); // Initialize mapRenderer's currentMapData
+                window.mapRenderer.initializeCurrentMap(loadedMapData); // Initialize mapRenderer's currentMapData
                 gameState.layers = loadedMapData.layers; // Sync gameState.layers
                 gameState.playerPos = loadedMapData.startPos || { x: 2, y: 2 }; // Update playerPos
                 console.log("Initial map loaded:", loadedMapData.name);
             } else {
                 console.error(`Failed to load initial map: ${initialMapId}`);
-                initializeCurrentMap(null); // Ensure mapRenderer knows map is cleared
+                window.mapRenderer.initializeCurrentMap(null); // Ensure mapRenderer knows map is cleared
                 const errorDisplay = document.getElementById('errorMessageDisplay');
                 if (errorDisplay) errorDisplay.textContent = `Failed to load initial map: ${initialMapId}.`;
                 gameState.layers = { landscape: [], building: [], item: [], roof: [] }; // Clear gameState layers
             }
         } else {
             console.warn("No initial map selected or map selector is empty. No map loaded at startup.");
-            initializeCurrentMap(null); // Ensure mapRenderer knows map is cleared
+            window.mapRenderer.initializeCurrentMap(null); // Ensure mapRenderer knows map is cleared
             gameState.layers = { landscape: [], building: [], item: [], roof: [] }; // Clear gameState layers
         }
 
         // renderTables is now in js/character.js, call it with gameState
-        renderTables(gameState);
-        scheduleRender(); // Initial render of the map (or empty state)
-        updateInventoryUI(); // Initialize inventory display (now from js/inventory.js)
+        window.renderTables(gameState);
+        window.mapRenderer.scheduleRender(); // Initial render of the map (or empty state)
+        window.updateInventoryUI(); // Initialize inventory display (now from js/inventory.js)
 
 
     } catch (error) {
@@ -837,8 +633,8 @@ function startGame() {
     const characterInfoPanel = document.getElementById('character-info-panel');
     // const gameControls = document.getElementById('game-controls'); // This ID does not exist in index.html right-panel is used.
 
-    // Ensure currentMapData is loaded (now via getCurrentMapData())
-    let currentMap = getCurrentMapData(); // Use getter from mapRenderer.js
+    // Ensure currentMapData is loaded (now via window.mapRenderer.getCurrentMapData())
+    let currentMap = window.mapRenderer.getCurrentMapData(); // Use getter from mapRenderer.js
     if (!currentMap) {
         console.warn("startGame called but no map data loaded from mapRenderer. Attempting to load from selector.");
         const mapSelector = document.getElementById('mapSelector');
@@ -856,27 +652,27 @@ function startGame() {
         if (initialMapId) {
             assetManager.loadMap(initialMapId).then(loadedMapData => {
                 if (loadedMapData) {
-                    initializeCurrentMap(loadedMapData);
-                    currentMap = getCurrentMapData();    // Update local reference
+                    window.mapRenderer.initializeCurrentMap(loadedMapData);
+                    currentMap = window.mapRenderer.getCurrentMapData();    // Update local reference
                     if (currentMap) { // Check if currentMap is now valid
                         gameState.layers = currentMap.layers;
                         gameState.playerPos = currentMap.startPos || { x: 2, y: 2 };
-                        scheduleRender();
+                        window.mapRenderer.scheduleRender();
                         detectInteractableItems();
                         showInteractableItems();
                         logToConsole(`Map ${currentMap.name} loaded in startGame.`);
                     }
                 } else {
                     logToConsole(`Failed to load map ${initialMapId} in startGame.`);
-                    initializeCurrentMap(null);
+                    window.mapRenderer.initializeCurrentMap(null);
                 }
             }).catch(error => {
                 console.error(`Error loading map in startGame: ${error}`);
-                initializeCurrentMap(null);
+                window.mapRenderer.initializeCurrentMap(null);
             });
         } else {
             logToConsole("No map selected in startGame, map display might be empty.");
-            initializeCurrentMap(null);
+            window.mapRenderer.initializeCurrentMap(null);
         }
     } else {
         // Map is already loaded via initialize(), ensure layers and playerPos are synced
@@ -913,7 +709,7 @@ function startGame() {
             // For simplicity, if addItem can handle raw definitions, that's fine too.
             // Assuming Item constructor can take the definition object:
             const newItem = new Item(itemDef);
-            addItem(newItem);
+            window.addItem(newItem);
         } else {
             console.warn(`Clothing item definition not found for ID: ${itemId}`);
         }
@@ -972,7 +768,7 @@ function startGame() {
                     newItem.ammoType = itemDef.ammoType;
                     newItem.quantityPerBox = itemDef.quantity; // Assuming 'quantity' in JSON is per-box
                 }
-                addItem(newItem);
+                window.addItem(newItem);
             }
         } else {
             console.warn(`Weapon or ammo definition not found for ID: ${itemEntry.id}`);
@@ -1012,16 +808,16 @@ function startGame() {
 
     renderCharacterInfo(); // This now calls the specific rendering function from js/character.js
     gameState.gameStarted = true;
-    updateInventoryUI();
-    if (getCurrentMapData()) scheduleRender(); // Render if map is loaded
+    window.updateInventoryUI();
+    if (window.mapRenderer.getCurrentMapData()) window.mapRenderer.scheduleRender(); // Render if map is loaded
 
     // initializeHealth is now in js/character.js, call it with gameState
-    initializeHealth(gameState);
-    renderHealthTable(gameState); // Explicitly call to render after health is set up.
+    window.initializeHealth(gameState);
+    window.renderHealthTable(gameState); // Explicitly call to render after health is set up.
 
-    if (getCurrentMapData()) { // Only run these if a map is loaded
-        detectInteractableItems();
-        showInteractableItems();
+    if (window.mapRenderer.getCurrentMapData()) { // Only run these if a map is loaded
+        window.interaction.detectInteractableItems();
+        window.interaction.showInteractableItems();
     }
     startTurn();
 }
@@ -1032,9 +828,9 @@ document.addEventListener('DOMContentLoaded', initialize); // Changed to call ne
 // Make sure endTurn calls the correct updateHealthCrisis
 function endTurn() {
     logToConsole(`Turn ${gameState.currentTurn} ended.`);
-    updateHealthCrisis(gameState); // Pass gameState to the generalized function
+    window.updateHealthCrisis(gameState); // Pass gameState to the generalized function
     gameState.currentTurn++;
     startTurn();
-    scheduleRender();
+    window.mapRenderer.scheduleRender();
     updateTurnUI();
 }

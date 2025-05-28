@@ -1,4 +1,4 @@
-/**************************************************************
+ï»¿/**************************************************************
  * Inventory System Functions & Constructors
  **************************************************************/
 
@@ -265,7 +265,7 @@ function updateInventoryUI() {
             }
         }
         if (!hasWornItems) {
-            wornItemsList.textContent = "— Not wearing anything —";
+            wornItemsList.textContent = "Â— Not wearing anything Â—";
         }
     }
 }
@@ -277,7 +277,7 @@ function renderInventoryMenu() {
     list.innerHTML = "";
 
     if (!gameState.inventory.container) {
-        list.textContent = "— Inventory container not available —";
+        list.textContent = "Â— Inventory container not available Â—";
         return;
     }
 
@@ -295,7 +295,7 @@ function renderInventoryMenu() {
     );
 
     if (gameState.inventory.currentlyDisplayedItems.length === 0) {
-        list.textContent = "— empty —";
+        list.textContent = "Â— empty Â—";
         return;
     }
 
@@ -331,7 +331,7 @@ function toggleInventoryMenu() {
     }
 }
 
-// 12) “Use” selected item
+// 12) Â“UseÂ” selected item
 function interactInventoryItem() {
     if (!gameState.inventory.currentlyDisplayedItems || gameState.inventory.currentlyDisplayedItems.length === 0) return;
     if (!gameState.inventory.container) return;
@@ -377,3 +377,18 @@ function clearInventoryHighlight() {
     document.querySelectorAll("#inventoryList .selected")
         .forEach(el => el.classList.remove("selected"));
 }
+
+window.InventoryContainer = InventoryContainer;
+window.Item = Item;
+window.canAddItem = canAddItem;
+window.addItem = addItem;
+window.removeItem = removeItem;
+window.equipItem = equipItem;
+window.unequipItem = unequipItem;
+window.equipClothing = equipClothing;
+window.unequipClothing = unequipClothing;
+window.updateInventoryUI = updateInventoryUI;
+window.renderInventoryMenu = renderInventoryMenu;
+window.toggleInventoryMenu = toggleInventoryMenu;
+window.interactInventoryItem = interactInventoryItem;
+window.clearInventoryHighlight = clearInventoryHighlight;
