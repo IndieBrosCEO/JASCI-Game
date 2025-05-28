@@ -166,7 +166,12 @@ function getArmorForBodyPart(bodyPartName, character) {
     let totalArmor = 0;
     // gameState.js initializes gameState.player.wornClothing
     // So if 'character' is gameState, then character.player.wornClothing is the path.
-    const wornClothingSource = (character === gameState && character.player) ? character.player.wornClothing : character.wornClothing;
+    let wornClothingSource = null;
+    if (character === gameState && character.player) {
+        wornClothingSource = character.player.wornClothing;
+    } else if (character && character.wornClothing) { 
+        wornClothingSource = character.wornClothing;
+    }
 
     if (!wornClothingSource) {
         return 0;
