@@ -1561,7 +1561,7 @@ class CombatManager {
                     logToConsole(`CRISIS: Player's ${normalizedBodyPartName} is critically injured! Treat within 3 turns.`);
                 }
             }
-            window.renderHealthTable();
+            window.renderHealthTable(entity);
         } else { // NPC victim
             if (!entity.health || !entity.health[normalizedBodyPartName]) {
                 logToConsole(`Error: ${entityName} health data missing for body part: ${normalizedBodyPartName}`);
