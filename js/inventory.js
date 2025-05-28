@@ -377,3 +377,18 @@ function clearInventoryHighlight() {
     document.querySelectorAll("#inventoryList .selected")
         .forEach(el => el.classList.remove("selected"));
 }
+
+window.InventoryContainer = InventoryContainer;
+window.Item = Item;
+window.canAddItem = canAddItem;
+window.addItem = addItem;
+window.removeItem = removeItem;
+window.equipItem = equipItem;
+window.unequipItem = unequipItem;
+window.equipClothing = equipClothing;
+window.unequipClothing = unequipClothing;
+window.updateInventoryUI = updateInventoryUI;
+window.renderInventoryMenu = renderInventoryMenu;
+window.toggleInventoryMenu = toggleInventoryMenu;
+window.interactInventoryItem = interactInventoryItem;
+window.clearInventoryHighlight = clearInventoryHighlight;

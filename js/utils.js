@@ -162,3 +162,12 @@ function getSkillModifier(skillName, entity) {
 
 // Exporting for potential ES6 module usage later, though current structure is global.
 // export { logToConsole, rollDie, parseDiceNotation, rollDiceNotation, getSkillValue, getStatValue, getStatModifier, getSkillModifier };
+
+window.logToConsole = logToConsole;
+window.rollDie = rollDie;
+window.parseDiceNotation = parseDiceNotation;
+window.rollDiceNotation = rollDiceNotation;
+window.getSkillValue = getSkillValue;
+window.getStatValue = getStatValue;
+window.getStatModifier = getStatModifier;
+window.getSkillModifier = getSkillModifier;
