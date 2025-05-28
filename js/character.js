@@ -284,7 +284,8 @@ function formatBodyPartName(part) {
 
 // Game over logic placeholder, now accepts a character
 function gameOver(character) {
-    logToConsole(`GAME OVER for ${character.id || 'player'}.`);
+    const characterName = (character === gameState) ? 'Player' : (character.name || character.id || 'Unknown NPC');
+    logToConsole(`GAME OVER for ${characterName}.`);
     // Further game-over logic here
     // For player (gameState), this might mean stopping the game.
     // For NPCs, it might mean removing them from combat or the map.
