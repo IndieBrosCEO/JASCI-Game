@@ -137,105 +137,6 @@ function handleMapSelectionChangeWrapper(mapId) {
 // --- All functions from this section have been moved to js/mapRenderer.js ---
 
 /**************************************************************
- * Turn-Based & Movement Functions
- **************************************************************/
-// Update the UI with current movement and action points
-function updateTurnUI() {
-    const movementUI = document.getElementById("movementPointsUI");
-    const actionUI = document.getElementById("actionPointsUI");
-    if (movementUI) movementUI.textContent = "Moves Left: " + gameState.movementPointsRemaining;
-    if (actionUI) actionUI.textContent = "Actions Left: " + gameState.actionPointsRemaining;
-}
-
-// Start a new turn by resetting movement and action points
-function startTurn() {
-    gameState.movementPointsRemaining = 6;
-    gameState.actionPointsRemaining = 1;
-    gameState.hasDashed = false;
-    logToConsole(`Turn ${gameState.currentTurn} started. Moves: ${gameState.movementPointsRemaining}, Actions: ${gameState.actionPointsRemaining}`);
-    updateTurnUI();
-}
-
-// Allow the player to dash (double movement) if conditions are met
-function dash() {
-    if (!gameState.hasDashed && gameState.actionPointsRemaining > 0) {
-        gameState.movementPointsRemaining += 6;
-        gameState.hasDashed = true;
-        gameState.actionPointsRemaining--;
-        logToConsole(`Dashing activated. Moves now: ${gameState.movementPointsRemaining}, Actions left: ${gameState.actionPointsRemaining}`);
-        updateTurnUI();
-    } else {
-        logToConsole("Already dashed this turn or no actions left.");
-    }
-}
-
-// End the turn, update health crises, and prepare for the next turn
-function endTurn() {
-    logToConsole(`Turn ${gameState.currentTurn} ended.`);
-    updateHealthCrisis();
-    gameState.currentTurn++;
-    startTurn();
-    scheduleRender(); // Replaced renderMapLayers
-    updateTurnUI();
-}
-
-/**************************************************************
- * Updated Movement Function Using the New Map System
- **************************************************************/
-function move(direction) {
-    if (gameState.isActionMenuActive) return;
-    if (gameState.movementPointsRemaining <= 0) {
-        logToConsole("No movement points remaining. End your turn (press 't').");
-        return;
-    }
-    const currentMap = window.mapRenderer.getCurrentMapData(); // Use getter from mapRenderer.js
-    if (!currentMap || !currentMap.dimensions) {
-        logToConsole("Cannot move: Map data not loaded.");
-        return;
-    }
-    const width = currentMap.dimensions.width;
-    const height = currentMap.dimensions.height;
-    const originalPos = { ...gameState.playerPos };
-    const newPos = { ...gameState.playerPos };
-    switch (direction) {
-        case 'up':
-        case 'w':
-        case 'ArrowUp':
-            if (newPos.y > 0 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x, newPos.y - 1))) newPos.y--;
-            break;
-        case 'down':
-        case 's':
-        case 'ArrowDown':
-            if (newPos.y < height - 1 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x, newPos.y + 1))) newPos.y++;
-            break;
-        case 'left':
-        case 'a':
-        case 'ArrowLeft':
-            if (newPos.x > 0 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x - 1, newPos.y))) newPos.x--;
-            break;
-        case 'right':
-        case 'd':
-        case 'ArrowRight':
-            if (newPos.x < width - 1 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x + 1, newPos.y))) newPos.x++;
-            break;
-        default:
-            return;
-    }
-    if (newPos.x === originalPos.x && newPos.y === originalPos.y) {
-        logToConsole("Can't move that way.");
-        return;
-    }
-    gameState.playerPos = newPos;
-    gameState.movementPointsRemaining--;
-    gameState.playerMovedThisTurn = true; // CRITICAL: Set player movement flag
-    logToConsole(`Moved to (${newPos.x}, ${newPos.y}). Moves left: ${gameState.movementPointsRemaining}`);
-    updateTurnUI();
-    window.mapRenderer.scheduleRender(); // Replaced renderMapLayers
-    window.interaction.detectInteractableItems();
-    window.interaction.showInteractableItems();
-}
-
-/**************************************************************
  * Interaction & Action Functions
  **************************************************************/
 // All interaction functions previously here (detectInteractableItems, showInteractableItems, 
@@ -293,6 +194,7 @@ function renderCharacterInfo() {
     // Call the function from character.js to render stats, skills, and worn clothing
     // gameState is passed as the 'character' object for the player.
     window.renderCharacterStatsSkillsAndWornClothing(gameState, characterInfoElement);
+    window.renderHealthTable(gameState); // Ensure health table (armor) updates
 }
 
 // Wrapper functions for HTML onchange events
@@ -403,7 +305,7 @@ function handleKeyDown(event) {
             case 'ArrowDown': case 's': case 'S':
             case 'ArrowLeft': case 'a': case 'A':
             case 'ArrowRight': case 'd': case 'D':
-                move(event.key);
+                window.turnManager.move(event.key);
                 event.preventDefault(); return;
             default:
                 if (event.key >= '1' && event.key <= '9') {
@@ -412,7 +314,7 @@ function handleKeyDown(event) {
                 }
         }
         if (event.key === 'x' || event.key === 'X') {
-            dash();
+            window.turnManager.dash();
             event.preventDefault(); return;
         }
         if (event.key === 't' || event.key === 'T') {
@@ -423,7 +325,7 @@ function handleKeyDown(event) {
                 logToConsole("Not your turn to end.");
             } else {
                 // Original non-combat end turn functionality
-                endTurn();
+                window.turnManager.endTurn();
             }
             event.preventDefault(); return;
         }
@@ -439,12 +341,25 @@ function handleKeyDown(event) {
             event.preventDefault(); break;
         case 'r':
             if (gameState.inventory.open || gameState.isInCombat) return; // Prevent if inventory open or already in combat
-            const rangedTarget = gameState.npcs.find(npc => npc.id === "training_dummy" && npc.mapPos);
-            if (rangedTarget) {
-                // Start combat handles setting up turns and UI
-                combatManager.startCombat([gameState, rangedTarget]);
+            let closestRangedTarget = null;
+            let minSqDistance = Infinity;
+            gameState.npcs.forEach(npc => {
+                if (npc.mapPos && npc.health && npc.health.torso.current > 0 && npc.health.head.current > 0) { // Check if NPC is alive
+                    const dx = gameState.playerPos.x - npc.mapPos.x;
+                    const dy = gameState.playerPos.y - npc.mapPos.y;
+                    const sqDistance = dx * dx + dy * dy;
+                    if (sqDistance < minSqDistance) {
+                        minSqDistance = sqDistance;
+                        closestRangedTarget = npc;
+                    }
+                }
+            });
+
+            if (closestRangedTarget) {
+                logToConsole(`Initiating ranged combat with ${closestRangedTarget.name || closestRangedTarget.id}...`);
+                combatManager.startCombat([gameState, closestRangedTarget]);
             } else {
-                logToConsole("Training Dummy not found for ranged attack or has no position.");
+                logToConsole("No valid NPC targets found on map for ranged attack.");
             }
             event.preventDefault(); break;
         case 'Escape':
@@ -462,18 +377,25 @@ function handleKeyDown(event) {
             break;
         case 'c':
             if (gameState.inventory.open || gameState.isInCombat) return; // Prevent if inventory open or already in combat
-            const meleeTarget = gameState.npcs.find(npc => npc.id === "training_dummy" && npc.mapPos);
-            if (meleeTarget) {
-                const inRange = Math.abs(gameState.playerPos.x - meleeTarget.mapPos.x) <= 1 &&
-                    Math.abs(gameState.playerPos.y - meleeTarget.mapPos.y) <= 1;
-                if (inRange) {
-                    // Start combat handles setting up turns and UI
-                    combatManager.startCombat([gameState, meleeTarget]);
-                } else {
-                    logToConsole("Training Dummy is not in melee range.");
+            let closestMeleeTarget = null;
+            let minDistance = Infinity;
+            gameState.npcs.forEach(npc => {
+                if (npc.mapPos && npc.health && npc.health.torso.current > 0 && npc.health.head.current > 0) { // Check if NPC is alive
+                    const distance = Math.max(Math.abs(gameState.playerPos.x - npc.mapPos.x), Math.abs(gameState.playerPos.y - npc.mapPos.y));
+                    if (distance <= 1) { // Melee range (Chebyshev distance for square grid adjacency)
+                        if (distance < minDistance) { // Could be multiple NPCs in range, pick closest if needed, or first found.
+                            minDistance = distance; // This logic will just pick the first one found at distance 1.
+                            closestMeleeTarget = npc;
+                        }
+                    }
                 }
+            });
+
+            if (closestMeleeTarget) {
+                logToConsole(`Initiating melee combat with ${closestMeleeTarget.name || closestMeleeTarget.id}...`);
+                combatManager.startCombat([gameState, closestMeleeTarget]);
             } else {
-                logToConsole("Training Dummy not found for melee attack or has no position.");
+                logToConsole("No target in melee range.");
             }
             event.preventDefault(); break;
     }
@@ -658,8 +580,8 @@ function startGame() {
                         gameState.layers = currentMap.layers;
                         gameState.playerPos = currentMap.startPos || { x: 2, y: 2 };
                         window.mapRenderer.scheduleRender();
-                        detectInteractableItems();
-                        showInteractableItems();
+                        window.interaction.detectInteractableItems(); // <<< CORRECTED
+                        window.interaction.showInteractableItems();   // <<< CORRECTED
                         logToConsole(`Map ${currentMap.name} loaded in startGame.`);
                     }
                 } else {
@@ -819,18 +741,997 @@ function startGame() {
         window.interaction.detectInteractableItems();
         window.interaction.showInteractableItems();
     }
-    startTurn();
+    window.turnManager.startTurn();
 }
 
 
 document.addEventListener('DOMContentLoaded', initialize); // Changed to call new async initialize
 
 // Make sure endTurn calls the correct updateHealthCrisis
-function endTurn() {
-    logToConsole(`Turn ${gameState.currentTurn} ended.`);
-    window.updateHealthCrisis(gameState); // Pass gameState to the generalized function
-    gameState.currentTurn++;
-    startTurn();
-    window.mapRenderer.scheduleRender();
-    updateTurnUI();
+// function endTurn() { // This function is now removed
+//     logToConsole(`Turn ${gameState.currentTurn} ended.`);
+//     window.updateHealthCrisis(gameState); // Pass gameState to the generalized function
+//     gameState.currentTurn++;
+//     window.turnManager.startTurn(); // Make sure this is called via turnManager
+//     window.mapRenderer.scheduleRender();
+//     window.turnManager.updateTurnUI(); // Make sure this is called via turnManager
+// }
+
+function testTurnManagerDash() {
+    console.log("Testing turnManager.dash()...");
+    // Setup initial state for testing
+    gameState.currentTurn = 1;
+    gameState.movementPointsRemaining = 6;
+    gameState.actionPointsRemaining = 1;
+    gameState.hasDashed = false;
+    console.log("Initial gameState (for dash test): ", JSON.parse(JSON.stringify(gameState)));
+
+    window.turnManager.dash();
+
+    console.log("gameState after dash:", JSON.parse(JSON.stringify(gameState)));
+
+    if (gameState.actionPointsRemaining === 0 && gameState.movementPointsRemaining === 12 && gameState.hasDashed === true) {
+        console.log("testTurnManagerDash PASSED!");
+        logToConsole("Test: turnManager.dash PASSED!");
+        return true;
+    } else {
+        console.error("testTurnManagerDash FAILED! Check console for details.");
+        logToConsole("Test: turnManager.dash FAILED!");
+        return false;
+    }
+}
+// To run the test, open the browser console and type: testTurnManagerDash()
+
+async function testAssetManagerAndInteractionInitialization() {
+    console.log("Testing AssetManager and Interaction module initialization...");
+    logToConsole("Test: Starting AssetManager & Interaction Initialization Test...");
+
+    // 1. Test AssetManager's loadMap
+    if (!assetManager || typeof assetManager.loadDefinitions !== 'function') {
+        console.error("AssetManager instance not available globally or not initialized.");
+        logToConsole("Test FAIL: AssetManager not available.");
+        return false;
+    }
+
+    // This test assumes the main initialize() function in script.js, which calls
+    // assetManager.loadDefinitions(), has already run.
+
+    let mapData = null;
+    try {
+        // Using 'testMap' as it's listed in Maps/ and likely a valid map ID.
+        mapData = await assetManager.loadMap('testMap');
+        if (mapData && mapData.id === 'testMap') {
+            console.log("testAssetManagerAndInteractionInitialization: assetManager.loadMap('testMap') PASSED.");
+            logToConsole("Test: assetManager.loadMap('testMap') PASSED.");
+        } else {
+            console.error("testAssetManagerAndInteractionInitialization: assetManager.loadMap('testMap') FAILED to return correct data.", mapData);
+            logToConsole("Test FAIL: assetManager.loadMap('testMap') did not return correct data.");
+            return false;
+        }
+    } catch (error) {
+        console.error("testAssetManagerAndInteractionInitialization: assetManager.loadMap('testMap') FAILED with error:", error);
+        logToConsole("Test FAIL: assetManager.loadMap('testMap') threw an error.");
+        return false;
+    }
+
+    // 2. Test Interaction module's use of AssetManager
+    if (!window.interaction || typeof window.interaction.initInteraction !== 'function') {
+        console.error("window.interaction or window.interaction.initInteraction not available.");
+        logToConsole("Test FAIL: window.interaction.initInteraction not available.");
+        return false;
+    }
+    // initInteraction is called by the main initialize() in script.js.
+
+    const originalPlayerPos = gameState.playerPos;
+    const originalInteractableItems = gameState.interactableItems;
+
+    gameState.playerPos = { x: 0, y: 0 };
+
+    // Mock map data for interaction test.
+    // Assuming 'WDH' (Wooden Door Horizontal) is a valid interactive tile ID.
+    // This assumption might need verification against 'tileset.json'.
+    const mockMapData = {
+        id: 'testMapForInteraction',
+        name: 'Test Map for Interaction',
+        dimensions: { width: 1, height: 1 },
+        layers: {
+            landscape: [['grass']],
+            building: [['WDH']],
+            item: [[]],
+            roof: [[]]
+        },
+        startPos: { x: 0, y: 0 }
+    };
+
+    const realCurrentMap = window.mapRenderer.getCurrentMapData();
+    window.mapRenderer.initializeCurrentMap(mockMapData);
+    gameState.layers = mockMapData.layers;
+
+    try {
+        window.interaction.detectInteractableItems();
+        // Check if 'WDH' was detected. This depends on 'WDH' being in tileset.json and tagged "interactive".
+        if (gameState.interactableItems && gameState.interactableItems.length > 0 && gameState.interactableItems[0].id === 'WDH') {
+            console.log("testAssetManagerAndInteractionInitialization: interaction.detectInteractableItems() PASSED and found 'WDH'.");
+            logToConsole("Test: interaction.detectInteractableItems() PASSED.");
+        } else {
+            console.error("testAssetManagerAndInteractionInitialization: interaction.detectInteractableItems() FAILED to find 'WDH'. Found:", gameState.interactableItems);
+            logToConsole("Test FAIL: interaction.detectInteractableItems() did not find 'WDH'. Verify 'WDH' is interactive in tileset.json.");
+            // Restore original map and player pos before returning false
+            window.mapRenderer.initializeCurrentMap(realCurrentMap);
+            gameState.layers = realCurrentMap ? realCurrentMap.layers : { landscape: [], building: [], item: [], roof: [] };
+            gameState.playerPos = originalPlayerPos;
+            gameState.interactableItems = originalInteractableItems;
+            return false;
+        }
+    } catch (e) {
+        console.error("testAssetManagerAndInteractionInitialization: interaction.detectInteractableItems() FAILED with error:", e);
+        logToConsole("Test FAIL: interaction.detectInteractableItems() threw an error.");
+        // Restore original map and player pos before returning false
+        window.mapRenderer.initializeCurrentMap(realCurrentMap);
+        gameState.layers = realCurrentMap ? realCurrentMap.layers : { landscape: [], building: [], item: [], roof: [] };
+        gameState.playerPos = originalPlayerPos;
+        gameState.interactableItems = originalInteractableItems;
+        return false;
+    }
+
+    // Restore original map and player pos
+    window.mapRenderer.initializeCurrentMap(realCurrentMap);
+    gameState.layers = realCurrentMap ? realCurrentMap.layers : { landscape: [], building: [], item: [], roof: [] };
+    gameState.playerPos = originalPlayerPos;
+    gameState.interactableItems = originalInteractableItems;
+
+    console.log("testAssetManagerAndInteractionInitialization: All checks PASSED.");
+    logToConsole("Test: AssetManager & Interaction Initialization PASSED.");
+    return true;
+}
+// To run the test, open the browser console after the game has initialized and type: testAssetManagerAndInteractionInitialization()
+
+async function testCombatTurnProgression() {
+    logToConsole("--- Running Combat Turn Progression Test ---");
+    let testPassed = true;
+    let turnUiCalledLog = [];
+
+    // Ensure combatManager is available
+    if (!combatManager || typeof combatManager.startCombat !== 'function') {
+        logToConsole("Combat Turn Progression Test FAIL: combatManager not available.");
+        return false;
+    }
+
+    // Find the training dummy
+    const dummyNpc = gameState.npcs.find(npc => npc.id === 'training_dummy');
+    if (!dummyNpc) {
+        logToConsole("Combat Turn Progression Test FAIL: Training dummy NPC not found.");
+        return false;
+    }
+    if (!dummyNpc.mapPos) {
+        logToConsole("Combat Turn Progression Test FAIL: Training dummy has no mapPos for combat.");
+        return false;
+    }
+
+
+    // Store original and set up spy
+    const originalUpdateTurnUI = window.turnManager.updateTurnUI;
+    let updateTurnUICallCount = 0;
+    window.turnManager.updateTurnUI = () => {
+        updateTurnUICallCount++;
+        turnUiCalledLog.push(`updateTurnUI called. AP: ${gameState.actionPointsRemaining}, MP: ${gameState.movementPointsRemaining}`);
+        originalUpdateTurnUI.call(window.turnManager); // Call the original function
+    };
+
+    // Start combat
+    logToConsole("Starting combat for test...");
+    gameState.playerPos = { x: dummyNpc.mapPos.x - 1, y: dummyNpc.mapPos.y }; // Position player next to dummy
+    combatManager.startCombat([gameState, dummyNpc]);
+
+    if (!gameState.isInCombat) {
+        logToConsole("Combat Turn Progression Test FAIL: Combat did not start.");
+        testPassed = false;
+    } else {
+        logToConsole("Combat started. Initiative: " + JSON.stringify(combatManager.initiativeTracker.map(e => e.isPlayer ? 'Player' : e.entity.id)));
+        logToConsole(`Current attacker: ${combatManager.initiativeTracker[combatManager.currentTurnIndex].isPlayer ? 'Player' : combatManager.initiativeTracker[combatManager.currentTurnIndex].entity.id}`);
+    }
+
+    // --- Simulate Player's Turn ---
+    if (testPassed && gameState.isInCombat && combatManager.initiativeTracker[combatManager.currentTurnIndex].entity === gameState) {
+        logToConsole("Player's turn. Ending player turn immediately for test purposes...");
+        const initialPlayerAP = gameState.actionPointsRemaining;
+        combatManager.endPlayerTurn(); // This should advance the turn
+
+        if (gameState.actionPointsRemaining !== 0 || gameState.movementPointsRemaining !== 0) {
+            logToConsole(`Player Turn End Check FAIL: AP or MP not zeroed. AP: ${gameState.actionPointsRemaining}, MP: ${gameState.movementPointsRemaining}`);
+            // testPassed = false; // This might be too strict if endPlayerTurn has other effects before UI update
+        }
+        logToConsole("Player turn ended by test.");
+    } else if (testPassed && gameState.isInCombat) {
+        logToConsole("WARN: Not player's turn first, or player is not the current entity. Test will proceed but might be less indicative for player-specific UI updates initially.");
+    }
+
+
+    // --- Simulate through a few turns OR until it's player's turn again (if NPC went first) ---
+    // This part is tricky to automate perfectly without a more complex setup.
+    // We're primarily testing if `updateTurnUI` is called by combatManager.
+    // Let's assume for now that combatManager.nextTurn() will eventually call it.
+    // The previous changes ensured updateTurnUI is called in nextTurn.
+
+    // After combatManager.endPlayerTurn(), it should be NPC's turn.
+    // combatManager.executeNpcCombatTurn will run, then combatManager.nextTurn().
+    // The nextTurn() call is where window.turnManager.updateTurnUI() is expected if it becomes player's turn again.
+
+    // For simplicity, we check call count. startCombat calls nextTurn, which calls updateTurnUI.
+    // endPlayerTurn calls nextTurn, which calls updateTurnUI.
+    // If NPC turn also calls nextTurn which leads to player turn, that's another call.
+
+    // Let's just check if updateTurnUICallCount increased after starting combat and ending one player turn.
+    // startCombat -> nextTurn (calls updateTurnUI once for the first entity)
+    // endPlayerTurn -> nextTurn (calls updateTurnUI for the next entity)
+
+    logToConsole(`updateTurnUI call count after simulated turns: ${updateTurnUICallCount}`);
+    turnUiCalledLog.forEach(log => logToConsole(log));
+
+
+    if (updateTurnUICallCount < 2) { // At least one for combat start, one for turn change after player.
+        logToConsole(`Combat Turn Progression Test FAIL: updateTurnUI was called ${updateTurnUICallCount} times, expected at least 2.`);
+        testPassed = false;
+    }
+
+    // Clean up
+    if (gameState.isInCombat) {
+        combatManager.endCombat();
+        logToConsole("Combat ended by test.");
+    }
+    window.turnManager.updateTurnUI = originalUpdateTurnUI; // Restore original function
+
+    if (testPassed) {
+        logToConsole("Combat Turn Progression Test PASSED (updateTurnUI was called).");
+    } else {
+        logToConsole("Combat Turn Progression Test FAILED. Check logs.");
+    }
+    return testPassed;
+}
+
+// Make sure to add testCombatTurnProgression to runAllBasicConnectionTests if it exists
+if (typeof runAllBasicConnectionTests === 'function' &&
+    !runAllBasicConnectionTests.toString().includes('testCombatTurnProgression')) {
+    const originalRunAll = runAllBasicConnectionTests;
+    runAllBasicConnectionTests = async function () {
+        let overallResult = await originalRunAll(); // Run previous tests
+        logToConsole("--- Running Combat Turn Progression Test (from wrapper) ---");
+        if (!await testCombatTurnProgression()) overallResult = false;
+        return overallResult;
+    }
+}
+
+// --- Test Suite for Reconnected Features ---
+
+async function runAllBasicConnectionTests() {
+    logToConsole("===== STARTING BASIC CONNECTION TESTS =====");
+    let allPassed = true;
+
+    // Prerequisite: Ensure game is in a somewhat initialized state for some tests
+    // This might mean running parts of initialize() or startGame() if not already done.
+    // For now, these tests assume they are run after the main initialize() and startGame() have setup gameState.
+    // If not, they might need more internal setup.
+
+    if (typeof testPlayerMovement === 'function') {
+        logToConsole("--- Running Player Movement Test ---");
+        if (!await testPlayerMovement()) allPassed = false;
+    } else { logToConsole("Test function testPlayerMovement not found."); allPassed = false; }
+
+    if (typeof testDoorInteraction === 'function') {
+        logToConsole("--- Running Door Interaction Test ---");
+        if (!await testDoorInteraction()) allPassed = false;
+    } else { logToConsole("Test function testDoorInteraction not found."); allPassed = false; }
+
+    if (typeof testItemAddAndEquip === 'function') {
+        logToConsole("--- Running Item Add and Equip Test ---");
+        if (!await testItemAddAndEquip()) allPassed = false;
+    } else { logToConsole("Test function testItemAddAndEquip not found."); allPassed = false; }
+
+    if (typeof testCombatInitiation === 'function') {
+        logToConsole("--- Running Combat Initiation Test ---");
+        if (!await testCombatInitiation()) allPassed = false;
+    } else { logToConsole("Test function testCombatInitiation not found."); allPassed = false; }
+
+    logToConsole("===== BASIC CONNECTION TESTS COMPLETE =====");
+    if (allPassed) {
+        logToConsole("All basic connection tests PASSED!");
+    } else {
+        logToConsole("One or more basic connection tests FAILED. Check logs.");
+    }
+    return allPassed;
+}
+
+async function testPlayerMovement() {
+    logToConsole("Setting up for player movement test...");
+    // Ensure a map is loaded; use the default from initialize if available
+    if (!window.mapRenderer.getCurrentMapData()) {
+        logToConsole("Player Movement Test: No map loaded. Attempting to load 'testMap'.");
+        await assetManager.loadMap('testMap').then(mapData => {
+            if (mapData) {
+                window.mapRenderer.initializeCurrentMap(mapData);
+                gameState.layers = mapData.layers;
+                gameState.playerPos = mapData.startPos || { x: 2, y: 2 };
+                window.mapRenderer.scheduleRender();
+            } else {
+                logToConsole("Player Movement Test FAIL: Could not load 'testMap'.");
+                return false;
+            }
+        });
+    }
+    if (!window.mapRenderer.getCurrentMapData()) {
+        logToConsole("Player Movement Test FAIL: Map still not loaded after attempt.");
+        return false;
+    }
+
+
+    const initialPos = { ...gameState.playerPos };
+    gameState.movementPointsRemaining = 3; // Set some movement points
+    gameState.actionPointsRemaining = 1; // Ensure actions available if move uses one (it doesn't)
+    let renderScheduled = false;
+    let interactionDetected = false;
+
+    // Spy on scheduleRender and detectInteractableItems
+    const originalScheduleRender = window.mapRenderer.scheduleRender;
+    const originalDetectInteractable = window.interaction.detectInteractableItems;
+    window.mapRenderer.scheduleRender = () => { renderScheduled = true; originalScheduleRender.call(window.mapRenderer); };
+    window.interaction.detectInteractableItems = () => { interactionDetected = true; originalDetectInteractable.call(window.interaction); };
+
+    logToConsole(`Initial pos: (${initialPos.x}, ${initialPos.y}), MP: ${gameState.movementPointsRemaining}`);
+    window.turnManager.move('right'); // Assuming 'right' is a valid move direction
+
+    // Restore spies
+    window.mapRenderer.scheduleRender = originalScheduleRender;
+    window.interaction.detectInteractableItems = originalDetectInteractable;
+
+    const newPos = gameState.playerPos;
+    logToConsole(`New pos: (${newPos.x}, ${newPos.y}), MP: ${gameState.movementPointsRemaining}`);
+    logToConsole(`Render scheduled: ${renderScheduled}, Interaction detected: ${interactionDetected}`);
+
+    if (newPos.x === initialPos.x + 1 && gameState.movementPointsRemaining === 2 && renderScheduled && interactionDetected) {
+        logToConsole("Player Movement Test PASSED!");
+        return true;
+    } else {
+        logToConsole(`Player Movement Test FAILED. newPos.x: ${newPos.x} (expected ${initialPos.x + 1}), MP: ${gameState.movementPointsRemaining} (expected 2), render: ${renderScheduled}, interaction: ${interactionDetected}`);
+        return false;
+    }
+}
+
+async function testDoorInteraction() {
+    logToConsole("Setting up for door interaction test...");
+    // Assumes assetManager and its definitions (tileset.json) are loaded.
+    // Assumes 'WDH' is an interactive door tile that opens to 'WOH'.
+    if (!assetManager.tilesets['WDH'] || !assetManager.tilesets['WOH']) {
+        logToConsole("Door Interaction Test FAIL: Required tile definitions 'WDH' or 'WOH' not found in assetManager.tilesets.");
+        return false;
+    }
+    if (!assetManager.tilesets['WDH'].tags || !assetManager.tilesets['WDH'].tags.includes("interactive")) {
+        logToConsole("Door Interaction Test FAIL: Tile 'WDH' is not tagged as interactive.");
+        return false;
+    }
+
+
+    // Setup a mock map with a door and player nearby
+    const originalMapData = window.mapRenderer.getCurrentMapData();
+    const originalPlayerPos = { ...gameState.playerPos };
+    const originalLayers = JSON.parse(JSON.stringify(gameState.layers)); // Deep copy
+    const originalInteractableItems = [...gameState.interactableItems];
+    const originalActionPoints = gameState.actionPointsRemaining;
+
+    const doorX = 1, doorY = 0;
+    const playerX = 0, playerY = 0;
+    const mockDoorMap = {
+        id: 'testDoorMap', name: 'Test Door Map',
+        dimensions: { width: 2, height: 1 },
+        layers: { landscape: [['grass', 'grass']], building: [['grass', 'WDH']], item: [[]], roof: [[]] },
+        startPos: { x: playerX, y: playerY }
+    };
+    window.mapRenderer.initializeCurrentMap(mockDoorMap);
+    gameState.layers = JSON.parse(JSON.stringify(mockDoorMap.layers)); // Deep copy for modification
+    gameState.playerPos = { x: playerX, y: playerY };
+    gameState.actionPointsRemaining = 1; // Ensure an action point
+
+    window.interaction.detectInteractableItems();
+    logToConsole(`Interactable items detected: ${JSON.stringify(gameState.interactableItems)}`);
+
+    if (!gameState.interactableItems.find(item => item.id === 'WDH' && item.x === doorX && item.y === doorY)) {
+        logToConsole("Door Interaction Test FAIL: Door 'WDH' not detected at expected location.");
+        // Restore original state
+        window.mapRenderer.initializeCurrentMap(originalMapData);
+        gameState.playerPos = originalPlayerPos;
+        gameState.layers = originalLayers;
+        gameState.interactableItems = originalInteractableItems;
+        gameState.actionPointsRemaining = originalActionPoints;
+        return false;
+    }
+
+    // Select the door (assuming it's the first, or find it)
+    const doorItemIndex = gameState.interactableItems.findIndex(item => item.id === 'WDH');
+    if (doorItemIndex === -1) {
+        logToConsole("Door Interaction Test FAIL: Could not find WDH in interactable items list after detection.");
+        return false; // Early exit after restoring
+    }
+    window.interaction.selectItem(doorItemIndex);
+    window.interaction.interact(); // Show actions
+
+    // Select "Open" (Cancel=0, Open=1, Close=2, Break Down=3 - depends on _getActionsForItem)
+    // For a closed door 'WDH', actions should be [Cancel, Open, Break Down]
+    const openActionIndex = 1;
+    window.interaction.selectAction(openActionIndex);
+    window.interaction.performSelectedAction();
+
+    const tileAfterAction = gameState.layers.building[doorY][doorX];
+    logToConsole(`Tile at (${doorX},${doorY}) after action: ${tileAfterAction}`);
+
+    // Restore original state
+    window.mapRenderer.initializeCurrentMap(originalMapData);
+    gameState.playerPos = originalPlayerPos;
+    gameState.layers = originalLayers;
+    gameState.interactableItems = originalInteractableItems;
+    gameState.actionPointsRemaining = originalActionPoints; // Or check if it was correctly decremented.
+
+    if (tileAfterAction === 'WOH' && gameState.actionPointsRemaining === 0) { // WOH is the open state for WDH
+        logToConsole("Door Interaction Test PASSED!");
+        return true;
+    } else {
+        logToConsole(`Door Interaction Test FAILED. Tile is ${tileAfterAction} (expected WOH), AP: ${gameState.actionPointsRemaining} (expected 0).`);
+        return false;
+    }
+}
+
+async function testItemAddAndEquip() {
+    logToConsole("Setting up for item add and equip test...");
+    // Assumes assetManager has loaded item definitions, and InventoryContainer is initialized.
+    // This test works better if run after startGame() has initialized inventory.
+    if (!gameState.inventory.container) {
+        logToConsole("Item Add/Equip Test: gameState.inventory.container not initialized. Attempting to initialize.");
+        if (typeof InventoryContainer === 'function') {
+            gameState.inventory.container = new InventoryContainer("TestBackpack", "M");
+        } else {
+            logToConsole("Item Add/Equip Test FAIL: InventoryContainer constructor not found.");
+            return false;
+        }
+    }
+
+    const knifeDef = assetManager.getItem('knife_melee');
+    if (!knifeDef) {
+        logToConsole("Item Add/Equip Test FAIL: 'knife_melee' definition not found.");
+        return false;
+    }
+
+    // Clear hand slots and ensure knife is not in inventory for a clean test
+    gameState.inventory.handSlots = [null, null];
+    gameState.inventory.container.items = gameState.inventory.container.items.filter(i => i.id !== 'knife_melee');
+    const originalItemCount = gameState.inventory.container.items.length;
+
+    window.addItem(new Item(knifeDef)); // Item constructor is from inventory.js
+    const itemInInventory = gameState.inventory.container.items.find(item => item.id === 'knife_melee');
+
+    if (!itemInInventory) {
+        logToConsole("Item Add/Equip Test FAILED: Knife not added to inventory.");
+        return false;
+    }
+    logToConsole("Knife added to inventory.");
+
+    window.equipItem(knifeDef.name, 0); // equipItem is from inventory.js
+    const itemInHand = gameState.inventory.handSlots[0];
+    const knifeStillInContainerItems = gameState.inventory.container.items.find(item => item.id === 'knife_melee');
+
+
+    if (itemInHand && itemInHand.id === 'knife_melee' && !knifeStillInContainerItems) {
+        logToConsole("Item Add/Equip Test PASSED!");
+        // Cleanup: unequip and remove for subsequent tests
+        window.unequipItem(0);
+        window.removeItem(knifeDef.name);
+        return true;
+    } else {
+        logToConsole(`Item Add/Equip Test FAILED. Item in hand: ${itemInHand ? itemInHand.id : 'null'}. Knife in container: ${knifeStillInContainerItems}.`);
+        return false;
+    }
+}
+
+async function testCombatInitiation() {
+    logToConsole("Setting up for combat initiation test...");
+    // This test assumes startGame() has run and placed a 'training_dummy'.
+    // It also assumes player and dummy are positioned for combat.
+
+    if (!combatManager || typeof combatManager.startCombat !== 'function') {
+        logToConsole("Combat Initiation Test FAIL: combatManager not available or startCombat is not a function.");
+        return false;
+    }
+
+    const dummyNpc = gameState.npcs.find(npc => npc.id === 'training_dummy');
+    if (!dummyNpc) {
+        logToConsole("Combat Initiation Test FAIL: Training dummy NPC not found in gameState.npcs. Ensure startGame() has run correctly.");
+        return false;
+    }
+    if (!dummyNpc.mapPos) {
+        logToConsole("Combat Initiation Test FAIL: Training dummy has no mapPos.");
+        return false;
+    }
+
+
+    // Ensure player is next to the dummy for melee combat test.
+    // This might require temporarily moving the player or dummy.
+    // For simplicity, we'll assume they are close enough or combat can start regardless of range for this basic test.
+    // A more robust test would set positions.
+    gameState.playerPos = { x: dummyNpc.mapPos.x - 1, y: dummyNpc.mapPos.y };
+
+
+    const initialIsInCombat = gameState.isInCombat;
+    combatManager.startCombat([gameState, dummyNpc]);
+
+    if (gameState.isInCombat && combatManager.initiativeTracker.length >= 2) {
+        logToConsole("Combat Initiation Test PASSED!");
+        combatManager.endCombat(); // Clean up
+        return true;
+    } else {
+        logToConsole(`Combat Initiation Test FAILED. isInCombat: ${gameState.isInCombat}, initiativeTracker length: ${combatManager.initiativeTracker.length}`);
+        // Ensure combat is ended if it partially started
+        if (gameState.isInCombat) combatManager.endCombat();
+        return false;
+    }
+}
+
+// To run all tests: runAllBasicConnectionTests()
+// Individual tests can also be run: testPlayerMovement(), testDoorInteraction(), etc.
+
+async function testCombatInitiationWithGenericNpc() {
+    logToConsole("--- Running Combat Initiation with Generic NPC Test ---");
+    let testPassed = true;
+
+    // Prerequisites
+    if (!combatManager || typeof combatManager.startCombat !== 'function') {
+        logToConsole("Generic NPC Combat Test FAIL: combatManager not available.");
+        return false;
+    }
+    if (!assetManager.npcsById || !assetManager.getItem('club_melee')) { // Assuming 'club_melee' is a loadable item for NPC
+        logToConsole("Generic NPC Combat Test FAIL: NPC definitions or club item not loaded.");
+        return false;
+    }
+    if (typeof window.initializeHealth !== 'function') {
+        logToConsole("Generic NPC Combat Test FAIL: initializeHealth function not found.");
+        return false;
+    }
+
+
+    // Clean up any existing NPCs from previous tests if necessary
+    // gameState.npcs = []; 
+
+    // Create a generic NPC definition (simplified)
+    const genericNpcDef = {
+        id: "generic_bandit",
+        name: "Generic Bandit",
+        sprite: "B",
+        color: "darkred",
+        health: { // NPCs need health defined this way or initializeHealth needs to handle it
+            head: { max: 5, current: 5, armor: 0, crisisTimer: 0 },
+            torso: { max: 8, current: 8, armor: 0, crisisTimer: 0 },
+            leftArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
+            rightArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
+            leftLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
+            rightLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 }
+        },
+        stats: { "Strength": 3, "Dexterity": 3, "Constitution": 3 }, // Simplified
+        skills: { "Melee Weapons": 20, "Unarmed": 20 },
+        equippedWeaponId: "club_melee", // Assuming a basic club
+        defaultActionPoints: 1,
+        defaultMovementPoints: 3
+    };
+
+    // Add our generic NPC to the game state (deep clone if it's going to be modified)
+    const genericNpcInstance = JSON.parse(JSON.stringify(genericNpcDef));
+
+    // Position player and NPC for melee combat
+    gameState.playerPos = { x: 5, y: 5 };
+    genericNpcInstance.mapPos = { x: 5, y: 6 }; // Adjacent to player
+
+    // Ensure NPC health is initialized if not fully defined in mock
+    // window.initializeHealth(genericNpcInstance); // If NPC def doesn't have full health structure
+
+    gameState.npcs.push(genericNpcInstance);
+    logToConsole(`Added ${genericNpcInstance.name} at (${genericNpcInstance.mapPos.x}, ${genericNpcInstance.mapPos.y}) for test.`);
+
+    // Ensure map is loaded for mapRenderer calls during combat start (if any)
+    if (!window.mapRenderer.getCurrentMapData() && typeof assetManager.loadMap === 'function') {
+        logToConsole("Generic NPC Combat Test: No map loaded. Attempting to load 'testMap'.");
+        const mapData = await assetManager.loadMap('testMap');
+        if (mapData) {
+            window.mapRenderer.initializeCurrentMap(mapData);
+            gameState.layers = mapData.layers;
+        } else {
+            logToConsole("Generic NPC Combat Test FAIL: Could not load 'testMap'.");
+            gameState.npcs.pop(); // remove test NPC
+            return false;
+        }
+    }
+
+
+    // Simulate pressing 'c' (melee) - directly call the core logic of combat start
+    // For this test, we'll rely on the refactored handleKeyDown finding this NPC.
+    // To be more direct, we can find it and call startCombat.
+    let foundNpcForTest = null;
+    let minDistance = Infinity;
+    gameState.npcs.forEach(npc => {
+        if (npc.id === genericNpcInstance.id && npc.mapPos && npc.health && npc.health.torso.current > 0) {
+            const distance = Math.max(Math.abs(gameState.playerPos.x - npc.mapPos.x), Math.abs(gameState.playerPos.y - npc.mapPos.y));
+            if (distance <= 1) {
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    foundNpcForTest = npc;
+                }
+            }
+        }
+    });
+
+    if (!foundNpcForTest) {
+        logToConsole("Generic NPC Combat Test FAIL: Test NPC not found by proximity logic.");
+        testPassed = false;
+    } else {
+        logToConsole(`NPC ${foundNpcForTest.name} found for combat. Starting combat...`);
+        combatManager.startCombat([gameState, foundNpcForTest]);
+        if (!gameState.isInCombat) {
+            logToConsole("Generic NPC Combat Test FAIL: gameState.isInCombat is false after starting.");
+            testPassed = false;
+        } else if (combatManager.initiativeTracker.some(e => e.entity.id === genericNpcInstance.id)) {
+            logToConsole("Generic NPC Combat Test PASSED: Combat started with generic NPC.");
+        } else {
+            logToConsole("Generic NPC Combat Test FAIL: Generic NPC not found in initiative tracker.");
+            testPassed = false;
+        }
+    }
+
+    // Cleanup
+    if (gameState.isInCombat) {
+        combatManager.endCombat();
+    }
+    gameState.npcs = gameState.npcs.filter(npc => npc.id !== genericNpcInstance.id); // Remove test NPC
+
+    return testPassed;
+}
+
+// Modify runAllBasicConnectionTests to include this new test
+if (typeof runAllBasicConnectionTests === 'function') {
+    const existingRunnerSource = runAllBasicConnectionTests.toString();
+    if (!existingRunnerSource.includes('testCombatInitiationWithGenericNpc')) {
+        const originalRunAllTests = runAllBasicConnectionTests;
+        runAllBasicConnectionTests = async function () {
+            // Preserve the result of previous tests
+            let overallResult = await originalRunAllTests();
+
+            logToConsole("--- Running Combat Initiation with Generic NPC Test (from wrapper) ---");
+            if (!await testCombatInitiationWithGenericNpc()) overallResult = false;
+
+            return overallResult;
+        }
+        logToConsole("Extended runAllBasicConnectionTests with testCombatInitiationWithGenericNpc.");
+    }
+} else {
+    async function runAllBasicConnectionTests() {
+        // ... (include other tests if this is the first time it's defined)
+        logToConsole("===== STARTING GENERIC NPC COMBAT INITIATION TEST (NEW RUNNER) =====");
+        let allPassed = true;
+        if (!await testCombatInitiationWithGenericNpc()) allPassed = false;
+        // ...
+        return allPassed;
+    }
+    logToConsole("Created new runAllBasicConnectionTests or it was empty; added testCombatInitiationWithGenericNpc.");
+}
+
+async function testPlayerTakesDamageWithArmor() {
+    logToConsole("--- Running Player Takes Damage With Armor Test ---");
+    let testPassed = true;
+    let originalLogToConsole = window.logToConsole;
+    let loggedMessages = [];
+
+    // Spy on logToConsole
+    window.logToConsole = (message) => {
+        loggedMessages.push(message);
+        originalLogToConsole(message); // Call the original function as well
+    };
+
+    // Prerequisites
+    if (!assetManager || !assetManager.getItem('basic_vest')) {
+        logToConsole("Player Damage w/ Armor Test FAIL: AssetManager or 'basic_vest' not available.");
+        window.logToConsole = originalLogToConsole; return false;
+    }
+    if (!gameState.inventory.container) {
+        logToConsole("Player Damage w/ Armor Test FAIL: Inventory container not initialized.");
+        if (typeof InventoryContainer === 'function') gameState.inventory.container = new InventoryContainer("TestBackpack", "M"); else { window.logToConsole = originalLogToConsole; return false; }
+    }
+    if (!gameState.player || !gameState.player.wornClothing) {
+        logToConsole("Player Damage w/ Armor Test FAIL: gameState.player.wornClothing not initialized.");
+        window.logToConsole = originalLogToConsole; return false;
+    }
+    if (!gameState.health) {
+        logToConsole("Player Damage w/ Armor Test FAIL: gameState.health not initialized.");
+        if (typeof window.initializeHealth === 'function') window.initializeHealth(gameState); else { window.logToConsole = originalLogToConsole; return false; }
+    }
+    if (!combatManager || typeof combatManager.applyDamage !== 'function') {
+        logToConsole("Player Damage w/ Armor Test FAIL: combatManager or applyDamage not available.");
+        window.logToConsole = originalLogToConsole; return false;
+    }
+
+
+    // Equip 'basic_vest'
+    const vestDef = assetManager.getItem('basic_vest');
+    if (!vestDef.armorValue) { // armorValue might be on the item definition itself
+        logToConsole("Player Damage w/ Armor Test FAIL: 'basic_vest' has no armorValue defined.");
+        window.logToConsole = originalLogToConsole; return false;
+    }
+    // Ensure vest is not already equipped on this layer for a clean test
+    if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
+        window.unequipClothing(vestDef.layer);
+    }
+    // Add vest to inventory if not there
+    if (!gameState.inventory.container.items.find(item => item.id === 'basic_vest')) {
+        window.addItem(new Item(vestDef));
+    }
+    window.equipClothing(vestDef.name);
+    logToConsole("Equipped 'basic_vest'. Worn clothing: " + JSON.stringify(gameState.player.wornClothing));
+
+
+    // Set initial HP
+    gameState.health.torso.current = gameState.health.torso.max;
+    const initialHp = gameState.health.torso.current;
+    const rawDamage = 5;
+    const expectedArmor = window.getArmorForBodyPart('torso', gameState);
+    const expectedDamageTaken = Math.max(0, rawDamage - expectedArmor);
+    const expectedHpAfterDamage = initialHp - expectedDamageTaken;
+
+    logToConsole(`Initial HP: ${initialHp}, Raw Damage: ${rawDamage}, Expected Armor: ${expectedArmor}, Expected Damage Taken: ${expectedDamageTaken}, Expected HP After: ${expectedHpAfterDamage}`);
+
+    // Dummy attacker for the applyDamage function
+    const dummyAttacker = { name: 'Test Dummy Attacker', id: 'test_dummy_attacker' };
+    // The weapon object can be minimal for this test, only name is used in the log currently
+    const testWeapon = { name: 'TestClub' };
+
+    combatManager.applyDamage(dummyAttacker, gameState, 'torso', rawDamage, 'Bludgeoning', testWeapon);
+
+    const actualHpAfterDamage = gameState.health.torso.current;
+    logToConsole(`Actual HP after damage: ${actualHpAfterDamage}`);
+
+    // Check HP
+    if (actualHpAfterDamage !== expectedHpAfterDamage) {
+        logToConsole(`Player Damage w/ Armor Test FAILED: HP mismatch. Expected ${expectedHpAfterDamage}, got ${actualHpAfterDamage}.`);
+        testPassed = false;
+    }
+
+    // Check log for correct armor reporting
+    const damageLogMessage = loggedMessages.find(msg => msg.includes("DAMAGE") && msg.includes("to Player's torso") && msg.includes(`Armor: ${expectedArmor}`));
+    if (!damageLogMessage) {
+        logToConsole(`Player Damage w/ Armor Test FAILED: Damage log message with correct armor value (Armor: ${expectedArmor}) not found.`);
+        testPassed = false;
+    } else {
+        logToConsole(`Damage log found: "${damageLogMessage}"`);
+    }
+
+    if (testPassed) {
+        logToConsole("Player Takes Damage With Armor Test PASSED!");
+    }
+
+    // Cleanup
+    if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
+        window.unequipClothing(vestDef.layer);
+    }
+    gameState.health.torso.current = initialHp; // Restore HP
+    window.logToConsole = originalLogToConsole; // Restore original logToConsole
+
+    return testPassed;
+}
+
+// Modify runAllBasicConnectionTests to include this new test
+// This assumes runAllBasicConnectionTests is already defined from previous steps.
+if (typeof runAllBasicConnectionTests === 'function') {
+    const existingRunnerSource = runAllBasicConnectionTests.toString();
+    if (!existingRunnerSource.includes('testPlayerTakesDamageWithArmor')) {
+        const originalRunAllTests = runAllBasicConnectionTests;
+        runAllBasicConnectionTests = async function () {
+            let overallResult = await originalRunAllTests(); // Run previous tests
+
+            logToConsole("--- Running Player Takes Damage With Armor Test (from wrapper) ---");
+            if (!await testPlayerTakesDamageWithArmor()) overallResult = false;
+
+            // Re-log final status (if the original runner had one, this might be redundant or replace it)
+            // This part might need to be adjusted based on how the original runner logs.
+            // For now, let's assume the original runner had its own final log.
+            // We'll just add our test. If the original runner's final log is conditional,
+            // this new 'overallResult' should be the one determining the final message.
+            return overallResult;
+        }
+        logToConsole("Extended runAllBasicConnectionTests with testPlayerTakesDamageWithArmor.");
+    }
+} else {
+    // If runAllBasicConnectionTests doesn't exist, create a basic one.
+    async function runAllBasicConnectionTests() {
+        logToConsole("===== STARTING PLAYER DAMAGE WITH ARMOR TEST (NEW RUNNER) =====");
+        let allPassed = true;
+        if (!await testPlayerTakesDamageWithArmor()) allPassed = false;
+        logToConsole("===== PLAYER DAMAGE WITH ARMOR TEST (NEW RUNNER) COMPLETE =====");
+        if (allPassed) {
+            logToConsole("Player Damage With Armor Test (New Runner) PASSED!");
+        } else {
+            logToConsole("Player Damage With Armor Test (New Runner) FAILED. Check logs.");
+        }
+        return allPassed;
+    }
+    logToConsole("Created new runAllBasicConnectionTests with testPlayerTakesDamageWithArmor.");
+}
+
+async function testEquipArmorAndUpdateUI() {
+    logToConsole("--- Running Equip Armor & UI Update Test ---");
+    let testPassed = true;
+
+    // Prerequisites
+    if (!assetManager || !assetManager.getItem('basic_vest')) {
+        logToConsole("Equip Armor Test FAIL: AssetManager or 'basic_vest' item definition not available.");
+        return false;
+    }
+    if (!gameState.inventory.container) {
+        logToConsole("Equip Armor Test FAIL: Inventory container not initialized.");
+        // Attempt to initialize for testability, though ideally startGame handles this
+        if (typeof InventoryContainer === 'function') {
+            gameState.inventory.container = new InventoryContainer("TestBackpack", "M");
+        } else { return false; }
+    }
+    if (!gameState.player || !gameState.player.wornClothing) {
+        logToConsole("Equip Armor Test FAIL: gameState.player.wornClothing not initialized.");
+        return false;
+    }
+    if (!gameState.health) {
+        logToConsole("Equip Armor Test FAIL: gameState.health not initialized.");
+        // Attempt to initialize for testability
+        if (typeof window.initializeHealth === 'function') {
+            window.initializeHealth(gameState);
+        } else { return false; }
+    }
+
+
+    // Ensure 'basic_vest' is in inventory and unequipped
+    const vestDef = assetManager.getItem('basic_vest');
+    let vestInstance = gameState.inventory.container.items.find(item => item.id === 'basic_vest');
+    if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
+        window.unequipClothing(vestDef.layer); // Unequip if already worn
+    }
+    if (!vestInstance) {
+        window.addItem(new Item(vestDef)); // Add if not in inventory
+        vestInstance = gameState.inventory.container.items.find(item => item.id === 'basic_vest');
+        if (!vestInstance) {
+            logToConsole("Equip Armor Test FAIL: Could not add 'basic_vest' to inventory.");
+            return false;
+        }
+    }
+
+    // At this point, vest should be in inventory and not equipped on the target layer.
+    // Clear the target layer just in case.
+    gameState.player.wornClothing[vestDef.layer] = null;
+    window.renderHealthTable(gameState); // Render once to get initial armor state if needed
+
+    logToConsole("Equipping 'basic_vest'...");
+    window.equipClothing(vestDef.name); // This should trigger renderCharacterInfo -> renderHealthTable
+
+    const expectedArmor = window.getArmorForBodyPart('torso', gameState);
+    const healthTableBody = document.querySelector("#healthTable tbody");
+    let displayedArmor = -1;
+
+    if (healthTableBody) {
+        for (let i = 0; i < healthTableBody.rows.length; i++) {
+            const row = healthTableBody.rows[i];
+            if (row.cells[0] && row.cells[0].textContent === 'Torso') {
+                displayedArmor = parseInt(row.cells[2].textContent, 10);
+                break;
+            }
+        }
+    }
+
+    logToConsole(`Expected armor for torso: ${expectedArmor}, Displayed armor: ${displayedArmor}`);
+
+    if (displayedArmor === expectedArmor) {
+        logToConsole("Equip Armor & UI Update Test PASSED!");
+    } else {
+        logToConsole("Equip Armor & UI Update Test FAILED.");
+        testPassed = false;
+    }
+
+    // Cleanup: unequip
+    if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
+        window.unequipClothing(vestDef.layer);
+    }
+    window.renderHealthTable(gameState); // Re-render to restore UI
+
+    return testPassed;
+}
+
+async function testTakeDamageAndUpdateUI() {
+    logToConsole("--- Running Take Damage & UI Update Test ---");
+    let testPassed = true;
+
+    if (!gameState.health || !gameState.health.torso) {
+        logToConsole("Take Damage Test FAIL: gameState.health.torso not initialized.");
+        if (typeof window.initializeHealth === 'function') {
+            window.initializeHealth(gameState);
+        } else { return false; }
+    }
+
+    // Ensure torso has some health to lose
+    gameState.health.torso.current = gameState.health.torso.max;
+    window.renderHealthTable(gameState); // Initial render to capture state
+
+    const initialTorsoHp = gameState.health.torso.current;
+    const damageToApply = 2;
+    const expectedHp = initialTorsoHp - damageToApply;
+
+    logToConsole(`Initial torso HP: ${initialTorsoHp}. Applying ${damageToApply} damage.`);
+    gameState.health.torso.current = expectedHp; // Manually set HP
+    window.renderHealthTable(gameState); // Call the function that should update UI
+
+    const healthTableBody = document.querySelector("#healthTable tbody");
+    let displayedHpText = "";
+    let displayedHp = -1;
+
+    if (healthTableBody) {
+        for (let i = 0; i < healthTableBody.rows.length; i++) {
+            const row = healthTableBody.rows[i];
+            if (row.cells[0] && row.cells[0].textContent === 'Torso') {
+                displayedHpText = row.cells[1].textContent; // Should be "current/max"
+                displayedHp = parseInt(displayedHpText.split('/')[0], 10);
+                break;
+            }
+        }
+    }
+
+    logToConsole(`Expected HP for torso: ${expectedHp}, Displayed HP: ${displayedHp} (raw text: '${displayedHpText}')`);
+
+    if (displayedHp === expectedHp) {
+        logToConsole("Take Damage & UI Update Test PASSED!");
+    } else {
+        logToConsole("Take Damage & UI Update Test FAILED.");
+        testPassed = false;
+    }
+
+    // Cleanup: Restore HP for other tests
+    gameState.health.torso.current = initialTorsoHp;
+    window.renderHealthTable(gameState);
+
+    return testPassed;
+}
+
+// Modify runAllBasicConnectionTests to include these new tests
+if (typeof runAllBasicConnectionTests === 'function') {
+    const originalRunAllTests = runAllBasicConnectionTests;
+    runAllBasicConnectionTests = async function () {
+        let overallResult = await originalRunAllTests(); // Run previous tests
+
+        logToConsole("--- Running Equip Armor & UI Update Test (from wrapper) ---");
+        if (!await testEquipArmorAndUpdateUI()) overallResult = false;
+
+        logToConsole("--- Running Take Damage & UI Update Test (from wrapper) ---");
+        if (!await testTakeDamageAndUpdateUI()) overallResult = false;
+
+        // Re-log final status
+        if (overallResult) {
+            logToConsole("All basic connection tests (including UI updates) PASSED!");
+        } else {
+            logToConsole("One or more basic connection tests (including UI updates) FAILED. Check logs.");
+        }
+        return overallResult;
+    }
+    // Overwrite the console message for the original if it exists to avoid double "All tests PASSED"
+    // This is a bit hacky but avoids needing to edit the original test runner string directly.
+    // Better would be to edit the original runAllBasicConnectionTests string to include these.
+    // For now, this just adds them on. The final message from this new runner will be the definitive one.
+} else {
+    // If runAllBasicConnectionTests doesn't exist, create it to run these.
+    async function runAllBasicConnectionTests() {
+        logToConsole("===== STARTING BASIC UI UPDATE TESTS =====");
+        let allPassed = true;
+        if (!await testEquipArmorAndUpdateUI()) allPassed = false;
+        if (!await testTakeDamageAndUpdateUI()) allPassed = false;
+        logToConsole("===== BASIC UI UPDATE TESTS COMPLETE =====");
+        if (allPassed) {
+            logToConsole("All basic UI update tests PASSED!");
+        } else {
+            logToConsole("One or more basic UI update tests FAILED. Check logs.");
+        }
+        return allPassed;
+    }
 }

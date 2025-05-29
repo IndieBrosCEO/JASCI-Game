@@ -216,7 +216,7 @@ window.interaction = {
         } else if (gameState.actionPointsRemaining > 0) {
             gameState.actionPointsRemaining--;
             // updateTurnUI is still in script.js and global for now
-            if (typeof updateTurnUI === 'function') updateTurnUI(); else console.warn("updateTurnUI not found globally");
+            if (window.turnManager && typeof window.turnManager.updateTurnUI === 'function') { window.turnManager.updateTurnUI(); } else { console.error("window.turnManager.updateTurnUI is not available."); }
             _performAction(actionText, item); // Use internal helper
         } else {
             logToConsole("No actions left for this turn.");

@@ -282,7 +282,7 @@ class CombatManager {
             this.gameState.playerMovedThisTurn = false;
             this.gameState.actionPointsRemaining = 1;
             this.gameState.movementPointsRemaining = 6;
-            updateTurnUI();
+            window.turnManager.updateTurnUI();
         } else {
             attacker.movedThisTurn = false;
             attacker.currentActionPoints = attacker.defaultActionPoints || 1;
@@ -741,7 +741,7 @@ class CombatManager {
                     return;
                 }
                 this.gameState.actionPointsRemaining--;
-                updateTurnUI();
+                window.turnManager.updateTurnUI();
                 logToConsole(`Action point spent for reload. Remaining: ${this.gameState.actionPointsRemaining}`);
             }
 
@@ -778,7 +778,7 @@ class CombatManager {
                     return;
                 }
                 this.gameState.actionPointsRemaining--;
-                updateTurnUI();
+                window.turnManager.updateTurnUI();
                 logToConsole(`Action point spent for attack. Remaining: ${this.gameState.actionPointsRemaining}`);
             }
         } else if (this.gameState.pendingCombatAction.actionType === "grapple") {
@@ -816,7 +816,7 @@ class CombatManager {
                         } else if (this.gameState.movementPointsRemaining > 0) {
                             logToConsole("Melee attack failed (out of range). You have movement points remaining or can end your turn.");
                             this.gameState.combatPhase = 'playerPostAction';
-                            updateTurnUI();
+                            window.turnManager.updateTurnUI();
                         } else {
                             this.nextTurn();
                         }
@@ -1281,7 +1281,7 @@ class CombatManager {
                     this.promptPlayerAttackDeclaration();
                 } else if (this.gameState.movementPointsRemaining > 0) {
                     logToConsole("Player has movement points remaining. Can move or end turn.");
-                    updateTurnUI();
+                    window.turnManager.updateTurnUI();
                 } else {
                     logToConsole("Player has no action or movement points remaining. Ending turn.");
                     this.nextTurn();
@@ -1299,7 +1299,7 @@ class CombatManager {
             logToConsole("Player manually ends their turn.");
             this.gameState.actionPointsRemaining = 0;
             this.gameState.movementPointsRemaining = 0;
-            updateTurnUI();
+            window.turnManager.updateTurnUI();
             this.nextTurn();
         } else {
             logToConsole("Cannot end player turn: not in combat or not player's turn.");
@@ -1418,7 +1418,7 @@ class CombatManager {
                 return;
             }
             this.gameState.actionPointsRemaining--;
-            updateTurnUI();
+            window.turnManager.updateTurnUI();
             logToConsole(`Action point spent for grapple attempt. Remaining: ${this.gameState.actionPointsRemaining}`);
         }
 
@@ -1544,7 +1544,7 @@ class CombatManager {
                 return;
             }
             part = this.gameState.health[normalizedBodyPartName];
-            const effectiveArmor = getArmorForBodyPart(normalizedBodyPartName);
+            const effectiveArmor = window.getArmorForBodyPart(normalizedBodyPartName, entity);
             const reducedDamage = Math.max(0, damageAmount - effectiveArmor);
 
             logToConsole(`DAMAGE${bulletPrefix}: ${attackerName}'s ${weaponName} deals ${reducedDamage} ${damageType} to Player's ${normalizedBodyPartName} (Raw: ${damageAmount}, Armor: ${effectiveArmor}).`);
@@ -1813,3 +1813,4 @@ class CombatManager {
         }
     }
 }
+window.CombatManager = CombatManager;

@@ -32,10 +32,10 @@ function dash_internal() {
 function endTurn_internal() {
     logToConsole(`Turn ${gameState.currentTurn} ended.`);
     // Assuming character.js exports updateHealthCrisis to window.character
-    if (window.character && typeof window.character.updateHealthCrisis === 'function') {
-        window.character.updateHealthCrisis(gameState); // Pass gameState as the character object for player
+    if (typeof window.updateHealthCrisis === 'function') {
+        window.updateHealthCrisis(gameState);
     } else {
-        console.error("character.updateHealthCrisis is not available. Health crisis cannot be updated.");
+        console.error("window.updateHealthCrisis is not available. Health crisis cannot be updated.");
     }
     gameState.currentTurn++;
     startTurn_internal(); // Call internal startTurn
