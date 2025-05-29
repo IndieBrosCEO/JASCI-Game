@@ -233,6 +233,13 @@ function handleUpdateSkill(name, value) {
  **************************************************************/
 // Keydown event handler for movement and actions
 function handleKeyDown(event) {
+    // Toggle Keybinds Display
+    if (event.key === 'h' || event.key === 'H') {
+        toggleKeybindsDisplay();
+        event.preventDefault();
+        return;
+    }
+
     // New logic for Escape key during combat UI declaration
     if (gameState.isInCombat && gameState.combatPhase === 'playerAttackDeclare' && event.key === 'Escape') {
         const attackDeclUI = document.getElementById('attackDeclarationUI');

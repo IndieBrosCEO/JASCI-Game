@@ -284,6 +284,9 @@ class CombatManager {
     }
 
     nextTurn() {
+        // Added more specific logging for current attacker and turn index *before* potential modification
+        const currentAttackerForLog = this.gameState.combatCurrentAttacker ? (this.gameState.combatCurrentAttacker.name || this.gameState.combatCurrentAttacker.id) : 'N/A';
+        logToConsole(`CombatManager.nextTurn() called. Current attacker was: ${currentAttackerForLog}, currentTurnIndex before processing: ${this.currentTurnIndex}`);
         if (!this.gameState.isInCombat || this.initiativeTracker.length === 0) {
             this.endCombat();
             return;
@@ -475,9 +478,20 @@ class CombatManager {
             this.gameState.pendingCombatAction.skillToUse = "Explosives";
             if (!this.gameState.pendingCombatAction.targetTile) {
                 const targetEntity = this.gameState.combatCurrentDefender;
-                this.gameState.pendingCombatAction.targetTile = targetEntity && targetEntity.mapPos ?
-                    { x: targetEntity.mapPos.x, y: targetEntity.mapPos.y } :
-                    (this.gameState.defenderMapPos || this.gameState.playerPos);
+                let newTargetTileValue;
+                if (targetEntity && targetEntity.mapPos) {
+                    newTargetTileValue = { x: targetEntity.mapPos.x, y: targetEntity.mapPos.y };
+                } else {
+                    // This branch means no specific entity was targeted (combatCurrentDefender is null or has no mapPos)
+                    if (this.gameState.defenderMapPos) {
+                        newTargetTileValue = this.gameState.defenderMapPos;
+                    } else {
+                        // This is the problematic fallback
+                        logToConsole(`WARNING: Grenade target fallback to playerPos! combatCurrentDefender was '${targetEntity}', defenderMapPos was '${this.gameState.defenderMapPos}'. This may result in self-targeting if player throws from their own position.`);
+                        newTargetTileValue = { ...this.gameState.playerPos }; // Ensure it's a copy
+                    }
+                }
+                this.gameState.pendingCombatAction.targetTile = newTargetTileValue;
             }
             logToConsole(`Player declares: Throwing ${weaponObject.name} at tile (${this.gameState.pendingCombatAction.targetTile.x},${this.gameState.pendingCombatAction.targetTile.y}) (using Explosives skill).`);
         } else {
@@ -793,6 +807,7 @@ class CombatManager {
         const attacker = this.gameState.combatCurrentAttacker;
         const defender = this.gameState.combatCurrentDefender;
         const { weapon, attackType, bodyPart: intendedBodyPart, fireMode = "single", actionType = "attack" } = this.gameState.pendingCombatAction || {};
+        let logMsg = "";
 
         if (!this.gameState.pendingCombatAction || !this.gameState.pendingCombatAction.actionType) {
             console.error("processAttack called without a valid pendingCombatAction or actionType.");
@@ -922,7 +937,16 @@ class CombatManager {
         attackResult = this.calculateAttackRoll(attacker, weapon, defender ? intendedBodyPart : null, actionContext);
         defenseResult = this.calculateDefenseRoll(defender, defender ? (defender === this.gameState ? (this.gameState.playerDefenseChoice ? this.gameState.playerDefenseChoice.type : "Dodge") : (this.gameState.npcDefenseChoice || "Dodge")) : "None", weapon, coverBonus, {});
 
-        logMsg = `ATTACK: ${attackerName} targets ${defenderName}'s ${defender ? intendedBodyPart : 'tile'} with ${weapon ? weapon.name : 'Unarmed'} (Mode: ${fireMode}). ` +
+        let targetDescriptionForLog;
+        if (defender) {
+            targetDescriptionForLog = `${defenderName}'s ${intendedBodyPart}`;
+        } else if (this.gameState.pendingCombatAction && this.gameState.pendingCombatAction.targetTile) {
+            targetDescriptionForLog = `tile at X:${this.gameState.pendingCombatAction.targetTile.x}, Y:${this.gameState.pendingCombatAction.targetTile.y}`;
+        } else {
+            targetDescriptionForLog = "an unknown target"; // Fallback, should not happen
+        }
+        // logMsg is already declared at the beginning of the function
+        logMsg = `ATTACK: ${attackerName} targets ${targetDescriptionForLog} with ${weapon ? weapon.name : 'Unarmed'} (Mode: ${fireMode}). ` +
             `Roll: ${attackResult.roll} (Nat: ${attackResult.naturalRoll}, Skill (${actionContext.skillName}): ${actionContext.skillBasedModifier}, ` +
             `BodyPart: ${actionContext.bodyPartModifier}, Range: ${actionContext.rangeModifier}, Mode: ${actionContext.attackModifier}, Move: ${actionContext.attackerMovementPenalty})`;
         logToConsole(logMsg);
@@ -1106,7 +1130,13 @@ class CombatManager {
                         this.gameState.inventory.handSlots[thrownItemHandIndex] = null;
                         logToConsole(`ACTION: Player threw ${thrownItemName}. Item removed from hand slot ${thrownItemHandIndex + 1}.`);
                         window.updateInventoryUI();
-                    } else logToConsole(`ERROR: Could not find thrown weapon ${weapon.name} in player's hand slots to remove.`);
+                    } else {
+                        let hand0Name = this.gameState.inventory.handSlots[0] ? this.gameState.inventory.handSlots[0].name : "Empty";
+                        let hand0Id = this.gameState.inventory.handSlots[0] ? this.gameState.inventory.handSlots[0].id : "N/A";
+                        let hand1Name = this.gameState.inventory.handSlots[1] ? this.gameState.inventory.handSlots[1].name : "Empty";
+                        let hand1Id = this.gameState.inventory.handSlots[1] ? this.gameState.inventory.handSlots[1].id : "N/A";
+                        logToConsole(`ERROR: Could not find thrown weapon ${weapon.name} (ID: ${weapon.id}) in player's hand slots to remove. Hand0: ${hand0Name} (ID: ${hand0Id}), Hand1: ${hand1Name} (ID: ${hand1Id})`);
+                    }
                 }
             }
         }
@@ -1237,16 +1267,29 @@ class CombatManager {
                     logToConsole("Player has action points remaining. Prompting for next action.");
                     this.promptPlayerAttackDeclaration();
                 } else if (this.gameState.movementPointsRemaining > 0) {
-                    logToConsole("Player has movement points remaining. Can move or end turn.");
-                    window.turnManager.updateTurnUI();
+                    logToConsole("Player has 0 AP but >0 MP. Player can move or press 'T' to end turn. Attack/Defense UI should be hidden.");
+                    const attackDeclUI = document.getElementById('attackDeclarationUI');
+                    if (attackDeclUI && !attackDeclUI.classList.contains('hidden')) {
+                        attackDeclUI.classList.add('hidden');
+                        logToConsole("INFO: Explicitly hid attackDeclarationUI for player (0 AP, >0 MP state).");
+                    }
+                    const defenseDeclUI = document.getElementById('defenseDeclarationUI');
+                    if (defenseDeclUI && !defenseDeclUI.classList.contains('hidden')) {
+                        defenseDeclUI.classList.add('hidden');
+                        logToConsole("INFO: Explicitly hid defenseDeclarationUI for player (0 AP, >0 MP state).");
+                    }
+                    window.turnManager.updateTurnUI(); // Update AP/MP display on main UI
                 } else {
-                    logToConsole("Player has no action or movement points remaining. Ending turn.");
+                    logToConsole("Player has no action or movement points remaining. Automatically ending player's turn.");
                     this.nextTurn();
                 }
-            } else {
+            } else { // NPC was the attacker
+                const npcAttackerName = attacker ? (attacker.name || attacker.id) : 'N/A';
+                logToConsole(`NPC attacker ${npcAttackerName} finished its attack action. Calling this.nextTurn() to advance turn.`);
                 this.nextTurn();
             }
         } else {
+            // This else corresponds to if (!this.gameState.isInCombat)
             this.updateCombatUI();
         }
     }
