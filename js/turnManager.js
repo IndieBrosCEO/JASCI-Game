@@ -76,11 +76,27 @@ function move_internal(direction) {
             return;
     }
 
+    // Check for NPC occupation at newPos
+    if (gameState.npcs && gameState.npcs.length > 0) {
+        for (const npc of gameState.npcs) {
+            if (npc.mapPos && npc.mapPos.x === newPos.x && npc.mapPos.y === newPos.y &&
+                npc.health && npc.health.torso && npc.health.torso.current > 0) {
+                logToConsole(`Cannot move to (${newPos.x},${newPos.y}): Tile occupied by ${npc.name}.`);
+                return; // Prevent movement
+            }
+        }
+    }
+
     if (newPos.x === originalPos.x && newPos.y === originalPos.y) {
         logToConsole("Can't move that way.");
         return;
     }
     gameState.playerPos = newPos;
+    if (gameState.isInCombat &&
+        gameState.combatCurrentAttacker === gameState) {
+        gameState.attackerMapPos = { ...gameState.playerPos };
+        // logToConsole("Player (attacker) moved, updated attackerMapPos for highlight sync."); // Optional: for debugging
+    }
     gameState.movementPointsRemaining--;
     gameState.playerMovedThisTurn = true;
     logToConsole(`Moved to (${newPos.x}, ${newPos.y}). Moves left: ${gameState.movementPointsRemaining}`);

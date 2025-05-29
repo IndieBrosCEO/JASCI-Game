@@ -6,6 +6,47 @@ class AssetManager {
         this.mapsById = {};
         this.currentMap = null;
         this.mapIndexData = null; // For storing mapIndex.json content
+        this.tileAliases = {
+            "WW1": "WWH",     // Wood Wall Horizontal
+            "WW2": "WWV",     // Wood Wall Vertical
+            "WW3": "WWCTL",   // Wood Wall Corner Top-Left
+            "WW4": "WWCTR",   // Wood Wall Corner Top-Right
+            "WW5": "WWCBL",   // Wood Wall Corner Bottom-Left
+            "WW6": "WWCBR",   // Wood Wall Corner Bottom-Right
+            "WWinC1": "WinCH", // Example: Wood Window Closed Horizontal
+            "WWinC2": "WinCV", // Example: Wood Window Closed Vertical
+            "WD1": "WDH",     // Wood Door Horizontal (Closed)
+            "WD2": "WDV",     // Wood Door Vertical (Closed)
+            "MW1": "MWH",     // Metal Wall Horizontal
+            "MW2": "MWV",     // Metal Wall Vertical
+            "MW3": "MWCTL",   // Metal Wall Corner Top-Left
+            "MW4": "MWCTR",   // Metal Wall Corner Top-Right
+            "MW5": "MWCBL",   // Metal Wall Corner Bottom-Left
+            "MW6": "MWCBR",   // Metal Wall Corner Bottom-Right
+            "MD1": "MDH",     // Metal Door Horizontal (Closed)
+            // Add any other common wall/door/window aliases observed if obvious.
+            // For instance, map IDs like 'WF' (Wood Floor), 'FL' (Tile Flooring) likely map directly.
+            // If they don't and are used in maps, they might need entries too,
+            // but prioritize structural, impassable items for the wall-phasing bug.
+            "FL": "FL", // Tile Flooring (likely direct map)
+            "WF": "WF"  // Wood Flooring (likely direct map)
+        };
+    }
+
+    getTileDefinition(tileIdFromMap) {
+        if (!tileIdFromMap) return null;
+        // Check direct match first
+        if (this.tilesets[tileIdFromMap]) {
+            return this.tilesets[tileIdFromMap];
+        }
+        // Check aliases
+        const alias = this.tileAliases[tileIdFromMap];
+        if (alias && this.tilesets[alias]) {
+            return this.tilesets[alias];
+        }
+        // Optional: Log warning if tile still not found, though _validateMapTiles handles this broadly.
+        // console.warn(`AssetManager.getTileDefinition: No definition found for tile ID '${tileIdFromMap}' after checking aliases.`);
+        return null;
     }
 
     setMapIndexData(mapIndexJson) {
@@ -245,7 +286,7 @@ class AssetManager {
 
         // Assuming this.tilesets is the direct content of 'tileset.json'
         // and it contains tile definitions where keys are tile IDs.
-        const availableTileIds = Object.keys(this.tilesets);
+        // const availableTileIds = Object.keys(this.tilesets); // No longer needed directly here
 
         for (const layerName in mapData.layers) {
             if (mapData.layers.hasOwnProperty(layerName)) {
@@ -257,9 +298,9 @@ class AssetManager {
                             for (let c = 0; c < row.length; c++) {
                                 const tileId = row[c];
                                 // Check if tileId is defined, not null, not an empty string,
-                                // and not present in the availableTileIds (derived from this.tilesets keys)
-                                if (tileId !== null && tileId !== "" && !availableTileIds.includes(String(tileId))) {
-                                    console.warn(`Unknown tile ID: '${tileId}' in map '${mapData.id}', layer '${layerName}', at [${r},${c}]`);
+                                // and not resolvable via getTileDefinition (which checks direct and aliases)
+                                if (tileId !== null && tileId !== "" && !this.getTileDefinition(tileId)) {
+                                    console.warn(`Unknown tile ID: '${tileId}' in map '${mapData.id}', layer '${layerName}', at [${r},${c}] (after alias check)`);
                                 }
                             }
                         }

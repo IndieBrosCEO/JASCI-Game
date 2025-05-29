@@ -102,6 +102,15 @@ function equipItem(itemName, handIndex) {
     gameState.inventory.handSlots[handIndex] = equippedItem;
     logToConsole(`Equipped ${equippedItem.name} to hand slot ${handIndex + 1}.`);
     updateInventoryUI();
+    logToConsole(`[equipItem Debug] isInCombat: ${gameState.isInCombat}, combatPhase: ${gameState.combatPhase}`); // New log
+    if (gameState.isInCombat &&
+        gameState.combatPhase === 'playerAttackDeclare' &&
+        typeof window.combatManager !== 'undefined' &&
+        typeof window.combatManager.populateWeaponSelect === 'function') {
+        logToConsole("Combat attack UI active after equipping item, refreshing weapon select."); // Existing log
+        window.combatManager.populateWeaponSelect();
+        logToConsole("[equipItem Debug] populateWeaponSelect was called."); // New log
+    }
 }
 
 function unequipItem(handIndex) {
@@ -123,6 +132,15 @@ function unequipItem(handIndex) {
     gameState.inventory.handSlots[handIndex] = null;
     logToConsole(`Unequipped ${slot.name}.`);
     updateInventoryUI();
+    logToConsole(`[unequipItem Debug] isInCombat: ${gameState.isInCombat}, combatPhase: ${gameState.combatPhase}`); // New log
+    if (gameState.isInCombat &&
+        gameState.combatPhase === 'playerAttackDeclare' &&
+        typeof window.combatManager !== 'undefined' &&
+        typeof window.combatManager.populateWeaponSelect === 'function') {
+        logToConsole("Combat attack UI active after unequipping item, refreshing weapon select."); // Existing log
+        window.combatManager.populateWeaponSelect();
+        logToConsole("[unequipItem Debug] populateWeaponSelect was called."); // New log
+    }
 }
 
 /**************************************************************
@@ -290,12 +308,29 @@ function renderInventoryMenu() {
         });
     }
 
-    gameState.inventory.currentlyDisplayedItems = gameState.inventory.container.items.filter(
-        item => !item.isClothing || !wornItemNames.has(item.name)
-    );
+    gameState.inventory.currentlyDisplayedItems = [];
+
+    // Add equipped hand items first
+    gameState.inventory.handSlots.forEach((item, index) => {
+        if (item) {
+            gameState.inventory.currentlyDisplayedItems.push({
+                ...item, // Spread existing item properties
+                isEquippedHandItem: true,
+                originalHandIndex: index
+            });
+        }
+    });
+
+    // Then add container items, filtering out already worn clothing
+    const containerItemsToAdd = gameState.inventory.container.items
+        .filter(item => !item.isClothing || !wornItemNames.has(item.name))
+        .map(item => ({ ...item, isEquippedHandItem: false })); // Mark as not equipped hand item
+
+    gameState.inventory.currentlyDisplayedItems.push(...containerItemsToAdd);
+
 
     if (gameState.inventory.currentlyDisplayedItems.length === 0) {
-        list.textContent = " empty ";
+        list.textContent = " No items "; // Changed from "empty" to "No items" for clarity
         return;
     }
 
@@ -305,7 +340,11 @@ function renderInventoryMenu() {
 
     gameState.inventory.currentlyDisplayedItems.forEach((it, idx) => {
         const d = document.createElement("div");
-        d.textContent = `${idx + 1}. ${it.name} (${it.size})`;
+        let prefix = "";
+        if (it.isEquippedHandItem) {
+            prefix = `[HAND ${it.originalHandIndex + 1}] `;
+        }
+        d.textContent = `${idx + 1}. ${prefix}${it.name} (${it.size})`;
         if (idx === gameState.inventory.cursor) {
             d.classList.add("selected");
         }
@@ -328,6 +367,15 @@ function toggleInventoryMenu() {
         inventoryListDiv.style.display = 'none';
         clearInventoryHighlight();
         gameState.inventory.currentlyDisplayedItems = [];
+
+        // New logic to refresh combat weapon select:
+        if (gameState.isInCombat &&
+            gameState.combatPhase === 'playerAttackDeclare' &&
+            typeof window.combatManager !== 'undefined' &&
+            typeof window.combatManager.populateWeaponSelect === 'function') {
+            logToConsole("[toggleInventoryMenu] Inventory closed during playerAttackDeclare. Refreshing combat weapon select.");
+            window.combatManager.populateWeaponSelect();
+        }
     }
 }
 
@@ -343,29 +391,36 @@ function interactInventoryItem() {
     const displayedItem = gameState.inventory.currentlyDisplayedItems[idx];
     if (!displayedItem) return;
 
-    const actualItemInContainer = gameState.inventory.container.items.find(item => item.name === displayedItem.name);
-
-    if (!actualItemInContainer) {
-        logToConsole(`Error: Could not find ${displayedItem.name} in main inventory for interaction.`);
-        return;
-    }
-
-    if (actualItemInContainer.isClothing) {
-        logToConsole(`Attempting to wear ${actualItemInContainer.name}...`);
-        equipClothing(actualItemInContainer.name);
-    } else if (actualItemInContainer.canEquip) {
-        let handSlotToEquip = -1;
-        if (!gameState.inventory.handSlots[0]) handSlotToEquip = 0;
-        else if (!gameState.inventory.handSlots[1]) handSlotToEquip = 1;
-
-        if (handSlotToEquip !== -1) {
-            logToConsole(`Attempting to equip ${actualItemInContainer.name} to hand ${handSlotToEquip + 1}...`);
-            equipItem(actualItemInContainer.name, handSlotToEquip);
-        } else {
-            logToConsole(`Both hands are full. Cannot equip ${actualItemInContainer.name}.`);
-        }
+    if (displayedItem.isEquippedHandItem === true) {
+        logToConsole(`Attempting to unequip ${displayedItem.name} from hand ${displayedItem.originalHandIndex + 1}...`);
+        window.unequipItem(displayedItem.originalHandIndex);
     } else {
-        logToConsole(`You look at your ${actualItemInContainer.name}: ${actualItemInContainer.description}`);
+        // This is an item from the container
+        const actualItemInContainer = gameState.inventory.container.items.find(item => item.name === displayedItem.name && item.id === displayedItem.id);
+
+        if (!actualItemInContainer) {
+            // This case should ideally not happen if currentlyDisplayedItems is built correctly from container
+            logToConsole(`Error: Could not find ${displayedItem.name} in main inventory for interaction.`);
+            return;
+        }
+
+        if (actualItemInContainer.isClothing) {
+            logToConsole(`Attempting to wear ${actualItemInContainer.name}...`);
+            equipClothing(actualItemInContainer.name);
+        } else if (actualItemInContainer.canEquip) {
+            let handSlotToEquip = -1;
+            if (!gameState.inventory.handSlots[0]) handSlotToEquip = 0;
+            else if (!gameState.inventory.handSlots[1]) handSlotToEquip = 1;
+
+            if (handSlotToEquip !== -1) {
+                logToConsole(`Attempting to equip ${actualItemInContainer.name} to hand ${handSlotToEquip + 1}...`);
+                equipItem(actualItemInContainer.name, handSlotToEquip);
+            } else {
+                logToConsole(`Both hands are full. Cannot equip ${actualItemInContainer.name}.`);
+            }
+        } else {
+            logToConsole(`You look at your ${actualItemInContainer.name}: ${actualItemInContainer.description}`);
+        }
     }
     if (gameState.inventory.open) {
         renderInventoryMenu();

@@ -344,7 +344,7 @@ function handleKeyDown(event) {
             let closestRangedTarget = null;
             let minSqDistance = Infinity;
             gameState.npcs.forEach(npc => {
-                if (npc.mapPos && npc.health && npc.health.torso.current > 0 && npc.health.head.current > 0) { // Check if NPC is alive
+                if (npc.mapPos && npc.health && npc.health.torso.current > 0 && npc.health.head.current > 0 && npc.tags && npc.tags.includes("hostile")) { // Check if NPC is alive and hostile
                     const dx = gameState.playerPos.x - npc.mapPos.x;
                     const dy = gameState.playerPos.y - npc.mapPos.y;
                     const sqDistance = dx * dx + dy * dy;
@@ -380,7 +380,7 @@ function handleKeyDown(event) {
             let closestMeleeTarget = null;
             let minDistance = Infinity;
             gameState.npcs.forEach(npc => {
-                if (npc.mapPos && npc.health && npc.health.torso.current > 0 && npc.health.head.current > 0) { // Check if NPC is alive
+                if (npc.mapPos && npc.health && npc.health.torso.current > 0 && npc.health.head.current > 0 && npc.tags && npc.tags.includes("hostile")) { // Check if NPC is alive and hostile
                     const distance = Math.max(Math.abs(gameState.playerPos.x - npc.mapPos.x), Math.abs(gameState.playerPos.y - npc.mapPos.y));
                     if (distance <= 1) { // Melee range (Chebyshev distance for square grid adjacency)
                         if (distance < minDistance) { // Could be multiple NPCs in range, pick closest if needed, or first found.
@@ -395,7 +395,7 @@ function handleKeyDown(event) {
                 logToConsole(`Initiating melee combat with ${closestMeleeTarget.name || closestMeleeTarget.id}...`);
                 combatManager.startCombat([gameState, closestMeleeTarget]);
             } else {
-                logToConsole("No target in melee range.");
+                logToConsole("No hostile target in melee range.");
             }
             event.preventDefault(); break;
     }
@@ -646,29 +646,12 @@ function startGame() {
         { id: "beretta_92f_9mm" },
         { id: "ammo_9mm", quantity: 1 }, // Add 2 boxes of 9mm ammo
 
-        // Shotgun and Ammo
-        { id: "mossberg_12ga" },
-        { id: "ammo_12gauge_buckshot", quantity: 1 }, // Add 3 boxes of 12-gauge buckshot
-
         // Rifle and Ammo
         { id: "akm_ak47_762mmr" },
         { id: "ammo_762mmr", quantity: 1 }, // Add 2 boxes of 7.62mmR ammo
 
-        // Sniper Rifle and Ammo
-        { id: "hk_psg1_762mm" },
-        { id: "ammo_762mm", quantity: 1 }, // Add 2 boxes of 7.62mm ammo
-
-
         // Thrown Weapon
         { id: "frag_grenade_thrown", quantity: 1 }, // Add 3 frag grenades
-
-
-        // Rocket Launcher (no separate ammo item, it's self-contained)
-        { id: "m72a3_law_rocket_launcher", quantity: 1 }, // Add 2 rocket launchers
-
-        // Grenade Launcher and Ammo
-        { id: "m79_grenade_launcher" },
-        { id: "ammo_40mm_grenade_frag", quantity: 1 }, // Add 3 40mm grenades
 
         // Bow and Ammo
         { id: "compound_bow" },
@@ -723,6 +706,27 @@ function startGame() {
         }
     }
 
+    // Spawn Hostile Scavenger
+    const scavengerDef = assetManager.npcsById["hostile_scavenger"];
+    if (scavengerDef) {
+        const scavengerInstance = JSON.parse(JSON.stringify(scavengerDef));
+        scavengerInstance.mapPos = { x: 15, y: 5 }; // Example position
+        gameState.npcs.push(scavengerInstance);
+        logToConsole(`Hostile Scavenger spawned at (${scavengerInstance.mapPos.x},${scavengerInstance.mapPos.y}) with health initialized from definition.`);
+    } else {
+        logToConsole("Error: Hostile Scavenger NPC definition not found.");
+    }
+
+    // Spawn Militia Man
+    const militiaDef = assetManager.npcsById["militia_man"];
+    if (militiaDef) {
+        const militiaInstance = JSON.parse(JSON.stringify(militiaDef));
+        militiaInstance.mapPos = { x: 15, y: 7 }; // Example position
+        gameState.npcs.push(militiaInstance);
+        logToConsole(`Militia Man spawned at (${militiaInstance.mapPos.x},${militiaInstance.mapPos.y}) with health initialized from definition.`);
+    } else {
+        logToConsole("Error: Militia Man NPC definition not found.");
+    }
 
     if (characterCreator) characterCreator.classList.add('hidden');
     if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
