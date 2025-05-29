@@ -239,58 +239,54 @@ function handleKeyDown(event) {
         if (attackDeclUI && !attackDeclUI.classList.contains('hidden')) {
             attackDeclUI.classList.add('hidden');
             logToConsole("Attack declaration cancelled.");
-            // Optionally, provide a way for player to re-open declaration or end turn.
-            // For now, just hiding it. Player can press 't' to end turn if they wish.
             event.preventDefault();
             return;
         }
     }
 
-    if (gameState.isInCombat) {
-        // Most combat key handling is now through the UI or specific phases.
-        // Player defense choice (if UI were implemented) would be here.
-        // For now, NPC defense is automatic, and player defense defaults.
-        // The 't' (end turn) and general 'Escape' are primary combat-related keys here.
+    // Targeting Mode: Escape Key
+    if (gameState.isTargetingMode && event.key === 'Escape') {
+        gameState.isTargetingMode = false;
+        gameState.targetingType = null;
+        logToConsole("Exited targeting mode.");
+        window.mapRenderer.scheduleRender(); // Re-render to remove targeting UI if any
+        event.preventDefault();
+        return;
+    }
 
-        if (event.key === 'Escape') {
+    if (gameState.isInCombat) {
+        // The 't' (end turn) and general 'Escape' are primary combat-related keys here.
+        if (event.key === 'Escape') { // Note: This Escape is for combat, different from targeting mode Escape
             logToConsole("Attempting to end combat with Escape key.");
             combatManager.endCombat(); // Use CombatManager's method to end combat
             event.preventDefault();
             return;
         }
-
-        // Other general combat keys could be handled here if necessary,
-        // but detailed phase-specific inputs (like old 1-6 for body parts) are removed.
-        // logToConsole(`Combat active (Phase: ${gameState.combatPhase || 'N/A'}). Key '${event.key}' pressed. Non-combat game actions are blocked.`);
-        // event.preventDefault(); // Be careful with overly broad preventDefault
-        // return; // Return to ensure no non-combat actions are processed.
     }
 
-    // Non-combat key handling starts here (or if not returned by combat logic above)
+    // Non-combat key handling starts here
     if (gameState.inventory.open) {
         switch (event.key) {
             case 'ArrowUp': case 'w':
                 if (gameState.inventory.cursor > 0) {
                     gameState.inventory.cursor--;
-                    window.renderInventoryMenu(); // Re-render to update selection highlight
+                    window.renderInventoryMenu();
                 }
                 event.preventDefault(); return;
             case 'ArrowDown': case 's':
-                // Use currentlyDisplayedItems for correct length check
                 if (gameState.inventory.currentlyDisplayedItems && gameState.inventory.cursor < gameState.inventory.currentlyDisplayedItems.length - 1) {
                     gameState.inventory.cursor++;
-                    window.renderInventoryMenu(); // Re-render to update selection highlight
+                    window.renderInventoryMenu();
                 }
                 event.preventDefault(); return;
             case 'Enter': case 'f':
                 window.interactInventoryItem();
                 event.preventDefault(); return;
-            case 'i': case 'I': // Toggle inventory also handled below if not open
+            case 'i': case 'I':
                 window.toggleInventoryMenu();
-                // clearInventoryHighlight(); // toggleInventoryMenu handles this when closing
                 event.preventDefault(); return;
             default:
-                return;
+                return; // Other keys do nothing if inventory is open
         }
     }
 
@@ -299,7 +295,51 @@ function handleKeyDown(event) {
         event.preventDefault(); return;
     }
 
-    if (!gameState.isActionMenuActive) {
+    // Targeting Mode: Movement Keys
+    if (gameState.isTargetingMode) {
+        let currentMapData = window.mapRenderer.getCurrentMapData();
+        if (!currentMapData) {
+            logToConsole("Targeting mode movement: No map data available.");
+            return; // Cannot move target if no map
+        }
+        let movedTarget = false;
+        switch (event.key) {
+            case 'ArrowUp': case 'w': case 'W':
+                if (gameState.targetingCoords.y > 0) {
+                    gameState.targetingCoords.y--;
+                    movedTarget = true;
+                }
+                break;
+            case 'ArrowDown': case 's': case 'S':
+                if (gameState.targetingCoords.y < currentMapData.dimensions.height - 1) {
+                    gameState.targetingCoords.y++;
+                    movedTarget = true;
+                }
+                break;
+            case 'ArrowLeft': case 'a': case 'A':
+                if (gameState.targetingCoords.x > 0) {
+                    gameState.targetingCoords.x--;
+                    movedTarget = true;
+                }
+                break;
+            case 'ArrowRight': case 'd': case 'D':
+                if (gameState.targetingCoords.x < currentMapData.dimensions.width - 1) {
+                    gameState.targetingCoords.x++;
+                    movedTarget = true;
+                }
+                break;
+        }
+        if (movedTarget) {
+            logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}`);
+            window.mapRenderer.scheduleRender();
+            event.preventDefault();
+            return; // Prevent player movement or other actions
+        }
+    }
+
+    // Default game actions (player movement, interaction, etc.)
+    // This block is processed if not in targeting mode OR if in targeting mode but no targeting movement key was pressed.
+    if (!gameState.isActionMenuActive && !gameState.isTargetingMode) { // Ensure not in targeting mode for player movement
         switch (event.key) {
             case 'ArrowUp': case 'w': case 'W':
             case 'ArrowDown': case 's': case 'S':
@@ -319,54 +359,105 @@ function handleKeyDown(event) {
         }
         if (event.key === 't' || event.key === 'T') {
             if (gameState.isInCombat && combatManager.initiativeTracker[combatManager.currentTurnIndex]?.entity === gameState) {
-                //logToConsole("Player attempts to end their turn via 't' key."); // Log moved to endPlayerTurn
-                combatManager.endPlayerTurn(); // Changed to use the new method
+                combatManager.endPlayerTurn();
             } else if (gameState.isInCombat) {
                 logToConsole("Not your turn to end.");
             } else {
-                // Original non-combat end turn functionality
                 window.turnManager.endTurn();
             }
             event.preventDefault(); return;
         }
     }
 
+    // Action-related keys (f, r, c, Escape for action menu, 1-9 for action menu)
     switch (event.key) {
         case 'f': case 'F':
-            if (gameState.isActionMenuActive) {
-                performSelectedAction(); // This now calls window.interaction.performSelectedAction
-            } else if (gameState.selectedItemIndex !== -1) {
-                window.interaction.interact();
-            }
-            event.preventDefault(); break;
-        case 'r':
-            if (gameState.inventory.open || gameState.isInCombat) return; // Prevent if inventory open or already in combat
-            let closestRangedTarget = null;
-            let minSqDistance = Infinity;
-            gameState.npcs.forEach(npc => {
-                if (npc.mapPos && npc.health && npc.health.torso.current > 0 && npc.health.head.current > 0 && npc.tags && npc.tags.includes("hostile")) { // Check if NPC is alive and hostile
-                    const dx = gameState.playerPos.x - npc.mapPos.x;
-                    const dy = gameState.playerPos.y - npc.mapPos.y;
-                    const sqDistance = dx * dx + dy * dy;
-                    if (sqDistance < minSqDistance) {
-                        minSqDistance = sqDistance;
-                        closestRangedTarget = npc;
+            if (gameState.isTargetingMode) {
+                gameState.targetConfirmed = true;
+                logToConsole(`Target confirmed at: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}`);
+                logToConsole(`Targeting type: ${gameState.targetingType}`);
+
+                gameState.selectedTargetEntity = null; // Reset before checking
+                for (const npc of gameState.npcs) {
+                    if (npc.mapPos && npc.mapPos.x === gameState.targetingCoords.x && npc.mapPos.y === gameState.targetingCoords.y) {
+                        gameState.selectedTargetEntity = npc;
+                        break;
                     }
                 }
-            });
 
-            if (closestRangedTarget) {
-                logToConsole(`Initiating ranged combat with ${closestRangedTarget.name || closestRangedTarget.id}...`);
-                combatManager.startCombat([gameState, closestRangedTarget]);
+                if (gameState.selectedTargetEntity) {
+                    logToConsole(`Combat would be initiated with ${gameState.selectedTargetEntity.name || gameState.selectedTargetEntity.id} at (${gameState.targetingCoords.x}, ${gameState.targetingCoords.y}).`);
+                    // Future: Call combatManager.initiateCombat(gameState.selectedTargetEntity, gameState.targetingType);
+                } else {
+                    logToConsole(`Targeting tile (${gameState.targetingCoords.x}, ${gameState.targetingCoords.y}). No entity selected. Combat would not be initiated in this manner.`);
+                }
+
+                gameState.isTargetingMode = false; // Exit targeting mode
+                window.mapRenderer.scheduleRender(); // Re-render to remove 'X'
+
+                // Integration with CombatManager
+                if (!gameState.isInCombat) {
+                    if (gameState.selectedTargetEntity) {
+                        combatManager.startCombat([gameState, gameState.selectedTargetEntity]);
+                    } else { // Tile targeted
+                        combatManager.startCombat([gameState]); // Start combat with player only, defender will be tile
+                    }
+                }
+                // Always call promptPlayerAttackDeclaration after 'f' in targeting mode
+                combatManager.promptPlayerAttackDeclaration();
+                event.preventDefault();
+
+            } else if (gameState.isActionMenuActive) {
+                performSelectedAction();
+                event.preventDefault();
+            } else if (gameState.selectedItemIndex !== -1) {
+                window.interaction.interact();
+                event.preventDefault();
+            }
+            // If none of the above, let the event propagate or do nothing.
+            break;
+        case 'r': case 'R': // Changed to include R
+            if (gameState.inventory.open || gameState.isInCombat) return; // Prevent if inventory open or in combat
+
+            if (gameState.isTargetingMode && gameState.targetingType === 'ranged') {
+                gameState.isTargetingMode = false;
+                gameState.targetingType = null;
+                logToConsole("Exited ranged targeting mode.");
+                window.mapRenderer.scheduleRender(); // Re-render
             } else {
-                logToConsole("No valid NPC targets found on map for ranged attack.");
+                gameState.isTargetingMode = true;
+                gameState.targetingType = 'ranged';
+                gameState.targetingCoords = { ...gameState.playerPos }; // Initialize to player's position
+                logToConsole("Entering ranged targeting mode.");
+                logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}`);
+                window.mapRenderer.scheduleRender(); // Re-render
             }
             event.preventDefault(); break;
-        case 'Escape':
+        case 'c': case 'C': // Changed to include C
+            if (gameState.inventory.open || gameState.isInCombat) return; // Prevent if inventory open or in combat
+
+            if (gameState.isTargetingMode && gameState.targetingType === 'melee') {
+                gameState.isTargetingMode = false;
+                gameState.targetingType = null;
+                logToConsole("Exited melee targeting mode.");
+                window.mapRenderer.scheduleRender(); // Re-render
+            } else {
+                gameState.isTargetingMode = true;
+                gameState.targetingType = 'melee';
+                gameState.targetingCoords = { ...gameState.playerPos }; // Initialize to player's position
+                logToConsole("Entering melee targeting mode.");
+                logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}`);
+                window.mapRenderer.scheduleRender(); // Re-render
+            }
+            event.preventDefault(); break;
+        case 'Escape': // This Escape is for cancelling action menu, different from targeting/combat Escapes
             if (gameState.isActionMenuActive) {
                 window.interaction.cancelActionSelection();
                 event.preventDefault();
             }
+            // Note: If not isActionMenuActive, this Escape might have been handled by targeting or combat logic already.
+            // If it reaches here and isTargetingMode is true, it means the earlier targeting Escape didn't catch it (should not happen).
+            // If it reaches here and isInCombat is true, it means the earlier combat Escape didn't catch it (should not happen).
             break;
         case '1': case '2': case '3': case '4':
         case '5': case '6': case '7': case '8': case '9':
@@ -374,38 +465,62 @@ function handleKeyDown(event) {
                 window.interaction.selectAction(parseInt(event.key, 10) - 1);
                 event.preventDefault();
             }
+            // If not in action menu, these keys might be caught by the earlier block for item selection if not in targeting mode.
             break;
-        case 'c':
-            if (gameState.inventory.open || gameState.isInCombat) return; // Prevent if inventory open or already in combat
-            let closestMeleeTarget = null;
-            let minDistance = Infinity;
-            gameState.npcs.forEach(npc => {
-                if (npc.mapPos && npc.health && npc.health.torso.current > 0 && npc.health.head.current > 0 && npc.tags && npc.tags.includes("hostile")) { // Check if NPC is alive and hostile
-                    const distance = Math.max(Math.abs(gameState.playerPos.x - npc.mapPos.x), Math.abs(gameState.playerPos.y - npc.mapPos.y));
-                    if (distance <= 1) { // Melee range (Chebyshev distance for square grid adjacency)
-                        if (distance < minDistance) { // Could be multiple NPCs in range, pick closest if needed, or first found.
-                            minDistance = distance; // This logic will just pick the first one found at distance 1.
-                            closestMeleeTarget = npc;
-                        }
-                    }
-                }
-            });
-
-            if (closestMeleeTarget) {
-                logToConsole(`Initiating melee combat with ${closestMeleeTarget.name || closestMeleeTarget.id}...`);
-                combatManager.startCombat([gameState, closestMeleeTarget]);
-            } else {
-                logToConsole("No hostile target in melee range.");
-            }
-            event.preventDefault(); break;
+        // Default: allow event to propagate if not handled by any case.
     }
 }
 
 const combatManager = new CombatManager(gameState, assetManager);
 
+// Keybinds Display Functions
+function populateKeybinds() {
+    const keybindsList = document.getElementById('keybindsList');
+    if (!keybindsList) return;
+
+    keybindsList.innerHTML = ''; // Clear existing items
+
+    const keybinds = [
+        "Movement: W, A, S, D / Arrow Keys",
+        "Interact (selected item): F (when action menu is not active)",
+        "Open/Close Inventory: I",
+        "End Turn: T",
+        "Dash: X",
+        "Toggle Roof View: O (This is a placeholder, actual key might be different or UI button only)",
+        "Enter Ranged Targeting: R",
+        "Enter Melee Targeting: C",
+        "Confirm Target/Action: F (in targeting or action menu)",
+        "Cancel Targeting/Action Menu: Escape",
+        "Cycle Interactable Items: 1-9 (selects item directly)",
+        "Cycle Inventory Items: Up/Down Arrow Keys (in inventory)",
+        "Use/Equip Inventory Item: Enter (in inventory)",
+        "Toggle Controls Display: H"
+    ];
+
+    keybinds.forEach(kb => {
+        const li = document.createElement('li');
+        li.textContent = kb;
+        keybindsList.appendChild(li);
+    });
+}
+
+function toggleKeybindsDisplay() {
+    gameState.showKeybinds = !gameState.showKeybinds;
+    const displayDiv = document.getElementById('keybindsDisplay');
+    if (!displayDiv) return;
+
+    if (gameState.showKeybinds) {
+        displayDiv.style.display = 'block';
+    } else {
+        displayDiv.style.display = 'none';
+    }
+}
+
+
 // Initial setup on DOM content load
 async function initialize() { // Made async
     try {
+        populateKeybinds(); // Populate the keybinds list on init
         await assetManager.loadDefinitions();
         console.log("Asset definitions loaded.");
         window.interaction.initInteraction(assetManager);
@@ -646,12 +761,29 @@ function startGame() {
         { id: "beretta_92f_9mm" },
         { id: "ammo_9mm", quantity: 1 }, // Add 2 boxes of 9mm ammo
 
+        // Shotgun and Ammo
+        { id: "mossberg_12ga" },
+        { id: "ammo_12gauge_buckshot", quantity: 1 }, // Add 3 boxes of 12-gauge buckshot
+
         // Rifle and Ammo
         { id: "akm_ak47_762mmr" },
         { id: "ammo_762mmr", quantity: 1 }, // Add 2 boxes of 7.62mmR ammo
 
+        // Sniper Rifle and Ammo
+        { id: "hk_psg1_762mm" },
+        { id: "ammo_762mm", quantity: 1 }, // Add 2 boxes of 7.62mm ammo
+
+
         // Thrown Weapon
         { id: "frag_grenade_thrown", quantity: 1 }, // Add 3 frag grenades
+
+
+        // Rocket Launcher (no separate ammo item, it's self-contained)
+        { id: "m72a3_law_rocket_launcher", quantity: 1 }, // Add 2 rocket launchers
+
+        // Grenade Launcher and Ammo
+        { id: "m79_grenade_launcher" },
+        { id: "ammo_40mm_grenade_frag", quantity: 1 }, // Add 3 40mm grenades
 
         // Bow and Ammo
         { id: "compound_bow" },
@@ -706,27 +838,6 @@ function startGame() {
         }
     }
 
-    // Spawn Hostile Scavenger
-    const scavengerDef = assetManager.npcsById["hostile_scavenger"];
-    if (scavengerDef) {
-        const scavengerInstance = JSON.parse(JSON.stringify(scavengerDef));
-        scavengerInstance.mapPos = { x: 15, y: 5 }; // Example position
-        gameState.npcs.push(scavengerInstance);
-        logToConsole(`Hostile Scavenger spawned at (${scavengerInstance.mapPos.x},${scavengerInstance.mapPos.y}) with health initialized from definition.`);
-    } else {
-        logToConsole("Error: Hostile Scavenger NPC definition not found.");
-    }
-
-    // Spawn Militia Man
-    const militiaDef = assetManager.npcsById["militia_man"];
-    if (militiaDef) {
-        const militiaInstance = JSON.parse(JSON.stringify(militiaDef));
-        militiaInstance.mapPos = { x: 15, y: 7 }; // Example position
-        gameState.npcs.push(militiaInstance);
-        logToConsole(`Militia Man spawned at (${militiaInstance.mapPos.x},${militiaInstance.mapPos.y}) with health initialized from definition.`);
-    } else {
-        logToConsole("Error: Militia Man NPC definition not found.");
-    }
 
     if (characterCreator) characterCreator.classList.add('hidden');
     if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');

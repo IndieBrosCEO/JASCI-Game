@@ -174,6 +174,48 @@ window.mapRenderer = {
 
         const fragment = isInitialRender ? document.createDocumentFragment() : null;
 
+        // Clear any previous targeting cursor rendering
+        if (gameState.tileCache && !isInitialRender) { // Don't clear if initial render, nothing to clear
+            for (let yCache = 0; yCache < gameState.tileCache.length; yCache++) {
+                for (let xCache = 0; xCache < gameState.tileCache[yCache].length; xCache++) {
+                    const cellToClear = gameState.tileCache[yCache][xCache];
+                    if (cellToClear && cellToClear.span && cellToClear.span.classList.contains('flashing-targeting-cursor')) {
+                        cellToClear.span.classList.remove('flashing-targeting-cursor');
+                        // Restore to its actual underlying sprite and color
+                        // This requires that the cache reflects the state *before* the X was applied.
+                        // The logic below for drawing tiles should inherently do this if it's not the targeting cell.
+                        // So, simply removing the class might be enough, and then the normal render pass fixes it.
+                        // However, to be explicit and ensure it reverts *before* player/NPCs might be drawn:
+                        let originalSprite = '';
+                        let originalColor = '';
+                        let originalId = mapData.layers.landscape?.[yCache]?.[xCache] || "";
+                        if (mapData.layers.building?.[yCache]?.[xCache]) originalId = mapData.layers.building[yCache][xCache];
+                        if (mapData.layers.item?.[yCache]?.[xCache]) originalId = mapData.layers.item[yCache][xCache];
+                        if (gameState.showRoof && mapData.layers.roof?.[yCache]?.[xCache]) {
+                            originalId = mapData.layers.roof[yCache][xCache];
+                        }
+
+                        if (originalId) {
+                            const def = assetManagerInstance.tilesets[originalId];
+                            if (def) {
+                                originalSprite = def.sprite;
+                                originalColor = def.color;
+                            } else {
+                                originalSprite = '?'; originalColor = 'magenta';
+                            }
+                        }
+                        cellToClear.span.textContent = originalSprite;
+                        cellToClear.span.style.color = originalColor;
+                        // Update cache to reflect this restored state (though it will be updated again shortly)
+                        cellToClear.sprite = originalSprite;
+                        cellToClear.color = originalColor;
+                        cellToClear.displayedId = originalId;
+                    }
+                }
+            }
+        }
+
+
         for (let y = 0; y < H; y++) {
             for (let x = 0; x < W; x++) {
                 let actualTileId = mapData.layers.landscape?.[y]?.[x] || "";
@@ -218,22 +260,29 @@ window.mapRenderer = {
                     gameState.tileCache[y][x] = {
                         span: span,
                         displayedId: targetDisplayId,
-                        sprite: targetSprite,
-                        color: targetColor
+                        sprite: targetSprite, // Store the original sprite
+                        color: targetColor   // Store the original color
                     };
                     if (fragment) fragment.appendChild(span);
                 } else {
                     const cachedCell = gameState.tileCache[y]?.[x];
                     if (cachedCell && cachedCell.span) {
                         const span = cachedCell.span;
-                        if (cachedCell.displayedId !== targetDisplayId ||
-                            cachedCell.sprite !== targetSprite ||
-                            cachedCell.color !== targetColor) {
+                        // Update cache with potentially new underlying tile if map changed (e.g. door opened)
+                        // This is important for the "clear previous targeting cursor" logic
+                        cachedCell.sprite = targetSprite;
+                        cachedCell.color = targetColor;
+                        cachedCell.displayedId = targetDisplayId;
+
+                        // Now apply to DOM
+                        if (span.textContent !== targetSprite || span.style.color !== targetColor) {
                             span.textContent = targetSprite;
                             span.style.color = targetColor;
-                            cachedCell.displayedId = targetDisplayId;
-                            cachedCell.sprite = targetSprite;
-                            cachedCell.color = targetColor;
+                        }
+                        // Ensure flashing class is removed if this tile is NOT the current target
+                        if (span.classList.contains('flashing-targeting-cursor') &&
+                            !(gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y)) {
+                            span.classList.remove('flashing-targeting-cursor');
                         }
                     }
                 }
@@ -248,6 +297,7 @@ window.mapRenderer = {
             container.appendChild(fragment);
         }
 
+        // Render NPCs after base tiles and player
         if (gameState.npcs && gameState.npcs.length > 0 && gameState.tileCache) {
             gameState.npcs.forEach(npc => {
                 if (npc.mapPos) {
@@ -256,15 +306,19 @@ window.mapRenderer = {
                     if (npcX >= 0 && npcX < W && npcY >= 0 && npcY < H) {
                         const roofObscures = gameState.showRoof && mapData.layers.roof?.[npcY]?.[npcX];
                         const playerIsHere = (npcX === gameState.playerPos.x && npcY === gameState.playerPos.y);
-                        if (!roofObscures && !playerIsHere) {
+
+                        // Only draw NPC if not obscured by roof AND not where player is (player sprite takes precedence)
+                        // AND not where the targeting cursor will be (targeting cursor takes precedence over NPC sprite)
+                        const isTargetingCursorHere = gameState.isTargetingMode && npcX === gameState.targetingCoords.x && npcY === gameState.targetingCoords.y;
+
+                        if (!roofObscures && !playerIsHere && !isTargetingCursorHere) {
                             const cachedCell = gameState.tileCache[npcY]?.[npcX];
                             if (cachedCell && cachedCell.span) {
-                                const npcDisplayId = 'NPC_' + npc.id;
-                                if (cachedCell.displayedId !== npcDisplayId) {
-                                    cachedCell.span.textContent = npc.sprite;
-                                    cachedCell.span.style.color = npc.color;
-                                    cachedCell.displayedId = npcDisplayId;
-                                }
+                                // Check if NPC is different from what's in cache (e.g. underlying tile)
+                                // For simplicity, we just overwrite. More complex logic could check cachedCell.displayedId
+                                cachedCell.span.textContent = npc.sprite;
+                                cachedCell.span.style.color = npc.color;
+                                // Optionally update cachedCell.displayedId, sprite, color for NPCs if needed for other logic
                             }
                         }
                     }
@@ -272,13 +326,34 @@ window.mapRenderer = {
             });
         }
 
-        if (gameState.tileCache) {
+        // Render Targeting Cursor 'X' - this should be after player and NPCs so it's on top.
+        if (gameState.isTargetingMode && gameState.tileCache) {
+            const targetX = gameState.targetingCoords.x;
+            const targetY = gameState.targetingCoords.y;
+
+            if (targetX >= 0 && targetX < W && targetY >= 0 && targetY < H) {
+                const cachedCell = gameState.tileCache[targetY]?.[targetX];
+                if (cachedCell && cachedCell.span) {
+                    // No need to store original, the cache already holds the underlying tile's sprite/color
+                    // or player/NPC if they were there. The next render pass will restore it if targeting moves.
+                    cachedCell.span.textContent = 'X';
+                    cachedCell.span.style.color = 'red'; // Distinct color for targeting cursor
+                    if (!cachedCell.span.classList.contains('flashing-targeting-cursor')) {
+                        cachedCell.span.classList.add('flashing-targeting-cursor');
+                    }
+                }
+            }
+        }
+
+
+        // Clear combat highlights (attacker/defender)
+        if (gameState.tileCache) { // This loop might be redundant if highlights are cleared another way or part of cache state
             for (let y = 0; y < H; y++) {
                 for (let x = 0; x < W; x++) {
                     const cell = gameState.tileCache[y]?.[x];
                     if (cell && cell.span) {
                         if (cell.span.dataset.isAttackerHighlighted === 'true' || cell.span.dataset.isDefenderHighlighted === 'true') {
-                            cell.span.style.backgroundColor = '';
+                            cell.span.style.backgroundColor = ''; // Clear background
                             delete cell.span.dataset.isAttackerHighlighted;
                             delete cell.span.dataset.isDefenderHighlighted;
                         }
@@ -287,6 +362,7 @@ window.mapRenderer = {
             }
         }
 
+        // Apply combat highlights
         if (gameState.isInCombat && gameState.tileCache) {
             if (gameState.attackerMapPos) {
                 const attackerCell = gameState.tileCache[gameState.attackerMapPos.y]?.[gameState.attackerMapPos.x];

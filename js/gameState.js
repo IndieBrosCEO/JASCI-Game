@@ -109,6 +109,16 @@ const gameState = {
     combatPhase: null, // e.g., 'attackerDeclare', 'defenderDeclare', 'resolveRolls', 'applyDamage'
     playerDefenseChoice: null, // e.g., 'dodge', 'block_unarmed', 'block_armed'
     npcDefenseChoice: null,
+
+    // Targeting System State
+    isTargetingMode: false,
+    targetingCoords: { x: 0, y: 0 }, // Initialized to a default, will be updated when entering targeting mode
+    targetingType: null, // Can be 'ranged' or 'melee'
+    targetConfirmed: false,
+    selectedTargetEntity: null,
+
+    // UI State
+    showKeybinds: false,
 };
 
 // Initialize player object and wornClothing if they don't exist
