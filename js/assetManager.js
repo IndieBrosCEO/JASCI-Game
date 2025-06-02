@@ -265,7 +265,7 @@ class AssetManager {
         processedMapData.dimensions = { width, height };
         processedMapData.layers = mapJsonData.layers || {}; // Ensure layers object exists
         processedMapData.portals = mapJsonData.portals || [];
-        processedMapData.npc_spawns = mapJsonData.npc_spawns || [];
+        processedMapData.npcs = mapJsonData.npcs || [];
         processedMapData.container_instances = mapJsonData.container_instances || [];
         processedMapData.tileset = mapJsonData.tileset || null; // Or a default tileset ID
 

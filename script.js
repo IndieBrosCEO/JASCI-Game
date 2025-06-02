@@ -153,7 +153,7 @@ function spawnNpcsFromMapData(mapData) {
     if (mapData && mapData.npcs && Array.isArray(mapData.npcs)) {
         logToConsole(`Spawning NPCs from map data for map: ${mapData.name || mapData.id}`);
         mapData.npcs.forEach(npcPlacementInfo => {
-            const npcDefinition = assetManager.getNpcDefinition(npcPlacementInfo.id);
+            const npcDefinition = assetManager.getNpc(npcPlacementInfo.id); // Changed getNpcDefinition to getNpc
             if (npcDefinition) {
                 const newNpc = JSON.parse(JSON.stringify(npcDefinition)); // Deep clone definition
                 newNpc.mapPos = { ...npcPlacementInfo.pos }; // Assign position from map data

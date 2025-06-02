@@ -56,6 +56,8 @@
   "npcs": [
     {
       "id": "training_dummy",
+      "name": "Training Dummy",
+      "teamId": 1,
       "pos": {
         "x": 1,
         "y": 1
@@ -63,13 +65,17 @@
     },
     {
       "id": "bandit_archer",
+      "name": "Bandit Archer",
+      "teamId": 2,
       "pos": {
         "x": 2,
-        "y": 2
+        "y": 3
       }
     },
     {
       "id": "bandit_thug",
+      "name": "Bandit Thug",
+      "teamId": 2,
       "pos": {
         "x": 3,
         "y": 3
@@ -77,20 +83,26 @@
     },
     {
       "id": "militia_man",
+      "name": "Militia Man",
+      "teamId": 2,
       "pos": {
         "x": 4,
-        "y": 4
+        "y": 5
       }
     },
     {
       "id": "hostile_scavenger",
+      "name": "Hostile Scavenger",
+      "teamId": 3,
       "pos": {
-        "x": 5,
+        "x": 6,
         "y": 5
       }
     },
     {
       "id": "hostile_scavenger_2",
+      "name": "Hostile Scavenger (Ally)",
+      "teamId": 3,
       "pos": {
         "x": 6,
         "y": 6
@@ -98,6 +110,8 @@
     },
     {
       "id": "militia_man_2",
+      "name": "Militia Man (Ally)",
+      "teamId": 3,
       "pos": {
         "x": 7,
         "y": 7
