@@ -119,6 +119,7 @@ const gameState = {
 
     // UI State
     showKeybinds: false,
+    retargetingJustHappened: false,
 };
 
 // Initialize player object and wornClothing if they don't exist
@@ -126,6 +127,8 @@ if (!gameState.player) {
     gameState.player = {};
 }
 
+gameState.player.teamId = 1;
+gameState.player.aggroList = [];
 gameState.player.wornClothing = {
     [ClothingLayers.HEAD_BOTTOM]: null,
     [ClothingLayers.HEAD_TOP]: null,

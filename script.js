@@ -116,18 +116,72 @@ function calculateDefenseRoll(defender, defenseType, attackerWeapon, actionConte
     };
 }
 
-function handleMapSelectionChangeWrapper(mapId) {
+async function handleMapSelectionChangeWrapper(mapId) { // Made async to handle map loading properly
     if (window.mapRenderer && typeof window.mapRenderer.handleMapSelectionChange === 'function') {
-        // It's an async function, but the onchange attribute won't await it.
-        // This is usually fine for UI event handlers.
-        window.mapRenderer.handleMapSelectionChange(mapId);
+        const loadedMapData = await window.mapRenderer.handleMapSelectionChange(mapId);
+        if (loadedMapData) {
+            // These are already set by mapRenderer.initializeCurrentMap via handleMapSelectionChange,
+            // but explicit sync here ensures script.js's direct gameState manipulations are aligned.
+            gameState.layers = loadedMapData.layers;
+            gameState.playerPos = loadedMapData.startPos || { x: 2, y: 2 };
+
+            // Spawn NPCs for the new map
+            spawnNpcsFromMapData(loadedMapData); // Ensures gameState.npcs is fresh for the new map
+
+            // Re-render and update UI based on new map
+            window.mapRenderer.scheduleRender();
+            window.interaction.detectInteractableItems();
+            window.interaction.showInteractableItems();
+            logToConsole(`Map ${loadedMapData.name} processed in wrapper.`);
+        } else {
+            logToConsole(`Map loading failed for ${mapId} in wrapper, no NPC spawning.`);
+            gameState.npcs = []; // Clear NPCs if map loading failed
+            window.mapRenderer.scheduleRender(); // Render empty state or previous state
+        }
     } else {
         console.error("window.mapRenderer.handleMapSelectionChange is not available.");
-        // Optionally, provide user feedback here if critical
         const errorDisplay = document.getElementById('errorMessageDisplay');
         if (errorDisplay) {
             errorDisplay.textContent = "Error: Map changing function is not available.";
         }
+    }
+}
+
+function spawnNpcsFromMapData(mapData) {
+    gameState.npcs = []; // Clear existing NPCs from gameState before spawning new ones
+
+    if (mapData && mapData.npcs && Array.isArray(mapData.npcs)) {
+        logToConsole(`Spawning NPCs from map data for map: ${mapData.name || mapData.id}`);
+        mapData.npcs.forEach(npcPlacementInfo => {
+            const npcDefinition = assetManager.getNpcDefinition(npcPlacementInfo.id);
+            if (npcDefinition) {
+                const newNpc = JSON.parse(JSON.stringify(npcDefinition)); // Deep clone definition
+                newNpc.mapPos = { ...npcPlacementInfo.pos }; // Assign position from map data
+
+                // Initialize health and aggroList
+                if (typeof window.initializeHealth === 'function') {
+                    window.initializeHealth(newNpc);
+                } else {
+                    console.error(`initializeHealth function not found for NPC: ${newNpc.id}`);
+                    // Basic fallback if initializeHealth is missing
+                    newNpc.health = newNpc.health || { head: {}, torso: {}, leftArm: {}, rightArm: {}, leftLeg: {}, rightLeg: {} };
+                    newNpc.aggroList = [];
+                }
+
+                // teamId should be copied by JSON.parse(JSON.stringify(npcDefinition))
+                // Log if teamId is unexpectedly missing after cloning and initialization
+                if (newNpc.teamId === undefined) { // Check if teamId is undefined on the instance
+                    console.warn(`NPC ${newNpc.id} (Name: ${newNpc.name || 'N/A'}) spawned without a teamId. Definition might be missing it, or it was not set prior to this point.`);
+                }
+
+                gameState.npcs.push(newNpc);
+                logToConsole(`Spawned NPC: ${newNpc.name || newNpc.id} (ID: ${newNpc.id}, Team: ${newNpc.teamId}) at (X:${newNpc.mapPos.x}, Y:${newNpc.mapPos.y})`);
+            } else {
+                console.warn(`NPC definition not found for ID: ${npcPlacementInfo.id} in map data.`);
+            }
+        });
+    } else {
+        logToConsole(`No NPCs to spawn for map: ${mapData.name || mapData.id} (mapData.npcs is missing or not an array).`);
     }
 }
 
@@ -567,8 +621,11 @@ async function initialize() { // Made async
                 gameState.layers = loadedMapData.layers; // Sync gameState.layers
                 gameState.playerPos = loadedMapData.startPos || { x: 2, y: 2 }; // Update playerPos
                 console.log("Initial map loaded:", loadedMapData.name);
+                // Spawn NPCs from the newly loaded map data
+                spawnNpcsFromMapData(loadedMapData); // Ensures gameState.npcs is fresh for the new map
             } else {
                 console.error(`Failed to load initial map: ${initialMapId}`);
+                gameState.npcs = []; // Clear NPCs if map fails to load
                 window.mapRenderer.initializeCurrentMap(null); // Ensure mapRenderer knows map is cleared
                 const errorDisplay = document.getElementById('errorMessageDisplay');
                 if (errorDisplay) errorDisplay.textContent = `Failed to load initial map: ${initialMapId}.`;
@@ -666,6 +723,17 @@ async function initialize() { // Made async
         });
     } else {
         console.error("confirmDefenseButton not found in the DOM during initialization.");
+    }
+
+    const retargetBtn = document.getElementById('retargetButton');
+    if (retargetBtn) {
+        retargetBtn.addEventListener('click', () => {
+            if (gameState.isInCombat && gameState.combatPhase === 'playerAttackDeclare' && combatManager) {
+                combatManager.handleRetarget();
+            }
+        });
+    } else {
+        console.error("retargetButton not found in the DOM during initialization.");
     }
 
 }
@@ -837,13 +905,25 @@ function startGame() {
                     x: startX + dx,
                     y: startY + dy
                 };
+                // Ensure teamId is copied (already handled by stringify/parse) and call initializeHealth
+                if (typeof window.initializeHealth === 'function') {
+                    window.initializeHealth(dummyInstance); // Initializes health and aggroList
+                } else {
+                    console.error("initializeHealth function not found for training_dummy");
+                    dummyInstance.aggroList = []; // Fallback
+                }
                 gameState.npcs.push(dummyInstance);
                 logToConsole(
-                    `Training Dummy placed at (${dummyInstance.mapPos.x},${dummyInstance.mapPos.y}) with detailed health initialized.`
+                    `Training Dummy (ID: ${dummyInstance.id}) placed at (${dummyInstance.mapPos.x},${dummyInstance.mapPos.y}) and initialized.`
                 );
             }
         }
     }
+    // NOTE: The spawning of map-defined NPCs will be handled by spawnNpcsFromMapData,
+    // which should be called after currentMap is confirmed to be loaded in startGame.
+    // For now, we're just correcting the hardcoded dummy spawning.
+    // If currentMap is available here AND has NPCs, spawnNpcsFromMapData(currentMap) could be called.
+    // However, the primary NPC spawning from map data is in initialize() and handleMapSelectionChangeWrapper().
 
 
     if (characterCreator) characterCreator.classList.add('hidden');

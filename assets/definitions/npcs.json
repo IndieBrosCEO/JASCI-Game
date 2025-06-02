@@ -60,7 +60,8 @@
     "equippedWeaponId": "club",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
-    "tags": [ "dummy", "target", "hostile", "melee" ]
+    "tags": [ "dummy", "target", "hostile", "melee" ],
+    "teamId": 0
   },
   {
     "id": "hostile_scavenger",
@@ -124,7 +125,8 @@
     "equippedWeaponId": "club",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 3,
-    "tags": [ "hostile", "scavenger", "melee" ]
+    "tags": [ "hostile", "scavenger", "melee" ],
+    "teamId": 3
   },
   {
     "id": "militia_man",
@@ -188,6 +190,135 @@
     "equippedWeaponId": "club",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 3,
-    "tags": [ "hostile", "humanoid", "militia" ]
+    "tags": [ "hostile", "humanoid", "militia" ],
+    "teamId": 4
+  },
+  {
+    "id": "bandit_archer",
+    "name": "Bandit Archer",
+    "sprite": "A",
+    "color": "green",
+    "health": {
+      "head": {
+        "max": 4,
+        "current": 4,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "torso": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftArm": {
+        "max": 6,
+        "current": 6,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightArm": {
+        "max": 6,
+        "current": 6,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftLeg": {
+        "max": 6,
+        "current": 6,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightLeg": {
+        "max": 6,
+        "current": 6,
+        "armor": 0,
+        "crisisTimer": 0
+      }
+    },
+    "stats": {
+      "Strength": 2,
+      "Intelligence": 2,
+      "Dexterity": 4,
+      "Constitution": 2,
+      "Perception": 3,
+      "Willpower": 2,
+      "Charisma": 1,
+      "Marksmanship": 4
+    },
+    "skills": {
+      "Unarmed": 5,
+      "MeleeWeapons": 10,
+      "Guns": 20
+    },
+    "equippedWeaponId": "bow",
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 4,
+    "tags": [ "hostile", "humanoid", "bandit", "ranged" ],
+    "teamId": 2
+  },
+  {
+    "id": "bandit_thug",
+    "name": "Bandit Thug",
+    "sprite": "T",
+    "color": "green",
+    "health": {
+      "head": {
+        "max": 6,
+        "current": 6,
+        "armor": 1,
+        "crisisTimer": 0
+      },
+      "torso": {
+        "max": 9,
+        "current": 9,
+        "armor": 1,
+        "crisisTimer": 0
+      },
+      "leftArm": {
+        "max": 8,
+        "current": 8,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightArm": {
+        "max": 8,
+        "current": 8,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftLeg": {
+        "max": 8,
+        "current": 8,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightLeg": {
+        "max": 8,
+        "current": 8,
+        "armor": 0,
+        "crisisTimer": 0
+      }
+    },
+    "stats": {
+      "Strength": 4,
+      "Intelligence": 1,
+      "Dexterity": 3,
+      "Constitution": 4,
+      "Perception": 2,
+      "Willpower": 3,
+      "Charisma": 1,
+      "Marksmanship": 1
+    },
+    "skills": {
+      "Unarmed": 15,
+      "MeleeWeapons": 25,
+      "Guns": 5
+    },
+    "equippedWeaponId": "mace",
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 3,
+    "tags": [ "hostile", "humanoid", "bandit", "melee" ],
+    "teamId": 2
   }
 ]

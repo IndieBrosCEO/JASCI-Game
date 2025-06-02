@@ -126,6 +126,8 @@ class CombatManager {
 
     promptPlayerAttackDeclaration() {
         if (this.gameState.targetConfirmed) {
+            // This block executes if a map click has occurred (targetConfirmed is true)
+            this.gameState.retargetingJustHappened = false; // Reset flag as a target has been selected
             if (this.gameState.selectedTargetEntity) {
                 this.gameState.combatCurrentDefender = this.gameState.selectedTargetEntity;
                 if (this.gameState.selectedTargetEntity.mapPos) {
@@ -137,22 +139,15 @@ class CombatManager {
             } else { // A tile was targeted, not an entity
                 const newDefenderMapPos = { ...this.gameState.targetingCoords };
                 logToConsole(`Targeting system selected tile at X:${newDefenderMapPos.x}, Y:${newDefenderMapPos.y}.`);
-                // If there's an existing combatCurrentDefender, preserve it.
-                // The defenderMapPos will point to the tile, useful for AOE or if player changes mind.
-                // If player attacks with a single-target weapon, handleConfirmedAttackDeclaration will use combatCurrentDefender.
-                // If they throw a grenade, it will use newDefenderMapPos via pendingCombatAction.targetTile.
-                this.gameState.defenderMapPos = newDefenderMapPos; // Always update defenderMapPos to the clicked tile.
-
-                // DO NOT set this.gameState.combatCurrentDefender = null; here anymore.
-                // Let nextTurn() and explicit entity targeting handle setting/clearing combatCurrentDefender.
-                // If player wants to clear an entity target, they'd need a different way or target another entity.
+                this.gameState.defenderMapPos = newDefenderMapPos;
                 if (this.gameState.combatCurrentDefender) {
-                    logToConsole(`INFO: Tile selected, but current entity target '${this.gameState.combatCurrentDefender.name}' is kept. Grenades/AOE will use tile, direct attacks will use entity.`);
+                    logToConsole(`INFO: Tile selected, but current entity target '${this.gameState.combatCurrentDefender.name}' is kept. Grenades/AOE will use tile, direct attacks will use entity unless retargeted.`);
                 }
             }
-            this.gameState.targetConfirmed = false;
-            this.gameState.selectedTargetEntity = null;
-        } else if (!this.gameState.combatCurrentDefender && this.gameState.isInCombat) {
+            this.gameState.targetConfirmed = false; // Reset for next targeting action
+            // selectedTargetEntity is reset by the targeting system directly or if a new target is chosen.
+        } else if (!this.gameState.combatCurrentDefender && this.gameState.isInCombat && !this.gameState.retargetingJustHappened) {
+            // Auto-target only if no defender, in combat, AND retargeting didn't JUST happen
             const availableNpcs = this.initiativeTracker.filter(entry =>
                 !entry.isPlayer &&
                 entry.entity.health &&
@@ -179,7 +174,7 @@ class CombatManager {
             } else if (this.gameState.defenderMapPos) {
                 defenderDisplay.textContent = `Defender: Tile at X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}`;
             } else {
-                defenderDisplay.textContent = `Defender: None`;
+                defenderDisplay.textContent = "Defender: None (Click on map to target)";
             }
         }
 
@@ -382,102 +377,72 @@ class CombatManager {
             // logToConsole('DEBUG_LOG POINT_A CHECK_UNDEFINED: GS.combatCurrentDefender === undefined: ' + (this.gameState.combatCurrentDefender === undefined));
             // logToConsole('DEBUG_LOG POINT_A CHECK_BOOLEAN: Boolean(GS.combatCurrentDefender): ' + Boolean(this.gameState.combatCurrentDefender));
 
-            logToConsole(`DEBUG NEXTTURN: Player turn starts. Initial combatCurrentDefender: ${(this.gameState.combatCurrentDefender ? (this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id) : String(this.gameState.combatCurrentDefender))}, Initial defenderMapPos: ${JSON.stringify(this.gameState.defenderMapPos)}`);
-
-            let currentDefenderStillValid = false;
-            // Stricter check for a valid combatCurrentDefender object with an id or name
-            if (this.gameState.combatCurrentDefender &&
-                this.gameState.combatCurrentDefender !== this.gameState && // Ensures defender is not the player
-                typeof this.gameState.combatCurrentDefender === 'object' &&
-                this.gameState.combatCurrentDefender !== null &&
-                (this.gameState.combatCurrentDefender.id || this.gameState.combatCurrentDefender.name)) {
-
-                const defenderInInitiative = this.initiativeTracker.find(e => e.entity === this.gameState.combatCurrentDefender);
-
-                if (defenderInInitiative &&
-                    !defenderInInitiative.isPlayer && // Double check: entity from tracker is not player
-                    defenderInInitiative.entity.health &&
-                    defenderInInitiative.entity.health.torso.current > 0 &&
-                    defenderInInitiative.entity.health.head.current > 0) {
-
-                    currentDefenderStillValid = true;
-                } else {
-                    // Inner checks failed (not in initiative, is player, or not healthy)
-                    currentDefenderStillValid = false;
-                }
+            // New Player Targeting Logic
+            if (this.gameState.retargetingJustHappened) {
+                logToConsole("Player is manually retargeting. Skipping auto-target selection.");
+                // combatCurrentDefender should be null from handleRetarget()
             } else {
-                // Outer checks failed (is null, undefined, not an object, is the player, or no id/name)
-                currentDefenderStillValid = false;
-            }
-            logToConsole(`DEBUG NEXTTURN: currentDefenderStillValid evaluated as: ${currentDefenderStillValid}`);
+                this.gameState.combatCurrentDefender = null; // Clear previous defender before new auto-selection
+                this.gameState.defenderMapPos = null;
 
-            if (!currentDefenderStillValid) {
-                // logToConsole("DEBUG NEXTTURN ReTarget: currentDefenderStillValid is FALSE. Attempting to find new NPC target."); 
-                const availableNpcs = this.initiativeTracker.filter(entry =>
-                    !entry.isPlayer && entry.entity &&
-                    entry.entity.health &&
-                    entry.entity.health.torso.current > 0 &&
-                    entry.entity.health.head.current > 0
-                );
-                // logToConsole("DEBUG NEXTTURN ReTarget: Found " + availableNpcs.length + " available NPCs for re-targeting.");
-                if (availableNpcs.length > 0) {
-                    this.gameState.combatCurrentDefender = availableNpcs[0].entity;
-                    // logToConsole("DEBUG NEXTTURN ReTarget: NEWLY ASSIGNED combatCurrentDefender. Name: " + (this.gameState.combatCurrentDefender ? this.gameState.combatCurrentDefender.name : "Error-NewDefIsNull"));
+                // 1. Check Aggro List
+                if (this.gameState.player && this.gameState.player.aggroList && this.gameState.player.aggroList.length > 0) {
+                    for (const aggroEntry of this.gameState.player.aggroList) {
+                        const potentialTarget = aggroEntry.entityRef;
+                        if (!potentialTarget) continue;
 
-                    if (this.gameState.combatCurrentDefender && this.gameState.combatCurrentDefender.mapPos) {
-                        this.gameState.defenderMapPos = { ...this.gameState.combatCurrentDefender.mapPos };
-                        logToConsole(`Player's turn: Auto-targeting new defender: ${this.gameState.combatCurrentDefender.name}. Target pos: X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}`);
-                    } else {
-                        this.gameState.defenderMapPos = null;
-                        logToConsole(`Player's turn: Auto-targeting new defender: ${(this.gameState.combatCurrentDefender ? this.gameState.combatCurrentDefender.name : "Error-NewDefIsNullNoMapPos")}, but target has no mapPos.`);
+                        const targetInInitiative = this.initiativeTracker.find(e => e.entity === potentialTarget);
+                        if (!targetInInitiative) continue;
+
+                        // Player is gameState, so potentialTarget cannot be gameState
+                        // And player's teamId is gameState.player.teamId (e.g. 1)
+                        if (potentialTarget !== this.gameState &&
+                            potentialTarget.health && potentialTarget.health.torso.current > 0 && potentialTarget.health.head.current > 0 &&
+                            potentialTarget.teamId !== this.gameState.player.teamId) {
+
+                            this.gameState.combatCurrentDefender = potentialTarget;
+                            this.gameState.defenderMapPos = { ...potentialTarget.mapPos };
+                            logToConsole(`Player automatically targets ${potentialTarget.name} from aggro list (Threat: ${aggroEntry.threat}). Pos: X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}`);
+                            break;
+                        }
                     }
-                } else {
-                    logToConsole("Player's turn: No valid NPC targets available for re-targeting. Combat may end or targeting will fail.");
-                    // Consider if endCombat() or other actions are strictly needed here if game is to continue for other reasons.
-                    // For now, focus on logging. The existing this.endCombat() and return might be too aggressive if player could still act (e.g. move, use item if combat doesn't strictly require an enemy).
-                    // However, if no NPCs, combat usually does end. This part of the logic is pre-existing.
-                    const wasInCombat = this.gameState.isInCombat;
-                    this.endCombat();
-                    // if (wasInCombat && !this.gameState.isInCombat) logToConsole("DEBUG NEXTTURN ReTarget: Called endCombat() due to no available NPCs."); // Redundant if combat ends.
-                    return;
                 }
-            } else { // currentDefenderStillValid is TRUE
-                // logToConsole("DEBUG NEXTTURN KeepTarget: currentDefenderStillValid is TRUE. Keeping existing target.");
-                // This part already logs the existing target name and its mapPos (or lack thereof)
-                // Make sure the logs are clear here too.
-                if (this.gameState.combatCurrentDefender && this.gameState.combatCurrentDefender.mapPos) {
-                    // This mapPos update was part of the original fix for keeping existing target, ensure it's here.
-                    this.gameState.defenderMapPos = { ...this.gameState.combatCurrentDefender.mapPos };
-                    logToConsole(`Player's turn: Existing target ${this.gameState.combatCurrentDefender.name} (at X:${this.gameState.combatCurrentDefender.mapPos.x}, Y:${this.gameState.combatCurrentDefender.mapPos.y}) is still valid. Updated defenderMapPos.`);
-                } else {
-                    this.gameState.defenderMapPos = null;
-                    logToConsole(`Player's turn: Existing target ${this.gameState.combatCurrentDefender ? this.gameState.combatCurrentDefender.name : "Error-ValidDefNoName"} is still valid but currently has no mapPos. defenderMapPos set to null.`);
-                }
-            }
 
-            // Final check and log before calling promptPlayerAttackDeclaration
-            if (!this.gameState.combatCurrentDefender && this.gameState.isInCombat && this.initiativeTracker.some(e => !e.isPlayer && e.entity.health.torso.current > 0)) {
-                // This case should ideally not be reached if the logic above is correct and combat shouldn't have ended.
-                logToConsole("CRITICAL WARNING NEXTTURN: No defender set for player's turn despite available NPCs. This indicates a flaw in targeting logic.");
-                // As a safety, try one last time to pick a target if any available.
-                const safetyNpcs = this.initiativeTracker.filter(e => !e.isPlayer && e.entity && e.entity.health.torso.current > 0 && e.entity.health.head.current > 0);
-                if (safetyNpcs.length > 0) {
-                    this.gameState.combatCurrentDefender = safetyNpcs[0].entity;
-                    if (this.gameState.combatCurrentDefender.mapPos) {
-                        this.gameState.defenderMapPos = { ...this.gameState.combatCurrentDefender.mapPos };
-                        logToConsole(`SAFETY NET: Re-assigned target to ${this.gameState.combatCurrentDefender.name} at X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}`);
-                    } else {
-                        this.gameState.defenderMapPos = null;
-                        logToConsole(`SAFETY NET: Re-assigned target to ${(this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id)}, but target has no mapPos.`);
+                // 2. Fallback to Closest Enemy (if no valid aggro target)
+                if (!this.gameState.combatCurrentDefender) {
+                    logToConsole("Player has no valid aggro targets or aggro list is empty. Searching for nearest enemy.");
+                    let closestEnemy = null;
+                    let minDistance = Infinity;
+
+                    for (const initiativeEntry of this.initiativeTracker) {
+                        const candidateEntity = initiativeEntry.entity;
+                        if (candidateEntity === this.gameState) continue; // Skip player
+
+                        if (candidateEntity.health && candidateEntity.health.torso.current > 0 && candidateEntity.health.head.current > 0 &&
+                            candidateEntity.teamId !== this.gameState.player.teamId && candidateEntity.mapPos && this.gameState.playerPos) {
+
+                            const distance = Math.abs(this.gameState.playerPos.x - candidateEntity.mapPos.x) + Math.abs(this.gameState.playerPos.y - candidateEntity.mapPos.y);
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                                closestEnemy = candidateEntity;
+                            }
+                        }
                     }
-                } else {
-                    logToConsole("SAFETY NET: No NPCs available to target. Combat should likely end if not already.");
-                    // Consider calling this.endCombat() if not already handled by other paths.
+
+                    if (closestEnemy) {
+                        this.gameState.combatCurrentDefender = closestEnemy;
+                        this.gameState.defenderMapPos = { ...closestEnemy.mapPos };
+                        logToConsole(`Player automatically targets nearest enemy: ${closestEnemy.name}. Pos: X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}`);
+                    } else {
+                        logToConsole("Player found no valid enemies on the map.");
+                        // combatCurrentDefender remains null, promptPlayerAttackDeclaration will show "Defender: None"
+                    }
                 }
             }
+            // End of New Player Targeting Logic
             logToConsole(`DEBUG NEXTTURN: Player turn setup complete. Final combatCurrentDefender: ${(this.gameState.combatCurrentDefender ? (this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id) : 'null')}, Final defenderMapPos: ${JSON.stringify(this.gameState.defenderMapPos)}`);
 
-        } else { // NPC's turn (existing logic from previous fix for this part)
+        } else { // NPC's turn
             const npcAttacker = currentEntry.entity;
             npcAttacker.movedThisTurn = false;
             npcAttacker.currentActionPoints = npcAttacker.defaultActionPoints || 1;
@@ -558,6 +523,7 @@ class CombatManager {
     }
 
     handleConfirmedAttackDeclaration() {
+        this.gameState.retargetingJustHappened = false; // Attack confirmed, so retargeting sequence is over.
         const weaponSelect = document.getElementById('combatWeaponSelect');
         const bodyPartSelect = document.getElementById('combatBodyPartSelect');
         const selectedWeaponValue = weaponSelect.value;
@@ -1720,6 +1686,11 @@ class CombatManager {
             part.current = Math.max(0, part.current - reducedDamage);
             logToConsole(`INFO: Player ${accessKey} HP: ${part.current}/${part.max}.`);
 
+            // Add aggro before crisis/death checks
+            if (typeof window.shareAggroWithTeam === 'function') {
+                window.shareAggroWithTeam(entity, attacker, damageAmount); // Use raw damageAmount for threat
+            }
+
             if (part.current === 0) {
                 const formattedPartName = window.formatBodyPartName ? window.formatBodyPartName(accessKey) : accessKey.toUpperCase();
                 if (part.inCrisis) {
@@ -1759,6 +1730,11 @@ class CombatManager {
             logToConsole(`DAMAGE${bulletPrefix}: ${attackerName}'s ${weaponName} deals ${reducedDamage} ${damageType} to ${entityName}'s ${bodyPartName} (health key: ${accessKey}) (Raw: ${damageAmount}, Armor: ${effectiveArmor}).`);
             part.current = Math.max(0, part.current - reducedDamage);
             logToConsole(`INFO: ${entityName} ${accessKey} HP: ${part.current}/${part.max}.`);
+
+            // Add aggro before crisis/death checks
+            if (typeof window.shareAggroWithTeam === 'function') {
+                window.shareAggroWithTeam(entity, attacker, damageAmount); // Use raw damageAmount for threat
+            }
 
             if (part.current === 0) {
                 const formattedPartName = window.formatBodyPartName ? window.formatBodyPartName(accessKey) : accessKey.toUpperCase();
@@ -1889,17 +1865,88 @@ class CombatManager {
             this.nextTurn();
             return;
         }
-        const playerTarget = this.gameState;
-        if (!playerTarget || (playerTarget.health.head.current <= 0 || playerTarget.health.torso.current <= 0)) {
-            logToConsole(`INFO: ${npcName} has no valid (alive) player target. Ending NPC turn.`);
+
+        // Initialize aggroList if it doesn't exist
+        if (!Array.isArray(npc.aggroList)) {
+            npc.aggroList = [];
+        }
+
+        this.gameState.combatCurrentDefender = null; // Clear previous defender for NPC's turn
+
+        // 1. Target Selection from Aggro List
+        if (npc.aggroList.length > 0) {
+            for (const aggroEntry of npc.aggroList) {
+                const potentialTarget = aggroEntry.entityRef;
+                if (!potentialTarget) continue;
+
+                const targetInInitiative = this.initiativeTracker.find(e => e.entity === potentialTarget);
+                if (!targetInInitiative) continue; // Target not in current combat
+
+                const isTargetPlayer = potentialTarget === this.gameState;
+                const targetHealth = isTargetPlayer ? this.gameState.health : potentialTarget.health;
+                const targetTeamId = isTargetPlayer ? this.gameState.player.teamId : potentialTarget.teamId;
+
+                if (targetHealth && targetHealth.torso.current > 0 && targetHealth.head.current > 0 && npc.teamId !== targetTeamId) {
+                    this.gameState.combatCurrentDefender = potentialTarget;
+                    this.gameState.defenderMapPos = isTargetPlayer ? { ...this.gameState.playerPos } : { ...potentialTarget.mapPos };
+                    logToConsole(`NPC TARGETING: ${npcName} targets ${isTargetPlayer ? "Player" : potentialTarget.name} from aggro list (Threat: ${aggroEntry.threat}). Pos: X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}`);
+                    break;
+                }
+            }
+        }
+
+        // 2. Fallback Targeting (if no valid aggro target)
+        if (!this.gameState.combatCurrentDefender) {
+            logToConsole(`NPC TARGETING: ${npcName} found no valid target in aggro list. Searching for nearest enemy.`);
+            let closestTarget = null;
+            let minDistance = Infinity;
+
+            for (const initiativeEntry of this.initiativeTracker) {
+                const candidateEntity = initiativeEntry.entity;
+                if (candidateEntity === npc) continue; // Skip self
+
+                const isCandidatePlayer = candidateEntity === this.gameState;
+                const candidateHealth = isCandidatePlayer ? this.gameState.health : candidateEntity.health;
+                const candidateTeamId = isCandidatePlayer ? this.gameState.player.teamId : candidateEntity.teamId;
+                const candidateMapPos = isCandidatePlayer ? this.gameState.playerPos : candidateEntity.mapPos;
+
+                if (candidateHealth && candidateHealth.torso.current > 0 && candidateHealth.head.current > 0 && npc.teamId !== candidateTeamId && npc.mapPos && candidateMapPos) {
+                    const distance = Math.abs(npc.mapPos.x - candidateMapPos.x) + Math.abs(npc.mapPos.y - candidateMapPos.y);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestTarget = candidateEntity;
+                    }
+                }
+            }
+
+            if (closestTarget) {
+                this.gameState.combatCurrentDefender = closestTarget;
+                const isClosestTargetPlayer = closestTarget === this.gameState;
+                this.gameState.defenderMapPos = isClosestTargetPlayer ? { ...this.gameState.playerPos } : { ...closestTarget.mapPos };
+                logToConsole(`NPC TARGETING: ${npcName} targets nearest enemy: ${isClosestTargetPlayer ? "Player" : closestTarget.name}. Pos: X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}`);
+            }
+        }
+
+        // 3. No Target Found Handling
+        if (!this.gameState.combatCurrentDefender) {
+            logToConsole(`NPC ACTION: ${npcName} found no valid targets. Ending turn.`);
             this.nextTurn();
             return;
         }
 
+        // 4. Action Execution (using the selected combatCurrentDefender)
+        // Specific "training_dummy" logic: It will use the aggro target if one exists, otherwise defaults to player if player is the defender.
+        // If defender is not player (e.g. another NPC attacked it), it will attack that NPC.
         if (npc.id === "training_dummy") {
-            const playerPos = this.gameState.playerPos;
+            const targetPos = this.gameState.defenderMapPos; // Already set if a defender was found
             const npcPos = npc.mapPos;
-            const distance = Math.abs(npcPos.x - playerPos.x) + Math.abs(npcPos.y - playerPos.y);
+
+            if (!targetPos || !npcPos) {
+                logToConsole(`INFO: ${npcName} (dummy) cannot act: missing target or self position. Ending turn.`);
+                this.nextTurn();
+                return;
+            }
+            const distance = Math.abs(npcPos.x - targetPos.x) + Math.abs(npcPos.y - targetPos.y);
 
             if (distance <= 1 && npc.currentActionPoints > 0) {
                 const weaponToUse = npc.equippedWeaponId ? this.assetManager.getItem(npc.equippedWeaponId) : null;
@@ -1907,45 +1954,48 @@ class CombatManager {
                 const targetBodyPart = "Torso";
 
                 this.gameState.pendingCombatAction = {
-                    target: playerTarget, weapon: weaponToUse, attackType: attackType, bodyPart: targetBodyPart,
+                    target: this.gameState.combatCurrentDefender, weapon: weaponToUse, attackType: attackType, bodyPart: targetBodyPart,
                     fireMode: 'single', actionType: "attack", entity: npc,
                     actionDescription: `${attackType} attack by ${npcName}`
                 };
-                logToConsole(`NPC ACTION: ${npcName} (dummy) attacks Player's ${targetBodyPart} with ${weaponToUse ? weaponToUse.name : 'Unarmed'}.`);
+                const defenderNameDisplay = (this.gameState.combatCurrentDefender === this.gameState) ? "Player" : this.gameState.combatCurrentDefender.name;
+                logToConsole(`NPC ACTION: ${npcName} (dummy) attacks ${defenderNameDisplay}'s ${targetBodyPart} with ${weaponToUse ? weaponToUse.name : 'Unarmed'}.`);
                 npc.currentActionPoints--;
                 this.gameState.combatPhase = 'defenderDeclare';
-                this.handleDefenderActionPrompt();
-                return;
-            }
-            else if (distance > 1 && npc.currentMovementPoints > 0) {
-                logToConsole(`INFO: ${npcName} (dummy) is ${distance} units away. Attempting to move.`);
-                const moved = this.moveNpcTowardsTarget(npc, playerPos);
+                this.handleDefenderActionPrompt(); // This will prompt player if player is defender, or decide NPC defense
+                return; // Action taken or attempted
+            } else if (distance > 1 && npc.currentMovementPoints > 0) {
+                const moved = this.moveNpcTowardsTarget(npc, targetPos);
                 if (moved) {
-                    const newDistance = Math.abs(npc.mapPos.x - playerPos.x) + Math.abs(npc.mapPos.y - playerPos.y);
+                    const newDistance = Math.abs(npc.mapPos.x - targetPos.x) + Math.abs(npc.mapPos.y - targetPos.y);
                     if (newDistance <= 1 && npc.currentActionPoints > 0) {
-                        logToConsole(`INFO: ${npcName} (dummy) moved and is now adjacent. Attempting attack.`);
+                        // Attack after moving
                         const weaponToUse = npc.equippedWeaponId ? this.assetManager.getItem(npc.equippedWeaponId) : null;
                         const attackType = (weaponToUse && weaponToUse.type.includes("melee")) ? 'melee' : 'unarmed';
                         this.gameState.pendingCombatAction = {
-                            target: playerTarget, weapon: weaponToUse, attackType: attackType, bodyPart: "Torso",
+                            target: this.gameState.combatCurrentDefender, weapon: weaponToUse, attackType: attackType, bodyPart: "Torso",
                             fireMode: 'single', actionType: "attack", entity: npc,
                             actionDescription: `${attackType} attack by ${npcName}`
                         };
+                        const defenderNameDisplay = (this.gameState.combatCurrentDefender === this.gameState) ? "Player" : this.gameState.combatCurrentDefender.name;
+                        logToConsole(`NPC ACTION: ${npcName} (dummy) moved and attacks ${defenderNameDisplay}'s Torso with ${weaponToUse ? weaponToUse.name : 'Unarmed'}.`);
                         npc.currentActionPoints--;
                         this.gameState.combatPhase = 'defenderDeclare';
                         this.handleDefenderActionPrompt();
-                        return;
+                        return; // Action taken or attempted
                     }
                 }
-                if (npc.currentMovementPoints > 0 && !moved) {
-                    logToConsole(`INFO: ${npcName} (dummy) could not move closer or chose not to.`);
+                // If still has AP after move (or couldn't move but has AP for other actions, though dummy is simple)
+                if (npc.currentActionPoints > 0 && npc.currentMovementPoints === 0 && distance > 1) {
+                    logToConsole(`INFO: ${npcName} (dummy) moved but still out of range or couldn't move, has AP but no MP. Ending turn.`);
+                } else if (npc.currentMovementPoints === 0 && distance > 1) {
+                    logToConsole(`INFO: ${npcName} (dummy) has no more movement points and is not in range. Ending turn.`);
                 }
             } else {
-                logToConsole(`INFO: ${npcName} (dummy) - No further actions or cannot act (No AP/MP, or too far and cannot move).`);
+                logToConsole(`INFO: ${npcName} (dummy) - No further actions or cannot act (No AP/MP, or already adjacent and no AP). Ending turn.`);
             }
-            this.nextTurn();
-
-        } else {
+            this.nextTurn(); // End turn if no action taken or after movement without attack
+        } else { // For other NPCs
             let weaponToUse = null;
             let attackType = 'unarmed';
             let fireMode = 'single';
@@ -1958,23 +2008,60 @@ class CombatManager {
                     else if (equippedWeapon.type.includes("firearm") || equippedWeapon.type.includes("bow") || equippedWeapon.type.includes("crossbow")) {
                         attackType = 'ranged';
                         if (equippedWeapon.fireModes && equippedWeapon.fireModes.includes("burst")) fireMode = "burst";
-                    }
-                    else if (equippedWeapon.type.includes("thrown")) { attackType = 'ranged'; }
+                    } else if (equippedWeapon.type.includes("thrown")) { attackType = 'ranged'; }
                 }
             }
-            if (attackType === 'unarmed' && !weaponToUse) {
+            if (attackType === 'unarmed' && !weaponToUse) { // Default to melee if unarmed
                 attackType = 'melee'; weaponToUse = null;
             }
-            const targetBodyPart = "Torso";
-            this.gameState.pendingCombatAction = {
-                target: playerTarget, weapon: weaponToUse, attackType: attackType, bodyPart: targetBodyPart,
-                fireMode: fireMode, actionType: "attack",
-                actionDescription: `${attackType} attack by ${npcName}`,
-                entity: npc
-            };
-            logToConsole(`NPC ACTION: ${npcName} attacks Player's ${targetBodyPart} with ${weaponToUse ? weaponToUse.name : 'Unarmed'} (Mode: ${fireMode}).`);
-            this.gameState.combatPhase = 'defenderDeclare';
-            this.handleDefenderActionPrompt();
+
+            const targetBodyPart = "Torso"; // NPCs aim for torso by default for now
+
+            // Check distance for melee attacks
+            if (attackType === 'melee') {
+                const npcPos = npc.mapPos;
+                const targetPos = this.gameState.defenderMapPos;
+                if (!npcPos || !targetPos) {
+                    logToConsole(`NPC ACTION: ${npcName} cannot perform melee attack: missing self or target position. Ending turn.`);
+                    this.nextTurn();
+                    return;
+                }
+                const distance = Math.abs(npcPos.x - targetPos.x) + Math.abs(npcPos.y - targetPos.y);
+                if (distance > 1) { // Out of melee range
+                    if (npc.currentMovementPoints > 0) {
+                        this.moveNpcTowardsTarget(npc, targetPos);
+                        // Re-check distance after move for a potential attack
+                        const newDistance = Math.abs(npc.mapPos.x - targetPos.x) + Math.abs(npc.mapPos.y - targetPos.y);
+                        if (newDistance <= 1 && npc.currentActionPoints > 0) {
+                            // Fall through to attack
+                        } else {
+                            logToConsole(`NPC ACTION: ${npcName} moved towards target but still not in melee range or no AP. Ending turn.`);
+                            this.nextTurn();
+                            return;
+                        }
+                    } else {
+                        logToConsole(`NPC ACTION: ${npcName} is out of melee range and has no movement points. Ending turn.`);
+                        this.nextTurn();
+                        return;
+                    }
+                }
+            }
+            // If ranged, or melee and now in range:
+            if (npc.currentActionPoints > 0) {
+                this.gameState.pendingCombatAction = {
+                    target: this.gameState.combatCurrentDefender, weapon: weaponToUse, attackType: attackType, bodyPart: targetBodyPart,
+                    fireMode: fireMode, actionType: "attack", entity: npc,
+                    actionDescription: `${attackType} attack by ${npcName}`
+                };
+                const defenderNameDisplay = (this.gameState.combatCurrentDefender === this.gameState) ? "Player" : this.gameState.combatCurrentDefender.name;
+                logToConsole(`NPC ACTION: ${npcName} attacks ${defenderNameDisplay}'s ${targetBodyPart} with ${weaponToUse ? weaponToUse.name : 'Unarmed'} (Mode: ${fireMode}).`);
+                npc.currentActionPoints--;
+                this.gameState.combatPhase = 'defenderDeclare';
+                this.handleDefenderActionPrompt();
+            } else {
+                logToConsole(`NPC ACTION: ${npcName} has no action points left. Ending turn.`);
+                this.nextTurn();
+            }
         }
     }
 
