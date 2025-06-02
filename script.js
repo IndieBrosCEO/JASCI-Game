@@ -5,6 +5,7 @@ const assetManager = new AssetManager();
 // let currentMapData = null; // This is now managed in js/mapRenderer.js // This comment is accurate.
 
 // gameState, ClothingLayers, and InventorySizes are now in js/gameState.js
+const COMBAT_ALERT_RADIUS = 10;
 
 /**************************************************************
  * Clothing System Constants and Initialization
@@ -458,14 +459,56 @@ function handleKeyDown(event) {
 
                 // Integration with CombatManager
                 if (!gameState.isInCombat) {
+                    let allParticipants = [];
+                    allParticipants.push(gameState); // Add player
+
                     if (gameState.selectedTargetEntity) {
-                        combatManager.startCombat([gameState, gameState.selectedTargetEntity]);
-                    } else { // Tile targeted
-                        combatManager.startCombat([gameState]); // Start combat with player only, defender will be tile
+                        // Check if the selected target is already the player (should not happen with NPCs)
+                        // or if it's already in the list (e.g. if gameState itself was somehow a target, which is unlikely for NPCs)
+                        if (!allParticipants.includes(gameState.selectedTargetEntity)) {
+                            allParticipants.push(gameState.selectedTargetEntity);
+                        }
+                        logToConsole(`Combat initiated by player targeting ${gameState.selectedTargetEntity.name || gameState.selectedTargetEntity.id}.`);
+                    } else {
+                        logToConsole("Combat initiated by player targeting a tile.");
+                    }
+
+                    const playerPos = gameState.playerPos;
+                    if (playerPos) { // Ensure playerPos is valid
+                        gameState.npcs.forEach(npc => {
+                            // Check if NPC is already included (e.g. was the direct target)
+                            if (allParticipants.includes(npc)) {
+                                return; // Skip if already added
+                            }
+
+                            // Check if NPC is alive
+                            if (!npc.health || !npc.health.torso || npc.health.torso.current <= 0 || !npc.health.head || npc.health.head.current <= 0) {
+                                return; // Skip if not alive
+                            }
+
+                            if (npc.mapPos) {
+                                const distance = Math.abs(npc.mapPos.x - playerPos.x) + Math.abs(npc.mapPos.y - playerPos.y);
+                                if (distance <= COMBAT_ALERT_RADIUS) {
+                                    if (!allParticipants.includes(npc)) { // Double check before pushing
+                                        allParticipants.push(npc);
+                                        logToConsole(`${npc.name || npc.id} (Team: ${npc.teamId}) is nearby (distance: ${distance}) and added to combat.`);
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    combatManager.startCombat(allParticipants);
+                    // combatManager.promptPlayerAttackDeclaration(); // Removed as per refactoring instructions
+                } else {
+                    // If combat is ongoing and 'f' is pressed in targeting mode (e.g. for re-targeting)
+                    // We might need to prompt player attack declaration if it's their turn.
+                    if (combatManager.gameState.combatCurrentAttacker === combatManager.gameState &&
+                        (combatManager.gameState.combatPhase === 'playerAttackDeclare' || combatManager.gameState.retargetingJustHappened)) {
+                        logToConsole("Targeting confirmed mid-combat. Prompting player attack declaration.");
+                        combatManager.promptPlayerAttackDeclaration();
                     }
                 }
-                // Always call promptPlayerAttackDeclaration after 'f' in targeting mode
-                combatManager.promptPlayerAttackDeclaration();
                 event.preventDefault();
 
             } else if (gameState.isActionMenuActive) {

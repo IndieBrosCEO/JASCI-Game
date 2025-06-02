@@ -61,7 +61,7 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
     "tags": [ "dummy", "target", "hostile", "melee" ],
-    "teamId": 0
+    "teamId": 1
   },
   {
     "id": "hostile_scavenger",
@@ -126,7 +126,7 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 3,
     "tags": [ "hostile", "scavenger", "melee" ],
-    "teamId": 3
+    "teamId": 2
   },
   {
     "id": "hostile_scavenger_2",
@@ -191,7 +191,7 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 3,
     "tags": [ "hostile", "scavenger", "melee" ],
-    "teamId": 3
+    "teamId": 2
   },
   {
     "id": "militia_man",
@@ -256,7 +256,7 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 3,
     "tags": [ "hostile", "humanoid", "militia" ],
-    "teamId": 4
+    "teamId": 3
   },
   {
     "id": "militia_man_2",
@@ -321,7 +321,7 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 3,
     "tags": [ "hostile", "humanoid", "militia" ],
-    "teamId": 4
+    "teamId": 3
   },
   {
     "id": "bandit_archer",
@@ -385,7 +385,7 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
     "tags": [ "hostile", "humanoid", "bandit", "ranged" ],
-    "teamId": 2
+    "teamId": 4
   },
   {
     "id": "bandit_thug",
@@ -449,6 +449,6 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 3,
     "tags": [ "hostile", "humanoid", "bandit", "melee" ],
-    "teamId": 2
+    "teamId": 4
   }
 ]
