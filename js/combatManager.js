@@ -181,6 +181,7 @@ class CombatManager {
     }
 
     promptPlayerAttackDeclaration() {
+        this.gameState.isWaitingForPlayerCombatInput = true;
         const defenderDisplay = document.getElementById('currentDefender');
         const attackDeclUI = document.getElementById('attackDeclarationUI');
 
@@ -277,6 +278,7 @@ class CombatManager {
     }
 
     promptPlayerDefenseDeclaration(attackData) {
+        this.gameState.isWaitingForPlayerCombatInput = true;
         const defenseTypeSelect = document.getElementById('combatDefenseTypeSelect');
         const blockingLimbSelect = document.getElementById('combatBlockingLimbSelect');
         const defenseUI = document.getElementById('defenseDeclarationUI');
@@ -415,6 +417,10 @@ class CombatManager {
     }
 
     nextTurn(previousAttackerEntity = null) {
+        if (this.gameState.isWaitingForPlayerCombatInput) {
+            logToConsole("INFO: nextTurn() deferred as game is waiting for player combat input.");
+            return;
+        }
         const prevAttackerName = previousAttackerEntity ? (previousAttackerEntity.name || (previousAttackerEntity === this.gameState ? "Player" : previousAttackerEntity.id)) : (this.gameState.combatCurrentAttacker ? (this.gameState.combatCurrentAttacker.name || this.gameState.combatCurrentAttacker.id) : 'N/A');
         logToConsole(`CombatManager.nextTurn() called. Turn ended for: ${prevAttackerName}. Current GS attacker (if any, before update): ${this.gameState.combatCurrentAttacker ? (this.gameState.combatCurrentAttacker.name || this.gameState.combatCurrentAttacker.id) : 'N/A'}. Initiative index before adv: ${this.currentTurnIndex}`);
         if (!this.gameState.isInCombat || this.initiativeTracker.length === 0) {
@@ -610,6 +616,7 @@ class CombatManager {
     }
 
     handleConfirmedAttackDeclaration() {
+        this.gameState.isWaitingForPlayerCombatInput = false;
         this.gameState.retargetingJustHappened = false; // Attack confirmed, so retargeting sequence is over.
         const weaponSelect = document.getElementById('combatWeaponSelect');
         const bodyPartSelect = document.getElementById('combatBodyPartSelect');
@@ -701,6 +708,7 @@ class CombatManager {
     }
 
     handleConfirmedDefenseDeclaration() {
+        this.gameState.isWaitingForPlayerCombatInput = false;
         const defenseTypeSelect = document.getElementById('combatDefenseTypeSelect');
         const blockingLimbSelect = document.getElementById('combatBlockingLimbSelect');
 
@@ -1497,13 +1505,15 @@ class CombatManager {
                     }
                     window.turnManager.updateTurnUI(); // Update AP/MP display on main UI
                 } else {
-                    logToConsole("Player has no action or movement points remaining. Scheduling next turn.");
+                    logToConsole("Player has no action or movement points remaining. Proceeding to next turn.");
                     const playerEntity = this.gameState; // Player is gameState
-                    setTimeout(() => this.nextTurn(playerEntity), 0);
+                    this.nextTurn(playerEntity);
                 }
             } else { // NPC was the attacker
-                // Control returns to the loop in executeNpcCombatTurn.
-                logToConsole(`NPC ${attacker.name || attacker.id} finished an attack sequence. Remaining AP: ${attacker.currentActionPoints}, MP: ${attacker.currentMovementPoints}. Returning to executeNpcCombatTurn.`);
+                logToConsole(`NPC ${attacker.name || attacker.id} finished an attack sequence against ${defenderName}. AP: ${attacker.currentActionPoints}, MP: ${attacker.currentMovementPoints}.`);
+                if (this.gameState.isInCombat) {
+                    this.nextTurn(attacker); // 'attacker' is the NPC whose action just resolved.
+                }
             }
         } else {
             // This else corresponds to if (!this.gameState.isInCombat)
@@ -2108,6 +2118,11 @@ class CombatManager {
                 actionTakenThisLoopIteration = true;
                 this.gameState.combatPhase = 'defenderDeclare';
                 this.handleDefenderActionPrompt();
+
+                if (this.gameState.combatPhase === 'playerDefenseDeclare') {
+                    logToConsole(`INFO: ${npcName} turn paused, awaiting player defense declaration.`);
+                    return;
+                }
             } else if (distanceToTarget > 1 && attackType === 'melee' && npc.currentMovementPoints > 0) {
                 logToConsole(`${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}) decides to MOVE towards ${targetName} (melee). Dist: ${distanceToTarget}`);
                 if (this.moveNpcTowardsTarget(npc, currentTargetPos)) {
@@ -2135,8 +2150,8 @@ class CombatManager {
         } // End of while loop
 
         const aboutToEndTurnNpc = npc; // Capture the current NPC
-        logToConsole(`${npcName} turn processing finished. AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}. Scheduling nextTurn() via setTimeout.`);
-        setTimeout(() => this.nextTurn(aboutToEndTurnNpc), 0);
+        logToConsole(`${npcName} turn processing finished. AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}. Proceeding to nextTurn().`);
+        this.nextTurn(aboutToEndTurnNpc);
     }
 
     updateCombatUI() {

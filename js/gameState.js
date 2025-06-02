@@ -120,6 +120,7 @@ const gameState = {
     // UI State
     showKeybinds: false,
     retargetingJustHappened: false,
+    isWaitingForPlayerCombatInput: false,
 };
 
 // Initialize player object and wornClothing if they don't exist
