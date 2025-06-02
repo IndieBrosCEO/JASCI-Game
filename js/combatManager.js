@@ -231,7 +231,7 @@ class CombatManager {
         this.defenseTypeChangeListener = (event) => {
             if (event.target.value === 'BlockUnarmed') {
                 blockingLimbSelect.classList.remove('hidden');
-                blockingLimbSelect.value = "LeftArm";
+                blockingLimbSelect.value = "leftArm";
             } else {
                 blockingLimbSelect.classList.add('hidden');
             }
@@ -311,7 +311,7 @@ class CombatManager {
             // const entityName = entry.isPlayer ? "Player" : entry.entity.name;
             let entityName;
             if (entry.isPlayer) {
-                entityName = "Player";
+                entityName = (document.getElementById('charName')?.value || "Player");
             } else {
                 if (entry.entity && entry.entity.name) {
                     entityName = entry.entity.name;
@@ -353,7 +353,7 @@ class CombatManager {
         }
         this.gameState.combatCurrentAttacker = currentEntry.entity;
         const attacker = this.gameState.combatCurrentAttacker;
-        const attackerName = currentEntry.isPlayer ? "Player" : attacker.name;
+        const attackerName = currentEntry.isPlayer ? (document.getElementById('charName')?.value || "Player") : attacker.name;
 
         this.gameState.attackerMapPos = currentEntry.isPlayer ? { ...this.gameState.playerPos } : (attacker.mapPos ? { ...attacker.mapPos } : null);
 
@@ -795,13 +795,17 @@ class CombatManager {
             baseRoll = Math.min(rollDie(20), rollDie(20));
         }
 
-        actionContext.bodyPartModifier = 0;
-        if (this.gameState.combatCurrentDefender) {
-            const lowerCaseTargetBodyPart = targetBodyPart ? targetBodyPart.toLowerCase().replace(/\s/g, '') : "torso";
-            if (lowerCaseTargetBodyPart === "head") actionContext.bodyPartModifier = -4;
-            else if (["leftarm", "rightarm", "leftleg", "rightleg"].includes(lowerCaseTargetBodyPart)) actionContext.bodyPartModifier = -1;
-        }
+        actionContext.bodyPartModifier = 0; // Ensure it's initialized
+        if (this.gameState.combatCurrentDefender && targetBodyPart) { // targetBodyPart comes from pendingCombatAction
+            const partToCheck = targetBodyPart; // e.g., "leftArm", "Head", "Torso"
 
+            if (partToCheck.toLowerCase() === "head") { // Keep head check flexible (lowercase)
+                actionContext.bodyPartModifier = -4;
+            } else if (["leftArm", "rightArm", "leftLeg", "rightLeg"].includes(partToCheck)) { // Use camelCase for limbs
+                actionContext.bodyPartModifier = -1;
+            }
+            // If partToCheck is "Torso", or any other value not "head" or a listed limb, modifier remains 0.
+        }
 
         const totalAttackRoll = baseRoll + skillBasedModifier + actionContext.bodyPartModifier + rangeModifier + attackModifierForFireMode + actionContext.attackerMovementPenalty;
 
@@ -1680,7 +1684,19 @@ class CombatManager {
     }
 
     applyDamage(attacker, entity, bodyPartName, damageAmount, damageType, weapon, bulletNum = 0, totalBullets = 0) {
-        const normalizedBodyPartName = bodyPartName.toLowerCase().replace(/\s/g, '');
+        let accessKey;
+        const lowerBodyPartName = bodyPartName.toLowerCase();
+
+        if (lowerBodyPartName === "head") {
+            accessKey = "head";
+        } else if (lowerBodyPartName === "torso") {
+            accessKey = "torso";
+        } else {
+            // For limbs, assume bodyPartName is already in the correct camelCase
+            // (e.g., "leftArm", "rightArm") as passed from the UI.
+            accessKey = bodyPartName;
+        }
+
         let part;
         const entityName = (entity === this.gameState) ? "Player" : entity.name;
         const attackerName = (attacker === this.gameState) ? "Player" : attacker.name;
@@ -1692,20 +1708,20 @@ class CombatManager {
         }
 
         if (isPlayerVictim) {
-            if (!this.gameState.health || !this.gameState.health[normalizedBodyPartName]) {
-                logToConsole(`Error: Player health data missing for body part: ${normalizedBodyPartName}`);
+            if (!this.gameState.health || !this.gameState.health[accessKey]) {
+                logToConsole(`Error: Player health data missing for body part: ${accessKey} (original: ${bodyPartName})`);
                 return;
             }
-            part = this.gameState.health[normalizedBodyPartName];
-            const effectiveArmor = window.getArmorForBodyPart(normalizedBodyPartName, entity);
+            part = this.gameState.health[accessKey];
+            const effectiveArmor = window.getArmorForBodyPart(accessKey, entity);
             const reducedDamage = Math.max(0, damageAmount - effectiveArmor);
 
-            logToConsole(`DAMAGE${bulletPrefix}: ${attackerName}'s ${weaponName} deals ${reducedDamage} ${damageType} to Player's ${normalizedBodyPartName} (Raw: ${damageAmount}, Armor: ${effectiveArmor}).`);
+            logToConsole(`DAMAGE${bulletPrefix}: ${attackerName}'s ${weaponName} deals ${reducedDamage} ${damageType} to Player's ${bodyPartName} (health key: ${accessKey}) (Raw: ${damageAmount}, Armor: ${effectiveArmor}).`);
             part.current = Math.max(0, part.current - reducedDamage);
-            logToConsole(`INFO: Player ${normalizedBodyPartName} HP: ${part.current}/${part.max}.`);
+            logToConsole(`INFO: Player ${accessKey} HP: ${part.current}/${part.max}.`);
 
             if (part.current === 0) {
-                const formattedPartName = window.formatBodyPartName ? window.formatBodyPartName(normalizedBodyPartName) : normalizedBodyPartName.toUpperCase();
+                const formattedPartName = window.formatBodyPartName ? window.formatBodyPartName(accessKey) : accessKey.toUpperCase();
                 if (part.inCrisis) {
                     logToConsole(`FATAL HIT: ${entityName}'s already crippled ${formattedPartName} was struck again! Character has died.`);
                     window.gameOver(entity);
@@ -1732,20 +1748,20 @@ class CombatManager {
             }
             window.renderHealthTable(entity);
         } else {
-            if (!entity.health || !entity.health[normalizedBodyPartName]) {
-                logToConsole(`Error: ${entityName} health data missing for body part: ${normalizedBodyPartName}`);
+            if (!entity.health || !entity.health[accessKey]) {
+                logToConsole(`Error: ${entityName} health data missing for body part: ${accessKey} (original: ${bodyPartName})`);
                 return;
             }
-            part = entity.health[normalizedBodyPartName];
-            const effectiveArmor = entity.armor ? (entity.armor[normalizedBodyPartName] || 0) : 0;
+            part = entity.health[accessKey];
+            const effectiveArmor = entity.armor ? (entity.armor[accessKey] || 0) : 0;
             const reducedDamage = Math.max(0, damageAmount - effectiveArmor);
 
-            logToConsole(`DAMAGE${bulletPrefix}: ${attackerName}'s ${weaponName} deals ${reducedDamage} ${damageType} to ${entityName}'s ${normalizedBodyPartName} (Raw: ${damageAmount}, Armor: ${effectiveArmor}).`);
+            logToConsole(`DAMAGE${bulletPrefix}: ${attackerName}'s ${weaponName} deals ${reducedDamage} ${damageType} to ${entityName}'s ${bodyPartName} (health key: ${accessKey}) (Raw: ${damageAmount}, Armor: ${effectiveArmor}).`);
             part.current = Math.max(0, part.current - reducedDamage);
-            logToConsole(`INFO: ${entityName} ${normalizedBodyPartName} HP: ${part.current}/${part.max}.`);
+            logToConsole(`INFO: ${entityName} ${accessKey} HP: ${part.current}/${part.max}.`);
 
             if (part.current === 0) {
-                const formattedPartName = window.formatBodyPartName ? window.formatBodyPartName(normalizedBodyPartName) : normalizedBodyPartName.toUpperCase();
+                const formattedPartName = window.formatBodyPartName ? window.formatBodyPartName(accessKey) : accessKey.toUpperCase();
                 if (part.inCrisis) {
                     logToConsole(`FATAL HIT: ${entityName}'s already crippled ${formattedPartName} was struck again! Character has died.`);
                     window.gameOver(entity);
@@ -1971,8 +1987,8 @@ class CombatManager {
         const defenseRollResultEl = document.getElementById('defenseRollResult');
         const damageResultEl = document.getElementById('damageResult');
 
-        const attackerName = this.gameState.combatCurrentAttacker ? (this.gameState.combatCurrentAttacker === this.gameState ? 'Player' : this.gameState.combatCurrentAttacker.name) : '-';
-        const defenderName = this.gameState.combatCurrentDefender ? (this.gameState.combatCurrentDefender === this.gameState ? 'Player' : this.gameState.combatCurrentDefender.name) : '-';
+        const attackerName = this.gameState.combatCurrentAttacker ? (this.gameState.combatCurrentAttacker === this.gameState ? (document.getElementById('charName')?.value || "Player") : this.gameState.combatCurrentAttacker.name) : '-';
+        const defenderName = this.gameState.combatCurrentDefender ? (this.gameState.combatCurrentDefender === this.gameState ? (document.getElementById('charName')?.value || "Player") : this.gameState.combatCurrentDefender.name) : '-';
 
         if (currentAttackerEl) currentAttackerEl.textContent = `Attacker: ${attackerName}`;
         if (currentDefenderEl) currentDefenderEl.textContent = `Defender: ${defenderName}`;
@@ -1990,6 +2006,10 @@ class CombatManager {
             if (damageResultEl) damageResultEl.textContent = 'Damage: -';
             this.gameState.attackerMapPos = null;
             this.gameState.defenderMapPos = null;
+            // Ensure player name is updated in UI even when combat ends if player was last attacker/defender
+            const charNameVal = document.getElementById('charName')?.value || "Player";
+            if (currentAttackerEl && currentAttackerEl.textContent.includes("Player")) currentAttackerEl.textContent = `Attacker: ${charNameVal}`;
+            if (currentDefenderEl && currentDefenderEl.textContent.includes("Player")) currentDefenderEl.textContent = `Defender: ${charNameVal}`;
             window.mapRenderer.scheduleRender();
         }
     }

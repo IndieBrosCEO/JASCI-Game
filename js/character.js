@@ -274,10 +274,10 @@ function formatBodyPartName(part) {
     const nameMap = {
         head: "Head",
         torso: "Torso",
-        leftArm: "L Arm",
-        rightArm: "R Arm",
-        leftLeg: "L Leg",
-        rightLeg: "R Leg"
+        leftArm: "Left Arm",
+        rightArm: "Right Arm",
+        leftLeg: "Left Leg",
+        rightLeg: "Right Leg"
     };
     return nameMap[part] || part;
 }
