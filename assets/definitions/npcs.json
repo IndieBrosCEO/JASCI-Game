@@ -129,9 +129,139 @@
     "teamId": 3
   },
   {
+    "id": "hostile_scavenger_2",
+    "name": "Hostile Scavenger (Ally)",
+    "sprite": "s",
+    "color": "darkred",
+    "health": {
+      "head": {
+        "max": 5,
+        "current": 5,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "torso": {
+        "max": 8,
+        "current": 8,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftArm": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightArm": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftLeg": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightLeg": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      }
+    },
+    "stats": {
+      "Strength": 3,
+      "Intelligence": 2,
+      "Dexterity": 3,
+      "Constitution": 3,
+      "Perception": 2,
+      "Willpower": 2,
+      "Charisma": 1,
+      "Marksmanship": 1
+    },
+    "skills": {
+      "Unarmed": 10,
+      "MeleeWeapons": 15,
+      "Guns": 5,
+      "Explosives": 0
+    },
+    "equippedWeaponId": "club",
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 3,
+    "tags": [ "hostile", "scavenger", "melee" ],
+    "teamId": 3
+  },
+  {
     "id": "militia_man",
     "name": "Militia Man",
     "sprite": "M",
+    "color": "blue",
+    "health": {
+      "head": {
+        "max": 5,
+        "current": 5,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "torso": {
+        "max": 8,
+        "current": 8,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftArm": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightArm": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftLeg": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightLeg": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      }
+    },
+    "stats": {
+      "Strength": 3,
+      "Intelligence": 3,
+      "Dexterity": 3,
+      "Constitution": 3,
+      "Perception": 3,
+      "Willpower": 3,
+      "Charisma": 3,
+      "Marksmanship": 3
+    },
+    "skills": {
+      "Unarmed": 10,
+      "MeleeWeapons": 15,
+      "Guns": 10,
+      "Explosives": 0
+    },
+    "equippedWeaponId": "club",
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 3,
+    "tags": [ "hostile", "humanoid", "militia" ],
+    "teamId": 4
+  },
+  {
+    "id": "militia_man_2",
+    "name": "Militia Man (Ally)",
+    "sprite": "m",
     "color": "blue",
     "health": {
       "head": {

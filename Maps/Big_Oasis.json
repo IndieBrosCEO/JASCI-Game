@@ -1,6 +1,29 @@
 {
   "width": 80,
   "height": 50,
+  "npcs": [
+    {
+      "id": "bandit_archer",
+      "pos": {
+        "x": 5,
+        "y": 2
+      }
+    },
+    {
+      "id": "bandit_thug",
+      "pos": {
+        "x": 6,
+        "y": 2
+      }
+    },
+    {
+      "id": "hostile_scavenger",
+      "pos": {
+        "x": 5,
+        "y": 8
+      }
+    }
+  ],
   "layers": {
     "landscape": [
       [

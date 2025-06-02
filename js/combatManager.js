@@ -124,10 +124,89 @@ class CombatManager {
         }
     }
 
+    shareAggroWithTeam(damagedEntity, attacker, threatAmount) {
+        if (!damagedEntity || !attacker || threatAmount <= 0) {
+            return;
+        }
+
+        let teamId;
+        const isDamagedEntityPlayer = damagedEntity === this.gameState;
+
+        if (isDamagedEntityPlayer) {
+            teamId = this.gameState.player.teamId;
+        } else {
+            teamId = damagedEntity.teamId;
+        }
+
+        if (typeof teamId === 'undefined') {
+            logToConsole(`WARN: shareAggroWithTeam - damagedEntity ${isDamagedEntityPlayer ? 'Player' : damagedEntity.id} has no teamId.`);
+            return;
+        }
+
+        // Share with NPCs on the same team
+        this.gameState.npcs.forEach(npc => {
+            if (npc.teamId === teamId && npc !== attacker && npc !== damagedEntity) {
+                if (!Array.isArray(npc.aggroList)) {
+                    npc.aggroList = [];
+                }
+                let existingEntry = npc.aggroList.find(entry => entry.entityRef === attacker);
+                if (existingEntry) {
+                    existingEntry.threat += threatAmount;
+                    logToConsole(`INFO: ${npc.name} existing threat vs ${attacker === this.gameState ? 'Player' : attacker.name} increased to ${existingEntry.threat}`);
+                } else {
+                    npc.aggroList.push({ entityRef: attacker, threat: threatAmount });
+                    logToConsole(`INFO: ${npc.name} new threat vs ${attacker === this.gameState ? 'Player' : attacker.name}: ${threatAmount}`);
+                }
+                // Sort aggroList by threat descending
+                npc.aggroList.sort((a, b) => b.threat - a.threat);
+            }
+        });
+
+        // Share with Player if on the same team
+        if (this.gameState.player.teamId === teamId && attacker !== this.gameState && damagedEntity !== this.gameState) {
+            if (!Array.isArray(this.gameState.player.aggroList)) {
+                this.gameState.player.aggroList = [];
+            }
+            let existingEntry = this.gameState.player.aggroList.find(entry => entry.entityRef === attacker);
+            if (existingEntry) {
+                existingEntry.threat += threatAmount;
+                logToConsole(`INFO: Player existing threat vs ${attacker.name} increased to ${existingEntry.threat}`);
+            } else {
+                this.gameState.player.aggroList.push({ entityRef: attacker, threat: threatAmount });
+                logToConsole(`INFO: Player new threat vs ${attacker.name}: ${threatAmount}`);
+            }
+            // Sort aggroList by threat descending
+            this.gameState.player.aggroList.sort((a, b) => b.threat - a.threat);
+        }
+    }
+
     promptPlayerAttackDeclaration() {
-        if (this.gameState.targetConfirmed) {
-            // This block executes if a map click has occurred (targetConfirmed is true)
-            this.gameState.retargetingJustHappened = false; // Reset flag as a target has been selected
+        const defenderDisplay = document.getElementById('currentDefender');
+        const attackDeclUI = document.getElementById('attackDeclarationUI');
+
+        if (this.gameState.retargetingJustHappened) {
+            // Target already updated by map click handler
+            logToConsole(`Retargeting complete. New target: ${this.gameState.combatCurrentDefender ? (this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id) : 'None'}.`);
+            // Crucially, reset retargetingJustHappened AFTER it's handled.
+            this.gameState.retargetingJustHappened = false;
+            // Proceed to show attack UI
+            if (attackDeclUI) attackDeclUI.classList.remove('hidden');
+            this.populateWeaponSelect();
+            const bodyPartSelect = document.getElementById('combatBodyPartSelect');
+            if (bodyPartSelect) bodyPartSelect.value = "Torso";
+            this.gameState.combatPhase = 'playerAttackDeclare';
+            logToConsole("Declare your attack using the UI.");
+
+        } else if (this.gameState.isRetargeting) {
+            logToConsole("Player is selecting a new target. Click on the map.");
+            if (defenderDisplay) defenderDisplay.textContent = "Retargeting: Select new target on map";
+            if (attackDeclUI) attackDeclUI.classList.add('hidden'); // Hide attack options until target selected
+            // Do not auto-select or proceed to full attack declaration yet
+            return; // Wait for map click
+
+        } else if (this.gameState.targetConfirmed) {
+            // This block executes if a map click has occurred for initial targeting (targetConfirmed is true)
+            // this.gameState.retargetingJustHappened = false; // Already false or handled above
             if (this.gameState.selectedTargetEntity) {
                 this.gameState.combatCurrentDefender = this.gameState.selectedTargetEntity;
                 if (this.gameState.selectedTargetEntity.mapPos) {
@@ -146,8 +225,16 @@ class CombatManager {
             }
             this.gameState.targetConfirmed = false; // Reset for next targeting action
             // selectedTargetEntity is reset by the targeting system directly or if a new target is chosen.
-        } else if (!this.gameState.combatCurrentDefender && this.gameState.isInCombat && !this.gameState.retargetingJustHappened) {
-            // Auto-target only if no defender, in combat, AND retargeting didn't JUST happen
+            // Proceed to show attack UI
+            if (attackDeclUI) attackDeclUI.classList.remove('hidden');
+            this.populateWeaponSelect();
+            const bodyPartSelect = document.getElementById('combatBodyPartSelect');
+            if (bodyPartSelect) bodyPartSelect.value = "Torso";
+            this.gameState.combatPhase = 'playerAttackDeclare';
+            logToConsole("Declare your attack using the UI.");
+
+        } else if (!this.gameState.combatCurrentDefender && this.gameState.isInCombat) {
+            // Auto-target only if no defender, in combat, AND not in any retargeting mode
             const availableNpcs = this.initiativeTracker.filter(entry =>
                 !entry.isPlayer &&
                 entry.entity.health &&
@@ -167,8 +254,8 @@ class CombatManager {
             }
         }
 
-        const defenderDisplay = document.getElementById('currentDefender');
-        if (defenderDisplay) {
+        // const defenderDisplay = document.getElementById('currentDefender'); // This is the redundant declaration
+        if (defenderDisplay) { // This 'defenderDisplay' refers to the one declared at the top of the function
             if (this.gameState.combatCurrentDefender) {
                 defenderDisplay.textContent = `Defender: ${this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id}`;
             } else if (this.gameState.defenderMapPos) {
@@ -441,6 +528,7 @@ class CombatManager {
             }
             // End of New Player Targeting Logic
             logToConsole(`DEBUG NEXTTURN: Player turn setup complete. Final combatCurrentDefender: ${(this.gameState.combatCurrentDefender ? (this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id) : 'null')}, Final defenderMapPos: ${JSON.stringify(this.gameState.defenderMapPos)}`);
+            this.gameState.isRetargeting = false; // Reset isRetargeting at the start of a new player turn
 
         } else { // NPC's turn
             const npcAttacker = currentEntry.entity;
@@ -1687,9 +1775,7 @@ class CombatManager {
             logToConsole(`INFO: Player ${accessKey} HP: ${part.current}/${part.max}.`);
 
             // Add aggro before crisis/death checks
-            if (typeof window.shareAggroWithTeam === 'function') {
-                window.shareAggroWithTeam(entity, attacker, damageAmount); // Use raw damageAmount for threat
-            }
+            this.shareAggroWithTeam(entity, attacker, damageAmount); // Use raw damageAmount for threat
 
             if (part.current === 0) {
                 const formattedPartName = window.formatBodyPartName ? window.formatBodyPartName(accessKey) : accessKey.toUpperCase();
@@ -1732,9 +1818,7 @@ class CombatManager {
             logToConsole(`INFO: ${entityName} ${accessKey} HP: ${part.current}/${part.max}.`);
 
             // Add aggro before crisis/death checks
-            if (typeof window.shareAggroWithTeam === 'function') {
-                window.shareAggroWithTeam(entity, attacker, damageAmount); // Use raw damageAmount for threat
-            }
+            this.shareAggroWithTeam(entity, attacker, damageAmount); // Use raw damageAmount for threat
 
             if (part.current === 0) {
                 const formattedPartName = window.formatBodyPartName ? window.formatBodyPartName(accessKey) : accessKey.toUpperCase();
@@ -1763,6 +1847,19 @@ class CombatManager {
                 }
             }
         }
+    }
+
+    handleRetargetButtonClick() {
+        this.gameState.isRetargeting = true;
+        this.gameState.retargetingJustHappened = false; // Clear any previous state
+        this.gameState.combatCurrentDefender = null;    // Clear current defender
+        this.gameState.defenderMapPos = null;           // Clear defender position
+        this.gameState.selectedTargetEntity = null;     // Clear selected entity from map click
+        logToConsole("Retarget button clicked. Player should now click on a new target on the map.");
+        // Call promptPlayerAttackDeclaration to update UI (hide attack options, change defender display)
+        this.promptPlayerAttackDeclaration();
+        // Ensure combat UI reflects the change, especially the defender display
+        this.updateCombatUI();
     }
 
     _getTileProperties(tileId) {

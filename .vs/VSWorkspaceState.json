@@ -5,8 +5,9 @@
     "\\assets\\definitions",
     "\\assets\\maps",
     "\\js",
+    "\\mapMaker",
     "\\Maps"
   ],
-  "SelectedNode": "\\Maps\\Swamp_House_Boat.json",
+  "SelectedNode": "\\mapMaker\\mapMaker.html",
   "PreviewInSolutionExplorer": false
 }

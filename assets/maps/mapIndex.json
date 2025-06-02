@@ -1,5 +1,9 @@
 [
   {
+    "id": "Small_Map",
+    "name": "Small Map"
+  },
+  {
     "id": "Big_Oasis",
     "name": "Big Oasis"
   },
@@ -10,21 +14,5 @@
   {
     "id": "beachHouse",
     "name": "Beach House"
-  },
-  {
-    "id": "grassTemplate",
-    "name": "Grass Template"
-  },
-  {
-    "id": "linMap_1",
-    "name": "LinMap 1"
-  },
-  {
-    "id": "testMap",
-    "name": "Test Map"
-  },
-  {
-    "id": "testMap_2",
-    "name": "Test Map 2"
   }
 ]
