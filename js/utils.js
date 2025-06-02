@@ -2,13 +2,22 @@
  * Utility & Logging Functions
  **************************************************************/
 
-function logToConsole(message) {
+function logToConsole(message, color) {
     console.log(message);
     const consoleElement = document.getElementById("console");
     if (consoleElement) {
-        const para = document.createElement("p");
-        para.textContent = message;
-        consoleElement.appendChild(para);
+        if (color) {
+            const span = document.createElement("span");
+            span.style.color = color;
+            span.textContent = message;
+            const para = document.createElement("p");
+            para.appendChild(span);
+            consoleElement.appendChild(para);
+        } else {
+            const para = document.createElement("p");
+            para.textContent = message;
+            consoleElement.appendChild(para);
+        }
         consoleElement.scrollTop = consoleElement.scrollHeight;
     }
 }
