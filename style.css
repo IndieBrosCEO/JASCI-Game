@@ -82,7 +82,7 @@ button {
 }
 
 #console {
-    height: 100px;
+    height: 80%;
     overflow-y: auto;
     background: #111;
     color: #0f0;

@@ -590,14 +590,12 @@ function populateKeybinds() {
         "Open/Close Inventory: I",
         "End Turn: T",
         "Dash: X",
-        "Toggle Roof View: O (This is a placeholder, actual key might be different or UI button only)",
-        "Enter Ranged Targeting: R",
-        "Enter Melee Targeting: C",
+        "Enter Combat Targeting: R or C",
         "Confirm Target/Action: F (in targeting or action menu)",
         "Cancel Targeting/Action Menu: Escape",
         "Cycle Interactable Items: 1-9 (selects item directly)",
         "Cycle Inventory Items: Up/Down Arrow Keys (in inventory)",
-        "Use/Equip Inventory Item: Enter (in inventory)",
+        "Use/Equip Inventory Item: F (in inventory)",
         "Toggle Controls Display: H"
     ];
 
@@ -929,44 +927,6 @@ function startGame() {
             console.warn(`Weapon or ammo definition not found for ID: ${itemEntry.id}`);
         }
     });
-
-    // Load and place 8 Training Dummies in a 4×2 block starting at (10,10)
-    const dummyDefinition = assetManager.npcsById["training_dummy"];
-    if (!dummyDefinition) {
-        logToConsole("Error: Training Dummy NPC definition not found.");
-    } else {
-        const startX = 10;
-        const startY = 10;
-        const width = 2;   // how many across
-        const height = 2;  // how many down
-
-        for (let dy = 0; dy < height; dy++) {
-            for (let dx = 0; dx < width; dx++) {
-                // deep‐clone the definition
-                const dummyInstance = JSON.parse(JSON.stringify(dummyDefinition));
-                dummyInstance.mapPos = {
-                    x: startX + dx,
-                    y: startY + dy
-                };
-                // Ensure teamId is copied (already handled by stringify/parse) and call initializeHealth
-                if (typeof window.initializeHealth === 'function') {
-                    window.initializeHealth(dummyInstance); // Initializes health and aggroList
-                } else {
-                    console.error("initializeHealth function not found for training_dummy");
-                    dummyInstance.aggroList = []; // Fallback
-                }
-                gameState.npcs.push(dummyInstance);
-                logToConsole(
-                    `Training Dummy (ID: ${dummyInstance.id}) placed at (${dummyInstance.mapPos.x},${dummyInstance.mapPos.y}) and initialized.`
-                );
-            }
-        }
-    }
-    // NOTE: The spawning of map-defined NPCs will be handled by spawnNpcsFromMapData,
-    // which should be called after currentMap is confirmed to be loaded in startGame.
-    // For now, we're just correcting the hardcoded dummy spawning.
-    // If currentMap is available here AND has NPCs, spawnNpcsFromMapData(currentMap) could be called.
-    // However, the primary NPC spawning from map data is in initialize() and handleMapSelectionChangeWrapper().
 
 
     if (characterCreator) characterCreator.classList.add('hidden');

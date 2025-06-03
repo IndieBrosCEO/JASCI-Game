@@ -139,7 +139,7 @@ class CombatManager {
         }
 
         if (typeof teamId === 'undefined') {
-            logToConsole(`WARN: shareAggroWithTeam - damagedEntity ${isDamagedEntityPlayer ? 'Player' : damagedEntity.id} has no teamId.`);
+            logToConsole(`WARN: shareAggroWithTeam - damagedEntity ${isDamagedEntityPlayer ? 'Player' : damagedEntity.id} has no teamId.`, 'orange');
             return;
         }
 
@@ -152,10 +152,10 @@ class CombatManager {
                 let existingEntry = npc.aggroList.find(entry => entry.entityRef === attacker);
                 if (existingEntry) {
                     existingEntry.threat += threatAmount;
-                    logToConsole(`INFO: ${npc.name} existing threat vs ${attacker === this.gameState ? 'Player' : attacker.name} increased to ${existingEntry.threat}`);
+                    logToConsole(`INFO: ${npc.name} existing threat vs ${attacker === this.gameState ? 'Player' : attacker.name} increased to ${existingEntry.threat}`, 'gold');
                 } else {
                     npc.aggroList.push({ entityRef: attacker, threat: threatAmount });
-                    logToConsole(`INFO: ${npc.name} new threat vs ${attacker === this.gameState ? 'Player' : attacker.name}: ${threatAmount}`);
+                    logToConsole(`INFO: ${npc.name} new threat vs ${attacker === this.gameState ? 'Player' : attacker.name}: ${threatAmount}`, 'gold');
                 }
                 // Sort aggroList by threat descending
                 npc.aggroList.sort((a, b) => b.threat - a.threat);
@@ -170,10 +170,10 @@ class CombatManager {
             let existingEntry = this.gameState.player.aggroList.find(entry => entry.entityRef === attacker);
             if (existingEntry) {
                 existingEntry.threat += threatAmount;
-                logToConsole(`INFO: Player existing threat vs ${attacker.name} increased to ${existingEntry.threat}`);
+                logToConsole(`INFO: Player existing threat vs ${attacker.name} increased to ${existingEntry.threat}`, 'lightgreen');
             } else {
                 this.gameState.player.aggroList.push({ entityRef: attacker, threat: threatAmount });
-                logToConsole(`INFO: Player new threat vs ${attacker.name}: ${threatAmount}`);
+                logToConsole(`INFO: Player new threat vs ${attacker.name}: ${threatAmount}`, 'lightgreen');
             }
             // Sort aggroList by threat descending
             this.gameState.player.aggroList.sort((a, b) => b.threat - a.threat);
@@ -187,7 +187,7 @@ class CombatManager {
 
         if (this.gameState.retargetingJustHappened) {
             // Target already updated by map click handler
-            logToConsole(`Retargeting complete. New target: ${this.gameState.combatCurrentDefender ? (this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id) : 'None'}.`);
+            logToConsole(`Retargeting complete. New target: ${this.gameState.combatCurrentDefender ? (this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id) : 'None'}.`, 'lightblue');
             // Crucially, reset retargetingJustHappened AFTER it's handled.
             this.gameState.retargetingJustHappened = false;
             // Proceed to show attack UI
@@ -196,10 +196,10 @@ class CombatManager {
             const bodyPartSelect = document.getElementById('combatBodyPartSelect');
             if (bodyPartSelect) bodyPartSelect.value = "Torso";
             this.gameState.combatPhase = 'playerAttackDeclare';
-            logToConsole("Declare your attack using the UI.");
+            logToConsole("Declare your attack using the UI.", 'lightblue');
 
         } else if (this.gameState.isRetargeting) {
-            logToConsole("Player is selecting a new target. Click on the map.");
+            logToConsole("Player is selecting a new target. Click on the map.", 'lightblue');
             if (defenderDisplay) defenderDisplay.textContent = "Retargeting: Select new target on map";
             if (attackDeclUI) attackDeclUI.classList.add('hidden'); // Hide attack options until target selected
             // Do not auto-select or proceed to full attack declaration yet
@@ -215,13 +215,13 @@ class CombatManager {
                 } else {
                     this.gameState.defenderMapPos = null;
                 }
-                logToConsole(`Target acquired via targeting system: ${this.gameState.selectedTargetEntity.name || this.gameState.selectedTargetEntity.id}`);
+                logToConsole(`Target acquired via targeting system: ${this.gameState.selectedTargetEntity.name || this.gameState.selectedTargetEntity.id}`, 'lightblue');
             } else { // A tile was targeted, not an entity
                 const newDefenderMapPos = { ...this.gameState.targetingCoords };
-                logToConsole(`Targeting system selected tile at X:${newDefenderMapPos.x}, Y:${newDefenderMapPos.y}.`);
+                logToConsole(`Targeting system selected tile at X:${newDefenderMapPos.x}, Y:${newDefenderMapPos.y}.`, 'lightblue');
                 this.gameState.defenderMapPos = newDefenderMapPos;
                 if (this.gameState.combatCurrentDefender) {
-                    logToConsole(`INFO: Tile selected, but current entity target '${this.gameState.combatCurrentDefender.name}' is kept. Grenades/AOE will use tile, direct attacks will use entity unless retargeted.`);
+                    logToConsole(`INFO: Tile selected, but current entity target '${this.gameState.combatCurrentDefender.name}' is kept. Grenades/AOE will use tile, direct attacks will use entity unless retargeted.`, 'gold');
                 }
             }
             this.gameState.targetConfirmed = false; // Reset for next targeting action
@@ -232,7 +232,7 @@ class CombatManager {
             const bodyPartSelect = document.getElementById('combatBodyPartSelect');
             if (bodyPartSelect) bodyPartSelect.value = "Torso";
             this.gameState.combatPhase = 'playerAttackDeclare';
-            logToConsole("Declare your attack using the UI.");
+            logToConsole("Declare your attack using the UI.", 'lightblue');
 
         } else if (!this.gameState.combatCurrentDefender && this.gameState.isInCombat) {
             // Auto-target only if no defender, in combat, AND not in any retargeting mode
@@ -247,9 +247,9 @@ class CombatManager {
                 if (this.gameState.combatCurrentDefender.mapPos) {
                     this.gameState.defenderMapPos = { ...this.gameState.combatCurrentDefender.mapPos };
                 }
-                logToConsole(`Auto-targeting ${this.gameState.combatCurrentDefender.name}.`);
+                logToConsole(`Auto-targeting ${this.gameState.combatCurrentDefender.name}.`, 'lightblue');
             } else {
-                logToConsole("No valid NPC targets available. Combat may need to end.");
+                logToConsole("No valid NPC targets available. Combat may need to end.", 'orange');
                 this.endCombat();
                 return;
             }
@@ -274,7 +274,7 @@ class CombatManager {
         document.getElementById('attackDeclarationUI').classList.remove('hidden');
         const oldAttackerPrompt = document.getElementById('attackerPrompt');
         if (oldAttackerPrompt) oldAttackerPrompt.innerHTML = '';
-        logToConsole("Declare your attack using the UI.");
+        logToConsole("Declare your attack using the UI.", 'lightblue');
     }
 
     promptPlayerDefenseDeclaration(attackData) {
@@ -325,7 +325,7 @@ class CombatManager {
         const attackerName = (this.gameState.combatCurrentAttacker === this.gameState || !this.gameState.combatCurrentAttacker) ? "Opponent" : this.gameState.combatCurrentAttacker.name;
         const weaponName = (attackData && attackData.weapon) ? attackData.weapon.name : "Unarmed";
         const targetBodyPart = (attackData && attackData.bodyPart) ? attackData.bodyPart : "your body";
-        logToConsole(`${attackerName} is attacking ${targetBodyPart} with ${weaponName}! Choose your defense.`);
+        logToConsole(`${attackerName} is attacking ${targetBodyPart} with ${weaponName}! Choose your defense.`, 'orange');
 
         defenseUI.classList.remove('hidden');
         this.gameState.combatPhase = 'playerDefenseDeclare';
@@ -357,16 +357,16 @@ class CombatManager {
                 if (!participant) {
                     console.warn("CRITICAL WARNING STCOMBAT: Undefined non-player participant detected.");
                 } else if (!participant.name && !participant.id) {
-                    logToConsole(`DEBUG STCOMBAT: Adding NPC to initiative: Name=UNDEFINED_NAME, ID=UNDEFINED_ID, isPlayer=${isPlayer}`);
+                    logToConsole(`DEBUG STCOMBAT: Adding NPC to initiative: Name=UNDEFINED_NAME, ID=UNDEFINED_ID, isPlayer=${isPlayer}`, 'grey');
                     console.warn(`WARNING STCOMBAT: NPC entity (isPlayer=false) is missing both .name and .id. Entity:`, participant);
                 } else if (!participant.name) {
-                    logToConsole(`DEBUG STCOMBAT: Adding NPC to initiative: Name=(missing, using ID) ${participant.id}, ID='${participant.id}', isPlayer=${isPlayer}`);
+                    logToConsole(`DEBUG STCOMBAT: Adding NPC to initiative: Name=(missing, using ID) ${participant.id}, ID='${participant.id}', isPlayer=${isPlayer}`, 'grey');
                     console.warn(`WARNING STCOMBAT: NPC entity (ID: ${participant.id}) is missing .name property.`);
                 } else {
-                    logToConsole(`DEBUG STCOMBAT: Adding NPC to initiative: Name='${participant.name}', ID='${participant.id}', isPlayer=${isPlayer}`);
+                    logToConsole(`DEBUG STCOMBAT: Adding NPC to initiative: Name='${participant.name}', ID='${participant.id}', isPlayer=${isPlayer}`, 'grey');
                 }
             } else {
-                logToConsole(`DEBUG STCOMBAT: Adding Player to initiative: Name='Player', isPlayer=${isPlayer}`);
+                logToConsole(`DEBUG STCOMBAT: Adding Player to initiative: Name='Player', isPlayer=${isPlayer}`, 'grey');
             }
             this.initiativeTracker.push(participantEntry);
         });
@@ -418,11 +418,11 @@ class CombatManager {
 
     nextTurn(previousAttackerEntity = null) {
         if (this.gameState.isWaitingForPlayerCombatInput) {
-            logToConsole("INFO: nextTurn() deferred as game is waiting for player combat input.");
+            logToConsole("INFO: nextTurn() deferred as game is waiting for player combat input.", 'grey');
             return;
         }
         const prevAttackerName = previousAttackerEntity ? (previousAttackerEntity.name || (previousAttackerEntity === this.gameState ? "Player" : previousAttackerEntity.id)) : (this.gameState.combatCurrentAttacker ? (this.gameState.combatCurrentAttacker.name || this.gameState.combatCurrentAttacker.id) : 'N/A');
-        logToConsole(`CombatManager.nextTurn() called. Turn ended for: ${prevAttackerName}. Current GS attacker (if any, before update): ${this.gameState.combatCurrentAttacker ? (this.gameState.combatCurrentAttacker.name || this.gameState.combatCurrentAttacker.id) : 'N/A'}. Initiative index before adv: ${this.currentTurnIndex}`);
+        logToConsole(`CombatManager.nextTurn() called. Turn ended for: ${prevAttackerName}. Current GS attacker (if any, before update): ${this.gameState.combatCurrentAttacker ? (this.gameState.combatCurrentAttacker.name || this.gameState.combatCurrentAttacker.id) : 'N/A'}. Initiative index before adv: ${this.currentTurnIndex}`, 'grey');
         if (!this.gameState.isInCombat || this.initiativeTracker.length === 0) {
             this.endCombat();
             return;
@@ -430,11 +430,11 @@ class CombatManager {
         this.currentTurnIndex++;
         if (this.currentTurnIndex >= this.initiativeTracker.length) {
             this.currentTurnIndex = 0;
-            logToConsole("New combat round started.");
+            logToConsole("New combat round started.", 'lightblue');
         }
         const currentEntry = this.initiativeTracker[this.currentTurnIndex];
         if (!currentEntry || !currentEntry.entity) {
-            logToConsole("Error: Current turn entry or entity is undefined. Ending combat.");
+            logToConsole("Error: Current turn entry or entity is undefined. Ending combat.", 'red');
             this.endCombat();
             return;
         }
@@ -444,7 +444,7 @@ class CombatManager {
 
         this.gameState.attackerMapPos = currentEntry.isPlayer ? { ...this.gameState.playerPos } : (attacker.mapPos ? { ...attacker.mapPos } : null);
 
-        logToConsole(`--- ${attackerName}'s Turn ---`);
+        logToConsole(`--- ${attackerName}'s Turn ---`, 'lightblue');
 
         if (currentEntry.isPlayer) {
             this.gameState.playerMovedThisTurn = false;
@@ -471,7 +471,7 @@ class CombatManager {
 
             // New Player Targeting Logic
             if (this.gameState.retargetingJustHappened) {
-                logToConsole("Player is manually retargeting. Skipping auto-target selection.");
+                logToConsole("Player is manually retargeting. Skipping auto-target selection.", 'lightblue');
                 // combatCurrentDefender should be null from handleRetarget()
             } else {
                 this.gameState.combatCurrentDefender = null; // Clear previous defender before new auto-selection
@@ -494,7 +494,7 @@ class CombatManager {
 
                             this.gameState.combatCurrentDefender = potentialTarget;
                             this.gameState.defenderMapPos = { ...potentialTarget.mapPos };
-                            logToConsole(`Player automatically targets ${potentialTarget.name} from aggro list (Threat: ${aggroEntry.threat}). Pos: X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}`);
+                            logToConsole(`Player automatically targets ${potentialTarget.name} from aggro list (Threat: ${aggroEntry.threat}). Pos: X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}`, 'lightblue');
                             break;
                         }
                     }
@@ -502,7 +502,7 @@ class CombatManager {
 
                 // 2. Fallback to Closest Enemy (if no valid aggro target)
                 if (!this.gameState.combatCurrentDefender) {
-                    logToConsole("Player has no valid aggro targets or aggro list is empty. Searching for nearest enemy.");
+                    logToConsole("Player has no valid aggro targets or aggro list is empty. Searching for nearest enemy.", 'lightblue');
                     let closestEnemy = null;
                     let minDistance = Infinity;
 
@@ -524,15 +524,15 @@ class CombatManager {
                     if (closestEnemy) {
                         this.gameState.combatCurrentDefender = closestEnemy;
                         this.gameState.defenderMapPos = { ...closestEnemy.mapPos };
-                        logToConsole(`Player automatically targets nearest enemy: ${closestEnemy.name}. Pos: X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}`);
+                        logToConsole(`Player automatically targets nearest enemy: ${closestEnemy.name}. Pos: X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}`, 'lightblue');
                     } else {
-                        logToConsole("Player found no valid enemies on the map.");
+                        logToConsole("Player found no valid enemies on the map.", 'orange');
                         // combatCurrentDefender remains null, promptPlayerAttackDeclaration will show "Defender: None"
                     }
                 }
             }
             // End of New Player Targeting Logic
-            logToConsole(`DEBUG NEXTTURN: Player turn setup complete. Final combatCurrentDefender: ${(this.gameState.combatCurrentDefender ? (this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id) : 'null')}, Final defenderMapPos: ${JSON.stringify(this.gameState.defenderMapPos)}`);
+            logToConsole(`DEBUG NEXTTURN: Player turn setup complete. Final combatCurrentDefender: ${(this.gameState.combatCurrentDefender ? (this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id) : 'null')}, Final defenderMapPos: ${JSON.stringify(this.gameState.defenderMapPos)}`, 'grey');
             this.gameState.isRetargeting = false; // Reset isRetargeting at the start of a new player turn
 
         } else { // NPC's turn
@@ -544,10 +544,10 @@ class CombatManager {
             this.gameState.combatCurrentDefender = this.gameState;
             if (this.gameState.playerPos) {
                 this.gameState.defenderMapPos = { ...this.gameState.playerPos };
-                // logToConsole(`NPC ${attackerName}'s turn: Targeting Player at X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}.`);
+                // logToConsole(`NPC ${attackerName}'s turn: Targeting Player at X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}.`, 'gold');
             } else {
                 this.gameState.defenderMapPos = null;
-                logToConsole(`NPC ${attackerName}'s turn: Targeting Player, but Player has no mapPos.`);
+                logToConsole(`NPC ${attackerName}'s turn: Targeting Player, but Player has no mapPos.`, 'orange');
             }
         }
 
@@ -606,7 +606,7 @@ class CombatManager {
         const defenseDeclUI = document.getElementById('defenseDeclarationUI');
         if (defenseDeclUI) defenseDeclUI.classList.add('hidden');
         this.updateCombatUI();
-        logToConsole("Combat Ended.");
+        logToConsole("Combat Ended.", 'lightblue');
         const defenseTypeSelect = document.getElementById('combatDefenseTypeSelect');
         if (defenseTypeSelect && this.defenseTypeChangeListener) {
             defenseTypeSelect.removeEventListener('change', this.defenseTypeChangeListener);
@@ -638,11 +638,11 @@ class CombatManager {
                 else if (weaponObject.type.includes("firearm") || weaponObject.type.includes("bow") || weaponObject.type.includes("crossbow") || weaponObject.type.includes("weapon_ranged_other")) attackType = "ranged";
                 else if (weaponObject.type.includes("thrown")) attackType = "ranged"; // Covers both explosive and non-explosive thrown
                 else {
-                    logToConsole(`ERROR: Unknown weapon type for '${selectedWeaponValue}'. Defaulting to unarmed.`);
+                    logToConsole(`ERROR: Unknown weapon type for '${selectedWeaponValue}'. Defaulting to unarmed.`, 'red');
                     weaponObject = null; attackType = "melee";
                 }
             } else {
-                logToConsole(`ERROR: Selected weapon '${selectedWeaponValue}' not found. Defaulting to unarmed.`);
+                logToConsole(`ERROR: Selected weapon '${selectedWeaponValue}' not found. Defaulting to unarmed.`, 'red');
                 weaponObject = null;
                 attackType = "melee";
             }
@@ -652,7 +652,7 @@ class CombatManager {
         const requiresEntityTarget = true;
 
         if (requiresEntityTarget && !this.gameState.combatCurrentDefender) {
-            logToConsole(`ERROR: Action requires an entity target, but none is selected. Weapon: ${(weaponObject ? weaponObject.name : 'Unarmed')}. Please select an entity.`);
+            logToConsole(`ERROR: Action requires an entity target, but none is selected. Weapon: ${(weaponObject ? weaponObject.name : 'Unarmed')}. Please select an entity.`, 'red');
             this.promptPlayerAttackDeclaration();
             return;
         }
@@ -678,9 +678,9 @@ class CombatManager {
             // Target entity for grenade is combatCurrentDefender. Explosion centers on its tile.
             if (this.gameState.combatCurrentDefender.mapPos) { // mapPos should exist if defender is valid
                 this.gameState.pendingCombatAction.targetTile = { ...this.gameState.combatCurrentDefender.mapPos };
-                logToConsole(`Player declares: Throwing ${weaponObject.name} at ${this.gameState.combatCurrentDefender.name}'s tile (X:${this.gameState.pendingCombatAction.targetTile.x},Y:${this.gameState.pendingCombatAction.targetTile.y}).`);
+                logToConsole(`Player declares: Throwing ${weaponObject.name} at ${this.gameState.combatCurrentDefender.name}'s tile (X:${this.gameState.pendingCombatAction.targetTile.x},Y:${this.gameState.pendingCombatAction.targetTile.y}).`, 'lightgreen');
             } else {
-                logToConsole(`ERROR: Grenade target ${this.gameState.combatCurrentDefender.name} has no valid mapPos. Aborting throw.`);
+                logToConsole(`ERROR: Grenade target ${this.gameState.combatCurrentDefender.name} has no valid mapPos. Aborting throw.`, 'red');
                 this.promptPlayerAttackDeclaration();
                 return;
             }
@@ -688,7 +688,7 @@ class CombatManager {
             // Standard attack declaration log for non-explosives
             // Dual wield logging can also be integrated here as before.
             const currentDefenderName = this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id;
-            logToConsole(`Player declares: ${attackType} attack on ${currentDefenderName}'s ${bodyPart} with ${(weaponObject ? weaponObject.name : 'Unarmed')} (Mode: ${fireMode}).`);
+            logToConsole(`Player declares: ${attackType} attack on ${currentDefenderName}'s ${bodyPart} with ${(weaponObject ? weaponObject.name : 'Unarmed')} (Mode: ${fireMode}).`, 'lightgreen');
 
             const primaryHandItem = this.gameState.inventory.handSlots[0];
             const offHandItem = this.gameState.inventory.handSlots[1];
@@ -696,7 +696,7 @@ class CombatManager {
                 offHandItem && offHandItem.type.includes("firearm") &&
                 weaponObject && weaponObject.id === primaryHandItem.id) {
                 this.gameState.dualWieldPending = true;
-                logToConsole(`Dual Wield: Main hand attack with ${primaryHandItem.name}. Off-hand ${offHandItem.name} to follow.`);
+                logToConsole(`Dual Wield: Main hand attack with ${primaryHandItem.name}. Off-hand ${offHandItem.name} to follow.`, 'lightgreen');
             } else {
                 this.gameState.dualWieldPending = false;
             }
@@ -726,7 +726,7 @@ class CombatManager {
             blockingLimb: blockingLimb,
             description: description
         };
-        logToConsole(`Player defends: ${description}.`);
+        logToConsole(`Player defends: ${description}.`, 'lightgreen');
 
         const defenseUI = document.getElementById('defenseDeclarationUI');
         if (defenseUI) {
@@ -764,7 +764,7 @@ class CombatManager {
             }
         }
         this.gameState.npcDefenseChoice = chosenDefense;
-        logToConsole(`${defenderNpc.name} defends: ${chosenDefense}.`);
+        logToConsole(`${defenderNpc.name} defends: ${chosenDefense}.`, 'gold');
     }
 
     handleDefenderActionPrompt() {
@@ -773,15 +773,15 @@ class CombatManager {
         const attackerName = attacker === this.gameState ? "Player" : attacker.name;
 
         if (!defender && !(this.gameState.pendingCombatAction && this.gameState.pendingCombatAction.targetTile && this.gameState.pendingCombatAction.weapon && this.gameState.pendingCombatAction.weapon.type === "weapon_thrown_explosive")) {
-            logToConsole(`Error in handleDefenderActionPrompt: Defender not set and not a thrown explosive at tile. Attacker was ${attackerName}.`);
+            logToConsole(`Error in handleDefenderActionPrompt: Defender not set and not a thrown explosive at tile. Attacker was ${attackerName}.`, 'red');
             if (attacker === this.gameState) this.promptPlayerAttackDeclaration();
-            else this.nextTurn();
+            else this.nextTurn(attacker); // Pass attacker to nextTurn
             return;
         }
 
         if (defender && defender === this.gameState) { // Player is defending
             if (!this.gameState.pendingCombatAction || Object.keys(this.gameState.pendingCombatAction).length === 0) {
-                logToConsole("Error: No pending attack data for player defense. Defaulting defense.");
+                logToConsole("Error: No pending attack data for player defense. Defaulting defense.", 'red');
                 this.gameState.playerDefenseChoice = { type: "Dodge", blockingLimb: null, description: "Error - No attack data" };
                 this.gameState.combatPhase = 'resolveRolls';
                 this.processAttack();
@@ -791,7 +791,7 @@ class CombatManager {
                 this.gameState.pendingCombatAction.weapon &&
                 !this.gameState.pendingCombatAction.weapon.type.includes("thrown") &&
                 !(this.gameState.pendingCombatAction.weapon.tags && this.gameState.pendingCombatAction.weapon.tags.includes("launcher_treated_as_rifle") && this.gameState.pendingCombatAction.weapon.explodesOnImpact)) {
-                logToConsole("Defense: Player cannot actively defend (dodge/block) against non-thrown, non-explosive ranged attacks. Only cover applies.");
+                logToConsole("Defense: Player cannot actively defend (dodge/block) against non-thrown, non-explosive ranged attacks. Only cover applies.", 'lightblue');
                 this.gameState.playerDefenseChoice = { type: "None", blockingLimb: null, description: "No active defense vs non-thrown/non-explosive ranged" };
                 this.gameState.combatPhase = 'resolveRolls';
                 this.processAttack();
@@ -803,7 +803,7 @@ class CombatManager {
             this.gameState.combatPhase = 'resolveRolls';
             this.processAttack();
         } else { // No specific defender (e.g. thrown explosive at empty tile)
-            logToConsole("Attacking an empty tile with a thrown explosive. No specific defender action.");
+            logToConsole("Attacking an empty tile with a thrown explosive. No specific defender action.", 'gold');
             this.gameState.combatPhase = 'resolveRolls';
             this.processAttack();
         }
@@ -983,7 +983,8 @@ class CombatManager {
         }
         const damageType = weapon.damageType || "Ballistic";
         let totalDamageThisVolley = 0;
-        logToConsole(`HITS: ${attacker === this.gameState ? "Player" : attacker.name}'s ${weapon.name} strikes ${numHits} time(s)! (Base Damage: ${weapon.damage})`);
+        const hitMessageColorRanged = attacker === this.gameState ? 'lightgreen' : (numHits > 1 ? 'orangered' : 'orange');
+        logToConsole(`HITS: ${attacker === this.gameState ? "Player" : attacker.name}'s ${weapon.name} strikes ${numHits} time(s)! (Base Damage: ${weapon.damage})`, hitMessageColorRanged);
 
         for (let i = 0; i < numHits; i++) {
             const damageNotation = parseDiceNotation(weapon.damage);
@@ -1016,25 +1017,26 @@ class CombatManager {
 
         if (this.gameState.pendingCombatAction.actionType === "Reload") {
             const weaponToReload = this.gameState.pendingCombatAction.weapon;
-            logToConsole(`${attacker === this.gameState ? "Player" : attacker.name} reloads ${weaponToReload ? weaponToReload.name : 'their weapon'}.`);
+            const reloadMsgColor = attacker === this.gameState ? 'lightgreen' : 'gold';
+            logToConsole(`${attacker === this.gameState ? "Player" : attacker.name} reloads ${weaponToReload ? weaponToReload.name : 'their weapon'}.`, reloadMsgColor);
             if (attacker === this.gameState) {
                 if (this.gameState.actionPointsRemaining <= 0) {
-                    logToConsole("Not enough action points to reload.");
+                    logToConsole("Not enough action points to reload.", 'orange');
                     this.promptPlayerAttackDeclaration();
                     return;
                 }
                 this.gameState.actionPointsRemaining--;
                 window.turnManager.updateTurnUI();
-                logToConsole(`Action point spent for reload. Remaining: ${this.gameState.actionPointsRemaining}`);
+                logToConsole(`Action point spent for reload. Remaining: ${this.gameState.actionPointsRemaining}`, 'lightblue');
             }
 
             if (attacker === this.gameState) {
                 if (this.gameState.actionPointsRemaining > 0) this.promptPlayerAttackDeclaration();
                 else if (this.gameState.movementPointsRemaining > 0) {
-                    logToConsole("Reload complete. You have movement points remaining or can end your turn.");
+                    logToConsole("Reload complete. You have movement points remaining or can end your turn.", 'lightblue');
                     this.gameState.combatPhase = 'playerPostAction';
-                } else this.nextTurn();
-            } else this.nextTurn();
+                } else this.nextTurn(attacker);
+            } else this.nextTurn(attacker);
             return;
         }
 
@@ -1047,16 +1049,16 @@ class CombatManager {
         if (this.gameState.pendingCombatAction.actionType === "attack") {
             if (attacker === this.gameState) {
                 if (this.gameState.actionPointsRemaining <= 0) {
-                    logToConsole("Not enough action points to complete the attack.");
+                    logToConsole("Not enough action points to complete the attack.", 'orange');
                     this.promptPlayerAttackDeclaration(); return;
                 }
                 this.gameState.actionPointsRemaining--;
                 window.turnManager.updateTurnUI();
-                logToConsole(`Action point spent for attack. Remaining: ${this.gameState.actionPointsRemaining}`);
+                logToConsole(`Action point spent for attack. Remaining: ${this.gameState.actionPointsRemaining}`, 'lightblue');
             }
         } else if (this.gameState.pendingCombatAction.actionType === "grapple") {
-            console.error("processAttack called with actionType 'grapple'. This should be handled by processGrapple.");
-            this.nextTurn(); return;
+            console.error("processAttack called with actionType 'grapple'. This should be handled by processGrapple."); // Keep as error
+            this.nextTurn(attacker); return;
         }
 
         const attackerName = (attacker === this.gameState) ? "Player" : attacker.name;
@@ -1067,7 +1069,7 @@ class CombatManager {
             let bulletsToConsume = 1;
             if (fireMode === "burst") bulletsToConsume = 3;
             else if (fireMode === "auto") bulletsToConsume = 6;
-            logToConsole(`COMBAT: ${weapon.name} fires ${bulletsToConsume} bullet(s) in ${fireMode} mode.`);
+            logToConsole(`COMBAT: ${weapon.name} fires ${bulletsToConsume} bullet(s) in ${fireMode} mode.`, attacker === this.gameState ? 'lightgreen' : 'gold');
         }
 
         if (attackType === 'melee' && defender) {
@@ -1076,14 +1078,14 @@ class CombatManager {
             if (attackerMapPos && defenderMapPos) {
                 const manhattanDistance = Math.abs(attackerMapPos.x - defenderMapPos.x) + Math.abs(attackerMapPos.y - defenderMapPos.y);
                 if (manhattanDistance > 1) {
-                    logToConsole(`MELEE FAIL: ${attackerName}'s melee attack on ${defenderName} fails. Target out of range (Distance: ${manhattanDistance}).`);
+                    logToConsole(`MELEE FAIL: ${attackerName}'s melee attack on ${defenderName} fails. Target out of range (Distance: ${manhattanDistance}).`, attacker === this.gameState ? 'orange' : 'gold');
                     if (attacker === this.gameState) {
                         if (this.gameState.actionPointsRemaining > 0) this.promptPlayerAttackDeclaration();
                         else if (this.gameState.movementPointsRemaining > 0) {
-                            logToConsole("Melee attack failed (out of range). You have movement points remaining or can end your turn.");
+                            logToConsole("Melee attack failed (out of range). You have movement points remaining or can end your turn.", 'orange');
                             this.gameState.combatPhase = 'playerPostAction'; window.turnManager.updateTurnUI();
-                        } else this.nextTurn();
-                    } else this.nextTurn();
+                        } else this.nextTurn(attacker);
+                    } else this.nextTurn(attacker);
                     return;
                 }
             } else console.warn(`Warning: Attacker or defender map position undefined for melee range check. Attacker: ${attackerName}, Defender: ${defenderName}. Attack proceeds.`);
@@ -1095,7 +1097,7 @@ class CombatManager {
             const grappledById = (attacker === this.gameState) ? 'player' : (attacker.id || null);
             if (grappledById && defender.statusEffects.grappledBy === grappledById) {
                 actionContext.isGrappling = true;
-                logToConsole(`${attackerName} is grappling ${defenderName}. Grapple context for point-blank set.`);
+                logToConsole(`${attackerName} is grappling ${defenderName}. Grapple context for point-blank set.`, 'lightblue');
             }
         }
         if (defender && defender.mapPos) coverBonus = this.getDefenderCoverBonus(defender);
@@ -1115,7 +1117,7 @@ class CombatManager {
                 else if (distance <= 20) actionContext.rangeModifier = -5;
                 else if (distance <= 60) actionContext.rangeModifier = -10;
                 else actionContext.rangeModifier = -15;
-                logToConsole(`Distance: ${distance.toFixed(2)}, Base Range Modifier: ${actionContext.rangeModifier}`);
+                logToConsole(`Distance: ${distance.toFixed(2)}, Base Range Modifier: ${actionContext.rangeModifier}`, 'grey');
                 if (distance > 6) {
                     let weaponSpecificMod = 0;
                     if (weapon.type.includes("bow")) weaponSpecificMod = -3;
@@ -1123,9 +1125,9 @@ class CombatManager {
                     else if (weapon.type.includes("rifle") && !(weapon.tags && weapon.tags.includes("sniper"))) weaponSpecificMod = 2;
                     else if (weapon.tags && weapon.tags.includes("sniper")) weaponSpecificMod = 5;
                     actionContext.rangeModifier += weaponSpecificMod;
-                    if (weaponSpecificMod !== 0) logToConsole(`Weapon-specific modifier for ${weapon.name} at distance > 6: ${weaponSpecificMod}. New RangeMod: ${actionContext.rangeModifier}`);
+                    if (weaponSpecificMod !== 0) logToConsole(`Weapon-specific modifier for ${weapon.name} at distance > 6: ${weaponSpecificMod}. New RangeMod: ${actionContext.rangeModifier}`, 'grey');
                 }
-            } else console.warn("Warning: Attacker or target map position is undefined for ranged attack calculation.");
+            } else console.warn("Warning: Attacker or target map position is undefined for ranged attack calculation."); // Keep as warn
             if (weapon.type.includes("firearm")) {
                 if (fireMode === "burst") { actionContext.attackModifier = -5; actionContext.isBurst = true; }
                 else if (fireMode === "auto") { actionContext.attackModifier = -8; actionContext.isAutomatic = true; }
@@ -1147,38 +1149,61 @@ class CombatManager {
         logMsg = `ATTACK: ${attackerName} targets ${targetDescriptionForLog} with ${weapon ? weapon.name : 'Unarmed'} (Mode: ${fireMode}). ` +
             `Roll: ${attackResult.roll} (Nat: ${attackResult.naturalRoll}, Skill (${actionContext.skillName}): ${actionContext.skillBasedModifier}, ` +
             `BodyPart: ${actionContext.bodyPartModifier}, Range: ${actionContext.rangeModifier}, Mode: ${actionContext.attackModifier}, Move: ${actionContext.attackerMovementPenalty})`;
-        logToConsole(logMsg);
-        if (actionContext.attackerMovementPenalty !== 0) logToConsole(`Movement: ${attackerName} ${actionContext.attackerMovementPenalty} to attack roll.`);
+        logToConsole(logMsg, window.getSkillColor(actionContext.skillName));
+        if (actionContext.attackerMovementPenalty !== 0) logToConsole(`Movement: ${attackerName} ${actionContext.attackerMovementPenalty} to attack roll.`, 'grey');
 
         if (defender) {
             let defenderDefenseTypeToUse = defender === this.gameState ? (this.gameState.playerDefenseChoice ? this.gameState.playerDefenseChoice.type : "Dodge") : (this.gameState.npcDefenseChoice || "Dodge");
             if (defenderDefenseTypeToUse !== "None") {
+                let baseDefenseSkill = defenseResult.defenseSkillName;
+                if (baseDefenseSkill && baseDefenseSkill.includes(" + ")) {
+                    baseDefenseSkill = baseDefenseSkill.split(" + ")[0]; // e.g., "Unarmed" from "Unarmed + Dexterity"
+                }
                 let defenseLogMsg = `DEFENSE: ${defenderName} (${defenderDefenseTypeToUse} - ${defenseResult.defenseSkillName}). ` +
                     `Roll: ${defenseResult.roll} (Nat: ${defenseResult.naturalRoll}, Skill: ${defenseResult.defenseSkillValue}, Cover: +${defenseResult.coverBonusApplied}, Move: +${defenseResult.movementBonusApplied || 0})`;
-                logToConsole(defenseLogMsg);
-                if (defenseResult.movementBonusApplied !== 0) logToConsole(`Movement: ${defenderName} +${defenseResult.movementBonusApplied} to defense roll.`);
-            } else logToConsole(`DEFENSE: ${defenderName} (None - Ranged). Effective defense from cover: ${defenseResult.roll}`);
+                logToConsole(defenseLogMsg, window.getSkillColor(baseDefenseSkill));
+                if (defenseResult.movementBonusApplied !== 0) logToConsole(`Movement: ${defenderName} +${defenseResult.movementBonusApplied} to defense roll.`, 'grey');
+            } else logToConsole(`DEFENSE: ${defenderName} (None - Ranged). Effective defense from cover: ${defenseResult.roll}`, defender === this.gameState ? 'lightblue' : 'gold');
             if (document.getElementById('defenseRollResult')) document.getElementById('defenseRollResult').textContent = `Defense Roll (${defenderDefenseTypeToUse}): ${defenseResult.roll} (Natural: ${defenseResult.naturalRoll}, Cover: ${defenseResult.coverBonusApplied}, Moved: +${defenseResult.movementBonusApplied || 0}, ${defenderName})`;
         }
 
         let hit = false;
+        let resultColor = 'gold'; // Default for neutral outcomes
+
         if (defender) {
-            if (attackResult.isCriticalHit) hit = true;
-            else if (attackResult.isCriticalMiss) hit = false;
-            else if (defenseResult.isCriticalFailure && (defender === this.gameState ? (this.gameState.playerDefenseChoice ? this.gameState.playerDefenseChoice.type : "Dodge") : (this.gameState.npcDefenseChoice || "Dodge")) !== "None") hit = true;
-            else if (defenseResult.isCriticalSuccess && (defender === this.gameState ? (this.gameState.playerDefenseChoice ? this.gameState.playerDefenseChoice.type : "Dodge") : (this.gameState.npcDefenseChoice || "Dodge")) !== "None" && !attackResult.isCriticalHit) hit = false;
-            else hit = attackResult.roll > defenseResult.roll;
+            if (attackResult.isCriticalHit) {
+                hit = true;
+                resultColor = 'fuchsia'; // Critical Hit
+            } else if (attackResult.isCriticalMiss) {
+                hit = false;
+                resultColor = 'crimson'; // Critical Miss
+            } else if (defenseResult.isCriticalFailure && (defender === this.gameState ? (this.gameState.playerDefenseChoice ? this.gameState.playerDefenseChoice.type : "Dodge") : (this.gameState.npcDefenseChoice || "Dodge")) !== "None") {
+                hit = true; // Attacker hits due to defender's critical failure
+                resultColor = attacker === this.gameState ? 'lightgreen' : 'orange';
+            } else if (defenseResult.isCriticalSuccess && (defender === this.gameState ? (this.gameState.playerDefenseChoice ? this.gameState.playerDefenseChoice.type : "Dodge") : (this.gameState.npcDefenseChoice || "Dodge")) !== "None" && !attackResult.isCriticalHit) {
+                hit = false; // Defender avoids hit with critical success
+                resultColor = defender === this.gameState ? 'lightgreen' : 'orange';
+            } else {
+                hit = attackResult.roll > defenseResult.roll;
+                if (hit) {
+                    resultColor = attacker === this.gameState ? 'lightgreen' : 'orange'; // Regular hit
+                } else {
+                    resultColor = attacker === this.gameState ? 'orange' : 'lightgreen'; // Regular miss
+                }
+            }
             outcomeMessage = hit ? `RESULT: Hit! ${attackerName} strikes ${defenderName}` : `RESULT: Miss! ${attackerName} fails to strike ${defenderName}`;
             outcomeMessage += ` (Attack ${attackResult.roll} vs Defense ${defenseResult.roll}).`;
-        } else if (weapon && weapon.type === "weapon_thrown_explosive") {
-            hit = true;
+        } else if (weapon && weapon.type === "weapon_thrown_explosive") { // Thrown explosive at a tile
+            hit = true; // The "hit" is that it lands where aimed
             outcomeMessage = `RESULT: ${weapon.name} lands at targeted tile ${this.gameState.pendingCombatAction.targetTile.x},${this.gameState.pendingCombatAction.targetTile.y}.`;
-        } else {
+            resultColor = attacker === this.gameState ? 'lightgreen' : 'gold';
+        } else { // Non-explosive attack on a tile or other non-defender scenario
             hit = false;
             outcomeMessage = `RESULT: Attack on empty tile with non-explosive weapon. No effect.`;
+            resultColor = 'grey';
         }
 
-        logToConsole(outcomeMessage);
+        logToConsole(outcomeMessage, resultColor);
         if (document.getElementById('attackRollResult')) document.getElementById('attackRollResult').textContent = `Attack Roll: ${attackResult.roll} (Natural: ${attackResult.naturalRoll}, ${attackerName})`;
 
         let actualTargetBodyPartForDamage = intendedBodyPart;
@@ -1199,91 +1224,98 @@ class CombatManager {
                     (defender && defender.mapPos) ||
                     (attacker === this.gameState ? this.gameState.playerPos : (attacker.mapPos || this.gameState.playerPos));
                 explosionReason = `${explosiveProperties.name} thrown to tile (${determinedImpactTile.x},${determinedImpactTile.y})`;
-                logToConsole(`INFO: Thrown explosive ${explosiveProperties.name} detonates at X:${determinedImpactTile.x}, Y:${determinedImpactTile.y}.`);
-                if (!hit && defender) {
-                    logToConsole(`INFO: Initial throw of ${explosiveProperties.name} missed direct hit on ${defenderName}. Explosion occurs at target tile.`);
+                logToConsole(`INFO: Thrown explosive ${explosiveProperties.name} detonates at X:${determinedImpactTile.x}, Y:${determinedImpactTile.y}.`, 'orange');
+                if (!hit && defender) { // If the throw missed but it's an explosive, it still explodes at the target tile
+                    logToConsole(`INFO: Initial throw of ${explosiveProperties.name} missed direct hit on ${defenderName}. Explosion occurs at target tile.`, 'gold');
                 }
                 explosionProcessed = true;
-            } else if (isImpactLauncher && hit && defender && defender.mapPos) {
+            } else if (isImpactLauncher && hit && defender && defender.mapPos) { // Launcher hits a target
                 determinedImpactTile = defender.mapPos;
                 explosionReason = `${explosiveProperties.name} impacts ${defenderName}`;
                 explosionProcessed = true;
             }
 
             if (determinedImpactTile && explosionProcessed) {
-                logToConsole(`EXPLOSION TRIGGERED: ${explosionReason}. Radius: ${explosiveProperties.burstRadiusFt}ft.`);
-                const burstRadiusTiles = Math.ceil(explosiveProperties.burstRadiusFt / 5);
+                logToConsole(`EXPLOSION TRIGGERED: ${explosionReason}. Radius: ${explosiveProperties.burstRadiusFt}ft.`, 'orangered');
+                const burstRadiusTiles = Math.ceil(explosiveProperties.burstRadiusFt / 5); // Convert feet to tiles
                 const affectedCharacters = this.getCharactersInBlastRadius(determinedImpactTile, burstRadiusTiles);
 
                 affectedCharacters.forEach(char => {
                     const charName = char === this.gameState ? "Player" : (char.name || char.id);
-                    let affectedByBlast = true;
+                    let affectedByBlast = true; // Assume affected unless dodged
 
+                    // Dodge logic for explosions (especially thrown ones)
                     if (isThrownExplosive) {
+                        // Primary target of a DIRECT HIT on a thrown explosive doesn't get a separate dodge roll against the blast itself.
+                        // Others in radius, or if the throw missed the primary target but landed nearby, do.
                         if (char !== defender || (char === defender && !hit)) {
-                            const attackerThrowRoll = attackResult.roll;
-                            const charDodgeRoll = rollDie(20) + getStatModifier("Dexterity", char);
-                            logToConsole(`EXPLOSION DODGE: ${charName} attempts to dodge ${explosiveProperties.name} blast. Roll: ${charDodgeRoll} vs Throw Hit Quality: ${attackerThrowRoll}`);
-                            if (charDodgeRoll >= attackerThrowRoll) {
+                            const attackerThrowRoll = attackResult.roll; // Use the "hit quality" of the throw
+                            const charDodgeRoll = rollDie(20) + getStatModifier("Dexterity", char); // Everyone gets a chance to dodge area effect
+                            logToConsole(`EXPLOSION DODGE: ${charName} attempts to dodge ${explosiveProperties.name} blast. Roll: ${charDodgeRoll} vs Throw Hit Quality: ${attackerThrowRoll}`, char === this.gameState ? 'lightblue' : 'gold');
+                            if (charDodgeRoll >= attackerThrowRoll) { // Higher dodge means success
                                 affectedByBlast = false;
-                                logToConsole(`RESULT: ${charName} dodged the blast from the thrown explosive!`);
+                                logToConsole(`RESULT: ${charName} dodged the blast from the thrown explosive!`, char === this.gameState ? 'lightgreen' : 'orange');
                             } else {
-                                logToConsole(`RESULT: ${charName} failed to dodge the blast.`);
+                                logToConsole(`RESULT: ${charName} failed to dodge the blast.`, char === this.gameState ? 'indianred' : 'red');
                             }
-                        } else if (char === defender && hit) {
-                            logToConsole(`INFO: ${charName} (primary target) was directly hit by the thrown explosive object; no separate dodge roll against the immediate blast.`);
+                        } else if (char === defender && hit) { // Primary target and was directly hit by the object
+                            logToConsole(`INFO: ${charName} (primary target) was directly hit by the thrown explosive object; no separate dodge roll against the immediate blast.`, 'gold');
                         }
-                    } else if (isImpactLauncher && char !== defender) {
-                        logToConsole(`INFO: ${charName} is in blast radius of impact launcher, affected by blast (no specific dodge).`);
-                    } else if (isImpactLauncher && char === defender && hit) {
-                        logToConsole(`INFO: ${charName} (primary target) was directly hit by impact launcher; no separate dodge roll against the immediate blast.`);
+                    } else if (isImpactLauncher && char !== defender) { // Collateral damage from launcher
+                        logToConsole(`INFO: ${charName} is in blast radius of impact launcher, affected by blast (no specific dodge).`, 'gold');
+                    } else if (isImpactLauncher && char === defender && hit) { // Direct hit from launcher
+                        logToConsole(`INFO: ${charName} (primary target) was directly hit by impact launcher; no separate dodge roll against the immediate blast.`, 'gold');
                     }
+
 
                     if (affectedByBlast) {
                         const healthObject = (char === this.gameState) ? this.gameState.health : char.health;
-                        let targetBodyPartForExplosion = "Torso";
+                        let targetBodyPartForExplosion = "Torso"; // Default for explosions
                         if (healthObject) {
                             const availableParts = Object.keys(healthObject).filter(partName =>
                                 healthObject[partName].current > 0 &&
-                                (!healthObject[partName].isDestroyed)
+                                (!healthObject[partName].isDestroyed) // Ensure part is not already destroyed
                             );
                             if (availableParts.length > 0) {
-                                targetBodyPartForExplosion = availableParts[Math.floor(Math.random() * availableParts.length)];
+                                // For explosions, it's common to hit a random part or just torso.
+                                // Let's stick to Torso for simplicity unless a more complex system is desired.
+                                // targetBodyPartForExplosion = availableParts[Math.floor(Math.random() * availableParts.length)];
                             } else {
-                                logToConsole(`EXPLOSION: No viable parts left for ${charName} to target. Defaulting to Torso.`);
+                                logToConsole(`EXPLOSION: No viable parts left for ${charName} to target. Defaulting to Torso.`, 'orange');
                             }
                         } else {
-                            logToConsole(`EXPLOSION WARNING: Could not find health object for ${charName}. Defaulting to Torso.`);
+                            logToConsole(`EXPLOSION WARNING: Could not find health object for ${charName}. Defaulting to Torso.`, 'red');
                         }
 
                         const explosionDamageRolled = rollDiceNotation(parseDiceNotation(explosiveProperties.damage));
-                        const formattedTargetPart = window.formatBodyPartName ? window.formatBodyPartName(targetBodyPartForExplosion) : targetBodyPartForExplosion;
-                        logToConsole(`EXPLOSION DAMAGE: ${explosiveProperties.name} deals ${explosionDamageRolled} ${explosiveProperties.damageType} to ${charName}'s ${formattedTargetPart} (randomly selected).`);
+                        // EXPLOSION DAMAGE log is now part of applyDamage
                         this.applyDamage(attacker, char, targetBodyPartForExplosion, explosionDamageRolled, explosiveProperties.damageType, explosiveProperties);
                     }
                 });
             }
         }
 
-        if (hit && !explosionProcessed && defender) {
+        if (hit && !explosionProcessed && defender) { // Direct hit, not an explosion that was already handled
             let defenderDefenseTypeToUse = defender === this.gameState ? (this.gameState.playerDefenseChoice ? this.gameState.playerDefenseChoice.type : "Dodge") : (this.gameState.npcDefenseChoice || "Dodge");
             if (defenderDefenseTypeToUse === "BlockUnarmed") {
                 const blockRollNatural = defenseResult.naturalRoll;
                 let blockingLimb = null;
                 if (defender === this.gameState && this.gameState.playerDefenseChoice) blockingLimb = this.gameState.playerDefenseChoice.blockingLimb;
-                if (blockRollNatural >= 11) {
+                // Check if block was successful enough to redirect
+                if (blockRollNatural >= 11) { // Example threshold for successful block redirect
                     if (blockingLimb) {
                         actualTargetBodyPartForDamage = blockingLimb;
-                        logToConsole(`Block Redirect: ${defenderName}'s Unarmed Block (Nat ${blockRollNatural}) redirects damage to ${blockingLimb}.`);
+                        logToConsole(`Block Redirect: ${defenderName}'s Unarmed Block (Nat ${blockRollNatural}) redirects damage to ${blockingLimb}.`, defender === this.gameState ? 'lightgreen' : 'orange');
                     }
                 } else {
-                    logToConsole(`Block Failed: ${defenderName}'s Unarmed Block (Nat ${blockRollNatural}) fails. Damage to ${intendedBodyPart}.`);
+                    logToConsole(`Block Failed: ${defenderName}'s Unarmed Block (Nat ${blockRollNatural}) fails. Damage to ${intendedBodyPart}.`, defender === this.gameState ? 'orange' : 'lightgreen');
                 }
             }
+            // Handle multi-hit attacks (burst/auto)
             if (attackType === "ranged" && weapon && weapon.type.includes("firearm")) {
                 if (actionContext.isBurst) numHits = rollDie(3);
-                else if (actionContext.isAutomatic) numHits = Math.min(rollDie(6), rollDie(6));
-                if (numHits > 1) logToConsole(`${fireMode} Fire: ${numHits} shots connect.`);
+                else if (actionContext.isAutomatic) numHits = Math.min(rollDie(6), rollDie(6)); // e.g. two d6 take lowest
+                if (numHits > 1) logToConsole(`${fireMode} Fire: ${numHits} shots connect.`, attacker === this.gameState ? 'lightgreen' : 'gold');
             }
             this.gameState.combatPhase = 'applyDamage';
             if (attackType === 'melee') this.calculateAndApplyMeleeDamage(attacker, defender, weapon, hit, attackResult.naturalRoll, defenseResult.naturalRoll, actualTargetBodyPartForDamage);
@@ -1295,12 +1327,12 @@ class CombatManager {
             if (document.getElementById('damageResult')) document.getElementById('damageResult').textContent = 'Damage: 0 (Miss)';
         }
 
-        if (hit && defender && defender.health && !explosionProcessed) {
-            const finalTargetPartKey = actualTargetBodyPartForDamage.toLowerCase().replace(/\s/g, '');
+        if (hit && defender && defender.health && !explosionProcessed) { // Check if target was hit and is a defender (not just a tile)
+            const finalTargetPartKey = actualTargetBodyPartForDamage.toLowerCase().replace(/\s/g, ''); // Normalize key
             if (defender.health[finalTargetPartKey] && defender.health[finalTargetPartKey].current <= 0) {
-                logToConsole(`CRITICAL DAMAGE (Post-Direct Attack): ${defenderName}'s ${finalTargetPartKey} is destroyed!`);
+                logToConsole(`CRITICAL DAMAGE (Post-Direct Attack): ${defenderName}'s ${finalTargetPartKey} is destroyed!`, defender === this.gameState ? 'red' : 'orangered');
                 if (finalTargetPartKey === "head" || finalTargetPartKey === "torso") {
-                    logToConsole(`DEFEATED (Post-Direct Attack): ${defenderName} has fallen!`);
+                    logToConsole(`DEFEATED (Post-Direct Attack): ${defenderName} has fallen!`, defender === this.gameState ? 'red' : 'fuchsia');
                     if (defender === this.gameState) { this.endCombat(); window.gameOver(this.gameState); return; }
                     else {
                         this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== defender);
@@ -1360,7 +1392,7 @@ class CombatManager {
                         let hand1Id = this.gameState.inventory.handSlots[1] ? this.gameState.inventory.handSlots[1].id : "N/A";
                         const actionItemName = itemUsedInAction ? itemUsedInAction.name : "Unknown item from action";
                         const actionItemId = itemUsedInAction ? itemUsedInAction.id : "Unknown ID from action";
-                        logToConsole(`ERROR: Could not find thrown weapon ${actionItemName} (ID: ${actionItemId}) in player's hand slots to remove. Hand0: ${hand0Name} (ID: ${hand0Id}), Hand1: ${hand1Name} (ID: ${hand1Id})`);
+                        logToConsole(`ERROR: Could not find thrown weapon ${actionItemName} (ID: ${actionItemId}) in player's hand slots to remove. Hand0: ${hand0Name} (ID: ${hand0Id}), Hand1: ${hand1Name} (ID: ${hand1Id})`, 'red');
                     }
                 }
             }
@@ -1380,11 +1412,11 @@ class CombatManager {
                 }
                 if (defenderActuallyDefeated) {
                     const defeatedName = defenderIsPlayer ? "Player" : defender.name;
-                    if (this.initiativeTracker.find(e => e.entity === defender)) {
-                        logToConsole(`DEFEATED: ${defeatedName} succumbed to wounds.`);
+                    if (this.initiativeTracker.find(e => e.entity === defender)) { // Ensure not already removed
+                        logToConsole(`DEFEATED: ${defeatedName} succumbed to wounds.`, defenderIsPlayer ? 'red' : 'fuchsia');
                         this.initiativeTracker = this.initiativeTracker.filter(entry => entry.entity !== defender);
-                        this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== defender);
-                        if (defenderIsPlayer) { this.endCombat(); window.gameOver(this.gameState); return; }
+                        this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== defender); // Also remove from global NPC list
+                        if (defenderIsPlayer) { this.endCombat(); window.gameOver(this.gameState); return; } // Game over if player
                         window.mapRenderer.scheduleRender();
                     }
                 }
@@ -1398,11 +1430,11 @@ class CombatManager {
                 const offHandWeapon = this.gameState.inventory.handSlots[1];
 
                 if (offHandWeapon && offHandWeapon.type.includes("firearm")) {
-                    logToConsole(`DUAL WIELD: Executing off-hand attack with ${offHandWeapon.name}.`);
-                    let bulletsToConsume = 1;
-                    logToConsole(`COMBAT: ${offHandWeapon.name} fires ${bulletsToConsume} bullet(s) in single mode (off-hand).`);
+                    logToConsole(`DUAL WIELD: Executing off-hand attack with ${offHandWeapon.name}.`, 'lightgreen');
+                    let bulletsToConsume = 1; // Dual wield typically single shots for off-hand
+                    logToConsole(`COMBAT: ${offHandWeapon.name} fires ${bulletsToConsume} bullet(s) in single mode (off-hand).`, 'lightgreen');
 
-                    const originalPendingAction = { ...this.gameState.pendingCombatAction };
+                    const originalPendingAction = { ...this.gameState.pendingCombatAction }; // Copy relevant parts
                     let offHandActionContext = {
                         isSecondAttack: true, isBurst: false, isAutomatic: false,
                         rangeModifier: 0, attackModifier: 0,
@@ -1431,39 +1463,32 @@ class CombatManager {
                             else if (offHandWeapon.tags && offHandWeapon.tags.includes("sniper")) weaponSpecificMod = 5;
                             offHandActionContext.rangeModifier += weaponSpecificMod;
                         }
-                        logToConsole(`DUAL WIELD: Off-hand range modifier: ${offHandActionContext.rangeModifier} (Distance: ${distance.toFixed(2)})`);
+                        logToConsole(`DUAL WIELD: Off-hand range modifier: ${offHandActionContext.rangeModifier} (Distance: ${distance.toFixed(2)})`, 'grey');
                     }
 
                     const offHandAttackResult = this.calculateAttackRoll(attacker, offHandWeapon, originalPendingAction.bodyPart, offHandActionContext);
                     logToConsole(`DUAL WIELD ATTACK: ${attackerName} (off-hand) targets ${defenderName}'s ${originalPendingAction.bodyPart} with ${offHandWeapon.name}. ` +
                         `Roll: ${offHandAttackResult.roll} (Nat: ${offHandAttackResult.naturalRoll}, Skill (${offHandActionContext.skillName}): ${offHandActionContext.skillBasedModifier}, ` +
-                        `BodyPart: ${offHandActionContext.bodyPartModifier}, Range: ${offHandActionContext.rangeModifier}, Move: ${offHandActionContext.attackerMovementPenalty})`);
+                        `BodyPart: ${offHandActionContext.bodyPartModifier}, Range: ${offHandActionContext.rangeModifier}, Move: ${offHandActionContext.attackerMovementPenalty})`, 'lightblue');
 
                     if (defender) {
-                        const defenderCoverBonus = this.getDefenderCoverBonus(defender);
-                        const offHandDefenseResult = this.calculateDefenseRoll(defender, "None", offHandWeapon, defenderCoverBonus, {});
-                        logToConsole(`DUAL WIELD DEFENSE: ${defenderName} (Passive/Cover). Effective Defense: ${offHandDefenseResult.roll}`);
-                        const offHandHit = offHandAttackResult.roll > offHandDefenseResult.roll && !offHandAttackResult.isCriticalMiss;
+                        const defenderCoverBonus = this.getDefenderCoverBonus(defender); // Defender still gets cover
+                        const offHandDefenseResult = this.calculateDefenseRoll(defender, "None", offHandWeapon, defenderCoverBonus, {}); // Usually no active defense vs second attack
+                        logToConsole(`DUAL WIELD DEFENSE: ${defenderName} (Passive/Cover). Effective Defense: ${offHandDefenseResult.roll}`, defender === this.gameState ? 'lightblue' : 'gold');
+                        const offHandHit = offHandAttackResult.roll > offHandDefenseResult.roll && !offHandAttackResult.isCriticalMiss; // No crit success/fail on defense for offhand
 
                         if (offHandHit) {
-                            logToConsole(`RESULT: DUAL WIELD Hit! ${attackerName}'s off-hand ${offHandWeapon.name} strikes ${defenderName}.`);
-                            this.calculateAndApplyRangedDamage(attacker, defender, offHandWeapon, originalPendingAction.bodyPart, true, offHandAttackResult, 1);
-                            if (defender.health && (defender.health.head.current <= 0 || defender.health.torso.current <= 0)) {
-                                logToConsole(`DEFEATED: ${defenderName} has fallen after off-hand attack!`);
-                                this.initiativeTracker = this.initiativeTracker.filter(entry => entry.entity !== defender);
-                                this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== defender);
-                                if (defender === this.gameState) { this.endCombat(); window.gameOver(this.gameState); return; }
-                                if (!this.initiativeTracker.some(e => !e.isPlayer)) { this.endCombat(); return; }
-                                window.mapRenderer.scheduleRender();
-                            }
+                            logToConsole(`RESULT: DUAL WIELD Hit! ${attackerName}'s off-hand ${offHandWeapon.name} strikes ${defenderName}.`, 'lightgreen');
+                            this.calculateAndApplyRangedDamage(attacker, defender, offHandWeapon, originalPendingAction.bodyPart, true, offHandAttackResult, 1); // 1 hit for off-hand
+                            // Defeated check inside applyDamage will handle logging and removal
                         } else {
-                            logToConsole(`RESULT: DUAL WIELD Miss! ${attackerName}'s off-hand ${offHandWeapon.name} fails to strike ${defenderName}.`);
+                            logToConsole(`RESULT: DUAL WIELD Miss! ${attackerName}'s off-hand ${offHandWeapon.name} fails to strike ${defenderName}.`, 'orange');
                         }
                     } else {
-                        logToConsole(`DUAL WIELD: Off-hand attack on tile target. No defense roll.`);
+                        logToConsole(`DUAL WIELD: Off-hand attack on tile target. No defense roll.`, 'grey');
                     }
                 } else {
-                    logToConsole("DUAL WIELD: Off-hand item not a firearm or missing. Skipping off-hand attack.");
+                    logToConsole("DUAL WIELD: Off-hand item not a firearm or missing. Skipping off-hand attack.", 'orange');
                 }
             }
 
@@ -1489,29 +1514,29 @@ class CombatManager {
 
             if (attacker === this.gameState) {
                 if (this.gameState.actionPointsRemaining > 0) {
-                    logToConsole("Player has action points remaining. Prompting for next action.");
+                    logToConsole("Player has action points remaining. Prompting for next action.", 'lightblue');
                     this.promptPlayerAttackDeclaration();
                 } else if (this.gameState.movementPointsRemaining > 0) {
-                    logToConsole("Player has 0 AP but >0 MP. Player can move or press 'T' to end turn. Attack/Defense UI should be hidden.");
+                    logToConsole("Player has 0 AP but >0 MP. Player can move or press 'T' to end turn. Attack/Defense UI should be hidden.", 'lightblue');
                     const attackDeclUI = document.getElementById('attackDeclarationUI');
                     if (attackDeclUI && !attackDeclUI.classList.contains('hidden')) {
                         attackDeclUI.classList.add('hidden');
-                        logToConsole("INFO: Explicitly hid attackDeclarationUI for player (0 AP, >0 MP state).");
+                        logToConsole("INFO: Explicitly hid attackDeclarationUI for player (0 AP, >0 MP state).", 'grey');
                     }
                     const defenseDeclUI = document.getElementById('defenseDeclarationUI');
                     if (defenseDeclUI && !defenseDeclUI.classList.contains('hidden')) {
                         defenseDeclUI.classList.add('hidden');
-                        logToConsole("INFO: Explicitly hid defenseDeclarationUI for player (0 AP, >0 MP state).");
+                        logToConsole("INFO: Explicitly hid defenseDeclarationUI for player (0 AP, >0 MP state).", 'grey');
                     }
                     window.turnManager.updateTurnUI(); // Update AP/MP display on main UI
                 } else {
-                    logToConsole("Player has no action or movement points remaining. Proceeding to next turn.");
+                    logToConsole("Player has no action or movement points remaining. Proceeding to next turn.", 'lightblue');
                     const playerEntity = this.gameState; // Player is gameState
                     this.nextTurn(playerEntity);
                 }
             } else { // NPC was the attacker
-                logToConsole(`NPC ${attacker.name || attacker.id} finished an attack sequence against ${defenderName}. AP: ${attacker.currentActionPoints}, MP: ${attacker.currentMovementPoints}.`);
-                if (this.gameState.isInCombat) {
+                logToConsole(`NPC ${attacker.name || attacker.id} finished an attack sequence against ${defenderName}. AP: ${attacker.currentActionPoints}, MP: ${attacker.currentMovementPoints}.`, 'gold');
+                if (this.gameState.isInCombat) { // Ensure combat is still active before proceeding
                     this.nextTurn(attacker); // 'attacker' is the NPC whose action just resolved.
                 }
             }
@@ -1523,13 +1548,13 @@ class CombatManager {
 
     endPlayerTurn() {
         if (this.gameState.isInCombat && this.gameState.combatCurrentAttacker === this.gameState) {
-            logToConsole("Player manually ends their turn.");
+            logToConsole("Player manually ends their turn.", 'lightblue');
             this.gameState.actionPointsRemaining = 0;
             this.gameState.movementPointsRemaining = 0;
             window.turnManager.updateTurnUI();
-            this.nextTurn();
+            this.nextTurn(this.gameState); // Pass the player entity (gameState)
         } else {
-            logToConsole("Cannot end player turn: not in combat or not player's turn.");
+            logToConsole("Cannot end player turn: not in combat or not player's turn.", 'orange');
         }
     }
 
@@ -1558,7 +1583,7 @@ class CombatManager {
         let weaponObject = null;
 
         if (selectedOption.value === "unarmed") {
-            logToConsole("Cannot reload Unarmed.");
+            logToConsole("Cannot reload Unarmed.", 'orange');
             return;
         } else if (selectedOption.dataset.itemData) {
             weaponObject = JSON.parse(selectedOption.dataset.itemData);
@@ -1567,37 +1592,37 @@ class CombatManager {
         }
 
         if (!weaponObject) {
-            logToConsole("No weapon selected or found for reloading.");
+            logToConsole("No weapon selected or found for reloading.", 'orange');
             return;
         }
         if (!(weaponObject.type.includes("firearm") || weaponObject.type.includes("bow") || weaponObject.type.includes("crossbow"))) {
-            logToConsole(`Cannot reload ${weaponObject.name}, it's not a firearm, bow, or crossbow.`);
+            logToConsole(`Cannot reload ${weaponObject.name}, it's not a firearm, bow, or crossbow.`, 'orange');
             return;
         }
 
 
         if (this.gameState.actionPointsRemaining <= 0) {
-            logToConsole("No action points remaining to reload.");
+            logToConsole("No action points remaining to reload.", 'orange');
             return;
         }
 
         this.gameState.pendingCombatAction = {
             actionType: "Reload",
             weapon: weaponObject,
-            target: null,
-            entity: this.gameState,
+            target: null, // Reloading doesn't have a target in the same way an attack does
+            entity: this.gameState, // The entity performing the action
             actionDescription: `reloads ${weaponObject.name}`
         };
 
-        logToConsole(`Player action: Reloads ${weaponObject.name}.`);
+        logToConsole(`Player action: Reloads ${weaponObject.name}.`, 'lightgreen');
         document.getElementById('attackDeclarationUI').classList.add('hidden');
-        this.gameState.combatPhase = 'resolveRolls';
-        this.processAttack();
+        this.gameState.combatPhase = 'resolveRolls'; // Set phase for processAttack
+        this.processAttack(); // Call processAttack to handle the reload action
     }
 
     handleGrappleAttemptDeclaration() {
         if (this.gameState.actionPointsRemaining <= 0) {
-            logToConsole("No action points remaining to attempt grapple.");
+            logToConsole("No action points remaining to attempt grapple.", 'orange');
             return;
         }
 
@@ -1614,13 +1639,13 @@ class CombatManager {
         const primaryHandItem = this.gameState.inventory.handSlots[0];
         const offHandItem = this.gameState.inventory.handSlots[1];
         if (primaryHandItem && primaryHandItem.type.includes("firearm") && offHandItem && offHandItem.type.includes("firearm")) {
-            logToConsole("Cannot attempt grapple while dual-wielding firearms.");
-            document.getElementById('attackDeclarationUI').classList.remove('hidden');
-            this.promptPlayerAttackDeclaration();
+            logToConsole("Cannot attempt grapple while dual-wielding firearms.", 'orange');
+            document.getElementById('attackDeclarationUI').classList.remove('hidden'); // Show UI again
+            this.promptPlayerAttackDeclaration(); // Re-prompt
             return;
         }
 
-        logToConsole(`Player action: Attempts to grapple ${this.gameState.combatCurrentDefender.name}.`);
+        logToConsole(`Player action: Attempts to grapple ${this.gameState.combatCurrentDefender.name}.`, 'lightgreen');
         document.getElementById('attackDeclarationUI').classList.add('hidden');
         this.gameState.combatPhase = 'resolveGrapple';
         this.processGrapple();
@@ -1631,21 +1656,22 @@ class CombatManager {
         const defender = this.gameState.combatCurrentDefender;
 
         if (!attacker || !defender) {
-            logToConsole("Error: Attacker or Defender not defined for grapple.");
-            this.nextTurn();
+            logToConsole("Error: Attacker or Defender not defined for grapple.", 'red');
+            this.nextTurn(attacker); // Or handle error more gracefully, pass attacker
             return;
         }
 
-        if (attacker === this.gameState) {
+        if (attacker === this.gameState) { // Player is grappling
             if (this.gameState.actionPointsRemaining <= 0) {
-                logToConsole("No action points to complete grapple (should have been checked earlier).");
-                this.promptPlayerAttackDeclaration();
+                logToConsole("No action points to complete grapple (should have been checked earlier).", 'orange');
+                this.promptPlayerAttackDeclaration(); // Re-prompt if player
                 return;
             }
             this.gameState.actionPointsRemaining--;
             window.turnManager.updateTurnUI();
-            logToConsole(`Action point spent for grapple attempt. Remaining: ${this.gameState.actionPointsRemaining}`);
+            logToConsole(`Action point spent for grapple attempt. Remaining: ${this.gameState.actionPointsRemaining}`, 'lightblue');
         }
+        // If NPC is grappling, AP would be handled in their turn logic, but this function is player-invoked.
 
 
         const attackerUnarmedSkill = getSkillValue("Unarmed", attacker);
@@ -1658,34 +1684,37 @@ class CombatManager {
         const defenderDisplayName = defender === this.gameState ? "Player" : defender.name;
 
 
-        logToConsole(`GRAPPLE: ${attackerDisplayName} attempts grapple. Roll: ${attackerRoll} (Nat: ${attackerRollNatural}, Unarmed Skill: ${attackerUnarmedSkill})`);
-        logToConsole(`GRAPPLE DEFENSE: ${defenderDisplayName} resists. Roll: ${defenderRoll} (Nat: ${defenderRollNatural}, Unarmed Skill: ${defenderUnarmedSkill})`);
+        logToConsole(`GRAPPLE: ${attackerDisplayName} attempts grapple. Roll: ${attackerRoll} (Nat: ${attackerRollNatural}, Unarmed Skill: ${attackerUnarmedSkill})`, window.getSkillColor("Unarmed"));
+        logToConsole(`GRAPPLE DEFENSE: ${defenderDisplayName} resists. Roll: ${defenderRoll} (Nat: ${defenderRollNatural}, Unarmed Skill: ${defenderUnarmedSkill})`, window.getSkillColor("Unarmed"));
 
         if (attackerRoll > defenderRoll) {
             if (!defender.statusEffects) {
-                defender.statusEffects = {};
+                defender.statusEffects = {}; // Initialize if not present
             }
             defender.statusEffects.isGrappled = true;
-            defender.statusEffects.grappledBy = (attacker === this.gameState) ? "player" : (attacker.id || "npc");
+            defender.statusEffects.grappledBy = (attacker === this.gameState) ? "player" : (attacker.id || "npc"); // Store who is grappling
 
-            logToConsole(`RESULT: Grapple Succeeded! ${defenderDisplayName} is grappled by ${attackerDisplayName}.`);
+            logToConsole(`RESULT: Grapple Succeeded! ${defenderDisplayName} is grappled by ${attackerDisplayName}.`, attacker === this.gameState ? 'lightgreen' : 'orange');
         } else {
-            logToConsole("RESULT: Grapple Failed!");
+            logToConsole("RESULT: Grapple Failed!", attacker === this.gameState ? 'orange' : 'lightgreen');
         }
 
+        // Post-grapple action for player
         if (attacker === this.gameState) {
             if (this.gameState.actionPointsRemaining > 0) {
-                logToConsole("You have action points remaining.");
+                logToConsole("You have action points remaining.", 'lightblue');
                 this.promptPlayerAttackDeclaration();
             } else if (this.gameState.movementPointsRemaining > 0) {
-                logToConsole("Grapple attempt resolved. You have movement points remaining or can end your turn.");
-                this.gameState.combatPhase = 'playerPostAction';
+                logToConsole("Grapple attempt resolved. You have movement points remaining or can end your turn.", 'lightblue');
+                this.gameState.combatPhase = 'playerPostAction'; // Allow movement or turn end
             } else {
-                logToConsole("Grapple attempt resolved. No action or movement points remaining.");
-                this.nextTurn();
+                logToConsole("Grapple attempt resolved. No action or movement points remaining.", 'lightblue');
+                this.nextTurn(this.gameState); // Automatically end turn if no AP/MP
             }
         } else {
-            this.nextTurn();
+            // This block should ideally not be reached if grapple is player-initiated.
+            // If an NPC grapple system is added, its turn progression would be handled by executeNpcCombatTurn.
+            this.nextTurn(attacker);
         }
     }
 
@@ -1770,29 +1799,29 @@ class CombatManager {
 
         if (isPlayerVictim) {
             if (!this.gameState.health || !this.gameState.health[accessKey]) {
-                logToConsole(`Error: Player health data missing for body part: ${accessKey} (original: ${bodyPartName})`);
+                logToConsole(`Error: Player health data missing for body part: ${accessKey} (original: ${bodyPartName})`, 'red');
                 return;
             }
             part = this.gameState.health[accessKey];
-            const effectiveArmor = window.getArmorForBodyPart(accessKey, entity);
+            const effectiveArmor = window.getArmorForBodyPart(accessKey, entity); // Assuming this function exists and is correct
             const reducedDamage = Math.max(0, damageAmount - effectiveArmor);
+            const damageColor = (attacker === this.gameState && entity !== this.gameState) ? 'orange' : 'indianred'; // Player dealing damage vs. player taking damage
 
-            logToConsole(`DAMAGE${bulletPrefix}: ${attackerName}'s ${weaponName} deals ${reducedDamage} ${damageType} to Player's ${bodyPartName} (health key: ${accessKey}) (Raw: ${damageAmount}, Armor: ${effectiveArmor}).`);
+            logToConsole(`DAMAGE${bulletPrefix}: ${attackerName}'s ${weaponName} deals ${reducedDamage} ${damageType} to Player's ${bodyPartName} (Raw: ${damageAmount}, Armor: ${effectiveArmor}).`, damageColor);
             part.current = Math.max(0, part.current - reducedDamage);
-            logToConsole(`INFO: Player ${accessKey} HP: ${part.current}/${part.max}.`);
+            logToConsole(`INFO: Player ${accessKey} HP: ${part.current}/${part.max}.`, 'lightblue');
 
-            // Add aggro before crisis/death checks
-            this.shareAggroWithTeam(entity, attacker, damageAmount); // Use raw damageAmount for threat
+            this.shareAggroWithTeam(entity, attacker, damageAmount);
 
             if (part.current === 0) {
                 const formattedPartName = window.formatBodyPartName ? window.formatBodyPartName(accessKey) : accessKey.toUpperCase();
                 if (part.inCrisis) {
-                    logToConsole(`FATAL HIT: ${entityName}'s already crippled ${formattedPartName} was struck again! Character has died.`);
-                    window.gameOver(entity);
+                    logToConsole(`FATAL HIT: Player's already crippled ${formattedPartName} was struck again! Player has died.`, 'darkred');
+                    window.gameOver(entity); // Pass the player object (gameState)
                 } else {
                     part.inCrisis = true;
-                    part.crisisTimer = 3;
-                    part.crisisDamageType = damageType;
+                    part.crisisTimer = 3; // Example timer
+                    part.crisisDamageType = damageType; // Store damage type for potential ongoing effects
                     let crisisMessage = "";
                     switch (damageType.toLowerCase()) {
                         case "ballistic": crisisMessage = `${formattedPartName} deeply lacerated!`; break;
@@ -1802,35 +1831,35 @@ class CombatManager {
                         case "fire": crisisMessage = `${formattedPartName} badly burned!`; break;
                         default: crisisMessage = `${formattedPartName} critically injured!`;
                     }
-                    logToConsole(`CRISIS START: ${entityName}'s ${crisisMessage} (Timer: ${part.crisisTimer} turns).`);
+                    logToConsole(`CRISIS START: Player's ${crisisMessage} (Timer: ${part.crisisTimer} turns).`, 'red');
                 }
                 const sourceExplosive = weapon;
                 if (sourceExplosive && sourceExplosive.explodesOnImpact) {
                     part.isDestroyed = true;
-                    logToConsole(`CRITICAL DAMAGE: ${entityName}'s ${formattedPartName} is DESTROYED by the explosion!`);
+                    logToConsole(`CRITICAL DAMAGE: Player's ${formattedPartName} is DESTROYED by the explosion!`, 'darkred');
                 }
             }
-            window.renderHealthTable(entity);
-        } else {
+            window.renderHealthTable(entity); // Update player health UI
+        } else { // NPC is the victim
             if (!entity.health || !entity.health[accessKey]) {
-                logToConsole(`Error: ${entityName} health data missing for body part: ${accessKey} (original: ${bodyPartName})`);
+                logToConsole(`Error: ${entityName} health data missing for body part: ${accessKey} (original: ${bodyPartName})`, 'red');
                 return;
             }
             part = entity.health[accessKey];
             const effectiveArmor = entity.armor ? (entity.armor[accessKey] || 0) : 0;
             const reducedDamage = Math.max(0, damageAmount - effectiveArmor);
+            const damageColorNpc = attacker === this.gameState ? 'orange' : 'red'; // Player damaging NPC vs NPC damaging NPC
 
-            logToConsole(`DAMAGE${bulletPrefix}: ${attackerName}'s ${weaponName} deals ${reducedDamage} ${damageType} to ${entityName}'s ${bodyPartName} (health key: ${accessKey}) (Raw: ${damageAmount}, Armor: ${effectiveArmor}).`);
+            logToConsole(`DAMAGE${bulletPrefix}: ${attackerName}'s ${weaponName} deals ${reducedDamage} ${damageType} to ${entityName}'s ${bodyPartName} (Raw: ${damageAmount}, Armor: ${effectiveArmor}).`, damageColorNpc);
             part.current = Math.max(0, part.current - reducedDamage);
-            logToConsole(`INFO: ${entityName} ${accessKey} HP: ${part.current}/${part.max}.`);
+            logToConsole(`INFO: ${entityName} ${accessKey} HP: ${part.current}/${part.max}.`, 'gold');
 
-            // Add aggro before crisis/death checks
-            this.shareAggroWithTeam(entity, attacker, damageAmount); // Use raw damageAmount for threat
+            this.shareAggroWithTeam(entity, attacker, damageAmount);
 
             if (part.current === 0) {
                 const formattedPartName = window.formatBodyPartName ? window.formatBodyPartName(accessKey) : accessKey.toUpperCase();
                 if (part.inCrisis) {
-                    logToConsole(`FATAL HIT: ${entityName}'s already crippled ${formattedPartName} was struck again! Character has died.`);
+                    logToConsole(`FATAL HIT: ${entityName}'s already crippled ${formattedPartName} was struck again! Character has died.`, 'darkred');
                     window.gameOver(entity);
                 } else {
                     part.inCrisis = true;
@@ -1845,12 +1874,12 @@ class CombatManager {
                         case "fire": crisisMessage = `${formattedPartName} badly burned!`; break;
                         default: crisisMessage = `${formattedPartName} critically injured!`;
                     }
-                    logToConsole(`CRISIS START: ${entityName}'s ${crisisMessage} (Timer: ${part.crisisTimer} turns).`);
+                    logToConsole(`CRISIS START: ${entityName}'s ${crisisMessage} (Timer: ${part.crisisTimer} turns).`, 'orangered');
                 }
                 const sourceExplosive = weapon;
                 if (sourceExplosive && sourceExplosive.explodesOnImpact) {
                     part.isDestroyed = true;
-                    logToConsole(`CRITICAL DAMAGE: ${entityName}'s ${formattedPartName} is DESTROYED by the explosion!`);
+                    logToConsole(`CRITICAL DAMAGE: ${entityName}'s ${formattedPartName} is DESTROYED by the explosion!`, 'darkred');
                 }
             }
         }
@@ -1862,7 +1891,7 @@ class CombatManager {
         this.gameState.combatCurrentDefender = null;    // Clear current defender
         this.gameState.defenderMapPos = null;           // Clear defender position
         this.gameState.selectedTargetEntity = null;     // Clear selected entity from map click
-        logToConsole("Retarget button clicked. Player should now click on a new target on the map.");
+        logToConsole("Retarget button clicked. Player should now click on a new target on the map.", 'lightblue');
         // Call promptPlayerAttackDeclaration to update UI (hide attack options, change defender display)
         this.promptPlayerAttackDeclaration();
         // Ensure combat UI reflects the change, especially the defender display
@@ -1954,9 +1983,9 @@ class CombatManager {
         if (moved) {
             npc.currentMovementPoints--;
             npc.movedThisTurn = true; // Note: movedThisTurn is for the entire game turn, not loop iteration.
-            logToConsole(`ACTION: ${npc.name} moves to (${npc.mapPos.x}, ${npc.mapPos.y}). MP Left: ${npc.currentMovementPoints}`);
-            this.gameState.attackerMapPos = { ...npc.mapPos };
-            window.mapRenderer.scheduleRender();
+            logToConsole(`ACTION: ${npc.name} moves to (${npc.mapPos.x}, ${npc.mapPos.y}). MP Left: ${npc.currentMovementPoints}`, 'gold');
+            this.gameState.attackerMapPos = { ...npc.mapPos }; // Update attacker's map position state
+            window.mapRenderer.scheduleRender(); // Re-render map to show NPC new position
         }
         return moved;
     }
@@ -1983,7 +2012,7 @@ class CombatManager {
                 if (targetHealth && targetHealth.torso.current > 0 && targetHealth.head.current > 0 && npc.teamId !== targetTeamId && targetMapPos) {
                     this.gameState.combatCurrentDefender = potentialTarget;
                     this.gameState.defenderMapPos = { ...targetMapPos };
-                    logToConsole(`NPC TARGETING: ${npcName} (Team: ${npc.teamId}) selected ${targetName} (Team: ${targetTeamId}) from aggro list (Threat: ${aggroEntry.threat}).`);
+                    logToConsole(`NPC TARGETING: ${npcName} (Team: ${npc.teamId}) selected ${targetName} (Team: ${targetTeamId}) from aggro list (Threat: ${aggroEntry.threat}).`, 'gold');
                     return true; // Target found
                 }
             }
@@ -2017,11 +2046,11 @@ class CombatManager {
             const closestTargetName = isClosestTargetPlayer ? "Player" : (closestTarget.name || closestTarget.id);
             const closestTargetTeamId = isClosestTargetPlayer ? this.gameState.player.teamId : closestTarget.teamId;
             this.gameState.defenderMapPos = isClosestTargetPlayer ? { ...this.gameState.playerPos } : { ...closestTarget.mapPos };
-            logToConsole(`NPC TARGETING: ${npcName} (Team: ${npc.teamId}) selected nearest enemy: ${closestTargetName} (Team: ${closestTargetTeamId}). Distance: ${minDistance}.`);
+            logToConsole(`NPC TARGETING: ${npcName} (Team: ${npc.teamId}) selected nearest enemy: ${closestTargetName} (Team: ${closestTargetTeamId}). Distance: ${minDistance}.`, 'gold');
             return true; // Target found
         }
 
-        logToConsole(`NPC TARGETING: ${npcName} (Team: ${npc.teamId}) found no valid targets after full selection process.`);
+        logToConsole(`NPC TARGETING: ${npcName} (Team: ${npc.teamId}) found no valid targets after full selection process.`, 'orange');
         // Explicitly nullify if no target found, ensuring clean state
         this.gameState.combatCurrentDefender = null;
         this.gameState.defenderMapPos = null;
@@ -2032,21 +2061,22 @@ class CombatManager {
     executeNpcCombatTurn(npc) {
         const npcName = npc.name || npc.id || "NPC (Unknown ID)";
         if (!npc || (npc.health && npc.health.torso && npc.health.torso.current <= 0) || (npc.health && npc.health.head && npc.health.head.current <= 0)) {
-            logToConsole(`INFO: ${npcName} is incapacitated at start of turn. Advancing turn.`);
+            logToConsole(`INFO: ${npcName} is incapacitated at start of turn. Advancing turn.`, 'orange');
             this.nextTurn(npc); // Pass current NPC for logging
             return;
         }
 
         if (!Array.isArray(npc.aggroList)) npc.aggroList = [];
 
-        logToConsole(`NPC TURN START: ${npcName} (AP: ${npc.currentActionPoints}, MP: ${npc.currentMovementPoints}, Team: ${npc.teamId})`);
+        logToConsole(`NPC TURN START: ${npcName} (AP: ${npc.currentActionPoints}, MP: ${npc.currentMovementPoints}, Team: ${npc.teamId})`, 'gold');
 
         // Initial target selection for the turn
-        if (!this._npcSelectTarget(npc)) {
-            logToConsole(`NPC ACTION: ${npcName} found no valid targets at turn start. Ending turn.`);
+        if (!this._npcSelectTarget(npc)) { // This helper already logs its own success/failure
+            logToConsole(`NPC ACTION: ${npcName} found no valid targets at turn start. Ending turn.`, 'orange');
+            // _npcSelectTarget will have nulled combatCurrentDefender and defenderMapPos
         }
-        // If _npcSelectTarget found a target, this.gameState.combatCurrentDefender will be set.
-        // If not, it remains null from the helper.
+        // If _npcSelectTarget found a target, this.gameState.combatCurrentDefender and defenderMapPos will be set.
+        // If not, they remain null from the helper.
 
         let turnEnded = false;
         if (!this.gameState.combatCurrentDefender) { // If still no target after initial selection
@@ -2058,7 +2088,7 @@ class CombatManager {
         while (!turnEnded && (npc.currentActionPoints > 0 || npc.currentMovementPoints > 0) && iterationSafetyNet < 10) {
             iterationSafetyNet++;
             if (iterationSafetyNet >= 10) {
-                logToConsole(`WARN: ${npcName} turn loop hit safety net. Ending turn.`);
+                logToConsole(`WARN: ${npcName} turn loop hit safety net. Ending turn.`, 'red');
                 break;
             }
 
@@ -2067,16 +2097,16 @@ class CombatManager {
 
             // Re-evaluate target if current one is invalid/defeated
             if (!currentTarget || !currentTarget.health || currentTarget.health.torso.current <= 0 || currentTarget.health.head.current <= 0) {
-                logToConsole(`${npcName} current target ${currentTarget ? (currentTarget.name || currentTarget.id) : 'None'} is invalid/defeated. Attempting to find new target.`);
-                if (!this._npcSelectTarget(npc)) { // This now also nulls defender state if no target found
-                    logToConsole(`${npcName} could not find a new valid target. Ending turn.`);
+                logToConsole(`${npcName} current target ${currentTarget ? (currentTarget.name || currentTarget.id) : 'None'} is invalid/defeated. Attempting to find new target.`, 'gold');
+                if (!this._npcSelectTarget(npc)) { // This helper logs its outcome and nulls defender state if no target
+                    logToConsole(`${npcName} could not find a new valid target after re-evaluation. Ending turn.`, 'orange');
                     turnEnded = true;
                     break; // Break from while loop
                 }
-                currentTarget = this.gameState.combatCurrentDefender; // Update currentTarget
-                currentTargetPos = this.gameState.defenderMapPos; // Update currentTargetPos
-                if (!currentTarget) {
-                    logToConsole(`${npcName} still no target after re-evaluation (should have been nulled by _npcSelectTarget). Ending turn.`);
+                currentTarget = this.gameState.combatCurrentDefender; // Update currentTarget after re-evaluation
+                currentTargetPos = this.gameState.defenderMapPos;     // Update currentTargetPos
+                if (!currentTarget) { // Should be redundant if _npcSelectTarget correctly nulls, but good safety
+                    logToConsole(`${npcName} still no target after re-evaluation (should have been nulled by _npcSelectTarget). Ending turn.`, 'orange');
                     turnEnded = true;
                     break; // Break from while loop
                 }
@@ -2108,50 +2138,55 @@ class CombatManager {
             const canAttack = (attackType === 'melee' && distanceToTarget <= 1) || (attackType === 'ranged');
 
             if (canAttack && npc.currentActionPoints > 0) {
-                logToConsole(`${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}) decides to ATTACK ${targetName} with ${weaponToUse ? weaponToUse.name : 'Unarmed'} (Mode: ${fireMode}). Dist: ${distanceToTarget}`);
+                logToConsole(`${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}) decides to ATTACK ${targetName} with ${weaponToUse ? weaponToUse.name : 'Unarmed'} (Mode: ${fireMode}). Dist: ${distanceToTarget}`, 'gold');
                 this.gameState.pendingCombatAction = {
                     target: currentTarget, weapon: weaponToUse, attackType: attackType,
-                    bodyPart: "Torso", fireMode: fireMode, actionType: "attack", entity: npc,
+                    bodyPart: "Torso", // NPCs typically aim for torso unless more complex AI
+                    fireMode: fireMode, actionType: "attack", entity: npc,
                     actionDescription: `${attackType} attack by ${npcName}`
                 };
                 npc.currentActionPoints--;
                 actionTakenThisLoopIteration = true;
-                this.gameState.combatPhase = 'defenderDeclare';
-                this.handleDefenderActionPrompt();
+                this.gameState.combatPhase = 'defenderDeclare'; // Set phase before calling
+                this.handleDefenderActionPrompt(); // This will prompt player if player is defender
 
+                // If player is defending, their input will resume combat. NPC turn effectively pauses.
                 if (this.gameState.combatPhase === 'playerDefenseDeclare') {
-                    logToConsole(`INFO: ${npcName} turn paused, awaiting player defense declaration.`);
-                    return;
+                    logToConsole(`INFO: ${npcName} turn paused, awaiting player defense declaration.`, 'grey');
+                    return; // Exit NPC turn; player input will drive next step
                 }
+                // If NPC was defender, or if it was an attack on a tile, processAttack would have completed.
+
             } else if (distanceToTarget > 1 && attackType === 'melee' && npc.currentMovementPoints > 0) {
-                logToConsole(`${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}) decides to MOVE towards ${targetName} (melee). Dist: ${distanceToTarget}`);
-                if (this.moveNpcTowardsTarget(npc, currentTargetPos)) {
+                logToConsole(`${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}) decides to MOVE towards ${targetName} (melee). Dist: ${distanceToTarget}`, 'gold');
+                if (this.moveNpcTowardsTarget(npc, currentTargetPos)) { // moveNpcTowardsTarget logs its own success/failure
                     actionTakenThisLoopIteration = true;
                 } else {
-                    logToConsole(`${npcName} could not move closer to ${targetName}.`);
+                    logToConsole(`${npcName} could not move closer to ${targetName} (melee).`, 'orange');
                 }
-            } else if (attackType === 'ranged' && distanceToTarget > (weaponToUse?.effectiveRange || 20) && npc.currentMovementPoints > 0) {
-                logToConsole(`${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}) decides to MOVE towards ${targetName} (ranged). Dist: ${distanceToTarget}`);
+            } else if (attackType === 'ranged' && distanceToTarget > (weaponToUse?.effectiveRange || 20) && npc.currentMovementPoints > 0) { // Example: move if outside effective range
+                logToConsole(`${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}) decides to MOVE towards ${targetName} (ranged). Dist: ${distanceToTarget}`, 'gold');
                 if (this.moveNpcTowardsTarget(npc, currentTargetPos)) {
                     actionTakenThisLoopIteration = true;
                 } else {
-                    logToConsole(`${npcName} could not move closer to ${targetName} (ranged).`);
+                    logToConsole(`${npcName} could not move closer to ${targetName} (ranged).`, 'orange');
                 }
             }
+
 
             if (!actionTakenThisLoopIteration) {
-                logToConsole(`NPC ${npcName} took no specific action this iteration (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}, Target: ${targetName}, Dist: ${distanceToTarget}). Considering end of turn.`);
-                turnEnded = true;
+                logToConsole(`NPC ${npcName} took no specific action this iteration (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}, Target: ${targetName}, Dist: ${distanceToTarget}). Considering end of turn.`, 'gold');
+                turnEnded = true; // No useful action could be taken
             }
             if (npc.currentActionPoints === 0 && npc.currentMovementPoints === 0) {
-                logToConsole(`${npcName} has no AP or MP left. Ending turn.`);
+                logToConsole(`${npcName} has no AP or MP left. Ending turn.`, 'gold');
                 turnEnded = true;
             }
         } // End of while loop
 
-        const aboutToEndTurnNpc = npc; // Capture the current NPC
-        logToConsole(`${npcName} turn processing finished. AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}. Proceeding to nextTurn().`);
-        this.nextTurn(aboutToEndTurnNpc);
+        const aboutToEndTurnNpc = npc; // Capture the current NPC whose turn is ending
+        logToConsole(`${npcName} turn processing finished. AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}. Proceeding to nextTurn().`, 'gold');
+        this.nextTurn(aboutToEndTurnNpc); // Pass the NPC whose turn just ended
     }
 
     updateCombatUI() {
@@ -2163,11 +2198,39 @@ class CombatManager {
         const defenseRollResultEl = document.getElementById('defenseRollResult');
         const damageResultEl = document.getElementById('damageResult');
 
-        const attackerName = this.gameState.combatCurrentAttacker ? (this.gameState.combatCurrentAttacker === this.gameState ? (document.getElementById('charName')?.value || "Player") : this.gameState.combatCurrentAttacker.name) : '-';
-        const defenderName = this.gameState.combatCurrentDefender ? (this.gameState.combatCurrentDefender === this.gameState ? (document.getElementById('charName')?.value || "Player") : this.gameState.combatCurrentDefender.name) : '-';
+        // Attacker Name Update
+        const attacker = this.gameState.combatCurrentAttacker;
+        if (currentAttackerEl) {
+            currentAttackerEl.innerHTML = 'Attacker: '; // Clear and add prefix
+            if (attacker) {
+                const attackerName = (attacker === this.gameState) ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id);
+                const attackerColor = window.getTeamColor(attacker);
+                const nameSpan = document.createElement('span');
+                nameSpan.style.color = attackerColor;
+                nameSpan.textContent = attackerName || '-';
+                currentAttackerEl.appendChild(nameSpan);
+            } else {
+                currentAttackerEl.append('-');
+            }
+        }
 
-        if (currentAttackerEl) currentAttackerEl.textContent = `Attacker: ${attackerName}`;
-        if (currentDefenderEl) currentDefenderEl.textContent = `Defender: ${defenderName}`;
+        // Defender Name Update
+        const defender = this.gameState.combatCurrentDefender;
+        if (currentDefenderEl) {
+            currentDefenderEl.innerHTML = 'Defender: '; // Clear and add prefix
+            if (defender) {
+                const defenderName = (defender === this.gameState) ? (document.getElementById('charName')?.value || "Player") : (defender.name || defender.id);
+                const defenderColor = window.getTeamColor(defender);
+                const nameSpan = document.createElement('span');
+                nameSpan.style.color = defenderColor;
+                nameSpan.textContent = defenderName || '-';
+                currentDefenderEl.appendChild(nameSpan);
+            } else if (this.gameState.defenderMapPos) { // Tile target
+                currentDefenderEl.append(`Tile at X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}`);
+            } else {
+                currentDefenderEl.append('-');
+            }
+        }
 
         if (attackerPromptEl && (this.gameState.combatPhase !== 'playerAttackDeclare' || document.getElementById('attackDeclarationUI').classList.contains('hidden'))) {
             attackerPromptEl.innerHTML = '';
@@ -2182,10 +2245,8 @@ class CombatManager {
             if (damageResultEl) damageResultEl.textContent = 'Damage: -';
             this.gameState.attackerMapPos = null;
             this.gameState.defenderMapPos = null;
-            // Ensure player name is updated in UI even when combat ends if player was last attacker/defender
-            const charNameVal = document.getElementById('charName')?.value || "Player";
-            if (currentAttackerEl && currentAttackerEl.textContent.includes("Player")) currentAttackerEl.textContent = `Attacker: ${charNameVal}`;
-            if (currentDefenderEl && currentDefenderEl.textContent.includes("Player")) currentDefenderEl.textContent = `Defender: ${charNameVal}`;
+            // The new logic for attacker/defender name display already uses charName input for player,
+            // so the specific textContent.includes("Player") checks below are no longer necessary for that purpose.
             window.mapRenderer.scheduleRender();
         }
     }

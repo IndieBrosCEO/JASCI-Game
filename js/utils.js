@@ -1,16 +1,72 @@
+// Palette for distinct faction/team colors
+const FACTION_COLORS = [
+    'orange',        // A common, distinct color
+    'purple',        // Another distinct one
+    'teal',          // Good contrast
+    'olive',         // Usually readable
+    'sandybrown',    // Lighter, but should be okay
+    'lightblue',     // Already used for some general logs, but can be okay for a team
+    'pink',          // Readable
+    'coral',         // Bright and distinct
+    'dodgerblue',    // A brighter blue
+    'mediumseagreen' // A lighter green than player's 'lightgreen'
+];
+
+// Global variables for delayed console message processing
+let consoleMessageQueue = [];
+let isConsoleProcessing = false;
+const CONSOLE_MESSAGE_DELAY = 50; // milliseconds for message delay
+
 /**************************************************************
  * Utility & Logging Functions
  **************************************************************/
 
-function logToConsole(message) {
-    console.log(message);
-    const consoleElement = document.getElementById("console");
-    if (consoleElement) {
-        const para = document.createElement("p");
-        para.textContent = message;
-        consoleElement.appendChild(para);
-        consoleElement.scrollTop = consoleElement.scrollHeight;
+function logToConsole(message, color) { // color is optional
+    console.log(message); // Keep original console.log for raw debugging
+
+    const messageObject = { text: message };
+    if (color) {
+        messageObject.color = color;
     }
+
+    consoleMessageQueue.push(messageObject);
+    ensureConsoleProcessing(); // This function will be created in the next step
+}
+// window.logToConsole = logToConsole; // This will be reassigned later with other window assignments
+
+function ensureConsoleProcessing() {
+    if (isConsoleProcessing) {
+        return; // Already processing, new messages are just added to the queue
+    }
+    isConsoleProcessing = true;
+    processNextConsoleMessage(); // Start processing the queue
+}
+
+function processNextConsoleMessage() {
+    if (consoleMessageQueue.length === 0) {
+        isConsoleProcessing = false; // No more messages, stop processing
+        return;
+    }
+
+    const messageObject = consoleMessageQueue.shift(); // Get the oldest message
+    const consoleElement = document.getElementById("console");
+
+    if (consoleElement && messageObject) {
+        const para = document.createElement("p");
+        if (messageObject.color) {
+            const span = document.createElement("span");
+            span.style.color = messageObject.color;
+            span.textContent = messageObject.text;
+            para.appendChild(span);
+        } else {
+            para.textContent = messageObject.text;
+        }
+        consoleElement.appendChild(para);
+        consoleElement.scrollTop = consoleElement.scrollHeight; // Auto-scroll
+    }
+
+    // Schedule the next message processing after the defined delay
+    setTimeout(processNextConsoleMessage, CONSOLE_MESSAGE_DELAY);
 }
 
 /**************************************************************
@@ -163,7 +219,7 @@ function getSkillModifier(skillName, entity) {
 // Exporting for potential ES6 module usage later, though current structure is global.
 // export { logToConsole, rollDie, parseDiceNotation, rollDiceNotation, getSkillValue, getStatValue, getStatModifier, getSkillModifier };
 
-window.logToConsole = logToConsole;
+window.logToConsole = logToConsole; // Re-establish this assignment here
 window.rollDie = rollDie;
 window.parseDiceNotation = parseDiceNotation;
 window.rollDiceNotation = rollDiceNotation;
@@ -171,3 +227,86 @@ window.getSkillValue = getSkillValue;
 window.getStatValue = getStatValue;
 window.getStatModifier = getStatModifier;
 window.getSkillModifier = getSkillModifier;
+
+function getSkillColor(skillName) {
+    if (!gameState || !gameState.skills) {
+        return 'lightgray';
+    }
+    const skill = gameState.skills.find(s => s.name === skillName);
+    if (skill) {
+        if (skill.textColor && skill.textColor.toLowerCase() === 'white') {
+            // If the skill's defined text color is white, use it.
+            return 'white';
+        } else if (skill.textColor && skill.textColor.toLowerCase() === 'black') {
+            // If the skill's defined text color is black, then its bgColor is meant to be the prominent color.
+            // Use bgColor as the text color in the console.
+            if (skill.bgColor) {
+                const lowerBgColor = skill.bgColor.toLowerCase();
+                if (lowerBgColor === 'black' || lowerBgColor === '#000000' || lowerBgColor === '#111111') {
+                    return 'cyan'; // Fallback for black bgColor
+                }
+                if (lowerBgColor === 'darkred') {
+                    return 'indianred'; // Brighter alternative for darkred
+                }
+                return skill.bgColor;
+            }
+        }
+        // Fallback if textColor is neither black nor white, or if bgColor is missing in the black textColor case
+        // Try bgColor first if available and not black/dark, then textColor if not black, then cyan
+        if (skill.bgColor) {
+            const lowerBgColor = skill.bgColor.toLowerCase();
+            if (lowerBgColor !== 'black' && lowerBgColor !== '#000000' && lowerBgColor !== '#111111') {
+                if (lowerBgColor === 'darkred') return 'indianred'; // Already handled but good for safety
+                return skill.bgColor;
+            }
+        }
+        if (skill.textColor) { // This case handles if skill.textColor is something other than black/white
+            const lowerTextColor = skill.textColor.toLowerCase();
+            // Ensure this other textColor isn't black or too dark either
+            if (lowerTextColor !== 'black' && lowerTextColor !== '#000000' && lowerTextColor !== '#111111') {
+                if (lowerTextColor === 'darkred') return 'indianred';
+                return skill.textColor;
+            }
+        }
+        return 'cyan'; // Ultimate fallback if previous conditions didn't return
+    }
+    return 'lightgray'; // Skill not found
+}
+window.getSkillColor = getSkillColor;
+
+function getTeamColor(entity) {
+    if (!entity) {
+        return 'lightgray';
+    }
+
+    if (!window.gameState || !window.gameState.player) {
+        if (entity === window.gameState) {
+            return 'lightgreen'; // Player
+        }
+        return 'gold'; // Default if player context for team comparison is missing
+    }
+
+    if (entity === window.gameState) { // Player
+        return 'lightgreen';
+    }
+
+    if (typeof entity.teamId !== 'undefined') {
+        if (entity.teamId === 0) { // Explicitly neutral team
+            return 'gold';
+        } else if (entity.teamId === window.gameState.player.teamId) { // Ally
+            return 'lightgreen';
+        } else { // Other defined teamIds (enemies or other factions)
+            if (FACTION_COLORS && FACTION_COLORS.length > 0) {
+                // Use teamId to pick a color from the FACTION_COLORS list.
+                // Math.abs ensures positive index, % handles wrapping.
+                const colorIndex = Math.abs(entity.teamId) % FACTION_COLORS.length;
+                return FACTION_COLORS[colorIndex];
+            } else {
+                return 'indianred'; // Fallback if FACTION_COLORS is missing
+            }
+        }
+    }
+
+    return 'gold'; // Fallback for entities with undefined teamId
+}
+window.getTeamColor = getTeamColor;
