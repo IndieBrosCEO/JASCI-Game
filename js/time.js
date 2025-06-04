@@ -35,13 +35,17 @@
         // Damage checks moved here - these now run every call to Time.advanceTime
         if (gameState.playerHunger === 0) {
             if (typeof window.applyHungerThirstDamage === 'function') {
+                logToConsole("DEBUG: Attempting to apply 1 hunger damage. Current Hunger: " + gameState.playerHunger);
                 window.applyHungerThirstDamage(gameState, 1); // Apply 1 damage for starvation
+                logToConsole("DEBUG: Hunger damage application attempt finished. Torso HP should be affected if conditions met.");
             }
             logToConsole('%cCRITICAL WARNING: PLAYER IS STARVING! Hunger at 0.', 'color: red; font-weight: bold; font-size: 14px;');
         }
         if (gameState.playerThirst === 0) {
             if (typeof window.applyHungerThirstDamage === 'function') {
+                logToConsole("DEBUG: Attempting to apply 1 thirst damage. Current Thirst: " + gameState.playerThirst);
                 window.applyHungerThirstDamage(gameState, 1); // Apply 1 damage for dehydration
+                logToConsole("DEBUG: Thirst damage application attempt finished. Torso HP should be affected if conditions met.");
             }
             logToConsole('%cCRITICAL WARNING: PLAYER IS DEHYDRATED! Thirst at 0.', 'color: red; font-weight: bold; font-size: 14px;');
         }
