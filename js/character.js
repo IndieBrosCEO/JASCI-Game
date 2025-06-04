@@ -88,6 +88,38 @@ function renderTables(character) {
 function renderCharacterStatsSkillsAndWornClothing(character, characterInfoElement) {
     if (!characterInfoElement) return;
 
+function applyHungerThirstDamage(gameState, damageAmount) {
+    // The 'character' parameter in other health functions is analogous to 'gameState' here,
+    // as player-specific health is directly on gameState.health.
+    if (!gameState.health || !gameState.health.torso) {
+        logToConsole("Error: Player health or torso data is missing. Cannot apply hunger/thirst damage.");
+        return;
+    }
+
+    let torso = gameState.health.torso;
+    let oldHp = torso.current;
+
+    torso.current = Math.max(0, torso.current - damageAmount);
+    logToConsole(`Player's torso damaged by ${damageAmount} due to hunger/thirst. HP: ${oldHp} -> ${torso.current}/${torso.max}`);
+
+    if (torso.current === 0 && torso.crisisTimer === 0) {
+        // Start crisis timer if torso HP drops to 0 and it's not already in crisis.
+        // This aligns with how other damage might trigger a crisis.
+        torso.crisisTimer = 3; // Default crisis timer duration
+        logToConsole(`Torso HP reached 0 due to hunger/thirst. Crisis timer started for player's torso.`);
+    }
+
+    // Update health UI
+    if (typeof window.renderHealthTable === 'function') {
+        window.renderHealthTable(gameState); // Pass gameState as the character object
+    } else {
+        logToConsole("Error: renderHealthTable function not found. UI may not update.");
+    }
+
+    // Game over is handled by updateHealthCrisis when a crisis timer runs out.
+    // No immediate game over check here, respecting the crisis timer system.
+}
+
     const statsHtml = character.stats.map(stat => `
         <div class="stats" style="background-color: ${stat.bgColor}; color: ${stat.textColor};">
             <span>${stat.name}:</span>
@@ -311,3 +343,4 @@ window.applyTreatment = applyTreatment;
 window.renderHealthTable = renderHealthTable;
 window.formatBodyPartName = formatBodyPartName;
 window.gameOver = gameOver;
+window.applyHungerThirstDamage = applyHungerThirstDamage;

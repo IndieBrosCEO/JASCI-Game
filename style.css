@@ -151,3 +151,18 @@ th, td {
     vertical-align: top;
     pointer-events: auto; /* if you want to click on tiles */
 }
+
+/* Status Bars Styling */
+#statusBars {
+    margin-bottom: 10px;
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+}
+.status-bar span:first-child {
+    margin-right: 5px;
+}

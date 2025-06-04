@@ -424,13 +424,13 @@ function handleKeyDown(event) {
             const previousHour = gameState.currentTime.hours;
             Time.advanceTime(gameState); // Advances by 2 minutes
 
-            if (previousHour !== gameState.currentTime.hours) {
-                updateHourlyNeeds(gameState); // From js/character.js
-            }
+            // if (previousHour !== gameState.currentTime.hours) {
+            //     updateHourlyNeeds(gameState); // From js/character.js
+            // }
 
-            if (previousHour === 23 && gameState.currentTime.hours === 0) {
-                applyDailyNeeds(gameState); // From js/character.js
-            }
+            // if (previousHour === 23 && gameState.currentTime.hours === 0) {
+            //     applyDailyNeeds(gameState); // From js/character.js
+            // }
             updatePlayerStatusDisplay(); // Update UI for time and needs
 
             if (gameState.isInCombat && combatManager.initiativeTracker[combatManager.currentTurnIndex]?.entity === gameState) {
@@ -713,6 +713,35 @@ async function initialize() { // Made async
     /**************************************************************
      * Player Status Display Function
      **************************************************************/
+    function renderStatusBars(gameState) {
+        const hungerBar = document.getElementById('hungerBar');
+        const thirstBar = document.getElementById('thirstBar');
+
+        if (!hungerBar || !thirstBar) {
+            // console.warn("Status bar elements not found."); // Optional warning
+            return;
+        }
+
+        const filledChar = '■';
+        const emptyChar = '□'; // Using a different empty character for clarity if needed
+        const maxBoxes = 24;
+
+        let hungerDisplay = '[';
+        for (let i = 0; i < maxBoxes; i++) {
+            hungerDisplay += (i < gameState.playerHunger) ? filledChar : emptyChar;
+        }
+        hungerDisplay += ']';
+        hungerBar.textContent = hungerDisplay;
+
+        let thirstDisplay = '[';
+        for (let i = 0; i < maxBoxes; i++) {
+            thirstDisplay += (i < gameState.playerThirst) ? filledChar : emptyChar;
+        }
+        thirstDisplay += ']';
+        thirstBar.textContent = thirstDisplay;
+    }
+    window.renderStatusBars = renderStatusBars; // Make global if called from elsewhere or for testing
+
     function updatePlayerStatusDisplay() {
         // Update Clock
         const clockElement = document.getElementById('clockDisplay');
@@ -724,23 +753,8 @@ async function initialize() { // Made async
             clockElement.textContent = "Clock N/A";
         }
 
-        // Update Hunger Bar
-        const hungerElement = document.getElementById('hungerDisplay');
-        if (hungerElement && typeof getNeedsStatusBars !== 'undefined') {
-            const needsBars = getNeedsStatusBars(gameState);
-            hungerElement.textContent = needsBars.hungerBar;
-        } else if (hungerElement) {
-            hungerElement.textContent = "Hunger N/A";
-        }
-
-        // Update Thirst Bar
-        const thirstElement = document.getElementById('thirstDisplay');
-        if (thirstElement && typeof getNeedsStatusBars !== 'undefined') {
-            const needsBars = getNeedsStatusBars(gameState); // Called again, but simple
-            thirstElement.textContent = needsBars.thirstBar;
-        } else if (thirstElement) {
-            thirstElement.textContent = "Thirst N/A";
-        }
+        // Update Hunger and Thirst Bars using the new function
+        renderStatusBars(gameState);
     }
     window.updatePlayerStatusDisplay = updatePlayerStatusDisplay; // Make it globally accessible if needed elsewhere
 
@@ -917,65 +931,84 @@ function startGame() {
     });
 
     // Add weapons and ammunition
-    const weaponsAndAmmoToAdd = [
-        // Melee Weapon
-        { id: "knife_melee" },
+    // const weaponsAndAmmoToAdd = [
+    //     // Melee Weapon
+    //     { id: "knife_melee" },
 
-        // Pistol and Ammo
-        { id: "beretta_92f_9mm" },
-        { id: "ammo_9mm", quantity: 1 }, // Add 2 boxes of 9mm ammo
+    //     // Pistol and Ammo
+    //     { id: "beretta_92f_9mm" },
+    //     { id: "ammo_9mm", quantity: 1 }, // Add 2 boxes of 9mm ammo
 
-        // Shotgun and Ammo
-        { id: "mossberg_12ga" },
-        { id: "ammo_12gauge_buckshot", quantity: 1 }, // Add 3 boxes of 12-gauge buckshot
+    //     // Shotgun and Ammo
+    //     { id: "mossberg_12ga" },
+    //     { id: "ammo_12gauge_buckshot", quantity: 1 }, // Add 3 boxes of 12-gauge buckshot
 
-        // Rifle and Ammo
-        { id: "akm_ak47_762mmr" },
-        { id: "ammo_762mmr", quantity: 1 }, // Add 2 boxes of 7.62mmR ammo
+    //     // Rifle and Ammo
+    //     { id: "akm_ak47_762mmr" },
+    //     { id: "ammo_762mmr", quantity: 1 }, // Add 2 boxes of 7.62mmR ammo
 
-        // Sniper Rifle and Ammo
-        { id: "hk_psg1_762mm" },
-        { id: "ammo_762mm", quantity: 1 }, // Add 2 boxes of 7.62mm ammo
-
-
-        // Thrown Weapon
-        { id: "frag_grenade_thrown", quantity: 1 }, // Add 3 frag grenades
+    //     // Sniper Rifle and Ammo
+    //     { id: "hk_psg1_762mm" },
+    //     { id: "ammo_762mm", quantity: 1 }, // Add 2 boxes of 7.62mm ammo
 
 
-        // Rocket Launcher (no separate ammo item, it's self-contained)
-        { id: "m72a3_law_rocket_launcher", quantity: 1 }, // Add 2 rocket launchers
+    //     // Thrown Weapon
+    //     { id: "frag_grenade_thrown", quantity: 1 }, // Add 3 frag grenades
 
-        // Grenade Launcher and Ammo
-        { id: "m79_grenade_launcher" },
-        { id: "ammo_40mm_grenade_frag", quantity: 1 }, // Add 3 40mm grenades
 
-        // Bow and Ammo
-        { id: "compound_bow" },
-        { id: "ammo_arrow", quantity: 1 }, // Add 2 bundles of arrows
+    //     // Rocket Launcher (no separate ammo item, it's self-contained)
+    //     { id: "m72a3_law_rocket_launcher", quantity: 1 }, // Add 2 rocket launchers
 
-        // Crossbow and Ammo
-        { id: "crossbow" },
-        { id: "ammo_crossbow_bolt", quantity: 1 }, // Add 2 bundles of crossbow bolts
+    //     // Grenade Launcher and Ammo
+    //     { id: "m79_grenade_launcher" },
+    //     { id: "ammo_40mm_grenade_frag", quantity: 1 }, // Add 3 40mm grenades
+
+    //     // Bow and Ammo
+    //     { id: "compound_bow" },
+    //     { id: "ammo_arrow", quantity: 1 }, // Add 2 bundles of arrows
+
+    //     // Crossbow and Ammo
+    //     { id: "crossbow" },
+    //     { id: "ammo_crossbow_bolt", quantity: 1 }, // Add 2 bundles of crossbow bolts
+    // ];
+
+    // weaponsAndAmmoToAdd.forEach(itemEntry => {
+    //     const itemDef = assetManager.getItem(itemEntry.id);
+    //     if (itemDef) {
+    //         const quantity = itemEntry.quantity || 1; // Default to 1 if quantity not specified
+    //         for (let i = 0; i < quantity; i++) {
+    //             const newItem = new Item(itemDef);
+    //             // If it's ammunition, we might want to store its specific ammoType or quantity per item
+    //             if (itemDef.type === "ammunition") {
+    //                 newItem.ammoType = itemDef.ammoType;
+    //                 newItem.quantityPerBox = itemDef.quantity; // Assuming 'quantity' in JSON is per-box
+    //             }
+    //             window.addItem(newItem);
+    //         }
+    //     } else {
+    //         console.warn(`Weapon or ammo definition not found for ID: ${itemEntry.id}`);
+    //     }
+    // });
+
+    const startingConsumables = [
+        { id: "canned_food", quantity: 2 },
+        { id: "bottled_water", quantity: 2 }
     ];
 
-    weaponsAndAmmoToAdd.forEach(itemEntry => {
+    startingConsumables.forEach(itemEntry => {
         const itemDef = assetManager.getItem(itemEntry.id);
         if (itemDef) {
-            const quantity = itemEntry.quantity || 1; // Default to 1 if quantity not specified
+            const quantity = itemEntry.quantity || 1;
             for (let i = 0; i < quantity; i++) {
-                const newItem = new Item(itemDef);
-                // If it's ammunition, we might want to store its specific ammoType or quantity per item
-                if (itemDef.type === "ammunition") {
-                    newItem.ammoType = itemDef.ammoType;
-                    newItem.quantityPerBox = itemDef.quantity; // Assuming 'quantity' in JSON is per-box
-                }
-                window.addItem(newItem);
+                const newItem = new Item(itemDef); // Assumes Item constructor is available
+                window.addItem(newItem); // Assumes addItem is available globally
             }
+            logToConsole(`Added ${quantity}x ${itemDef.name} to starting inventory.`);
         } else {
-            console.warn(`Weapon or ammo definition not found for ID: ${itemEntry.id}`);
+            console.warn(`Starting consumable definition not found for ID: ${itemEntry.id}`);
+            logToConsole(`Warning: Starting consumable definition not found for ID: ${itemEntry.id}`);
         }
     });
-
 
     if (characterCreator) characterCreator.classList.add('hidden');
     if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
