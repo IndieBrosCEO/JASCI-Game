@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "desert_eagle_50ae",
     "name": "Desert Eagle (.50AE autoloader)",
@@ -1623,9 +1623,9 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.5,
-    "tags": [ "consumable", "drink", "modern" ],
+    "tags": [ "consumable", "drink", "water", "modern" ],
     "effects": {
-      "thirst": -50
+      "thirstRestored": 10
     }
   },
   {
@@ -1889,5 +1889,56 @@
     "size": 3,
     "canEquip": true,
     "tags": [ "weapon", "melee", "bludgeoning", "improvised", "simple" ]
+  },
+  {
+    "id": "canned_food",
+    "name": "Canned Food",
+    "description": "A can of preserved food. Provides decent sustenance.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [ "consumable", "food", "modern" ],
+    "effects": { "hungerRestored": 10 }
+  },
+  {
+    "id": "cooked_meat",
+    "name": "Cooked Meat",
+    "description": "A piece of cooked meat. Satisfying and nourishing.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.3,
+    "tags": [ "consumable", "food" ],
+    "effects": { "hungerRestored": 15 }
+  },
+  {
+    "id": "purified_water",
+    "name": "Purified Water",
+    "description": "Water that has been purified, safe to drink.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [ "consumable", "drink", "water", "modern" ],
+    "effects": { "thirstRestored": 15 }
+  },
+  {
+    "id": "dirty_water",
+    "name": "Dirty Water",
+    "description": "Water from an unknown source. Might be unsafe to drink without purification.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [ "consumable", "drink", "water", "unsafe" ],
+    "effects": {
+      "thirstRestored": 5,
+      "sicknessChance": 0.25
+    }
   }
 ]

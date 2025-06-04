@@ -1,4 +1,4 @@
-// Palette for distinct faction/team colors
+﻿// Palette for distinct faction/team colors
 const FACTION_COLORS = [
     'orange',        // A common, distinct color
     'purple',        // Another distinct one

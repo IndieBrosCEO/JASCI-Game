@@ -1,4 +1,4 @@
-/**************************************************************
+ï»¿/**************************************************************
  * Character Creation & Stats Functions
  **************************************************************/
 
@@ -127,7 +127,7 @@ function renderCharacterStatsSkillsAndWornClothing(character, characterInfoEleme
         }
     }
     if (!hasWornItemsCharPanel) {
-        wornHtml += '<div>— Not wearing anything —</div>';
+        wornHtml += '<div>â€” Not wearing anything â€”</div>';
     }
     characterHtml += wornHtml;
 
@@ -143,6 +143,41 @@ function renderCharacterStatsSkillsAndWornClothing(character, characterInfoEleme
     statsSkillsContainer.innerHTML = characterHtml;
 }
 
+function applyHungerThirstDamage(gameState, damageAmount) {
+    logToConsole(`DEBUG: applyHungerThirstDamage CALLED. Damage: ${damageAmount}. Initial Torso HP: ${gameState.health && gameState.health.torso ? gameState.health.torso.current : 'N/A'}`);
+    // The 'character' parameter in other health functions is analogous to 'gameState' here,
+    // as player-specific health is directly on gameState.health.
+    if (!gameState.health || !gameState.health.torso) {
+        logToConsole("Error: Player health or torso data is missing. Cannot apply hunger/thirst damage.");
+        return;
+    }
+
+    let torso = gameState.health.torso;
+    let oldHp = torso.current;
+
+    logToConsole(`DEBUG: Modifying torso HP. Current HP before change: ${torso.current}, Damage to apply: ${damageAmount}`);
+    torso.current = Math.max(0, torso.current - damageAmount);
+    logToConsole(`DEBUG: Torso HP modified. Current HP after change: ${torso.current}`);
+    logToConsole(`Player's torso damaged by ${damageAmount} due to hunger/thirst. HP: ${oldHp} -> ${torso.current}/${torso.max}`);
+
+    if (torso.current === 0 && torso.crisisTimer === 0) {
+        // Start crisis timer if torso HP drops to 0 and it's not already in crisis.
+        // This aligns with how other damage might trigger a crisis.
+        torso.crisisTimer = 3; // Default crisis timer duration
+        logToConsole(`Torso HP reached 0 due to hunger/thirst. Crisis timer started for player's torso.`);
+    }
+
+    // Update health UI
+    if (typeof window.renderHealthTable === 'function') {
+        logToConsole("DEBUG: Calling renderHealthTable to update UI.");
+        window.renderHealthTable(gameState); // Pass gameState as the character object
+    } else {
+        logToConsole("Error: renderHealthTable function not found. UI may not update.");
+    }
+
+    // Game over is handled by updateHealthCrisis when a crisis timer runs out.
+    // No immediate game over check here, respecting the crisis timer system.
+}
 
 /**************************************************************
  * Health System Functions
@@ -258,7 +293,7 @@ function renderHealthTable(character) {
             <td>${formatBodyPartName(partNameKey)}</td>
             <td>${current}/${max}</td>
             <td>${effectiveArmor}</td> 
-            <td>${crisisTimer > 0 ? crisisTimer : "—"}</td>
+            <td>${crisisTimer > 0 ? crisisTimer : "â€”"}</td>
         `;
         if (current === 0) {
             row.style.backgroundColor = "#ff4444";
@@ -311,3 +346,4 @@ window.applyTreatment = applyTreatment;
 window.renderHealthTable = renderHealthTable;
 window.formatBodyPartName = formatBodyPartName;
 window.gameOver = gameOver;
+window.applyHungerThirstDamage = applyHungerThirstDamage;

@@ -330,7 +330,7 @@ function renderInventoryMenu() {
 
 
     if (gameState.inventory.currentlyDisplayedItems.length === 0) {
-        list.textContent = " No items "; // Changed from "empty" to "No items" for clarity
+        list.textContent = " No items 㗗"; // Changed from "empty" to "No items" for clarity
         return;
     }
 
@@ -384,7 +384,6 @@ function interactInventoryItem() {
     if (!gameState.inventory.currentlyDisplayedItems || gameState.inventory.currentlyDisplayedItems.length === 0) return;
     if (!gameState.inventory.container) return;
 
-
     const idx = gameState.inventory.cursor;
     if (idx < 0 || idx >= gameState.inventory.currentlyDisplayedItems.length) return;
 
@@ -395,15 +394,41 @@ function interactInventoryItem() {
         logToConsole(`Attempting to unequip ${displayedItem.name} from hand ${displayedItem.originalHandIndex + 1}...`);
         window.unequipItem(displayedItem.originalHandIndex);
     } else {
-        // This is an item from the container
         const actualItemInContainer = gameState.inventory.container.items.find(item => item.name === displayedItem.name && item.id === displayedItem.id);
 
         if (!actualItemInContainer) {
-            // This case should ideally not happen if currentlyDisplayedItems is built correctly from container
             logToConsole(`Error: Could not find ${displayedItem.name} in main inventory for interaction.`);
             return;
         }
 
+        if (actualItemInContainer.type === "consumable" && actualItemInContainer.effects) {
+            let consumed = false;
+            if (actualItemInContainer.effects.hungerRestored !== undefined) {
+                gameState.playerHunger = Math.min(24, gameState.playerHunger + actualItemInContainer.effects.hungerRestored);
+                logToConsole(`Consumed ${actualItemInContainer.name}, hunger restored to ${gameState.playerHunger}/24.`);
+                consumed = true;
+            }
+            if (actualItemInContainer.effects.thirstRestored !== undefined) {
+                gameState.playerThirst = Math.min(24, gameState.playerThirst + actualItemInContainer.effects.thirstRestored);
+                logToConsole(`Consumed ${actualItemInContainer.name}, thirst restored to ${gameState.playerThirst}/24.`);
+                consumed = true;
+            }
+            if (actualItemInContainer.effects.sicknessChance) {
+                logToConsole(`Warning: ${actualItemInContainer.name} has a ${actualItemInContainer.effects.sicknessChance * 100}% chance of causing sickness.`);
+            }
+
+            if (consumed) {
+                removeItem(actualItemInContainer.name);
+                // If consumed, we might not want to do other actions like equipping.
+                // Refresh menu and return.
+                if (gameState.inventory.open) {
+                    renderInventoryMenu();
+                }
+                return;
+            }
+        }
+
+        // If not consumed (or not primarily a consumable), proceed with other interactions
         if (actualItemInContainer.isClothing) {
             logToConsole(`Attempting to wear ${actualItemInContainer.name}...`);
             equipClothing(actualItemInContainer.name);
@@ -418,7 +443,7 @@ function interactInventoryItem() {
             } else {
                 logToConsole(`Both hands are full. Cannot equip ${actualItemInContainer.name}.`);
             }
-        } else {
+        } else if (actualItemInContainer.type !== "consumable") { // Avoid double-logging for non-consumed consumables
             logToConsole(`You look at your ${actualItemInContainer.name}: ${actualItemInContainer.description}`);
         }
     }
@@ -432,6 +457,38 @@ function clearInventoryHighlight() {
     document.querySelectorAll("#inventoryList .selected")
         .forEach(el => el.classList.remove("selected"));
 }
+
+window.findAndRemoveFoodItem = function (gameState) {
+    if (!gameState.inventory.container || !gameState.inventory.container.items) return false;
+    const foodItemIndex = gameState.inventory.container.items.findIndex(item =>
+        item.tags && item.tags.includes("food") && item.effects && item.effects.hungerRestored > 0
+    );
+
+    if (foodItemIndex !== -1) {
+        const item = gameState.inventory.container.items[foodItemIndex];
+        logToConsole(`Daily consumption: Consumed ${item.name} for food.`);
+        // Assuming removeItem handles UI update and actual removal from gameState
+        removeItem(item.name);
+        return true;
+    }
+    return false;
+};
+
+window.findAndRemoveWaterItem = function (gameState) {
+    if (!gameState.inventory.container || !gameState.inventory.container.items) return false;
+    const waterItemIndex = gameState.inventory.container.items.findIndex(item =>
+        item.tags && item.tags.includes("water") && item.effects && item.effects.thirstRestored > 0
+    );
+
+    if (waterItemIndex !== -1) {
+        const item = gameState.inventory.container.items[waterItemIndex];
+        logToConsole(`Daily consumption: Consumed ${item.name} for water.`);
+        // Assuming removeItem handles UI update and actual removal from gameState
+        removeItem(item.name);
+        return true;
+    }
+    return false;
+};
 
 window.InventoryContainer = InventoryContainer;
 window.Item = Item;
