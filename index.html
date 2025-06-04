@@ -102,6 +102,12 @@
                 <div id="movementPointsUI">Moves Left: </div>
                 <div id="actionPointsUI">Actions Left: </div>
             </div>
+            <div id="timeAndNeedsStatus">
+                <h3>Time & Needs</h3>
+                <div id="clockDisplay" style="font-family: monospace; white-space: pre;">╔════╗<br>║00:00║<br>╚════╝</div>
+                <div id="hungerDisplay">[■■■■■■■■■■■■■■■■■■■■■■■■] (24/24)</div>
+                <div id="thirstDisplay">[■■■■■■■■■■■■■■■■■■■■■■■■] (24/24)</div>
+            </div>
             <h3>Health Status</h3>
             <table id="healthTable">
                 <thead>
@@ -135,6 +141,7 @@
 
     <script src="js/gameState.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/time.js"></script>
     <script src="js/assetManager.js"></script>
     <script src="js/mapRenderer.js"></script>
     <script src="js/character.js"></script>

@@ -250,6 +250,7 @@ function renderCharacterInfo() {
     // gameState is passed as the 'character' object for the player.
     window.renderCharacterStatsSkillsAndWornClothing(gameState, characterInfoElement);
     window.renderHealthTable(gameState); // Ensure health table (armor) updates
+    updatePlayerStatusDisplay(); // Update clock and needs display
 }
 
 // Wrapper functions for HTML onchange events
@@ -420,12 +421,24 @@ function handleKeyDown(event) {
             event.preventDefault(); return;
         }
         if (event.key === 't' || event.key === 'T') {
+            const previousHour = gameState.currentTime.hours;
+            Time.advanceTime(gameState); // Advances by 2 minutes
+
+            if (previousHour !== gameState.currentTime.hours) {
+                updateHourlyNeeds(gameState); // From js/character.js
+            }
+
+            if (previousHour === 23 && gameState.currentTime.hours === 0) {
+                applyDailyNeeds(gameState); // From js/character.js
+            }
+            updatePlayerStatusDisplay(); // Update UI for time and needs
+
             if (gameState.isInCombat && combatManager.initiativeTracker[combatManager.currentTurnIndex]?.entity === gameState) {
-                combatManager.endPlayerTurn();
+                combatManager.endPlayerTurn(); // This will also handle UI updates via its own flow
             } else if (gameState.isInCombat) {
                 logToConsole("Not your turn to end.");
             } else {
-                window.turnManager.endTurn();
+                window.turnManager.endTurn(); // This will also handle UI updates via its own flow
             }
             event.preventDefault(); return;
         }
@@ -682,6 +695,7 @@ async function initialize() { // Made async
         window.renderTables(gameState);
         window.mapRenderer.scheduleRender(); // Initial render of the map (or empty state)
         window.updateInventoryUI(); // Initialize inventory display (now from js/inventory.js)
+        updatePlayerStatusDisplay(); // Initial display of clock and needs
 
 
     } catch (error) {
@@ -695,6 +709,40 @@ async function initialize() { // Made async
     }
 
     document.addEventListener('keydown', handleKeyDown);
+
+    /**************************************************************
+     * Player Status Display Function
+     **************************************************************/
+    function updatePlayerStatusDisplay() {
+        // Update Clock
+        const clockElement = document.getElementById('clockDisplay');
+        if (clockElement && typeof Time !== 'undefined' && Time.getClockDisplay) {
+            const clock = Time.getClockDisplay(gameState);
+            clockElement.textContent = clock.clockString;
+            clockElement.style.color = clock.color;
+        } else if (clockElement) {
+            clockElement.textContent = "Clock N/A";
+        }
+
+        // Update Hunger Bar
+        const hungerElement = document.getElementById('hungerDisplay');
+        if (hungerElement && typeof getNeedsStatusBars !== 'undefined') {
+            const needsBars = getNeedsStatusBars(gameState);
+            hungerElement.textContent = needsBars.hungerBar;
+        } else if (hungerElement) {
+            hungerElement.textContent = "Hunger N/A";
+        }
+
+        // Update Thirst Bar
+        const thirstElement = document.getElementById('thirstDisplay');
+        if (thirstElement && typeof getNeedsStatusBars !== 'undefined') {
+            const needsBars = getNeedsStatusBars(gameState); // Called again, but simple
+            thirstElement.textContent = needsBars.thirstBar;
+        } else if (thirstElement) {
+            thirstElement.textContent = "Thirst N/A";
+        }
+    }
+    window.updatePlayerStatusDisplay = updatePlayerStatusDisplay; // Make it globally accessible if needed elsewhere
 
     const confirmButton = document.getElementById('confirmAttackButton');
     if (confirmButton) {
@@ -941,6 +989,8 @@ function startGame() {
     // initializeHealth is now in js/character.js, call it with gameState
     window.initializeHealth(gameState);
     window.renderHealthTable(gameState); // Explicitly call to render after health is set up.
+
+    updatePlayerStatusDisplay(); // Initialize clock and needs display
 
     if (window.mapRenderer.getCurrentMapData()) { // Only run these if a map is loaded
         window.interaction.detectInteractableItems();

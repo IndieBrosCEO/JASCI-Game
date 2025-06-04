@@ -32,6 +32,11 @@ const gameState = {
     playerPos: { x: 2, y: 2 }, // Will be updated when a map is loaded
     gameStarted: false,
 
+    // Time, Hunger, and Thirst
+    currentTime: { hours: 0, minutes: 0 },
+    playerHunger: 24,
+    playerThirst: 24,
+
     // Turn-based properties
     currentTurn: 1,
     movementPointsRemaining: 6,
