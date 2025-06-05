@@ -2723,5 +2723,39 @@
     "insulation": 5,
     "armorValue": 1,
     "capacity": 5
+  },
+  {
+    "id": "canned_beans_food",
+    "name": "Canned Beans",
+    "description": "A can of beans. Provides some sustenance.",
+    "size": 1,
+    "type": "food",
+    "isConsumable": true,
+    "effects": {
+      "hunger": 8
+    },
+    "sprite": "i",
+    "color": "brown",
+    "canEquip": false,
+    "isClothing": false,
+    "weightLbs": 0.5,
+    "tags": [ "consumable", "food", "modern" ]
+  },
+  {
+    "id": "bottled_water_drink",
+    "name": "Bottled Water",
+    "description": "A bottle of clean drinking water. Very refreshing.",
+    "size": 1,
+    "type": "drink",
+    "isConsumable": true,
+    "effects": {
+      "thirst": 10
+    },
+    "sprite": "i",
+    "color": "blue",
+    "canEquip": false,
+    "isClothing": false,
+    "weightLbs": 0.5,
+    "tags": [ "consumable", "drink", "modern" ]
   }
 ]

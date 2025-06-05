@@ -423,6 +423,47 @@ function interactInventoryItem() {
 
     logToConsole(`Interacting with: ${selectedDisplayItem.displayName}, Equipped: ${selectedDisplayItem.equipped}, Source: ${selectedDisplayItem.source}`);
 
+    // --- BEGIN NEW CONSUMABLE LOGIC ---
+    if (selectedDisplayItem.isConsumable && selectedDisplayItem.effects && !selectedDisplayItem.equipped) {
+        let consumed = false;
+        const maxNeeds = 24; // Assuming 24 is the max for hunger and thirst
+
+        // Ensure playerHunger and playerThirst are initialized
+        if (typeof gameState.playerHunger === 'undefined') gameState.playerHunger = maxNeeds;
+        if (typeof gameState.playerThirst === 'undefined') gameState.playerThirst = maxNeeds;
+
+        if (selectedDisplayItem.effects.hunger) {
+            const hungerRestored = selectedDisplayItem.effects.hunger;
+            gameState.playerHunger = Math.min(gameState.playerHunger + hungerRestored, maxNeeds);
+            logToConsole(`Restored ${hungerRestored} hunger. Current hunger: ${gameState.playerHunger}/${maxNeeds}`);
+            consumed = true;
+        }
+        if (selectedDisplayItem.effects.thirst) {
+            const thirstRestored = selectedDisplayItem.effects.thirst;
+            gameState.playerThirst = Math.min(gameState.playerThirst + thirstRestored, maxNeeds);
+            logToConsole(`Restored ${thirstRestored} thirst. Current thirst: ${gameState.playerThirst}/${maxNeeds}`);
+            consumed = true;
+        }
+
+        if (consumed) {
+            logToConsole(`You consumed ${selectedDisplayItem.displayName}.`);
+            removeItem(selectedDisplayItem.name);
+
+            if (typeof window.updatePlayerStatusDisplay === 'function') {
+                window.updatePlayerStatusDisplay();
+            } else {
+                logToConsole("Error: updatePlayerStatusDisplay function not found to update needs bars.");
+            }
+
+            if (gameState.inventory.open) {
+                renderInventoryMenu();
+            }
+            return; // Consumed, so no further action.
+        }
+    }
+    // --- END NEW CONSUMABLE LOGIC ---
+
+    // Existing logic for equipping/unequipping or describing items:
     if (selectedDisplayItem.equipped === true) {
         if (selectedDisplayItem.source === 'clothing' && selectedDisplayItem.originalLayer) {
             logToConsole(`Attempting to unequip ${selectedDisplayItem.displayName} from layer ${selectedDisplayItem.originalLayer}...`);
@@ -449,14 +490,21 @@ function interactInventoryItem() {
                 logToConsole(`Both hands are full. Cannot equip ${selectedDisplayItem.displayName}.`);
             }
         } else {
+            // If not consumable (already handled by new logic), not equippable, and not clothing, then describe.
             logToConsole(`You look at your ${selectedDisplayItem.displayName}: ${selectedDisplayItem.description || '(No description)'}`);
         }
     }
 
+    // renderInventoryMenu and updateInventoryUI are called by equip/unequip/removeItem and the consumable logic path.
+    // If execution reaches here, it means an equip/unequip action was taken, or an item was just described.
+    // Equip/unequip functions call updateInventoryUI and renderCharacterInfo (which updates health, not inventory list).
+    // The consumable path calls renderInventoryMenu if open.
+    // For safety, if inventory is open, re-render menu. updateInventoryUI is generally handled by sub-functions.
     if (gameState.inventory.open) {
         renderInventoryMenu();
     }
-    updateInventoryUI();
+    // updateInventoryUI(); // This call is likely redundant as primary actions (equip, unequip, remove) handle it.
+    // Removing it to avoid excessive UI updates. If issues arise, it can be reinstated.
 }
 
 // 13) Clear highlight when closing

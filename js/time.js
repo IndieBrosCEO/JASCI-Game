@@ -71,6 +71,27 @@
         }
 
         return { clockString: clockString, color: color };
+    },
+
+    getNeedsStatusBars: function (gameState) {
+        const maxNeeds = 24; // Assuming 24 is the max for hunger and thirst
+
+        // Hunger Bar
+        const hungerPercentage = gameState.playerHunger / maxNeeds;
+        const hungerFilledChars = Math.round(hungerPercentage * 10); // Create a 10-char bar
+        const hungerEmptyChars = 10 - hungerFilledChars;
+        const hungerBarDisplay = `[${'■'.repeat(hungerFilledChars)}${'-'.repeat(hungerEmptyChars)}] (${gameState.playerHunger}/${maxNeeds})`;
+
+        // Thirst Bar
+        const thirstPercentage = gameState.playerThirst / maxNeeds;
+        const thirstFilledChars = Math.round(thirstPercentage * 10); // Create a 10-char bar
+        const thirstEmptyChars = 10 - thirstFilledChars;
+        const thirstBarDisplay = `[${'■'.repeat(thirstFilledChars)}${'-'.repeat(thirstEmptyChars)}] (${gameState.playerThirst}/${maxNeeds})`;
+
+        return {
+            hungerBar: hungerBarDisplay,
+            thirstBar: thirstBarDisplay
+        };
     }
 };
 
