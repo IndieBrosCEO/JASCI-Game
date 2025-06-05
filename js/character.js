@@ -106,30 +106,6 @@ function renderCharacterStatsSkillsAndWornClothing(character, characterInfoEleme
         ${skillsHtml}
     `;
 
-    // Add Worn Clothing section
-    let wornHtml = '<h3>Worn Clothing</h3>';
-    let hasWornItemsCharPanel = false;
-    // gameState.js initializes gameState.player.wornClothing
-    // So if 'character' is gameState, then character.player.wornClothing is the path.
-    const wornClothingSource = character.player && character.player.wornClothing ? character.player.wornClothing : character.wornClothing;
-
-    if (wornClothingSource) {
-        for (const layer in wornClothingSource) {
-            const item = wornClothingSource[layer];
-            if (item) {
-                hasWornItemsCharPanel = true;
-                // ClothingLayers should be globally available from gameState.js
-                const layerDisplayNameKey = Object.keys(ClothingLayers).find(key => ClothingLayers[key] === layer);
-                let formattedLayerName = (layerDisplayNameKey || layer).replace(/_/g, ' ');
-                formattedLayerName = formattedLayerName.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.substring(1)).join(' ');
-                wornHtml += `<div><em>${formattedLayerName}:</em> ${item.name}</div>`;
-            }
-        }
-    }
-    if (!hasWornItemsCharPanel) {
-        wornHtml += '<div>— Not wearing anything —</div>';
-    }
-    characterHtml += wornHtml;
 
     // Append this specific section to the characterInfo element
     // This assumes the Name, Level, XP part is already there or handled separately.

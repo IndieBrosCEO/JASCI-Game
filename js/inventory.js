@@ -6,6 +6,32 @@
 // logToConsole is expected to be global, loaded from js/utils.js
 // renderCharacterInfo is expected to be global, loaded from script.js
 
+function calculateCumulativeCapacity(playerGameState) {
+    if (!playerGameState || !playerGameState.stats || !playerGameState.player || !playerGameState.player.wornClothing) {
+        console.error("calculateCumulativeCapacity: Invalid playerGameState object provided.");
+        return 0;
+    }
+    let totalCapacity = 0;
+    const strengthStat = playerGameState.stats.find(stat => stat.name === "Strength");
+    if (strengthStat && typeof strengthStat.points === 'number') {
+        totalCapacity = strengthStat.points;
+        if (totalCapacity < 1) {
+            console.warn(`CumulativeCapacity: Strength stat (${totalCapacity}) is less than 1. Setting base capacity to 1.`);
+            totalCapacity = 1;
+        }
+    } else {
+        console.warn("CumulativeCapacity: Could not find Strength stat or points invalid. Defaulting base capacity to 5.");
+        totalCapacity = 5;
+    }
+    for (const layer in playerGameState.player.wornClothing) {
+        const item = playerGameState.player.wornClothing[layer];
+        if (item && item.capacity && typeof item.capacity === 'number') {
+            totalCapacity += item.capacity;
+        }
+    }
+    return totalCapacity;
+}
+
 // 2) Inventory container constructor
 function InventoryContainer(name, sizeLabel) {
     this.name = name;
@@ -98,18 +124,18 @@ function equipItem(itemName, handIndex) {
     }
 
     const equippedItem = inv.splice(itemIndex, 1)[0];
-    equippedItem.equipped = true;
+    equippedItem.equipped = true; // Ensure flag is set
     gameState.inventory.handSlots[handIndex] = equippedItem;
     logToConsole(`Equipped ${equippedItem.name} to hand slot ${handIndex + 1}.`);
     updateInventoryUI();
-    logToConsole(`[equipItem Debug] isInCombat: ${gameState.isInCombat}, combatPhase: ${gameState.combatPhase}`); // New log
+    logToConsole(`[equipItem Debug] isInCombat: ${gameState.isInCombat}, combatPhase: ${gameState.combatPhase}`);
     if (gameState.isInCombat &&
         gameState.combatPhase === 'playerAttackDeclare' &&
         typeof window.combatManager !== 'undefined' &&
         typeof window.combatManager.populateWeaponSelect === 'function') {
-        logToConsole("Combat attack UI active after equipping item, refreshing weapon select."); // Existing log
+        logToConsole("Combat attack UI active after equipping item, refreshing weapon select.");
         window.combatManager.populateWeaponSelect();
-        logToConsole("[equipItem Debug] populateWeaponSelect was called."); // New log
+        logToConsole("[equipItem Debug] populateWeaponSelect was called.");
     }
 }
 
@@ -127,19 +153,19 @@ function unequipItem(handIndex) {
         logToConsole(`Not enough space to unequip ${slot.name}.`);
         return;
     }
-    slot.equipped = false;
+    slot.equipped = false; // Ensure flag is set before returning to inventory
     gameState.inventory.container.items.push(slot);
     gameState.inventory.handSlots[handIndex] = null;
     logToConsole(`Unequipped ${slot.name}.`);
     updateInventoryUI();
-    logToConsole(`[unequipItem Debug] isInCombat: ${gameState.isInCombat}, combatPhase: ${gameState.combatPhase}`); // New log
+    logToConsole(`[unequipItem Debug] isInCombat: ${gameState.isInCombat}, combatPhase: ${gameState.combatPhase}`);
     if (gameState.isInCombat &&
         gameState.combatPhase === 'playerAttackDeclare' &&
         typeof window.combatManager !== 'undefined' &&
         typeof window.combatManager.populateWeaponSelect === 'function') {
-        logToConsole("Combat attack UI active after unequipping item, refreshing weapon select."); // Existing log
+        logToConsole("Combat attack UI active after unequipping item, refreshing weapon select.");
         window.combatManager.populateWeaponSelect();
-        logToConsole("[unequipItem Debug] populateWeaponSelect was called."); // New log
+        logToConsole("[unequipItem Debug] populateWeaponSelect was called.");
     }
 }
 
@@ -166,7 +192,7 @@ function equipClothing(itemName) {
         return;
     }
 
-    if (!item.layer || !Object.values(ClothingLayers).includes(item.layer)) { // Assumes ClothingLayers is global
+    if (!item.layer || !Object.values(ClothingLayers).includes(item.layer)) {
         logToConsole(`Error: "${itemName}" has an invalid or missing clothing layer: ${item.layer}`);
         return;
     }
@@ -180,10 +206,11 @@ function equipClothing(itemName) {
     inv.splice(itemIndex, 1);
     gameState.player.wornClothing[targetLayer] = item;
     item.equipped = true;
+    gameState.inventory.container.maxSlots = calculateCumulativeCapacity(gameState);
 
     logToConsole(`Equipped ${itemName} to ${targetLayer}.`);
     updateInventoryUI();
-    renderCharacterInfo(); // Assumes renderCharacterInfo is global
+    renderCharacterInfo();
 }
 
 function unequipClothing(clothingLayer) {
@@ -203,27 +230,26 @@ function unequipClothing(clothingLayer) {
         return;
     }
 
-    if (!canAddItem(item)) {
-        logToConsole(`Not enough inventory space to unequip ${item.name}.`);
-        return;
-    }
-
-    gameState.inventory.container.items.push(item);
     gameState.player.wornClothing[clothingLayer] = null;
     item.equipped = false;
 
+    gameState.inventory.container.maxSlots = calculateCumulativeCapacity(gameState);
+
+    if (!canAddItem(item)) {
+        logToConsole("Critical Warning: Not enough inventory space to unequip " + item.name + " to Body Pockets. Item is lost.");
+    } else {
+        gameState.inventory.container.items.push(item);
+    }
+
     logToConsole(`Unequipped ${item.name} from ${clothingLayer}.`);
     updateInventoryUI();
-    renderCharacterInfo(); // Assumes renderCharacterInfo is global
+    renderCharacterInfo();
 }
 
 // 9) Update the DOM
 function updateInventoryUI() {
-    if (!gameState.inventory.container) { // Check if container is initialized
-        // It might be called during initial setup before container is made.
+    if (!gameState.inventory.container) {
         // console.warn("updateInventoryUI called before inventory container is initialized.");
-        // return; 
-        // Or, allow it to proceed if other parts of UI should update (e.g. hand slots if they are separate)
     }
 
     const equippedHandItemsDiv = document.getElementById("equippedHandItems");
@@ -240,111 +266,109 @@ function updateInventoryUI() {
     const equippedContainersDiv = document.getElementById("equippedContainers");
     const invCapacitySpan = document.getElementById("invCapacity");
 
-    if (gameState.inventory.container) { // Only update if container exists
+    if (gameState.inventory.container) {
         if (equippedContainersDiv) {
             equippedContainersDiv.innerHTML = "";
-            const mainContainer = gameState.inventory.container;
-            const usedSlots = mainContainer.items.reduce((sum, i) => sum + i.size, 0);
-            const containerDisplay = document.createElement("div");
-            containerDisplay.textContent = `${mainContainer.name}: ${usedSlots}/${mainContainer.maxSlots}`;
-            equippedContainersDiv.appendChild(containerDisplay);
+            let foundContainers = false;
+            if (gameState.player && gameState.player.wornClothing) {
+                for (const layer in gameState.player.wornClothing) {
+                    const wornItem = gameState.player.wornClothing[layer];
+                    if (wornItem && wornItem.capacity && typeof wornItem.capacity === 'number' && wornItem.capacity > 0) {
+                        const containerDisplay = document.createElement("div");
+                        containerDisplay.textContent = `${wornItem.name}: ${wornItem.capacity} slots`;
+                        equippedContainersDiv.appendChild(containerDisplay);
+                        foundContainers = true;
+                    }
+                }
+            }
+            if (!foundContainers) {
+                equippedContainersDiv.textContent = "No capacity-providing clothing equipped.";
+            }
         }
         if (invCapacitySpan) {
             const mainContainer = gameState.inventory.container;
             const usedSlots = mainContainer.items.reduce((sum, i) => sum + i.size, 0);
             invCapacitySpan.textContent = `${usedSlots}/${mainContainer.maxSlots}`;
         }
-    } else { // If container doesn't exist, show default/empty state
+    } else {
         if (equippedContainersDiv) equippedContainersDiv.innerHTML = "No container equipped.";
         if (invCapacitySpan) invCapacitySpan.textContent = "0/0";
     }
-
 
     const oldHandSlotsDiv = document.getElementById("handSlots");
     if (oldHandSlotsDiv) {
         oldHandSlotsDiv.innerHTML = "";
     }
 
-    const wornItemsList = document.getElementById("wornClothingList");
-    if (wornItemsList) {
-        wornItemsList.innerHTML = "";
-        let hasWornItems = false;
-        if (gameState.player && gameState.player.wornClothing) {
-            for (const layer in gameState.player.wornClothing) {
-                const item = gameState.player.wornClothing[layer];
-                if (item) {
-                    hasWornItems = true;
-                    const itemDiv = document.createElement("div");
-                    const layerDisplayNameKey = Object.keys(ClothingLayers).find(key => ClothingLayers[key] === layer); // Assumes ClothingLayers global
-                    const layerDisplayName = layerDisplayNameKey ? layerDisplayNameKey.replace(/_/g, ' ') : layer.replace(/_/g, ' ');
-                    itemDiv.textContent = `${layerDisplayName}: ${item.name}`;
-                    wornItemsList.appendChild(itemDiv);
-                }
-            }
-        }
-        if (!hasWornItems) {
-            wornItemsList.textContent = " Not wearing anything ";
-        }
-    }
+    // The wornItemsList population block has been removed.
 }
 
 // 10) Render inventory when open
 function renderInventoryMenu() {
     const list = document.getElementById("inventoryList");
     if (!list) return;
-    list.innerHTML = "";
-
-    if (!gameState.inventory.container) {
-        list.textContent = " Inventory container not available ";
-        return;
-    }
-
-    const wornItemNames = new Set();
-    if (gameState.player && gameState.player.wornClothing) {
-        Object.values(gameState.player.wornClothing).forEach(wornItem => {
-            if (wornItem && wornItem.name) {
-                wornItemNames.add(wornItem.name);
-            }
-        });
-    }
+    list.innerHTML = ""; // Clear existing list
 
     gameState.inventory.currentlyDisplayedItems = [];
 
-    // Add equipped hand items first
+    // 1. Add equipped hand items
     gameState.inventory.handSlots.forEach((item, index) => {
         if (item) {
-            gameState.inventory.currentlyDisplayedItems.push({
-                ...item, // Spread existing item properties
-                isEquippedHandItem: true,
-                originalHandIndex: index
-            });
+            const displayItem = { ...item };
+            displayItem.equipped = true;
+            displayItem.source = 'hand';
+            displayItem.originalHandIndex = index;
+            displayItem.displayName = item.name;
+            gameState.inventory.currentlyDisplayedItems.push(displayItem);
         }
     });
 
-    // Then add container items, filtering out already worn clothing
-    const containerItemsToAdd = gameState.inventory.container.items
-        .filter(item => !item.isClothing || !wornItemNames.has(item.name))
-        .map(item => ({ ...item, isEquippedHandItem: false })); // Mark as not equipped hand item
+    // 2. Add worn clothing items
+    for (const layer in gameState.player.wornClothing) {
+        const item = gameState.player.wornClothing[layer];
+        if (item) {
+            const displayItem = { ...item };
+            displayItem.equipped = true;
+            displayItem.source = 'clothing';
+            displayItem.originalLayer = layer;
+            displayItem.displayName = item.name;
+            gameState.inventory.currentlyDisplayedItems.push(displayItem);
+        }
+    }
 
-    gameState.inventory.currentlyDisplayedItems.push(...containerItemsToAdd);
-
+    // 3. Add items from the main inventory container
+    if (gameState.inventory.container && gameState.inventory.container.items) {
+        gameState.inventory.container.items.forEach(item => {
+            const displayItem = { ...item };
+            displayItem.equipped = false;
+            displayItem.source = 'container';
+            displayItem.displayName = item.name;
+            gameState.inventory.currentlyDisplayedItems.push(displayItem);
+        });
+    }
 
     if (gameState.inventory.currentlyDisplayedItems.length === 0) {
-        list.textContent = " No items 㗗"; // Changed from "empty" to "No items" for clarity
+        list.textContent = " No items ";
+        gameState.inventory.cursor = 0;
         return;
     }
 
     if (gameState.inventory.cursor >= gameState.inventory.currentlyDisplayedItems.length) {
         gameState.inventory.cursor = Math.max(0, gameState.inventory.currentlyDisplayedItems.length - 1);
     }
+    if (gameState.inventory.cursor < 0 && gameState.inventory.currentlyDisplayedItems.length > 0) {
+        gameState.inventory.cursor = 0;
+    }
 
-    gameState.inventory.currentlyDisplayedItems.forEach((it, idx) => {
+    gameState.inventory.currentlyDisplayedItems.forEach((item, idx) => {
         const d = document.createElement("div");
         let prefix = "";
-        if (it.isEquippedHandItem) {
-            prefix = `[HAND ${it.originalHandIndex + 1}] `;
+        if (item.equipped) {
+            prefix = "[EQUIPPED] ";
         }
-        d.textContent = `${idx + 1}. ${prefix}${it.name} (${it.size})`;
+        const sizeText = item.size !== undefined ? ` (Size: ${item.size})` : "";
+        d.textContent = `${idx + 1}. ${prefix}${item.displayName}${sizeText}`;
+
         if (idx === gameState.inventory.cursor) {
             d.classList.add("selected");
         }
@@ -368,7 +392,6 @@ function toggleInventoryMenu() {
         clearInventoryHighlight();
         gameState.inventory.currentlyDisplayedItems = [];
 
-        // New logic to refresh combat weapon select:
         if (gameState.isInCombat &&
             gameState.combatPhase === 'playerAttackDeclare' &&
             typeof window.combatManager !== 'undefined' &&
@@ -381,75 +404,59 @@ function toggleInventoryMenu() {
 
 // 12) Use selected item
 function interactInventoryItem() {
-    if (!gameState.inventory.currentlyDisplayedItems || gameState.inventory.currentlyDisplayedItems.length === 0) return;
-    if (!gameState.inventory.container) return;
+    if (!gameState.inventory.currentlyDisplayedItems || gameState.inventory.currentlyDisplayedItems.length === 0) {
+        logToConsole("No items to interact with.");
+        return;
+    }
 
-    const idx = gameState.inventory.cursor;
-    if (idx < 0 || idx >= gameState.inventory.currentlyDisplayedItems.length) return;
+    const cursorIndex = gameState.inventory.cursor;
+    if (cursorIndex < 0 || cursorIndex >= gameState.inventory.currentlyDisplayedItems.length) {
+        logToConsole("Invalid inventory cursor position.");
+        return;
+    }
 
-    const displayedItem = gameState.inventory.currentlyDisplayedItems[idx];
-    if (!displayedItem) return;
+    const selectedDisplayItem = gameState.inventory.currentlyDisplayedItems[cursorIndex];
+    if (!selectedDisplayItem) {
+        logToConsole("No item selected at cursor position.");
+        return;
+    }
 
-    if (displayedItem.isEquippedHandItem === true) {
-        logToConsole(`Attempting to unequip ${displayedItem.name} from hand ${displayedItem.originalHandIndex + 1}...`);
-        window.unequipItem(displayedItem.originalHandIndex);
+    logToConsole(`Interacting with: ${selectedDisplayItem.displayName}, Equipped: ${selectedDisplayItem.equipped}, Source: ${selectedDisplayItem.source}`);
+
+    if (selectedDisplayItem.equipped === true) {
+        if (selectedDisplayItem.source === 'clothing' && selectedDisplayItem.originalLayer) {
+            logToConsole(`Attempting to unequip ${selectedDisplayItem.displayName} from layer ${selectedDisplayItem.originalLayer}...`);
+            unequipClothing(selectedDisplayItem.originalLayer);
+        } else if (selectedDisplayItem.source === 'hand' && selectedDisplayItem.originalHandIndex !== undefined) {
+            logToConsole(`Attempting to unequip ${selectedDisplayItem.displayName} from hand ${selectedDisplayItem.originalHandIndex + 1}...`);
+            unequipItem(selectedDisplayItem.originalHandIndex);
+        } else {
+            logToConsole(`Cannot unequip ${selectedDisplayItem.displayName}: Unknown equipped source or missing data.`);
+        }
     } else {
-        const actualItemInContainer = gameState.inventory.container.items.find(item => item.name === displayedItem.name && item.id === displayedItem.id);
-
-        if (!actualItemInContainer) {
-            logToConsole(`Error: Could not find ${displayedItem.name} in main inventory for interaction.`);
-            return;
-        }
-
-        if (actualItemInContainer.type === "consumable" && actualItemInContainer.effects) {
-            let consumed = false;
-            if (actualItemInContainer.effects.hungerRestored !== undefined) {
-                gameState.playerHunger = Math.min(24, gameState.playerHunger + actualItemInContainer.effects.hungerRestored);
-                logToConsole(`Consumed ${actualItemInContainer.name}, hunger restored to ${gameState.playerHunger}/24.`);
-                consumed = true;
-            }
-            if (actualItemInContainer.effects.thirstRestored !== undefined) {
-                gameState.playerThirst = Math.min(24, gameState.playerThirst + actualItemInContainer.effects.thirstRestored);
-                logToConsole(`Consumed ${actualItemInContainer.name}, thirst restored to ${gameState.playerThirst}/24.`);
-                consumed = true;
-            }
-            if (actualItemInContainer.effects.sicknessChance) {
-                logToConsole(`Warning: ${actualItemInContainer.name} has a ${actualItemInContainer.effects.sicknessChance * 100}% chance of causing sickness.`);
-            }
-
-            if (consumed) {
-                removeItem(actualItemInContainer.name);
-                // If consumed, we might not want to do other actions like equipping.
-                // Refresh menu and return.
-                if (gameState.inventory.open) {
-                    renderInventoryMenu();
-                }
-                return;
-            }
-        }
-
-        // If not consumed (or not primarily a consumable), proceed with other interactions
-        if (actualItemInContainer.isClothing) {
-            logToConsole(`Attempting to wear ${actualItemInContainer.name}...`);
-            equipClothing(actualItemInContainer.name);
-        } else if (actualItemInContainer.canEquip) {
+        if (selectedDisplayItem.isClothing) {
+            logToConsole(`Attempting to wear ${selectedDisplayItem.displayName}...`);
+            equipClothing(selectedDisplayItem.name);
+        } else if (selectedDisplayItem.canEquip) {
             let handSlotToEquip = -1;
             if (!gameState.inventory.handSlots[0]) handSlotToEquip = 0;
             else if (!gameState.inventory.handSlots[1]) handSlotToEquip = 1;
 
             if (handSlotToEquip !== -1) {
-                logToConsole(`Attempting to equip ${actualItemInContainer.name} to hand ${handSlotToEquip + 1}...`);
-                equipItem(actualItemInContainer.name, handSlotToEquip);
+                logToConsole(`Attempting to equip ${selectedDisplayItem.displayName} to hand ${handSlotToEquip + 1}...`);
+                equipItem(selectedDisplayItem.name, handSlotToEquip);
             } else {
-                logToConsole(`Both hands are full. Cannot equip ${actualItemInContainer.name}.`);
+                logToConsole(`Both hands are full. Cannot equip ${selectedDisplayItem.displayName}.`);
             }
-        } else if (actualItemInContainer.type !== "consumable") { // Avoid double-logging for non-consumed consumables
-            logToConsole(`You look at your ${actualItemInContainer.name}: ${actualItemInContainer.description}`);
+        } else {
+            logToConsole(`You look at your ${selectedDisplayItem.displayName}: ${selectedDisplayItem.description || '(No description)'}`);
         }
     }
+
     if (gameState.inventory.open) {
         renderInventoryMenu();
     }
+    updateInventoryUI();
 }
 
 // 13) Clear highlight when closing
@@ -457,38 +464,6 @@ function clearInventoryHighlight() {
     document.querySelectorAll("#inventoryList .selected")
         .forEach(el => el.classList.remove("selected"));
 }
-
-window.findAndRemoveFoodItem = function (gameState) {
-    if (!gameState.inventory.container || !gameState.inventory.container.items) return false;
-    const foodItemIndex = gameState.inventory.container.items.findIndex(item =>
-        item.tags && item.tags.includes("food") && item.effects && item.effects.hungerRestored > 0
-    );
-
-    if (foodItemIndex !== -1) {
-        const item = gameState.inventory.container.items[foodItemIndex];
-        logToConsole(`Daily consumption: Consumed ${item.name} for food.`);
-        // Assuming removeItem handles UI update and actual removal from gameState
-        removeItem(item.name);
-        return true;
-    }
-    return false;
-};
-
-window.findAndRemoveWaterItem = function (gameState) {
-    if (!gameState.inventory.container || !gameState.inventory.container.items) return false;
-    const waterItemIndex = gameState.inventory.container.items.findIndex(item =>
-        item.tags && item.tags.includes("water") && item.effects && item.effects.thirstRestored > 0
-    );
-
-    if (waterItemIndex !== -1) {
-        const item = gameState.inventory.container.items[waterItemIndex];
-        logToConsole(`Daily consumption: Consumed ${item.name} for water.`);
-        // Assuming removeItem handles UI update and actual removal from gameState
-        removeItem(item.name);
-        return true;
-    }
-    return false;
-};
 
 window.InventoryContainer = InventoryContainer;
 window.Item = Item;

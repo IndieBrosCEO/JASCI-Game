@@ -8,7 +8,14 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 4,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d7",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -24,7 +31,15 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 3,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "revolver", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "revolver",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d6",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -40,7 +55,15 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 3,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "revolver", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "revolver",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d5",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -56,7 +79,14 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 3,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -72,7 +102,14 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 3,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -88,7 +125,14 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 3,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -104,11 +148,22 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 3,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "machine_pistol", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "machine_pistol",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S,A",
-    "fireModes": [ "single", "burst" ],
+    "fireModes": [
+      "single",
+      "burst"
+    ],
     "magazineSize": "20 box",
     "ammoType": "9mm"
   },
@@ -121,7 +176,14 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 3,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -137,7 +199,14 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -153,11 +222,22 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 6,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "machine_pistol", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "machine_pistol",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S,A",
-    "fireModes": [ "single", "auto" ],
+    "fireModes": [
+      "single",
+      "auto"
+    ],
     "magazineSize": "30 box",
     "ammoType": ".45acp"
   },
@@ -170,7 +250,14 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 2,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -186,11 +273,22 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 4,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "machine_pistol", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "machine_pistol",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S,A",
-    "fireModes": [ "single", "auto" ],
+    "fireModes": [
+      "single",
+      "auto"
+    ],
     "magazineSize": "32 box",
     "ammoType": "9mm"
   },
@@ -203,7 +301,14 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d3",
     "damageType": "Ballistic",
     "rateOfFire": "Single",
@@ -219,7 +324,15 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "revolver", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "revolver",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d3",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -235,7 +348,15 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "revolver", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "revolver",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d2",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -251,11 +372,22 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 4,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "machine_pistol", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "machine_pistol",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d2",
     "damageType": "Ballistic",
     "rateOfFire": "S,A",
-    "fireModes": [ "single", "auto" ],
+    "fireModes": [
+      "single",
+      "auto"
+    ],
     "magazineSize": "20 box",
     "ammoType": ".32acp"
   },
@@ -268,7 +400,14 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 1,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "handgun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "handgun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d2",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -284,7 +423,13 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 11,
-    "tags": [ "weapon", "firearm", "shotgun", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "shotgun",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d10",
     "damageType": "Ballistic",
     "rateOfFire": "Single",
@@ -300,7 +445,15 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 16,
-    "tags": [ "weapon", "firearm", "rifle", "sniper_rifle", "modern", "long_gun", "sniper" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle",
+      "sniper_rifle",
+      "modern",
+      "long_gun",
+      "sniper"
+    ],
     "damage": "1d10",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -316,11 +469,19 @@
     "isClothing": false,
     "size": 5,
     "weightLbs": 22,
-    "tags": [ "weapon", "firearm", "machine_gun", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "machine_gun",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d10",
     "damageType": "Ballistic",
     "rateOfFire": "A",
-    "fireModes": [ "auto" ],
+    "fireModes": [
+      "auto"
+    ],
     "magazineSize": "Linked",
     "ammoType": "7.62mm"
   },
@@ -333,11 +494,22 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 7,
-    "tags": [ "weapon", "firearm", "smg", "modern", "long_gun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "smg",
+      "modern",
+      "long_gun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S,A",
-    "fireModes": [ "single", "burst", "auto" ],
+    "fireModes": [
+      "single",
+      "burst",
+      "auto"
+    ],
     "magazineSize": "30 box",
     "ammoType": "9mm"
   },
@@ -350,11 +522,22 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 5,
-    "tags": [ "weapon", "firearm", "smg", "modern", "long_gun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "smg",
+      "modern",
+      "long_gun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S,A",
-    "fireModes": [ "single", "burst", "auto" ],
+    "fireModes": [
+      "single",
+      "burst",
+      "auto"
+    ],
     "magazineSize": "15 box",
     "ammoType": "9mm"
   },
@@ -367,11 +550,21 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 8,
-    "tags": [ "weapon", "firearm", "smg", "modern", "long_gun", "requires_grapple_for_point_blank" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "smg",
+      "modern",
+      "long_gun",
+      "requires_grapple_for_point_blank"
+    ],
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S,A",
-    "fireModes": [ "single", "auto" ],
+    "fireModes": [
+      "single",
+      "auto"
+    ],
     "magazineSize": "20 box",
     "ammoType": "9mm"
   },
@@ -384,11 +577,21 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 10,
-    "tags": [ "weapon", "firearm", "rifle", "assault_rifle", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle",
+      "assault_rifle",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d7",
     "damageType": "Ballistic",
     "rateOfFire": "S,A",
-    "fireModes": [ "single", "auto" ],
+    "fireModes": [
+      "single",
+      "auto"
+    ],
     "magazineSize": "30 box",
     "ammoType": "7.62mmR"
   },
@@ -401,11 +604,21 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 8,
-    "tags": [ "weapon", "firearm", "rifle", "assault_rifle", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle",
+      "assault_rifle",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d7",
     "damageType": "Ballistic",
     "rateOfFire": "S,A",
-    "fireModes": [ "single", "burst" ],
+    "fireModes": [
+      "single",
+      "burst"
+    ],
     "magazineSize": "30 box",
     "ammoType": "5.56mm"
   },
@@ -418,11 +631,22 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 7,
-    "tags": [ "weapon", "firearm", "rifle", "assault_rifle", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle",
+      "assault_rifle",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d7",
     "damageType": "Ballistic",
     "rateOfFire": "S,A",
-    "fireModes": [ "single", "burst", "auto" ],
+    "fireModes": [
+      "single",
+      "burst",
+      "auto"
+    ],
     "magazineSize": "30 box",
     "ammoType": "5.56mm"
   },
@@ -435,11 +659,21 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 9,
-    "tags": [ "weapon", "firearm", "rifle", "assault_rifle", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle",
+      "assault_rifle",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d7",
     "damageType": "Ballistic",
     "rateOfFire": "S,A",
-    "fireModes": [ "single", "auto" ],
+    "fireModes": [
+      "single",
+      "auto"
+    ],
     "magazineSize": "30 box",
     "ammoType": "5.56mm"
   },
@@ -452,11 +686,21 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 11,
-    "tags": [ "weapon", "firearm", "rifle", "battle_rifle", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle",
+      "battle_rifle",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d7",
     "damageType": "Ballistic",
     "rateOfFire": "S,A",
-    "fireModes": [ "single", "auto" ],
+    "fireModes": [
+      "single",
+      "auto"
+    ],
     "magazineSize": "20 box",
     "ammoType": "7.62mm"
   },
@@ -469,7 +713,14 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 7,
-    "tags": [ "weapon", "firearm", "rifle", "hunting_rifle", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle",
+      "hunting_rifle",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d7",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -485,7 +736,13 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 8,
-    "tags": [ "weapon", "firearm", "shotgun", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "shotgun",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d8",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -501,7 +758,13 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 9,
-    "tags": [ "weapon", "firearm", "shotgun", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "shotgun",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d8",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -517,7 +780,13 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 7,
-    "tags": [ "weapon", "firearm", "shotgun", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "shotgun",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d8",
     "damageType": "Ballistic",
     "rateOfFire": "Single",
@@ -533,7 +802,13 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 4,
-    "tags": [ "weapon", "firearm", "shotgun", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "shotgun",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d8",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -549,7 +824,14 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 8,
-    "tags": [ "weapon", "firearm", "rifle", "hunting_rifle", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle",
+      "hunting_rifle",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d8",
     "damageType": "Ballistic",
     "rateOfFire": "Single",
@@ -565,11 +847,21 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 14,
-    "tags": [ "weapon", "firearm", "shotgun", "automatic_shotgun", "modern", "long_gun" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "shotgun",
+      "automatic_shotgun",
+      "modern",
+      "long_gun"
+    ],
     "damage": "1d8",
     "damageType": "Ballistic",
     "rateOfFire": "S,A",
-    "fireModes": [ "single", "auto" ],
+    "fireModes": [
+      "single",
+      "auto"
+    ],
     "magazineSize": "8 drum",
     "ammoType": "12gauge_buckshot"
   },
@@ -582,7 +874,16 @@
     "isClothing": false,
     "size": 5,
     "weightLbs": 35,
-    "tags": [ "weapon", "firearm", "rifle", "sniper_rifle", "anti_materiel", "modern", "long_gun", "sniper" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle",
+      "sniper_rifle",
+      "anti_materiel",
+      "modern",
+      "long_gun",
+      "sniper"
+    ],
     "damage": "3d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
@@ -598,11 +899,19 @@
     "isClothing": false,
     "size": 5,
     "weightLbs": 75,
-    "tags": [ "weapon", "firearm", "machine_gun", "heavy_weapon", "modern" ],
+    "tags": [
+      "weapon",
+      "firearm",
+      "machine_gun",
+      "heavy_weapon",
+      "modern"
+    ],
     "damage": "2d12",
     "damageType": "Ballistic",
     "rateOfFire": "A",
-    "fireModes": [ "auto" ],
+    "fireModes": [
+      "auto"
+    ],
     "magazineSize": "Linked",
     "ammoType": ".50bmg"
   },
@@ -615,7 +924,14 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 5,
-    "tags": [ "weapon", "heavy_weapon", "launcher", "explosive", "modern", "launcher_treated_as_rifle" ],
+    "tags": [
+      "weapon",
+      "heavy_weapon",
+      "launcher",
+      "explosive",
+      "modern",
+      "launcher_treated_as_rifle"
+    ],
     "damage": "10d6",
     "damageType": "Explosive",
     "rateOfFire": "Single",
@@ -632,7 +948,14 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 7,
-    "tags": [ "weapon", "heavy_weapon", "launcher", "explosive", "modern", "launcher_treated_as_rifle" ],
+    "tags": [
+      "weapon",
+      "heavy_weapon",
+      "launcher",
+      "explosive",
+      "modern",
+      "launcher_treated_as_rifle"
+    ],
     "damage": "See Grenade",
     "damageType": "Explosive",
     "rateOfFire": "Single",
@@ -649,7 +972,13 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 3,
-    "tags": [ "weapon", "bow", "ranged", "modern", "silent" ],
+    "tags": [
+      "weapon",
+      "bow",
+      "ranged",
+      "modern",
+      "silent"
+    ],
     "damage": "1d6",
     "damageType": "Piercing",
     "rateOfFire": "Single",
@@ -665,7 +994,13 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 7,
-    "tags": [ "weapon", "crossbow", "ranged", "modern", "silent" ],
+    "tags": [
+      "weapon",
+      "crossbow",
+      "ranged",
+      "modern",
+      "silent"
+    ],
     "damage": "1d8",
     "damageType": "Piercing",
     "rateOfFire": "Single",
@@ -681,11 +1016,18 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 50,
-    "tags": [ "weapon", "heavy_weapon", "incendiary", "modern" ],
+    "tags": [
+      "weapon",
+      "heavy_weapon",
+      "incendiary",
+      "modern"
+    ],
     "damage": "3d6",
     "damageType": "Fire",
     "rateOfFire": "A",
-    "fireModes": [ "auto" ],
+    "fireModes": [
+      "auto"
+    ],
     "magazineSize": "10 int."
   },
   {
@@ -697,7 +1039,12 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 2,
-    "tags": [ "weapon", "thrown", "spear", "ancient" ],
+    "tags": [
+      "weapon",
+      "thrown",
+      "spear",
+      "ancient"
+    ],
     "damage": "1d6",
     "damageType": "Piercing",
     "rangeIncrementFt": 30
@@ -711,7 +1058,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.5,
-    "tags": [ "weapon", "less_lethal", "chemical", "modern" ],
+    "tags": [
+      "weapon",
+      "less_lethal",
+      "chemical",
+      "modern"
+    ],
     "damage": "0",
     "damageType": "Chemical",
     "rateOfFire": "S",
@@ -727,7 +1079,13 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.5,
-    "tags": [ "weapon", "thrown", "ninja", "ancient", "silent" ],
+    "tags": [
+      "weapon",
+      "thrown",
+      "ninja",
+      "ancient",
+      "silent"
+    ],
     "damage": "1",
     "damageType": "Piercing",
     "rangeIncrementFt": 10
@@ -741,7 +1099,12 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2,
-    "tags": [ "weapon", "less_lethal", "electricity", "modern" ],
+    "tags": [
+      "weapon",
+      "less_lethal",
+      "electricity",
+      "modern"
+    ],
     "damage": "0",
     "damageType": "Electricity",
     "rateOfFire": "Single",
@@ -757,7 +1120,11 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2,
-    "tags": [ "weapon", "melee", "reach" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "reach"
+    ],
     "damage": "1d2",
     "damageType": "Slashing"
   },
@@ -770,7 +1137,12 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 1,
-    "tags": [ "explosive", "demolition", "modern", "consumable" ],
+    "tags": [
+      "explosive",
+      "demolition",
+      "modern",
+      "consumable"
+    ],
     "damage": "4d6",
     "damageType": "Concussion",
     "burstRadiusFt": 10
@@ -784,7 +1156,12 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 2,
-    "tags": [ "explosive", "demolition", "modern", "consumable" ],
+    "tags": [
+      "explosive",
+      "demolition",
+      "modern",
+      "consumable"
+    ],
     "damage": "2d6",
     "damageType": "Fire",
     "burstRadiusFt": 1
@@ -798,7 +1175,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1,
-    "tags": [ "explosive", "demolition", "modern", "consumable" ],
+    "tags": [
+      "explosive",
+      "demolition",
+      "modern",
+      "consumable"
+    ],
     "damage": "2d6",
     "damageType": "Concussion",
     "burstRadiusFt": 5
@@ -812,7 +1194,13 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1,
-    "tags": [ "weapon", "thrown", "explosive", "grenade", "modern" ],
+    "tags": [
+      "weapon",
+      "thrown",
+      "explosive",
+      "grenade",
+      "modern"
+    ],
     "damage": "3d6",
     "damageType": "Slashing",
     "burstRadiusFt": 20,
@@ -828,7 +1216,13 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2,
-    "tags": [ "weapon", "thrown", "utility", "grenade", "modern" ],
+    "tags": [
+      "weapon",
+      "thrown",
+      "utility",
+      "grenade",
+      "modern"
+    ],
     "damage": "0",
     "damageType": "None",
     "burstRadiusFt": 20,
@@ -844,7 +1238,14 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2,
-    "tags": [ "weapon", "thrown", "utility", "grenade", "less_lethal", "modern" ],
+    "tags": [
+      "weapon",
+      "thrown",
+      "utility",
+      "grenade",
+      "less_lethal",
+      "modern"
+    ],
     "damage": "0",
     "damageType": "Chemical",
     "burstRadiusFt": 20,
@@ -860,7 +1261,13 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2,
-    "tags": [ "weapon", "thrown", "incendiary", "grenade", "modern" ],
+    "tags": [
+      "weapon",
+      "thrown",
+      "incendiary",
+      "grenade",
+      "modern"
+    ],
     "damage": "6d6",
     "damageType": "Fire",
     "burstRadiusFt": 5,
@@ -875,7 +1282,14 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2,
-    "tags": [ "weapon", "thrown", "incendiary", "smoke", "grenade", "modern" ],
+    "tags": [
+      "weapon",
+      "thrown",
+      "incendiary",
+      "smoke",
+      "grenade",
+      "modern"
+    ],
     "damage": "2d6",
     "damageType": "Fire",
     "burstRadiusFt": 20,
@@ -891,7 +1305,13 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1,
-    "tags": [ "weapon", "thrown", "acid", "chemical", "modern" ],
+    "tags": [
+      "weapon",
+      "thrown",
+      "acid",
+      "chemical",
+      "modern"
+    ],
     "damage": "1d6",
     "damageType": "Acid",
     "rangeIncrementFt": 10,
@@ -906,7 +1326,13 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 1,
-    "tags": [ "weapon", "thrown", "incendiary", "improvised", "modern" ],
+    "tags": [
+      "weapon",
+      "thrown",
+      "incendiary",
+      "improvised",
+      "modern"
+    ],
     "damage": "1d6",
     "damageType": "Fire",
     "rangeIncrementFt": 10,
@@ -921,7 +1347,13 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1,
-    "tags": [ "weapon", "melee", "less_lethal", "electricity", "modern" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "less_lethal",
+      "electricity",
+      "modern"
+    ],
     "damage": "0",
     "damageType": "Electricity",
     "specialEffect": "Stun on contact"
@@ -935,7 +1367,13 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 3,
-    "tags": [ "weapon", "melee", "bludgeoning", "less_lethal", "modern" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning",
+      "less_lethal",
+      "modern"
+    ],
     "damage": "1d2",
     "damageType": "Bludgeoning"
   },
@@ -948,7 +1386,13 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 2,
-    "tags": [ "weapon", "melee", "bludgeoning", "less_lethal", "modern" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning",
+      "less_lethal",
+      "modern"
+    ],
     "damage": "1d2",
     "damageType": "Bludgeoning"
   },
@@ -961,7 +1405,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1,
-    "tags": [ "weapon", "melee", "bludgeoning", "modern" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning",
+      "modern"
+    ],
     "damage": "1d2",
     "damageType": "Bludgeoning"
   },
@@ -974,7 +1423,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.5,
-    "tags": [ "weapon", "melee", "slashing", "modern" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing",
+      "modern"
+    ],
     "damage": "1d3",
     "damageType": "Slashing"
   },
@@ -987,7 +1441,12 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2,
-    "tags": [ "weapon", "melee", "bludgeoning", "martial_arts" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning",
+      "martial_arts"
+    ],
     "damage": "1d3",
     "damageType": "Bludgeoning"
   },
@@ -1000,7 +1459,13 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 2,
-    "tags": [ "weapon", "melee", "bludgeoning", "martial_arts", "police" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning",
+      "martial_arts",
+      "police"
+    ],
     "damage": "1d4",
     "damageType": "Bludgeoning"
   },
@@ -1013,7 +1478,12 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 1,
-    "tags": [ "weapon", "melee", "slashing", "knife" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing",
+      "knife"
+    ],
     "damage": "1d4",
     "damageType": "Slashing"
   },
@@ -1026,7 +1496,14 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1,
-    "tags": [ "weapon", "melee", "piercing", "slashing", "knife", "tool" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "piercing",
+      "slashing",
+      "knife",
+      "tool"
+    ],
     "damage": "1d4",
     "damageType": "Piercing"
   },
@@ -1039,7 +1516,12 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2,
-    "tags": [ "weapon", "melee", "slashing", "tool" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing",
+      "tool"
+    ],
     "damage": "1d4",
     "damageType": "Slashing"
   },
@@ -1052,7 +1534,12 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 1,
-    "tags": [ "weapon", "melee", "piercing", "military" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "piercing",
+      "military"
+    ],
     "damage": "1d5",
     "damageType": "Piercing"
   },
@@ -1065,7 +1552,12 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 3,
-    "tags": [ "weapon", "melee", "piercing", "concealed" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "piercing",
+      "concealed"
+    ],
     "damage": "1d6",
     "damageType": "Piercing"
   },
@@ -1078,7 +1570,12 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 3,
-    "tags": [ "weapon", "melee", "piercing", "sword" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "piercing",
+      "sword"
+    ],
     "damage": "1d6",
     "damageType": "Piercing"
   },
@@ -1091,7 +1588,12 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2,
-    "tags": [ "weapon", "melee", "slashing", "tool" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing",
+      "tool"
+    ],
     "damage": "1d6",
     "damageType": "Slashing"
   },
@@ -1104,7 +1606,12 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2,
-    "tags": [ "weapon", "melee", "slashing", "martial_arts" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing",
+      "martial_arts"
+    ],
     "damage": "1d6",
     "damageType": "Slashing"
   },
@@ -1117,7 +1624,12 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 4,
-    "tags": [ "weapon", "melee", "slashing", "tool" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing",
+      "tool"
+    ],
     "damage": "1d6",
     "damageType": "Slashing"
   },
@@ -1130,7 +1642,12 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 3,
-    "tags": [ "weapon", "melee", "bludgeoning", "improvised" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning",
+      "improvised"
+    ],
     "damage": "1d6",
     "damageType": "Bludgeoning"
   },
@@ -1143,7 +1660,12 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 9,
-    "tags": [ "weapon", "melee", "piercing", "reach" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "piercing",
+      "reach"
+    ],
     "damage": "1d8",
     "damageType": "Piercing"
   },
@@ -1156,7 +1678,12 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 4,
-    "tags": [ "weapon", "melee", "slashing", "sword" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing",
+      "sword"
+    ],
     "damage": "1d8",
     "damageType": "Slashing"
   },
@@ -1169,7 +1696,13 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 6,
-    "tags": [ "weapon", "melee", "slashing", "sword", "japanese" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing",
+      "sword",
+      "japanese"
+    ],
     "damage": "2d4",
     "damageType": "Slashing"
   },
@@ -1182,7 +1715,13 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 10,
-    "tags": [ "weapon", "melee", "slashing", "tool", "noisy" ],
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing",
+      "tool",
+      "noisy"
+    ],
     "damage": "3d6",
     "damageType": "Slashing"
   },
@@ -1195,7 +1734,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.6,
-    "tags": [ "ammo", "modern", "rifle" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "rifle"
+    ],
     "ammoType": "5.56mm",
     "quantity": 30
   },
@@ -1208,7 +1751,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.7,
-    "tags": [ "ammo", "modern", "rifle" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "rifle"
+    ],
     "ammoType": "7.62mm",
     "quantity": 20
   },
@@ -1221,7 +1768,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.7,
-    "tags": [ "ammo", "modern", "rifle" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "rifle"
+    ],
     "ammoType": "7.62mmR",
     "quantity": 30
   },
@@ -1234,7 +1785,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.8,
-    "tags": [ "ammo", "modern", "rifle", "hunting" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "rifle",
+      "hunting"
+    ],
     "ammoType": ".444",
     "quantity": 20
   },
@@ -1247,7 +1803,12 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2.5,
-    "tags": [ "ammo", "modern", "heavy_weapon", "sniper" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "heavy_weapon",
+      "sniper"
+    ],
     "ammoType": ".50bmg",
     "quantity": 10
   },
@@ -1260,7 +1821,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.5,
-    "tags": [ "ammo", "modern", "pistol", "smg" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "pistol",
+      "smg"
+    ],
     "ammoType": "9mm",
     "quantity": 50
   },
@@ -1273,7 +1839,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.6,
-    "tags": [ "ammo", "modern", "pistol" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "pistol"
+    ],
     "ammoType": "10mm",
     "quantity": 50
   },
@@ -1286,7 +1856,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.3,
-    "tags": [ "ammo", "modern", "pistol", "rifle" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "pistol",
+      "rifle"
+    ],
     "ammoType": ".22lr",
     "quantity": 50
   },
@@ -1299,7 +1874,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.4,
-    "tags": [ "ammo", "modern", "pistol" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "pistol"
+    ],
     "ammoType": ".32acp",
     "quantity": 50
   },
@@ -1312,7 +1891,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.5,
-    "tags": [ "ammo", "modern", "revolver" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "revolver"
+    ],
     "ammoType": ".38spl",
     "quantity": 50
   },
@@ -1325,7 +1908,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.6,
-    "tags": [ "ammo", "modern", "revolver" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "revolver"
+    ],
     "ammoType": ".357mag",
     "quantity": 50
   },
@@ -1338,7 +1925,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.7,
-    "tags": [ "ammo", "modern", "revolver" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "revolver"
+    ],
     "ammoType": ".44mag",
     "quantity": 20
   },
@@ -1351,7 +1942,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.6,
-    "tags": [ "ammo", "modern", "pistol" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "pistol"
+    ],
     "ammoType": ".45acp",
     "quantity": 50
   },
@@ -1364,7 +1959,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.8,
-    "tags": [ "ammo", "modern", "pistol" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "pistol"
+    ],
     "ammoType": ".50AE",
     "quantity": 20
   },
@@ -1377,7 +1976,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1.0,
-    "tags": [ "ammo", "modern", "shotgun" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "shotgun"
+    ],
     "ammoType": "10gauge_buckshot",
     "quantity": 10
   },
@@ -1390,7 +1993,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.9,
-    "tags": [ "ammo", "modern", "shotgun" ],
+    "tags": [
+      "ammo",
+      "modern",
+      "shotgun"
+    ],
     "ammoType": "12gauge_buckshot",
     "quantity": 10
   },
@@ -1403,7 +2010,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1.0,
-    "tags": [ "ammo", "arrow", "ranged" ],
+    "tags": [
+      "ammo",
+      "arrow",
+      "ranged"
+    ],
     "ammoType": "arrow",
     "quantity": 12
   },
@@ -1416,7 +2027,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1.0,
-    "tags": [ "ammo", "bolt", "ranged" ],
+    "tags": [
+      "ammo",
+      "bolt",
+      "ranged"
+    ],
     "ammoType": "crossbow_bolt",
     "quantity": 12
   },
@@ -1429,7 +2044,13 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1,
-    "tags": [ "ammo", "explosive", "grenade", "40mm", "modern" ],
+    "tags": [
+      "ammo",
+      "explosive",
+      "grenade",
+      "40mm",
+      "modern"
+    ],
     "ammoType": "40mm_grenade",
     "quantity": 1,
     "damage": "3d6",
@@ -1445,7 +2066,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.5,
-    "tags": [ "weapon", "improvised", "melee", "modern" ],
+    "tags": [
+      "weapon",
+      "improvised",
+      "melee",
+      "modern"
+    ],
     "damage": "1",
     "damageType": "Bludgeoning"
   },
@@ -1458,7 +2084,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1,
-    "tags": [ "weapon", "improvised", "melee", "modern" ],
+    "tags": [
+      "weapon",
+      "improvised",
+      "melee",
+      "modern"
+    ],
     "damage": "1",
     "damageType": "Bludgeoning"
   },
@@ -1471,7 +2102,12 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 3,
-    "tags": [ "weapon", "improvised", "melee", "modern" ],
+    "tags": [
+      "weapon",
+      "improvised",
+      "melee",
+      "modern"
+    ],
     "damage": "1d2",
     "damageType": "Bludgeoning"
   },
@@ -1484,7 +2120,12 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 8,
-    "tags": [ "weapon", "improvised", "melee", "modern" ],
+    "tags": [
+      "weapon",
+      "improvised",
+      "melee",
+      "modern"
+    ],
     "damage": "1d3",
     "damageType": "Bludgeoning"
   },
@@ -1497,7 +2138,12 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 15,
-    "tags": [ "weapon", "improvised", "melee", "modern" ],
+    "tags": [
+      "weapon",
+      "improvised",
+      "melee",
+      "modern"
+    ],
     "damage": "1d4",
     "damageType": "Bludgeoning"
   },
@@ -1510,7 +2156,12 @@
     "isClothing": false,
     "size": 5,
     "weightLbs": 50,
-    "tags": [ "weapon", "improvised", "melee", "modern" ],
+    "tags": [
+      "weapon",
+      "improvised",
+      "melee",
+      "modern"
+    ],
     "damage": "1d8",
     "damageType": "Bludgeoning"
   },
@@ -1523,7 +2174,12 @@
     "isClothing": false,
     "size": 5,
     "weightLbs": 200,
-    "tags": [ "weapon", "improvised", "melee", "modern" ],
+    "tags": [
+      "weapon",
+      "improvised",
+      "melee",
+      "modern"
+    ],
     "damage": "2d6",
     "damageType": "Bludgeoning"
   },
@@ -1536,7 +2192,12 @@
     "isClothing": false,
     "size": 5,
     "weightLbs": 1000,
-    "tags": [ "weapon", "improvised", "melee", "modern" ],
+    "tags": [
+      "weapon",
+      "improvised",
+      "melee",
+      "modern"
+    ],
     "damage": "4d4",
     "damageType": "Bludgeoning"
   },
@@ -1549,7 +2210,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.1,
-    "tags": [ "consumable", "medical", "modern" ],
+    "tags": [
+      "consumable",
+      "medical",
+      "modern"
+    ],
     "effects": {
       "health": 10,
       "stopBleeding": true
@@ -1564,7 +2229,11 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 1,
-    "tags": [ "consumable", "medical", "modern" ],
+    "tags": [
+      "consumable",
+      "medical",
+      "modern"
+    ],
     "effects": {
       "health": 50,
       "stopBleeding": true
@@ -1579,7 +2248,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.5,
-    "tags": [ "consumable", "food", "modern" ],
+    "tags": [
+      "consumable",
+      "food",
+      "modern"
+    ],
     "effects": {
       "hunger": -40
     }
@@ -1593,7 +2266,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.2,
-    "tags": [ "consumable", "food", "modern" ],
+    "tags": [
+      "consumable",
+      "food",
+      "modern"
+    ],
     "effects": {
       "hunger": -25,
       "stamina": 20
@@ -1608,7 +2285,12 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 1.5,
-    "tags": [ "consumable", "food", "modern", "military" ],
+    "tags": [
+      "consumable",
+      "food",
+      "modern",
+      "military"
+    ],
     "effects": {
       "hunger": -70,
       "thirst": -10
@@ -1623,9 +2305,13 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.5,
-    "tags": [ "consumable", "drink", "water", "modern" ],
+    "tags": [
+      "consumable",
+      "drink",
+      "modern"
+    ],
     "effects": {
-      "thirstRestored": 10
+      "thirst": -50
     }
   },
   {
@@ -1637,7 +2323,12 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 1,
-    "tags": [ "consumable", "drink", "modern", "reusable_container" ],
+    "tags": [
+      "consumable",
+      "drink",
+      "modern",
+      "reusable_container"
+    ],
     "effects": {
       "thirst": -80
     }
@@ -1651,7 +2342,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.1,
-    "tags": [ "consumable", "utility", "modern" ],
+    "tags": [
+      "consumable",
+      "utility",
+      "modern"
+    ],
     "effects": {
       "purifyWater": 1
     }
@@ -1665,7 +2360,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.8,
-    "tags": [ "material", "crafting", "metal", "modern" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "modern"
+    ]
   },
   {
     "id": "wood_planks",
@@ -1676,7 +2376,12 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 1.5,
-    "tags": [ "material", "crafting", "wood", "modern" ]
+    "tags": [
+      "material",
+      "crafting",
+      "wood",
+      "modern"
+    ]
   },
   {
     "id": "cloth_scraps",
@@ -1687,7 +2392,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.2,
-    "tags": [ "material", "crafting", "cloth", "modern" ]
+    "tags": [
+      "material",
+      "crafting",
+      "cloth",
+      "modern"
+    ]
   },
   {
     "id": "duct_tape",
@@ -1698,7 +2408,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.3,
-    "tags": [ "material", "crafting", "adhesive", "modern" ]
+    "tags": [
+      "material",
+      "crafting",
+      "adhesive",
+      "modern"
+    ]
   },
   {
     "id": "nails",
@@ -1709,7 +2424,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.2,
-    "tags": [ "material", "crafting", "metal", "modern" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "modern"
+    ]
   },
   {
     "id": "sharp_glass",
@@ -1720,7 +2440,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.3,
-    "tags": [ "debris", "sharp", "glass", "modern" ]
+    "tags": [
+      "debris",
+      "sharp",
+      "glass",
+      "modern"
+    ]
   },
   {
     "id": "splintered_wood",
@@ -1731,7 +2456,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.4,
-    "tags": [ "debris", "sharp", "wood", "modern" ]
+    "tags": [
+      "debris",
+      "sharp",
+      "wood",
+      "modern"
+    ]
   },
   {
     "id": "tomato_seeds",
@@ -1742,7 +2472,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.1,
-    "tags": [ "seed", "gardening", "consumable", "food_source" ],
+    "tags": [
+      "seed",
+      "gardening",
+      "consumable",
+      "food_source"
+    ],
     "plantable": true,
     "effects": {
       "growsInto": "tomato_plant"
@@ -1757,7 +2492,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.1,
-    "tags": [ "seed", "gardening", "consumable", "food_source" ],
+    "tags": [
+      "seed",
+      "gardening",
+      "consumable",
+      "food_source"
+    ],
     "plantable": true,
     "effects": {
       "growsInto": "corn_stalk"
@@ -1772,7 +2512,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.1,
-    "tags": [ "seed", "gardening", "consumable", "food_source" ],
+    "tags": [
+      "seed",
+      "gardening",
+      "consumable",
+      "food_source"
+    ],
     "plantable": true,
     "effects": {
       "growsInto": "carrot_plant"
@@ -1787,9 +2532,16 @@
     "isClothing": true,
     "size": 1,
     "weightLbs": 0.5,
-    "tags": [ "clothing", "torso_top" ],
+    "tags": [
+      "clothing",
+      "torso_top"
+    ],
     "layer": "torso_top",
-    "coverage": [ "torso", "leftArm", "rightArm" ],
+    "coverage": [
+      "torso",
+      "leftArm",
+      "rightArm"
+    ],
     "insulation": 5,
     "armorValue": 0
   },
@@ -1802,9 +2554,14 @@
     "isClothing": true,
     "size": 1,
     "weightLbs": 0.2,
-    "tags": [ "clothing", "head_top" ],
+    "tags": [
+      "clothing",
+      "head_top"
+    ],
     "layer": "head_top",
-    "coverage": [ "head" ],
+    "coverage": [
+      "head"
+    ],
     "insulation": 2,
     "armorValue": 0
   },
@@ -1817,9 +2574,14 @@
     "isClothing": true,
     "size": 1,
     "weightLbs": 1,
-    "tags": [ "clothing", "torso_top" ],
+    "tags": [
+      "clothing",
+      "torso_top"
+    ],
     "layer": "torso_top",
-    "coverage": [ "torso" ],
+    "coverage": [
+      "torso"
+    ],
     "insulation": 3,
     "armorValue": 1
   },
@@ -1832,9 +2594,15 @@
     "isClothing": true,
     "size": 2,
     "weightLbs": 1.5,
-    "tags": [ "clothing", "legs_bottom" ],
+    "tags": [
+      "clothing",
+      "legs_bottom"
+    ],
     "layer": "legs_bottom",
-    "coverage": [ "leftLeg", "rightLeg" ],
+    "coverage": [
+      "leftLeg",
+      "rightLeg"
+    ],
     "insulation": 8,
     "armorValue": 1
   },
@@ -1847,9 +2615,14 @@
     "isClothing": true,
     "size": 1,
     "weightLbs": 0.3,
-    "tags": [ "clothing", "head_top" ],
+    "tags": [
+      "clothing",
+      "head_top"
+    ],
     "layer": "head_top",
-    "coverage": [ "head" ],
+    "coverage": [
+      "head"
+    ],
     "insulation": 3,
     "armorValue": 0
   },
@@ -1862,23 +2635,35 @@
     "isClothing": true,
     "size": 0,
     "weightLbs": 1,
-    "tags": [ "clothing", "backpack", "container" ],
+    "tags": [
+      "clothing",
+      "backpack",
+      "container"
+    ],
     "layer": "backpack",
     "coverage": [],
     "insulation": 0,
     "armorValue": 0
   },
   {
-    "id": "large_backpack_upgrade",
+    "id": "large_backpack_item",
     "name": "Large Backpack",
-    "description": "Upgrades your carrying capacity significantly.",
-    "type": "containerUpgrade",
+    "description": "A large backpack that significantly increases carrying capacity.",
+    "type": "clothing",
     "canEquip": false,
-    "isClothing": false,
-    "size": 0,
-    "weightLbs": 0,
-    "tags": [ "upgrade", "container" ],
-    "containerSizeLabel": "XL"
+    "isClothing": true,
+    "size": 3,
+    "weightLbs": 2.5,
+    "tags": [
+      "clothing",
+      "container",
+      "backpack"
+    ],
+    "layer": "backpack",
+    "coverage": [],
+    "insulation": 1,
+    "armorValue": 0,
+    "capacity": 24
   },
   {
     "id": "club",
@@ -1888,57 +2673,55 @@
     "damageType": "Bludgeoning",
     "size": 3,
     "canEquip": true,
-    "tags": [ "weapon", "melee", "bludgeoning", "improvised", "simple" ]
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning",
+      "improvised",
+      "simple"
+    ]
   },
   {
-    "id": "canned_food",
-    "name": "Canned Food",
-    "description": "A can of preserved food. Provides decent sustenance.",
-    "type": "consumable",
+    "id": "small_backpack_container",
+    "name": "Small Backpack",
+    "description": "A simple backpack that adds some carrying capacity.",
+    "type": "clothing",
     "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [ "consumable", "food", "modern" ],
-    "effects": { "hungerRestored": 10 }
+    "isClothing": true,
+    "size": 2,
+    "weightLbs": 1.5,
+    "tags": [
+      "clothing",
+      "container",
+      "backpack"
+    ],
+    "layer": "backpack",
+    "coverage": [],
+    "insulation": 1,
+    "armorValue": 0,
+    "capacity": 15
   },
   {
-    "id": "cooked_meat",
-    "name": "Cooked Meat",
-    "description": "A piece of cooked meat. Satisfying and nourishing.",
-    "type": "consumable",
+    "id": "cargo_pants_pockets",
+    "name": "Cargo Pants",
+    "description": "Sturdy cargo pants with extra pockets for more carrying capacity.",
+    "type": "clothing",
     "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.3,
-    "tags": [ "consumable", "food" ],
-    "effects": { "hungerRestored": 15 }
-  },
-  {
-    "id": "purified_water",
-    "name": "Purified Water",
-    "description": "Water that has been purified, safe to drink.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [ "consumable", "drink", "water", "modern" ],
-    "effects": { "thirstRestored": 15 }
-  },
-  {
-    "id": "dirty_water",
-    "name": "Dirty Water",
-    "description": "Water from an unknown source. Might be unsafe to drink without purification.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [ "consumable", "drink", "water", "unsafe" ],
-    "effects": {
-      "thirstRestored": 5,
-      "sicknessChance": 0.25
-    }
+    "isClothing": true,
+    "size": 2,
+    "weightLbs": 1.2,
+    "tags": [
+      "clothing",
+      "container",
+      "legs_bottom"
+    ],
+    "layer": "legs_bottom",
+    "coverage": [
+      "leftLeg",
+      "rightLeg"
+    ],
+    "insulation": 5,
+    "armorValue": 1,
+    "capacity": 5
   }
 ]

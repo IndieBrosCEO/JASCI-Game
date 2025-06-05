@@ -424,13 +424,13 @@ function handleKeyDown(event) {
             const previousHour = gameState.currentTime.hours;
             Time.advanceTime(gameState); // Advances by 2 minutes
 
-            // if (previousHour !== gameState.currentTime.hours) {
-            //     updateHourlyNeeds(gameState); // From js/character.js
-            // }
+            if (previousHour !== gameState.currentTime.hours) {
+                updateHourlyNeeds(gameState); // From js/character.js
+            }
 
-            // if (previousHour === 23 && gameState.currentTime.hours === 0) {
-            //     applyDailyNeeds(gameState); // From js/character.js
-            // }
+            if (previousHour === 23 && gameState.currentTime.hours === 0) {
+                applyDailyNeeds(gameState); // From js/character.js
+            }
             updatePlayerStatusDisplay(); // Update UI for time and needs
 
             if (gameState.isInCombat && combatManager.initiativeTracker[combatManager.currentTurnIndex]?.entity === gameState) {
@@ -641,13 +641,7 @@ async function initialize() { // Made async
         window.interaction.initInteraction(assetManager);
         window.mapRenderer.initMapRenderer(assetManager); // Initialize mapRenderer with assetManager.
 
-        // Initialize gameState.inventory.container now that InventoryContainer is defined (from js/inventory.js)
-        if (typeof InventoryContainer === 'function') {
-            gameState.inventory.container = new InventoryContainer("Backpack", "M");
-            console.log("Player inventory container initialized.");
-        } else {
-            console.error("InventoryContainer constructor not found. Inventory not initialized.");
-        }
+        gameState.inventory.container = new InventoryContainer("Body Pockets", "S"); // Capacity will be updated in startGame based on Strength
 
         await window.mapRenderer.setupMapSelector(); // This function is now in mapRenderer.js
         console.log("Map selector setup complete.");
@@ -713,35 +707,6 @@ async function initialize() { // Made async
     /**************************************************************
      * Player Status Display Function
      **************************************************************/
-    function renderStatusBars(gameState) {
-        const hungerBar = document.getElementById('hungerBar');
-        const thirstBar = document.getElementById('thirstBar');
-
-        if (!hungerBar || !thirstBar) {
-            // console.warn("Status bar elements not found."); // Optional warning
-            return;
-        }
-
-        const filledChar = '■';
-        const emptyChar = '□'; // Using a different empty character for clarity if needed
-        const maxBoxes = 24;
-
-        let hungerDisplay = '[';
-        for (let i = 0; i < maxBoxes; i++) {
-            hungerDisplay += (i < gameState.playerHunger) ? filledChar : emptyChar;
-        }
-        hungerDisplay += ']';
-        hungerBar.textContent = hungerDisplay;
-
-        let thirstDisplay = '[';
-        for (let i = 0; i < maxBoxes; i++) {
-            thirstDisplay += (i < gameState.playerThirst) ? filledChar : emptyChar;
-        }
-        thirstDisplay += ']';
-        thirstBar.textContent = thirstDisplay;
-    }
-    window.renderStatusBars = renderStatusBars; // Make global if called from elsewhere or for testing
-
     function updatePlayerStatusDisplay() {
         // Update Clock
         const clockElement = document.getElementById('clockDisplay');
@@ -753,8 +718,23 @@ async function initialize() { // Made async
             clockElement.textContent = "Clock N/A";
         }
 
-        // Update Hunger and Thirst Bars using the new function
-        renderStatusBars(gameState);
+        // Update Hunger Bar
+        const hungerElement = document.getElementById('hungerDisplay');
+        if (hungerElement && typeof getNeedsStatusBars !== 'undefined') {
+            const needsBars = getNeedsStatusBars(gameState);
+            hungerElement.textContent = needsBars.hungerBar;
+        } else if (hungerElement) {
+            hungerElement.textContent = "Hunger N/A";
+        }
+
+        // Update Thirst Bar
+        const thirstElement = document.getElementById('thirstDisplay');
+        if (thirstElement && typeof getNeedsStatusBars !== 'undefined') {
+            const needsBars = getNeedsStatusBars(gameState); // Called again, but simple
+            thirstElement.textContent = needsBars.thirstBar;
+        } else if (thirstElement) {
+            thirstElement.textContent = "Thirst N/A";
+        }
     }
     window.updatePlayerStatusDisplay = updatePlayerStatusDisplay; // Make it globally accessible if needed elsewhere
 
@@ -898,20 +878,34 @@ function startGame() {
 
     // Logic for item creation (using assetManager to get item definitions)
     // Ensure gameState.inventory.container is initialized before trying to modify it or call functions like addItem.
-    if (gameState.inventory.container) {
-        const backpackUpgradeDef = assetManager.getItem("large_backpack_upgrade");
-        if (backpackUpgradeDef && backpackUpgradeDef.type === "containerUpgrade") {
-            gameState.inventory.container.name = backpackUpgradeDef.name;
-            gameState.inventory.container.sizeLabel = "XL"; // Assuming XL, or get from itemDef
-            gameState.inventory.container.maxSlots = InventorySizes.XL; // Assumes InventorySizes is global
-            logToConsole(`You've upgraded to a ${backpackUpgradeDef.name}! Capacity is now XL (24 slots).`);
-        } else {
-            logToConsole(`Using ${gameState.inventory.container.name}. Capacity: ${gameState.inventory.container.maxSlots} slots.`);
-        }
-    } else {
-        logToConsole("Cannot apply backpack upgrade: Inventory container not initialized.");
-    }
+    // OLD BACKPACK UPGRADE LOGIC REMOVED
 
+    // Add Small Backpack and Cargo Pants as starting items
+    if (gameState.inventory.container && typeof window.addItem === 'function' && assetManager) {
+        const itemsToStartWith = [
+            { id: "small_backpack_container", nameForLog: "Small Backpack" },
+            { id: "cargo_pants_pockets", nameForLog: "Cargo Pants" },
+            { id: "large_backpack_item", nameForLog: "Large Backpack" }
+        ];
+
+        itemsToStartWith.forEach(itemInfo => {
+            const itemDef = assetManager.getItem(itemInfo.id);
+            if (itemDef) {
+                const newItem = new Item(itemDef); // Assumes Item constructor is globally available
+                if (window.addItem(newItem)) {
+                    logToConsole(`Added starting item: ${itemInfo.nameForLog} to inventory.`);
+                } else {
+                    logToConsole(`Failed to add starting item: ${itemInfo.nameForLog} to inventory (addItem returned false).`);
+                }
+            } else {
+                logToConsole(`Warning: Item definition not found for starting item ID: ${itemInfo.id} (${itemInfo.nameForLog}).`);
+            }
+        });
+    } else {
+        if (!gameState.inventory.container) logToConsole("Could not add starting backpack/pants: Inventory container not ready.");
+        if (typeof window.addItem !== 'function') logToConsole("Could not add starting backpack/pants: addItem function not available.");
+        if (!assetManager) logToConsole("Could not add starting backpack/pants: assetManager not available.");
+    }
 
     // Add clothing items from definitions
     // Item constructor is now in js/inventory.js
@@ -931,90 +925,99 @@ function startGame() {
     });
 
     // Add weapons and ammunition
-    // const weaponsAndAmmoToAdd = [
-    //     // Melee Weapon
-    //     { id: "knife_melee" },
+    const weaponsAndAmmoToAdd = [
+        // Melee Weapon
+        { id: "knife_melee" },
 
-    //     // Pistol and Ammo
-    //     { id: "beretta_92f_9mm" },
-    //     { id: "ammo_9mm", quantity: 1 }, // Add 2 boxes of 9mm ammo
+        // Pistol and Ammo
+        { id: "beretta_92f_9mm" },
+        { id: "ammo_9mm", quantity: 1 }, // Add 2 boxes of 9mm ammo
 
-    //     // Shotgun and Ammo
-    //     { id: "mossberg_12ga" },
-    //     { id: "ammo_12gauge_buckshot", quantity: 1 }, // Add 3 boxes of 12-gauge buckshot
+        // Shotgun and Ammo
+        { id: "mossberg_12ga" },
+        { id: "ammo_12gauge_buckshot", quantity: 1 }, // Add 3 boxes of 12-gauge buckshot
 
-    //     // Rifle and Ammo
-    //     { id: "akm_ak47_762mmr" },
-    //     { id: "ammo_762mmr", quantity: 1 }, // Add 2 boxes of 7.62mmR ammo
+        // Rifle and Ammo
+        { id: "akm_ak47_762mmr" },
+        { id: "ammo_762mmr", quantity: 1 }, // Add 2 boxes of 7.62mmR ammo
 
-    //     // Sniper Rifle and Ammo
-    //     { id: "hk_psg1_762mm" },
-    //     { id: "ammo_762mm", quantity: 1 }, // Add 2 boxes of 7.62mm ammo
-
-
-    //     // Thrown Weapon
-    //     { id: "frag_grenade_thrown", quantity: 1 }, // Add 3 frag grenades
+        // Sniper Rifle and Ammo
+        { id: "hk_psg1_762mm" },
+        { id: "ammo_762mm", quantity: 1 }, // Add 2 boxes of 7.62mm ammo
 
 
-    //     // Rocket Launcher (no separate ammo item, it's self-contained)
-    //     { id: "m72a3_law_rocket_launcher", quantity: 1 }, // Add 2 rocket launchers
+        // Thrown Weapon
+        { id: "frag_grenade_thrown", quantity: 1 }, // Add 3 frag grenades
 
-    //     // Grenade Launcher and Ammo
-    //     { id: "m79_grenade_launcher" },
-    //     { id: "ammo_40mm_grenade_frag", quantity: 1 }, // Add 3 40mm grenades
 
-    //     // Bow and Ammo
-    //     { id: "compound_bow" },
-    //     { id: "ammo_arrow", quantity: 1 }, // Add 2 bundles of arrows
+        // Rocket Launcher (no separate ammo item, it's self-contained)
+        { id: "m72a3_law_rocket_launcher", quantity: 1 }, // Add 2 rocket launchers
 
-    //     // Crossbow and Ammo
-    //     { id: "crossbow" },
-    //     { id: "ammo_crossbow_bolt", quantity: 1 }, // Add 2 bundles of crossbow bolts
-    // ];
+        // Grenade Launcher and Ammo
+        { id: "m79_grenade_launcher" },
+        { id: "ammo_40mm_grenade_frag", quantity: 1 }, // Add 3 40mm grenades
 
-    // weaponsAndAmmoToAdd.forEach(itemEntry => {
-    //     const itemDef = assetManager.getItem(itemEntry.id);
-    //     if (itemDef) {
-    //         const quantity = itemEntry.quantity || 1; // Default to 1 if quantity not specified
-    //         for (let i = 0; i < quantity; i++) {
-    //             const newItem = new Item(itemDef);
-    //             // If it's ammunition, we might want to store its specific ammoType or quantity per item
-    //             if (itemDef.type === "ammunition") {
-    //                 newItem.ammoType = itemDef.ammoType;
-    //                 newItem.quantityPerBox = itemDef.quantity; // Assuming 'quantity' in JSON is per-box
-    //             }
-    //             window.addItem(newItem);
-    //         }
-    //     } else {
-    //         console.warn(`Weapon or ammo definition not found for ID: ${itemEntry.id}`);
-    //     }
-    // });
+        // Bow and Ammo
+        { id: "compound_bow" },
+        { id: "ammo_arrow", quantity: 1 }, // Add 2 bundles of arrows
 
-    const startingConsumables = [
-        { id: "canned_food", quantity: 2 },
-        { id: "bottled_water", quantity: 2 }
+        // Crossbow and Ammo
+        { id: "crossbow" },
+        { id: "ammo_crossbow_bolt", quantity: 1 }, // Add 2 bundles of crossbow bolts
     ];
 
-    startingConsumables.forEach(itemEntry => {
+    weaponsAndAmmoToAdd.forEach(itemEntry => {
         const itemDef = assetManager.getItem(itemEntry.id);
         if (itemDef) {
-            const quantity = itemEntry.quantity || 1;
+            const quantity = itemEntry.quantity || 1; // Default to 1 if quantity not specified
             for (let i = 0; i < quantity; i++) {
-                const newItem = new Item(itemDef); // Assumes Item constructor is available
-                window.addItem(newItem); // Assumes addItem is available globally
+                const newItem = new Item(itemDef);
+                // If it's ammunition, we might want to store its specific ammoType or quantity per item
+                if (itemDef.type === "ammunition") {
+                    newItem.ammoType = itemDef.ammoType;
+                    newItem.quantityPerBox = itemDef.quantity; // Assuming 'quantity' in JSON is per-box
+                }
+                window.addItem(newItem);
             }
-            logToConsole(`Added ${quantity}x ${itemDef.name} to starting inventory.`);
         } else {
-            console.warn(`Starting consumable definition not found for ID: ${itemEntry.id}`);
-            logToConsole(`Warning: Starting consumable definition not found for ID: ${itemEntry.id}`);
+            console.warn(`Weapon or ammo definition not found for ID: ${itemEntry.id}`);
         }
     });
+
 
     if (characterCreator) characterCreator.classList.add('hidden');
     if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
     // if (gameControls) gameControls.classList.remove('hidden'); // As noted, this ID isn't in use
 
     renderCharacterInfo(); // This now calls the specific rendering function from js/character.js
+
+    // Set final inventory capacity based on player's chosen Strength stat
+    if (gameState.inventory.container && gameState.stats) {
+        const strengthStat = gameState.stats.find(stat => stat.name === "Strength");
+        let finalPlayerStrengthCapacity = 5; // Fallback capacity
+
+        if (strengthStat && typeof strengthStat.points === 'number') {
+            finalPlayerStrengthCapacity = strengthStat.points;
+            // Ensure capacity is not excessively low, e.g., minimum 1
+            if (finalPlayerStrengthCapacity < 1) {
+                logToConsole(`Warning: Strength stat (${finalPlayerStrengthCapacity}) is less than 1. Setting base capacity to 1.`);
+                finalPlayerStrengthCapacity = 1;
+            }
+        } else {
+            console.warn("Could not find Strength stat for player in startGame, or points is not a number. Defaulting initial capacity to fallback 5.");
+            logToConsole("Warning: Could not determine Strength. Base carrying capacity set to fallback value.");
+        }
+
+        gameState.inventory.container.name = "Body Pockets"; // Ensure correct name
+        gameState.inventory.container.maxSlots = finalPlayerStrengthCapacity;
+
+        logToConsole(`Your base carrying capacity (Body Pockets) is now ${finalPlayerStrengthCapacity} slots, based on your Strength of ${strengthStat ? strengthStat.points : 'N/A'}.`);
+        // updateInventoryUI() will be called later, or as items are added.
+    } else {
+        console.error("Critical error: Cannot set Strength-based capacity in startGame. Inventory container or gameState.stats not available.");
+        logToConsole("Error: Could not set Strength-based carrying capacity.");
+    }
+
     gameState.gameStarted = true;
     window.updateInventoryUI();
     if (window.mapRenderer.getCurrentMapData()) window.mapRenderer.scheduleRender(); // Render if map is loaded
