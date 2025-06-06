@@ -1,4 +1,4 @@
-class CombatManager {
+﻿class CombatManager {
     constructor(gameState, assetManager) {
         this.gameState = gameState;
         this.assetManager = assetManager;
@@ -849,6 +849,38 @@ class CombatManager {
         actionContext.skillName = skillName;
         actionContext.skillBasedModifier = skillBasedModifier;
 
+        // Inside calculateAttackRoll, after existing initializations (like skillName, skillBasedModifier)
+        // but before 'let baseRoll = rollDie(20);' or before totalAttackRoll is summed.
+
+        let lightingPenalty = 0;
+        let targetX, targetY;
+
+        // Determine target coordinates for lighting check
+        if (actionContext.skillToUse === "Explosives" && this.gameState.pendingCombatAction && this.gameState.pendingCombatAction.targetTile) {
+            // For explosives targeted at a tile
+            targetX = this.gameState.pendingCombatAction.targetTile.x;
+            targetY = this.gameState.pendingCombatAction.targetTile.y;
+        } else if (this.gameState.combatCurrentDefender && this.gameState.combatCurrentDefender.mapPos) {
+            // For attacks against an entity
+            targetX = this.gameState.combatCurrentDefender.mapPos.x;
+            targetY = this.gameState.combatCurrentDefender.mapPos.y;
+        }
+
+        if (typeof targetX === 'number' && typeof targetY === 'number') {
+            // Check if getTileLightingLevel is available (it's global via window)
+            if (typeof window.getTileLightingLevel === 'function') {
+                const lightingLevel = window.getTileLightingLevel(targetX, targetY, this.gameState);
+                if (lightingLevel === 'dark') {
+                    lightingPenalty = -2;
+                    if (typeof logToConsole === 'function') {
+                        const attackerName = (attacker === this.gameState || attacker === this.gameState.player) ? "Player" : (attacker.name || attacker.id);
+                        logToConsole(`${attackerName}'s attack target at (${targetX},${targetY}) is in darkness. Applying -2 penalty.`, "orange");
+                    }
+                }
+            } else {
+                // console.warn("getTileLightingLevel function not found. Cannot apply lighting penalties.");
+            }
+        }
 
         let baseRoll = rollDie(20);
 
@@ -868,7 +900,7 @@ class CombatManager {
             // If partToCheck is "Torso", or any other value not "head" or a listed limb, modifier remains 0.
         }
 
-        const totalAttackRoll = baseRoll + skillBasedModifier + actionContext.bodyPartModifier + rangeModifier + attackModifierForFireMode + actionContext.attackerMovementPenalty;
+        const totalAttackRoll = baseRoll + skillBasedModifier + actionContext.bodyPartModifier + rangeModifier + attackModifierForFireMode + actionContext.attackerMovementPenalty + lightingPenalty;
 
         const canCrit = !(actionContext.isSecondAttack || actionContext.isBurst || actionContext.isAutomatic);
 
@@ -1148,7 +1180,7 @@ class CombatManager {
         // logMsg is already declared at the beginning of the function
         logMsg = `ATTACK: ${attackerName} targets ${targetDescriptionForLog} with ${weapon ? weapon.name : 'Unarmed'} (Mode: ${fireMode}). ` +
             `Roll: ${attackResult.roll} (Nat: ${attackResult.naturalRoll}, Skill (${actionContext.skillName}): ${actionContext.skillBasedModifier}, ` +
-            `BodyPart: ${actionContext.bodyPartModifier}, Range: ${actionContext.rangeModifier}, Mode: ${actionContext.attackModifier}, Move: ${actionContext.attackerMovementPenalty})`;
+            `BodyPart: ${actionContext.bodyPartModifier}, Range: ${actionContext.rangeModifier}, Mode: ${actionContext.attackModifier}, Move: ${actionContext.attackerMovementPenalty}, Light: ${lightingPenalty})`;
         logToConsole(logMsg, window.getSkillColor(actionContext.skillName));
         if (actionContext.attackerMovementPenalty !== 0) logToConsole(`Movement: ${attackerName} ${actionContext.attackerMovementPenalty} to attack roll.`, 'grey');
 

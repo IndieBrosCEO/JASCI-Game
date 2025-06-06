@@ -28,6 +28,8 @@ const gameState = {
         item: [],
         roof: []
     },
+    fowData: [], // Added for Fog of War
+    lightSources: [], // Added for lighting system
     // Player positioning and game status
     playerPos: { x: 2, y: 2 }, // Will be updated when a map is loaded
     gameStarted: false,

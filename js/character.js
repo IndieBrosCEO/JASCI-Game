@@ -323,3 +323,42 @@ window.renderHealthTable = renderHealthTable;
 window.formatBodyPartName = formatBodyPartName;
 window.gameOver = gameOver;
 window.applyHungerThirstDamage = applyHungerThirstDamage;
+
+// Add this function at the end of js/character.js, before any exports if present,
+// or just at the end of the file.
+function getTileLightingLevel(tileX, tileY, currentGameState) {
+    if (!currentGameState || !currentGameState.fowData || !currentGameState.fowData[tileY] || typeof currentGameState.fowData[tileY][tileX] === 'undefined') {
+        // console.warn(`getTileLightingLevel: FOW data missing for ${tileX},${tileY}. Assuming dark.`);
+        return 'dark'; // Default to dark if FOW data is unavailable
+    }
+
+    const fowStatus = currentGameState.fowData[tileY][tileX];
+    if (fowStatus === 'hidden') {
+        return 'dark'; // Hidden areas are considered dark for gameplay penalties
+    }
+
+    if (currentGameState.lightSources && currentGameState.lightSources.length > 0) {
+        for (const source of currentGameState.lightSources) {
+            if (typeof source.x !== 'number' || typeof source.y !== 'number' || typeof source.radius !== 'number' || source.radius <= 0) {
+                continue;
+            }
+            const distanceToLight = Math.sqrt(Math.pow(tileX - source.x, 2) + Math.pow(tileY - source.y, 2));
+            if (distanceToLight <= source.radius) {
+                return 'bright'; // Tile is directly lit
+            }
+            // Optional: Add 'dim' light logic here if desired. 
+            // For example, if distanceToLight <= source.radius + DIM_LIGHT_EXTENSION_RADIUS, return 'dim'
+            // For now, only 'bright' and 'dark' (if not hidden) are implemented.
+        }
+    }
+
+    // If not hidden and not directly lit by any source, it's considered 'dark' for penalty purposes.
+    // This could also be 'ambient' or 'dim' in a more complex system.
+    return 'dark';
+}
+
+// Make it globally accessible if character.js doesn't use a module system.
+// If other files need to call it directly:
+if (typeof window !== 'undefined') {
+    window.getTileLightingLevel = getTileLightingLevel;
+}
