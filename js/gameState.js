@@ -1,4 +1,4 @@
-const ClothingLayers = {
+﻿const ClothingLayers = {
     HEAD_BOTTOM: "head_bottom",
     HEAD_TOP: "head_top",
     TORSO_BOTTOM: "torso_bottom",
@@ -135,6 +135,8 @@ if (!gameState.player) {
 
 gameState.player.teamId = 1;
 gameState.player.aggroList = [];
+gameState.player.isGodMode = false;
+gameState.player.noClipEnabled = false;
 gameState.player.wornClothing = {
     [ClothingLayers.HEAD_BOTTOM]: null,
     [ClothingLayers.HEAD_TOP]: null,

@@ -4,6 +4,12 @@
 const assetManager = new AssetManager();
 // let currentMapData = null; // This is now managed in js/mapRenderer.js // This comment is accurate.
 
+// Game Console Elements
+const gameConsoleElement = document.getElementById('gameConsole');
+const consoleOutputElement = document.getElementById('consoleOutput');
+const consoleInputElement = document.getElementById('consoleInput');
+let isConsoleOpen = false;
+
 // gameState, ClothingLayers, and InventorySizes are now in js/gameState.js
 const COMBAT_ALERT_RADIUS = 10;
 
@@ -289,6 +295,98 @@ function handleUpdateSkill(name, value) {
  **************************************************************/
 // Keydown event handler for movement and actions
 function handleKeyDown(event) {
+    // Console Toggle (Backquote key, often with Shift for tilde '~')
+    if (event.code === 'Backquote') {
+        event.preventDefault();
+        isConsoleOpen = !isConsoleOpen;
+        if (isConsoleOpen) {
+            gameConsoleElement.classList.remove('hidden');
+            if (typeof window.logToConsoleUI === 'function') {
+                window.logToConsoleUI("Console opened. Type 'help' for commands.", "info");
+            }
+            consoleInputElement.focus();
+        } else {
+            gameConsoleElement.classList.add('hidden');
+        }
+        return; // Stop further processing in handleKeyDown if it was the toggle key
+    }
+
+    // If console is open, let console.js's own input handler manage Enter/Arrows.
+    // We just need to prevent game actions for other keys if console has focus
+    // and handle Escape to close the console.
+    if (isConsoleOpen) {
+        if (event.key === 'Escape') { // Handles Escape even if input is not focused
+            event.preventDefault();
+            isConsoleOpen = false;
+            gameConsoleElement.classList.add('hidden');
+            consoleInputElement.blur(); // Remove focus from input
+            return;
+        }
+
+        if (event.target === consoleInputElement) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const commandText = consoleInputElement.value.trim();
+
+                // Removed DEBUG logs from previous step
+
+                if (commandText) {
+                    if (typeof window.processConsoleCommand === 'function') {
+                        window.processConsoleCommand(commandText);
+                    } else {
+                        console.error("processConsoleCommand is not defined from script.js.");
+                        if (typeof window.logToConsoleUI === 'function') {
+                            window.logToConsoleUI("Error: processConsoleCommand not defined!", "error");
+                        }
+                    }
+                    consoleInputElement.value = '';
+
+                    if (window.commandHistory && typeof window.historyIndex === 'number') {
+                        window.historyIndex = window.commandHistory.length; // Reset history index
+                    }
+                }
+                return; // Processed 'Enter', stop further handling
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                if (window.commandHistory && window.commandHistory.length > 0) {
+                    if (window.historyIndex > 0) {
+                        window.historyIndex--;
+                    }
+                    consoleInputElement.value = window.commandHistory[window.historyIndex] || '';
+                    consoleInputElement.setSelectionRange(consoleInputElement.value.length, consoleInputElement.value.length);
+                }
+                return; // Processed 'ArrowUp', stop further handling
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                if (window.commandHistory && window.commandHistory.length > 0) {
+                    if (window.historyIndex < window.commandHistory.length - 1) {
+                        window.historyIndex++;
+                        consoleInputElement.value = window.commandHistory[window.historyIndex];
+                    } else if (window.historyIndex >= window.commandHistory.length - 1) {
+                        window.historyIndex = window.commandHistory.length;
+                        consoleInputElement.value = '';
+                    }
+                    consoleInputElement.setSelectionRange(consoleInputElement.value.length, consoleInputElement.value.length);
+                }
+                return; // Processed 'ArrowDown', stop further handling
+            } else if (event.key === 'Tab') {
+                event.preventDefault(); // Prevent tabbing out of the console input
+                // Future: Implement tab completion if desired
+                // For now, just logs or does nothing.
+                // window.logToConsoleUI("Tab completion not yet implemented.", "info");
+            }
+            // For other keys (alphanumeric, space, backspace, etc.),
+            // allow default behavior so user can type in the input field.
+            // No event.preventDefault() for these.
+            // The final 'return' for the 'isConsoleOpen' block handles stopping game actions.
+
+        } else {
+            // If console is open but focus is not on input (e.g. user clicked outside)
+            event.preventDefault();
+        }
+        return; // Crucial: stop further game key processing if console is open
+    }
+
     // Toggle Keybinds Display
     if (event.key === 'h' || event.key === 'H') {
         toggleKeybindsDisplay();
