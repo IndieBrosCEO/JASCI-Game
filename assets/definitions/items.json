@@ -2757,5 +2757,52 @@
     "isClothing": false,
     "weightLbs": 0.5,
     "tags": [ "consumable", "drink", "modern" ]
+  },
+  {
+    "id": "flashlight",
+    "name": "Flashlight",
+    "type": "tool",
+    "description": "A battery-powered directional light source.",
+    "weight": 0.5,
+    "volume": 0.5,
+    "tags": ["light_source_item", "hand_held", "requires_power_cell"],
+    "equipSlots": ["hand"],
+    "light_properties": { "color": "#FFFFFF", "radius": 8, "intensity": 0.9, "cone_angle": 60 }
+  },
+  {
+    "id": "table_lantern_portable",
+    "name": "Portable Table Lantern",
+    "type": "tool",
+    "description": "A fuel-burning lantern that can be carried or placed.",
+    "weight": 1.0,
+    "volume": 1.0,
+    "tags": ["light_source_item", "hand_held"],
+    "equipSlots": ["hand"],
+    "light_properties": { "color": "#FFFFE0", "radius": 4, "intensity": 0.7 }
+  },
+  {
+    "id": "candle_portable",
+    "name": "Portable Candle",
+    "type": "tool",
+    "description": "A simple wax candle. Provides a small amount of light.",
+    "weight": 0.1,
+    "volume": 0.1,
+    "tags": ["light_source_item", "hand_held", "consumable_light"],
+    "equipSlots": ["hand"],
+    "light_properties": { "color": "#FFFFE0", "radius": 3, "intensity": 0.5 }
+  },
+  {
+    "id": "headlamp",
+    "name": "Headlamp",
+    "type": "armor",
+    "description": "A light source worn on the head, leaving hands free.",
+    "weight": 0.3,
+    "volume": 0.4,
+    "equipSlots": ["head"],
+    "armorValue": 0,
+    "material": "plastic",
+    "coverage": ["head"],
+    "tags": ["light_source_item", "requires_power_cell"],
+    "light_properties": { "color": "#FFFFFF", "radius": 7, "intensity": 0.8, "cone_angle": 70 }
   }
 ]

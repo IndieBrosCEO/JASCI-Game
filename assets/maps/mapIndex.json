@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "Small_Map",
     "name": "Small Map"
@@ -10,6 +10,10 @@
   {
     "id": "Swamp_House_Boat",
     "name": "Swamp House Boat"
+  },
+  {
+    "id": "lights",
+    "name": "Lights"
   },
   {
     "id": "beachHouse",

@@ -484,7 +484,7 @@ window.mapRenderer = {
         const fragment = isInitialRender ? document.createDocumentFragment() : null;
 
         const currentAmbientColor = getAmbientLightColor(gameState.currentTime && typeof gameState.currentTime.hours === 'number' ? gameState.currentTime.hours : 12);
-        const AMBIENT_STRENGTH_VISIBLE = 0.6;
+        const AMBIENT_STRENGTH_VISIBLE = 0.3;
         const AMBIENT_STRENGTH_VISITED = 0.4;
         // const DEBUG_AMBIENT_TINT_COLOR = '#FF00FF'; // Removed
 
@@ -565,28 +565,24 @@ window.mapRenderer = {
                     displayId = 'FOW_HIDDEN';
                 } else if (fowStatus === 'visited') {
                     const visitedColorStyle = (c) => {
-                        if (typeof c !== 'string') return '#696969';
-                        let lowerC = c.toLowerCase();
-                        if (lowerC.startsWith('#')) {
-                            try {
-                                let r = parseInt(lowerC.substring(1, 3), 16) || 0;
-                                let g = parseInt(lowerC.substring(3, 5), 16) || 0;
-                                let b = parseInt(lowerC.substring(5, 7), 16) || 0;
-                                r = Math.max(0, Math.floor(r * 0.6));
-                                g = Math.max(0, Math.floor(g * 0.6));
-                                b = Math.max(0, Math.floor(b * 0.6));
-                                return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-                            } catch (e) { return '#505050'; }
+                        if (typeof c !== 'string' || !c.startsWith('#')) {
+                            // If not a string or not a hex color, return a default dark color.
+                            return '#505050';
                         }
-                        const colorMap = {
-                            'white': '#aaaaaa', 'yellow': '#b0a000', 'green': '#006400',
-                            'blue': '#00008b', 'red': '#8b0000', 'cyan': '#008b8b',
-                            'magenta': '#8b008b', 'orange': '#b26621', 'black': '#101010',
-                            'darkred': '#500000', 'darkblue': '#000050', 'purple': '#500050',
-                            'brown': '#654321', 'lightgray': '#888888', 'darkgray': '#444444',
-                            'default': '#696969'
-                        };
-                        return colorMap[lowerC] || colorMap['default'];
+                        try {
+                            let r = parseInt(c.substring(1, 3), 16) || 0;
+                            let g = parseInt(c.substring(3, 5), 16) || 0;
+                            let b = parseInt(c.substring(5, 7), 16) || 0;
+
+                            r = Math.max(0, Math.floor(r * 0.1));
+                            g = Math.max(0, Math.floor(g * 0.1));
+                            b = Math.max(0, Math.floor(b * 0.1));
+
+                            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+                        } catch (e) {
+                            // Fallback for any parsing error
+                            return '#505050';
+                        }
                     };
                     displayColor = visitedColorStyle(originalColor);
                 }
