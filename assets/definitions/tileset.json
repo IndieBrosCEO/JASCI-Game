@@ -1,88 +1,524 @@
 ﻿{
-  "MB": { "sprite": "▒", "name": "Map Boundary", "color": "#FFFFFF", "tags": ["landscape", "impassable"] },
-  "DI": { "sprite": ".", "name": "Dirt", "color": "#A52A2A", "tags": ["landscape", "floor"] },
-  "GR": { "sprite": ",", "name": "Grass", "color": "#008000", "tags": ["landscape", "floor"] },
-  "MU": { "sprite": ",", "name": "Mud", "color": "#A52A2A", "tags": ["landscape", "floor"] },
-  "TGR": { "sprite": "W", "name": "Tall Grass", "color": "#008000", "tags": ["landscape", "floor"] },
-  "MSH": { "sprite": "w", "name": "Marsh", "color": "#2e4b36", "tags": ["landscape", "floor"] },
-  "BOG": { "sprite": "~", "name": "Bog", "color": "#006400", "tags": ["landscape", "floor"] },
-  "SA": { "sprite": ":", "name": "Sand", "color": "#F0E68C", "tags": ["landscape", "floor"] },
-  "GV": { "sprite": ";", "name": "Gravel", "color": "#D3D3D3", "tags": ["landscape", "floor"] },
-  "WS": { "sprite": "~", "name": "Shallow Water", "color": "#0000FF", "tags": ["landscape", "water", "floor"] },
-  "WD": { "sprite": "~", "name": "Deep Water", "color": "#00008B", "tags": ["landscape", "water", "floor", "impassable"] },
-  "AR": { "sprite": "=", "name": "Asphalt Road", "color": "#808080", "tags": ["landscape", "floor"] },
-  "DRO": { "sprite": ":", "name": "Dirt Road", "color": "#A0522D", "tags": ["landscape", "floor"] },
-  "TRK": { "sprite": "|", "name": "Tree Trunk", "color": "#A52A2A", "tags": ["landscape", "vegetation", "impassable"], "coverBonus": 2 },
-  "BSH": { "sprite": "*", "name": "Bush", "color": "#008000", "tags": ["landscape", "vegetation"] },
-  "BLK": { "sprite": "O", "name": "Boulder", "color": "#D3D3D3", "tags": ["landscape", "impassable"], "coverBonus": 10 },
-  "SPK": { "sprite": "^", "name": "Spikes", "color": "#808080", "tags": ["landscape", "item"] },
-  "MH": { "sprite": "o", "name": "Manhole", "color": "#A9A9A9", "tags": ["landscape", "floor"] },
-  "FL": { "sprite": "+", "name": "Tile Flooring", "color": "#d3d3d3", "tags": ["floor", "building"] },
-  "WF": { "sprite": "-", "name": "Wood Flooring", "color": "#A52A2A", "tags": ["floor", "wood", "building"] },
-  "CT": { "sprite": "░", "name": "Carpet Floor", "color": "#808080", "tags": ["floor", "building"] },
-  "WWH": { "sprite": "═", "name": "Wood Wall Hz", "color": "#A52A2A", "tags": ["wall", "wood", "impassable", "building"], "coverBonus": 4 },
-  "WWV": { "sprite": "║", "name": "Wood Wall Vt", "color": "#A52A2A", "tags": ["wall", "wood", "impassable", "building"] },
-  "WWCTL": { "sprite": "╔", "name": "Wood Wall Corner TL", "color": "#A52A2A", "tags": ["wall", "wood", "impassable", "building"] },
-  "WWCTR": { "sprite": "╗", "name": "Wood Wall Corner TR", "color": "#A52A2A", "tags": ["wall", "wood", "impassable", "building"] },
-  "WWCBL": { "sprite": "╚", "name": "Wood Wall Corner BL", "color": "#A52A2A", "tags": ["wall", "wood", "impassable", "building"] },
-  "WWCBR": { "sprite": "╝", "name": "Wood Wall Corner BR", "color": "#A52A2A", "tags": ["wall", "wood", "impassable", "building"] },
-  "WWTE": { "sprite": "╠", "name": "Wood Wall T–East", "color": "#A52A2A", "tags": ["wall", "wood", "impassable", "building"] },
-  "WWTW": { "sprite": "╣", "name": "Wood Wall T–West", "color": "#A52A2A", "tags": ["wall", "wood", "impassable", "building"] },
-  "WWTS": { "sprite": "╦", "name": "Wood Wall T–South", "color": "#A52A2A", "tags": ["wall", "wood", "impassable", "building"] },
-  "WWTN": { "sprite": "╩", "name": "Wood Wall T–North", "color": "#A52A2A", "tags": ["wall", "wood", "impassable", "building"] },
-  "WWC": { "sprite": "╬", "name": "Wood Wall Cross", "color": "#A52A2A", "tags": ["wall", "wood", "impassable", "building"] },
-  "MWH": { "sprite": "═", "name": "Metal Wall Hz", "color": "#808080", "tags": ["wall", "metal", "impassable", "building"], "coverBonus": 7 },
-  "MWV": { "sprite": "║", "name": "Metal Wall Vt", "color": "#808080", "tags": ["wall", "metal", "impassable", "building"] },
-  "MWCTL": { "sprite": "╔", "name": "Metal Wall Corner TL", "color": "#808080", "tags": ["wall", "metal", "impassable", "building"] },
-  "MWCTR": { "sprite": "╗", "name": "Metal Wall Corner TR", "color": "#808080", "tags": ["wall", "metal", "impassable", "building"] },
-  "MWCBL": { "sprite": "╚", "name": "Metal Wall Corner BL", "color": "#808080", "tags": ["wall", "metal", "impassable", "building"] },
-  "MWCBR": { "sprite": "╝", "name": "Metal Wall Corner BR", "color": "#808080", "tags": ["wall", "metal", "impassable", "building"] },
-  "MWTE": { "sprite": "╠", "name": "Metal Wall T–East", "color": "#808080", "tags": ["wall", "metal", "impassable", "building"] },
-  "MWTW": { "sprite": "╣", "name": "Metal Wall T–West", "color": "#808080", "tags": ["wall", "metal", "impassable", "building"] },
-  "MWTS": { "sprite": "╦", "name": "Metal Wall T–South", "color": "#808080", "tags": ["wall", "metal", "impassable", "building"] },
-  "MWTN": { "sprite": "╩", "name": "Metal Wall T–North", "color": "#808080", "tags": ["wall", "metal", "impassable", "building"] },
-  "MWC": { "sprite": "╬", "name": "Metal Wall Cross", "color": "#808080", "tags": ["wall", "metal", "impassable", "building"] },
-  "WDH": { "sprite": "─", "name": "Wood Door Hz", "color": "#A52A2A", "tags": ["door", "wood", "closed", "impassable", "interactive", "breakable", "building"] },
-  "WDV": { "sprite": "│", "name": "Wood Door Vt", "color": "#A52A2A", "tags": ["door", "wood", "closed", "impassable", "interactive", "breakable", "building"] },
-  "WOH": { "sprite": "┄", "name": "Wood Door Hz Open", "color": "#A52A2A", "tags": ["door", "wood", "open", "interactive", "breakable", "building", "allows_vision"] },
-  "WOV": { "sprite": "┆", "name": "Wood Door Vt Open", "color": "#A52A2A", "tags": ["door", "wood", "open", "interactive", "breakable", "building", "allows_vision"] },
-  "WDB": { "sprite": ">", "name": "Wood Door Broken", "color": "#A52A2A", "tags": ["door", "wood", "broken", "interactive", "building", "allows_vision"] },
-  "MDH": { "sprite": "─", "name": "Metal Door Hz", "color": "#808080", "tags": ["door", "metal", "closed", "impassable", "interactive", "breakable", "building"] },
-  "MDV": { "sprite": "│", "name": "Metal Door Vt", "color": "#808080", "tags": ["door", "metal", "closed", "impassable", "interactive", "breakable", "building"] },
-  "MOH": { "sprite": "┄", "name": "Metal Door Hz Open", "color": "#808080", "tags": ["door", "metal", "open", "interactive", "breakable", "building", "allows_vision"] },
-  "MOV": { "sprite": "┆", "name": "Metal Door Vt Open", "color": "#808080", "tags": ["door", "metal", "open", "interactive", "breakable", "building", "allows_vision"] },
-  "MDB": { "sprite": ">", "name": "Metal Door Broken", "color": "#808080", "tags": ["door", "metal", "broken", "interactive", "building", "allows_vision"] },
-  "WinCH": { "sprite": "─", "name": "Window Hz Closed", "color": "#00FFFF", "tags": ["window", "closed", "impassable", "interactive", "breakable", "building", "transparent"] },
-  "WinCV": { "sprite": "│", "name": "Window Vt Closed", "color": "#00FFFF", "tags": ["window", "closed", "impassable", "interactive", "breakable", "building", "transparent"] },
-  "WinOH": { "sprite": "┄", "name": "Window Hz Open", "color": "#00FFFF", "tags": ["window", "open", "interactive", "breakable", "building", "transparent"] },
-  "WinOV": { "sprite": "┆", "name": "Window Vt Open", "color": "#00FFFF", "tags": ["window", "open", "interactive", "breakable", "building", "transparent"] },
-  "WinB": { "sprite": ">", "name": "Window Broken", "color": "#00FFFF", "tags": ["window", "broken", "interactive", "building", "allows_vision"] },
-  "RW": { "sprite": "#", "name": "Roof (Wood)", "color": "#A52A2A", "tags": ["roof", "impassable"] },
-  "RM": { "sprite": "#", "name": "Roof (Metal)", "color": "#808080", "tags": ["roof", "impassable"] },
-  "TRF": { "sprite": "Y", "name": "Tree Leaves", "color": "#008000", "tags": ["roof", "vegetation"] },
-  "CN": { "sprite": "∩", "name": "Counter", "color": "#d3d3d3", "tags": ["building", "impassable"] },
-  "CB": { "sprite": "□", "name": "Cabinet", "color": "#A52A2A", "tags": ["container", "building", "interactive"] },
-  "SN": { "sprite": "⊡", "name": "Sink", "color": "#C0C0C0", "tags": ["building", "interactive"] },
-  "DR": { "sprite": "π", "name": "Drawer", "color": "#A52A2A", "tags": ["container", "interactive", "item"] },
-  "GC": { "sprite": "Æ", "name": "Gun Case", "color": "#808000", "tags": ["container", "interactive", "item"] },
-  "TC": { "sprite": "u", "name": "Trash Can", "color": "#808080", "tags": ["container", "interactive", "item"] },
-  "SF": { "sprite": "#", "name": "Safe", "color": "#808080", "tags": ["container", "interactive", "item"] },
-  "RF": { "sprite": "║", "name": "Refrigerator", "color": "#D3D3D3", "tags": ["container", "item", "interactive", "impassable"] },
-  "ST": { "sprite": "▣", "name": "Stove/Oven", "color": "#808080", "tags": ["container", "item", "interactive", "impassable"] },
-  "MW": { "sprite": "≋", "name": "Microwave", "color": "#808080", "tags": ["container", "item", "interactive"] },
-  "SF2": { "sprite": "≡", "name": "Sofa", "color": "#800000", "tags": ["item", "interactive"] },
-  "CH": { "sprite": "╥", "name": "Armchair", "color": "#800000", "tags": ["item", "interactive"] },
-  "TB": { "sprite": "☐", "name": "Coffee Table", "color": "#A52A2A", "tags": ["item", "impassable"] },
-  "TV": { "sprite": "▢", "name": "Television", "color": "#808080", "tags": ["item", "interactive"] },
-  "STL": { "sprite": "⌠", "name": "Bookshelf", "color": "#DEB887", "tags": ["item", "interactive", "container", "impassable"] },
-  "BD": { "sprite": "╬", "name": "Bed", "color": "#FF0000", "tags": ["building", "interactive"] },
-  "NK": { "sprite": "▦", "name": "Nightstand", "color": "#A52A2A", "tags": ["item", "interactive", "container"] },
-  "DRS": { "sprite": "∥", "name": "Dresser", "color": "#A52A2A", "tags": ["item", "interactive", "container"] },
-  "DSK": { "sprite": "⌂", "name": "Desk", "color": "#808080", "tags": ["item", "interactive", "container"] },
-  "CR": { "sprite": "≔", "name": "Chair", "color": "#A52A2A", "tags": ["item", "interactive"] },
-  "TW": { "sprite": "‖", "name": "Toilet", "color": "#FFFFFF", "tags": ["item", "interactive"] },
-  "SH": { "sprite": "╱", "name": "Shower", "color": "#0000FF", "tags": ["item", "interactive"] },
-  "BTB": { "sprite": "◯", "name": "Bathtub", "color": "#FFFFFF", "tags": ["item", "interactive"] },
+  "MB": {
+    "sprite": "▒",
+    "name": "Map Boundary",
+    "color": "#FFFFFF",
+    "tags": [ "landscape", "impassable" ]
+  },
+  "DI": {
+    "sprite": ".",
+    "name": "Dirt",
+    "color": "#A52A2A",
+    "tags": [ "landscape", "floor" ]
+  },
+  "GR": {
+    "sprite": ",",
+    "name": "Grass",
+    "color": "#008000",
+    "tags": [ "landscape", "floor" ]
+  },
+  "MU": {
+    "sprite": ",",
+    "name": "Mud",
+    "color": "#A52A2A",
+    "tags": [ "landscape", "floor" ]
+  },
+  "TGR": {
+    "sprite": "W",
+    "name": "Tall Grass",
+    "color": "#008000",
+    "tags": [ "landscape", "floor" ]
+  },
+  "MSH": {
+    "sprite": "w",
+    "name": "Marsh",
+    "color": "#2e4b36",
+    "tags": [ "landscape", "floor" ]
+  },
+  "BOG": {
+    "sprite": "~",
+    "name": "Bog",
+    "color": "#006400",
+    "tags": [ "landscape", "floor" ]
+  },
+  "SA": {
+    "sprite": ":",
+    "name": "Sand",
+    "color": "#F0E68C",
+    "tags": [ "landscape", "floor" ]
+  },
+  "GV": {
+    "sprite": ";",
+    "name": "Gravel",
+    "color": "#D3D3D3",
+    "tags": [ "landscape", "floor" ]
+  },
+  "WS": {
+    "sprite": "~",
+    "name": "Shallow Water",
+    "color": "#0000FF",
+    "tags": [ "landscape", "water", "floor" ]
+  },
+  "WD": {
+    "sprite": "~",
+    "name": "Deep Water",
+    "color": "#00008B",
+    "tags": [ "landscape", "water", "floor", "impassable" ]
+  },
+  "AR": {
+    "sprite": "=",
+    "name": "Asphalt Road",
+    "color": "#808080",
+    "tags": [ "landscape", "floor" ]
+  },
+  "DRO": {
+    "sprite": ":",
+    "name": "Dirt Road",
+    "color": "#A0522D",
+    "tags": [ "landscape", "floor" ]
+  },
+  "TRK": {
+    "sprite": "|",
+    "name": "Tree Trunk",
+    "color": "#A52A2A",
+    "tags": [ "landscape", "vegetation", "impassable" ],
+    "coverBonus": 2
+  },
+  "BSH": {
+    "sprite": "*",
+    "name": "Bush",
+    "color": "#008000",
+    "tags": [ "landscape", "vegetation" ]
+  },
+  "BLK": {
+    "sprite": "O",
+    "name": "Boulder",
+    "color": "#D3D3D3",
+    "tags": [ "landscape", "impassable" ],
+    "coverBonus": 10
+  },
+  "SPK": {
+    "sprite": "^",
+    "name": "Spikes",
+    "color": "#808080",
+    "tags": [ "landscape", "item" ]
+  },
+  "MH": {
+    "sprite": "o",
+    "name": "Manhole",
+    "color": "#A9A9A9",
+    "tags": [ "landscape", "floor" ]
+  },
+  "FL": {
+    "sprite": "+",
+    "name": "Tile Flooring",
+    "color": "#d3d3d3",
+    "tags": [ "floor", "building" ]
+  },
+  "WF": {
+    "sprite": "-",
+    "name": "Wood Flooring",
+    "color": "#A52A2A",
+    "tags": [ "floor", "wood", "building" ]
+  },
+  "CT": {
+    "sprite": "░",
+    "name": "Carpet Floor",
+    "color": "#808080",
+    "tags": [ "floor", "building" ]
+  },
+  "WWH": {
+    "sprite": "═",
+    "name": "Wood Wall Hz",
+    "color": "#A52A2A",
+    "tags": [ "wall", "wood", "impassable", "building" ],
+    "coverBonus": 4
+  },
+  "WWV": {
+    "sprite": "║",
+    "name": "Wood Wall Vt",
+    "color": "#A52A2A",
+    "tags": [ "wall", "wood", "impassable", "building" ]
+  },
+  "WWCTL": {
+    "sprite": "╔",
+    "name": "Wood Wall Corner TL",
+    "color": "#A52A2A",
+    "tags": [ "wall", "wood", "impassable", "building" ]
+  },
+  "WWCTR": {
+    "sprite": "╗",
+    "name": "Wood Wall Corner TR",
+    "color": "#A52A2A",
+    "tags": [ "wall", "wood", "impassable", "building" ]
+  },
+  "WWCBL": {
+    "sprite": "╚",
+    "name": "Wood Wall Corner BL",
+    "color": "#A52A2A",
+    "tags": [ "wall", "wood", "impassable", "building" ]
+  },
+  "WWCBR": {
+    "sprite": "╝",
+    "name": "Wood Wall Corner BR",
+    "color": "#A52A2A",
+    "tags": [ "wall", "wood", "impassable", "building" ]
+  },
+  "WWTE": {
+    "sprite": "╠",
+    "name": "Wood Wall T–East",
+    "color": "#A52A2A",
+    "tags": [ "wall", "wood", "impassable", "building" ]
+  },
+  "WWTW": {
+    "sprite": "╣",
+    "name": "Wood Wall T–West",
+    "color": "#A52A2A",
+    "tags": [ "wall", "wood", "impassable", "building" ]
+  },
+  "WWTS": {
+    "sprite": "╦",
+    "name": "Wood Wall T–South",
+    "color": "#A52A2A",
+    "tags": [ "wall", "wood", "impassable", "building" ]
+  },
+  "WWTN": {
+    "sprite": "╩",
+    "name": "Wood Wall T–North",
+    "color": "#A52A2A",
+    "tags": [ "wall", "wood", "impassable", "building" ]
+  },
+  "WWC": {
+    "sprite": "╬",
+    "name": "Wood Wall Cross",
+    "color": "#A52A2A",
+    "tags": [ "wall", "wood", "impassable", "building" ]
+  },
+  "MWH": {
+    "sprite": "═",
+    "name": "Metal Wall Hz",
+    "color": "#808080",
+    "tags": [ "wall", "metal", "impassable", "building" ],
+    "coverBonus": 7
+  },
+  "MWV": {
+    "sprite": "║",
+    "name": "Metal Wall Vt",
+    "color": "#808080",
+    "tags": [ "wall", "metal", "impassable", "building" ]
+  },
+  "MWCTL": {
+    "sprite": "╔",
+    "name": "Metal Wall Corner TL",
+    "color": "#808080",
+    "tags": [ "wall", "metal", "impassable", "building" ]
+  },
+  "MWCTR": {
+    "sprite": "╗",
+    "name": "Metal Wall Corner TR",
+    "color": "#808080",
+    "tags": [ "wall", "metal", "impassable", "building" ]
+  },
+  "MWCBL": {
+    "sprite": "╚",
+    "name": "Metal Wall Corner BL",
+    "color": "#808080",
+    "tags": [ "wall", "metal", "impassable", "building" ]
+  },
+  "MWCBR": {
+    "sprite": "╝",
+    "name": "Metal Wall Corner BR",
+    "color": "#808080",
+    "tags": [ "wall", "metal", "impassable", "building" ]
+  },
+  "MWTE": {
+    "sprite": "╠",
+    "name": "Metal Wall T–East",
+    "color": "#808080",
+    "tags": [ "wall", "metal", "impassable", "building" ]
+  },
+  "MWTW": {
+    "sprite": "╣",
+    "name": "Metal Wall T–West",
+    "color": "#808080",
+    "tags": [ "wall", "metal", "impassable", "building" ]
+  },
+  "MWTS": {
+    "sprite": "╦",
+    "name": "Metal Wall T–South",
+    "color": "#808080",
+    "tags": [ "wall", "metal", "impassable", "building" ]
+  },
+  "MWTN": {
+    "sprite": "╩",
+    "name": "Metal Wall T–North",
+    "color": "#808080",
+    "tags": [ "wall", "metal", "impassable", "building" ]
+  },
+  "MWC": {
+    "sprite": "╬",
+    "name": "Metal Wall Cross",
+    "color": "#808080",
+    "tags": [ "wall", "metal", "impassable", "building" ]
+  },
+  "WDH": {
+    "sprite": "─",
+    "name": "Wood Door Hz",
+    "color": "#A52A2A",
+    "tags": [ "door", "wood", "closed", "impassable", "interactive", "breakable", "building" ]
+  },
+  "WDV": {
+    "sprite": "│",
+    "name": "Wood Door Vt",
+    "color": "#A52A2A",
+    "tags": [ "door", "wood", "closed", "impassable", "interactive", "breakable", "building" ]
+  },
+  "WOH": {
+    "sprite": "┄",
+    "name": "Wood Door Hz Open",
+    "color": "#A52A2A",
+    "tags": [ "door", "wood", "open", "interactive", "breakable", "building", "allows_vision" ]
+  },
+  "WOV": {
+    "sprite": "┆",
+    "name": "Wood Door Vt Open",
+    "color": "#A52A2A",
+    "tags": [ "door", "wood", "open", "interactive", "breakable", "building", "allows_vision" ]
+  },
+  "WDB": {
+    "sprite": ">",
+    "name": "Wood Door Broken",
+    "color": "#A52A2A",
+    "tags": [ "door", "wood", "broken", "interactive", "building", "allows_vision" ]
+  },
+  "MDH": {
+    "sprite": "─",
+    "name": "Metal Door Hz",
+    "color": "#808080",
+    "tags": [ "door", "metal", "closed", "impassable", "interactive", "breakable", "building" ]
+  },
+  "MDV": {
+    "sprite": "│",
+    "name": "Metal Door Vt",
+    "color": "#808080",
+    "tags": [ "door", "metal", "closed", "impassable", "interactive", "breakable", "building" ]
+  },
+  "MOH": {
+    "sprite": "┄",
+    "name": "Metal Door Hz Open",
+    "color": "#808080",
+    "tags": [ "door", "metal", "open", "interactive", "breakable", "building", "allows_vision" ]
+  },
+  "MOV": {
+    "sprite": "┆",
+    "name": "Metal Door Vt Open",
+    "color": "#808080",
+    "tags": [ "door", "metal", "open", "interactive", "breakable", "building", "allows_vision" ]
+  },
+  "MDB": {
+    "sprite": ">",
+    "name": "Metal Door Broken",
+    "color": "#808080",
+    "tags": [ "door", "metal", "broken", "interactive", "building", "allows_vision" ]
+  },
+  "WinCH": {
+    "sprite": "─",
+    "name": "Window Hz Closed",
+    "color": "#00FFFF",
+    "tags": [ "window", "closed", "impassable", "interactive", "breakable", "building", "transparent" ]
+  },
+  "WinCV": {
+    "sprite": "│",
+    "name": "Window Vt Closed",
+    "color": "#00FFFF",
+    "tags": [ "window", "closed", "impassable", "interactive", "breakable", "building", "transparent" ]
+  },
+  "WinOH": {
+    "sprite": "┄",
+    "name": "Window Hz Open",
+    "color": "#00FFFF",
+    "tags": [ "window", "open", "interactive", "breakable", "building", "transparent" ]
+  },
+  "WinOV": {
+    "sprite": "┆",
+    "name": "Window Vt Open",
+    "color": "#00FFFF",
+    "tags": [ "window", "open", "interactive", "breakable", "building", "transparent" ]
+  },
+  "WinB": {
+    "sprite": ">",
+    "name": "Window Broken",
+    "color": "#00FFFF",
+    "tags": [ "window", "broken", "interactive", "building", "allows_vision" ]
+  },
+  "RW": {
+    "sprite": "#",
+    "name": "Roof (Wood)",
+    "color": "#A52A2A",
+    "tags": [ "roof", "impassable" ]
+  },
+  "RM": {
+    "sprite": "#",
+    "name": "Roof (Metal)",
+    "color": "#808080",
+    "tags": [ "roof", "impassable" ]
+  },
+  "TRF": {
+    "sprite": "Y",
+    "name": "Tree Leaves",
+    "color": "#008000",
+    "tags": [ "roof", "vegetation" ]
+  },
+  "CN": {
+    "sprite": "∩",
+    "name": "Counter",
+    "color": "#d3d3d3",
+    "tags": [ "building", "impassable" ]
+  },
+  "CB": {
+    "sprite": "□",
+    "name": "Cabinet",
+    "color": "#A52A2A",
+    "tags": [ "interactive", "container", "blocks_vision", "impassable", "building", "furniture" ],
+    "itemLink": "cb_container_item"
+  },
+  "SN": {
+    "sprite": "⊡",
+    "name": "Sink",
+    "color": "#C0C0C0",
+    "tags": [ "building", "interactive" ]
+  },
+  "DR": {
+    "sprite": "π",
+    "name": "Drawer",
+    "color": "#A52A2A",
+    "tags": [ "interactive", "container", "item", "furniture" ],
+    "itemLink": "dr_container_item"
+  },
+  "GC": {
+    "sprite": "Æ",
+    "name": "Gun Case",
+    "color": "#808000",
+    "tags": [ "interactive", "container", "item", "furniture", "blocks_vision", "impassable" ],
+    "itemLink": "gc_container_item"
+  },
+  "TC": {
+    "sprite": "u",
+    "name": "Trash Can",
+    "color": "#808080",
+    "tags": [ "interactive", "container", "item" ],
+    "itemLink": "tc_container_item"
+  },
+  "SF": {
+    "sprite": "#",
+    "name": "Safe",
+    "color": "#808080",
+    "tags": [ "interactive", "container", "item", "furniture", "blocks_vision", "impassable", "metal" ],
+    "itemLink": "sf_container_item"
+  },
+  "RF": {
+    "sprite": "║",
+    "name": "Refrigerator",
+    "color": "#D3D3D3",
+    "tags": [ "interactive", "container", "item", "furniture", "blocks_vision", "impassable", "electronics" ],
+    "itemLink": "rf_container_item"
+  },
+  "ST": {
+    "sprite": "▣",
+    "name": "Stove/Oven",
+    "color": "#808080",
+    "tags": [ "interactive", "container", "item", "furniture", "blocks_vision", "impassable", "electronics" ],
+    "itemLink": "st_container_item"
+  },
+  "MW": {
+    "sprite": "≋",
+    "name": "Microwave",
+    "color": "#808080",
+    "tags": [ "interactive", "container", "item", "furniture", "electronics" ],
+    "itemLink": "mw_container_item"
+  },
+  "SF2": {
+    "sprite": "≡",
+    "name": "Sofa",
+    "color": "#800000",
+    "tags": [ "item", "interactive" ]
+  },
+  "CH": {
+    "sprite": "╥",
+    "name": "Armchair",
+    "color": "#800000",
+    "tags": [ "item", "interactive" ]
+  },
+  "TB": {
+    "sprite": "☐",
+    "name": "Coffee Table",
+    "color": "#A52A2A",
+    "tags": [ "item", "impassable" ]
+  },
+  "TV": {
+    "sprite": "▢",
+    "name": "Television",
+    "color": "#808080",
+    "tags": [ "item", "interactive" ]
+  },
+  "STL": {
+    "sprite": "⌠",
+    "name": "Bookshelf",
+    "color": "#DEB887",
+    "tags": [ "interactive", "container", "item", "furniture", "blocks_vision", "impassable" ],
+    "itemLink": "stl_container_item"
+  },
+  "BD": {
+    "sprite": "╬",
+    "name": "Bed",
+    "color": "#FF0000",
+    "tags": [ "building", "interactive" ]
+  },
+  "NK": {
+    "sprite": "▦",
+    "name": "Nightstand",
+    "color": "#A52A2A",
+    "tags": [ "interactive", "container", "item", "furniture" ],
+    "itemLink": "nk_container_item"
+  },
+  "DRS": {
+    "sprite": "∥",
+    "name": "Dresser",
+    "color": "#A52A2A",
+    "tags": [ "interactive", "container", "item", "furniture", "blocks_vision", "impassable" ],
+    "itemLink": "drs_container_item"
+  },
+  "DSK": {
+    "sprite": "⌂",
+    "name": "Desk",
+    "color": "#808080",
+    "tags": [ "interactive", "container", "item", "furniture", "blocks_vision", "impassable" ],
+    "itemLink": "dsk_container_item"
+  },
+  "CR": {
+    "sprite": "≔",
+    "name": "Chair",
+    "color": "#A52A2A",
+    "tags": [ "item", "interactive" ]
+  },
+  "TW": {
+    "sprite": "‖",
+    "name": "Toilet",
+    "color": "#FFFFFF",
+    "tags": [ "item", "interactive" ]
+  },
+  "SH": {
+    "sprite": "╱",
+    "name": "Shower",
+    "color": "#0000FF",
+    "tags": [ "item", "interactive" ]
+  },
+  "BTB": {
+    "sprite": "◯",
+    "name": "Bathtub",
+    "color": "#FFFFFF",
+    "tags": [ "item", "interactive" ]
+  },
   "FLR": {
     "sprite": "⌧",
     "name": "Floor Lamp",
@@ -92,33 +528,172 @@
     "lightRadius": 5,
     "lightIntensity": 1,
     "lightColor": "#FFFFE0"
- },
-  "PL": { "sprite": "#", "name": "Potted Plant", "color": "#008000", "tags": ["item"] },
-  "CP": { "sprite": "⌨", "name": "Computer", "color": "#A9A9A9", "tags": ["item", "interactive"] },
-  "PR": { "sprite": "⋈", "name": "Printer", "color": "#808080", "tags": ["item", "interactive"] },
-  "WM": { "sprite": "≋", "name": "Washer", "color": "#FFFFFF", "tags": ["item", "interactive", "impassable"] },
-  "DRY": { "sprite": "≡", "name": "Dryer", "color": "#FFFFFF", "tags": ["item", "interactive", "impassable"] },
-  "FT": { "sprite": "♣", "name": "Fireplace", "color": "#FF0000", "tags": ["building", "interactive"] },
-  "TSL": { "sprite": "≈", "name": "Tilled Soil", "color": "#8B4513", "tags": ["landscape", "floor", "farmland", "plantable"] },
-  "WBD": { "sprite": "X", "name": "Wooden Barricade", "color": "#DEB887", "tags": ["structure", "impassable", "wood", "cover", "breakable"] },
+  },
+  "PL": {
+    "sprite": "#",
+    "name": "Potted Plant",
+    "color": "#008000",
+    "tags": [ "item" ]
+  },
+  "CP": {
+    "sprite": "⌨",
+    "name": "Computer",
+    "color": "#A9A9A9",
+    "tags": [ "item", "interactive" ]
+  },
+  "PR": {
+    "sprite": "⋈",
+    "name": "Printer",
+    "color": "#808080",
+    "tags": [ "item", "interactive" ]
+  },
+  "WM": {
+    "sprite": "≋",
+    "name": "Washer",
+    "color": "#FFFFFF",
+    "tags": [ "item", "interactive", "impassable" ]
+  },
+  "DRY": {
+    "sprite": "≡",
+    "name": "Dryer",
+    "color": "#FFFFFF",
+    "tags": [ "item", "interactive", "impassable" ]
+  },
+  "FT": {
+    "sprite": "♣",
+    "name": "Fireplace",
+    "color": "#FF0000",
+    "tags": [ "building", "interactive" ]
+  },
+  "TSL": {
+    "sprite": "≈",
+    "name": "Tilled Soil",
+    "color": "#8B4513",
+    "tags": [ "landscape", "floor", "farmland", "plantable" ]
+  },
+  "WBD": {
+    "sprite": "X",
+    "name": "Wooden Barricade",
+    "color": "#DEB887",
+    "tags": [ "structure", "impassable", "wood", "cover", "breakable" ]
+  },
   "TOR": {
     "sprite": "~",
     "color": "#FFA500",
-    "tags": [ "item", "interactive"],
+    "tags": [ "item", "interactive" ],
     "emitsLight": true,
     "lightRadius": 5,
     "lightIntensity": 1,
     "lightColor": "#FFDD33"
   },
-  "FLT": { "sprite": "Î", "name": "Floor Torch", "color": "#A0522D", "tags": ["item", "interactive"], "emitsLight": true, "lightColor": "#FFA500", "lightRadius": 6, "lightIntensity": 0.9 },
-  "SLN": { "sprite": "Ħ", "name": "Standing Lantern", "color": "#808080", "tags": ["item"], "emitsLight": true, "lightColor": "#FFFFE0", "lightRadius": 7, "lightIntensity": 0.8 },
-  "TLN_P": { "sprite": "ñ", "name": "Table Lantern (Placed)", "color": "#A52A2A", "tags": ["item"], "emitsLight": true, "lightColor": "#FFFFE0", "lightRadius": 4, "lightIntensity": 0.7 },
-  "CDL_P": { "sprite": "¦", "name": "Candle (Placed)", "color": "#FFFFFF", "tags": ["item"], "emitsLight": true, "lightColor": "#FFFFE0", "lightRadius": 3, "lightIntensity": 0.5 },
-  "STLMP": { "sprite": "¶", "name": "Streetlamp", "color": "#A9A9A9", "tags": ["structure", "impassable"], "emitsLight": true, "lightColor": "#FFFF00", "lightRadius": 12, "lightIntensity": 0.9 },
-  "FLDL": { "sprite": "Θ", "name": "Floodlight", "color": "#D3D3D3", "tags": ["structure"], "emitsLight": true, "lightColor": "#FFFFFF", "lightRadius": 15, "lightIntensity": 1.0 },
-  "NEON_R": { "sprite": "§", "name": "Neon Sign (Red)", "color": "#FF0000", "tags": ["item", "decorative"], "emitsLight": true, "lightColor": "#FF0000", "lightRadius": 3, "lightIntensity": 0.6 },
-  "NEON_B": { "sprite": "§", "name": "Neon Sign (Blue)", "color": "#0000FF", "tags": ["item", "decorative"], "emitsLight": true, "lightColor": "#0000FF", "lightRadius": 3, "lightIntensity": 0.6 },
-  "NEON_G": { "sprite": "§", "name": "Neon Sign (Green)", "color": "#008000", "tags": ["item", "decorative"], "emitsLight": true, "lightColor": "#008000", "lightRadius": 3, "lightIntensity": 0.6 },
-  "SOLG": { "sprite": "þ", "name": "Solar Garden Lamp", "color": "#808080", "tags": ["item", "emits_at_night"], "emitsLight": true, "lightColor": "#F0FFF0", "lightRadius": 3, "lightIntensity": 0.5 },
-  "EMBCN": { "sprite": "!", "name": "Emergency Beacon", "color": "#B22222", "tags": ["item", "flashing_effect"], "emitsLight": true, "lightColor": "#FF0000", "lightRadius": 5, "lightIntensity": 0.8 }
+  "FLT": {
+    "sprite": "Î",
+    "name": "Floor Torch",
+    "color": "#A0522D",
+    "tags": [ "item", "interactive" ],
+    "emitsLight": true,
+    "lightColor": "#FFA500",
+    "lightRadius": 6,
+    "lightIntensity": 0.9
+  },
+  "SLN": {
+    "sprite": "Ħ",
+    "name": "Standing Lantern",
+    "color": "#808080",
+    "tags": [ "item" ],
+    "emitsLight": true,
+    "lightColor": "#FFFFE0",
+    "lightRadius": 7,
+    "lightIntensity": 0.8
+  },
+  "TLN_P": {
+    "sprite": "ñ",
+    "name": "Table Lantern (Placed)",
+    "color": "#A52A2A",
+    "tags": [ "item" ],
+    "emitsLight": true,
+    "lightColor": "#FFFFE0",
+    "lightRadius": 4,
+    "lightIntensity": 0.7
+  },
+  "CDL_P": {
+    "sprite": "¦",
+    "name": "Candle (Placed)",
+    "color": "#FFFFFF",
+    "tags": [ "item" ],
+    "emitsLight": true,
+    "lightColor": "#FFFFE0",
+    "lightRadius": 3,
+    "lightIntensity": 0.5
+  },
+  "STLMP": {
+    "sprite": "¶",
+    "name": "Streetlamp",
+    "color": "#A9A9A9",
+    "tags": [ "structure", "impassable" ],
+    "emitsLight": true,
+    "lightColor": "#FFFF00",
+    "lightRadius": 12,
+    "lightIntensity": 0.9
+  },
+  "FLDL": {
+    "sprite": "Θ",
+    "name": "Floodlight",
+    "color": "#D3D3D3",
+    "tags": [ "structure" ],
+    "emitsLight": true,
+    "lightColor": "#FFFFFF",
+    "lightRadius": 15,
+    "lightIntensity": 1.0
+  },
+  "NEON_R": {
+    "sprite": "§",
+    "name": "Neon Sign (Red)",
+    "color": "#FF0000",
+    "tags": [ "item", "decorative" ],
+    "emitsLight": true,
+    "lightColor": "#FF0000",
+    "lightRadius": 3,
+    "lightIntensity": 0.6
+  },
+  "NEON_B": {
+    "sprite": "§",
+    "name": "Neon Sign (Blue)",
+    "color": "#0000FF",
+    "tags": [ "item", "decorative" ],
+    "emitsLight": true,
+    "lightColor": "#0000FF",
+    "lightRadius": 3,
+    "lightIntensity": 0.6
+  },
+  "NEON_G": {
+    "sprite": "§",
+    "name": "Neon Sign (Green)",
+    "color": "#008000",
+    "tags": [ "item", "decorative" ],
+    "emitsLight": true,
+    "lightColor": "#008000",
+    "lightRadius": 3,
+    "lightIntensity": 0.6
+  },
+  "SOLG": {
+    "sprite": "þ",
+    "name": "Solar Garden Lamp",
+    "color": "#808080",
+    "tags": [ "item", "emits_at_night" ],
+    "emitsLight": true,
+    "lightColor": "#F0FFF0",
+    "lightRadius": 3,
+    "lightIntensity": 0.5
+  },
+  "EMBCN": {
+    "sprite": "!",
+    "name": "Emergency Beacon",
+    "color": "#B22222",
+    "tags": [ "item", "flashing_effect" ],
+    "emitsLight": true,
+    "lightColor": "#FF0000",
+    "lightRadius": 5,
+    "lightIntensity": 0.8
+  }
 }

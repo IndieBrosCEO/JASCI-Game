@@ -35,13 +35,13 @@ function _getActionsForItem(it) {
         if (tags.includes("breakable")) actions.push("Break Down");
     }
     if (tags.includes("container")) {
-        actions.push("Inspect", "Loot");
+        actions.push("Open", "Loot"); // Changed "Inspect" to "Open"
     }
     return actions;
 }
 
 function _performAction(action, it) {
-    const { x, y, id } = it;
+    const { x, y, id } = it; // id here is the tileId from the map
 
     const currentMap = window.mapRenderer.getCurrentMapData(); // Assumes mapRenderer is globally available
     if (!currentMap || !currentMap.layers.building) {
@@ -61,18 +61,51 @@ function _performAction(action, it) {
         console.error("Interaction module not initialized with AssetManager for _performAction.");
         return;
     }
-    const tileName = assetManagerInstance.tilesets[id]?.name || id;
+    const tileDef = assetManagerInstance.tilesets[id]; // Get tile definition using the id from 'it'
+    const tileName = tileDef?.name || id;
 
-    if (action === "Open" && DOOR_OPEN_MAP[targetTileId]) {
+    if (action === "Open" && DOOR_OPEN_MAP[targetTileId]) { // This handles doors/windows
         B[y][x] = DOOR_OPEN_MAP[targetTileId];
         logToConsole(`Opened ${tileName}`);
-    } else if (action === "Close" && DOOR_CLOSE_MAP[targetTileId]) {
+    } else if (action === "Close" && DOOR_CLOSE_MAP[targetTileId]) { // This handles doors/windows
         B[y][x] = DOOR_CLOSE_MAP[targetTileId];
         logToConsole(`Closed ${tileName}`);
-    } else if (action === "Break Down" && DOOR_BREAK_MAP[targetTileId]) {
+    } else if (action === "Break Down" && DOOR_BREAK_MAP[targetTileId]) { // This handles doors/windows
         B[y][x] = DOOR_BREAK_MAP[targetTileId];
         logToConsole(`Broke ${tileName}`);
-    } else if (action === "Inspect" || action === "Loot") {
+    } else if (tileDef && tileDef.tags && tileDef.tags.includes('container')) {
+        const containerInstance = gameState.containers.find(cont => cont.x === x && cont.y === y && cont.tileId === id);
+        console.log("INTERACTION: Found container for interaction:", containerInstance); // Added log
+
+        if (containerInstance) {
+            console.log(`INTERACTION: Setting interactingWithContainer to ID: ${containerInstance.id}`); // Added log
+            if (typeof containerInstance.id === 'number') {
+                window.gameState.inventory.interactingWithContainer = containerInstance.id;
+
+                if (action === "Open") {
+                    if (typeof toggleInventoryMenu === 'function') {
+                        toggleInventoryMenu();
+                    } else {
+                        logToConsole("Error: toggleInventoryMenu function not found.", "red");
+                    }
+                    logToConsole(`Opened ${containerInstance.name}`);
+                } else if (action === "Loot") {
+                    // For now, Loot does the same as Open.
+                    if (typeof toggleInventoryMenu === 'function') {
+                        toggleInventoryMenu();
+                    } else {
+                        logToConsole("Error: toggleInventoryMenu function not found.", "red");
+                    }
+                    logToConsole(`Looting ${containerInstance.name}`);
+                }
+            } else {
+                console.error("INTERACTION_ERROR: containerInstance is invalid or containerInstance.id is not a number. Cannot set interactingWithContainer.", containerInstance);
+                window.gameState.inventory.interactingWithContainer = null;
+            }
+        } else {
+            logToConsole(`Error: Could not find container instance at (${x},${y}) with tileId ${id}.`, "red");
+        }
+    } else if (action === "Inspect" || action === "Loot") { // Fallback for old "Inspect", or other non-container Loot
         logToConsole(`${action}ing ${tileName}`);
     }
 

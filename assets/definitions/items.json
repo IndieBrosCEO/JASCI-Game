@@ -2765,9 +2765,14 @@
     "description": "A battery-powered directional light source.",
     "weight": 0.5,
     "volume": 0.5,
-    "tags": ["light_source_item", "hand_held", "requires_power_cell"],
-    "equipSlots": ["hand"],
-    "light_properties": { "color": "#FFFFFF", "radius": 8, "intensity": 0.9, "cone_angle": 60 }
+    "tags": [ "light_source_item", "hand_held", "requires_power_cell" ],
+    "equipSlots": [ "hand" ],
+    "light_properties": {
+      "color": "#FFFFFF",
+      "radius": 8,
+      "intensity": 0.9,
+      "cone_angle": 60
+    }
   },
   {
     "id": "table_lantern_portable",
@@ -2776,9 +2781,13 @@
     "description": "A fuel-burning lantern that can be carried or placed.",
     "weight": 1.0,
     "volume": 1.0,
-    "tags": ["light_source_item", "hand_held"],
-    "equipSlots": ["hand"],
-    "light_properties": { "color": "#FFFFE0", "radius": 4, "intensity": 0.7 }
+    "tags": [ "light_source_item", "hand_held" ],
+    "equipSlots": [ "hand" ],
+    "light_properties": {
+      "color": "#FFFFE0",
+      "radius": 4,
+      "intensity": 0.7
+    }
   },
   {
     "id": "candle_portable",
@@ -2787,9 +2796,13 @@
     "description": "A simple wax candle. Provides a small amount of light.",
     "weight": 0.1,
     "volume": 0.1,
-    "tags": ["light_source_item", "hand_held", "consumable_light"],
-    "equipSlots": ["hand"],
-    "light_properties": { "color": "#FFFFE0", "radius": 3, "intensity": 0.5 }
+    "tags": [ "light_source_item", "hand_held", "consumable_light" ],
+    "equipSlots": [ "hand" ],
+    "light_properties": {
+      "color": "#FFFFE0",
+      "radius": 3,
+      "intensity": 0.5
+    }
   },
   {
     "id": "headlamp",
@@ -2798,11 +2811,148 @@
     "description": "A light source worn on the head, leaving hands free.",
     "weight": 0.3,
     "volume": 0.4,
-    "equipSlots": ["head"],
+    "equipSlots": [ "head" ],
     "armorValue": 0,
     "material": "plastic",
-    "coverage": ["head"],
-    "tags": ["light_source_item", "requires_power_cell"],
-    "light_properties": { "color": "#FFFFFF", "radius": 7, "intensity": 0.8, "cone_angle": 70 }
+    "coverage": [ "head" ],
+    "tags": [ "light_source_item", "requires_power_cell" ],
+    "light_properties": {
+      "color": "#FFFFFF",
+      "radius": 7,
+      "intensity": 0.8,
+      "cone_angle": 70
+    }
+  },
+  {
+    "id": "cb_container_item",
+    "name": "Cabinet",
+    "description": "A storage cabinet.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 15,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
+  },
+  {
+    "id": "dr_container_item",
+    "name": "Drawer",
+    "description": "A sliding drawer for storage.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 5,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
+  },
+  {
+    "id": "gc_container_item",
+    "name": "Gun Case",
+    "description": "A case for storing firearms.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 10,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
+  },
+  {
+    "id": "tc_container_item",
+    "name": "Trash Can",
+    "description": "A receptacle for waste.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 8,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage" ]
+  },
+  {
+    "id": "sf_container_item",
+    "name": "Safe",
+    "description": "A secure container for valuables.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 20,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture", "metal" ]
+  },
+  {
+    "id": "rf_container_item",
+    "name": "Refrigerator",
+    "description": "A household refrigerator for storing perishables.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 25,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture", "electronics" ]
+  },
+  {
+    "id": "st_container_item",
+    "name": "Stove/Oven",
+    "description": "A kitchen appliance for cooking, may have small storage.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 5,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture", "electronics" ]
+  },
+  {
+    "id": "mw_container_item",
+    "name": "Microwave",
+    "description": "A microwave oven, sometimes used to store small items.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 3,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture", "electronics" ]
+  },
+  {
+    "id": "stl_container_item",
+    "name": "Bookshelf",
+    "description": "A shelf for storing books and other items.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 20,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
+  },
+  {
+    "id": "nk_container_item",
+    "name": "Nightstand",
+    "description": "A small table or cabinet designed to stand beside a bed.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 8,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
+  },
+  {
+    "id": "drs_container_item",
+    "name": "Dresser",
+    "description": "A piece of furniture with drawers for storing clothes.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 15,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
+  },
+  {
+    "id": "dsk_container_item",
+    "name": "Desk",
+    "description": "A piece of furniture with a flat table-style work surface and drawers.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 10,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
   }
 ]

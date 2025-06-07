@@ -403,6 +403,40 @@ function renderInventoryMenu() {
         window.gameState.inventory.currentlyDisplayedItems.push(fi);
     });
 
+    // --- Display items from interacting world container ---
+    let worldContainerHeaderRendered = false;
+    if (window.gameState.inventory.interactingWithContainer !== null) {
+        const containerId = window.gameState.inventory.interactingWithContainer;
+        console.log(`INVENTORY_MENU: Looking for container with ID: ${containerId}`); // Added log
+        const worldContainer = window.gameState.containers.find(c => c.id === containerId);
+        console.log(`INVENTORY_MENU: Found target container: ${worldContainer ? worldContainer.name : 'Not Found'}. ID searched: ${containerId}`); // Added log
+
+        if (worldContainer) {
+            worldContainer.items.forEach((item, index) => { // Add index here
+                if (!worldContainerHeaderRendered) {
+                    const containerHeader = document.createElement("div");
+                    containerHeader.textContent = `--- ${worldContainer.name} (Capacity: ${worldContainer.items.reduce((s, i) => s + (i.size || 0), 0)}/${worldContainer.capacity}) ---`;
+                    containerHeader.classList.add("inventory-subheader");
+                    list.appendChild(containerHeader);
+                    worldContainerHeaderRendered = true;
+                }
+                const displayItem = {
+                    ...item, // item is already an Item instance
+                    source: 'world_container',
+                    containerId: worldContainer.id,
+                    originalIndexInContainer: index, // Store index for easy removal
+                    displayName: `[${worldContainer.name}] ${item.name}`
+                };
+                window.gameState.inventory.currentlyDisplayedItems.push(displayItem);
+            });
+        } else if (containerId !== null && containerId !== undefined) { // Only warn if we were actually looking for an ID
+            console.warn(`INVENTORY_MENU_WARN: Container with ID ${containerId} not found in gameState.containers. Current containers:`, JSON.stringify(window.gameState.containers.map(c => ({ id: c.id, name: c.name, x: c.x, y: c.y }))));
+            // logToConsole(`Error: Interacting with container ID ${containerId} but container not found.`, "red"); // Original log
+            window.gameState.inventory.interactingWithContainer = null; // Reset if invalid
+        }
+    }
+    // --- End display items from interacting world container ---
+
     if (window.gameState.inventory.currentlyDisplayedItems.length === 0) {
         list.textContent = " No items ";
         window.gameState.inventory.cursor = 0;
@@ -426,16 +460,41 @@ function renderInventoryMenu() {
             floorHeaderRendered = true;
         }
 
+        // Check for world container header again if it wasn't rendered before floor items (e.g. if floor items are empty)
+        if (item.source === 'world_container' && !worldContainerHeaderRendered && window.gameState.inventory.interactingWithContainer !== null) {
+            const containerId = window.gameState.inventory.interactingWithContainer;
+            const worldContainer = window.gameState.containers.find(c => c.id === containerId);
+            if (worldContainer && worldContainer.items.length > 0) { // Only render header if there are items
+                const containerHeader = document.createElement("div");
+                containerHeader.textContent = `--- ${worldContainer.name} (Capacity: ${worldContainer.items.reduce((s, i) => s + (i.size || 0), 0)}/${worldContainer.capacity}) ---`;
+                containerHeader.classList.add("inventory-subheader");
+                list.appendChild(containerHeader);
+                worldContainerHeaderRendered = true;
+            }
+        }
+
+
         const d = document.createElement("div");
         let prefix = "";
         if (item.equipped) {
             prefix = "[EQUIPPED] ";
         } else if (item.source === 'floor') {
             prefix = "[FLOOR] ";
+        } else if (item.source === 'world_container') {
+            // displayName for world_container items is already formatted
         }
         const sizeText = item.size !== undefined ? ` (Size: ${item.size})` : "";
+        // For world_container items, displayName is already set. For others, compute it.
         const nameToDisplay = item.displayName || item.name || "Unknown Item";
         d.textContent = `${idx + 1}. ${prefix}${nameToDisplay}${sizeText}`;
+
+        // Special prefix for world_container items if not already in displayName
+        if (item.source === 'world_container' && !prefix) {
+            // displayName is already set as `[Container Name] Item Name`
+            // So, no additional prefix like "[WORLD]" is needed.
+            d.textContent = `${idx + 1}. ${nameToDisplay}${sizeText}`;
+        }
+
 
         if (idx === window.gameState.inventory.cursor) {
             d.classList.add("selected");
@@ -459,6 +518,7 @@ function toggleInventoryMenu() {
         inventoryListDiv.style.display = 'none';
         clearInventoryHighlight();
         window.gameState.inventory.currentlyDisplayedItems = [];
+        window.gameState.inventory.interactingWithContainer = null; // Reset when inventory closes
 
         if (window.gameState.isInCombat &&
             window.gameState.combatPhase === 'playerAttackDeclare' &&
@@ -514,11 +574,66 @@ function interactInventoryItem() {
         }
         return; // Crucial: exit after handling floor item
     }
+
+    // --- Interaction with items from a world container (Taking an item) ---
+    if (selectedDisplayItem.source === 'world_container') {
+        const container = window.gameState.containers.find(c => c.id === selectedDisplayItem.containerId);
+        if (container) {
+            // The item itself is embedded in selectedDisplayItem, but we need its definition for canAddItem
+            // and the original instance to add to player inventory.
+            // selectedDisplayItem already is a copy of the item instance from the container.
+            const itemToTake = container.items[selectedDisplayItem.originalIndexInContainer];
+
+            if (itemToTake && itemToTake.name === selectedDisplayItem.name) { // Basic check
+                if (canAddItem(itemToTake)) {
+                    container.items.splice(selectedDisplayItem.originalIndexInContainer, 1); // Remove from world container
+                    addItem(itemToTake); // Add to player inventory
+                    logToConsole(`Took ${itemToTake.name} from ${container.name}.`);
+                } else {
+                    logToConsole(`Not enough space to take ${itemToTake.name}.`);
+                }
+            } else {
+                logToConsole(`Error: Item mismatch or not found in ${container.name} at index ${selectedDisplayItem.originalIndexInContainer}.`, "red");
+            }
+        } else {
+            logToConsole(`Error: Could not find world container with ID ${selectedDisplayItem.containerId}.`, "red");
+        }
+        if (window.gameState.inventory.open) renderInventoryMenu();
+        return;
+    }
+
+    // --- Interaction with items from player's inventory WHILE a world container is open (Placing an item) ---
+    if (selectedDisplayItem.source === 'container' && window.gameState.inventory.interactingWithContainer !== null) {
+        const targetContainerId = window.gameState.inventory.interactingWithContainer;
+        const targetContainer = window.gameState.containers.find(c => c.id === targetContainerId);
+        const itemToTransfer = selectedDisplayItem; // This is the item object from player's inventory
+
+        if (targetContainer) {
+            const currentContainerUsage = targetContainer.items.reduce((sum, i) => sum + (i.size || 0), 0);
+            if (currentContainerUsage + (itemToTransfer.size || 0) <= targetContainer.capacity) {
+                const removedItem = removeItem(itemToTransfer.name); // Remove from player inventory
+                if (removedItem) {
+                    targetContainer.items.push(removedItem); // Add to world container
+                    logToConsole(`Placed ${removedItem.name} into ${targetContainer.name}.`);
+                } else {
+                    logToConsole(`Error: Failed to remove ${itemToTransfer.name} from player inventory.`, "red");
+                }
+            } else {
+                logToConsole(`${targetContainer.name} is full. Cannot add ${itemToTransfer.name}.`);
+            }
+        } else {
+            logToConsole(`Error: Target world container with ID ${targetContainerId} not found.`, "red");
+        }
+        if (window.gameState.inventory.open) renderInventoryMenu();
+        return;
+    }
     // ... (The rest of the original interactInventoryItem function for other item types)
 
     logToConsole(`Interacting with: ${selectedDisplayItem.displayName}, Equipped: ${selectedDisplayItem.equipped}, Source: ${selectedDisplayItem.source}`);
 
     // --- BEGIN NEW CONSUMABLE LOGIC ---
+    // Ensure this doesn't conflict with the container logic above.
+    // The returns in container logic should prevent this from running for container interactions.
     if (selectedDisplayItem.isConsumable && selectedDisplayItem.effects && !selectedDisplayItem.equipped) {
         let consumed = false;
         const maxNeeds = 24; // Assuming 24 is the max for hunger and thirst

@@ -246,6 +246,7 @@ window.mapRenderer = {
     initializeCurrentMap: function (mapData) {
         currentMapData = mapData;
         gameState.lightSources = []; // Clear existing light sources
+        gameState.containers = []; // Clear existing container instances
 
         // FOW Initialization Block
         if (mapData && mapData.dimensions) {
@@ -282,6 +283,78 @@ window.mapRenderer = {
                 }
                 if (typeof logToConsole === 'function' && gameState.lightSources.length > 0) {
                     logToConsole(`Initialized ${gameState.lightSources.length} static light sources from map tiles.`);
+                }
+
+                // Populate container instances from map tiles
+                const layersToScanForContainers = ['item', 'building']; // Add other layers if needed
+                for (const layerName of layersToScanForContainers) {
+                    const layer = mapData.layers[layerName];
+                    if (layer) {
+                        for (let r = 0; r < H; r++) {
+                            for (let c = 0; c < W; c++) {
+                                const tileId = layer[r]?.[c];
+                                if (tileId && assetManagerInstance && assetManagerInstance.tilesets && assetManagerInstance.items) {
+                                    const tileDef = assetManagerInstance.tilesets[tileId];
+                                    if (tileDef && tileDef.tags && tileDef.tags.includes('container')) {
+                                        let capacity = 0;
+                                        let itemName = tileDef.name;
+                                        const linkedItemId = tileDef.itemLink; // Store itemLink for logging
+
+                                        if (linkedItemId && assetManagerInstance.items[linkedItemId]) {
+                                            const itemDef = assetManagerInstance.items[linkedItemId];
+                                            // Check if itemDef itself and its capacity are valid
+                                            if (itemDef && typeof itemDef.capacity === 'number' && itemDef.capacity > 0) {
+                                                capacity = itemDef.capacity;
+                                                itemName = itemDef.name || tileDef.name;
+                                            } else {
+                                                // Linked item exists but capacity is invalid/missing or zero/negative
+                                                if (typeof logToConsole === 'function') {
+                                                    logToConsole(`Warning: Container tile '${tileId}' at (${c},${r}) links to item '${linkedItemId}' which has invalid, zero, or negative capacity (${itemDef ? itemDef.capacity : 'N/A'}). Defaulting to 5.`, "orange");
+                                                }
+                                                capacity = 5; // Default capacity
+                                            }
+                                        } else if (linkedItemId) {
+                                            // itemLink exists but item not found in assetManagerInstance.items
+                                            if (typeof logToConsole === 'function') {
+                                                logToConsole(`Warning: Container tile '${tileId}' at (${c},${r}) has itemLink '${linkedItemId}' but linked item not found. Defaulting to 5.`, "orange");
+                                            }
+                                            capacity = 5; // Default capacity
+                                        } else {
+                                            // No itemLink
+                                            if (typeof logToConsole === 'function') {
+                                                logToConsole(`Warning: Container tile '${tileId}' at (${c},${r}) has no itemLink. Defaulting capacity to 5.`, "orange");
+                                            }
+                                            capacity = 5; // Default capacity
+                                        }
+
+                                        const containerInstance = {
+                                            x: c,
+                                            y: r,
+                                            id: gameState.nextContainerId++,
+                                            tileId: tileId,
+                                            name: itemName, // Use updated itemName
+                                            capacity: capacity, // Use validated capacity
+                                            items: []
+                                        };
+                                        // Log before pushing and populating
+                                        console.log(`MAP_RENDERER: Creating container instance: ID ${containerInstance.id}, TileID: ${containerInstance.tileId}, Name: ${containerInstance.name}, Pos: (${containerInstance.x},${containerInstance.y}), Capacity: ${containerInstance.capacity}`);
+                                        gameState.containers.push(containerInstance);
+                                        // Populate the newly created container instance
+                                        if (typeof window.populateContainer === 'function') {
+                                            window.populateContainer(containerInstance);
+                                        } else {
+                                            if (typeof logToConsole === 'function') {
+                                                logToConsole(`Error: populateContainer function not found. Cannot populate ${containerInstance.name}.`, "red");
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (typeof logToConsole === 'function' && gameState.containers.length > 0) {
+                    logToConsole(`Initialized ${gameState.containers.length} container instances from map tiles.`);
                 }
 
             } else {
@@ -587,6 +660,15 @@ window.mapRenderer = {
                 let displaySprite = originalSprite;
                 let displayColor = originalColor;
                 let displayId = actualTileId || "";
+
+                // --- TEMPORARY DEBUGGING FOR CONTAINERS ---
+                if (actualTileId && assetManagerInstance && assetManagerInstance.tilesets) {
+                    const tempTileDef = assetManagerInstance.tilesets[actualTileId];
+                    if (tempTileDef && tempTileDef.tags && tempTileDef.tags.includes('container')) {
+                        displayColor = 'fuchsia'; // Override color for visibility
+                    }
+                }
+                // --- END TEMPORARY DEBUGGING ---
 
                 if (fowStatus === 'hidden') {
                     displaySprite = ' ';

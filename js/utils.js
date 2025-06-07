@@ -310,3 +310,184 @@ function getTeamColor(entity) {
     return 'gold'; // Fallback for entities with undefined teamId
 }
 window.getTeamColor = getTeamColor;
+
+function populateContainer(containerInstance) {
+    if (!window.assetManagerInstance || !window.assetManagerInstance.items) {
+        logToConsole("Asset manager or item definitions not available for populating container.", "red");
+        return;
+    }
+    if (!containerInstance || !containerInstance.items || typeof containerInstance.capacity !== 'number') {
+        logToConsole("Invalid container instance provided to populateContainer.", "red");
+        return;
+    }
+
+    const allItemDefs = Object.values(window.assetManagerInstance.items);
+    // Filter out items that are containers themselves or other non-lootable types.
+    const lootableItems = allItemDefs.filter(itemDef => {
+        return itemDef.type !== 'container_item' &&
+            itemDef.type !== 'clothing' && // Temporarily avoid clothing in loot
+            itemDef.size !== undefined && itemDef.size > 0; // Must have a defined, positive size
+    });
+
+    if (lootableItems.length === 0) {
+        // logToConsole(`No lootable item definitions found to populate ${containerInstance.name}.`, "orange");
+        return;
+    }
+
+    // Determine a random number of items to *try* to add.
+    // Bias towards adding 0 to 2 items, but can go higher if capacity allows. Max of 5 attempts.
+    const attempts = Math.floor(Math.random() * 3) + Math.floor(Math.random() * 3); // 0 to 4, biased towards lower
+
+    let itemsAddedCount = 0;
+    for (let i = 0; i < attempts; i++) {
+        const randomDef = lootableItems[Math.floor(Math.random() * lootableItems.length)];
+        const newItem = new Item(randomDef); // Assumes window.Item is global
+
+        const currentUsage = containerInstance.items.reduce((sum, item) => sum + (item.size || 1), 0);
+
+        if (currentUsage + (newItem.size || 1) <= containerInstance.capacity) {
+            containerInstance.items.push(newItem);
+            itemsAddedCount++;
+        } else {
+            // If an item doesn't fit, we might break early if the container is mostly full.
+            if (currentUsage / containerInstance.capacity > 0.8) { // If 80% full and item doesn't fit
+                break;
+            }
+        }
+    }
+
+    if (itemsAddedCount > 0) {
+        // logToConsole(`Populated ${containerInstance.name} (ID: ${containerInstance.id}) with ${itemsAddedCount} items. Current total: ${containerInstance.items.length}.`);
+    }
+}
+window.populateContainer = populateContainer;
+
+function runContainerTests() {
+    logToConsole("--- Starting Container System Tests ---", "blue");
+
+    // Test 1: Container Presence & Population
+    logToConsole("Test 1: Checking gameState.containers presence and basic properties...", "lightblue");
+    if (!gameState.containers || typeof gameState.containers.length === 'undefined') {
+        logToConsole("Error: gameState.containers is missing or not an array.", "red");
+        logToConsole("--- Container System Tests Finished (Aborted) ---", "red");
+        return;
+    }
+    if (gameState.containers.length === 0) {
+        logToConsole("Warning: gameState.containers is empty. Map might not have containers or they weren't initialized by mapLoader.", "orange");
+    } else {
+        logToConsole(`Found ${gameState.containers.length} container instances on the map.`);
+        const limit = Math.min(3, gameState.containers.length);
+        for (let i = 0; i < limit; i++) {
+            const c = gameState.containers[i];
+            if (!c) {
+                logToConsole(`Error: Container at index ${i} is null/undefined.`, "red");
+                continue;
+            }
+            logToConsole(`Container ${i + 1}/${limit}: Name: ${c.name}, ID: ${c.id}, Pos: (${c.x},${c.y}), Capacity: ${c.capacity}, Items: ${c.items ? c.items.length : 'N/A'}`);
+            if (typeof c.capacity !== 'number' || c.capacity < 0) {
+                logToConsole(`  Error: Container ${c.id} has invalid capacity: ${c.capacity}`, "red");
+            }
+            if (!Array.isArray(c.items)) {
+                logToConsole(`  Error: Container ${c.id} items is not an array.`, "red");
+            }
+            if (c.items && c.items.length > 0 && c.items[0]) {
+                logToConsole(`    First item in ${c.name}: ${c.items[0].name} (Size: ${c.items[0].size || 'N/A'})`);
+            } else if (c.items && c.items.length > 0 && !c.items[0]) {
+                logToConsole(`    Error: Container ${c.id} has a null/undefined item in its items array.`, "red");
+            }
+        }
+    }
+
+    // Test 2: Player Inventory Interaction (Simulated)
+    logToConsole("Test 2: Simulating player interaction (take/put items)...", "lightblue");
+    const playerInventory = window.gameState.inventory.container;
+    if (!playerInventory) {
+        logToConsole("Error: Player inventory (gameState.inventory.container) not found. Skipping interaction tests.", "red");
+    } else {
+        const testContainer = gameState.containers.find(c => c && c.items && c.items.length > 0);
+        if (!testContainer) {
+            logToConsole("Skipping 'take item' test - no containers with items found or containers are malformed.", "orange");
+        } else {
+            logToConsole(`Using container "${testContainer.name}" (ID: ${testContainer.id}) for take/put tests.`);
+            gameState.inventory.interactingWithContainer = testContainer.id; // Simulate opening
+
+            const itemToTakeCopy = { ...testContainer.items[0] }; // Take a copy for checks, original might be mutated by Item constructor if not careful
+
+            if (itemToTakeCopy && itemToTakeCopy.name) {
+                logToConsole(`Attempting to take "${itemToTakeCopy.name}" (Size: ${itemToTakeCopy.size || 'N/A'}) from "${testContainer.name}".`);
+                const playerItemsBefore = playerInventory.items.length;
+                const containerItemsBefore = testContainer.items.length;
+                const canPlayerTake = window.canAddItem(itemToTakeCopy); // Assumes itemToTakeCopy has 'size'
+
+                if (canPlayerTake) {
+                    // Simulate the actual item instance that would be created/transferred
+                    const actualItemTakenFromContainer = testContainer.items[0];
+                    const playerReceivedItem = window.addItem(new Item(actualItemTakenFromContainer)); // Player gets a new instance
+
+                    if (playerReceivedItem) {
+                        testContainer.items.splice(0, 1); // Remove original from container
+                        logToConsole(`  SUCCESS: Took "${actualItemTakenFromContainer.name}".`, "green");
+                        if (playerInventory.items.length !== playerItemsBefore + 1 || testContainer.items.length !== containerItemsBefore - 1) {
+                            logToConsole(`  VERIFICATION ERROR: Item counts mismatch after taking. Player: ${playerInventory.items.length} (was ${playerItemsBefore}), Container: ${testContainer.items.length} (was ${containerItemsBefore})`, "red");
+                        } else {
+                            logToConsole(`  VERIFICATION: Item counts correct. Player: ${playerInventory.items.length}, Container: ${testContainer.items.length}`, "green");
+                        }
+                    } else {
+                        logToConsole(`  FAILURE: addItem to player inventory returned false.`, "red");
+                    }
+                } else {
+                    logToConsole(`  SKIPPED: Player cannot add "${itemToTakeCopy.name}" (not enough space). Player capacity: ${playerInventory.maxSlots}, Used: ${playerInventory.items.reduce((s, i) => s + (i.size || 0), 0)}`, "orange");
+                }
+
+                // Test putting an item back
+                const playerItemToPut = playerInventory.items.find(i => i.id === itemToTakeCopy.id); // Find the item (or one like it) in player's inv
+
+                if (playerItemToPut) {
+                    logToConsole(`Attempting to put "${playerItemToPut.name}" (Size: ${playerItemToPut.size || 'N/A'}) back into "${testContainer.name}".`);
+                    const playerItemsBeforePut = playerInventory.items.length;
+                    const containerItemsBeforePut = testContainer.items.length;
+                    const containerCurrentUsage = testContainer.items.reduce((sum, i) => sum + (i.size || 1), 0);
+                    const canContainerAccept = (containerCurrentUsage + (playerItemToPut.size || 1)) <= testContainer.capacity;
+
+                    if (canContainerAccept) {
+                        const itemActuallyRemovedFromPlayer = window.removeItem(playerItemToPut.name);
+                        if (itemActuallyRemovedFromPlayer) {
+                            testContainer.items.push(itemActuallyRemovedFromPlayer); // Add the actual instance
+                            logToConsole(`  SUCCESS: Put "${itemActuallyRemovedFromPlayer.name}" into "${testContainer.name}".`, "green");
+                            if (playerInventory.items.length !== playerItemsBeforePut - 1 || testContainer.items.length !== containerItemsBeforePut + 1) {
+                                logToConsole(`  VERIFICATION ERROR: Item counts mismatch after putting. Player: ${playerInventory.items.length} (was ${playerItemsBeforePut}), Container: ${testContainer.items.length} (was ${containerItemsBeforePut})`, "red");
+                            } else {
+                                logToConsole(`  VERIFICATION: Item counts correct. Player: ${playerInventory.items.length}, Container: ${testContainer.items.length}`, "green");
+                            }
+                        } else {
+                            logToConsole(`  FAILURE: removeItem from player failed for "${playerItemToPut.name}". It might have been a different instance if names are not unique.`, "red");
+                        }
+                    } else {
+                        logToConsole(`  SKIPPED: Container "${testContainer.name}" (Cap: ${testContainer.capacity}, Used: ${containerCurrentUsage}) cannot accept "${playerItemToPut.name}" (Size: ${playerItemToPut.size || 1}).`, "orange");
+                    }
+                } else {
+                    logToConsole("Skipping 'put item back' test - player does not have an item of the type that was taken (or it couldn't be identified to put back).", "orange");
+                }
+            } else {
+                logToConsole("Skipping 'take item' sub-test as the identified test container's first item is invalid or undefined.", "orange");
+            }
+            gameState.inventory.interactingWithContainer = null; // Cleanup
+        }
+    }
+
+    // Test 3: Manual Verification Prompts
+    logToConsole("Test 3: Manual Verification Steps (perform these in-game):", "lightblue");
+    logToConsole("  - Ensure map is loaded, preferably one with built-in containers like cabinets, desks, or refrigerators (e.g., Small_Map, Beach_House).");
+    logToConsole("  - Verify containers render on the map with their defined sprites and colors from the tileset.");
+    logToConsole("  - Use interaction keys (e.g., 'e', then number for item, then 'Enter' for action menu, then number for 'Open', then 'Enter') to 'Open' a container like a Cabinet or Desk.");
+    logToConsole("  - Check inventory panel: Does it show '--- [Container Name] (Capacity: X/Y) ---' header for the opened container?");
+    logToConsole("  - Check inventory panel: Are items from the container listed below this header, formatted like '[Container Name] Item Name'?");
+    logToConsole("  - Try selecting an item from the container section and pressing 'Enter' (or your interact key for inventory) to take it.");
+    logToConsole("  - Verify console log for taking item and check if item is now in player's main inventory section in UI.");
+    logToConsole("  - Try selecting an item from your player's inventory section and pressing 'Enter' to put it into the (still open) container.");
+    logToConsole("  - Verify console log for placing item and check if item is now in container's section in UI / removed from player's section.");
+    logToConsole("  - Close inventory (e.g., 'i' key). Re-open. Container view should be gone (interactingWithContainer should be null).");
+
+    logToConsole("--- Container System Tests Finished ---", "blue");
+}
+window.runContainerTests = runContainerTests;
