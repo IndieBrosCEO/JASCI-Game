@@ -440,8 +440,72 @@ function handleKeyDown(event) {
                     window.renderInventoryMenu();
                 }
                 event.preventDefault(); return;
-            case 'Enter': case 'f':
+            case 'Enter': // Keep Enter for interact
                 window.interactInventoryItem();
+                event.preventDefault(); return;
+            case 'f': case 'F':
+                if (event.shiftKey) {
+                    // Shift + F: Drop item
+                    if (window.gameState && window.gameState.inventory.open) {
+                        const inventory = window.gameState.inventory;
+                        if (!inventory.currentlyDisplayedItems || inventory.currentlyDisplayedItems.length === 0) {
+                            logToConsole("No items in the displayed inventory to drop.");
+                            event.preventDefault(); return;
+                        }
+                        const cursorIndex = inventory.cursor;
+                        if (cursorIndex < 0 || cursorIndex >= inventory.currentlyDisplayedItems.length) {
+                            logToConsole("Invalid inventory cursor position for dropping.", "warn");
+                            event.preventDefault(); return;
+                        }
+                        const selectedDisplayItem = inventory.currentlyDisplayedItems[cursorIndex];
+                        if (!selectedDisplayItem) {
+                            logToConsole("No item selected to drop.", "warn");
+                            event.preventDefault(); return;
+                        }
+
+                        if (selectedDisplayItem.source === 'container') {
+                            if (typeof window.dropItem === 'function') {
+                                logToConsole(`Attempting to drop '${selectedDisplayItem.name}' from container via Shift+F.`);
+                                window.dropItem(selectedDisplayItem.name);
+                            } else {
+                                logToConsole("dropItem function not found!", "error");
+                            }
+                        } else if (selectedDisplayItem.source === 'hand') {
+                            logToConsole(`Attempting to drop '${selectedDisplayItem.name}' from hand via Shift+F.`);
+                            if (typeof window.unequipItem === 'function' && typeof window.dropItem === 'function') {
+                                const handIndex = selectedDisplayItem.originalHandIndex;
+                                const itemName = selectedDisplayItem.name;
+
+                                window.unequipItem(handIndex);
+
+                                let unequippedItemInContainer = false;
+                                if (window.gameState.inventory.container && window.gameState.inventory.container.items) {
+                                    if (window.gameState.inventory.container.items.some(item => item.name === itemName)) {
+                                        unequippedItemInContainer = true;
+                                    }
+                                }
+
+                                if (unequippedItemInContainer) {
+                                    logToConsole(`Successfully unequipped '${itemName}', now attempting to drop from container.`);
+                                    window.dropItem(itemName);
+                                } else {
+                                    logToConsole(`Could not unequip '${itemName}' to inventory (perhaps full?), or item not found after unequip. Drop cancelled.`, "warn");
+                                }
+                            } else {
+                                logToConsole("unequipItem or dropItem function not found!", "error");
+                            }
+                        } else if (selectedDisplayItem.source === 'clothing') {
+                            logToConsole("Cannot drop equipped clothing directly. Please unequip it first.", "info");
+                        } else if (selectedDisplayItem.source === 'floor') {
+                            logToConsole("This item is already on the floor.", "info");
+                        } else {
+                            logToConsole(`Cannot drop item from source: '${selectedDisplayItem.source}'.`, "warn");
+                        }
+                    }
+                } else {
+                    // Just 'f': Interact with item
+                    window.interactInventoryItem();
+                }
                 event.preventDefault(); return;
             case 'i': case 'I':
                 window.toggleInventoryMenu();

@@ -1,4 +1,4 @@
-// js/interaction.js
+﻿// js/interaction.js
 
 const DOOR_OPEN_MAP = {
     "WDH": "WOH", "WDV": "WOV", "MDH": "MOH", "MDV": "MOV",
@@ -22,8 +22,9 @@ function _getActionsForItem(it) {
         console.error("Interaction module not initialized with AssetManager for _getActionsForItem.");
         return ["Cancel"];
     }
+
     const tileDef = assetManagerInstance.tilesets[it.id];
-    if (!tileDef) return ["Cancel"];
+    if (!tileDef) return ["Cancel"]; // Now this is safe
 
     const tags = tileDef.tags || [];
     const actions = ["Cancel"];
@@ -41,6 +42,7 @@ function _getActionsForItem(it) {
 
 function _performAction(action, it) {
     const { x, y, id } = it;
+
     const currentMap = window.mapRenderer.getCurrentMapData(); // Assumes mapRenderer is globally available
     if (!currentMap || !currentMap.layers.building) {
         logToConsole("Error: Building layer not found in current map data."); // Assumes logToConsole is global
@@ -49,7 +51,8 @@ function _performAction(action, it) {
     const B = currentMap.layers.building;
     let targetTileId = B[y]?.[x];
 
-    if (!targetTileId) {
+    // Added check for it.id !== "FLOOR_PROXY" because FLOOR_PROXY won't have a targetTileId in the building layer
+    if (!targetTileId && it.id !== "FLOOR_PROXY") {
         logToConsole(`Error: No building tile found at ${x},${y} to perform action.`);
         return;
     }
@@ -127,10 +130,11 @@ window.interaction = {
 
                 const tileDef = assetManagerInstance.tilesets[tileId];
                 if (tileDef && tileDef.tags && tileDef.tags.includes("interactive")) {
-                    gameState.interactableItems.push({ x: x_scan, y: y_scan, id: tileId });
+                    gameState.interactableItems.push({ x: x_scan, y: y_scan, id: tileId, name: tileDef.name });
                 }
             }
         }
+        // Removed FLOOR_PROXY detection logic
     },
 
     showInteractableItems: function () {
@@ -145,8 +149,12 @@ window.interaction = {
 
         gameState.interactableItems.forEach((it, idx) => {
             const div = document.createElement("div");
-            const tileDef = assetManagerInstance.tilesets[it.id] || { name: it.id };
-            div.textContent = `${idx + 1}. ${tileDef.name}`;
+            let displayName = it.name; // Use the name property directly if it exists
+            if (!displayName) { // Fallback for items that might not have had .name set (older saves, other code paths)
+                const tileDef = assetManagerInstance.tilesets[it.id];
+                displayName = tileDef ? tileDef.name : it.id;
+            }
+            div.textContent = `${idx + 1}. ${displayName}`;
 
             if (idx === gameState.selectedItemIndex) {
                 div.classList.add("selected");

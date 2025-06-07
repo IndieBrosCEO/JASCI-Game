@@ -710,6 +710,38 @@ window.mapRenderer = {
                     span.textContent = targetSprite;
                     span.style.color = targetColor;
 
+                    // New item highlight logic - apply background color
+                    let tileHighlightColor = "";
+                    if (fowStatus === 'visible') {
+                        if (window.gameState && window.gameState.floorItems && window.gameState.floorItems.length > 0) {
+                            let itemsOnThisTile = false;
+                            let impassableTileBlockingItemHighlight = false;
+                            const currentTileDef = assetManagerInstance && assetManagerInstance.tilesets ? assetManagerInstance.tilesets[actualTileId] : null;
+
+                            if (currentTileDef && currentTileDef.tags && currentTileDef.tags.includes("impassable")) {
+                                if (!currentTileDef.tags.includes("door") &&
+                                    !currentTileDef.tags.includes("window") &&
+                                    !currentTileDef.tags.includes("container")) {
+                                    impassableTileBlockingItemHighlight = true;
+                                }
+                            }
+
+                            if (!impassableTileBlockingItemHighlight) {
+                                for (const floorEntry of window.gameState.floorItems) {
+                                    if (floorEntry.x === x && floorEntry.y === y) {
+                                        itemsOnThisTile = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (itemsOnThisTile) {
+                                tileHighlightColor = "rgba(255, 255, 0, 0.3)"; // Semi-transparent yellow
+                            }
+                        }
+                    }
+                    span.style.backgroundColor = tileHighlightColor;
+                    // End new item highlight logic
+
                     if (!gameState.tileCache[y]) gameState.tileCache[y] = Array(W).fill(null);
 
                     gameState.tileCache[y][x] = {
@@ -717,20 +749,56 @@ window.mapRenderer = {
                         displayedId: targetDisplayId,
                         sprite: targetSprite,
                         color: targetColor
+                        // backgroundColor will be managed directly on the span's style
                     };
                     if (fragment) fragment.appendChild(span);
                 } else {
                     const cachedCell = gameState.tileCache[y]?.[x];
                     if (cachedCell && cachedCell.span) {
                         const span = cachedCell.span;
-                        cachedCell.sprite = targetSprite;
-                        cachedCell.color = targetColor;
-                        cachedCell.displayedId = targetDisplayId;
-
-                        if (span.textContent !== targetSprite || span.style.color !== targetColor) {
+                        // Update sprite and color if changed
+                        if (cachedCell.sprite !== targetSprite || cachedCell.color !== targetColor) {
                             span.textContent = targetSprite;
                             span.style.color = targetColor;
+                            cachedCell.sprite = targetSprite;
+                            cachedCell.color = targetColor;
                         }
+                        cachedCell.displayedId = targetDisplayId; // Always update displayedId
+
+                        // New item highlight logic - apply background color
+                        let tileHighlightColor = "";
+                        if (fowStatus === 'visible') {
+                            if (window.gameState && window.gameState.floorItems && window.gameState.floorItems.length > 0) {
+                                let itemsOnThisTile = false;
+                                let impassableTileBlockingItemHighlight = false;
+                                const currentTileDef = assetManagerInstance && assetManagerInstance.tilesets ? assetManagerInstance.tilesets[actualTileId] : null;
+
+                                if (currentTileDef && currentTileDef.tags && currentTileDef.tags.includes("impassable")) {
+                                    if (!currentTileDef.tags.includes("door") &&
+                                        !currentTileDef.tags.includes("window") &&
+                                        !currentTileDef.tags.includes("container")) {
+                                        impassableTileBlockingItemHighlight = true;
+                                    }
+                                }
+
+                                if (!impassableTileBlockingItemHighlight) {
+                                    for (const floorEntry of window.gameState.floorItems) {
+                                        if (floorEntry.x === x && floorEntry.y === y) {
+                                            itemsOnThisTile = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (itemsOnThisTile) {
+                                    tileHighlightColor = "rgba(255, 255, 0, 0.3)"; // Semi-transparent yellow
+                                }
+                            }
+                        }
+                        if (span.style.backgroundColor !== tileHighlightColor) {
+                            span.style.backgroundColor = tileHighlightColor;
+                        }
+                        // End new item highlight logic
+
                         if (span.classList.contains('flashing-targeting-cursor') &&
                             !(gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y)) {
                             span.classList.remove('flashing-targeting-cursor');

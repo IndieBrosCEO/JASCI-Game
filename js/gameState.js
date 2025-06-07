@@ -128,6 +128,7 @@ const gameState = {
     showKeybinds: false,
     retargetingJustHappened: false,
     isWaitingForPlayerCombatInput: false,
+    floorItems: [],
 };
 
 // Initialize player object and wornClothing if they don't exist
@@ -155,6 +156,8 @@ gameState.player.wornClothing = {
     [ClothingLayers.BACKPACK]: null,
     [ClothingLayers.WAIST]: null
 };
+
+window.gameState = gameState; // <-- ADD THIS LINE
 
 // 4) Attach to gameState - This was originally in script.js, moving it here as it directly modifies gameState
 // and uses InventoryContainer which might be defined elsewhere or needs to be defined here too.

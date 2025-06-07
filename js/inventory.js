@@ -50,18 +50,18 @@ function Item(itemDef) { // itemDef is the raw object from JSON
 
 // 5) Check capacity
 function canAddItem(item) {
-    if (!gameState.inventory.container) { // Ensure container is initialized
+    if (!window.gameState.inventory.container) { // Ensure container is initialized
         logToConsole("Inventory container not initialized yet.");
         return false;
     }
-    const used = gameState.inventory.container.items
+    const used = window.gameState.inventory.container.items
         .reduce((sum, i) => sum + i.size, 0);
-    return used + item.size <= gameState.inventory.container.maxSlots;
+    return used + item.size <= window.gameState.inventory.container.maxSlots;
 }
 
 // 6) Add
 function addItem(item) {
-    if (!gameState.inventory.container) { // Ensure container is initialized
+    if (!window.gameState.inventory.container) { // Ensure container is initialized
         logToConsole("Inventory container not initialized. Cannot add item.");
         return false;
     }
@@ -69,7 +69,7 @@ function addItem(item) {
         logToConsole(`Not enough space for ${item.name}.`);
         return false;
     }
-    gameState.inventory.container.items.push(item);
+    window.gameState.inventory.container.items.push(item);
     logToConsole(`Added ${item.name}.`);
     updateInventoryUI();
     return true;
@@ -77,11 +77,11 @@ function addItem(item) {
 
 // 7) Remove
 function removeItem(itemName) {
-    if (!gameState.inventory.container) {
+    if (!window.gameState.inventory.container) {
         logToConsole("Inventory container not initialized.");
         return null;
     }
-    const inv = gameState.inventory.container.items;
+    const inv = window.gameState.inventory.container.items;
     const idx = inv.findIndex(i => i.name === itemName);
     if (idx === -1) {
         logToConsole(`${itemName} not found.`);
@@ -93,13 +93,45 @@ function removeItem(itemName) {
     return removed;
 }
 
+function dropItem(itemName) {
+    if (!window.gameState || !window.gameState.inventory.container) {
+        logToConsole("Inventory container not initialized or gameState not found.");
+        return false;
+    }
+    const removedItem = removeItem(itemName);
+    if (removedItem) {
+        if (!window.gameState.playerPos || typeof window.gameState.playerPos.x === 'undefined' || typeof window.gameState.playerPos.y === 'undefined') {
+            logToConsole("Cannot drop item: Player position is unknown.", "error");
+            addItem(removedItem);
+            return false;
+        }
+        if (!window.gameState.floorItems) {
+            window.gameState.floorItems = [];
+        }
+        window.gameState.floorItems.push({
+            x: window.gameState.playerPos.x,
+            y: window.gameState.playerPos.y,
+            item: removedItem
+        });
+        logToConsole(`Dropped ${removedItem.name} on the floor at (${window.gameState.playerPos.x}, ${window.gameState.playerPos.y}).`);
+        if (typeof window.mapRenderer !== 'undefined' && typeof window.mapRenderer.scheduleRender === 'function') {
+            window.mapRenderer.scheduleRender();
+        }
+        if (window.gameState.inventory.open) {
+            renderInventoryMenu();
+        }
+        return true;
+    }
+    return false;
+}
+
 // 8) Equip / Unequip
 function equipItem(itemName, handIndex) {
-    if (!gameState.inventory.container) {
+    if (!window.gameState.inventory.container) {
         logToConsole("Inventory container not initialized.");
         return;
     }
-    const inv = gameState.inventory.container.items;
+    const inv = window.gameState.inventory.container.items;
     const itemIndex = inv.findIndex(i => i.name === itemName);
 
     if (itemIndex === -1) {
@@ -118,19 +150,19 @@ function equipItem(itemName, handIndex) {
         return;
     }
 
-    if (gameState.inventory.handSlots[handIndex]) {
-        logToConsole(`Hand slot ${handIndex + 1} is already occupied by ${gameState.inventory.handSlots[handIndex].name}.`);
+    if (window.gameState.inventory.handSlots[handIndex]) {
+        logToConsole(`Hand slot ${handIndex + 1} is already occupied by ${window.gameState.inventory.handSlots[handIndex].name}.`);
         return;
     }
 
     const equippedItem = inv.splice(itemIndex, 1)[0];
     equippedItem.equipped = true; // Ensure flag is set
-    gameState.inventory.handSlots[handIndex] = equippedItem;
+    window.gameState.inventory.handSlots[handIndex] = equippedItem;
     logToConsole(`Equipped ${equippedItem.name} to hand slot ${handIndex + 1}.`);
     updateInventoryUI();
-    logToConsole(`[equipItem Debug] isInCombat: ${gameState.isInCombat}, combatPhase: ${gameState.combatPhase}`);
-    if (gameState.isInCombat &&
-        gameState.combatPhase === 'playerAttackDeclare' &&
+    logToConsole(`[equipItem Debug] isInCombat: ${window.gameState.isInCombat}, combatPhase: ${window.gameState.combatPhase}`);
+    if (window.gameState.isInCombat &&
+        window.gameState.combatPhase === 'playerAttackDeclare' &&
         typeof window.combatManager !== 'undefined' &&
         typeof window.combatManager.populateWeaponSelect === 'function') {
         logToConsole("Combat attack UI active after equipping item, refreshing weapon select.");
@@ -140,11 +172,11 @@ function equipItem(itemName, handIndex) {
 }
 
 function unequipItem(handIndex) {
-    if (!gameState.inventory.container) {
+    if (!window.gameState.inventory.container) {
         logToConsole("Inventory container not initialized.");
         return;
     }
-    const slot = gameState.inventory.handSlots[handIndex];
+    const slot = window.gameState.inventory.handSlots[handIndex];
     if (!slot) {
         logToConsole(`No item in hand ${handIndex + 1}.`);
         return;
@@ -154,13 +186,13 @@ function unequipItem(handIndex) {
         return;
     }
     slot.equipped = false; // Ensure flag is set before returning to inventory
-    gameState.inventory.container.items.push(slot);
-    gameState.inventory.handSlots[handIndex] = null;
+    window.gameState.inventory.container.items.push(slot);
+    window.gameState.inventory.handSlots[handIndex] = null;
     logToConsole(`Unequipped ${slot.name}.`);
     updateInventoryUI();
-    logToConsole(`[unequipItem Debug] isInCombat: ${gameState.isInCombat}, combatPhase: ${gameState.combatPhase}`);
-    if (gameState.isInCombat &&
-        gameState.combatPhase === 'playerAttackDeclare' &&
+    logToConsole(`[unequipItem Debug] isInCombat: ${window.gameState.isInCombat}, combatPhase: ${window.gameState.combatPhase}`);
+    if (window.gameState.isInCombat &&
+        window.gameState.combatPhase === 'playerAttackDeclare' &&
         typeof window.combatManager !== 'undefined' &&
         typeof window.combatManager.populateWeaponSelect === 'function') {
         logToConsole("Combat attack UI active after unequipping item, refreshing weapon select.");
@@ -173,11 +205,11 @@ function unequipItem(handIndex) {
  * Clothing Equip/Unequip Functions
  **************************************************************/
 function equipClothing(itemName) {
-    if (!gameState.inventory.container) {
+    if (!window.gameState.inventory.container) {
         logToConsole("Inventory container not initialized.");
         return;
     }
-    const inv = gameState.inventory.container.items;
+    const inv = window.gameState.inventory.container.items;
     const itemIndex = inv.findIndex(i => i.name === itemName);
 
     if (itemIndex === -1) {
@@ -198,15 +230,15 @@ function equipClothing(itemName) {
     }
 
     const targetLayer = item.layer;
-    if (gameState.player.wornClothing[targetLayer]) {
-        logToConsole(`Layer ${targetLayer} is already occupied by ${gameState.player.wornClothing[targetLayer].name}.`);
+    if (window.gameState.player.wornClothing[targetLayer]) {
+        logToConsole(`Layer ${targetLayer} is already occupied by ${window.gameState.player.wornClothing[targetLayer].name}.`);
         return;
     }
 
     inv.splice(itemIndex, 1);
-    gameState.player.wornClothing[targetLayer] = item;
+    window.gameState.player.wornClothing[targetLayer] = item;
     item.equipped = true;
-    gameState.inventory.container.maxSlots = calculateCumulativeCapacity(gameState);
+    window.gameState.inventory.container.maxSlots = calculateCumulativeCapacity(window.gameState);
 
     logToConsole(`Equipped ${itemName} to ${targetLayer}.`);
     updateInventoryUI();
@@ -214,31 +246,31 @@ function equipClothing(itemName) {
 }
 
 function unequipClothing(clothingLayer) {
-    if (!gameState.inventory.container) {
+    if (!window.gameState.inventory.container) {
         logToConsole("Inventory container not initialized.");
         return;
     }
-    if (!clothingLayer || !gameState.player.wornClothing.hasOwnProperty(clothingLayer)) {
+    if (!clothingLayer || !window.gameState.player.wornClothing.hasOwnProperty(clothingLayer)) {
         logToConsole(`Error: Invalid clothing layer "${clothingLayer}".`);
         return;
     }
 
-    const item = gameState.player.wornClothing[clothingLayer];
+    const item = window.gameState.player.wornClothing[clothingLayer];
 
     if (!item) {
         logToConsole(`No item to unequip from ${clothingLayer}.`);
         return;
     }
 
-    gameState.player.wornClothing[clothingLayer] = null;
+    window.gameState.player.wornClothing[clothingLayer] = null;
     item.equipped = false;
 
-    gameState.inventory.container.maxSlots = calculateCumulativeCapacity(gameState);
+    window.gameState.inventory.container.maxSlots = calculateCumulativeCapacity(window.gameState);
 
     if (!canAddItem(item)) {
         logToConsole("Critical Warning: Not enough inventory space to unequip " + item.name + " to Body Pockets. Item is lost.");
     } else {
-        gameState.inventory.container.items.push(item);
+        window.gameState.inventory.container.items.push(item);
     }
 
     logToConsole(`Unequipped ${item.name} from ${clothingLayer}.`);
@@ -248,14 +280,14 @@ function unequipClothing(clothingLayer) {
 
 // 9) Update the DOM
 function updateInventoryUI() {
-    if (!gameState.inventory.container) {
+    if (!window.gameState.inventory.container) {
         // console.warn("updateInventoryUI called before inventory container is initialized.");
     }
 
     const equippedHandItemsDiv = document.getElementById("equippedHandItems");
     if (equippedHandItemsDiv) {
         equippedHandItemsDiv.innerHTML = "";
-        gameState.inventory.handSlots.forEach((it, i) => {
+        window.gameState.inventory.handSlots.forEach((it, i) => {
             const d = document.createElement("div");
             const handName = i === 0 ? "Left Hand" : "Right Hand";
             d.textContent = it ? `${handName}: ${it.name}` : `${handName}: Empty`;
@@ -266,13 +298,13 @@ function updateInventoryUI() {
     const equippedContainersDiv = document.getElementById("equippedContainers");
     const invCapacitySpan = document.getElementById("invCapacity");
 
-    if (gameState.inventory.container) {
+    if (window.gameState.inventory.container) {
         if (equippedContainersDiv) {
             equippedContainersDiv.innerHTML = "";
             let foundContainers = false;
-            if (gameState.player && gameState.player.wornClothing) {
-                for (const layer in gameState.player.wornClothing) {
-                    const wornItem = gameState.player.wornClothing[layer];
+            if (window.gameState.player && window.gameState.player.wornClothing) {
+                for (const layer in window.gameState.player.wornClothing) {
+                    const wornItem = window.gameState.player.wornClothing[layer];
                     if (wornItem && wornItem.capacity && typeof wornItem.capacity === 'number' && wornItem.capacity > 0) {
                         const containerDisplay = document.createElement("div");
                         containerDisplay.textContent = `${wornItem.name}: ${wornItem.capacity} slots`;
@@ -286,7 +318,7 @@ function updateInventoryUI() {
             }
         }
         if (invCapacitySpan) {
-            const mainContainer = gameState.inventory.container;
+            const mainContainer = window.gameState.inventory.container;
             const usedSlots = mainContainer.items.reduce((sum, i) => sum + i.size, 0);
             invCapacitySpan.textContent = `${usedSlots}/${mainContainer.maxSlots}`;
         }
@@ -307,69 +339,105 @@ function updateInventoryUI() {
 function renderInventoryMenu() {
     const list = document.getElementById("inventoryList");
     if (!list) return;
-    list.innerHTML = ""; // Clear existing list
+    list.innerHTML = "";
 
-    gameState.inventory.currentlyDisplayedItems = [];
+    window.gameState.inventory.currentlyDisplayedItems = [];
 
-    // 1. Add equipped hand items
-    gameState.inventory.handSlots.forEach((item, index) => {
+    window.gameState.inventory.handSlots.forEach((item, index) => {
         if (item) {
-            const displayItem = { ...item };
-            displayItem.equipped = true;
-            displayItem.source = 'hand';
-            displayItem.originalHandIndex = index;
-            displayItem.displayName = item.name;
-            gameState.inventory.currentlyDisplayedItems.push(displayItem);
+            const displayItem = { ...item, equipped: true, source: 'hand', originalHandIndex: index, displayName: item.name };
+            window.gameState.inventory.currentlyDisplayedItems.push(displayItem);
         }
     });
 
-    // 2. Add worn clothing items
-    for (const layer in gameState.player.wornClothing) {
-        const item = gameState.player.wornClothing[layer];
+    for (const layer in window.gameState.player.wornClothing) {
+        const item = window.gameState.player.wornClothing[layer];
         if (item) {
-            const displayItem = { ...item };
-            displayItem.equipped = true;
-            displayItem.source = 'clothing';
-            displayItem.originalLayer = layer;
-            displayItem.displayName = item.name;
-            gameState.inventory.currentlyDisplayedItems.push(displayItem);
+            const displayItem = { ...item, equipped: true, source: 'clothing', originalLayer: layer, displayName: item.name };
+            window.gameState.inventory.currentlyDisplayedItems.push(displayItem);
         }
     }
 
-    // 3. Add items from the main inventory container
-    if (gameState.inventory.container && gameState.inventory.container.items) {
-        gameState.inventory.container.items.forEach(item => {
-            const displayItem = { ...item };
-            displayItem.equipped = false;
-            displayItem.source = 'container';
-            displayItem.displayName = item.name;
-            gameState.inventory.currentlyDisplayedItems.push(displayItem);
+    if (window.gameState.inventory.container && window.gameState.inventory.container.items) {
+        window.gameState.inventory.container.items.forEach(item => {
+            const displayItem = { ...item, equipped: false, source: 'container', displayName: item.name };
+            window.gameState.inventory.currentlyDisplayedItems.push(displayItem);
         });
     }
 
-    if (gameState.inventory.currentlyDisplayedItems.length === 0) {
+    let collectedFloorItems = [];
+    if (window.gameState && window.gameState.floorItems && window.gameState.playerPos) {
+        const playerX = window.gameState.playerPos.x;
+        const playerY = window.gameState.playerPos.y;
+
+        // Define the 3x3 grid boundaries
+        const minX = playerX - 1;
+        const maxX = playerX + 1;
+        const minY = playerY - 1;
+        const maxY = playerY + 1;
+
+        window.gameState.floorItems.forEach(floorEntry => {
+            // Check if the item's coordinates are within the 3x3 grid
+            if (floorEntry.x >= minX && floorEntry.x <= maxX &&
+                floorEntry.y >= minY && floorEntry.y <= maxY) {
+
+                let displayName = floorEntry.item.name;
+                // Optional: Add indication if item is not directly underfoot.
+                // if (floorEntry.x !== playerX || floorEntry.y !== playerY) {
+                //     displayName = `${floorEntry.item.name} (Nearby)`; 
+                // }
+
+                const displayItem = {
+                    ...floorEntry.item,
+                    equipped: false,
+                    source: 'floor',
+                    originalFloorItemEntry: floorEntry,
+                    displayName: displayName
+                };
+                collectedFloorItems.push(displayItem);
+            }
+        });
+    }
+
+    collectedFloorItems.forEach(fi => {
+        window.gameState.inventory.currentlyDisplayedItems.push(fi);
+    });
+
+    if (window.gameState.inventory.currentlyDisplayedItems.length === 0) {
         list.textContent = " No items ";
-        gameState.inventory.cursor = 0;
+        window.gameState.inventory.cursor = 0;
         return;
     }
 
-    if (gameState.inventory.cursor >= gameState.inventory.currentlyDisplayedItems.length) {
-        gameState.inventory.cursor = Math.max(0, gameState.inventory.currentlyDisplayedItems.length - 1);
+    if (window.gameState.inventory.cursor >= window.gameState.inventory.currentlyDisplayedItems.length) {
+        window.gameState.inventory.cursor = Math.max(0, window.gameState.inventory.currentlyDisplayedItems.length - 1);
     }
-    if (gameState.inventory.cursor < 0 && gameState.inventory.currentlyDisplayedItems.length > 0) {
-        gameState.inventory.cursor = 0;
+    if (window.gameState.inventory.cursor < 0 && window.gameState.inventory.currentlyDisplayedItems.length > 0) {
+        window.gameState.inventory.cursor = 0;
     }
 
-    gameState.inventory.currentlyDisplayedItems.forEach((item, idx) => {
+    let floorHeaderRendered = false;
+    window.gameState.inventory.currentlyDisplayedItems.forEach((item, idx) => {
+        if (item.source === 'floor' && !floorHeaderRendered) {
+            const floorHeader = document.createElement("div");
+            floorHeader.textContent = "--- Floor ---";
+            floorHeader.classList.add("inventory-subheader");
+            list.appendChild(floorHeader);
+            floorHeaderRendered = true;
+        }
+
         const d = document.createElement("div");
         let prefix = "";
         if (item.equipped) {
             prefix = "[EQUIPPED] ";
+        } else if (item.source === 'floor') {
+            prefix = "[FLOOR] ";
         }
         const sizeText = item.size !== undefined ? ` (Size: ${item.size})` : "";
-        d.textContent = `${idx + 1}. ${prefix}${item.displayName}${sizeText}`;
+        const nameToDisplay = item.displayName || item.name || "Unknown Item";
+        d.textContent = `${idx + 1}. ${prefix}${nameToDisplay}${sizeText}`;
 
-        if (idx === gameState.inventory.cursor) {
+        if (idx === window.gameState.inventory.cursor) {
             d.classList.add("selected");
         }
         list.appendChild(d);
@@ -378,11 +446,11 @@ function renderInventoryMenu() {
 
 // 11) Toggle panel
 function toggleInventoryMenu() {
-    gameState.inventory.open = !gameState.inventory.open;
+    window.gameState.inventory.open = !window.gameState.inventory.open;
     const inventoryListDiv = document.getElementById("inventoryList");
     if (!inventoryListDiv) return;
 
-    if (gameState.inventory.open) {
+    if (window.gameState.inventory.open) {
         inventoryListDiv.classList.remove("hidden");
         inventoryListDiv.style.display = 'block';
         renderInventoryMenu();
@@ -390,10 +458,10 @@ function toggleInventoryMenu() {
         inventoryListDiv.classList.add("hidden");
         inventoryListDiv.style.display = 'none';
         clearInventoryHighlight();
-        gameState.inventory.currentlyDisplayedItems = [];
+        window.gameState.inventory.currentlyDisplayedItems = [];
 
-        if (gameState.isInCombat &&
-            gameState.combatPhase === 'playerAttackDeclare' &&
+        if (window.gameState.isInCombat &&
+            window.gameState.combatPhase === 'playerAttackDeclare' &&
             typeof window.combatManager !== 'undefined' &&
             typeof window.combatManager.populateWeaponSelect === 'function') {
             logToConsole("[toggleInventoryMenu] Inventory closed during playerAttackDeclare. Refreshing combat weapon select.");
@@ -404,22 +472,49 @@ function toggleInventoryMenu() {
 
 // 12) Use selected item
 function interactInventoryItem() {
-    if (!gameState.inventory.currentlyDisplayedItems || gameState.inventory.currentlyDisplayedItems.length === 0) {
+    if (!window.gameState.inventory.currentlyDisplayedItems || window.gameState.inventory.currentlyDisplayedItems.length === 0) {
         logToConsole("No items to interact with.");
         return;
     }
 
-    const cursorIndex = gameState.inventory.cursor;
-    if (cursorIndex < 0 || cursorIndex >= gameState.inventory.currentlyDisplayedItems.length) {
+    const cursorIndex = window.gameState.inventory.cursor;
+    if (cursorIndex < 0 || cursorIndex >= window.gameState.inventory.currentlyDisplayedItems.length) {
         logToConsole("Invalid inventory cursor position.");
         return;
     }
 
-    const selectedDisplayItem = gameState.inventory.currentlyDisplayedItems[cursorIndex];
+    const selectedDisplayItem = window.gameState.inventory.currentlyDisplayedItems[cursorIndex];
     if (!selectedDisplayItem) {
         logToConsole("No item selected at cursor position.");
         return;
     }
+
+    // Inside interactInventoryItem(), after:
+    // const selectedDisplayItem = window.gameState.inventory.currentlyDisplayedItems[cursorIndex];
+    // if (!selectedDisplayItem) { /* ... return ... */ }
+
+    if (selectedDisplayItem.source === 'floor') {
+        const itemToTake = selectedDisplayItem.originalFloorItemEntry.item;
+        if (canAddItem(itemToTake)) {
+            const floorItemIndex = window.gameState.floorItems.findIndex(entry => entry === selectedDisplayItem.originalFloorItemEntry);
+            if (floorItemIndex > -1) {
+                window.gameState.floorItems.splice(floorItemIndex, 1);
+            }
+            addItem(itemToTake);
+            logToConsole(`Picked up ${itemToTake.name} from the floor.`);
+            if (typeof window.mapRenderer !== 'undefined' && typeof window.mapRenderer.scheduleRender === 'function') {
+                window.mapRenderer.scheduleRender();
+            }
+        } else {
+            logToConsole(`Not enough space to pick up ${itemToTake.name}.`);
+        }
+
+        if (window.gameState.inventory.open) {
+            renderInventoryMenu();
+        }
+        return; // Crucial: exit after handling floor item
+    }
+    // ... (The rest of the original interactInventoryItem function for other item types)
 
     logToConsole(`Interacting with: ${selectedDisplayItem.displayName}, Equipped: ${selectedDisplayItem.equipped}, Source: ${selectedDisplayItem.source}`);
 
@@ -429,25 +524,25 @@ function interactInventoryItem() {
         const maxNeeds = 24; // Assuming 24 is the max for hunger and thirst
 
         // Ensure playerHunger and playerThirst are initialized
-        if (typeof gameState.playerHunger === 'undefined') gameState.playerHunger = maxNeeds;
-        if (typeof gameState.playerThirst === 'undefined') gameState.playerThirst = maxNeeds;
+        if (typeof window.gameState.playerHunger === 'undefined') window.gameState.playerHunger = maxNeeds;
+        if (typeof window.gameState.playerThirst === 'undefined') window.gameState.playerThirst = maxNeeds;
 
         if (selectedDisplayItem.effects.hunger) {
             const hungerRestored = selectedDisplayItem.effects.hunger;
-            gameState.playerHunger = Math.min(gameState.playerHunger + hungerRestored, maxNeeds);
-            logToConsole(`Restored ${hungerRestored} hunger. Current hunger: ${gameState.playerHunger}/${maxNeeds}`);
+            window.gameState.playerHunger = Math.min(window.gameState.playerHunger + hungerRestored, maxNeeds);
+            logToConsole(`Restored ${hungerRestored} hunger. Current hunger: ${window.gameState.playerHunger}/${maxNeeds}`);
             consumed = true;
         }
         if (selectedDisplayItem.effects.thirst) {
             const thirstRestored = selectedDisplayItem.effects.thirst;
-            gameState.playerThirst = Math.min(gameState.playerThirst + thirstRestored, maxNeeds);
-            logToConsole(`Restored ${thirstRestored} thirst. Current thirst: ${gameState.playerThirst}/${maxNeeds}`);
+            window.gameState.playerThirst = Math.min(window.gameState.playerThirst + thirstRestored, maxNeeds);
+            logToConsole(`Restored ${thirstRestored} thirst. Current thirst: ${window.gameState.playerThirst}/${maxNeeds}`);
             consumed = true;
         }
 
         if (consumed) {
             logToConsole(`You consumed ${selectedDisplayItem.displayName}.`);
-            removeItem(selectedDisplayItem.name);
+            removeItem(selectedDisplayItem.name); // This now uses window.gameState internally
 
             if (typeof window.updatePlayerStatusDisplay === 'function') {
                 window.updatePlayerStatusDisplay();
@@ -455,7 +550,7 @@ function interactInventoryItem() {
                 logToConsole("Error: updatePlayerStatusDisplay function not found to update needs bars.");
             }
 
-            if (gameState.inventory.open) {
+            if (window.gameState.inventory.open) { // Check window.gameState here
                 renderInventoryMenu();
             }
             return; // Consumed, so no further action.
@@ -467,25 +562,25 @@ function interactInventoryItem() {
     if (selectedDisplayItem.equipped === true) {
         if (selectedDisplayItem.source === 'clothing' && selectedDisplayItem.originalLayer) {
             logToConsole(`Attempting to unequip ${selectedDisplayItem.displayName} from layer ${selectedDisplayItem.originalLayer}...`);
-            unequipClothing(selectedDisplayItem.originalLayer);
+            unequipClothing(selectedDisplayItem.originalLayer); // This now uses window.gameState internally
         } else if (selectedDisplayItem.source === 'hand' && selectedDisplayItem.originalHandIndex !== undefined) {
             logToConsole(`Attempting to unequip ${selectedDisplayItem.displayName} from hand ${selectedDisplayItem.originalHandIndex + 1}...`);
-            unequipItem(selectedDisplayItem.originalHandIndex);
+            unequipItem(selectedDisplayItem.originalHandIndex); // This now uses window.gameState internally
         } else {
             logToConsole(`Cannot unequip ${selectedDisplayItem.displayName}: Unknown equipped source or missing data.`);
         }
     } else {
         if (selectedDisplayItem.isClothing) {
             logToConsole(`Attempting to wear ${selectedDisplayItem.displayName}...`);
-            equipClothing(selectedDisplayItem.name);
+            equipClothing(selectedDisplayItem.name); // This now uses window.gameState internally
         } else if (selectedDisplayItem.canEquip) {
             let handSlotToEquip = -1;
-            if (!gameState.inventory.handSlots[0]) handSlotToEquip = 0;
-            else if (!gameState.inventory.handSlots[1]) handSlotToEquip = 1;
+            if (!window.gameState.inventory.handSlots[0]) handSlotToEquip = 0;
+            else if (!window.gameState.inventory.handSlots[1]) handSlotToEquip = 1;
 
             if (handSlotToEquip !== -1) {
                 logToConsole(`Attempting to equip ${selectedDisplayItem.displayName} to hand ${handSlotToEquip + 1}...`);
-                equipItem(selectedDisplayItem.name, handSlotToEquip);
+                equipItem(selectedDisplayItem.name, handSlotToEquip); // This now uses window.gameState internally
             } else {
                 logToConsole(`Both hands are full. Cannot equip ${selectedDisplayItem.displayName}.`);
             }
@@ -500,7 +595,7 @@ function interactInventoryItem() {
     // Equip/unequip functions call updateInventoryUI and renderCharacterInfo (which updates health, not inventory list).
     // The consumable path calls renderInventoryMenu if open.
     // For safety, if inventory is open, re-render menu. updateInventoryUI is generally handled by sub-functions.
-    if (gameState.inventory.open) {
+    if (window.gameState.inventory.open) { // Check window.gameState here
         renderInventoryMenu();
     }
     // updateInventoryUI(); // This call is likely redundant as primary actions (equip, unequip, remove) handle it.
@@ -527,3 +622,6 @@ window.renderInventoryMenu = renderInventoryMenu;
 window.toggleInventoryMenu = toggleInventoryMenu;
 window.interactInventoryItem = interactInventoryItem;
 window.clearInventoryHighlight = clearInventoryHighlight;
+if (typeof window.dropItem === 'undefined') {
+    window.dropItem = dropItem;
+}
