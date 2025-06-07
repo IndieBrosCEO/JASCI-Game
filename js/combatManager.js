@@ -852,7 +852,6 @@
         // Inside calculateAttackRoll, after existing initializations (like skillName, skillBasedModifier)
         // but before 'let baseRoll = rollDie(20);' or before totalAttackRoll is summed.
 
-        let lightingPenalty = 0;
         let targetX, targetY;
 
         // Determine target coordinates for lighting check
@@ -866,20 +865,29 @@
             targetY = this.gameState.combatCurrentDefender.mapPos.y;
         }
 
-        if (typeof targetX === 'number' && typeof targetY === 'number') {
-            // Check if getTileLightingLevel is available (it's global via window)
-            if (typeof window.getTileLightingLevel === 'function') {
-                const lightingLevel = window.getTileLightingLevel(targetX, targetY, this.gameState);
-                if (lightingLevel === 'dark') {
-                    lightingPenalty = -2;
-                    if (typeof logToConsole === 'function') {
-                        const attackerName = (attacker === this.gameState || attacker === this.gameState.player) ? "Player" : (attacker.name || attacker.id);
-                        logToConsole(`${attackerName}'s attack target at (${targetX},${targetY}) is in darkness. Applying -2 penalty.`, "orange");
-                    }
+        let isLitBySource = false;
+        if (typeof targetX === 'number' && typeof targetY === 'number' && this.gameState.lightSources && typeof isTileIlluminated === 'function') {
+            for (const source of this.gameState.lightSources) {
+                if (isTileIlluminated(targetX, targetY, source)) {
+                    isLitBySource = true;
+                    break;
                 }
-            } else {
-                // console.warn("getTileLightingLevel function not found. Cannot apply lighting penalties.");
             }
+        }
+
+        const ambientColorHex = (typeof getAmbientLightColor === 'function' && this.gameState.currentTime && typeof this.gameState.currentTime.hours === 'number') ? getAmbientLightColor(this.gameState.currentTime.hours) : '#FFFFFF'; // Default to bright if function/time missing
+        const darkAmbientHexCodes = ['#303045']; // Night
+        // Consider adding '#B0A0A0' (Dusk) and '#A0A0C0' (Dawn) if they should also incur penalties without other light sources.
+        const isAmbientDark = darkAmbientHexCodes.includes(ambientColorHex.toUpperCase());
+
+        let lightingPenalty = 0;
+        if (!isLitBySource && isAmbientDark) {
+            lightingPenalty = -2;
+        }
+
+        const attackerNameForLog = (attacker === this.gameState || attacker === this.gameState.player) ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id);
+        if (lightingPenalty !== 0 && typeof targetX === 'number' && typeof targetY === 'number') {
+            logToConsole(`${attackerNameForLog}'s target at (${targetX},${targetY}) is in darkness (Ambient: ${ambientColorHex}, Lit by source: ${isLitBySource}). Applying ${lightingPenalty} penalty to attack.`, 'orange');
         }
 
         let baseRoll = rollDie(20);
@@ -908,7 +916,8 @@
             roll: totalAttackRoll,
             naturalRoll: baseRoll,
             isCriticalHit: canCrit && baseRoll === 20,
-            isCriticalMiss: canCrit && baseRoll === 1
+            isCriticalMiss: canCrit && baseRoll === 1,
+            lightingPenaltyApplied: lightingPenalty // Added this line
         };
     }
 
@@ -1180,7 +1189,7 @@
         // logMsg is already declared at the beginning of the function
         logMsg = `ATTACK: ${attackerName} targets ${targetDescriptionForLog} with ${weapon ? weapon.name : 'Unarmed'} (Mode: ${fireMode}). ` +
             `Roll: ${attackResult.roll} (Nat: ${attackResult.naturalRoll}, Skill (${actionContext.skillName}): ${actionContext.skillBasedModifier}, ` +
-            `BodyPart: ${actionContext.bodyPartModifier}, Range: ${actionContext.rangeModifier}, Mode: ${actionContext.attackModifier}, Move: ${actionContext.attackerMovementPenalty}, Light: ${lightingPenalty})`;
+            `BodyPart: ${actionContext.bodyPartModifier}, Range: ${actionContext.rangeModifier}, Mode: ${actionContext.attackModifier}, Move: ${actionContext.attackerMovementPenalty}, Light: ${attackResult.lightingPenaltyApplied})`;
         logToConsole(logMsg, window.getSkillColor(actionContext.skillName));
         if (actionContext.attackerMovementPenalty !== 0) logToConsole(`Movement: ${attackerName} ${actionContext.attackerMovementPenalty} to attack roll.`, 'grey');
 

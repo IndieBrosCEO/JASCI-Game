@@ -3,6 +3,18 @@
   "WorkspaceRootPath": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\js\\mapRenderer.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:js\\mapRenderer.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\js\\combatManager.js||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:js\\combatManager.js||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\assets\\maps\\mapIndex.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:assets\\maps\\mapIndex.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
@@ -19,20 +31,8 @@
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mapMaker\\mapMaker.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\js\\mapRenderer.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:js\\mapRenderer.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\js\\gameState.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:js\\gameState.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\js\\combatManager.js||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:js\\combatManager.js||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\js\\console.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
@@ -94,17 +94,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 11,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 2,
               "Title": "index.html",
               "DocumentMoniker": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\index.html",
               "RelativeDocumentMoniker": "index.html",
               "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\index.html",
               "RelativeToolTip": "index.html",
-              "ViewState": "AgIAAHkAAAAAAAAAAAAYwI0AAAAKAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAHAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-04-30T23:43:24.927Z",
               "IsPinned": true,
@@ -125,20 +125,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
               "Title": "mapRenderer.js",
               "DocumentMoniker": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\js\\mapRenderer.js",
               "RelativeDocumentMoniker": "js\\mapRenderer.js",
               "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\js\\mapRenderer.js",
               "RelativeToolTip": "js\\mapRenderer.js",
-              "ViewState": "AgIAANABAAAAAAAAAAAtwOcBAAAsAAAAAAAAAA==",
+              "ViewState": "AgIAAPYBAAAAAAAAAAAAAAECAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2025-05-28T00:26:41.745Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "gameState.js",
               "DocumentMoniker": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\js\\gameState.js",
               "RelativeDocumentMoniker": "js\\gameState.js",
@@ -186,7 +186,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 5,
               "Title": "items.json",
               "DocumentMoniker": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\assets\\definitions\\items.json",
               "RelativeDocumentMoniker": "assets\\definitions\\items.json",
@@ -194,24 +194,24 @@
               "RelativeToolTip": "assets\\definitions\\items.json",
               "ViewState": "AgIAAM8KAAAAAAAAAAAswPgKAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-05-23T00:33:05.996Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-23T00:33:05.996Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 1,
               "Title": "combatManager.js",
               "DocumentMoniker": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\js\\combatManager.js",
               "RelativeDocumentMoniker": "js\\combatManager.js",
               "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\js\\combatManager.js",
               "RelativeToolTip": "js\\combatManager.js",
-              "ViewState": "AgIAAMIIAAAAAAAAAAAowO0IAAAlAAAAAAAAAA==",
+              "ViewState": "AgIAAMsIAAAAAAAAAAAowPYIAAAlAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-05-26T02:15:51.986Z"
+              "WhenOpened": "2025-05-26T02:15:51.986Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
               "Title": "tileset.json",
               "DocumentMoniker": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\assets\\definitions\\tileset.json",
               "RelativeDocumentMoniker": "assets\\definitions\\tileset.json",
@@ -219,12 +219,11 @@
               "RelativeToolTip": "assets\\definitions\\tileset.json",
               "ViewState": "AgIAAGEAAAAAAAAAAAAAAG4AAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-05-26T02:47:09.225Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-26T02:47:09.225Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": "mapMaker.html",
               "DocumentMoniker": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\mapMaker\\mapMaker.html",
               "RelativeDocumentMoniker": "mapMaker\\mapMaker.html",
@@ -232,12 +231,11 @@
               "RelativeToolTip": "mapMaker\\mapMaker.html",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2025-06-02T04:22:31.574Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-02T04:22:31.574Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "mapIndex.json",
               "DocumentMoniker": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\assets\\maps\\mapIndex.json",
               "RelativeDocumentMoniker": "assets\\maps\\mapIndex.json",

@@ -40,6 +40,34 @@ function blendColors(baseColorHex, tintColorHex, tintFactor) {
     }
 }
 
+function brightenColor(hexColor, factor) {
+    if (typeof hexColor !== 'string' || !hexColor.startsWith('#') || typeof factor !== 'number') {
+        return hexColor || '#FFFFFF'; // Return original or white if invalid input
+    }
+    try {
+        let r = parseInt(hexColor.substring(1, 3), 16);
+        let g = parseInt(hexColor.substring(3, 5), 16);
+        let b = parseInt(hexColor.substring(5, 7), 16);
+
+        if (isNaN(r) || isNaN(g) || isNaN(b)) return hexColor || '#FFFFFF';
+
+        factor = Math.max(0, Math.min(1, factor)); // Clamp factor to 0-1
+
+        r = Math.round(r + (255 - r) * factor);
+        g = Math.round(g + (255 - g) * factor);
+        b = Math.round(b + (255 - b) * factor);
+
+        r = Math.max(0, Math.min(255, r));
+        g = Math.max(0, Math.min(255, g));
+        b = Math.max(0, Math.min(255, b));
+
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    } catch (e) {
+        // console.warn("Error brightening color:", e, hexColor, factor);
+        return hexColor || '#FFFFFF'; // Fallback on error
+    }
+}
+
 // Add this new helper function at the top of js/mapRenderer.js
 function getAmbientLightColor(currentTimeHours) {
     // Ensure currentTimeHours is a number and within 0-23 range
@@ -483,9 +511,10 @@ window.mapRenderer = {
 
         const fragment = isInitialRender ? document.createDocumentFragment() : null;
 
+        const LIGHT_SOURCE_BRIGHTNESS_BOOST = 0.1; // Constant for brightness boost
         const currentAmbientColor = getAmbientLightColor(gameState.currentTime && typeof gameState.currentTime.hours === 'number' ? gameState.currentTime.hours : 12);
         const AMBIENT_STRENGTH_VISIBLE = 0.3;
-        const AMBIENT_STRENGTH_VISITED = 0.4;
+        const AMBIENT_STRENGTH_VISITED = 0.2;
         // const DEBUG_AMBIENT_TINT_COLOR = '#FF00FF'; // Removed
 
         if (gameState.tileCache && !isInitialRender) {
@@ -574,9 +603,9 @@ window.mapRenderer = {
                             let g = parseInt(c.substring(3, 5), 16) || 0;
                             let b = parseInt(c.substring(5, 7), 16) || 0;
 
-                            r = Math.max(0, Math.floor(r * 0.1));
-                            g = Math.max(0, Math.floor(g * 0.1));
-                            b = Math.max(0, Math.floor(b * 0.1));
+                            r = Math.max(0, Math.floor(r * 0.6));
+                            g = Math.max(0, Math.floor(g * 0.6));
+                            b = Math.max(0, Math.floor(b * 0.6));
 
                             return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
                         } catch (e) {
@@ -600,12 +629,56 @@ window.mapRenderer = {
 
                     if (fowStatus === 'visible') {
                         if (isLit) {
-                            displayColor = originalColor;
+                            let activeLight = null;
+                            // Find the first light source illuminating this tile
+                            if (gameState.lightSources && gameState.lightSources.length > 0) {
+                                for (const source of gameState.lightSources) {
+                                    if (isTileIlluminated(x, y, source)) {
+                                        activeLight = source;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (activeLight && activeLight.color && typeof activeLight.intensity === 'number') {
+                                const brightenedBase = brightenColor(originalColor, LIGHT_SOURCE_BRIGHTNESS_BOOST);
+                                displayColor = blendColors(brightenedBase, activeLight.color, activeLight.intensity / 2);
+                            } else {
+                                // Fallback if no specific light found or light has no color/intensity
+                                displayColor = brightenColor(originalColor, LIGHT_SOURCE_BRIGHTNESS_BOOST / 2);
+                            }
                         } else {
+                            // Not lit by a dynamic source, apply ambient tint
                             displayColor = blendColors(originalColor, currentAmbientColor, AMBIENT_STRENGTH_VISIBLE);
                         }
                     } else if (fowStatus === 'visited') {
-                        displayColor = blendColors(displayColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
+                        // For visited tiles, if they are lit by a dynamic source, apply a less intense version of that light effect
+                        // Otherwise, apply the standard visited ambient tint.
+                        if (isLit) {
+                            let activeLight = null;
+                            if (gameState.lightSources && gameState.lightSources.length > 0) {
+                                for (const source of gameState.lightSources) {
+                                    if (isTileIlluminated(x, y, source)) {
+                                        activeLight = source;
+                                        break;
+                                    }
+                                }
+                            }
+                            // displayColor is already the darkened "visited" color from earlier logic.
+                            if (activeLight && activeLight.color && typeof activeLight.intensity === 'number') {
+                                // Brighten the already darkened "visited" color slightly, then blend with light source color at a reduced intensity.
+                                const slightlyBrightenedVisited = brightenColor(displayColor, LIGHT_SOURCE_BRIGHTNESS_BOOST / 2);
+                                displayColor = blendColors(slightlyBrightenedVisited, activeLight.color, activeLight.intensity * 0.25); // Further Reduced intensity for visited
+                            } else {
+                                // If no active light but it's "isLit" (e.g. from a default map property not in dynamic sources),
+                                // just apply ambient visited tint. Or, if it should be brighter, adjust here.
+                                // Current 'displayColor' is already the darkened base for visited.
+                                // We might blend it with ambient for consistency if needed, or leave as is if the darkening is enough.
+                                displayColor = blendColors(displayColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
+                            }
+                        } else {
+                            displayColor = blendColors(displayColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
+                        }
                     }
                 }
 
