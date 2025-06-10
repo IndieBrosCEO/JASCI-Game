@@ -271,25 +271,6 @@ function handleUpdateSkill(name, value) {
     // The skill point display is updated directly by updateSkill.
 }
 
-
-/**************************************************************
- * Inventory System Functions
- **************************************************************/
-// All inventory functions (InventoryContainer, Item constructors, canAddItem, addItem, removeItem, 
-// equipItem, unequipItem, equipClothing, unequipClothing, updateInventoryUI, 
-// renderInventoryMenu, toggleInventoryMenu, interactInventoryItem, clearInventoryHighlight)
-// are now in js/inventory.js.
-
-// The gameState.inventory object literal (except for the container itself) is in js/gameState.js.
-// The gameState.inventory.container will be initialized in script.js (e.g., in startGame).
-
-/**************************************************************
- * Health System Functions
- **************************************************************/
-// initializeHealth, getArmorForBodyPart, updateHealthCrisis, applyTreatment,
-// renderHealthTable, formatBodyPartName, gameOver are now in js/character.js
-// and are generalized to accept a 'character' parameter.
-
 /**************************************************************
  * Event Handlers & Initialization
  **************************************************************/

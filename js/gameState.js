@@ -129,10 +129,7 @@ const gameState = {
     retargetingJustHappened: false,
     isWaitingForPlayerCombatInput: false,
     floorItems: [],
-
-    // Containers
-    containers: [],
-    nextContainerId: 1,
+    worldContainers: [],
 };
 
 // Initialize player object and wornClothing if they don't exist
