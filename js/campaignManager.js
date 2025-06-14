@@ -1,16 +1,18 @@
-class CampaignManager {
+﻿class CampaignManager {
     constructor() {
         this.campaignsPath = 'campaigns/'; // Base path for campaigns
         this.activeCampaignId = null;
         this.activeCampaignManifest = null;
         this.activeCampaignZones = null; // New property
-            this.activeCampaignWorldMap = null; // New property
-            this.activeCampaignRandomEncounters = null; // New
-            this.activeCampaignNpcs = null; // New: Will store a Map of NPCs by ID
-            this.activeCampaignDialogues = new Map();
-            this.activeCampaignSchedules = null;
-            this.activeCampaignQuests = null;
+        this.activeCampaignWorldMap = null; // New property
+        this.activeCampaignRandomEncounters = null; // New
+        this.activeCampaignNpcs = null; // New: Will store a Map of NPCs by ID
+        this.activeCampaignDialogues = new Map();
+        this.activeCampaignSchedules = null;
+        this.activeCampaignQuests = null;
         this.campaignCache = new Map(); // To cache loaded campaign manifests
+        this.campaignRegistry = new Map(); // Added
+        this.activeCampaignBasePath = null; // Added
     }
 
     async listAvailableCampaigns() {
@@ -21,7 +23,11 @@ class CampaignManager {
                 throw new Error(`Failed to fetch campaign index: ${response.statusText}`);
             }
             const indexData = await response.json();
-            return indexData.availableCampaigns || [];
+            const campaigns = indexData.availableCampaigns || [];
+            campaigns.forEach(campaign => {
+                this.campaignRegistry.set(campaign.id, campaign);
+            });
+            return campaigns;
         } catch (error) {
             console.error("Error loading campaign index:", error);
             return []; // Return empty array on error
@@ -33,18 +39,25 @@ class CampaignManager {
             return this.campaignCache.get(campaignId);
         }
 
-        const manifestPath = `${this.campaignsPath}${campaignId}/campaign.json`;
+        const campaignData = this.campaignRegistry.get(campaignId);
+        if (!campaignData || !campaignData.manifestPath) {
+            const errorMsg = `Campaign data or manifestPath not found in registry for ID: ${campaignId}`;
+            console.error(errorMsg);
+            throw new Error(errorMsg); // Or return null if you prefer to handle it that way
+        }
+
+        const actualManifestPath = `${this.campaignsPath}${campaignData.manifestPath}`;
         try {
-            const response = await fetch(manifestPath);
+            const response = await fetch(actualManifestPath);
             if (!response.ok) {
-                throw new Error(`Failed to load campaign manifest for ${campaignId}: ${response.statusText}`);
+                throw new Error(`Failed to load campaign manifest for ${campaignId} from ${actualManifestPath}: ${response.statusText}`);
             }
             const manifest = await response.json();
             this.campaignCache.set(campaignId, manifest);
-            console.log(`Campaign manifest for '${campaignId}' loaded successfully.`);
+            console.log(`Campaign manifest for '${campaignId}' loaded successfully from ${actualManifestPath}.`);
             return manifest;
         } catch (error) {
-            console.error(`Error loading campaign manifest for ${campaignId}:`, error);
+            console.error(`Error loading campaign manifest for ${campaignId} from ${actualManifestPath}:`, error);
             return null;
         }
     }
@@ -85,7 +98,16 @@ class CampaignManager {
         if (manifest) {
             this.activeCampaignId = campaignId;
             this.activeCampaignManifest = manifest;
-            console.log(`Campaign '${campaignId}' activated.`);
+
+            const campaignData = this.campaignRegistry.get(campaignId);
+            if (campaignData && campaignData.manifestPath) {
+                this.activeCampaignBasePath = campaignData.manifestPath.substring(0, campaignData.manifestPath.lastIndexOf('/') + 1);
+            } else {
+                // Should not happen if manifest loaded, but as a fallback:
+                console.warn(`Could not determine base path for campaign ${campaignId}. Asset loading might be affected.`);
+                this.activeCampaignBasePath = `${campaignId}/`; // Fallback, less ideal
+            }
+            console.log(`Campaign '${campaignId}' activated with base path '${this.activeCampaignBasePath}'.`);
 
             await this.loadZoneData(); // Load zone data
             await this.loadWorldMapData(); // Load world map data
@@ -115,6 +137,7 @@ class CampaignManager {
             this.activeCampaignDialogues = new Map();
             this.activeCampaignSchedules = null;
             this.activeCampaignQuests = null;
+            this.activeCampaignBasePath = null; // Reset base path
             // TODO: Add hooks or events
         }
     }
@@ -169,11 +192,16 @@ class CampaignManager {
     }
 
     getCampaignAssetPath(assetRelativePath) {
-        if (!this.activeCampaignId) {
-            console.warn('No active campaign to get asset path from.');
+        if (!this.activeCampaignId || this.activeCampaignBasePath === null) {
+            console.warn('No active campaign or base path to get asset path from. ActiveCampaignID:', this.activeCampaignId, "Base Path:", this.activeCampaignBasePath);
             return null;
         }
-        return `${this.campaignsPath}${this.activeCampaignId}/${assetRelativePath}`;
+        // Ensure assetRelativePath doesn't start with a slash if activeCampaignBasePath already ends with one.
+        // And ensure there's exactly one slash between them.
+        let path = `${this.campaignsPath}${this.activeCampaignBasePath}${assetRelativePath}`;
+        // Simple normalization: replace // with / but not for protocol (http://)
+        path = path.replace(/(?<!:)\/\//g, '/');
+        return path;
     }
 
     async loadWorldMapData() {
@@ -268,10 +296,10 @@ class CampaignManager {
                         const dialogueData = await response.json();
                         // Use the ID from within the dialogue file as the key
                         if (dialogueData.id) {
-                           this.activeCampaignDialogues.set(dialogueData.id, dialogueData);
-                           console.log(`Dialogue '${dialogueData.id}' for NPC '${npc.id}' loaded successfully.`);
+                            this.activeCampaignDialogues.set(dialogueData.id, dialogueData);
+                            console.log(`Dialogue '${dialogueData.id}' for NPC '${npc.id}' loaded successfully.`);
                         } else {
-                           console.warn(`Dialogue file ${npc.dialogueId} is missing an 'id' field.`);
+                            console.warn(`Dialogue file ${npc.dialogueId} is missing an 'id' field.`);
                         }
                     } catch (error) {
                         console.error(`Error loading dialogue file ${npc.dialogueId}:`, error);
@@ -286,25 +314,25 @@ class CampaignManager {
                 const encounter = this.activeCampaignRandomEncounters.specificEncounters[encounterKey];
                 // Corrected path to dialogueId in encounter structure
                 if (encounter.dialogue && typeof encounter.dialogue === 'string' && !this.activeCampaignDialogues.has(encounter.dialogue)) {
-                     const dialoguePath = encounter.dialogue; // e.g., "dialogue/merchants/traveling_road_merchant_01.json"
-                     const dialogueFilePath = this.getCampaignAssetPath(dialoguePath);
-                     if (!dialogueFilePath) continue;
+                    const dialoguePath = encounter.dialogue; // e.g., "dialogue/merchants/traveling_road_merchant_01.json"
+                    const dialogueFilePath = this.getCampaignAssetPath(dialoguePath);
+                    if (!dialogueFilePath) continue;
 
-                     try {
+                    try {
                         const response = await fetch(dialogueFilePath);
                         if (!response.ok) {
-                            throw new Error (`Failed to load dialogue file ${dialoguePath}: ${response.statusText}`);
+                            throw new Error(`Failed to load dialogue file ${dialoguePath}: ${response.statusText}`);
                         }
                         const dialogueData = await response.json();
                         if (dialogueData.id) {
                             this.activeCampaignDialogues.set(dialogueData.id, dialogueData);
                             console.log(`Dialogue '${dialogueData.id}' for encounter '${encounterKey}' loaded successfully.`);
                         } else {
-                           console.warn(`Dialogue file ${dialoguePath} for encounter '${encounterKey}' is missing an 'id' field.`);
+                            console.warn(`Dialogue file ${dialoguePath} for encounter '${encounterKey}' is missing an 'id' field.`);
                         }
-                     } catch (error) {
+                    } catch (error) {
                         console.error(`Error loading dialogue ${dialoguePath} for encounter '${encounterKey}':`, error);
-                     }
+                    }
                 }
             }
         }
@@ -430,7 +458,7 @@ class CampaignManager {
 }
 
 // Make it a singleton or provide a global instance
-const campaignManager = new CampaignManager();
+window.campaignManager = new CampaignManager();
 // If using modules, export it:
 // export default campaignManager;
 // For now, let's assume it's available globally for simplicity in a non-module script environment

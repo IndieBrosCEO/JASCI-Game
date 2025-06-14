@@ -4,10 +4,13 @@
     "\\assets",
     "\\assets\\definitions",
     "\\assets\\maps",
+    "\\campaigns",
+    "\\campaigns\\fallbrook",
+    "\\campaigns\\fallbrook\\dialogue",
     "\\js",
     "\\mapMaker",
     "\\Maps"
   ],
-  "SelectedNode": "\\js\\assetManager.js",
+  "SelectedNode": "\\campaigns\\fallbrook\\dialogue\\dialogue_sample_placeholder.json",
   "PreviewInSolutionExplorer": false
 }

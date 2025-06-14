@@ -1,4 +1,4 @@
-// js/globalStateManager.js
+﻿// js/globalStateManager.js
 class GlobalStateManager {
     constructor() {
         this.flags = {};
@@ -74,7 +74,7 @@ class GlobalStateManager {
                 }
                 break;
             case "updateQuestObjective":
-                 if (window.questManager && typeof window.questManager.updateObjectiveStatus === 'function') {
+                if (window.questManager && typeof window.questManager.updateObjectiveStatus === 'function') {
                     window.questManager.updateObjectiveStatus(action.questId, action.objectiveId, action.status || "completed", action.amount || 1);
                 } else {
                     console.warn("GSM: QuestManager not found for updateQuestObjective action.");
@@ -107,7 +107,7 @@ class GlobalStateManager {
                 }
                 break;
             case "startDialogue":
-                 console.log(`GSM: Would start dialogue ${action.dialogueId} with NPC ${action.npcId || context}. (DialogueManager trigger needed)`);
+                console.log(`GSM: Would start dialogue ${action.dialogueId} with NPC ${action.npcId || context}. (DialogueManager trigger needed)`);
                 // Example: if(window.dialogueManager && action.dialogueId) window.dialogueManager.startConversation(action.dialogueId, null, action.npcId || context);
                 break;
             default:
@@ -118,7 +118,7 @@ class GlobalStateManager {
     evaluateCondition(condition) {
         if (!condition || !condition.type) return true;
         console.log("GSM: Evaluating condition:", condition);
-        switch(condition.type) {
+        switch (condition.type) {
             case "flagSet": return this.isFlagSet(condition.flag);
             case "flagNotSet": return !this.isFlagSet(condition.flag);
             case "questCompleted": return window.questManager ? window.questManager.isQuestCompleted(condition.questId) : false;
@@ -131,7 +131,7 @@ class GlobalStateManager {
                 }
                 return false;
             case "questObjectiveNotCompleted":
-                 if (window.questManager && condition.questId && condition.objectiveId) {
+                if (window.questManager && condition.questId && condition.objectiveId) {
                     return !window.questManager.isObjectiveCompleted(condition.questId, condition.objectiveId);
                 }
                 return true;
@@ -145,7 +145,7 @@ class GlobalStateManager {
         const saveData = {
             flags: { ...this.flags },
             variables: { ...this.variables },
-            discoveredMapNodes: [ ...this.discoveredMapNodes ],
+            discoveredMapNodes: [...this.discoveredMapNodes],
             playerCurrentNodeId: this.playerCurrentNodeId,
             quests: window.questManager ? window.questManager.getSaveData() : {},
             campaign: window.campaignManager ? window.campaignManager.getSaveData() : {}
@@ -242,5 +242,5 @@ class GlobalStateManager {
     }
 }
 
-const globalStateManager = new GlobalStateManager();
+window.globalStateManager = new GlobalStateManager();
 // globalStateManager.loadGameState(); // Call explicitly at game start
