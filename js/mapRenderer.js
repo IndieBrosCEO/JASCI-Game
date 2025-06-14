@@ -263,21 +263,43 @@ window.mapRenderer = {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status} for base mapIndex.json`);
             baseMapIndex = await response.json();
             assetManagerInstance.setMapIndexData(baseMapIndex);
-        } catch (error) { console.error("Failed to load base map index:", error); }
-        mapSelector.innerHTML = '';
+            console.log("Base map index loaded and set in AssetManager from:", baseMapIndexUrl);
+        } catch (error) {
+            // Failure to load the base map index is a significant issue.
+            console.error(`Failed to load base map index from ${baseMapIndexUrl}:`, error);
+            const errorDisplay = document.getElementById('errorMessageDisplay');
+            if (errorDisplay) errorDisplay.textContent = "CRITICAL ERROR: Could not load base map list. Game may not function.";
+        }
+        mapSelector.innerHTML = ''; // Clear even if base failed, to prevent stale data.
         baseMapIndex.forEach(mapInfo => { const option = document.createElement('option'); option.value = mapInfo.id; option.textContent = mapInfo.name; mapSelector.appendChild(option); });
-        const userMapIndexUrl = `/user_assets/maps/mapIndex.json?t=${Date.now()}`;
+
+        const userOverridesMapIndexUrl = `/assets/maps/user_overrides/mapIndex.json?t=${Date.now()}`;
         try {
-            const userResponse = await fetch(userMapIndexUrl);
+            const userResponse = await fetch(userOverridesMapIndexUrl);
             if (userResponse.ok) {
-                const userMapIndex = await userResponse.json();
-                if (userMapIndex && userMapIndex.length > 0) {
-                    if (baseMapIndex.length > 0) { const sep = document.createElement('option'); sep.disabled = true; sep.textContent = '--- User Maps ---'; mapSelector.appendChild(sep); }
-                    userMapIndex.forEach(mapInfo => { const option = document.createElement('option'); option.value = mapInfo.id; option.textContent = `[User] ${mapInfo.name}`; mapSelector.appendChild(option); });
-                    if (baseMapIndex.length === 0) assetManagerInstance.setMapIndexData(userMapIndex);
+                const userOverridesMapIndex = await userResponse.json();
+                if (userOverridesMapIndex && userOverridesMapIndex.length > 0) {
+                    console.log("User overrides map index found, adding to selector.");
+                    if (baseMapIndex.length > 0 && userOverridesMapIndex.length > 0) {
+                        const sep = document.createElement('option'); sep.disabled = true; sep.textContent = '--- User Overrides ---'; mapSelector.appendChild(sep);
+                    }
+                    userOverridesMapIndex.forEach(mapInfo => {
+                        const option = document.createElement('option'); option.value = mapInfo.id; option.textContent = `[Override] ${mapInfo.name}`; mapSelector.appendChild(option);
+                    });
+                    console.log("User override maps added to selector.");
+                    if (baseMapIndex.length === 0) { // Should ideally merge or clearly indicate override
+                        assetManagerInstance.setMapIndexData(userOverridesMapIndex);
+                    }
                 }
-            } else if (userResponse.status !== 404) throw new Error(`HTTP error! status: ${userResponse.status} for user mapIndex.json`);
-        } catch (error) { console.error("Failed to load/process user map index:", error); }
+            } else if (userResponse.status === 404) {
+                console.log(`User overrides map index file not found (logging suppressed): ${userOverridesMapIndexUrl}`);
+            } else {
+                // Log other HTTP errors as warnings for user overrides.
+                console.warn(`Warning: HTTP error ${userResponse.status} when fetching user overrides map index from ${userOverridesMapIndexUrl}.`);
+            }
+        } catch (error) {
+            console.warn(`Failed to load or process user overrides map index from ${userOverridesMapIndexUrl}:`, error.message);
+        }
     },
     scheduleRender: function () {
         if (!gameState.renderScheduled) {
