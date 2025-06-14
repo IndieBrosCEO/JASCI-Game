@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NPC Template Test</title>
+    <script src="js/campaignManager.js"></script>
+</head>
+<body>
+    <h1>Testing NPC Template System</h1>
+    <script>
+        async function testFallbrookCampaignLoad() {
+            console.log("Starting testFallbrookCampaignLoad...");
+            // The CampaignManager constructor already called loadBaseNpcTemplates()
+
+            // Need to list campaigns to get the correct ID and manifest path for fallbrook_main_story
+            // This ensures the registry is populated before activating.
+            try {
+                await window.campaignManager.listAvailableCampaigns();
+                console.log("Available campaigns listed.");
+
+                // Assuming 'fallbrook_main_story' is the ID for "Fallbrook Aftermath"
+                // and its manifest is 'fallbrook/campaign_manifest.json'
+                // The listAvailableCampaigns should populate campaignRegistry correctly.
+                // If campaign_index.json maps "fallbrook_main_story" to "fallbrook/campaign_manifest.json"
+                // then activateCampaign will find it.
+
+                const campaignIdToTest = 'fallbrook_main_story';
+                console.log(`Attempting to activate campaign: ${campaignIdToTest}`);
+                const activationSuccess = await window.campaignManager.activateCampaign(campaignIdToTest);
+
+                if (activationSuccess) {
+                    console.log(`Campaign '${campaignIdToTest}' activated successfully for testing.`);
+                    // The VERIFY_TEMPLATE_NPC_* logs should have been printed during loadNpcData
+                } else {
+                    console.error(`Failed to activate campaign '${campaignIdToTest}' for testing.`);
+                }
+            } catch (error) {
+                console.error("Error during testFallbrookCampaignLoad:", error);
+            }
+            console.log("testFallbrookCampaignLoad finished.");
+        }
+        testFallbrookCampaignLoad();
+    </script>
+</body>
+</html>

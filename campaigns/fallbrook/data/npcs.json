@@ -2,6 +2,7 @@
   {
     "id": "fpd_nisleit",
     "name": "Captain David Nisleit",
+    "templateId": "generic_guard_melee",
     "sprite": "C",
     "color": "blue",
     "role": "fpd_commander",
@@ -62,6 +63,7 @@
   {
     "id": "con_grayson",
     "name": "Grayson",
+    "templateId": "generic_guard_melee",
     "sprite": "G",
     "color": "dark_yellow",
     "role": "conspirator_gun_runner",
@@ -294,5 +296,16 @@
     "tags": ["monster", "mutant", "hostile"],
     "teamId": 9,
     "lootTableId": "mutant_parts_alpha"
+  },
+  {
+    "id": "fallbrook_test_civilian",
+    "templateId": "generic_civilian",
+    "name": "Test Civilian Pat",
+    "role": "tester",
+    "faction": "neutral",
+    "dialogueId": "dialogue/fallbrook/dialogue_sample_placeholder.json",
+    "initialLocation": { "worldMapNodeId": "fallbrook_airpark_exterior", "mapX": 10, "mapY": 10 },
+    "sprite": "tC",
+    "color": "purple"
   }
 ]

@@ -8,7 +8,7 @@ class DialogueManager {
         this.onConversationEnd = null; // Callback when conversation ends
     }
 
-    startConversation(dialogueId, onEndCallback, npcContext = null) {
+    async startConversation(dialogueId, onEndCallback, npcContext = null) {
         if (!this.campaignManager) {
             console.error("DialogueManager: CampaignManager not available.");
             return false;
@@ -17,7 +17,7 @@ class DialogueManager {
             console.error("DialogueManager: GlobalStateManager not available.");
             return false;
         }
-        const dialogueData = this.campaignManager.getDialogueData(dialogueId);
+        const dialogueData = await this.campaignManager.getDialogueData(dialogueId); // AWAIT added
         if (!dialogueData) {
             console.error(`DialogueManager: Dialogue data for '${dialogueId}' not found.`);
             return false;

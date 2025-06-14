@@ -12,7 +12,58 @@
         this.activeCampaignQuests = null;
         this.campaignCache = new Map(); // To cache loaded campaign manifests
         this.campaignRegistry = new Map(); // Added
+        this.baseNpcTemplates = new Map(); // ADDED
         this.activeCampaignBasePath = null; // Added
+
+        this.loadBaseNpcTemplates(); // Call new method
+    }
+
+    deepMergeNpcData(template, override) {
+        const merged = { ...template }; // Start with a shallow copy of template
+
+        for (const key in override) {
+            if (override.hasOwnProperty(key)) {
+                if (override[key] instanceof Object && key in template && template[key] instanceof Object && !(override[key] instanceof Array)) {
+                    // Deep merge for nested objects (excluding arrays)
+                    merged[key] = this.deepMergeNpcData(template[key], override[key]);
+                } else if (key === 'tags' && Array.isArray(template.tags) && Array.isArray(override.tags)) {
+                    // Concatenate tags and remove duplicates
+                    merged[key] = [...new Set([...template.tags, ...override.tags])];
+                } else if (key === 'tags' && Array.isArray(override.tags) && override.tags.length === 0) {
+                    // If override provides an empty tags array, it clears template tags
+                    merged[key] = [];
+                }
+                // For other types or if template doesn't have the key as an object, override takes precedence
+                else {
+                    merged[key] = override[key];
+                }
+            }
+        }
+        // Ensure the final ID is from the override (campaign-specific NPC entry)
+        if (override.id) {
+            merged.id = override.id;
+        }
+        return merged;
+    }
+
+    async loadBaseNpcTemplates() {
+        const templatesPath = 'assets/definitions/base_npc_templates.json';
+        try {
+            const response = await fetch(templatesPath);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch base NPC templates: ${response.statusText} from ${templatesPath}`);
+            }
+            const templatesArray = await response.json();
+            templatesArray.forEach(template => {
+                if (template.templateId) {
+                    this.baseNpcTemplates.set(template.templateId, template);
+                }
+            });
+            console.log(`Base NPC templates loaded successfully. ${this.baseNpcTemplates.size} templates available.`);
+        } catch (error) {
+            console.error("Error loading base NPC templates:", error);
+            // Decide if this is a fatal error or if the game can proceed without templates
+        }
     }
 
     async listAvailableCampaigns() {
@@ -113,7 +164,7 @@
             await this.loadWorldMapData(); // Load world map data
             await this.loadRandomEncounterData(); // New call
             await this.loadNpcData(); // New call
-            await this.loadAllDialogueFiles(); // New call
+            // await this.loadAllDialogueFiles(); // REMOVED - Dialogues are now lazy-loaded
             await this.loadScheduleData(); // New call
             await this.loadQuestData(); // New call
 
@@ -153,11 +204,55 @@
         return this.activeCampaignSchedules.get(scheduleId);
     }
 
-    getDialogueData(dialogueId) {
-        if (!this.activeCampaignDialogues) {
+    async getDialogueData(dialoguePath) {
+        if (!dialoguePath) {
+            console.error("getDialogueData called with null or empty dialoguePath.");
             return null;
         }
-        return this.activeCampaignDialogues.get(dialogueId);
+
+        // Try to derive an ID from path for cache checking (e.g., "dialogue/a/b.json" -> "b")
+        const pathParts = dialoguePath.split('/');
+        const fileName = pathParts.pop(); // Get filename.json
+        const expectedDialogueId = fileName ? fileName.replace('.json', '') : null;
+
+        if (expectedDialogueId && this.activeCampaignDialogues.has(expectedDialogueId)) {
+            console.log(`CACHE_HIT: Dialogue '${expectedDialogueId}' (Path: ${dialoguePath}) found in cache.`);
+            return this.activeCampaignDialogues.get(expectedDialogueId);
+        }
+        // Additionally, check if the path itself was used as a key (less ideal, but for robustness during transition)
+        if (this.activeCampaignDialogues.has(dialoguePath)) {
+            console.log(`CACHE_HIT: Dialogue '${dialoguePath}' (Path: ${dialoguePath}) found in cache (using path as key).`);
+            return this.activeCampaignDialogues.get(dialoguePath);
+        }
+
+        const actualFilePath = this.getCampaignAssetPath(dialoguePath);
+        if (!actualFilePath) {
+            console.error(`Could not resolve campaign asset path for dialogue: ${dialoguePath}`);
+            return null;
+        }
+
+        try {
+            // console.log(`Fetching dialogue from: ${actualFilePath} (original path: ${dialoguePath})`);
+            const response = await fetch(actualFilePath);
+            if (!response.ok) {
+                console.error(`FILE_LOAD_ERROR: Error loading dialogue file ${dialoguePath} (Resolved: ${actualFilePath}): ${response.statusText}`);
+                return null;
+            }
+            const dialogueData = await response.json();
+
+            if (dialogueData && dialogueData.id) {
+                // Cache using the internal ID from the dialogue content
+                this.activeCampaignDialogues.set(dialogueData.id, dialogueData);
+                console.log(`FILE_LOAD: Dialogue '${dialogueData.id}' (Path: ${dialoguePath}, Resolved: ${actualFilePath}) loaded from file and cached.`);
+                return dialogueData;
+            } else {
+                console.error(`DATA_ERROR: Dialogue file ${dialoguePath} (Resolved: ${actualFilePath}) is missing an internal 'id' field or data is invalid.`);
+                return null;
+            }
+        } catch (error) {
+            console.error(`Exception while fetching or parsing dialogue ${dialoguePath} (Resolved: ${actualFilePath}):`, error);
+            return null;
+        }
     }
 
     getActiveCampaignNpcs() { // Returns the Map of all NPCs
@@ -168,7 +263,12 @@
         if (!this.activeCampaignNpcs) {
             return null;
         }
-        return this.activeCampaignNpcs.get(npcId);
+        const npc = this.activeCampaignNpcs.get(npcId);
+        // Inside getNpcData(npcId), before returning npc
+        if (npc && (npc.id === 'fpd_nisleit' || npc.id === 'con_grayson' || npc.id === 'fallbrook_test_civilian')) {
+            console.log(`TEST_NPC_DATA_RETRIEVAL for ${npc.id}: ${JSON.stringify(npc, null, 2)}`);
+        }
+        return npc;
     }
 
     getActiveCampaignRandomEncounters() {
@@ -234,7 +334,10 @@
             return;
         }
         const filePath = this.getCampaignAssetPath(this.activeCampaignManifest.randomEncounters);
-        if (!filePath) return;
+        if (!filePath) {
+            this.activeCampaignNpcs = new Map();
+            return;
+        }
 
         try {
             const response = await fetch(filePath);
@@ -264,129 +367,49 @@
                 throw new Error(`Failed to load NPC data: ${response.statusText}`);
             }
             const npcArray = await response.json();
-            this.activeCampaignNpcs = new Map(npcArray.map(npc => [npc.id, npc]));
-            console.log(`NPC data for '${this.activeCampaignId}' loaded and mapped.`);
+            const tempNpcMap = new Map(); // Use a temporary map for processing
+
+            for (const npcEntry of npcArray) {
+                let finalNpcData = npcEntry; // Start with the entry from campaign's npcs.json
+
+                if (npcEntry.templateId && this.baseNpcTemplates.has(npcEntry.templateId)) {
+                    const template = this.baseNpcTemplates.get(npcEntry.templateId);
+                    // Perform a deep merge. The ID from npcEntry should always take precedence.
+                    finalNpcData = this.deepMergeNpcData(JSON.parse(JSON.stringify(template)), npcEntry); // Pass deep copy of template
+                    console.log(`NPC '${npcEntry.id}' composed from template '${npcEntry.templateId}'.`);
+                } else if (npcEntry.templateId) {
+                    console.warn(`NPC '${npcEntry.id}' specified template '${npcEntry.templateId}', but template was not found. Using NPC data as defined in campaign file.`);
+                }
+
+                // Inside loadNpcData, after 'finalNpcData' is determined
+                // and before tempNpcMap.set(finalNpcData.id, finalNpcData);
+                if (finalNpcData.id === "fpd_nisleit" || finalNpcData.id === "con_grayson") {
+                    console.log(`VERIFY_TEMPLATE_NPC_ID: ${finalNpcData.id}, Template Used: ${npcEntry.templateId || 'None'}`);
+                    console.log(`VERIFY_TEMPLATE_NPC_NAME: ${finalNpcData.name}`);
+                    console.log(`VERIFY_TEMPLATE_NPC_STATS: ${JSON.stringify(finalNpcData.stats)}`);
+                    console.log(`VERIFY_TEMPLATE_NPC_SKILLS: ${JSON.stringify(finalNpcData.skills)}`);
+                    console.log(`VERIFY_TEMPLATE_NPC_HEALTH: ${JSON.stringify(finalNpcData.health)}`);
+                    console.log(`VERIFY_TEMPLATE_NPC_TAGS: ${JSON.stringify(finalNpcData.tags)}`);
+                    console.log(`VERIFY_TEMPLATE_NPC_ACTION_POINTS: ${finalNpcData.defaultActionPoints}`);
+                    console.log(`VERIFY_TEMPLATE_NPC_MOVEMENT_POINTS: ${finalNpcData.defaultMovementPoints}`);
+                }
+
+                if (finalNpcData.id) { // Ensure there's an ID to use as a key
+                   tempNpcMap.set(finalNpcData.id, finalNpcData);
+                } else {
+                    console.error("NPC entry missing 'id'. Cannot load this NPC:", finalNpcData);
+                }
+            }
+            this.activeCampaignNpcs = tempNpcMap; // Assign the fully processed map
+            console.log(`NPC data for '${this.activeCampaignId}' loaded. Total NPCs: ${this.activeCampaignNpcs.size}.`);
+
         } catch (error) {
             console.error(`Error loading NPC data for '${this.activeCampaignId}':`, error);
-            this.activeCampaignNpcs = new Map(); // Initialize as empty map on error
+            this.activeCampaignNpcs = new Map();
         }
     }
 
-    async loadAllDialogueFiles() {
-        this.activeCampaignDialogues = new Map();
-        if (!this.activeCampaignManifest) { // Removed NPC check, can load dialogues even if no NPCs yet
-            console.warn("Cannot load dialogue files: No active campaign or manifest.");
-            return;
-        }
-
-        // Load dialogues specified in NPC data
-        if (this.activeCampaignNpcs) {
-            for (const npc of this.activeCampaignNpcs.values()) {
-                if (npc.dialogueId && !this.activeCampaignDialogues.has(npc.dialogueId)) {
-                    // Assuming npc.dialogueId is like "dialogue/folder/file.json"
-                    // and getCampaignAssetPath handles prepending "campaigns/{campaignId}/"
-                    const dialogueFilePath = this.getCampaignAssetPath(npc.dialogueId);
-                    if (!dialogueFilePath) continue;
-
-                    try {
-                        const response = await fetch(dialogueFilePath);
-                        if (!response.ok) {
-                            throw new Error(`Failed to load dialogue file ${npc.dialogueId}: ${response.statusText}`);
-                        }
-                        const dialogueData = await response.json();
-                        // Use the ID from within the dialogue file as the key
-                        if (dialogueData.id) {
-                            this.activeCampaignDialogues.set(dialogueData.id, dialogueData);
-                            console.log(`Dialogue '${dialogueData.id}' for NPC '${npc.id}' loaded successfully.`);
-                        } else {
-                            console.warn(`Dialogue file ${npc.dialogueId} is missing an 'id' field.`);
-                        }
-                    } catch (error) {
-                        console.error(`Error loading dialogue file ${npc.dialogueId}:`, error);
-                    }
-                }
-            }
-        }
-
-        // Load dialogues specified in random encounters
-        if (this.activeCampaignRandomEncounters && this.activeCampaignRandomEncounters.specificEncounters) {
-            for (const encounterKey in this.activeCampaignRandomEncounters.specificEncounters) {
-                const encounter = this.activeCampaignRandomEncounters.specificEncounters[encounterKey];
-                // Corrected path to dialogueId in encounter structure
-                if (encounter.dialogue && typeof encounter.dialogue === 'string' && !this.activeCampaignDialogues.has(encounter.dialogue)) {
-                    const dialoguePath = encounter.dialogue; // e.g., "dialogue/merchants/traveling_road_merchant_01.json"
-                    const dialogueFilePath = this.getCampaignAssetPath(dialoguePath);
-                    if (!dialogueFilePath) continue;
-
-                    try {
-                        const response = await fetch(dialogueFilePath);
-                        if (!response.ok) {
-                            throw new Error(`Failed to load dialogue file ${dialoguePath}: ${response.statusText}`);
-                        }
-                        const dialogueData = await response.json();
-                        if (dialogueData.id) {
-                            this.activeCampaignDialogues.set(dialogueData.id, dialogueData);
-                            console.log(`Dialogue '${dialogueData.id}' for encounter '${encounterKey}' loaded successfully.`);
-                        } else {
-                            console.warn(`Dialogue file ${dialoguePath} for encounter '${encounterKey}' is missing an 'id' field.`);
-                        }
-                    } catch (error) {
-                        console.error(`Error loading dialogue ${dialoguePath} for encounter '${encounterKey}':`, error);
-                    }
-                }
-            }
-        }
-        // Manually load the two specific sample files if they weren't picked up via NPCs/encounters
-        // This is a fallback/explicit load for the specified files in the task.
-        const manualDialoguesToLoad = [
-            "dialogue/aelric_default_dialogue.json",
-            "dialogue/merchant_generic_greeting.json"
-        ];
-
-        for (const dialoguePath of manualDialoguesToLoad) {
-            const dialogueAssetPath = this.getCampaignAssetPath(dialoguePath);
-            if (!dialogueAssetPath) continue;
-
-            // Check if already loaded to avoid errors or redundant fetches
-            // We need to derive the internal ID or fetch then check. For now, let's fetch and check ID.
-            // This isn't perfectly efficient as we might fetch twice if an NPC uses it.
-            // A better way would be to get the internal ID first if the file is known.
-            // For now, this ensures they are loaded if not referenced by an NPC that got processed.
-
-            let potentialIdToTest = dialoguePath.split('/').pop().replace('.json', ''); // Guess ID from filename
-            if (dialoguePath === "dialogue/aelric_default_dialogue.json") potentialIdToTest = "aelric_default";
-            if (dialoguePath === "dialogue/merchant_generic_greeting.json") potentialIdToTest = "merchant_generic_greeting";
-
-
-            if (this.activeCampaignDialogues.has(potentialIdToTest)) {
-                // console.log(`Dialogue ${potentialIdToTest} (manual check) already loaded.`);
-                continue;
-            }
-
-            try {
-                const response = await fetch(dialogueAssetPath);
-                if (!response.ok) {
-                    // Don't throw error if file not found for these manual ones, they might not exist in all campaigns
-                    if (response.status === 404) {
-                        console.warn(`Manual dialogue file not found: ${dialoguePath}`);
-                        continue;
-                    }
-                    throw new Error(`Failed to load manual dialogue file ${dialoguePath}: ${response.statusText}`);
-                }
-                const dialogueData = await response.json();
-                if (dialogueData.id) {
-                    if (!this.activeCampaignDialogues.has(dialogueData.id)) {
-                        this.activeCampaignDialogues.set(dialogueData.id, dialogueData);
-                        console.log(`Dialogue '${dialogueData.id}' (manual load) loaded successfully.`);
-                    }
-                } else {
-                    console.warn(`Manual dialogue file ${dialoguePath} is missing an 'id' field.`);
-                }
-            } catch (error) {
-                console.error(`Error loading manual dialogue file ${dialoguePath}:`, error);
-            }
-        }
-    }
+    // Removed loadAllDialogueFiles() method
 
     async loadScheduleData() {
         if (!this.activeCampaignManifest || !this.activeCampaignManifest.schedules) {
