@@ -1,0 +1,9 @@
+{
+  "mapId": "generic_wasteland_combat",
+  "name": "Generic Wasteland Combat Area",
+  "width": 30,
+  "height": 20,
+  "tiles": [],
+  "objects": [],
+  "entryPoints": [ { "id": "player_west", "x": 2, "y": 10 }, { "id": "enemy_east_1", "x": 28, "y": 8 }, { "id": "enemy_east_2", "x": 28, "y": 12 } ]
+}

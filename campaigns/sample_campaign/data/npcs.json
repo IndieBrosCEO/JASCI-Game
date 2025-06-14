@@ -1,0 +1,170 @@
+[
+  {
+    "id": "guard_captain_aelric",
+    "name": "Guard Captain Aelric",
+    "role": "Guard Captain",
+    "faction": "starter_town_guard",
+    "disposition": {
+      "player": 50
+    },
+    "stats": {
+      "level": 10,
+      "health": 150,
+      "mana": 30,
+      "stamina": 100,
+      "attributes": {
+        "strength": 15,
+        "dexterity": 12,
+        "constitution": 14,
+        "intelligence": 10,
+        "wisdom": 10,
+        "charisma": 12
+      },
+      "skills": {
+        "one_handed_blade": 50,
+        "block": 45,
+        "leadership": 60
+      }
+    },
+    "inventory": [
+      { "itemId": "longsword_steel", "equipped": true, "slot": "main_hand" },
+      { "itemId": "shield_guard_captain", "equipped": true, "slot": "off_hand" },
+      { "itemId": "potion_health_minor", "quantity": 2 },
+      { "itemId": "key_town_hall", "quantity": 1 }
+    ],
+    "dialogueId": "dialogue/guards/captain_aelric_main.json",
+    "scheduleId": "schedules/aelric_schedule.json",
+    "initialLocation": {
+      "mapId": "maps/town_hall.json",
+      "coordinates": { "x": 5, "y": 2 },
+      "zoneId": "starter_town"
+    },
+    "appearance": {
+      "model": "human_male_guard_captain.glb",
+      "texture": "human_male_guard_captain_texture.png",
+      "scale": 1.05
+    },
+    "isEssential": true,
+    "isHostile": false,
+    "lootTableId": null
+  },
+  {
+    "id": "wolf_alpha_weak",
+    "name": "Weak Alpha Wolf",
+    "role": "Creature",
+    "faction": "wild_animals_forest",
+    "disposition": {},
+    "stats": {
+      "level": 2,
+      "health": 40,
+      "mana": 0,
+      "stamina": 50,
+      "attributes": {
+        "strength": 12,
+        "dexterity": 14,
+        "constitution": 10,
+        "intelligence": 3,
+        "wisdom": 8,
+        "charisma": 5
+      },
+      "skills": {
+        "bite": 25,
+        "howl": 15
+      }
+    },
+    "inventory": [],
+    "dialogueId": null,
+    "scheduleId": null,
+    "initialLocation": null,
+    "appearance": {
+      "model": "wolf_alpha.glb",
+      "texture": "wolf_texture_gray.png",
+      "scale": 1.1
+    },
+    "isEssential": false,
+    "isHostile": true,
+    "lootTableId": "loot_wolf_common"
+  },
+  {
+    "id": "wolf_pup_aggressive",
+    "name": "Aggressive Wolf Pup",
+    "role": "Creature",
+    "faction": "wild_animals_forest",
+    "disposition": {},
+    "stats": {
+      "level": 1,
+      "health": 20,
+      "mana": 0,
+      "stamina": 30,
+      "attributes": {
+        "strength": 8,
+        "dexterity": 12,
+        "constitution": 8,
+        "intelligence": 3,
+        "wisdom": 6,
+        "charisma": 4
+      },
+      "skills": {
+        "bite": 15
+      }
+    },
+    "inventory": [],
+    "dialogueId": null,
+    "scheduleId": null,
+    "initialLocation": null,
+    "appearance": {
+      "model": "wolf_pup.glb",
+      "texture": "wolf_texture_brown.png",
+      "scale": 0.7
+    },
+    "isEssential": false,
+    "isHostile": true,
+    "lootTableId": "loot_wolf_pup"
+  },
+  {
+    "id": "npc_traveling_merchant_01",
+    "name": "Barnaby Copperpot",
+    "role": "Merchant",
+    "faction": "traveling_merchants_guild",
+    "disposition": {
+      "player": 70
+    },
+    "stats": {
+      "level": 5,
+      "health": 80,
+      "mana": 10,
+      "stamina": 60,
+      "attributes": {
+        "strength": 8,
+        "dexterity": 10,
+        "constitution": 10,
+        "intelligence": 12,
+        "wisdom": 11,
+        "charisma": 15
+      },
+      "skills": {
+        "barter": 55,
+        "persuasion": 40
+      }
+    },
+    "inventory": [
+      { "itemId": "potion_health_minor", "quantity": 10, "forSale": true, "priceModifier": 1.1 },
+      { "itemId": "arrow_iron", "quantity": 50, "forSale": true },
+      { "itemId": "lockpick_set_basic", "quantity": 3, "forSale": true, "priceModifier": 1.2 },
+      { "itemId": "food_apple", "quantity": 20, "forSale": true },
+      { "itemId": "dagger_iron", "equipped": true, "slot": "main_hand" }
+    ],
+    "dialogueId": "dialogue/merchants/traveling_road_merchant_01.json",
+    "scheduleId": null,
+    "initialLocation": null,
+    "appearance": {
+      "model": "human_male_merchant.glb",
+      "texture": "human_male_merchant_texture_blue.png",
+      "scale": 1.0
+    },
+    "isEssential": false,
+    "isHostile": false,
+    "lootTableId": "loot_merchant_common",
+    "shopInventoryId": "shop_traveling_merchant_basic"
+  }
+]

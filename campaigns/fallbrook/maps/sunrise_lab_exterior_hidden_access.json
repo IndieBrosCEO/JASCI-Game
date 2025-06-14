@@ -1,0 +1,11 @@
+{
+  "mapId": "sunrise_lab_exterior_hidden_access",
+  "name": "Sunrise Lab Hidden Access",
+  "width": 20,
+  "height": 15,
+  "tiles": [],
+  "objects": [
+    { "id": "sunrise_latrine_door", "type": "door_quest", "char": "L", "sprite": "door_rickety", "color": "brown", "x": 10, "y": 5, "name": "Rickety Latrine Door (Seems Unusually Solid)", "description": "This old latrine door feels much stronger than it looks. There might be something behind it." }
+  ],
+  "storyBeats": []
+}

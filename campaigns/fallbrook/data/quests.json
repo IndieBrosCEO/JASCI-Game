@@ -1,0 +1,94 @@
+{
+  "quests": {
+    "fallbrook_betrayal_investigation": {
+      "id": "fallbrook_betrayal_investigation",
+      "title": "Betrayal at Beebe's",
+      "description": "Captain Nisleit of the FPD has concerns about suspicious activity at Beebe's Firearms. Investigate the owners, Grayson and Shauna.",
+      "giverNpcId": "fpd_nisleit",
+      "type": "investigation",
+      "startConditions": [{ "type": "flagNotSet", "flag": "betrayal_investigation_started" }],
+      "objectives": [
+        { "id": "talk_to_nisleit", "type": "dialogue", "description": "Talk to Captain Nisleit for your briefing.", "targetNpcId": "fpd_nisleit", "dialogueNodeToTrigger": "nisleit_betrayal_briefing", "progressText": "Briefing Received: {isComplete}" },
+        { "id": "investigate_beebes", "type": "reach_location", "description": "Go to Beebe's Firearms.", "locationHint": {"worldMapNodeId": "beebes_firearms"}, "requiresObjective": "talk_to_nisleit", "progressText": "At Beebe's: {isComplete}" },
+        { "id": "observe_grayson_shauna", "type": "dialogue", "description": "Observe or talk to Grayson and Shauna to find clues.", "targetNpcId": ["con_grayson", "con_shauna"], "dialogueId": "grayson_shauna_initial_interaction", "flagToSetOnCompletion": "grayson_shauna_observed", "requiresObjective": "investigate_beebes", "progressText": "Grayson/Shauna Interaction: {isComplete}"},
+        { "id": "find_evidence_ledger", "type": "interact", "description": "Search for concrete evidence at Beebe's. Look for a hidden ledger.", "targetObjectId": "beebes_hidden_ledger", "mapId": "maps/fallbrook_beebes_shop.json", "flagToSetOnCompletion": "found_conspiracy_ledger", "requiresObjective": "observe_grayson_shauna", "progressText": "Ledger Found: {isComplete}"},
+        { "id": "report_to_nisleit", "type": "dialogue", "description": "Report your findings to Captain Nisleit.", "targetNpcId": "fpd_nisleit", "dialogueNodeToTrigger": "nisleit_betrayal_report", "requiresObjective": "find_evidence_ledger", "progressText": "Report Delivered: {isComplete}" }
+      ],
+      "rewards": [
+        { "type": "addExperience", "amount": 200 },
+        { "type": "addCurrency", "currencyType": "fpd_credits", "amount": 100 },
+        { "type": "adjustFactionRep", "factionId": "fpd", "amount": 15 }
+      ],
+      "onCompletionActions": [
+        { "type": "setFlag", "flag": "betrayal_investigation_completed" },
+        { "type": "setFlag", "flag": "grayson_shauna_conspiracy_exposed" }
+      ]
+    },
+    "frn_reactor_retrieval_briefing": {
+      "id": "frn_reactor_retrieval_briefing",
+      "title": "The Sunrise Protocol",
+      "description": "Dr. Isabella 'Izzy' Reyes of the Fallbrook Republic Network has an urgent and secretive mission for you.",
+      "giverNpcId": "frn_reyes_izzy",
+      "type": "dialogue",
+      "startConditions": [
+        { "type": "flagSet", "flag": "grayson_shauna_conspiracy_exposed" },
+        { "type": "flagNotSet", "flag": "reactor_mission_briefing_completed" }
+      ],
+      "objectives": [
+        { "id": "meet_izzy", "type": "dialogue", "description": "Meet Dr. Reyes at the FRN Bunker.", "targetNpcId": "frn_reyes_izzy", "dialogueNodeToTrigger": "reyes_reactor_briefing_intro", "progressText": "Met Dr. Reyes: {isComplete}" },
+        { "id": "receive_mission_details", "type": "dialogue_objective_flag", "description": "Receive full briefing about the Biomass Reactor and Sunrise Lab.", "dialogueIdToMonitor": "reyes_reactor_briefing_intro", "flagFromDialogue": "reactor_mission_details_given", "requiresObjective": "meet_izzy", "progressText": "Mission Details Received: {isComplete}" }
+      ],
+      "rewards": [
+        { "type": "addExperience", "amount": 100 },
+        { "type": "adjustFactionRep", "factionId": "frn", "amount": 10 },
+        { "type": "giveItem", "itemId": "geiger_counter", "count": 1 }
+      ],
+      "onCompletionActions": [
+        { "type": "setFlag", "flag": "reactor_mission_briefing_completed" },
+        { "type": "setFlag", "flag": "reactor_mission_accepted" },
+        { "type": "startQuest", "questId": "sunrise_lab_crawl" }
+      ]
+    },
+    "sunrise_lab_crawl": {
+      "id": "sunrise_lab_crawl",
+      "title": "Lab Rats",
+      "description": "Infiltrate the booby-trapped Sunrise Project Lab and retrieve the Biomass Reactor.",
+      "giverNpcId": "frn_reyes_izzy",
+      "type": "exploration_combat",
+      "startConditions": [{ "type": "flagSet", "flag": "reactor_mission_accepted" }, { "type": "flagNotSet", "flag": "reactor_retrieved" }],
+      "objectives": [
+        { "id": "find_lab_entrance", "type": "interact", "description": "Find and use the hidden latrine door entrance to Sunrise Lab.", "targetObjectId": "sunrise_latrine_door", "mapId": "maps/sunrise_lab_exterior_hidden_access.json", "progressText": "Lab Entered: {isComplete}" },
+        { "id": "navigate_level_1", "type": "reach_location", "description": "Navigate Level 1, avoiding hazards (gas, faulty elevators).", "locationHint": {"mapId": "maps/sunrise_lab_level1.json", "areaDescription": "elevator to Level 2"}, "requiresObjective": "find_lab_entrance", "progressText": "Level 1 Navigated: {isComplete}" },
+        { "id": "clear_control_room", "type": "kill", "description": "Clear the control room of Bio-Munchers.", "target": { "npcId": "biomuncher_alpha", "count": 1 }, "mapIdHint": "maps/sunrise_lab_control_room.json", "requiresObjective": "navigate_level_1", "progressText": "Control Room Cleared: {currentCount}/{targetCount}" },
+        { "id": "access_reactor_core", "type": "interact", "description": "Access the reactor core chamber.", "targetObjectId": "reactor_core_door_panel", "mapId": "maps/sunrise_lab_control_room.json", "requiresObjective": "clear_control_room", "progressText": "Core Chamber Accessed: {isComplete}" },
+        { "id": "retrieve_reactor", "type": "interact_give_item", "description": "Retrieve the Biomass Reactor.", "targetObjectId": "reactor_console", "itemReceived": "biomass_reactor_prototype", "mapId": "maps/sunrise_lab_reactor_core.json", "requiresObjective": "access_reactor_core", "progressText": "Reactor Retrieved: {hasItem}" }
+      ],
+      "rewards": [
+        { "type": "addExperience", "amount": 500 },
+        { "type": "giveItem", "itemId": "advanced_medkit", "count": 2 }
+      ],
+      "onCompletionActions": [{ "type": "setFlag", "flag": "reactor_retrieved" }, { "type": "startQuest", "questId": "reactor_delivery_choice" }]
+    },
+    "reactor_delivery_choice": {
+      "id": "reactor_delivery_choice",
+      "title": "The Delivery",
+      "description": "You have the Biomass Reactor. Now, who do you deliver it to? The FRN for its intended purpose, or a faction for your own ends?",
+      "type": "decision_dialogue",
+      "startConditions": [{ "type": "flagSet", "flag": "reactor_retrieved" }, { "type": "flagNotSet", "flag": "reactor_delivery_decision_made" }],
+      "objectives": [
+        { "id": "decide_reactors_fate", "type": "dialogue_driven_flag", "description": "Decide who gets the reactor. Your choice will have major consequences.", "dialogueIdToMonitor": "lin_reactor_decision_dialogue", "flagFromDialogue": "reactor_final_choice_made_FRN_or_FACTION", "progressText": "Decision Pending..."}
+      ],
+      "rewards": [
+        { "type": "addExperience", "amount": 1000, "ifCondition": {"type": "flagSet", "flag": "reactor_delivered_frn"} },
+        { "type": "giveItem", "itemId": "frn_prototype_weapon", "count": 1, "ifCondition": {"type": "flagSet", "flag": "reactor_delivered_frn"} },
+        { "type": "adjustFactionRep", "factionId": "frn", "amount": 50, "ifCondition": {"type": "flagSet", "flag": "reactor_delivered_frn"} },
+        { "type": "addExperience", "amount": 750, "ifCondition": {"type": "flagSet", "flag": "reactor_delivered_foak"} },
+        { "type": "giveItem", "itemId": "foak_unique_armor", "count": 1, "ifCondition": {"type": "flagSet", "flag": "reactor_delivered_foak"} },
+        { "type": "adjustFactionRep", "factionId": "foak", "amount": 40, "ifCondition": {"type": "flagSet", "flag": "reactor_delivered_foak"} }
+      ],
+      "onCompletionActions": [
+        { "type": "setFlag", "flag": "reactor_delivery_decision_made" }
+      ]
+    }
+  }
+}

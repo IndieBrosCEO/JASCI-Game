@@ -1,0 +1,23 @@
+{
+  "indexFormatVersion": "1.0.0",
+  "availableCampaigns": [
+    {
+      "id": "fallbrook_main_story",
+      "name": "Fallbrook Aftermath",
+      "description": "A story of survival, conspiracy, and moral ambiguity in the post-nuclear Fallbrook region.",
+      "version": "0.1.0",
+      "author": "JASCI Engine AI",
+      "thumbnail": "campaigns/fallbrook/assets/fallbrook_thumbnail.png",
+      "manifestPath": "fallbrook/campaign.json"
+    },
+    {
+      "id": "sample_campaign",
+      "name": "Sample Campaign - System Tests",
+      "description": "A basic campaign to test core engine features and mechanics.",
+      "version": "0.1.0",
+      "author": "JASCI Engine AI",
+      "thumbnail": "campaigns/sample_campaign/assets/thumbnail.png",
+      "manifestPath": "sample_campaign/campaign.json"
+    }
+  ]
+}

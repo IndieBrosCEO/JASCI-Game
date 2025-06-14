@@ -1,0 +1,27 @@
+{
+  "nodes": [
+    { "id": "airpark", "name": "Fallbrook Airpark", "zoneId": "fallbrook_town", "mapCoordinates": {"x": 10, "y": 15}, "icon": {"char":"A", "color":"light_gray"}, "isFastTravelHub": true, "requiresDiscovery": false, "entryMap": "maps/fallbrook_airpark_exterior.json"},
+    { "id": "beebes_firearms", "name": "Beebe’s Firearms", "zoneId": "fallbrook_town", "mapCoordinates": {"x": 15, "y": 18}, "icon": {"char":"B", "color":"brown"}, "isFastTravelHub": true, "requiresDiscovery": true, "entryMap": "maps/fallbrook_beebes_shop.json"},
+    { "id": "fpd_hq", "name": "FPD HQ", "zoneId": "fallbrook_town", "mapCoordinates": {"x": 12, "y": 20}, "icon": {"char":"P", "color":"blue"}, "isFastTravelHub": true, "requiresDiscovery": true, "entryMap": "maps/fallbrook_fpd_hq.json"},
+    { "id": "sunrise_lab_access", "name": "Sunrise Lab (Hidden Access)", "zoneId": "sunrise_outskirts", "mapCoordinates": {"x": 30, "y": 10}, "icon": {"char":"L", "color":"dark_red"}, "isFastTravelHub": false, "requiresDiscovery": true, "entryMap": "maps/sunrise_lab_exterior_hidden_access.json"},
+    { "id": "foak_hq", "name": "FOAK HQ", "zoneId": "de_luz_road_territory", "mapCoordinates": {"x": 5, "y": 5}, "icon": {"char":"F", "color":"orange"}, "isFastTravelHub": true, "requiresDiscovery": true, "entryMap": "maps/foak_hq_exterior.json"},
+    { "id": "calaveras_caves", "name": "Calaveras Caves", "zoneId": "calaveras_caves_region", "mapCoordinates": {"x": 25, "y": 25}, "icon": {"char":"C", "color":"red"}, "isFastTravelHub": true, "requiresDiscovery": true, "entryMap": "maps/calaveras_caves_entrance.json"},
+    { "id": "camp_pendleton_gate", "name": "Camp Pendleton Gate", "zoneId": "pendleton_ruins", "mapCoordinates": {"x": 40, "y": 30}, "icon": {"char":"M", "color":"dark_green"}, "isFastTravelHub": true, "requiresDiscovery": true, "entryMap": "maps/pendleton_gate_area.json"},
+    { "id": "frn_bunker_alpha", "name": "FRN Bunker Alpha", "zoneId": "frn_bunker_zone", "mapCoordinates": {"x": 20, "y": 5}, "icon": {"char":"R", "color":"cyan"}, "isFastTravelHub": true, "requiresDiscovery": true, "entryMap": "maps/frn_bunker_alpha_exterior.json"},
+    { "id": "de_luz_road_territory_entry", "name": "De Luz Road Entry", "zoneId": "de_luz_road_territory", "mapCoordinates": {"x": 8, "y": 8}, "icon": {"char":"D", "color":"light_orange"}, "isFastTravelHub": false, "requiresDiscovery": true, "entryMap": "maps/de_luz_road_checkpoint.json"}
+  ],
+  "connections": [
+    {"fromNode": "airpark", "toNode": "beebes_firearms", "travelTime": 1, "baseEncounterRisk": 0.2, "encounterTable": "urban_ruins_low"},
+    {"fromNode": "beebes_firearms", "toNode": "airpark", "travelTime": 1, "baseEncounterRisk": 0.2, "encounterTable": "urban_ruins_low"},
+    {"fromNode": "beebes_firearms", "toNode": "fpd_hq", "travelTime": 1, "baseEncounterRisk": 0.1, "encounterTable": "urban_streets_safer"},
+    {"fromNode": "fpd_hq", "toNode": "beebes_firearms", "travelTime": 1, "baseEncounterRisk": 0.1, "encounterTable": "urban_streets_safer"},
+    {"fromNode": "airpark", "toNode": "fpd_hq", "travelTime": 2, "baseEncounterRisk": 0.15, "encounterTable": "urban_ruins_medium"},
+    {"fromNode": "fpd_hq", "toNode": "airpark", "travelTime": 2, "baseEncounterRisk": 0.15, "encounterTable": "urban_ruins_medium"},
+    {"fromNode": "airpark", "toNode": "sunrise_lab_access", "travelTime": 6, "baseEncounterRisk": 0.4, "encounterTable": "wasteland_sparse"},
+    {"fromNode": "sunrise_lab_access", "toNode": "airpark", "travelTime": 6, "baseEncounterRisk": 0.4, "encounterTable": "wasteland_sparse"},
+    {"fromNode": "fpd_hq", "toNode": "de_luz_road_territory_entry", "travelTime": 4, "baseEncounterRisk": 0.3, "encounterTable": "wasteland_hills"},
+    {"fromNode": "de_luz_road_territory_entry", "toNode": "fpd_hq", "travelTime": 4, "baseEncounterRisk": 0.3, "encounterTable": "wasteland_hills"},
+    {"fromNode": "de_luz_road_territory_entry", "toNode": "foak_hq", "travelTime": 2, "baseEncounterRisk": 0.2, "encounterTable": "faction_territory_foak"},
+    {"fromNode": "foak_hq", "toNode": "de_luz_road_territory_entry", "travelTime": 2, "baseEncounterRisk": 0.2, "encounterTable": "faction_territory_foak"}
+  ]
+}

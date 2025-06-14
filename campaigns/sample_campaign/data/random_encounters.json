@@ -1,0 +1,105 @@
+{
+  "encounterTables": {
+    "forest_road_encounters": {
+      "description": "Encounters one might find on a path through the edges of a forest.",
+      "encounters": [
+        { "id": "nothing_common", "weight": 60 },
+        { "id": "wolf_pack_easy", "weight": 30 },
+        { "id": "traveling_merchant_rare", "weight": 10 }
+      ]
+    },
+    "deep_woods_encounters": {
+      "description": "Deeper into the woods, dangers and mysteries abound.",
+      "encounters": [
+        { "id": "nothing_less_common", "weight": 40 },
+        { "id": "wolf_pack_medium", "weight": 35 },
+        { "id": "ancient_spirit_puzzle", "weight": 15 },
+        { "id": "hidden_grove_resource", "weight": 10 }
+      ]
+    }
+  },
+  "specificEncounters": {
+    "nothing_common": {
+      "type": "nothing",
+      "description": "The road is quiet. For now."
+    },
+    "nothing_less_common": {
+      "type": "nothing",
+      "description": "The forest is eerily silent around you."
+    },
+    "wolf_pack_easy": {
+      "type": "combat",
+      "name": "A Few Hungry Wolves",
+      "description": "A small pack of wolves eyes you, clearly hungry.",
+      "enemies": [
+        { "npcId": "wolf_alpha_weak", "count": 1 },
+        { "npcId": "wolf_pup_aggressive", "count": 2 }
+      ],
+      "combatMap": "maps/combat/forest_path_combat.json",
+      "music": "music/combat_light.mp3",
+      "rewards": {
+        "experience": 50,
+        "items": [
+          { "itemId": "wolf_pelt", "quantity": 2, "chance": 0.75 },
+          { "itemId": "raw_meat", "quantity": 1, "chance": 0.9 }
+        ]
+      }
+    },
+    "traveling_merchant_rare": {
+      "type": "social",
+      "name": "Traveling Merchant",
+      "description": "You meet a merchant on the road, his cart laden with goods.",
+      "npcId": "npc_traveling_merchant_01",
+      "dialogue": "dialogue/merchants/traveling_road_merchant_01.json",
+      "disposition": "neutral",
+      "shopInventoryId": "shop_traveling_merchant_basic"
+    },
+    "wolf_pack_medium": {
+      "type": "combat",
+      "name": "Wolf Pack",
+      "description": "A larger, more coordinated pack of wolves.",
+      "enemies": [
+        { "npcId": "wolf_alpha", "count": 1 },
+        { "npcId": "wolf_adult", "count": 3 }
+      ],
+      "combatMap": "maps/combat/deep_woods_combat.json",
+      "music": "music/combat_standard.mp3",
+      "rewards": {
+        "experience": 120,
+        "items": [
+          { "itemId": "wolf_pelt_prime", "quantity": 1, "chance": 0.5 },
+          { "itemId": "raw_meat", "quantity": 3, "chance": 0.9 }
+        ]
+      }
+    },
+    "ancient_spirit_puzzle": {
+      "type": "puzzle",
+      "name": "Whispering Spirit",
+      "description": "An ancient spirit guards this part of the woods. It offers a riddle.",
+      "puzzleId": "puzzle_spirit_riddle_01",
+      "success": {
+        "message": "The spirit seems pleased and offers a boon.",
+        "reward": { "buff": "spirit_blessing_minor_wisdom" }
+      },
+      "failure": {
+        "message": "The spirit sighs, disappointed, and fades away.",
+        "consequence": { "effect": "temporary_confusion" }
+      }
+    },
+    "hidden_grove_resource": {
+      "type": "exploration",
+      "name": "Hidden Grove",
+      "description": "You stumble upon a small, serene grove with rare herbs.",
+      "skillCheck": {
+        "skill": "nature_lore",
+        "dc": 12,
+        "successMessage": "You identify and gather several potent herbs.",
+        "failureMessage": "You find some common plants, but nothing of significant value."
+      },
+      "rewards": [
+        { "itemId": "moonpetal_herb", "quantity": 3, "ifSuccess": true },
+        { "itemId": "common_herb", "quantity": 5 }
+      ]
+    }
+  }
+}

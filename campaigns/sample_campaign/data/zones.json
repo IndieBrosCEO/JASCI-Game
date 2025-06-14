@@ -1,0 +1,28 @@
+{
+  "zones": [
+    {
+      "id": "starter_town",
+      "name": "Beginner's Creek",
+      "description": "A small, dusty town where your adventure begins.",
+      "maps": [
+        "maps/introduction_area.json",
+        "maps/town_hall.json"
+      ],
+      "ambientMusic": "music/town_theme.mp3",
+      "encounterChanceModifier": 0.2
+    },
+    {
+      "id": "creepy_forest",
+      "name": "The Shadowy Woods",
+      "description": "A forest where the trees seem to watch you.",
+      "maps": [
+        "maps/forest_path_1.json",
+        "maps/forest_clearing.json"
+      ],
+      "pointsOfInterest": [
+        { "id": "abandoned_shack", "name": "Abandoned Shack", "map": "maps/forest_clearing.json", "coordinates": {"x": 15, "y": 22} }
+      ],
+      "encounterChanceModifier": 1.0
+    }
+  ]
+}
