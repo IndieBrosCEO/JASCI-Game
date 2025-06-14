@@ -1,0 +1,65 @@
+{
+  "locations": [
+    {
+      "id": "loc_beginners_creek",
+      "name": "Beginner's Creek",
+      "zoneId": "starter_town",
+      "mapPosition": { "x": 100, "y": 150 },
+      "description": "A small, dusty town. Ideal for starting an adventure.",
+      "icon": "icons/town_icon.png",
+      "entryMap": "maps/introduction_area.json",
+      "entryCoordinates": { "x": 5, "y": 5 },
+      "isFastTravelHub": true,
+      "requiresDiscovery": false
+    },
+    {
+      "id": "loc_shadowy_woods_edge",
+      "name": "Edge of the Shadowy Woods",
+      "zoneId": "creepy_forest",
+      "mapPosition": { "x": 200, "y": 120 },
+      "description": "The air grows cold as you approach these dark woods.",
+      "icon": "icons/forest_edge_icon.png",
+      "entryMap": "maps/forest_path_1.json",
+      "entryCoordinates": { "x": 1, "y": 10 },
+      "isFastTravelHub": false,
+      "requiresDiscovery": true
+    },
+    {
+      "id": "loc_abandoned_shack_wm",
+      "name": "Abandoned Shack (World Map)",
+      "zoneId": "creepy_forest",
+      "mapPosition": { "x": 250, "y": 100 },
+      "description": "A dilapidated shack, visible from the forest trails. It's marked on your map because it's a known point of interest.",
+      "icon": "icons/shack_icon.png",
+      "isPointOfInterest": true,
+      "poiTarget": {
+         "map": "maps/forest_clearing.json",
+         "poiId": "abandoned_shack"
+      },
+      "isFastTravelHub": true,
+      "requiresDiscovery": true
+    }
+  ],
+  "connections": [
+    {
+      "from": "loc_beginners_creek",
+      "to": "loc_shadowy_woods_edge",
+      "type": "road",
+      "travelTime": 120,
+      "description": "A well-trodden path leading towards the ominous forest.",
+      "encounterTable": "forest_road_encounters"
+    },
+    {
+      "from": "loc_shadowy_woods_edge",
+      "to": "loc_beginners_creek",
+      "type": "road",
+      "travelTime": 120,
+      "description": "The path back to the relative safety of Beginner's Creek."
+    }
+  ],
+  "mapSettings": {
+    "backgroundImage": "images/worldmap_background.png",
+    "defaultIcon": "icons/generic_location_icon.png",
+    "gridSize": { "width": 10, "height": 10 }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "mapId": "fallbrook_beebes_shop",
+  "name": "Beebe's Firearms Interior",
+  "width": 15,
+  "height": 10,
+  "tiles": [],
+  "objects": [
+    { "id": "beebes_hidden_ledger", "type": "quest_item_container", "char": "_", "sprite": "floorboard_loose", "color": "dark_gray", "x": 3, "y": 7, "name": "Loose Floorboard", "description": "One of the floorboards looks loose. Might be a good hiding spot." }
+  ],
+  "storyBeats": []
+}

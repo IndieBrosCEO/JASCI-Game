@@ -1,4 +1,11 @@
 ﻿// js/mapRenderer.js
+
+const QUEST_MARKER_CONFIG = {
+    AVAILABLE: { char: '!', color: 'yellow', priority: 2 },      // e.g., light_yellow if colors are specific
+    ACTIVE_TARGET: { char: '?', color: 'cyan', priority: 1 },   // e.g., light_cyan
+    TURN_IN: { char: '$', color: 'green', priority: 3 }       // e.g., light_green
+};
+
 // Helper functions for FOW and LOS
 
 // Add this new helper function at the top of js/mapRenderer.js
@@ -935,6 +942,62 @@ window.mapRenderer = {
                 }
             }
         }
+            gameState.npcs.forEach(npc => { // Assuming npc objects have id, mapPos, sprite, color
+                if (npc.mapPos) {
+                    const npcX = npc.mapPos.x;
+                    const npcY = npc.mapPos.y;
+                    let marker = null;
+
+                    // 1. Check for available quests
+                    const availableQuests = window.questManager.getAvailableQuestsForNpc(npc.id);
+                    if (availableQuests && availableQuests.length > 0) {
+                        marker = '!'; // Yellow '!' for available quests
+                        // Potentially change NPC sprite color or add to an overlay layer
+                    }
+
+                    // 2. Check for active quests needing interaction with this NPC
+                    if (!marker && window.questManager.activeQuests) { // If no available quest marker, check for active ones
+                        for (const [questId, questState] of window.questManager.activeQuests.entries()) {
+                            for (const objectiveProgress of questState.progress) {
+                                const objectiveData = questState.data.objectives.find(o => o.id === objectiveProgress.objectiveId);
+                                if (objectiveData && objectiveData.targetNpcId === npc.id && !objectiveProgress.isComplete) {
+                                    marker = '?'; // Blue '?' for active quest objective involving this NPC
+                                    // This could be further refined based on objective type (e.g. talk, kill - though kill target usually isn't the quest giver)
+                                    break;
+                                }
+                            }
+                            if (marker) break;
+                        }
+                    }
+
+                    // 3. Check for quests awaiting turn-in to this NPC
+                    if (!marker && typeof window.questManager.getQuestsAwaitingTurnIn === 'function') {
+                        const turnInQuests = window.questManager.getQuestsAwaitingTurnIn(npc.id);
+                        if (turnInQuests && turnInQuests.length > 0) {
+                            marker = '$'; // Green '$' or checkmark for turn-in ready
+                        }
+                    }
+
+
+                    if (marker) {
+                        const cachedCell = gameState.tileCache[npcY]?.[npcX];
+                        if (cachedCell && cachedCell.span) {
+                            // This is a simple way; an overlay canvas or more complex DOM manipulation might be better.
+                            // It might overwrite the NPC char if the marker is drawn on the same tile.
+                            // Consider drawing marker next to NPC or above.
+                            // For now, let's assume an overlay or a separate marker rendering pass.
+                            console.log(`NPC ${npc.id} at (${npcX}, ${npcY}) gets marker: ${marker}`);
+                            // Example: cachedCell.span.textContent = marker; // This would replace NPC sprite
+                            // Better: Create a new span for the marker and position it relative to the NPC.
+                            // Or, if NPC has a dedicated DOM element, add a child/pseudo-element.
+                        }
+                    }
+                }
+            });
+        }
+        // --- End Conceptual NPC Quest Marker Logic ---
+        */
+
 
         if (gameState.tileCache) {
             for (let y = 0; y < H; y++) {

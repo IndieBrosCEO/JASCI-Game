@@ -1,0 +1,11 @@
+{
+  "mapId": "sunrise_lab_reactor_core",
+  "name": "Sunrise Lab - Reactor Core",
+  "width": 25,
+  "height": 25,
+  "tiles": [],
+  "objects": [
+    { "id": "reactor_console", "type": "quest_interactive_panel", "char": "#", "sprite": "console_reactor", "color": "cyan", "x": 12, "y": 12, "name": "Biomass Reactor Main Console", "description": "The main control interface for the Biomass Reactor. It seems to be awaiting input." }
+  ],
+  "storyBeats": []
+}

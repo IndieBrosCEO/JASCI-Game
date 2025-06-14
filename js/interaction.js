@@ -256,3 +256,85 @@ window.interaction = {
         window.mapRenderer.updateMapHighlight(); // Assumes mapRenderer is global
     }
 };
+
+// --- Player Interaction with NPC Logic ---
+function handlePlayerNpcInteraction(npcId) {
+    if (!npcId) {
+        console.warn("handlePlayerNpcInteraction: npcId not provided.");
+        if (typeof logToConsole === 'function') logToConsole("Interaction attempt failed: No NPC ID.", "orange");
+        return;
+    }
+
+    if (!window.questManager || !window.dialogueManager || !window.campaignManager || !window.globalStateManager) {
+        console.error("Interaction Error: Required managers (Quest, Dialogue, Campaign, GlobalState) not available.");
+        if (typeof logToConsole === 'function') logToConsole("Interaction system error: managers not ready.", "red");
+        return;
+    }
+
+    const npcStaticData = window.campaignManager.getNpcData(npcId);
+    if (!npcStaticData) {
+        console.warn(`Interaction: NPC static data for '${npcId}' not found.`);
+        if (typeof logToConsole === 'function') logToConsole(`Cannot interact: NPC data for '${npcId}' missing.`, "orange");
+        return;
+    }
+
+    const npcDynamicData = window.gameState && window.gameState.npcs ? window.gameState.npcs.find(n => n.id === npcId) : null;
+    const npcContext = npcDynamicData || npcStaticData;
+
+    let dialogueToStart = npcStaticData.dialogueId || null;
+    let interactionTypeLog = `Default dialogue for ${npcStaticData.name}`;
+
+    // 1. Check for quests awaiting turn-in (highest priority)
+    const questsAwaitingTurnIn = window.questManager.getQuestsAwaitingTurnIn(npcId);
+    if (questsAwaitingTurnIn && questsAwaitingTurnIn.length > 0) {
+        const questToTurnIn = questsAwaitingTurnIn[0];
+
+        // Use quest-specific completion node, or objective-specific, or fallback to NPC default
+        if (questToTurnIn.completionDialogueNode) {
+            dialogueToStart = questToTurnIn.completionDialogueNode;
+        } else {
+            const lastObjective = questToTurnIn.objectives[questToTurnIn.objectives.length - 1];
+            if (lastObjective && lastObjective.type === "talk_to_npc" && lastObjective.completionDialogueNode) {
+                 dialogueToStart = lastObjective.completionDialogueNode;
+            }
+        }
+        // If dialogueToStart is still the NPC's default, the dialogue must handle the turn-in choice.
+        interactionTypeLog = `Turn-in for quest '${questToTurnIn.id}' with ${npcStaticData.name}`;
+    } else {
+        // 2. Check for available quests from this NPC
+        const availableQuests = window.questManager.getAvailableQuestsForNpc(npcId);
+        if (availableQuests && availableQuests.length > 0) {
+            const questToStart = availableQuests[0];
+
+            if (questToStart.startDialogueNode) {
+                dialogueToStart = questToStart.startDialogueNode;
+                interactionTypeLog = `Offer quest '${questToStart.id}' from ${npcStaticData.name} via specific start node`;
+            } else {
+                interactionTypeLog = `Potential to start quest '${questToStart.id}' with ${npcStaticData.name} via default dialogue choices`;
+            }
+        }
+        // 3. (Optional) Active quest objectives check (handled by dialogue conditions for now)
+    }
+
+    if (dialogueToStart) {
+        if (typeof logToConsole === 'function') {
+            logToConsole(`Interaction: ${interactionTypeLog}. Dialogue: '${dialogueToStart}'.`, "blue");
+        } else {
+            console.log(`Interaction: ${interactionTypeLog}. Dialogue ID: '${dialogueToStart}'. Context:`, npcContext);
+        }
+        window.dialogueManager.startConversation(dialogueToStart, null, npcContext);
+        // Actual display of dialogue UI would be handled by DialogueManager or an event listener.
+    } else {
+        const msg = `No specific dialogue found or configured for NPC ${npcId} (${npcStaticData.name}).`;
+        if (typeof logToConsole === 'function') logToConsole(msg, "yellow");
+        else console.log(msg);
+        // Optionally, display a generic message to player UI: e.g., `${npcStaticData.name} has nothing to say.`
+    }
+}
+window.handlePlayerNpcInteraction = handlePlayerNpcInteraction;
+
+// Example of how it might be called (e.g., from a key press handler in script.js):
+// Assume `targetNpcId` is determined by player proximity/targeting.
+// if (key === 'E' && targetNpcId) {
+//     window.handlePlayerNpcInteraction(targetNpcId);
+// }

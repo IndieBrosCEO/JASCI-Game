@@ -1,0 +1,11 @@
+{
+  "mapId": "sunrise_lab_control_room",
+  "name": "Sunrise Lab - Control Room",
+  "width": 20,
+  "height": 15,
+  "tiles": [],
+  "objects": [
+    { "id": "reactor_core_door_panel", "type": "quest_door_panel", "char": "P", "sprite": "panel_security", "color": "blue", "x": 18, "y": 7, "name": "Reactor Core Door Panel", "description": "A security panel next to a heavy blast door. It likely controls access to the reactor core." }
+  ],
+  "storyBeats": []
+}

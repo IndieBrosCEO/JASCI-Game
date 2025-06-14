@@ -1,0 +1,56 @@
+{
+  "zones": [
+    {
+      "id": "fallbrook_town",
+      "name": "Fallbrook Town Ruins",
+      "description": "The dilapidated urban sprawl of what was once Fallbrook. Dangerous, with pockets of activity.",
+      "maps": ["maps/fallbrook_airpark_exterior.json", "maps/fallbrook_beebes_shop.json", "maps/fallbrook_fpd_hq.json"],
+      "ambientMusic": "music/urban_desolation.ogg",
+      "encounterChanceModifier": 1.0
+    },
+    {
+      "id": "sunrise_outskirts",
+      "name": "Sunrise Project Outskirts",
+      "description": "Barren, irradiated plains surrounding the hidden Sunrise Project Lab. Few travel here willingly.",
+      "maps": ["maps/sunrise_plains.json", "maps/sunrise_lab_exterior_hidden_access.json"],
+      "ambientMusic": "music/wasteland_wind.ogg",
+      "encounterChanceModifier": 1.5
+    },
+    {
+      "id": "sunrise_lab_interior",
+      "name": "Sunrise Project Lab",
+      "description": "The secret underground facility. Automated defenses and strange creatures are rumored to be within.",
+      "maps": ["maps/sunrise_lab_level1.json", "maps/sunrise_lab_reactor_core.json"],
+      "encounterChanceModifier": 2.0,
+      "isUnderground": true
+    },
+    {
+      "id": "de_luz_road_territory",
+      "name": "De Luz Road Territory",
+      "description": "Rough terrain controlled by the Followers of Apocalypse's Kindle (FOAK).",
+      "maps": ["maps/de_luz_road_checkpoint.json", "maps/foak_hq_exterior.json"],
+      "encounterChanceModifier": 1.2
+    },
+    {
+      "id": "calaveras_caves_region",
+      "name": "Calaveras Caves Region",
+      "description": "A network of caves and canyons, lair of the Calaveras de la Muerte.",
+      "maps": ["maps/calaveras_caves_entrance.json"],
+      "encounterChanceModifier": 1.3
+    },
+    {
+      "id": "pendleton_ruins",
+      "name": "Camp Pendleton Ruins",
+      "description": "The sprawling, hazardous ruins of a major military base. Now home to various factions and dangers.",
+      "maps": ["maps/pendleton_gate_area.json"],
+      "encounterChanceModifier": 1.8
+    },
+    {
+      "id": "frn_bunker_zone",
+      "name": "FRN Bunker Zone",
+      "description": "A fortified zone containing Fallbrook Republic Network science bunkers.",
+      "maps": ["maps/frn_bunker_alpha_exterior.json"],
+      "encounterChanceModifier": 0.5
+    }
+  ]
+}

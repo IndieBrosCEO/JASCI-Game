@@ -1,0 +1,145 @@
+{
+  "id": "reyes_reactor_briefing_intro",
+  "startNode": "START",
+  "nodes": {
+    "START": {
+      "id": "START",
+      "npcLines": [
+        "Lin. Thank you for coming. What I'm about to discuss doesn't leave this room. Understood?",
+        "The Fallbrook Republic Network has been working on a project... something that could change everything. We call it the Sunrise Protocol."
+      ],
+      "playerChoices": [
+        {
+          "text": "I understand, Dr. Reyes. What is the Sunrise Protocol?",
+          "nextNode": "REYES_EXPLAINS_REACTOR"
+        },
+        {
+          "text": "Secrets aren't cheap. What's in it for me?",
+          "nextNode": "REYES_INCENTIVE"
+        },
+        {
+          "text": "I'm not sure I'm ready for 'doesn't leave this room' kind of work.",
+          "nextNode": "REYES_HESITATION"
+        }
+      ]
+    },
+    "REYES_EXPLAINS_REACTOR": {
+      "id": "REYES_EXPLAINS_REACTOR",
+      "npcLines": [
+        "At its heart is a prototype Biomass Reactor. A sustainable, high-yield power source. Decades ahead of anything else out there. It was under development at the old Sunrise Project Lab, pre-war.",
+        "The problem is, we've lost contact with the lab. It's gone dark. And that reactor... it's too important to lose. We need it retrieved."
+      ],
+      "actions": [
+        { "type": "setFlag", "flag": "reactor_mission_details_given", "value": true }
+      ],
+      "playerChoices": [
+        {
+          "text": "Sunrise Lab? Isn't that place a deathtrap?",
+          "nextNode": "REYES_LAB_DANGERS"
+        },
+        {
+          "text": "What do you need me to do?",
+          "nextNode": "REYES_THE_MISSION"
+        }
+      ]
+    },
+    "REYES_INCENTIVE": {
+      "id": "REYES_INCENTIVE",
+      "npcLines": [
+        "The FRN is prepared to compensate you very generously. Access to our resources, advanced technology... and a significant share of the credit when Fallbrook rises from these ashes.",
+        "But more than that, Lin, this is about securing a future. For everyone."
+      ],
+      "playerChoices": [
+        {
+          "text": "Alright, you have my attention. What's the mission?",
+          "nextNode": "REYES_EXPLAINS_REACTOR"
+        },
+        {
+          "text": "I'll need more concrete guarantees than 'credit'.",
+          "nextNode": "REYES_HARD_BARGAIN"
+        }
+      ]
+    },
+    "REYES_HARD_BARGAIN": {
+      "id": "REYES_HARD_BARGAIN",
+      "npcLines": [
+        "Specifics can be arranged. Advanced schematics, exclusive salvage rights to certain lab sections... We're not inflexible. But the reactor is the priority.",
+        "Are you in, or out?"
+      ],
+      "playerChoices": [
+        {
+          "text": "I'm in. Tell me about the reactor and the lab.",
+          "nextNode": "REYES_EXPLAINS_REACTOR"
+        },
+        {
+          "text": "Still not convinced the reward outweighs the risk.",
+          "nextNode": "REYES_HESITATION_FINAL"
+        }
+      ]
+    },
+    "REYES_LAB_DANGERS": {
+      "id": "REYES_LAB_DANGERS",
+      "npcLines": [
+        "It's... compromised. Automated security systems are likely still active. And there are reports of... biological contamination. Mutated flora, fauna... worse.",
+        "That's why we need someone with your particular skillset, Lin. Someone who can handle themselves."
+      ],
+      "playerChoices": [
+        {
+          "text": "Understood. What's the plan for retrieval?",
+          "nextNode": "REYES_THE_MISSION"
+        }
+      ]
+    },
+    "REYES_THE_MISSION": {
+      "id": "REYES_THE_MISSION",
+      "npcLines": [
+        "Infiltrate Sunrise Lab. Secure the Biomass Reactor prototype. Return it to me. Simple on paper, I know.",
+        "I'll provide you with a Geiger counter and some leads on a... less conventional entry point. The main entrance is a lost cause."
+      ],
+      "actions": [
+        { "type": "setFlag", "flag": "reactor_mission_details_given", "value": true } // Ensure it's set if they skip to here
+      ],
+      "playerChoices": [
+        {
+          "text": "I accept the mission.",
+          "nextNode": "REYES_MISSION_ACCEPTED"
+        },
+        {
+          "text": "I need some time to prepare before I commit.",
+          "nextNode": "REYES_UNDERSTANDS_PREPARATION"
+        }
+      ]
+    },
+    "REYES_MISSION_ACCEPTED": {
+      "id": "REYES_MISSION_ACCEPTED",
+      "npcLines": [
+        "Excellent. The future of Fallbrook may well rest on this. Here's the Geiger counter, and the location of the access point. Good luck, Lin. And try not to die."
+      ],
+      "endsConversation": true
+      // Note: QuestManager's onCompletionActions for "frn_reactor_retrieval_briefing" will set "reactor_mission_accepted"
+      // and start "sunrise_lab_crawl". This dialogue just needs to ensure the objective flag is set.
+    },
+    "REYES_HESITATION": {
+      "id": "REYES_HESITATION",
+      "npcLines": [
+        "I understand your caution. This isn't a supply run. The risks are substantial. But so is the potential reward for all of us.",
+        "Think it over. But not for too long. Time is a luxury we don't have."
+      ],
+      "endsConversation": true
+    },
+     "REYES_HESITATION_FINAL": {
+      "id": "REYES_HESITATION_FINAL",
+      "npcLines": [
+        "A pity. The FRN will have to find other means then. Perhaps less... discerning operatives. Good day, Lin."
+      ],
+      "endsConversation": true
+    },
+    "REYES_UNDERSTANDS_PREPARATION": {
+      "id": "REYES_UNDERSTANDS_PREPARATION",
+      "npcLines": [
+        "Prudent. Don't take too long. The situation at the lab is... deteriorating. Come back when you're ready to proceed."
+      ],
+      "endsConversation": true
+    }
+  }
+}
