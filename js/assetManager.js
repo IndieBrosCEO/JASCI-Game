@@ -1,4 +1,4 @@
-class AssetManager {
+﻿class AssetManager {
     constructor() {
         this.tilesets = {};
         this.itemsById = {};
@@ -147,7 +147,7 @@ class AssetManager {
                 }
                 // Extend for other definition files as they are added
             } catch (error) {
-                console.error(`Failed to load or process user definition file ${filename}:`, error);
+                console.warn(`Failed to load or process user definition file ${filename}:`, error);
             }
         }
         this.itemsById = tempItemsById;
