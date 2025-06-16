@@ -541,10 +541,6 @@ function interactInventoryItem() {
         return;
     }
 
-    // Inside interactInventoryItem(), after:
-    // const selectedDisplayItem = window.gameState.inventory.currentlyDisplayedItems[cursorIndex];
-    // if (!selectedDisplayItem) { /* ... return ... */ }
-
     if (selectedDisplayItem.source === 'floor') {
         const itemToTake = selectedDisplayItem.originalFloorItemEntry.item;
         if (canAddItem(itemToTake)) {

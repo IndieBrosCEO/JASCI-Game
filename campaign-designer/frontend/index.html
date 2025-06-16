@@ -1,14 +1,30 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Campaign Designer</title>
-    <link rel="stylesheet" href="styles.css">
     <style>
-        body { font-family: sans-serif; margin: 15px; background-color: #f4f4f4; color: #333; }
-        button { padding: 8px 12px; margin: 3px; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; background-color: #e7e7e7; }
-        button:hover { background-color: #ddd; }
+        body {
+            font-family: sans-serif;
+            margin: 15px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        button {
+            padding: 8px 12px;
+            margin: 3px;
+            cursor: pointer;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: #e7e7e7;
+        }
+
+            button:hover {
+                background-color: #ddd;
+            }
+
         input[type="text"], input[type="number"], textarea {
             padding: 8px;
             border: 1px solid #ccc;
@@ -16,35 +32,77 @@
             margin-bottom: 5px;
             box-sizing: border-box; /* So padding doesn't increase width */
         }
-        label { display: inline-block; margin-bottom: 3px; font-weight: bold; }
-        h1 { text-align: center; color: #2c3e50; }
-        h2 { border-bottom: 2px solid #2c3e50; padding-bottom: 6px; margin-top: 30px; color: #2980b9;}
-        h3, h4, h5, h6 { margin-top: 18px; margin-bottom: 6px; color: #34495e; }
-        ul { list-style-type: none; padding-left: 0; }
-        li { padding: 4px 0; border-bottom: 1px solid #ecf0f1; }
-        li:last-child { border-bottom: none; }
-        hr { margin-top:20px; margin-bottom:20px; border: 0; border-top: 1px solid #ccc; }
+
+        label {
+            display: inline-block;
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        h2 {
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 6px;
+            margin-top: 30px;
+            color: #2980b9;
+        }
+
+        h3, h4, h5, h6 {
+            margin-top: 18px;
+            margin-bottom: 6px;
+            color: #34495e;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            padding: 4px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+            li:last-child {
+                border-bottom: none;
+            }
+
+        hr {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border: 0;
+            border-top: 1px solid #ccc;
+        }
 
         .delete-button-style {
             background-color: #e74c3c; /* Red */
             color: white;
             border-color: #c0392b;
         }
-        .delete-button-style:hover {
-            background-color: #c0392b;
-        }
+
+            .delete-button-style:hover {
+                background-color: #c0392b;
+            }
+
         .primary-action-button {
             background-color: #2ecc71; /* Green */
             color: white;
             border-color: #27ae60;
         }
-        .primary-action-button:hover {
-            background-color: #27ae60;
-        }
+
+            .primary-action-button:hover {
+                background-color: #27ae60;
+            }
+
         .browse-button {
             margin-left: 8px;
             padding: 6px 10px;
         }
+
         .search-input {
             margin-bottom: 10px;
             padding: 8px;
@@ -52,6 +110,7 @@
             border-radius: 4px;
             width: calc(40% - 12px); /* Adjust width as needed */
         }
+
         div[id$="Section"] {
             margin-bottom: 30px;
             padding: 20px;
@@ -60,16 +119,35 @@
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0,0,0,0.05);
         }
+
         div[id$="ManagementSection"] > button,
         div[id$="Form"] > button {
-             margin-right: 8px; margin-top: 5px;
+            margin-right: 8px;
+            margin-top: 5px;
         }
-        table { border-collapse: collapse; width: 100%; box-shadow: 0 0 5px rgba(0,0,0,0.03); }
-        th, td { padding: 10px; text-align: left; border: 1px solid #ddd; }
-        th { background-color: #ecf0f1; color: #34495e; }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            box-shadow: 0 0 5px rgba(0,0,0,0.03);
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #ecf0f1;
+            color: #34495e;
+        }
         /* Specific form styling */
         div[id$="Form"], div[id="dialogueNodeEditArea"], div[id="addScheduleEntryForm"] { /* Keep addScheduleEntryForm for now */
-            background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin-top:10px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -264,7 +342,8 @@
         <div id="editScheduleEntriesForm" style="display:none;">
             <h4>Edit Entries for Schedule: <span id="editingScheduleIdName" style="font-weight:bold;"></span></h4>
             <ul id="scheduleEntriesList" style="margin-bottom:15px;"></ul>
-            <div id="addScheduleEntryForm"><h5>Add New Schedule Entry</h5>
+            <div id="addScheduleEntryForm">
+                <h5>Add New Schedule Entry</h5>
                 <div><label for="entryTime">Time (e.g., 08:00):</label><br><input type="text" id="entryTime" style="width: 80px;"></div>
                 <div style="margin-top:5px;"><label for="entryAction">Action:</label><br><input type="text" id="entryAction" style="width: 90%;"></div>
                 <div style="margin-top:5px;"><label for="entryMapId">Map ID:</label><br><input type="text" id="entryMapId" style="width: 90%;"></div>
@@ -329,7 +408,7 @@
     <script>
         if (!navigator.onLine) {
             const errorDiv = document.getElementById('errorMessages');
-            if(errorDiv) errorDiv.textContent = "Warning: No internet connection detected. Some features might be unavailable.";
+            if (errorDiv) errorDiv.textContent = "Warning: No internet connection detected. Some features might be unavailable.";
         }
     </script>
 </body>

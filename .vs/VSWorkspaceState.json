@@ -1,9 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\assets",
-    "\\assets\\definitions",
-    "\\assets\\maps",
+    "\\campaign-designer",
+    "\\campaign-designer\\backend",
+    "\\campaign-designer\\frontend",
     "\\campaigns",
     "\\campaigns\\fallbrook",
     "\\campaigns\\fallbrook\\dialogue",
@@ -11,5 +11,6 @@
     "\\mapMaker",
     "\\Maps"
   ],
+  "SelectedNode": "\\campaign-designer\\frontend\\app.js",
   "PreviewInSolutionExplorer": false
 }
