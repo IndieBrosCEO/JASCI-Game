@@ -11,9 +11,9 @@ const port = 3000;
 // you might go up one level if 'backend' is directly inside 'campaign-designer'.
 // If 'campaign-designer' is the root of your repo and contains 'backend' and 'frontend'
 // then __dirname (current dir: backend) -> path.resolve(__dirname, '..') would be 'campaign-designer'
-const projectRoot = path.resolve(__dirname, '..');
+const projectRoot = path.resolve(__dirname, '..', '..');
 // Verification log (optional, good for debugging setup)
-// console.log(`Project Root determined as: ${projectRoot}`);
+console.log(`[Server] Project Root Initialized: ${projectRoot}`);
 
 
 app.use(express.json());
@@ -31,17 +31,23 @@ app.get('/api/read-json', async (req, res) => {
     try {
         const decodedClientPath = decodeURIComponent(clientPath);
 
-        // Basic check for path traversal components before resolving
-        // More robust check is to see if the resolved path is within the project root.
-        if (decodedClientPath.includes('..')) {
-            console.warn(`Attempt to use '..' in path: ${decodedClientPath}`);
+        // Path validation: Reject absolute paths and ensure it's within expected structure
+        if (path.isAbsolute(decodedClientPath) || /^[a-zA-Z]:\\/.test(decodedClientPath) || decodedClientPath.startsWith('/')) {
+            console.warn(`[Server] /api/read-json: Access denied: Absolute path received: ${decodedClientPath}`);
+            return res.status(400).json({ error: 'Access denied: Absolute paths are not allowed. Please use paths relative to the project root (e.g., campaigns/yourcampaign/campaign.json or assets/yourfile.json).' });
+        }
+        // Ensure path uses forward slashes for internal consistency and starts with 'campaigns/' or 'assets/'
+        const normalizedClientPath = decodedClientPath.replace(/\\/g, '/');
+        if (normalizedClientPath.includes('..')) {
+            console.warn(`[Server] /api/read-json: Access denied: Path contains '..': ${normalizedClientPath}`);
             return res.status(403).json({ error: 'Access denied: Invalid path components (contains "..").' });
         }
-
-        const intendedPath = path.normalize(decodedClientPath); // Normalize for OS (e.g. / vs \) and remove redundant separators.
-
-        // path.join will create the correct path for the OS, path.resolve will make it absolute from projectRoot
-        // Using path.resolve from projectRoot is generally safer as it prevents escaping the root via symlinks if not careful.
+        if (!normalizedClientPath.startsWith('campaigns/') && !normalizedClientPath.startsWith('assets/')) {
+            console.warn(`[Server] /api/read-json: Access denied: Path must start with 'campaigns/' or 'assets/'. Received: ${normalizedClientPath}`);
+            return res.status(403).json({ error: 'Access denied: Path must be under campaigns/ or assets/.' });
+        }
+        // Use normalizedClientPath for further operations instead of decodedClientPath
+        const intendedPath = path.normalize(normalizedClientPath); // path.normalize will use OS specific separators internally for resolution.
         const absoluteServerPath = path.resolve(projectRoot, intendedPath);
 
         // Security check: Ensure the resolved path is still within the project root.
@@ -59,6 +65,7 @@ app.get('/api/read-json', async (req, res) => {
         }
 
         // Asynchronously read the file
+        console.log(`[Server] Read API: Attempting to access ${absoluteServerPath} (Original client path: ${normalizedClientPath})`);
         try {
             const fileData = await fs.readFile(absoluteServerPath, 'utf8');
             try {
@@ -98,12 +105,22 @@ app.post('/api/write-json', async (req, res) => {
     try {
         const decodedClientPath = decodeURIComponent(clientPath);
 
-        if (decodedClientPath.includes('..')) {
-            console.warn(`Attempt to use '..' in write path: ${decodedClientPath}`);
+        if (path.isAbsolute(decodedClientPath) || /^[a-zA-Z]:\\/.test(decodedClientPath) || decodedClientPath.startsWith('/')) {
+            console.warn(`[Server] /api/write-json: Access denied: Absolute path received: ${decodedClientPath}`);
+            return res.status(400).json({ error: 'Access denied: Absolute paths are not allowed for writing.' });
+        }
+        const normalizedClientPath = decodedClientPath.replace(/\\/g, '/');
+        if (normalizedClientPath.includes('..')) {
+            console.warn(`[Server] /api/write-json: Access denied: Path contains '..': ${normalizedClientPath}`);
             return res.status(403).json({ error: 'Access denied: Invalid path components (contains "..").' });
         }
-
-        const intendedPath = path.normalize(decodedClientPath);
+        // For writing, be even more restrictive. Only allow writes within 'campaigns/'
+        if (!normalizedClientPath.startsWith('campaigns/')) {
+            console.warn(`[Server] /api/write-json: Access denied: Write path must start with 'campaigns/'. Received: ${normalizedClientPath}`);
+            return res.status(403).json({ error: 'Access denied: Files can only be written to subdirectories within the campaigns/ folder.' });
+        }
+        // Use normalizedClientPath for further operations
+        const intendedPath = path.normalize(normalizedClientPath);
         const absoluteServerPath = path.resolve(projectRoot, intendedPath);
 
         if (!absoluteServerPath.startsWith(projectRoot + path.sep) && absoluteServerPath !== projectRoot) {
@@ -134,12 +151,22 @@ app.get('/api/list-files', async (req, res) => {
     try {
         const decodedDirPath = decodeURIComponent(directoryPathQuery);
 
-        if (decodedDirPath.includes('..')) {
-            console.warn(`Attempt to use '..' in list-files path: ${decodedDirPath}`);
+        if (path.isAbsolute(decodedDirPath) || /^[a-zA-Z]:\\/.test(decodedDirPath) || decodedDirPath.startsWith('/')) {
+            console.warn(`[Server] /api/list-files: Access denied: Absolute path received: ${decodedDirPath}`);
+            return res.status(400).json({ error: 'Access denied: Absolute paths are not allowed for listing.' });
+        }
+        const normalizedClientPath = decodedDirPath.replace(/\\/g, '/');
+        if (normalizedClientPath.includes('..')) {
+            console.warn(`[Server] /api/list-files: Access denied: Path contains '..': ${normalizedClientPath}`);
             return res.status(403).json({ error: 'Access denied: Invalid path components (contains "..").' });
         }
-
-        const intendedPath = path.normalize(decodedDirPath);
+        // Restrict listing to 'campaigns/' subdirectories (primarily for dialogue)
+        if (!normalizedClientPath.startsWith('campaigns/')) { // Or be more specific if it's always 'campaigns/.../dialogue/'
+            console.warn(`[Server] /api/list-files: Access denied: Directory listing must be within 'campaigns/'. Received: ${normalizedClientPath}`);
+            return res.status(403).json({ error: 'Access denied: Directory listing is restricted to subdirectories within campaigns/.' });
+        }
+        // Use normalizedClientPath for further operations
+        const intendedPath = path.normalize(normalizedClientPath);
         const absoluteServerPath = path.resolve(projectRoot, intendedPath);
 
         if (!absoluteServerPath.startsWith(projectRoot + path.sep) && absoluteServerPath !== projectRoot) {
@@ -172,15 +199,25 @@ app.post('/api/delete-file', async (req, res) => {
     try {
         const decodedFilePath = decodeURIComponent(filePathToDelete);
 
-        if (decodedFilePath.includes('..')) {
-            console.warn(`Attempt to use '..' in delete path: ${decodedFilePath}`);
+        if (path.isAbsolute(decodedFilePath) || /^[a-zA-Z]:\\/.test(decodedFilePath) || decodedFilePath.startsWith('/')) {
+            console.warn(`[Server] /api/delete-file: Access denied: Absolute path received: ${decodedFilePath}`);
+            return res.status(400).json({ error: 'Access denied: Absolute paths are not allowed for deletion.' });
+        }
+        const normalizedClientPath = decodedFilePath.replace(/\\/g, '/');
+        if (normalizedClientPath.includes('..')) {
+            console.warn(`[Server] /api/delete-file: Access denied: Path contains '..': ${normalizedClientPath}`);
             return res.status(403).json({ error: 'Access denied: Invalid path components (contains "..").' });
         }
-
-        const intendedPath = path.normalize(decodedFilePath);
+        // Restrict deletion to 'campaigns/' subdirectories
+        if (!normalizedClientPath.startsWith('campaigns/') || !normalizedClientPath.endsWith('.json')) { // Also ensure it's a JSON file
+            console.warn(`[Server] /api/delete-file: Access denied: Deletion restricted to .json files within 'campaigns/'. Received: ${normalizedClientPath}`);
+            return res.status(403).json({ error: 'Access denied: Deletion is restricted to .json files within subdirectories of campaigns/.' });
+        }
+        // Use normalizedClientPath for further operations
+        const intendedPath = path.normalize(normalizedClientPath);
         const absoluteServerPath = path.resolve(projectRoot, intendedPath);
 
-        if (!absoluteServerPath.startsWith(projectRoot + path.sep) || !absoluteServerPath.endsWith('.json')) {
+        if (!absoluteServerPath.startsWith(projectRoot + path.sep) || !absoluteServerPath.endsWith('.json')) { // Redundant check for absoluteServerPath, but good for safety
             console.warn(`Path traversal attempt or invalid file type for deletion. Resolved: '${absoluteServerPath}', ProjectRoot: '${projectRoot}'`);
             return res.status(403).json({ error: 'Access denied: Deletion restricted or invalid file type.' });
         }

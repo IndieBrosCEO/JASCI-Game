@@ -847,6 +847,24 @@ async function initialize() { // Made async
 
     document.addEventListener('keydown', handleKeyDown);
 
+    // Listen for campaign loaded event
+    document.addEventListener('campaignWasLoaded', async (event) => { // made async for handleMapSelectionChangeWrapper
+        logToConsole(`Campaign loaded: ${event.detail.campaignId}`);
+        if (event.detail.manifest && event.detail.manifest.entryMap) {
+            const entryMapId = event.detail.manifest.entryMap;
+            logToConsole(`Campaign entry map: ${entryMapId}`);
+            // Load the initial map for the campaign
+            // This replaces the previous initial map loading logic that was here.
+            await handleMapSelectionChangeWrapper(entryMapId);
+            // Ensure UI is updated after map change
+            // renderCharacterInfo(); // Potentially redundant if handleMapSelectionChangeWrapper covers it
+            // window.mapRenderer.scheduleRender(); // Covered by handleMapSelectionChangeWrapper
+            // updatePlayerStatusDisplay(); // Potentially redundant
+        } else {
+            logToConsole("Warning: Campaign loaded, but no entryMap specified in the manifest.", "warn");
+        }
+    });
+
     /**************************************************************
      * Player Status Display Function
      **************************************************************/

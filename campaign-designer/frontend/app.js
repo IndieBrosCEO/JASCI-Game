@@ -217,13 +217,52 @@
         clearManifestDetails(); clearNpcDetails(); clearDialogueDetails(); clearQuestDetails(); clearZoneDetails(); clearWorldMapDetails(); clearScheduleDetails(); clearRandomEncounterDetails(); clearStoryBeatDetails();
         clearErrorMessages(); hideAllNpcForms(); hideAllDialogueForms(); hideAllQuestForms(); hideAllZoneForms(); hideAllWorldMapForms(); hideAllScheduleForms(); hideAllRandomEncounterForms(); hideAllStoryBeatForms();
 
-        const filePath = prompt("Enter path to campaign.json:", "campaigns/fallbrook/campaign.json");
-        if (!filePath) { displayError("File path cannot be empty."); return; }
+        let filePath = prompt("Enter path to campaign.json (e.g., campaigns/fallbrook/campaign.json):", "campaigns/fallbrook/campaign.json");
+        if (!filePath) {
+            displayError("File path cannot be empty.");
+            return;
+        }
+
+        filePath = filePath.trim().replace(/^"|"$/g, ''); // Trim and remove surrounding quotes
+
+        // Attempt to normalize absolute paths containing 'JASCI-Game' to be relative to project root
+        // This specifically looks for "JASCI-Game/" followed by "campaigns/" or "assets/"
+        const projectFolderName = 'JASCI-Game';
+        const relevantSubfolders = ['campaigns/', 'assets/'];
+        let foundAndNormalized = false;
+
+        for (const subfolder of relevantSubfolders) {
+            // Check for patterns like "JASCI-Game/campaigns/" or "JASCI-Game\campaigns\"
+            let searchSegment = projectFolderName + '/' + subfolder;
+            let index = filePath.toUpperCase().indexOf(searchSegment.toUpperCase());
+            if (index !== -1) {
+                // Extract from the start of the subfolder (e.g., "campaigns/...")
+                filePath = filePath.substring(index + projectFolderName.length + 1);
+                foundAndNormalized = true;
+                break;
+            }
+
+            // Check for backslash version
+            searchSegment = projectFolderName + '\\' + subfolder; // Need to escape backslashes for regex-like string search
+            index = filePath.toUpperCase().indexOf(searchSegment.toUpperCase());
+            if (index !== -1) {
+                filePath = filePath.substring(index + projectFolderName.length + 1).replace(/\\/g, '/'); // Normalize backslashes to forward slashes
+                foundAndNormalized = true;
+                break;
+            }
+        }
+
+        // If not normalized yet, and it's an absolute path, it might be problematic.
+        // For now, we'll let it pass to the server for the server-side validation to catch,
+        // or it might be a relative path that's already correct (e.g. user types 'campaigns/other/').
+
+        console.log(`[App.js] Processed filePath for manifest load: ${filePath}`); // For debugging
+
         currentManifestPath = filePath;
         currentCampaignRoot = filePath.substring(0, filePath.lastIndexOf('/') + 1);
 
         try {
-            const response = await fetch(`/api/read-json?path=${encodeURIComponent(filePath)}`);
+            const response = await fetch(`/api/read-json?path=${encodeURIComponent(currentManifestPath)}`);
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ error: `HTTP error ${response.status}` }));
                 resetCurrentPathsAndData(); throw new Error(errorData.error || `HTTP error ${response.status}`);
@@ -506,7 +545,7 @@
             link.onclick = (e) => { e.preventDefault(); loadDialogueFileContent(fileName); };
             li.appendChild(link);
             const delBtn = document.createElement('button');
-            delBtn.textContent = 'Delete'; delBtn.classList.add('delete-button-style'); delBtn.dataset.filename = fileName;
+            delBtn.textContent = 'Delete'; delBtn.classList.add('button-danger'); delBtn.dataset.filename = fileName;
             delBtn.style.marginLeft = '10px'; delBtn.onclick = handleDeleteDialogueFile;
             li.appendChild(delBtn);
             dialogueFilesList.appendChild(li);
@@ -590,7 +629,7 @@
                 <div><label>Flags (comma-separated):</label><br><input type="text" class="choice-flags-input" value="${formatFlagsArray(choice.flags)}" data-index="${index}" style="width:90%;"></div>
             `;
             const removeBtn = document.createElement('button');
-            removeBtn.textContent = 'Remove Choice'; removeBtn.classList.add('delete-button-style');
+            removeBtn.textContent = 'Remove Choice'; removeBtn.classList.add('button-danger');
             removeBtn.style.marginTop = '5px'; removeBtn.onclick = () => removeChoiceFromCurrentNode(index);
             li.appendChild(removeBtn);
             nodePlayerChoicesList.appendChild(li);
@@ -727,7 +766,7 @@
         newQuestIdInput.value = ''; newQuestTitleInput.value = ''; newQuestDescriptionInput.value = '';
         createQuestForm.style.display = 'block'; clearErrorMessages();
     });
-    cancelCreateQuestFormButton.addEventListener('click', () => { hideAllQuestForms(); });
+    cancelCreateQuestButton.addEventListener('click', () => { hideAllQuestForms(); });
     saveNewQuestButton.addEventListener('click', async () => {
         const newId = newQuestIdInput.value.trim(); const newTitle = newQuestTitleInput.value.trim(); const newDesc = newQuestDescriptionInput.value.trim();
         if (!newId || !newTitle) { displayError("Quest ID and Title are required."); return; }
@@ -782,7 +821,7 @@
             li.innerHTML = `
                 <div style="display:grid; grid-template-columns: auto 1fr auto; gap: 5px 10px; align-items: center;">
                     <label>Type:</label><input type="text" class="quest-obj-type-input" value="${obj.type || ''}" data-index="${index}" style="width:100%;">
-                    <button type="button" class="remove-quest-objective-button delete-button-style" data-index="${index}" style="padding:3px 6px;">X</button>
+                    <button type="button" class="remove-quest-objective-button button-danger" data-index="${index}" style="padding:3px 6px;">X</button>
                     <label>Target:</label><input type="text" class="quest-obj-target-input" value="${obj.target || ''}" data-index="${index}" style="width:100%;"><span></span>
                     <label>Count:</label><input type="number" class="quest-obj-count-input" value="${obj.count || 1}" min="1" data-index="${index}" style="width:70px;"><span></span>
                     <label>Desc:</label><input type="text" class="quest-obj-desc-input" value="${obj.description || ''}" data-index="${index}" style="width:100%;"><span></span>
@@ -1097,7 +1136,7 @@
             editBtn.style.marginLeft = '10px'; editBtn.onclick = () => handleEditScheduleEntries(id);
             li.appendChild(editBtn);
             const delBtn = document.createElement('button'); delBtn.textContent = 'Delete ID';
-            delBtn.style.marginLeft = '5px'; delBtn.classList.add('delete-button-style');
+            delBtn.style.marginLeft = '5px'; delBtn.classList.add('button-danger');
             delBtn.onclick = () => handleDeleteScheduleId(id);
             li.appendChild(delBtn);
             scheduleIdsList.appendChild(li);
@@ -1123,7 +1162,7 @@
             const li = document.createElement('li');
             li.textContent = `Time: ${entry.time}, Action: ${entry.action}, Map: ${entry.mapId}, Waypoint: ${entry.waypointId}`;
             const removeBtn = document.createElement('button'); removeBtn.textContent = 'Remove';
-            removeBtn.style.marginLeft = '10px'; removeBtn.classList.add('delete-button-style');
+            removeBtn.style.marginLeft = '10px'; removeBtn.classList.add('button-danger');
             removeBtn.onclick = () => handleRemoveScheduleEntry(index);
             li.appendChild(removeBtn);
             scheduleEntriesList.appendChild(li);
@@ -1345,7 +1384,7 @@
                 valInput.type = 'text'; valInput.className = 'story-beat-value-input'; valInput.dataset.beatId = beatId;
                 valInput.value = String(val); valCell.appendChild(valInput);
                 const actCell = row.insertCell(); const delBtn = document.createElement('button');
-                delBtn.textContent = 'Delete'; delBtn.classList.add('delete-button-style'); delBtn.dataset.beatId = beatId;
+                delBtn.textContent = 'Delete'; delBtn.classList.add('button-danger'); delBtn.dataset.beatId = beatId;
                 delBtn.onclick = handleDeleteStoryBeat; actCell.appendChild(delBtn);
             }
         }
