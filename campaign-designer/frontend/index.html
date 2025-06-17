@@ -13,7 +13,9 @@
         <h2>Campaign Manifest</h2>
         <div id="manifestControls">
             <button id="loadManifestButton">Load Campaign Manifest</button>
+            <input type="file" id="fileUploader" accept=".json,.zip" multiple style="display: block; margin-top: 10px;">
             <button id="saveManifestButton" class="button-primary">Save Campaign Manifest</button>
+            <button id="exportCampaignButton" class="button-primary" style="margin-left: 10px;">Export Campaign to ZIP</button>
         </div>
         <div><label for="campaignId">ID:</label><input type="text" id="campaignId" readonly></div>
         <div><label for="campaignName">Name:</label><input type="text" id="campaignName" readonly></div>
