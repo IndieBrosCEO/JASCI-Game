@@ -913,6 +913,8 @@ window.mapRenderer = {
                             if (cachedCell && cachedCell.span) {
                                 cachedCell.span.textContent = npc.sprite;
                                 cachedCell.span.style.color = npc.color;
+                                cachedCell.sprite = npc.sprite;
+                                cachedCell.color = npc.color;
                             }
                         }
                     }
