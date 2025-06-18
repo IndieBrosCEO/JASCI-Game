@@ -12,9 +12,8 @@
     <div id="manifestDetailsSection">
         <h2>Campaign Manifest</h2>
         <div id="manifestControls">
-            <button id="loadManifestButton">Load Campaign Manifest</button>
-            <input type="file" id="fileUploader" accept=".json,.zip" multiple style="display: block; margin-top: 10px;">
-            <button id="saveManifestButton" class="button-primary">Save Campaign Manifest</button>
+            <input type="file" id="fileUploader" accept=".json,.zip" style="display: block; margin-bottom: 10px;">
+            <button id="loadManifestButton">Load Campaign Data</button>
             <button id="exportCampaignButton" class="button-primary" style="margin-left: 10px;">Export Campaign to ZIP</button>
         </div>
         <div><label for="campaignId">ID:</label><input type="text" id="campaignId" readonly></div>
@@ -22,8 +21,6 @@
         <div><label for="campaignVersion">Version:</label><input type="text" id="campaignVersion" readonly></div>
         <div><label for="campaignDescription">Description:</label><textarea id="campaignDescription" rows="3" readonly></textarea></div>
         <div><label for="campaignAuthor">Author:</label><input type="text" id="campaignAuthor" readonly></div>
-        <div><label for="entryMap">Entry Map:</label><input type="text" id="entryMap" readonly><button type="button" class="browse-button" data-target-input="entryMap">Browse...</button></div>
-        <h4>Data File Paths:</h4><ul id="filePathsList"></ul>
     </div>
 
     <div id="npcSection">
@@ -261,6 +258,7 @@
 
     <div id="errorMessages" style="color: red;"></div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="app.js"></script>
     <script>
         if (!navigator.onLine) {
@@ -270,5 +268,3 @@
     </script>
 </body>
 </html>
-
-[end of campaign-designer/frontend/index.html]
