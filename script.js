@@ -375,6 +375,52 @@ function handleKeyDown(event) {
         return;
     }
 
+    // Wait Feature (Shift+T)
+    if (event.shiftKey && (event.key === 'T' || event.key === 't')) {
+        event.preventDefault();
+        if (gameState.isInCombat) {
+            logToConsole("Cannot wait during combat.", "orange");
+            return;
+        }
+
+        const hoursToWaitStr = prompt("How many hours to wait? (1-24)", "1");
+        if (hoursToWaitStr === null) { // User pressed cancel
+            logToConsole("Wait cancelled.", "info");
+            return;
+        }
+
+        const hoursToWait = parseInt(hoursToWaitStr, 10);
+
+        if (isNaN(hoursToWait) || hoursToWait < 1 || hoursToWait > 24) {
+            logToConsole("Invalid number of hours. Please enter a number between 1 and 24.", "error");
+            return;
+        }
+
+        logToConsole(`Waiting for ${hoursToWait} hour(s)...`, "info");
+        const ticksToWait = hoursToWait * 30; // 1 hour = 60 minutes / 2 minutes/tick = 30 ticks
+
+        for (let i = 0; i < ticksToWait; i++) {
+            // Advance time
+            Time.advanceTime(gameState); // Assumes Time object is globally available from time.js
+
+            // Update UI (clock, needs)
+            // updatePlayerStatusDisplay is defined in script.js and should be callable
+            if (typeof updatePlayerStatusDisplay === 'function') {
+                updatePlayerStatusDisplay();
+            } else {
+                console.error("updatePlayerStatusDisplay function not found during wait loop.");
+            }
+
+            // Optional: Small delay or a way to interrupt long waits could be added here in a future enhancement.
+            // For now, it will run all ticks sequentially.
+        }
+        logToConsole(`Finished waiting for ${hoursToWait} hour(s).`, "info");
+        // It's important that player stats (hunger/thirst) are updated by Time.advanceTime
+        // and health effects from hunger/thirst are also handled there or by a function called within it.
+        // The current Time.advanceTime already includes hunger/thirst decrement and damage checks.
+        return;
+    }
+
     // New logic for Escape key during combat UI declaration
     if (gameState.isInCombat && gameState.combatPhase === 'playerAttackDeclare' && event.key === 'Escape') {
         const attackDeclUI = document.getElementById('attackDeclarationUI');

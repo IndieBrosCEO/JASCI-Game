@@ -447,6 +447,17 @@
         logToConsole(`--- ${attackerName}'s Turn ---`, 'lightblue');
 
         if (currentEntry.isPlayer) {
+            // Check if player forced end turn with zero AP
+            if (this.gameState.playerForcedEndTurnWithZeroAP) {
+                logToConsole("Player forced end turn with 0 AP. Advancing turn again.", 'orange');
+                this.gameState.playerForcedEndTurnWithZeroAP = false; // Reset the flag
+                // No AP/MP reset or prompt for attack declaration here
+                // Directly call nextTurn again to advance to the *actual* next participant
+                // Pass the current player entity as the one whose turn just ended (conceptually)
+                this.nextTurn(currentEntry.entity);
+                return; // Exit this call to nextTurn to avoid processing player's turn
+            }
+
             this.gameState.playerMovedThisTurn = false;
             this.gameState.actionPointsRemaining = 1;
             this.gameState.movementPointsRemaining = 6;
@@ -1588,8 +1599,21 @@
     }
 
     endPlayerTurn() {
+        // NEW: Clear the waiting flag as the player is explicitly ending their turn.
+        this.gameState.isWaitingForPlayerCombatInput = false;
+
         if (this.gameState.isInCombat && this.gameState.combatCurrentAttacker === this.gameState) {
             logToConsole("Player manually ends their turn.", 'lightblue');
+
+            // Check AP before ending turn
+            if (this.gameState.actionPointsRemaining === 0) {
+                this.gameState.playerForcedEndTurnWithZeroAP = true;
+                logToConsole("Player ends turn with 0 AP. Setting playerForcedEndTurnWithZeroAP = true.", "debug");
+            } else {
+                this.gameState.playerForcedEndTurnWithZeroAP = false;
+                logToConsole("Player ends turn with >0 AP. Setting playerForcedEndTurnWithZeroAP = false.", "debug");
+            }
+
             this.gameState.actionPointsRemaining = 0;
             this.gameState.movementPointsRemaining = 0;
             window.turnManager.updateTurnUI();
