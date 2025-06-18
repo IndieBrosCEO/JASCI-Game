@@ -118,7 +118,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
@@ -131,8 +131,7 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-04-30T23:43:24.927Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -145,7 +144,31 @@
               "ViewState": "AgIAAEgDAAAAAAAAAAAAAFYDAAA+AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2025-05-28T00:28:02.006Z",
-              "IsPinned": true,
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "server.js",
+              "DocumentMoniker": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\campaign-designer\\backend\\server.js",
+              "RelativeDocumentMoniker": "campaign-designer\\backend\\server.js",
+              "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\campaign-designer\\backend\\server.js",
+              "RelativeToolTip": "campaign-designer\\backend\\server.js",
+              "ViewState": "AgIAAMoAAAAAAAAAAAAowPUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-06-16T19:53:31.062Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "index.html",
+              "DocumentMoniker": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\campaign-designer\\frontend\\index.html",
+              "RelativeDocumentMoniker": "campaign-designer\\frontend\\index.html",
+              "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\campaign-designer\\frontend\\index.html",
+              "RelativeToolTip": "campaign-designer\\frontend\\index.html",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABoAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2025-06-15T22:55:57.91Z",
               "EditorCaption": ""
             },
             {
@@ -158,21 +181,7 @@
               "RelativeToolTip": "campaign-designer\\frontend\\campaign-designer-theme.css",
               "ViewState": "AgIAANAAAAAAAAAAAAAYwOoAAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-06-17T05:35:33.071Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "server.js",
-              "DocumentMoniker": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\campaign-designer\\backend\\server.js",
-              "RelativeDocumentMoniker": "campaign-designer\\backend\\server.js",
-              "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\campaign-designer\\backend\\server.js",
-              "RelativeToolTip": "campaign-designer\\backend\\server.js",
-              "ViewState": "AgIAAMoAAAAAAAAAAAAowPUAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-06-16T19:53:31.062Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-17T05:35:33.071Z"
             },
             {
               "$type": "Document",
@@ -182,22 +191,9 @@
               "RelativeDocumentMoniker": "campaign-designer\\frontend\\app.js",
               "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\campaign-designer\\frontend\\app.js",
               "RelativeToolTip": "campaign-designer\\frontend\\app.js",
-              "ViewState": "AgIAAAcGAAAAAAAAAAA6wDIGAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAwAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2025-06-15T23:07:26.669Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "index.html",
-              "DocumentMoniker": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\campaign-designer\\frontend\\index.html",
-              "RelativeDocumentMoniker": "campaign-designer\\frontend\\index.html",
-              "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\campaign-designer\\frontend\\index.html",
-              "RelativeToolTip": "campaign-designer\\frontend\\index.html",
-              "ViewState": "AgIAAOQAAAAAAAAAAAAYwOwAAAAOAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2025-06-15T22:55:57.91Z",
               "EditorCaption": ""
             },
             {

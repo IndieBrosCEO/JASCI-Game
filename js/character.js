@@ -1,6 +1,6 @@
 ﻿/**************************************************************
- * Character Creation & Stats Functions
- **************************************************************/
+* Character Creation & Stats Functions
+**************************************************************/
 
 // Update skill points from character creation
 // Assumes 'character' has 'skills' array and 'MAX_SKILL_POINTS'

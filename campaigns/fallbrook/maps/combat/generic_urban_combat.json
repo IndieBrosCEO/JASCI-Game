@@ -1,9 +1,0 @@
-{
-  "mapId": "generic_urban_combat",
-  "name": "Generic Urban Combat Area",
-  "width": 25,
-  "height": 15,
-  "tiles": [],
-  "objects": [],
-  "entryPoints": [ { "id": "player_south", "x": 12, "y": 14 }, { "id": "enemy_north_1", "x": 10, "y": 2 }, { "id": "enemy_north_2", "x": 14, "y": 2 } ]
-}

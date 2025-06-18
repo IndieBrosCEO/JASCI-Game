@@ -91,7 +91,6 @@
                 }
                 // Extend for other definition files as they are added
             } catch (error) {
-                // Base assets should exist, so this is always an error.
                 console.error(`Failed to load base definition file ${filename}:`, error);
             }
         }
@@ -99,19 +98,17 @@
 
         // Load user definitions (override/extend base definitions)
         console.log("Attempting to load user-generated definitions...");
-        const userDefinitionFiles = ['tileset.json', 'items.json', 'npcs.json', 'clothing.json'];
+        const userDefinitionFiles = ['tileset.json', 'items.json', 'npcs.json', 'clothing.json']; // Added clothing.json
 
         for (const filename of userDefinitionFiles) {
-            const url = `/assets/definitions/user_overrides/${filename}?t=${Date.now()}`;
+            const url = `/user_assets/definitions/${filename}?t=${Date.now()}`;
             try {
                 const response = await fetch(url);
                 if (!response.ok) {
                     if (response.status === 404) {
-                        // This is an expected case for user overrides, not a critical error.
-                        console.log(`User override definition file not found (logging suppressed): ${url}`);
+                        console.log(`User definition file ${filename} not found, skipping.`);
                     } else {
-                        // Other errors (network, server issues) might still be worth a warning.
-                        console.warn(`Warning: HTTP error ${response.status} when trying to load user override ${filename}. Path: ${url}`);
+                        throw new Error(`HTTP error! status: ${response.status} for user definition ${filename}`);
                     }
                     continue; // Skip to next file
                 }
@@ -119,7 +116,7 @@
                 console.log(`Successfully loaded user definition file ${filename}.`);
 
                 if (filename === 'tileset.json') {
-                    this.tilesets = parsedJson;
+                    this.tilesets = parsedJson; // User tileset replaces base
                     console.log("User tileset.json loaded, replacing base tileset.");
                 } else if (filename === 'items.json') {
                     if (Array.isArray(parsedJson)) {
@@ -134,7 +131,7 @@
                             if (this.npcsById[npc.id]) {
                                 console.warn(`AssetManager: User NPC ID ${npc.id} from npcs.json already exists. Overwriting.`);
                             }
-                            this.npcsById[npc.id] = npc;
+                            this.npcsById[npc.id] = npc; // Add/override NPCs
                         });
                         console.log("User npcs.json loaded, NPCs merged/overridden.");
                     } else {
@@ -148,9 +145,9 @@
                         console.warn(`User clothing.json for ${filename} was not an array. Skipping merge.`);
                     }
                 }
+                // Extend for other definition files as they are added
             } catch (error) {
-                // For user overrides, a fetch error (network, etc.) might be a warning rather than a critical error.
-                console.warn(`Failed to load or process user override definition file ${filename}. Error: ${error.message}. Path: ${url}`);
+                console.error(`Failed to load or process user definition file ${filename}:`, error);
             }
         }
         this.itemsById = tempItemsById;
@@ -185,8 +182,8 @@
         let mapJsonData;
         let loadedFromPath = '';
 
-        // Try fetching from user assets first (now from a subfolder of assets)
-        const userMapPath = `/assets/maps/user_overrides/${mapId}.json?t=${Date.now()}`; // Changed path
+        // Try fetching from user assets first
+        const userMapPath = `/user_assets/maps/${mapId}.json?t=${Date.now()}`;
         console.log(`AssetManager.loadMap: Attempting to load user map from: ${userMapPath}`);
         try {
             const response = await fetch(userMapPath);
@@ -195,19 +192,15 @@
                 loadedFromPath = userMapPath;
                 console.log(`AssetManager.loadMap: User map '${mapId}' data fetched successfully from ${userMapPath}.`);
             } else if (response.status !== 404) {
+                // Create an error object that includes the response status if possible
                 const error = new Error(`HTTP error! status: ${response.status} for user map ${mapId} at ${userMapPath}`);
-                error.response = response;
+                error.response = response; // Attach response for more details in catch
                 throw error;
             }
+            // If 404, mapJsonData remains undefined, proceed to base path
         } catch (error) {
-            // If it's not a 404, it might be a different issue.
-            if (error.response && error.response.status !== 404) {
-                console.warn(`AssetManager.loadMap: User override map fetch failed (status ${error.response.status}). Path: ${userMapPath}. Error: ${error.message}. Falling back to base map.`);
-            } else if (!error.response) { // Network error etc.
-                console.warn(`AssetManager.loadMap: User override map not loaded (network or other issue). Path: ${userMapPath}. Error: ${error.message}. Falling back to base map.`);
-            } else { // Is a 404
-                console.log(`User override map not found (logging suppressed): ${userMapPath}. Falling back to base map.`);
-            }
+            console.log(`AssetManager.loadMap: User map not loaded or failed. Error: ${error.message}. Falling back to base map.`);
+            // No need to re-throw, just proceed to base map loading
         }
 
         // Fallback to base assets if user map not found or failed to load
@@ -225,37 +218,13 @@
                 loadedFromPath = baseMapPath;
                 console.log(`AssetManager.loadMap: Base map '${mapId}' data fetched successfully from ${baseMapPath}.`);
             } catch (error) {
-                // Base assets should exist.
                 console.error(`AssetManager.loadMap: Base map fetch failed for '${baseMapPath}'. Error: ${error.message}, Status: ${error.response ? error.response.status : 'N/A'}`);
-                // Try to load from the old /Maps/ path as a final fallback for Small_Map.json specifically if mentioned
-                if (mapId === "Small_Map") {
-                    const oldPath = `/Maps/${mapId}.json?t=${Date.now()}`; // This is an old specific core path
-                    console.log(`AssetManager.loadMap: Attempting fallback to old core path for Small_Map: ${oldPath}`);
-                    try {
-                        const fallbackResponse = await fetch(oldPath);
-                        if (!fallbackResponse.ok) {
-                            // If even the old /Maps/ path fails for Small_Map, this is an error for a core asset.
-                            console.error(`AssetManager.loadMap: Also failed to load Small_Map from ${oldPath}. Error: HTTP status ${fallbackResponse.status}`);
-                            this.currentMap = null;
-                            return false;
-                        }
-                        mapJsonData = await fallbackResponse.json();
-                        loadedFromPath = oldPath;
-                        console.log(`AssetManager.loadMap: Base map '${mapId}' data fetched successfully from OLD path ${oldPath}.`);
-                    } catch (oldPathError) {
-                        console.error(`AssetManager.loadMap: Also failed to load Small_Map from ${oldPath}. Error: ${oldPathError.message}`);
-                        this.currentMap = null;
-                        return false;
-                    }
-                } else {
-                    this.currentMap = null;
-                    return false;
-                }
+                this.currentMap = null;
+                return false; // Indicate failure
             }
         }
 
         if (!mapJsonData) {
-            // This means all attempts, including fallbacks, failed.
             console.error(`Map data for '${mapId}' could not be loaded from any path.`);
             this.currentMap = null;
             return false;

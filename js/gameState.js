@@ -158,47 +158,4 @@ gameState.player.wornClothing = {
     [ClothingLayers.WAIST]: null
 };
 
-window.gameState = gameState; // <-- ADD THIS LINE
-
-// 4) Attach to gameState - This was originally in script.js, moving it here as it directly modifies gameState
-// and uses InventoryContainer which might be defined elsewhere or needs to be defined here too.
-// For now, assuming InventoryContainer constructor will be available globally or defined in another file.
-// If InventoryContainer is defined in utils.js or another new file, this part might need adjustment
-// or InventoryContainer needs to be explicitly imported if using modules.
-// Based on the task, InventoryContainer is part of the Inventory System Functions, which are NOT being moved in this step.
-// THEREFORE, this specific block that initializes gameState.inventory SHOULD REMAIN in script.js for now,
-// as it depends on InventoryContainer which is not yet moved.
-// I will OMIT the following block from gameState.js for now:
-/*
-// This structure was previously here, it's now part of the main gameState object above.
-gameState.inventory = {
-    container: new InventoryContainer("Backpack", "M"), // InventoryContainer is not defined here
-    handSlots: [null, null],
-    open: false,
-    cursor: 0
-};
-*/
-// The subtask asks to move `gameState` object literal. The `gameState.inventory` initialization
-// happens *after* the main object literal and depends on `InventoryContainer`.
-// The `InventorySizes` constant *is* moved, which is used by `InventoryContainer`.
-
-// Health initialization also directly modifies gameState.health.
-// This also seems like it should remain in script.js or be part of a dedicated health module later.
-// For now, I will OMIT the health initialization part as well.
-/*
-function initializeHealth() { // This function definition should not be here.
-    gameState.health = {
-        head: { max: 5, current: 5, armor: 0, crisisTimer: 0 },
-        torso: { max: 8, current: 8, armor: 0, crisisTimer: 0 },
-        leftArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
-        rightArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
-        leftLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
-        rightLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 }
-    };
-    // renderHealthTable(); // renderHealthTable is not defined here
-}
-// initializeHealth(); // Calling it here is also not right for this file's purpose.
-*/
-
-// Exporting for potential ES6 module usage later, though current structure is global.
-// export { gameState, ClothingLayers, InventorySizes };
+window.gameState = gameState;

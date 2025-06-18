@@ -1,4 +1,4 @@
-// js/turnManager.js
+﻿// js/turnManager.js
 
 // Assumes gameState, logToConsole, window.mapRenderer, window.interaction, window.character are globally available
 

@@ -1,16 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\campaign-designer",
-    "\\campaign-designer\\backend",
-    "\\campaign-designer\\frontend",
-    "\\campaigns",
-    "\\campaigns\\fallbrook",
-    "\\campaigns\\fallbrook\\dialogue",
     "\\js",
     "\\mapMaker",
     "\\Maps"
   ],
-  "SelectedNode": "\\campaign-designer\\frontend\\app.js",
+  "SelectedNode": "\\js\\turnManager.js",
   "PreviewInSolutionExplorer": false
 }

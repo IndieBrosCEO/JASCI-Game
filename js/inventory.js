@@ -1,6 +1,6 @@
 ﻿/**************************************************************
- * Inventory System Functions & Constructors
- **************************************************************/
+* Inventory System Functions & Constructors
+**************************************************************/
 
 // InventorySizes and ClothingLayers are expected to be global, loaded from js/gameState.js
 // logToConsole is expected to be global, loaded from js/utils.js
@@ -540,6 +540,10 @@ function interactInventoryItem() {
         logToConsole("No item selected at cursor position.");
         return;
     }
+
+    // Inside interactInventoryItem(), after:
+    // const selectedDisplayItem = window.gameState.inventory.currentlyDisplayedItems[cursorIndex];
+    // if (!selectedDisplayItem) { /* ... return ... */ }
 
     if (selectedDisplayItem.source === 'floor') {
         const itemToTake = selectedDisplayItem.originalFloorItemEntry.item;

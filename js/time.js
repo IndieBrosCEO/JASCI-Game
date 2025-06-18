@@ -92,54 +92,6 @@
             hungerBar: hungerBarDisplay,
             thirstBar: thirstBarDisplay
         };
-    },
-
-    advanceTimeSpecific: function(hours = 0, minutes = 0, gameState) {
-        if (!gameState || !gameState.currentTime) {
-            console.error("Time.advanceTimeSpecific: gameState or gameState.currentTime not initialized.");
-            return;
-        }
-        console.log(`Time: Advancing time by ${hours}h ${minutes}m from ${gameState.currentTime.hours}:${gameState.currentTime.minutes}. Day: ${gameState.currentDay}`);
-
-        let totalMinutesToAdd = (hours * 60) + minutes;
-
-        // Handle hunger/thirst for the elapsed time.
-        // This assumes 1 unit of hunger/thirst per hour.
-        let hoursPassedInt = Math.floor(totalMinutesToAdd / 60);
-        if (hoursPassedInt > 0) {
-            gameState.playerHunger = Math.max(0, (gameState.playerHunger || 24) - hoursPassedInt);
-            gameState.playerThirst = Math.max(0, (gameState.playerThirst || 24) - hoursPassedInt);
-            logToConsole(`${hoursPassedInt} hour(s) passed during travel. Hunger: ${gameState.playerHunger}/24, Thirst: ${gameState.playerThirst}/24`);
-        }
-        // Update minutesAccumulatedForHourTick if it's being used for partial hours towards hunger/thirst
-        // gameState.minutesAccumulatedForHourTick = (gameState.minutesAccumulatedForHourTick || 0) + (totalMinutesToAdd % 60);
-        // if (gameState.minutesAccumulatedForHourTick >= 60) { ... do the hourly tick ... }
-        // For simplicity, the above just does full hours. Fine-tuning this might be needed.
-
-
-        gameState.currentTime.minutes += totalMinutesToAdd;
-
-        while (gameState.currentTime.minutes >= 60) {
-            gameState.currentTime.hours++;
-            gameState.currentTime.minutes -= 60;
-        }
-
-        while (gameState.currentTime.hours >= 24) {
-            gameState.currentTime.hours -= 24;
-            gameState.currentDay = (gameState.currentDay || 1) + 1;
-            logToConsole(`A new day (${gameState.currentDay}) has begun.`);
-        }
-
-        logToConsole(`Time: New time is ${gameState.currentTime.hours}:${String(gameState.currentTime.minutes).padStart(2, '0')}. Day: ${gameState.currentDay}`);
-        window.dispatchEvent(new CustomEvent('timeUpdated', { detail: { ...gameState.currentTime, currentDay: gameState.currentDay } }));
-
-        if (typeof window.updateClockDisplay === 'function') {
-            window.updateClockDisplay();
-        }
-        // Potentially trigger NPC schedule updates if they are sensitive to large time jumps
-        if (window.npcScheduler && typeof window.npcScheduler.updateSchedules === 'function') {
-            window.npcScheduler.updateSchedules(window.gameState);
-        }
     }
 };
 

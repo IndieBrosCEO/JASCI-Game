@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿﻿
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -7,15 +8,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="campaign-select-screen">
-      <h2>Select a Campaign</h2>
-      <ul id="campaign-list"><li>Loading campaigns...</li></ul>
-      <button id="start-campaign-button" style="display:none;">Start Selected Campaign</button>
-    </div>
-    <div id="main-game-screen" style="display:none;">
-      <div id="game-container">
-          <!-- Left Column -->
-          <div id="left-panel">
+    <div id="game-container">
+        <!-- Left Column -->
+        <div id="left-panel">
             <div id="character-creator">
                 <h2>Character Creator</h2>
                 <label>Character Name:</label>
@@ -148,17 +143,9 @@
     </div>
 
     <script src="js/gameState.js"></script>
-    <script src="js/globalStateManager.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/time.js"></script>
     <script src="js/assetManager.js"></script>
-    <script src="js/campaignManager.js"></script>
-    <script src="js/dialogueManager.js"></script>
-    <script src="js/npcScheduler.js"></script>
-    <script src="js/questManager.js"></script>
-    <script src="js/scaffoldingTools.js"></script>
-    <script src="js/uiCampaignSelect.js"></script>
-    <script src="js/uiFastTravel.js"></script>
     <script src="js/mapRenderer.js"></script>
     <script src="js/character.js"></script>
     <script src="js/inventory.js"></script>
@@ -167,24 +154,6 @@
     <script src="js/combatManager.js"></script>
     <script src="js/console.js"></script>
     <script src="script.js"></script>
-    </div> <!-- This closes main-game-screen -->
-
-    <div id="fast-travel-screen" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 1px solid black; background: white; padding: 20px; z-index: 1000;">
-      <h2>Fast Travel</h2>
-      <div>Current Location: <span id="ft-current-location">N/A</span></div>
-      <hr>
-      <div>
-        <label for="ft-destination-select">Travel to:</label>
-        <select id="ft-destination-select">
-          <option value="">-- Select Destination --</option>
-        </select>
-      </div>
-      <div id="ft-travel-info" style="margin-top: 10px; margin-bottom: 10px;">
-        <p>Select a destination to see travel details.</p>
-      </div>
-      <button id="ft-travel-button" disabled>Travel</button>
-      <button id="ft-close-button">Close</button>
-    </div>
 
     <div id="keybindsDisplay" style="display: none; position: fixed; top: 10px; right: 10px; border: 1px solid white; background-color: black; padding: 10px; z-index: 100; max-height: 90vh; overflow-y: auto;">
         <h4>Controls</h4>
