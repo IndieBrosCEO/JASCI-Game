@@ -941,22 +941,41 @@ window.mapRenderer = {
         // Render Active Animations
         if (gameState.activeAnimations && gameState.activeAnimations.length > 0 && gameState.tileCache) {
             gameState.activeAnimations.forEach(anim => {
-                if (anim.visible && anim.sprite) { // Check if animation is visible and has a sprite
-                    const animX = Math.floor(anim.x); // Use Math.floor for tile grid
+                if (!anim.visible) return; // Skip non-visible animations
+
+                if (anim.type === 'explosion') {
+                    if (anim.centerPos && anim.explosionSprites && typeof anim.currentExpansionRadius === 'number' && typeof anim.currentFrameIndex === 'number' && anim.currentExpansionRadius >= 0 && anim.currentFrameIndex >= 0) {
+                        const spriteToRender = anim.explosionSprites[anim.currentFrameIndex];
+                        if (!spriteToRender) return;
+                        const colorToRender = anim.color;
+                        const centerX = Math.floor(anim.centerPos.x);
+                        const centerY = Math.floor(anim.centerPos.y);
+                        const radius = Math.floor(anim.currentExpansionRadius);
+                        // W and H are map dimensions, already available in this scope from earlier in the function
+
+                        for (let y_anim = Math.max(0, centerY - radius); y_anim <= Math.min(H - 1, centerY + radius); y_anim++) {
+                            for (let x_anim = Math.max(0, centerX - radius); x_anim <= Math.min(W - 1, centerX + radius); x_anim++) {
+                                const dx = x_anim - centerX;
+                                const dy = y_anim - centerY;
+                                if (dx * dx + dy * dy <= radius * radius) { // Check if within circular area
+                                    const cachedCell = gameState.tileCache[y_anim]?.[x_anim];
+                                    if (cachedCell && cachedCell.span) {
+                                        cachedCell.span.textContent = spriteToRender;
+                                        cachedCell.span.style.color = colorToRender;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (anim.sprite) { // Handle other single-sprite animations
+                    const animX = Math.floor(anim.x);
                     const animY = Math.floor(anim.y);
 
                     if (animX >= 0 && animX < W && animY >= 0 && animY < H) {
                         const cachedCell = gameState.tileCache[animY]?.[animX];
                         if (cachedCell && cachedCell.span) {
-                            // Temporarily override the tile content for the animation frame
-                            // We might need a way to restore it later if the animation is short-lived
-                            // or if multiple animations affect the same tile.
-                            // For now, simple override:
                             cachedCell.span.textContent = anim.sprite;
                             cachedCell.span.style.color = anim.color;
-                            // We're not changing cachedCell.sprite or cachedCell.color permanently here,
-                            // as the underlying tile should return to normal after the animation.
-                            // This means the next full render without this animation will restore it.
                         }
                     }
                 }

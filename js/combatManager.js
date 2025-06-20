@@ -417,10 +417,19 @@
     }
 
     async nextTurn(previousAttackerEntity = null) {
+        let waitCount = 0; // Counter for stuck log
         // Wait for any ongoing animations to complete
         if (window.animationManager) {
+            console.log('[CombatManager] nextTurn: Starting wait loop. isAnimationPlaying:', window.animationManager.isAnimationPlaying());
             while (window.animationManager.isAnimationPlaying()) {
-                // console.log("CombatManager.nextTurn: Waiting for animation to complete...");
+                waitCount++;
+                if (waitCount > 50) { // Approx 2.5 seconds
+                    console.log('[CombatManager] nextTurn: STUCK in wait loop. Count:', waitCount, 'isAnimationPlaying:', window.animationManager.isAnimationPlaying());
+                    if (waitCount > 100) {
+                        console.log('[CombatManager] nextTurn: Breaking wait loop due to excessive count.');
+                        break;
+                    }
+                }
                 await new Promise(resolve => setTimeout(resolve, 50)); // Wait 50ms
             }
         }
@@ -1108,10 +1117,10 @@
 
         // --- MELEE SWING ANIMATION --- 
         if (attackType === 'melee' && window.animationManager) {
-            logToConsole("Melee attack detected, playing swing animation.");
+            console.log('[CombatManager] processAttack: About to play animation - meleeSwing for weapon:', (weapon ? weapon.name : 'unarmed'));
             const attackerSprite = (attacker === this.gameState) ? '☻' : (attacker.sprite || '?');
             const attackerColor = (attacker === this.gameState) ? 'green' : (attacker.color || 'white');
-            await window.animationManager.playAnimation('meleeSwing', {
+            window.animationManager.playAnimation('meleeSwing', { // Removed await
                 attacker: attacker, // Pass the attacker object
                 x: attacker.mapPos ? attacker.mapPos.x : (this.gameState.playerPos.x), // Ensure position is valid
                 y: attacker.mapPos ? attacker.mapPos.y : (this.gameState.playerPos.y),
@@ -1119,8 +1128,62 @@
                 originalColor: attackerColor,
                 duration: 300
             });
+            console.log('[CombatManager] processAttack: Finished awaiting animation - meleeSwing');
         }
         // --- END MELEE SWING ANIMATION ---
+
+        // --- THROWING ANIMATION ---
+        if (weapon && weapon.type && weapon.type.includes("thrown") && window.animationManager) {
+            const attackerPosition = (attacker === this.gameState) ? this.gameState.playerPos : (attacker.mapPos || this.gameState.attackerMapPos);
+            let targetPosition = null;
+            if (this.gameState.pendingCombatAction && this.gameState.pendingCombatAction.targetTile) {
+                targetPosition = { ...this.gameState.pendingCombatAction.targetTile };
+            } else if (defender && defender.mapPos) {
+                targetPosition = { ...defender.mapPos };
+            } else if (this.gameState.defenderMapPos) { // Fallback to gameState's defenderMapPos
+                targetPosition = { ...this.gameState.defenderMapPos };
+            }
+
+            if (attackerPosition && targetPosition) {
+                console.log('[CombatManager] processAttack: About to play animation - throwing for weapon:', weapon.name);
+                window.animationManager.playAnimation('throwing', { // Removed await
+                    startPos: attackerPosition,
+                    endPos: targetPosition,
+                    sprite: (weapon.sprite || 'o'), // Use weapon's sprite or default
+                    color: (weapon.color || 'cyan'),   // Use weapon's color or default
+                    duration: 300, // Duration for the thrown item to reach target
+                    attacker: attacker,
+                    defender: defender
+                });
+                console.log('[CombatManager] processAttack: Finished awaiting animation - throwing');
+            }
+        }
+        // --- END THROWING ANIMATION ---
+
+        // --- RANGED BULLET ANIMATION ---
+        else if (attackType === 'ranged' && weapon && // Added 'else if' to avoid double animation for thrown items that might also be 'ranged'
+            !(weapon.type.includes("thrown")) &&
+            !(weapon.tags && weapon.tags.includes("launcher_treated_as_rifle")) &&
+            window.animationManager) {
+
+            const attackerPosition = (attacker === this.gameState) ? this.gameState.playerPos : (attacker.mapPos || this.gameState.attackerMapPos);
+            const defenderPosition = (defender === this.gameState) ? this.gameState.playerPos : (defender.mapPos || this.gameState.defenderMapPos);
+
+            if (attackerPosition && defenderPosition) {
+                console.log('[CombatManager] processAttack: About to play animation - rangedBullet for weapon:', weapon.name);
+                window.animationManager.playAnimation('rangedBullet', { // Removed await
+                    startPos: { ...attackerPosition },
+                    endPos: { ...defenderPosition },
+                    sprite: '*', // Standard bullet sprite
+                    color: 'yellow', // Standard bullet color
+                    duration: 200, // Short duration for quick bullet travel
+                    attacker: attacker,
+                    defender: defender
+                });
+                console.log('[CombatManager] processAttack: Finished awaiting animation - rangedBullet');
+            }
+        }
+        // --- END RANGED BULLET ANIMATION ---
 
         if (this.gameState.pendingCombatAction.actionType === "attack") {
             if (attacker === this.gameState) {
@@ -1312,8 +1375,24 @@
             }
 
             if (determinedImpactTile && explosionProcessed) {
-                logToConsole(`EXPLOSION TRIGGERED: ${explosionReason}. Radius: ${explosiveProperties.burstRadiusFt}ft.`, 'orangered');
                 const burstRadiusTiles = Math.ceil(explosiveProperties.burstRadiusFt / 5); // Convert feet to tiles
+                logToConsole(`EXPLOSION TRIGGERED: ${explosionReason}. Radius: ${explosiveProperties.burstRadiusFt}ft (${burstRadiusTiles} tiles).`, 'orangered');
+
+                // --- EXPLOSION ANIMATION ---
+                if (explosiveProperties.burstRadiusFt > 0 && window.animationManager) {
+                    console.log('[CombatManager] processAttack: About to play animation - explosion for weapon:', (weapon ? weapon.name : 'unknown explosive'));
+                    window.animationManager.playAnimation('explosion', { // Removed await
+                        centerPos: { ...determinedImpactTile },
+                        radius: burstRadiusTiles,
+                        // explosionSprites: ['·', 'o', 'O', '*', 'X', '*', 'O', 'o', '·'], // Default in class
+                        // color: 'orange', // Default in class
+                        duration: 500, // Default in class is 1000, 500ms might be better
+                        sourceWeapon: weapon
+                    });
+                    console.log('[CombatManager] processAttack: Finished awaiting animation - explosion');
+                }
+                // --- END EXPLOSION ANIMATION ---
+
                 const affectedCharacters = this.getCharactersInBlastRadius(determinedImpactTile, burstRadiusTiles);
 
                 affectedCharacters.forEach(char => {
@@ -2029,25 +2108,27 @@
     }
 
 
-    moveNpcTowardsTarget(npc, targetPos) {
+    async moveNpcTowardsTarget(npc, targetPos) {
         if (!npc.mapPos || npc.currentMovementPoints <= 0) return false;
 
+        const originalPos = { ...npc.mapPos };
         const dx = targetPos.x - npc.mapPos.x;
         const dy = targetPos.y - npc.mapPos.y;
         let moved = false;
+        let newPos = { ...originalPos };
 
         if (Math.abs(dx) > Math.abs(dy)) {
             if (dx !== 0) {
                 const nextX = npc.mapPos.x + Math.sign(dx);
                 if (this._isTilePassableAndUnoccupiedForNpc(nextX, npc.mapPos.y, npc.id)) {
-                    npc.mapPos.x = nextX;
+                    newPos = { x: nextX, y: npc.mapPos.y };
                     moved = true;
                 }
             }
-            if (!moved && dy !== 0) {
+            if (!moved && dy !== 0) { // Try Y if X failed or wasn't attempted
                 const nextY = npc.mapPos.y + Math.sign(dy);
                 if (this._isTilePassableAndUnoccupiedForNpc(npc.mapPos.x, nextY, npc.id)) {
-                    npc.mapPos.y = nextY;
+                    newPos = { x: npc.mapPos.x, y: nextY };
                     moved = true;
                 }
             }
@@ -2055,25 +2136,43 @@
             if (dy !== 0) {
                 const nextY = npc.mapPos.y + Math.sign(dy);
                 if (this._isTilePassableAndUnoccupiedForNpc(npc.mapPos.x, nextY, npc.id)) {
-                    npc.mapPos.y = nextY;
+                    newPos = { x: npc.mapPos.x, y: nextY };
                     moved = true;
                 }
             }
-            if (!moved && dx !== 0) {
+            if (!moved && dx !== 0) { // Try X if Y failed or wasn't attempted
                 const nextX = npc.mapPos.x + Math.sign(dx);
                 if (this._isTilePassableAndUnoccupiedForNpc(nextX, npc.mapPos.y, npc.id)) {
-                    npc.mapPos.x = nextX;
+                    newPos = { x: nextX, y: npc.mapPos.y };
                     moved = true;
                 }
             }
         }
 
-        if (moved) {
+        if (moved && window.animationManager) {
+            window.animationManager.playAnimation('movement', { // Removed await
+                entity: npc,
+                startPos: originalPos,
+                endPos: newPos,
+                sprite: npc.sprite,
+                color: npc.color,
+                duration: 150
+            });
+            npc.mapPos.x = newPos.x;
+            npc.mapPos.y = newPos.y;
             npc.currentMovementPoints--;
-            npc.movedThisTurn = true; // Note: movedThisTurn is for the entire game turn, not loop iteration.
+            npc.movedThisTurn = true;
             logToConsole(`ACTION: ${npc.name} moves to (${npc.mapPos.x}, ${npc.mapPos.y}). MP Left: ${npc.currentMovementPoints}`, 'gold');
-            this.gameState.attackerMapPos = { ...npc.mapPos }; // Update attacker's map position state
-            window.mapRenderer.scheduleRender(); // Re-render map to show NPC new position
+            this.gameState.attackerMapPos = { ...npc.mapPos };
+            window.mapRenderer.scheduleRender();
+        } else if (moved) { // Fallback if animationManager is not available
+            npc.mapPos.x = newPos.x;
+            npc.mapPos.y = newPos.y;
+            npc.currentMovementPoints--;
+            npc.movedThisTurn = true;
+            logToConsole(`ACTION: ${npc.name} moves to (${npc.mapPos.x}, ${npc.mapPos.y}) (no animation). MP Left: ${npc.currentMovementPoints}`, 'gold');
+            this.gameState.attackerMapPos = { ...npc.mapPos };
+            window.mapRenderer.scheduleRender();
         }
         return moved;
     }
@@ -2261,12 +2360,8 @@
                 }
 
             } else if (distanceToTarget > 1 && attackType === 'melee' && npc.currentMovementPoints > 0) {
-                // Movement animation for NPC can be added here later.
-                // For now, assume NPC movement is instant or handled by a separate animation call if implemented.
-                if (this.moveNpcTowardsTarget(npc, currentTargetPos)) {
+                if (await this.moveNpcTowardsTarget(npc, currentTargetPos)) {
                     actionTakenThisLoopIteration = true;
-                    // If moveNpcTowardsTarget becomes async due to animations:
-                    // await this.moveNpcTowardsTarget(npc, currentTargetPos);
                 }
             } // ... (other NPC actions like ranged movement)
 

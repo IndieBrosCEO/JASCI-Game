@@ -30,10 +30,19 @@ function dash_internal() {
 }
 
 async function endTurn_internal() { // Make async
+    let waitCount = 0; // Counter for stuck log
     // Wait for any ongoing animations to complete (e.g. player movement)
     if (window.animationManager) {
+        console.log('[TurnManager] endTurn_internal: Starting wait loop. isAnimationPlaying:', window.animationManager.isAnimationPlaying());
         while (window.animationManager.isAnimationPlaying()) {
-            // console.log("TurnManager.endTurn_internal: Waiting for animation to complete...");
+            waitCount++;
+            if (waitCount > 50) { // Approx 2.5 seconds if timeout is 50ms
+                console.log('[TurnManager] endTurn_internal: STUCK in wait loop. Count:', waitCount, 'isAnimationPlaying:', window.animationManager.isAnimationPlaying());
+                if (waitCount > 100) {
+                    console.log('[TurnManager] endTurn_internal: Breaking wait loop due to excessive count.');
+                    break; // Break to prevent infinite loop in bad state
+                }
+            }
             await new Promise(resolve => setTimeout(resolve, 50)); // Wait 50ms
         }
     }
@@ -54,9 +63,11 @@ async function endTurn_internal() { // Make async
 // Make move_internal async
 async function move_internal(direction) {
     if (gameState.isActionMenuActive) return;
+    console.log('[TurnManager] move_internal: Checking isAnimationPlaying. Flag:', (window.animationManager ? window.animationManager.isAnimationPlaying() : 'N/A'));
     // Check if an animation is playing. If so, prevent movement.
     if (window.animationManager && window.animationManager.isAnimationPlaying()) {
         logToConsole("Cannot move: Animation playing.", "orange");
+        console.log('[TurnManager] move_internal: Prevented movement due to animation playing.');
         return;
     }
     if (gameState.movementPointsRemaining <= 0) {
@@ -108,7 +119,7 @@ async function move_internal(direction) {
 
     // --- Animation Call ---
     if (window.animationManager) {
-        await window.animationManager.playAnimation('movement', {
+        window.animationManager.playAnimation('movement', { // Removed await
             entity: gameState,
             startPos: originalPos,
             endPos: newPos,
