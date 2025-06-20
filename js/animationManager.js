@@ -1,4 +1,4 @@
-// js/animationManager.js
+﻿// js/animationManager.js
 
 class AnimationManager {
     constructor(gameState) {
@@ -49,7 +49,7 @@ class AnimationManager {
         }
 
         if (!this.gameState.isAnimationPlaying) {
-             this.gameState.isAnimationPlaying = true;
+            this.gameState.isAnimationPlaying = true;
             // console.log("AnimationManager: Active animations present, ensuring isAnimationPlaying is true.");
         }
 

@@ -2,10 +2,11 @@
   "ExpandedNodes": [
     "",
     "\\assets",
+    "\\assets\\definitions",
     "\\js",
     "\\mapMaker",
     "\\Maps"
   ],
-  "SelectedNode": "\\index.html",
+  "SelectedNode": "\\script.js",
   "PreviewInSolutionExplorer": false
 }

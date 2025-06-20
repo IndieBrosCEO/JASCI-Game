@@ -1106,7 +1106,7 @@
             skillToUse: this.gameState.pendingCombatAction.skillToUse
         };
 
-        // --- MELEE SWING ANIMATION ---
+        // --- MELEE SWING ANIMATION --- 
         if (attackType === 'melee' && window.animationManager) {
             logToConsole("Melee attack detected, playing swing animation.");
             const attackerSprite = (attacker === this.gameState) ? '☻' : (attacker.sprite || '?');
@@ -2239,7 +2239,7 @@
                 // This call eventually leads to processAttack, which is async and may play animations.
                 // handleDefenderActionPrompt itself doesn't need to be async if it just sets up state
                 // and then calls processAttack, but the sequence from here must allow processAttack to complete.
-                // Since processAttack is awaited inside handleDefenderActionPrompt (implicitly, as it's called),
+                // Since processAttack is awaited inside handleDefenderActionPrompt (implicitly, as it's called), 
                 // we need to ensure this flow completes.
                 // For now, handleDefenderActionPrompt is synchronous but calls processAttack which is async.
                 // The critical part is that the game should pause here if an animation starts in processAttack.
