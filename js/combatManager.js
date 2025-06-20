@@ -1120,7 +1120,7 @@
             console.log('[CombatManager] processAttack: About to play animation - meleeSwing for weapon:', (weapon ? weapon.name : 'unarmed'));
             const attackerSprite = (attacker === this.gameState) ? '☻' : (attacker.sprite || '?');
             const attackerColor = (attacker === this.gameState) ? 'green' : (attacker.color || 'white');
-            await window.animationManager.playAnimation('meleeSwing', {
+            window.animationManager.playAnimation('meleeSwing', { // Removed await
                 attacker: attacker, // Pass the attacker object
                 x: attacker.mapPos ? attacker.mapPos.x : (this.gameState.playerPos.x), // Ensure position is valid
                 y: attacker.mapPos ? attacker.mapPos.y : (this.gameState.playerPos.y),
@@ -1146,7 +1146,7 @@
 
             if (attackerPosition && targetPosition) {
                 console.log('[CombatManager] processAttack: About to play animation - throwing for weapon:', weapon.name);
-                await window.animationManager.playAnimation('throwing', {
+                window.animationManager.playAnimation('throwing', { // Removed await
                     startPos: attackerPosition,
                     endPos: targetPosition,
                     sprite: (weapon.sprite || 'o'), // Use weapon's sprite or default
@@ -1171,7 +1171,7 @@
 
             if (attackerPosition && defenderPosition) {
                 console.log('[CombatManager] processAttack: About to play animation - rangedBullet for weapon:', weapon.name);
-                await window.animationManager.playAnimation('rangedBullet', {
+                window.animationManager.playAnimation('rangedBullet', { // Removed await
                     startPos: { ...attackerPosition },
                     endPos: { ...defenderPosition },
                     sprite: '*', // Standard bullet sprite
@@ -1381,7 +1381,7 @@
                 // --- EXPLOSION ANIMATION ---
                 if (explosiveProperties.burstRadiusFt > 0 && window.animationManager) {
                     console.log('[CombatManager] processAttack: About to play animation - explosion for weapon:', (weapon ? weapon.name : 'unknown explosive'));
-                    await window.animationManager.playAnimation('explosion', {
+                    window.animationManager.playAnimation('explosion', { // Removed await
                         centerPos: { ...determinedImpactTile },
                         radius: burstRadiusTiles,
                         // explosionSprites: ['·', 'o', 'O', '*', 'X', '*', 'O', 'o', '·'], // Default in class
@@ -2150,7 +2150,7 @@
         }
 
         if (moved && window.animationManager) {
-            await window.animationManager.playAnimation('movement', {
+            window.animationManager.playAnimation('movement', { // Removed await
                 entity: npc,
                 startPos: originalPos,
                 endPos: newPos,

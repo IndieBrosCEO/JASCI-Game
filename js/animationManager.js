@@ -13,7 +13,54 @@ class AnimationManager {
     }
 
     playAnimation(animationType, data) {
-        console.log('[AnimationManager] playAnimation REQUEST:', animationType, 'Data:', JSON.stringify(data), 'Current active before add:', this.gameState.activeAnimations.length, 'isAnimationPlaying Flag Before:', this.gameState.isAnimationPlaying);
+        // Safely log data
+        let dataForLog = {};
+        for (const key in data) {
+            if (data.hasOwnProperty(key)) {
+                if (key === 'entity' || key === 'attacker' || key === 'defender') {
+                    if (data[key]) {
+                        dataForLog[key] = data[key].id || data[key].name || `[${key}_object]`;
+                    } else {
+                        dataForLog[key] = null;
+                    }
+                } else if (key === 'gameState' || data[key] === window.gameState) {
+                    dataForLog[key] = '[gameState_reference]';
+                } else if (typeof data[key] === 'object' && data[key] !== null) {
+                    // For other objects, we'll let the replacer handle them or they'll be stringified if simple enough.
+                    dataForLog[key] = data[key];
+                } else {
+                    dataForLog[key] = data[key];
+                }
+            }
+        }
+
+        const customReplacer = (key, value) => {
+            if (value === window.gameState) {
+                return '[gameState_global_ref]';
+            }
+            // Add more checks here if other complex objects (like items from assetManager)
+            // are passed directly in `data` and cause stringify issues.
+            // For example:
+            // if (value && value.constructor && (value.constructor.name === 'Item' || value.constructor.name === 'Weapon')) {
+            //     return `[${value.constructor.name}:${value.id || value.name || 'unknown'}]`;
+            // }
+            return value;
+        };
+
+        try {
+            console.log('[AnimationManager] playAnimation REQUEST:', animationType,
+                        'Data (processed):', JSON.stringify(dataForLog, customReplacer, 2), // Using 2 for pretty print
+                        'Current active before add:', this.gameState.activeAnimations.length,
+                        'isAnimationPlaying Flag Before:', this.gameState.isAnimationPlaying);
+        } catch (e) {
+            console.error('[AnimationManager] playAnimation REQUEST: Error stringifying dataForLog - ', e);
+            // Fallback log if stringify still fails (e.g. due to properties within dataForLog still being complex)
+            console.log('[AnimationManager] playAnimation REQUEST (Fallback log):', animationType,
+                        'Data Keys:', Object.keys(data), // Log only keys of original data
+                        'Current active before add:', this.gameState.activeAnimations.length,
+                        'isAnimationPlaying Flag Before:', this.gameState.isAnimationPlaying);
+        }
+
         let animationInstance;
 
         switch (animationType) {
@@ -132,28 +179,27 @@ class MovementAnimation extends Animation {
     }
 
     update() {
+        if (this.finished) {
+            this.visible = false;
+            return;
+        }
+
         const elapsedTime = Date.now() - this.startTime;
         const progress = Math.min(elapsedTime / this.duration, 1);
-        super.update(); // Call base class update first
 
         if (progress < 0.5) {
             this.x = this.startPos.x;
             this.y = this.startPos.y;
-            this.visible = true;
-        } else if (progress < 1) {
+        } else {
             this.x = this.endPos.x;
             this.y = this.endPos.y;
-            this.visible = true;
-        } else {
-            this.visible = false;
         }
-
-        // super.update(); // Moved to the top of the method
+        this.visible = true; // Active frame is visible
 
         console.log('[MovementAnimation] Update Specifics - Progress:', progress, 'X:', this.x, 'Y:', this.y, 'Visible:', this.visible, 'Finished:', this.finished);
-        if (this.finished) {
-            // console.log(`MovementAnimation ${this.sprite} finished. Visibility: ${this.visible}`); // Kept original info log
-        }
+
+        super.update(); // Call base class update LAST
+        // Optional: console.log('[MovementAnimation] Update END - Visible:', this.visible, 'Finished:', this.finished);
     }
 }
 
@@ -176,25 +222,31 @@ class MeleeSwingAnimation extends Animation {
     }
 
     update() {
-        super.update(); // Call base class update first
+        if (this.finished) {
+            this.visible = false;
+            return;
+        }
+
         const now = Date.now();
-        let progress = (now - this.startTime) / this.duration; // For logging consistency
+        let progress = (now - this.startTime) / this.duration;
         if (progress > 1) progress = 1;
 
-
-        if (!this.finished && now - this.lastFrameTime >= this.frameDuration) {
+        if (now - this.lastFrameTime >= this.frameDuration) {
             this.currentSpriteIndex++;
             if (this.currentSpriteIndex < this.swingSprites.length) {
                 this.sprite = this.swingSprites[this.currentSpriteIndex];
                 this.lastFrameTime = now;
             }
+            // If currentSpriteIndex goes beyond swingSprites.length, it just means the "swing" part is done,
+            // but the animation might still be within its overall duration.
+            // The base Animation.update() will handle marking it finished when duration is met.
         }
+        this.visible = true; // Active frame is visible
 
         console.log('[MeleeSwingAnimation] Update Specifics - Progress:', progress.toFixed(2), 'FrameIdx:', this.currentSpriteIndex, 'Sprite:', this.sprite, 'Visible:', this.visible, 'Finished:', this.finished);
 
-        if (this.finished) {
-            // console.log("MeleeSwingAnimation finished."); // Kept original info log
-        }
+        super.update(); // Call base class update LAST
+        // Optional: console.log('[MeleeSwingAnimation] Update END - Visible:', this.visible, 'Finished:', this.finished);
     }
 }
 
@@ -214,26 +266,27 @@ class RangedBulletAnimation extends Animation {
     }
 
     update() {
-        super.update(); // Call base class update first
+        if (this.finished) {
+            this.visible = false;
+            return;
+        }
+
         const elapsedTime = Date.now() - this.startTime;
         let progress = elapsedTime / this.duration;
 
-        if (!this.finished) { // Only update position if not finished by base class
-            if (progress >= 1) {
-                progress = 1; // Cap progress at 1
-                // Base class update will set finished and visible
-            } else {
-                this.x = this.startPos.x + (this.endPos.x - this.startPos.x) * progress;
-                this.y = this.startPos.y + (this.endPos.y - this.startPos.y) * progress;
-                this.visible = true;
-            }
+        if (progress >= 1) {
+            progress = 1;
+            // Let super.update() handle finished and visible based on duration
+        } else {
+            this.x = this.startPos.x + (this.endPos.x - this.startPos.x) * progress;
+            this.y = this.startPos.y + (this.endPos.y - this.startPos.y) * progress;
+            this.visible = true; // Active frame is visible
         }
 
         console.log('[RangedBulletAnimation] Update Specifics - Progress:', progress.toFixed(2), 'X:', this.x.toFixed(2), 'Y:', this.y.toFixed(2), 'Visible:', this.visible, 'Finished:', this.finished);
 
-        // if (this.finished) {
-        //     console.log(`RangedBulletAnimation ${this.sprite} finished. Pos: (${this.x.toFixed(2)}, ${this.y.toFixed(2)}), Visible: ${this.visible}`); // Kept original info log
-        // }
+        super.update(); // Call base class update LAST
+        // Optional: console.log('[RangedBulletAnimation] Update END - Visible:', this.visible, 'Finished:', this.finished);
     }
 }
 
@@ -253,26 +306,27 @@ class ThrowingAnimation extends Animation {
     }
 
     update() {
-        super.update(); // Call base class update first
+        if (this.finished) {
+            this.visible = false;
+            return;
+        }
+
         const elapsedTime = Date.now() - this.startTime;
         let progress = elapsedTime / this.duration;
 
-        if (!this.finished) { // Only update position if not finished by base class
-            if (progress >= 1) {
-                progress = 1; // Cap progress at 1
-                 // Base class update will set finished and visible
-            } else {
-                this.x = this.startPos.x + (this.endPos.x - this.startPos.x) * progress;
-                this.y = this.startPos.y + (this.endPos.y - this.startPos.y) * progress;
-                this.visible = true;
-            }
+        if (progress >= 1) {
+            progress = 1;
+             // Let super.update() handle finished and visible based on duration
+        } else {
+            this.x = this.startPos.x + (this.endPos.x - this.startPos.x) * progress;
+            this.y = this.startPos.y + (this.endPos.y - this.startPos.y) * progress;
+            this.visible = true; // Active frame is visible
         }
 
         console.log('[ThrowingAnimation] Update Specifics - Progress:', progress.toFixed(2), 'X:', this.x.toFixed(2), 'Y:', this.y.toFixed(2), 'Visible:', this.visible, 'Finished:', this.finished);
 
-        // if (this.finished) {
-        //     console.log(`ThrowingAnimation ${this.sprite} finished. Pos: (${this.x.toFixed(2)}, ${this.y.toFixed(2)}), Visible: ${this.visible}`); // Kept original info log
-        // }
+        super.update(); // Call base class update LAST
+        // Optional: console.log('[ThrowingAnimation] Update END - Visible:', this.visible, 'Finished:', this.finished);
     }
 }
 
@@ -305,38 +359,36 @@ class ExplosionAnimation extends Animation {
     }
 
     update() {
-        super.update(); // Call base class update first
+        if (this.finished) {
+            this.visible = false;
+            return;
+        }
+
         const elapsedTime = Date.now() - this.startTime;
         let progress = elapsedTime / this.duration;
         if (progress > 1) progress = 1;
 
-
-        if (!this.finished) { // Only update specifics if not finished by base class
-            this.visible = true;
-            // Update frame index
-            this.currentFrameIndex = Math.floor(progress * this.explosionSprites.length);
-            if (this.currentFrameIndex >= this.explosionSprites.length) {
-                this.currentFrameIndex = this.explosionSprites.length - 1;
-            }
-
-            // Update expansion radius
-            if (progress < 0.75) { // Expanding phase (75% of duration)
-                const expansionProgress = progress / 0.75;
-                this.currentExpansionRadius = Math.ceil(expansionProgress * this.maxRadius);
-            } else { // Contracting phase (last 25% of duration)
-                const contractionProgress = (progress - 0.75) / 0.25;
-                this.currentExpansionRadius = Math.ceil((1 - contractionProgress) * this.maxRadius);
-            }
-            this.currentExpansionRadius = Math.max(0, this.currentExpansionRadius);
+        // Update frame index
+        this.currentFrameIndex = Math.floor(progress * this.explosionSprites.length);
+        if (this.currentFrameIndex >= this.explosionSprites.length) {
+            this.currentFrameIndex = this.explosionSprites.length - 1;
         }
+
+        // Update expansion radius
+        if (progress < 0.75) { // Expanding phase (75% of duration)
+            const expansionProgress = progress / 0.75;
+            this.currentExpansionRadius = Math.ceil(expansionProgress * this.maxRadius);
+        } else { // Contracting phase (last 25% of duration)
+            const contractionProgress = (progress - 0.75) / 0.25;
+            this.currentExpansionRadius = Math.ceil((1 - contractionProgress) * this.maxRadius);
+        }
+        this.currentExpansionRadius = Math.max(0, this.currentExpansionRadius);
+        this.visible = true; // Active frame is visible
 
         console.log('[ExplosionAnimation] Update Specifics - Progress:', progress.toFixed(2), 'currentFrameIndex:', this.currentFrameIndex, 'currentExpansionRadius:', this.currentExpansionRadius, 'Visible:', this.visible, 'Finished:', this.finished);
 
-        // if (this.finished) {
-        //     console.log(`ExplosionAnimation finished. Center: (${this.centerPos.x},${this.centerPos.y})`); // Kept original info log
-        // } else {
-        //     // console.log(`Explosion update: Progress: ${progress.toFixed(2)}, FrameIdx: ${this.currentFrameIndex}, Radius: ${this.currentExpansionRadius}`); // Kept original info log
-        // }
+        super.update(); // Call base class update LAST
+        // Optional: console.log('[ExplosionAnimation] Update END - Visible:', this.visible, 'Finished:', this.finished);
     }
 }
 window.ExplosionAnimation = ExplosionAnimation; // Export ExplosionAnimation

@@ -119,7 +119,7 @@ async function move_internal(direction) {
 
     // --- Animation Call ---
     if (window.animationManager) {
-        await window.animationManager.playAnimation('movement', {
+        window.animationManager.playAnimation('movement', { // Removed await
             entity: gameState,
             startPos: originalPos,
             endPos: newPos,
