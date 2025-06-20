@@ -39,27 +39,62 @@ function createDefaultLandscape(w, h) {
 }
 
 function applyAutoTile(x, y) {
-    const tile = layers[currentLayer]?.[y]?.[x];
-    if (!tile) return;
+    const tileData = layers[currentLayer]?.[y]?.[x];
+    if (!tileData) return;
+
+    let tileIdForAutoTiling = "";
+    if (typeof tileData === 'object' && tileData !== null && tileData.id) {
+        tileIdForAutoTiling = tileData.id;
+    } else if (typeof tileData === 'string') {
+        tileIdForAutoTiling = tileData;
+    }
+    if (!tileIdForAutoTiling) return; // No ID to process
+
     // Determine the family key: "WW" → "WWH", "MW" → "MWH"
-    const fam = tile.slice(0, 2);
-    const mapKey = fam + "H";
+    const fam = tileIdForAutoTiling.slice(0, 2);
+    const mapKey = fam + "H"; // Assumes base ID for auto-tiling (e.g. WWH for Wood Walls)
     const map = autoTileMap[mapKey];
     if (!map) return;
 
     // Build the 4-bit mask by checking if neighbors share the same family
     let mask = 0;
     [[0, -1, 1], [1, 0, 2], [0, 1, 4], [-1, 0, 8]].forEach(([dx, dy, bit]) => {
-        const n = layers[currentLayer][y + dy]?.[x + dx];
-        if (n?.slice(0, 2) === fam) mask |= bit;
+        const neighborData = layers[currentLayer]?.[y + dy]?.[x + dx];
+        let neighborId = "";
+        if (typeof neighborData === 'object' && neighborData !== null && neighborData.id) {
+            neighborId = neighborData.id;
+        } else if (typeof neighborData === 'string') {
+            neighborId = neighborData;
+        }
+        if (neighborId?.slice(0, 2) === fam) mask |= bit;
     });
 
-    // Write back the correct variant
-    layers[currentLayer][y][x] = map[mask];
+    // Write back the correct variant ID. If original was an object, update its ID.
+    const newVariantId = map[mask];
+    if (typeof tileData === 'object' && tileData !== null && tileData.id) {
+        // If it's an object, update its ID but keep other properties
+        layers[currentLayer][y][x].id = newVariantId;
+    } else {
+        // If it was a string, just update it
+        layers[currentLayer][y][x] = newVariantId;
+    }
 }
 
 function placeTile(x, y, tid) {
-    layers[currentLayer][y][x] = tid;
+    const tileDef = assetManager.getTileDefinition(tid);
+
+    if (tileDef && tileDef.tags && tileDef.tags.includes('container')) {
+        layers[currentLayer][y][x] = {
+            id: tid,
+            contents: JSON.parse(JSON.stringify(tileDef.contents || [])),
+            capacity: tileDef.capacity || 10, // Default to 10 if not specified
+            isLocked: tileDef.isLocked || false,
+            lockDifficulty: tileDef.lockDifficulty || 0,
+            uniqueID: tileDef.uniqueID || ""
+        };
+    } else {
+        layers[currentLayer][y][x] = tid;
+    }
     // Re-tile this cell and its 4 neighbors
     applyAutoTile(x, y);
     applyAutoTile(x, y - 1);
@@ -173,28 +208,232 @@ gridContainer.addEventListener("mouseleave", () => {
     previewPos = null; renderMergedGrid();
 });
 
+function updateTileInfoDisplay(x, y) {
+    let topTileData = null;
+    let topLayerName = "";
+
+    // Determine the topmost visible tile data and its layer
+    // Order matters: roof, item, building, landscape
+    if (layerVisibility.roof && layers.roof?.[y]?.[x]) {
+        topTileData = layers.roof[y][x];
+        topLayerName = "roof";
+    }
+    // Check !topTileData ensures we only take the first one found if layers overlap.
+    // However, the logic below now correctly prioritizes: roof > item > building > landscape
+    // So, we find the highest layer with data.
+
+    let currentTopData = null; // Temp variable to hold data from a specific layer
+
+    currentTopData = layers.landscape?.[y]?.[x];
+    if (layerVisibility.landscape && currentTopData) {
+        topTileData = currentTopData;
+        topLayerName = "landscape";
+    }
+
+    currentTopData = layers.building?.[y]?.[x];
+    if (layerVisibility.building && currentTopData) {
+        topTileData = currentTopData;
+        topLayerName = "building";
+    }
+
+    currentTopData = layers.item?.[y]?.[x];
+    if (layerVisibility.item && currentTopData) {
+        topTileData = currentTopData;
+        topLayerName = "item";
+    }
+
+    currentTopData = layers.roof?.[y]?.[x];
+    if (layerVisibility.roof && currentTopData) {
+        topTileData = currentTopData;
+        topLayerName = "roof";
+    }
+
+    const tileInfoDetailsDiv = document.getElementById("tileInfoDetails");
+    if (!tileInfoDetailsDiv) {
+        console.error("Tile info details div not found!");
+        return;
+    }
+
+    if (topTileData) {
+        const tileId = (typeof topTileData === 'object' && topTileData !== null) ? topTileData.id : topTileData;
+        let tileInstance = layers[topLayerName]?.[y]?.[x]; // Get the actual instance from the layer
+        const tileDef = assetManager.getTileDefinition(tileId);
+
+        if (tileDef) {
+            // If it's a container and stored as a string, convert to object for editing
+            if (typeof tileInstance === 'string' && tileDef.tags && tileDef.tags.includes('container')) {
+                layers[topLayerName][y][x] = {
+                    id: tileInstance,
+                    contents: JSON.parse(JSON.stringify(tileDef.contents || [])),
+                    capacity: tileDef.capacity || 10,
+                    isLocked: tileDef.isLocked || false,
+                    lockDifficulty: tileDef.lockDifficulty || 0,
+                    uniqueID: tileDef.uniqueID || ""
+                };
+                tileInstance = layers[topLayerName][y][x]; // Update reference
+                snapshot(); // Make this conversion undoable
+            }
+
+            let propertiesHtml = `<p><strong>Name:</strong> ${tileDef.name || 'N/A'}</p>`;
+            propertiesHtml += `<p><strong>ID:</strong> ${tileId}</p>`;
+            propertiesHtml += `<p><strong>Sprite:</strong> <span style="color: ${tileDef.color || '#000'};">${tileDef.sprite || '?'}</span></p>`;
+            propertiesHtml += `<p><strong>Color:</strong> ${tileDef.color || 'N/A'}</p>`;
+            propertiesHtml += `<p><strong>Tags:</strong> ${tileDef.tags ? tileDef.tags.join(', ') : 'None'}</p>`;
+            propertiesHtml += `<p><strong>Layer:</strong> ${topLayerName}</p>`;
+            propertiesHtml += `<p><strong>Coords:</strong> [${x}, ${y}]</p>`;
+
+            // Revised Generic Property Display Loop
+            propertiesHtml += "<h4>Base Definition Properties:</h4>";
+            const isContainer = tileDef.tags && tileDef.tags.includes('container');
+            const defaultExclusions = ['name', 'sprite', 'color', 'tags'];
+            const containerExclusions = ['contents', 'capacity', 'isLocked', 'lockDifficulty', 'uniqueID', 'itemLink'];
+
+            for (const key in tileDef) {
+                if (Object.prototype.hasOwnProperty.call(tileDef, key)) {
+                    if (defaultExclusions.includes(key)) continue;
+                    if (isContainer && containerExclusions.includes(key)) continue;
+
+                    let valueDisplay = JSON.stringify(tileDef[key]);
+                    if (tileDef[key] === true) {
+                        valueDisplay = "<strong style='color: green;'>true</strong>";
+                    } else if (tileDef[key] === false) {
+                        valueDisplay = "<span style='color: red;'>false</span>";
+                    }
+                    propertiesHtml += `<p><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${valueDisplay}</p>`;
+                }
+            }
+            propertiesHtml += "<hr/>";
+
+            // Editable fields for containers
+            if (isContainer && typeof tileInstance === 'object') { // Ensure tileInstance is an object for editable fields
+                propertiesHtml += `<h4>Instance Properties (Editable):</h4>`;
+                propertiesHtml += `<div><label>Contents (JSON): <textarea class="prop-input" data-prop="contents" data-x="${x}" data-y="${y}" data-layer="${topLayerName}">${JSON.stringify(tileInstance.contents || [])}</textarea></label></div>`;
+                propertiesHtml += `<div><label>Capacity: <input type="number" class="prop-input" data-prop="capacity" value="${tileInstance.capacity || 0}" data-x="${x}" data-y="${y}" data-layer="${topLayerName}"></label></div>`;
+                propertiesHtml += `<div><label>Is Locked: <input type="checkbox" class="prop-input" data-prop="isLocked" ${tileInstance.isLocked ? "checked" : ""} data-x="${x}" data-y="${y}" data-layer="${topLayerName}"></label></div>`;
+                propertiesHtml += `<div><label>Lock Difficulty: <input type="number" class="prop-input" data-prop="lockDifficulty" value="${tileInstance.lockDifficulty || 0}" data-x="${x}" data-y="${y}" data-layer="${topLayerName}" ${!tileInstance.isLocked ? "disabled" : ""}></label></div>`;
+                propertiesHtml += `<div><label>Unique ID: <input type="text" class="prop-input" data-prop="uniqueID" value="${tileInstance.uniqueID || ""}" data-x="${x}" data-y="${y}" data-layer="${topLayerName}" ${!tileInstance.isLocked ? "disabled" : ""}></label></div>`;
+            }
+            tileInfoDetailsDiv.innerHTML = propertiesHtml;
+
+            // Add event listeners for the new inputs
+            tileInfoDetailsDiv.querySelectorAll('.prop-input').forEach(input => {
+                input.onchange = handlePropertyChange;
+                if (input.type === 'text' || input.type === 'number' || input.type === 'textarea') {
+                    input.onkeyup = handlePropertyChange; // For more immediate feedback on text/number inputs
+                }
+            });
+
+        } else {
+            tileInfoDetailsDiv.innerHTML = `<p>Clicked on tile ID: "${tileId}" at [${x}, ${y}] on layer "${topLayerName}".</p><p>No definition found in tileset.</p>`;
+        }
+    } else {
+        tileInfoDetailsDiv.innerHTML = "<p>Clicked on an empty cell.</p>";
+    }
+}
+
+// Handler for property changes
+function handlePropertyChange(event) {
+    const input = event.target;
+    const x = parseInt(input.dataset.x, 10);
+    const y = parseInt(input.dataset.y, 10);
+    const layerName = input.dataset.layer;
+    const propertyName = input.dataset.prop;
+
+    if (isNaN(x) || isNaN(y) || !layerName || !propertyName) {
+        console.error("Invalid data attributes for property input:", input.dataset);
+        return;
+    }
+
+    const tileInstance = layers[layerName]?.[y]?.[x];
+    if (typeof tileInstance === 'object' && tileInstance !== null) {
+        let value;
+        if (input.type === 'checkbox') {
+            value = input.checked;
+        } else if (input.type === 'number') {
+            value = parseInt(input.value, 10);
+            if (isNaN(value)) value = 0; // Default for NaN
+        } else if (input.type === 'textarea' && propertyName === 'contents') {
+            try {
+                value = JSON.parse(input.value);
+            } catch (e) {
+                console.warn("Invalid JSON for contents:", e);
+                // Optionally, provide UI feedback to the user here
+                return; // Don't update if JSON is invalid
+            }
+        } else {
+            value = input.value;
+        }
+
+        tileInstance[propertyName] = value;
+        snapshot(); // Record change for undo
+
+        // Special handling for isLocked
+        if (propertyName === 'isLocked') {
+            const uniqueIdInput = tileInfoDetailsDiv.querySelector(`input[data-prop="uniqueID"][data-x="${x}"][data-y="${y}"][data-layer="${layerName}"]`);
+            const lockDifficultyInput = tileInfoDetailsDiv.querySelector(`input[data-prop="lockDifficulty"][data-x="${x}"][data-y="${y}"][data-layer="${layerName}"]`);
+
+            if (value && !tileInstance.uniqueID) { // If locked and no uniqueID, generate one
+                tileInstance.uniqueID = "lock_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
+                if (uniqueIdInput) uniqueIdInput.value = tileInstance.uniqueID;
+            }
+            if (uniqueIdInput) uniqueIdInput.disabled = !value;
+            if (lockDifficultyInput) lockDifficultyInput.disabled = !value;
+        }
+        // No need to call renderMergedGrid() here as tile appearance doesn't change based on these props
+        // But if it did, or if other UI elements depended on it, a targeted re-render or full renderMergedGrid() might be needed.
+    } else {
+        console.error("Tile instance not found or not an object at:", x, y, layerName);
+    }
+}
+
+
 function renderMergedGrid() {
     gridContainer.innerHTML = "";
     for (let y = 0; y < gridHeight; y++) {
         for (let x = 0; x < gridWidth; x++) {
-            let id = "";
-            // Determine the topmost visible tile ID
-            if (layerVisibility.landscape && layers.landscape?.[y]?.[x]) id = layers.landscape[y][x];
-            if (layerVisibility.building && layers.building?.[y]?.[x]) id = layers.building[y][x];
-            if (layerVisibility.item && layers.item?.[y]?.[x]) id = layers.item[y][x];
-            if (layerVisibility.roof && layers.roof?.[y]?.[x]) id = layers.roof[y][x];
+            let finalTileIdToRender = "";
+            let finalTileData = null; // Will hold the actual data (string or object) for the top tile
+
+            if (layerVisibility.landscape && layers.landscape?.[y]?.[x]) {
+                finalTileData = layers.landscape[y][x];
+            }
+            // Building layer can overwrite landscape
+            if (layerVisibility.building && layers.building?.[y]?.[x]) {
+                const buildingData = layers.building[y][x];
+                if (buildingData || (typeof buildingData === 'object' && buildingData !== null)) { // Check if not empty string or null/undefined object
+                    finalTileData = buildingData;
+                }
+            }
+            // Item layer can overwrite building/landscape
+            if (layerVisibility.item && layers.item?.[y]?.[x]) {
+                const itemData = layers.item[y][x];
+                if (itemData || (typeof itemData === 'object' && itemData !== null)) {
+                    finalTileData = itemData;
+                }
+            }
+            // Roof layer can overwrite item/building/landscape
+            if (layerVisibility.roof && layers.roof?.[y]?.[x]) {
+                const roofData = layers.roof[y][x];
+                if (roofData || (typeof roofData === 'object' && roofData !== null )) {
+                     finalTileData = roofData;
+                }
+            }
+
+            if (finalTileData !== null && finalTileData !== undefined && finalTileData !== "") {
+                 finalTileIdToRender = (typeof finalTileData === 'object' && finalTileData.id) ? finalTileData.id : finalTileData;
+            }
 
             const c = document.createElement("div");
             c.className = "cell"; c.dataset.x = x; c.dataset.y = y;
             
-            const tileDef = assetManager.tilesets[id]; // Use assetManager.tilesets
-            if (id && tileDef) {
+            const tileDef = assetManager.getTileDefinition(finalTileIdToRender);
+            // console.log("Rendering tile:", finalTileIdToRender, "Def:", tileDef); // Debugging line from previous step, can be removed or kept
+            if (finalTileIdToRender && tileDef) {
                 c.textContent = tileDef.sprite;
                 c.style.color = tileDef.color;
-            } else if (id) { // Tile ID exists in layer data but not in tileset
-                c.textContent = '?'; // Show placeholder for unknown tile
+            } else if (finalTileIdToRender) {
+                c.textContent = '?';
                 c.style.color = 'magenta'; 
-                // console.warn(`Tile ID '${id}' at [${x},${y}] not found in loaded tilesets.`);
             }
 
 
@@ -203,7 +442,7 @@ function renderMergedGrid() {
                 const dx = x - previewPos.x, dy = y - previewPos.y;
                 if (dx >= 0 && dy >= 0 && dx < stampData.w && dy < stampData.h) {
                     const pid = stampData.data[dy][dx];
-                    const stampTileDef = assetManager.tilesets[pid]; // Use assetManager.tilesets
+                    const stampTileDef = assetManager.getTileDefinition(pid); // MODIFIED LINE for stamp preview
                     if (pid && stampTileDef) {
                         c.textContent = stampTileDef.sprite;
                         c.style.color = stampTileDef.color;
@@ -216,8 +455,56 @@ function renderMergedGrid() {
                 }
             }
 
+            // >>> START NEW PORTAL RENDERING LOGIC <<<
+            if (layers.portals && Array.isArray(layers.portals)) {
+                const portalAtThisCell = layers.portals.find(p => p.x === x && p.y === y);
+                if (portalAtThisCell) {
+                    // Apply a distinct border for portals
+                    c.style.border = "2px dashed #FF00FF"; // Magenta dashed border
+
+                    // Add a title to show it's a portal on hover
+                    let portalTitle = "Portal";
+                    if (portalAtThisCell.targetMap) {
+                        portalTitle += ` to ${portalAtThisCell.targetMap}`;
+                        if (portalAtThisCell.targetX !== undefined && portalAtThisCell.targetY !== undefined) {
+                            portalTitle += ` (${portalAtThisCell.targetX},${portalAtThisCell.targetY})`;
+                        }
+                    }
+                    c.title = portalTitle;
+                }
+            }
+            // >>> END NEW PORTAL RENDERING LOGIC <<<
+
+            // >>> START NEW NPC RENDERING LOGIC <<<
+            if (layers.npc_spawns && Array.isArray(layers.npc_spawns)) {
+                const npcAtThisCell = layers.npc_spawns.find(npc => npc.x === x && npc.y === y);
+                if (npcAtThisCell) {
+                    // Check if an NPC marker already exists to avoid duplicates
+                    if (!c.querySelector('.npc-marker')) {
+                        const npcMarker = document.createElement("div");
+                        npcMarker.className = 'npc-marker';
+                        npcMarker.textContent = "@"; // Placeholder sprite
+                        npcMarker.style.position = "absolute";
+                        npcMarker.style.left = "50%";
+                        npcMarker.style.top = "50%";
+                        npcMarker.style.transform = "translate(-50%, -50%)";
+                        npcMarker.style.color = "red";
+                        npcMarker.style.fontWeight = "bold";
+                        npcMarker.style.pointerEvents = "none"; // Don't interfere with cell clicks
+                        npcMarker.title = `NPC: ${npcAtThisCell.id}`; // Tooltip
+                        c.appendChild(npcMarker);
+                    }
+                }
+            }
+            // >>> END NEW NPC RENDERING LOGIC <<<
+
             c.onmousedown = handleMouseDown;
             c.onmouseup = handleMouseUp;
+            c.onclick = function() { // Added onclick listener
+                const cellX = parseInt(this.dataset.x, 10);
+                const cellY = parseInt(this.dataset.y, 10);
+                updateTileInfoDisplay(cellX, cellY);
+            };
             gridContainer.appendChild(c);
         }
     }
@@ -274,6 +561,13 @@ function handleMouseDown(e) {
     } else if (currentTool === "fill") {
         floodFill(currentLayer, x, y, currentTileId);
         renderMergedGrid();
+    } else if (currentTool === "placeNpc") {
+        const npcId = prompt("Enter NPC ID (e.g., 'guard1', 'shopkeeper'):");
+        if (npcId && npcId.trim() !== "") {
+            snapshot(); // For undo functionality
+            layers.npc_spawns.push({ x: x, y: y, id: npcId.trim() });
+            renderMergedGrid();
+        }
     } else {
         dragStart = { x, y };
     }
@@ -318,6 +612,7 @@ window.addEventListener("keydown", e => {
             case "l": currentTool = "line"; break;
             case "r": currentTool = "rect"; break;
             case "s": currentTool = "stamp"; break;
+            case "p": currentTool = "placeNpc"; break; // New case
         }
         document.querySelectorAll(".toolBtn")
             .forEach(btn => btn.classList.toggle("selected", btn.dataset.tool === currentTool));
@@ -342,8 +637,20 @@ document.querySelectorAll(".toolBtn").forEach(btn => {
     };
 });
 document.getElementById("layerSelect").onchange = () => { buildPalette(); renderMergedGrid(); };
-["landscape", "building", "item", "roof"].forEach(l => {
-    document.getElementById("vis_" + l).onchange = () => renderMergedGrid();
+["landscape", "building", "item", "roof"].forEach(layerName => {
+    const checkbox = document.getElementById("vis_" + layerName);
+    if (checkbox) { // Ensure checkbox exists
+        checkbox.onchange = function() { // Use 'function' to access 'this' as the checkbox
+            if (layerVisibility.hasOwnProperty(layerName)) { // Check if property exists
+                layerVisibility[layerName] = this.checked; // Update state
+                renderMergedGrid(); // Re-render
+            } else {
+                console.warn(`Layer name "${layerName}" not found in layerVisibility object.`);
+            }
+        };
+    } else {
+        console.warn(`Checkbox with ID "vis_${layerName}" not found.`);
+    }
 });
 document.getElementById("exportBtn").onclick = () => {
     let mapId = prompt("Enter a filename/ID for the map (e.g., 'myNewMap')", "map");
@@ -449,6 +756,8 @@ async function initMap() {
     layers.building = createEmptyGrid(gridWidth, gridHeight, "");
     layers.item = createEmptyGrid(gridWidth, gridHeight, "");
     layers.roof = createEmptyGrid(gridWidth, gridHeight, "");
+    layers.npc_spawns = []; // Initialize npc_spawns
+
     buildPalette();
     renderMergedGrid();
 }
