@@ -29,7 +29,15 @@ function dash_internal() {
     }
 }
 
-function endTurn_internal() {
+async function endTurn_internal() { // Make async
+    // Wait for any ongoing animations to complete (e.g. player movement)
+    if (window.animationManager) {
+        while (window.animationManager.isAnimationPlaying()) {
+            // console.log("TurnManager.endTurn_internal: Waiting for animation to complete...");
+            await new Promise(resolve => setTimeout(resolve, 50)); // Wait 50ms
+        }
+    }
+
     logToConsole(`Turn ${gameState.currentTurn} ended.`);
     // Assuming character.js exports updateHealthCrisis to window.character
     if (typeof window.updateHealthCrisis === 'function') {
@@ -43,8 +51,14 @@ function endTurn_internal() {
     updateTurnUI_internal(); // Call internal updateTurnUI
 }
 
-function move_internal(direction) {
+// Make move_internal async
+async function move_internal(direction) {
     if (gameState.isActionMenuActive) return;
+    // Check if an animation is playing. If so, prevent movement.
+    if (window.animationManager && window.animationManager.isAnimationPlaying()) {
+        logToConsole("Cannot move: Animation playing.", "orange");
+        return;
+    }
     if (gameState.movementPointsRemaining <= 0) {
         logToConsole("No movement points remaining. End your turn (press 't').");
         return;
@@ -91,11 +105,24 @@ function move_internal(direction) {
         logToConsole("Can't move that way.");
         return;
     }
+
+    // --- Animation Call ---
+    if (window.animationManager) {
+        await window.animationManager.playAnimation('movement', {
+            entity: gameState,
+            startPos: originalPos,
+            endPos: newPos,
+            sprite: '☻', // This is a JS string, should be fine.
+            color: 'green',
+            duration: 150
+        });
+    }
+    // --- End Animation Call ---
+
     gameState.playerPos = newPos;
     if (gameState.isInCombat &&
         gameState.combatCurrentAttacker === gameState) {
         gameState.attackerMapPos = { ...gameState.playerPos };
-        // logToConsole("Player (attacker) moved, updated attackerMapPos for highlight sync."); // Optional: for debugging
     }
     gameState.movementPointsRemaining--;
     gameState.playerMovedThisTurn = true;
@@ -111,6 +138,6 @@ window.turnManager = {
     updateTurnUI: updateTurnUI_internal,
     startTurn: startTurn_internal,
     dash: dash_internal,
-    endTurn: endTurn_internal,
-    move: move_internal
+    endTurn: endTurn_internal, // ensure this points to the new async function
+    move: move_internal // already async
 };

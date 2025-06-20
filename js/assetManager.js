@@ -78,6 +78,7 @@
 
                 if (filename === 'tileset.json') {
                     this.tilesets = parsedJson;
+                    console.log("AssetManager: Base tilesets loaded:", this.tilesets); // Added for debugging
                 } else if (filename === 'items.json') {
                     parsedJson.forEach(item => { tempItemsById[item.id] = item; });
                 } else if (filename === 'npcs.json') {
@@ -117,6 +118,7 @@
 
                 if (filename === 'tileset.json') {
                     this.tilesets = parsedJson; // User tileset replaces base
+                    console.log("AssetManager: User tilesets loaded:", this.tilesets); // Added for debugging
                     console.log("User tileset.json loaded, replacing base tileset.");
                 } else if (filename === 'items.json') {
                     if (Array.isArray(parsedJson)) {

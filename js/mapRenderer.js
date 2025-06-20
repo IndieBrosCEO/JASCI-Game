@@ -506,6 +506,11 @@ window.mapRenderer = {
     },
 
     renderMapLayers: function () {
+        // NEW: Call updateAnimations at the start of the render cycle
+        if (window.animationManager && typeof window.animationManager.updateAnimations === 'function') {
+            window.animationManager.updateAnimations();
+        }
+
         const PLAYER_VISION_RADIUS = 120;
         const container = document.getElementById("mapContainer");
         const mapData = window.mapRenderer.getCurrentMapData();
@@ -768,10 +773,21 @@ window.mapRenderer = {
                 targetColor = displayColor;
                 targetDisplayId = displayId;
 
-                const isPlayerCurrentlyOnTile = (gameState.playerPos && x === gameState.playerPos.x && y === gameState.playerPos.y &&
-                    !(gameState.showRoof && mapData.layers.roof?.[y]?.[x]));
+                const isPlayerActuallyAtThisTile = (gameState.playerPos && x === gameState.playerPos.x && y === gameState.playerPos.y);
+                let hideStaticPlayer = false;
 
-                if (isPlayerCurrentlyOnTile) {
+                if (isPlayerActuallyAtThisTile && gameState.activeAnimations && gameState.activeAnimations.length > 0) {
+                    const playerMoveAnim = gameState.activeAnimations.find(anim =>
+                        anim.type === 'movement' &&
+                        anim.data.entity === gameState &&
+                        anim.visible
+                    );
+                    if (playerMoveAnim) {
+                        hideStaticPlayer = true;
+                    }
+                }
+
+                if (isPlayerActuallyAtThisTile && !hideStaticPlayer && !(gameState.showRoof && mapData.layers.roof?.[y]?.[x])) {
                     let playerTileFowStatus = 'hidden';
                     if (gameState.fowData && gameState.fowData[y] && typeof gameState.fowData[y][x] !== 'undefined') {
                         playerTileFowStatus = gameState.fowData[y][x];
@@ -916,6 +932,31 @@ window.mapRenderer = {
                                 cachedCell.sprite = npc.sprite;
                                 cachedCell.color = npc.color;
                             }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Active Animations
+        if (gameState.activeAnimations && gameState.activeAnimations.length > 0 && gameState.tileCache) {
+            gameState.activeAnimations.forEach(anim => {
+                if (anim.visible && anim.sprite) { // Check if animation is visible and has a sprite
+                    const animX = Math.floor(anim.x); // Use Math.floor for tile grid
+                    const animY = Math.floor(anim.y);
+
+                    if (animX >= 0 && animX < W && animY >= 0 && animY < H) {
+                        const cachedCell = gameState.tileCache[animY]?.[animX];
+                        if (cachedCell && cachedCell.span) {
+                            // Temporarily override the tile content for the animation frame
+                            // We might need a way to restore it later if the animation is short-lived
+                            // or if multiple animations affect the same tile.
+                            // For now, simple override:
+                            cachedCell.span.textContent = anim.sprite;
+                            cachedCell.span.style.color = anim.color;
+                            // We're not changing cachedCell.sprite or cachedCell.color permanently here,
+                            // as the underlying tile should return to normal after the animation.
+                            // This means the next full render without this animation will restore it.
                         }
                     }
                 }

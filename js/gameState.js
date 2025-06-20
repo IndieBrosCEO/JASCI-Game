@@ -127,6 +127,10 @@ const gameState = {
     targetConfirmed: false,
     selectedTargetEntity: null,
 
+    // Animation System State (NEW)
+    activeAnimations: [],
+    isAnimationPlaying: false,
+
     // UI State
     showKeybinds: false,
     retargetingJustHappened: false,

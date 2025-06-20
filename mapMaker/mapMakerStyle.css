@@ -84,6 +84,7 @@ h1 {
     line-height: 30px;
     cursor: pointer;
     background-color: #111;
+    position: relative; /* For positioning NPC sprites within cells */
 }
 
 /* Prevent text dragging/selection */

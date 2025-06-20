@@ -2,6 +2,7 @@
  * Global State & Constants
  **************************************************************/
 const assetManager = new AssetManager();
+const animationManager = new AnimationManager(gameState); // New line
 // let currentMapData = null; // This is now managed in js/mapRenderer.js // This comment is accurate.
 
 // Game Console Elements
