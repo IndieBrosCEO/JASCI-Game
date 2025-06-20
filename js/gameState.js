@@ -33,6 +33,9 @@ const gameState = {
     // Player positioning and game status
     playerPos: { x: 2, y: 2 }, // Will be updated when a map is loaded
     gameStarted: false,
+    currentMapId: null, // Will be set when a map is loaded for portal tracking
+    awaitingPortalConfirmation: false, // True if player is on a portal and confirm prompt is active
+    portalPromptActive: false, // True if the portal confirmation prompt is physically visible
 
     // Time, Hunger, and Thirst
     currentTime: { hours: 0, minutes: 0 },

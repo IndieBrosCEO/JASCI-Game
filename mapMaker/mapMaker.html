@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -45,6 +45,7 @@
             <button class="toolBtn" data-tool="line">Line</button>
             <button class="toolBtn" data-tool="rect">Rect</button>
             <button class="toolBtn" data-tool="stamp">Stamp</button> <!-- new -->
+            <button class="toolBtn" data-tool="selectInspect">Select</button>
         </div>
 
         <hr />
@@ -58,6 +59,78 @@
         <button id="exportBtn">Export Map JSON</button>
         <input type="file" id="mapFileInput" accept=".json" />
         <button id="loadBtn">Load Map</button>
+    </div>
+    <hr />
+    <div id="containerInventoryControls" style="display:none; padding: 10px; border: 1px solid #ccc; margin-top: 10px;">
+        <h3>Container Contents</h3>
+        <div style="margin-bottom: 5px;">Editing for: <strong id="editingContainerName">N/A</strong> at (<span id="editingContainerPos">N/A</span>)</div>
+        <div id="lockControls" style="display:none; margin-top: 10px; margin-bottom: 10px; padding-top:10px; border-top: 1px dashed #ccc;">
+            <h4>Lock Properties</h4>
+            <label for="isLockedCheckbox">Is Locked:</label>
+            <input type="checkbox" id="isLockedCheckbox" />
+            <label for="lockDifficultyInput" style="margin-left: 10px;">Lock DC:</label>
+            <input type="number" id="lockDifficultyInput" value="10" min="0" style="width: 60px;" />
+        </div>
+        <div id="itemInContainerList" style="margin-bottom: 10px; max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 5px;">
+            <!-- Items will be listed here -->
+        </div>
+        <div id="addItemToContainerForm">
+            <label for="itemSelectForContainer">Item:</label>
+            <select id="itemSelectForContainer" style="margin-right: 5px;"></select>
+            <label for="itemQuantityForContainer">Qty:</label>
+            <input type="number" id="itemQuantityForContainer" value="1" min="1" style="width: 50px; margin-right: 5px;">
+            <button id="addItemToContainerBtn">Add Item</button>
+        </div>
+    </div>
+    <hr />
+    <div id="portalToolsContainer" style="padding: 10px; border: 1px solid #ccc; margin-top: 10px;">
+        <h3>Portal Tools</h3>
+        <button id="toggleAddPortalModeBtn" style="margin-bottom: 5px;">Add Portal</button>
+        <div id="portalConfigControls" style="display:none; margin-top: 10px; padding: 10px; border: 1px solid #ddd;">
+            <h4>Configure Portal</h4>
+            <div>Editing Portal: <strong id="editingPortalId">N/A</strong> at (<span id="editingPortalPos">N/A</span>)</div>
+            <label for="portalTargetMapId">Target Map ID:</label>
+            <input type="text" id="portalTargetMapId" placeholder="e.g., another_map_id" />
+            <br />
+            <label for="portalTargetX">Target X:</label>
+            <input type="number" id="portalTargetX" min="0" style="width: 60px;" />
+            <label for="portalTargetY" style="margin-left: 5px;">Target Y:</label>
+            <input type="number" id="portalTargetY" min="0" style="width: 60px;" />
+            <br />
+            <button id="savePortalPropertiesBtn" style="margin-top: 5px;">Save Portal</button>
+        </div>
+        <div id="selectedPortalInfo" style="margin-top: 5px; padding: 5px; border: 1px solid #eee;">
+            Selected Portal: None
+        </div>
+        <button id="removePortalBtn" style="display:none; margin-top: 5px;">Remove Selected Portal</button>
+    </div>
+    <hr />
+    <div id="tilePropertyEditorControls" style="display:none; padding: 10px; border: 1px solid #ccc; margin-top: 10px;">
+        <h3>Tile Instance Properties</h3>
+        <div style="margin-bottom: 5px;">
+            Selected Tile: <strong id="selectedTileBaseId">N/A</strong>
+            (Name: <span id="selectedTileBaseName">N/A</span>)
+            at (<span id="selectedTileCoords">N/A</span>)
+        </div>
+        <div style="margin-bottom: 10px;">
+            Base Tags: <span id="selectedTileBaseTags" style="font-style: italic;">N/A</span>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+            <label for="tileInstanceName">Instance Name:</label><br />
+            <input type="text" id="tileInstanceName" style="width: 95%;" placeholder="Optional custom name for this tile" />
+        </div>
+
+        <div style="margin-bottom: 10px;">
+            <label for="tileInstanceTags">Instance Tags (comma-separated):</label><br />
+            <input type="text" id="tileInstanceTags" style="width: 95%;" placeholder="e.g., quest_item, fragile" />
+        </div>
+
+        <!-- Placeholder for more advanced customProperties editor if added later -->
+        <!-- For now, customProperties might be managed programmatically or not at all via UI -->
+
+        <button id="saveTileInstancePropertiesBtn">Save Tile Properties</button>
+        <button id="clearTileInstancePropertiesBtn" style="margin-left: 10px;">Clear Custom Properties</button>
     </div>
 
     <!-- 6. The grid -->

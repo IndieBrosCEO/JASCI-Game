@@ -1,5 +1,9 @@
 ﻿[
   {
+    "id": "portals",
+    "name": "Portals"
+  },
+  {
     "id": "Small_Map",
     "name": "Small Map"
   },

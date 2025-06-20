@@ -276,6 +276,12 @@ function handleUpdateSkill(name, value) {
  **************************************************************/
 // Keydown event handler for movement and actions
 function handleKeyDown(event) {
+    if (gameState.awaitingPortalConfirmation || gameState.portalPromptActive) {
+        // Allow only specific keys if needed (e.g., Enter/Escape for a custom modal)
+        // For window.confirm, it blocks anyway, but this prevents other game logic.
+        event.preventDefault();
+        return;
+    }
     // Console Toggle (Backquote key, often with Shift for tilde '~')
     if (event.code === 'Backquote') {
         event.preventDefault();
@@ -598,6 +604,8 @@ function handleKeyDown(event) {
             case 'ArrowLeft': case 'a': case 'A':
             case 'ArrowRight': case 'd': case 'D':
                 window.turnManager.move(event.key);
+                // Check for portal after movement
+                checkAndHandlePortal(gameState.playerPos.x, gameState.playerPos.y);
                 event.preventDefault(); return;
             default:
                 if (event.key >= '1' && event.key <= '9') {
@@ -607,6 +615,7 @@ function handleKeyDown(event) {
         }
         if (event.key === 'x' || event.key === 'X') {
             window.turnManager.dash();
+            checkAndHandlePortal(gameState.playerPos.x, gameState.playerPos.y);
             event.preventDefault(); return;
         }
         if (event.key === 't' || event.key === 'T') {
@@ -779,6 +788,140 @@ function handleKeyDown(event) {
 
 const combatManager = new CombatManager(gameState, assetManager);
 
+function checkAndHandlePortal(newX, newY) {
+    if (gameState.awaitingPortalConfirmation || gameState.portalPromptActive) {
+        return; // Already handling a portal or prompt is active
+    }
+
+    const currentMap = window.mapRenderer.getCurrentMapData();
+    if (!currentMap || !currentMap.portals || currentMap.portals.length === 0) {
+        return; // No portals on this map
+    }
+
+    const portal = currentMap.portals.find(p => p.x === newX && p.y === newY);
+
+    if (portal) {
+        logToConsole(`Player stepped on portal to ${portal.targetMapId} at (${portal.targetX}, ${portal.targetY})`);
+        gameState.awaitingPortalConfirmation = true;
+        gameState.portalPromptActive = true; // Set flag before showing prompt
+
+        // Simple window.confirm for now. A custom modal would be better for UI consistency.
+        // Adding a slight delay to ensure the current move/render cycle completes visually.
+        setTimeout(() => {
+            const travel = window.confirm(`You've stepped on a portal to '${portal.targetMapId || 'an unnamed map'}'. Do you want to travel to (X:${portal.targetX}, Y:${portal.targetY})?`);
+            if (travel) {
+                initiateMapTransition(portal.targetMapId, portal.targetX, portal.targetY);
+            } else {
+                logToConsole("Portal travel declined.");
+                gameState.awaitingPortalConfirmation = false;
+            }
+            // Reset prompt active flag regardless of choice, after a short delay to prevent re-triggering
+            // if the player somehow doesn't move off immediately.
+            setTimeout(() => {
+                gameState.portalPromptActive = false;
+            }, 100);
+        }, 50); // 50ms delay
+    }
+}
+
+async function initiateMapTransition(targetMapId, targetX, targetY) {
+    if (!targetMapId) {
+        logToConsole("Portal travel failed: No target map ID specified.", "error");
+        gameState.awaitingPortalConfirmation = false;
+        gameState.portalPromptActive = false; // Ensure this is reset even on early exit
+        return;
+    }
+
+    const cleanMapId = targetMapId.replace(/\.json$/i, "");
+    logToConsole(`Attempting to load map with cleaned ID: '${cleanMapId}' (original: '${targetMapId}')`);
+
+    logToConsole(`Traveling to map: ${cleanMapId} at (${targetX}, ${targetY})...`);
+    gameState.awaitingPortalConfirmation = false; // Reset this as we are now processing the transition
+
+    // Show a loading message or overlay (optional, but good for UX)
+    // For now, a simple log message will suffice.
+    logToConsole("Loading new map...", "info");
+
+    const newMapData = await assetManager.loadMap(cleanMapId);
+
+    if (newMapData) {
+        // Successfully loaded the new map data
+        gameState.currentMapId = cleanMapId; // Use cleaned ID
+
+        // Update map renderer with the new map
+        window.mapRenderer.initializeCurrentMap(newMapData); // This also updates currentMapData within mapRenderer
+
+        // Sync gameState layers with the new map's layers
+        gameState.layers = newMapData.layers;
+
+        // Update player position, ensuring it's within bounds of the new map
+        let finalX = targetX;
+        let finalY = targetY;
+        if (newMapData.dimensions) {
+            if (targetX < 0 || targetX >= newMapData.dimensions.width) {
+                logToConsole(`Target X (${targetX}) is out of bounds for map ${cleanMapId}. Clamping or using startPos.`, "warn");
+                finalX = newMapData.startPos ? newMapData.startPos.x : 0; // Fallback to startPos or 0
+            }
+            if (targetY < 0 || targetY >= newMapData.dimensions.height) {
+                logToConsole(`Target Y (${targetY}) is out of bounds for map ${cleanMapId}. Clamping or using startPos.`, "warn");
+                finalY = newMapData.startPos ? newMapData.startPos.y : 0; // Fallback to startPos or 0
+            }
+        } else {
+            logToConsole(`New map ${cleanMapId} has no dimension data. Placing player at raw target coords.`, "warn");
+        }
+        gameState.playerPos = { x: finalX, y: finalY };
+
+        // Spawn NPCs for the new map
+        spawnNpcsFromMapData(newMapData); // This clears old NPCs and spawns new ones
+
+        // Reset UI and game state relevant to map interaction
+        window.interaction.detectInteractableItems();
+        window.interaction.showInteractableItems();
+        gameState.selectedItemIndex = -1;
+        gameState.selectedActionIndex = -1; // Also clear selected action
+        gameState.isActionMenuActive = false;
+
+        // Clear any targeting state
+        gameState.isTargetingMode = false;
+        gameState.targetingType = null;
+
+        // If combat was ongoing, it should be ended by this transition
+        if (gameState.isInCombat) {
+            combatManager.endCombat(true); // Pass true to indicate it's a non-standard end (e.g. map change)
+            logToConsole("Combat ended due to map transition.", "info");
+        }
+
+        // Reset player's turn points (or handle as per game design for map transitions)
+        // For simplicity, let's reset them.
+        if (window.turnManager && typeof window.turnManager.startTurn === 'function') {
+            // Re-initialize player's turn state for the new map.
+            // This might involve resetting AP/MP directly or calling a specific turn manager function.
+            // Directly setting for now, assuming turnManager.startTurn() handles the rest.
+            gameState.actionPointsRemaining = window.turnManager.getBaseActionPoints();
+            gameState.movementPointsRemaining = window.turnManager.getBaseMovementPoints();
+            gameState.hasDashed = false;
+            window.turnManager.updateTurnUI(); // Update UI for turn points
+        }
+
+
+        // Schedule a re-render of the map
+        window.mapRenderer.scheduleRender();
+
+        logToConsole(`Arrived at ${newMapData.name || cleanMapId}. Player at (${finalX}, ${finalY}).`);
+
+    } else {
+        logToConsole(`Failed to travel: Could not load map '${cleanMapId}'.`, "error");
+        // Player remains on the current map. gameState.awaitingPortalConfirmation was already reset.
+    }
+
+    // Ensure portalPromptActive is reset after the whole operation is done or failed
+    // This timeout helps prevent re-triggering if player lands on another portal immediately
+    // or if the confirmation was very quick.
+    setTimeout(() => {
+        gameState.portalPromptActive = false;
+    }, 150); // Slightly longer delay than the prompt itself.
+}
+
 // Keybinds Display Functions
 function populateKeybinds() {
     const keybindsList = document.getElementById('keybindsList');
@@ -857,7 +1000,8 @@ async function initialize() { // Made async
                 window.mapRenderer.initializeCurrentMap(loadedMapData); // Initialize mapRenderer's currentMapData
                 gameState.layers = loadedMapData.layers; // Sync gameState.layers
                 gameState.playerPos = loadedMapData.startPos || { x: 2, y: 2 }; // Update playerPos
-                console.log("Initial map loaded:", loadedMapData.name);
+                gameState.currentMapId = loadedMapData.id || initialMapId; // Set currentMapId
+                console.log("Initial map loaded:", loadedMapData.name, "ID:", gameState.currentMapId);
                 // Spawn NPCs from the newly loaded map data
                 spawnNpcsFromMapData(loadedMapData); // Ensures gameState.npcs is fresh for the new map
             } else {
