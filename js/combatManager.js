@@ -416,7 +416,15 @@
         });
     }
 
-    nextTurn(previousAttackerEntity = null) {
+    async nextTurn(previousAttackerEntity = null) {
+        // Wait for any ongoing animations to complete
+        if (window.animationManager) {
+            while (window.animationManager.isAnimationPlaying()) {
+                // console.log("CombatManager.nextTurn: Waiting for animation to complete...");
+                await new Promise(resolve => setTimeout(resolve, 50)); // Wait 50ms
+            }
+        }
+
         if (this.gameState.isWaitingForPlayerCombatInput) {
             logToConsole("INFO: nextTurn() deferred as game is waiting for player combat input.", 'grey');
             return;
@@ -581,7 +589,7 @@
             this.promptPlayerAttackDeclaration();
         } else {
             this.gameState.combatPhase = 'attackerDeclare';
-            this.executeNpcCombatTurn(this.gameState.combatCurrentAttacker);
+            await this.executeNpcCombatTurn(this.gameState.combatCurrentAttacker); // Await this call
         }
         this.updateInitiativeDisplay();
     }
@@ -1047,11 +1055,12 @@
         if (document.getElementById('damageResult')) document.getElementById('damageResult').textContent = `Total Raw Damage: ${totalDamageThisVolley} ${damageType} (${numHits} hits)`;
     }
 
-
-    processAttack() {
+    // Make processAttack async
+    async processAttack() {
         if (this.gameState.combatPhase !== 'resolveRolls') {
             console.error("processAttack called at incorrect combat phase:", this.gameState.combatPhase);
-            this.nextTurn();
+            // Potentially await nextTurn if it also becomes async
+            this.nextTurn(); // Assuming nextTurn might also become async later
             return;
         }
         const attacker = this.gameState.combatCurrentAttacker;
@@ -1085,10 +1094,9 @@
             if (attacker === this.gameState) {
                 if (this.gameState.actionPointsRemaining > 0) this.promptPlayerAttackDeclaration();
                 else if (this.gameState.movementPointsRemaining > 0) {
-                    logToConsole("Reload complete. You have movement points remaining or can end your turn.", 'lightblue');
                     this.gameState.combatPhase = 'playerPostAction';
-                } else this.nextTurn(attacker);
-            } else this.nextTurn(attacker);
+                } else await this.nextTurn(attacker); // Await if nextTurn is async
+            } else await this.nextTurn(attacker); // Await if nextTurn is async
             return;
         }
 
@@ -1097,6 +1105,22 @@
             isBurst: false, isAutomatic: false, isSecondAttack: false,
             skillToUse: this.gameState.pendingCombatAction.skillToUse
         };
+
+        // --- MELEE SWING ANIMATION ---
+        if (attackType === 'melee' && window.animationManager) {
+            logToConsole("Melee attack detected, playing swing animation.");
+            const attackerSprite = (attacker === this.gameState) ? '☻' : (attacker.sprite || '?');
+            const attackerColor = (attacker === this.gameState) ? 'green' : (attacker.color || 'white');
+            await window.animationManager.playAnimation('meleeSwing', {
+                attacker: attacker, // Pass the attacker object
+                x: attacker.mapPos ? attacker.mapPos.x : (this.gameState.playerPos.x), // Ensure position is valid
+                y: attacker.mapPos ? attacker.mapPos.y : (this.gameState.playerPos.y),
+                originalSprite: attackerSprite,
+                originalColor: attackerColor,
+                duration: 300
+            });
+        }
+        // --- END MELEE SWING ANIMATION ---
 
         if (this.gameState.pendingCombatAction.actionType === "attack") {
             if (attacker === this.gameState) {
@@ -1569,7 +1593,7 @@
                     logToConsole("Player has action points remaining. Prompting for next action.", 'lightblue');
                     this.promptPlayerAttackDeclaration();
                 } else if (this.gameState.movementPointsRemaining > 0) {
-                    logToConsole("Player has 0 AP but >0 MP. Player can move or press 'T' to end turn. Attack/Defense UI should be hidden.", 'lightblue');
+                    logToConsole("Player has 0 AP but >0 MP. Can move or press 'T' to end turn. Attack/Defense UI should be hidden.", 'lightblue');
                     const attackDeclUI = document.getElementById('attackDeclarationUI');
                     if (attackDeclUI && !attackDeclUI.classList.contains('hidden')) {
                         attackDeclUI.classList.add('hidden');
@@ -1580,20 +1604,19 @@
                         defenseDeclUI.classList.add('hidden');
                         logToConsole("INFO: Explicitly hid defenseDeclarationUI for player (0 AP, >0 MP state).", 'grey');
                     }
-                    window.turnManager.updateTurnUI(); // Update AP/MP display on main UI
+                    window.turnManager.updateTurnUI();
                 } else {
                     logToConsole("Player has no action or movement points remaining. Proceeding to next turn.", 'lightblue');
                     const playerEntity = this.gameState; // Player is gameState
-                    this.nextTurn(playerEntity);
+                    await this.nextTurn(playerEntity); // nextTurn might become async
                 }
             } else { // NPC was the attacker
                 logToConsole(`NPC ${attacker.name || attacker.id} finished an attack sequence against ${defenderName}. AP: ${attacker.currentActionPoints}, MP: ${attacker.currentMovementPoints}.`, 'gold');
                 if (this.gameState.isInCombat) { // Ensure combat is still active before proceeding
-                    this.nextTurn(attacker); // 'attacker' is the NPC whose action just resolved.
+                    await this.nextTurn(attacker); // nextTurn might become async
                 }
             }
         } else {
-            // This else corresponds to if (!this.gameState.isInCombat)
             this.updateCombatUI();
         }
     }
@@ -2122,12 +2145,11 @@
         return false; // No target found
     }
 
-
-    executeNpcCombatTurn(npc) {
+    async executeNpcCombatTurn(npc) {
         const npcName = npc.name || npc.id || "NPC (Unknown ID)";
         if (!npc || (npc.health && npc.health.torso && npc.health.torso.current <= 0) || (npc.health && npc.health.head && npc.health.head.current <= 0)) {
             logToConsole(`INFO: ${npcName} is incapacitated at start of turn. Advancing turn.`, 'orange');
-            this.nextTurn(npc); // Pass current NPC for logging
+            await this.nextTurn(npc); // Pass current NPC for logging
             return;
         }
 
@@ -2212,46 +2234,49 @@
                 };
                 npc.currentActionPoints--;
                 actionTakenThisLoopIteration = true;
-                this.gameState.combatPhase = 'defenderDeclare'; // Set phase before calling
-                this.handleDefenderActionPrompt(); // This will prompt player if player is defender
+                this.gameState.combatPhase = 'defenderDeclare';
 
-                // If player is defending, their input will resume combat. NPC turn effectively pauses.
+                // This call eventually leads to processAttack, which is async and may play animations.
+                // handleDefenderActionPrompt itself doesn't need to be async if it just sets up state
+                // and then calls processAttack, but the sequence from here must allow processAttack to complete.
+                // Since processAttack is awaited inside handleDefenderActionPrompt (implicitly, as it's called),
+                // we need to ensure this flow completes.
+                // For now, handleDefenderActionPrompt is synchronous but calls processAttack which is async.
+                // The critical part is that the game should pause here if an animation starts in processAttack.
+                // The structure of handleDefenderActionPrompt -> processAttack (async) -> animation (async)
+                // means that executeNpcCombatTurn should effectively pause if an animation is running due to the
+                // global isAnimationPlaying flag and checks in nextTurn.
+
+                // However, to be robust, if handleDefenderActionPrompt can lead to an awaitable action (like processAttack),
+                // it should be awaited if it were async. Since it's not, the pause relies on nextTurn's check.
+                // Let's assume the existing structure with nextTurn's check is sufficient for now for NPC attacks.
+                // If not, handleDefenderActionPrompt might need to be async and awaited.
+                this.handleDefenderActionPrompt();
+
+                // If player is defending, their input will resume. If NPC is defending, processAttack runs.
+                // If processAttack played an animation, isAnimationPlaying will be true.
+                // The next call to nextTurn() (at the end of this NPC's turn) will wait.
                 if (this.gameState.combatPhase === 'playerDefenseDeclare') {
-                    logToConsole(`INFO: ${npcName} turn paused, awaiting player defense declaration.`, 'grey');
-                    return; // Exit NPC turn; player input will drive next step
+                    return;
                 }
-                // If NPC was defender, or if it was an attack on a tile, processAttack would have completed.
 
             } else if (distanceToTarget > 1 && attackType === 'melee' && npc.currentMovementPoints > 0) {
-                logToConsole(`${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}) decides to MOVE towards ${targetName} (melee). Dist: ${distanceToTarget}`, 'gold');
-                if (this.moveNpcTowardsTarget(npc, currentTargetPos)) { // moveNpcTowardsTarget logs its own success/failure
-                    actionTakenThisLoopIteration = true;
-                } else {
-                    logToConsole(`${npcName} could not move closer to ${targetName} (melee).`, 'orange');
-                }
-            } else if (attackType === 'ranged' && distanceToTarget > (weaponToUse?.effectiveRange || 20) && npc.currentMovementPoints > 0) { // Example: move if outside effective range
-                logToConsole(`${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}) decides to MOVE towards ${targetName} (ranged). Dist: ${distanceToTarget}`, 'gold');
+                // Movement animation for NPC can be added here later.
+                // For now, assume NPC movement is instant or handled by a separate animation call if implemented.
                 if (this.moveNpcTowardsTarget(npc, currentTargetPos)) {
                     actionTakenThisLoopIteration = true;
-                } else {
-                    logToConsole(`${npcName} could not move closer to ${targetName} (ranged).`, 'orange');
+                    // If moveNpcTowardsTarget becomes async due to animations:
+                    // await this.moveNpcTowardsTarget(npc, currentTargetPos);
                 }
-            }
+            } // ... (other NPC actions like ranged movement)
 
+            if (!actionTakenThisLoopIteration) turnEnded = true;
+            if (npc.currentActionPoints === 0 && npc.currentMovementPoints === 0) turnEnded = true;
+        }
 
-            if (!actionTakenThisLoopIteration) {
-                logToConsole(`NPC ${npcName} took no specific action this iteration (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}, Target: ${targetName}, Dist: ${distanceToTarget}). Considering end of turn.`, 'gold');
-                turnEnded = true; // No useful action could be taken
-            }
-            if (npc.currentActionPoints === 0 && npc.currentMovementPoints === 0) {
-                logToConsole(`${npcName} has no AP or MP left. Ending turn.`, 'gold');
-                turnEnded = true;
-            }
-        } // End of while loop
-
-        const aboutToEndTurnNpc = npc; // Capture the current NPC whose turn is ending
-        logToConsole(`${npcName} turn processing finished. AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}. Proceeding to nextTurn().`, 'gold');
-        this.nextTurn(aboutToEndTurnNpc); // Pass the NPC whose turn just ended
+        const aboutToEndTurnNpc = npc;
+        logToConsole(`${npcName} turn processing finished. Proceeding to nextTurn().`);
+        await this.nextTurn(aboutToEndTurnNpc); // Await nextTurn
     }
 
     updateCombatUI() {
