@@ -506,10 +506,7 @@ window.mapRenderer = {
     },
 
     renderMapLayers: function () {
-        // ADD THIS LINE AT THE TOP:
-        if (window.animationManager && gameState.gameStarted) { // Ensure game is started to avoid issues
-            window.animationManager.updateAnimations();
-        }
+        // Animation updates are now handled by the main gameLoop in script.js
 
         const PLAYER_VISION_RADIUS = 120;
         const container = document.getElementById("mapContainer");

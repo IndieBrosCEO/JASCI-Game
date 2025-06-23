@@ -1,4 +1,25 @@
-﻿/**************************************************************
+﻿async function gameLoop() {
+    // Check if the game has started. If not, keep requesting frames but do nothing else.
+    if (!gameState.gameStarted) {
+        requestAnimationFrame(gameLoop); // Continue the loop
+        return; // Exit early if game hasn't started
+    }
+
+    // If animationManager is available and the game has started, update animations.
+    if (window.animationManager && gameState.gameStarted) {
+        window.animationManager.updateAnimations();
+    }
+
+    // Schedule a render if mapRenderer is available.
+    if (window.mapRenderer) {
+        window.mapRenderer.scheduleRender();
+    }
+
+    // Request the next frame to continue the loop.
+    requestAnimationFrame(gameLoop);
+}
+
+/**************************************************************
  * Global State & Constants
  **************************************************************/
 const assetManager = new AssetManager();
@@ -1021,7 +1042,7 @@ async function initialize() { // Made async
 
         // renderTables is now in js/character.js, call it with gameState
         window.renderTables(gameState);
-        window.mapRenderer.scheduleRender(); // Initial render of the map (or empty state)
+        // window.mapRenderer.scheduleRender(); // Initial render of the map (or empty state) - gameLoop will handle this
         window.updateInventoryUI(); // Initialize inventory display (now from js/inventory.js)
         updatePlayerStatusDisplay(); // Initial display of clock and needs
 
@@ -1209,7 +1230,7 @@ function startGame() {
                     if (currentMap) { // Check if currentMap is now valid
                         gameState.layers = currentMap.layers;
                         gameState.playerPos = currentMap.startPos || { x: 2, y: 2 };
-                        window.mapRenderer.scheduleRender();
+                        // window.mapRenderer.scheduleRender(); // gameLoop handles this
                         window.interaction.detectInteractableItems(); // <<< CORRECTED
                         window.interaction.showInteractableItems();   // <<< CORRECTED
                         logToConsole(`Map ${currentMap.name} loaded in startGame.`);
@@ -1377,7 +1398,7 @@ function startGame() {
 
     gameState.gameStarted = true;
     window.updateInventoryUI();
-    if (window.mapRenderer.getCurrentMapData()) window.mapRenderer.scheduleRender(); // Render if map is loaded
+    // if (window.mapRenderer.getCurrentMapData()) window.mapRenderer.scheduleRender(); // Render if map is loaded - gameLoop handles this
 
     // initializeHealth is now in js/character.js, call it with gameState
     window.initializeHealth(gameState);
@@ -1692,7 +1713,6 @@ async function testCombatTurnProgression() {
     // --- Simulate through a few turns OR until it's player's turn again (if NPC went first) ---
     // This part is tricky to automate perfectly without a more complex setup.
     // We're primarily testing if `updateTurnUI` is called by combatManager.
-    // Let's assume for now that combatManager.nextTurn() will eventually call it.
     // The previous changes ensured updateTurnUI is called in nextTurn.
 
     // After combatManager.endPlayerTurn(), it should be NPC's turn.
@@ -1702,10 +1722,6 @@ async function testCombatTurnProgression() {
     // For simplicity, we check call count. startCombat calls nextTurn, which calls updateTurnUI.
     // endPlayerTurn calls nextTurn, which calls updateTurnUI.
     // If NPC turn also calls nextTurn which leads to player turn, that's another call.
-
-    // Let's just check if updateTurnUICallCount increased after starting combat and ending one player turn.
-    // startCombat -> nextTurn (calls updateTurnUI once for the first entity)
-    // endPlayerTurn -> nextTurn (calls updateTurnUI for the next entity)
 
     logToConsole(`updateTurnUI call count after simulated turns: ${updateTurnUICallCount}`);
     turnUiCalledLog.forEach(log => logToConsole(log));
@@ -1793,7 +1809,7 @@ async function testPlayerMovement() {
                 window.mapRenderer.initializeCurrentMap(mapData);
                 gameState.layers = mapData.layers;
                 gameState.playerPos = mapData.startPos || { x: 2, y: 2 };
-                window.mapRenderer.scheduleRender();
+                // window.mapRenderer.scheduleRender(); // gameLoop will handle
             } else {
                 logToConsole("Player Movement Test FAIL: Could not load 'testMap'.");
                 return false;
