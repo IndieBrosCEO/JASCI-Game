@@ -91,6 +91,12 @@ class AnimationManager {
         console.log('[AnimationManager] playAnimation PUSHED:', animationType, 'New active count:', this.gameState.activeAnimations.length);
         this.gameState.isAnimationPlaying = true; // Set flag when an animation starts
         console.log('[AnimationManager] playAnimation END: isAnimationPlaying SET TO TRUE. Flag:', this.gameState.isAnimationPlaying);
+
+        // Ensure a render is scheduled immediately when an animation starts
+        if (window.mapRenderer) {
+            window.mapRenderer.scheduleRender();
+        }
+
         return animationInstance.promise;
     }
 
@@ -183,7 +189,7 @@ class Animation {
         } else {
             dataForLog = data; // If data is not an object (e.g. primitive), log as is
         }
-        
+
         const customReplacerForAnimation = (key, value) => {
             if (value === window.gameState || value === this.gameState) { // Check against this.gameState as well
                 return '[gameState_global_ref]';
@@ -200,7 +206,7 @@ class Animation {
                     return '[Circular:object_with_entity_ref]';
                 }
                 if (value.pendingCombatAction) {
-                     return '[Circular:object_with_pendingCombatAction]';
+                    return '[Circular:object_with_pendingCombatAction]';
                 }
             }
             return value;
@@ -244,7 +250,7 @@ class MovementAnimation extends Animation {
     update() {
         const attackerName = this.data.attacker ? (this.data.attacker === this.gameState ? "Player" : (this.data.attacker.name || this.data.attacker.id)) : "N/A";
         if (attackerName === "Player") { // Log only for player for now to reduce noise
-           console.log(`[MeleeSwingAnimation UPDATE] For Player. Finished: ${this.finished}, Visible: ${this.visible}, SpriteIdx: ${this.currentSpriteIndex}`);
+            console.log(`[MeleeSwingAnimation UPDATE] For Player. Finished: ${this.finished}, Visible: ${this.visible}, SpriteIdx: ${this.currentSpriteIndex}`);
         }
         if (this.finished) {
             this.visible = false;

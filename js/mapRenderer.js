@@ -506,6 +506,11 @@ window.mapRenderer = {
     },
 
     renderMapLayers: function () {
+        // ADD THIS LINE AT THE TOP:
+        if (window.animationManager && gameState.gameStarted) { // Ensure game is started to avoid issues
+            window.animationManager.updateAnimations();
+        }
+
         const PLAYER_VISION_RADIUS = 120;
         const container = document.getElementById("mapContainer");
         const mapData = window.mapRenderer.getCurrentMapData();
@@ -781,7 +786,7 @@ window.mapRenderer = {
                         if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
                             const playerCombatAnim = gameState.activeAnimations.find(anim =>
                                 anim.visible &&
-                                (anim.type === 'meleeSwing' || anim.type === 'rangedBullet' || anim.type === 'throwing') && 
+                                (anim.type === 'meleeSwing' || anim.type === 'rangedBullet' || anim.type === 'throwing') &&
                                 anim.data.attacker === gameState && // Animation is for the player
                                 Math.floor(anim.x) === x && Math.floor(anim.y) === y // Animation is on this tile
                             );
@@ -793,19 +798,19 @@ window.mapRenderer = {
                         if (drawStaticPlayer) {
                             finalSpriteForTile = "☻";
                             finalColorForTile = "green";
-                            finalDisplayIdForTile = "PLAYER_STATIC"; 
+                            finalDisplayIdForTile = "PLAYER_STATIC";
                         }
                         // If drawStaticPlayer is false, finalSprite/Color/DisplayId remain the base tile's.
                         // The animation loop later will draw the animation sprite.
                     }
                 }
-                
+
                 if (isInitialRender) {
                     const span = document.createElement("span");
                     span.className = "tile";
                     span.dataset.x = x;
                     span.dataset.y = y;
-                    span.textContent = finalSpriteForTile; 
+                    span.textContent = finalSpriteForTile;
                     span.style.color = finalColorForTile;
 
                     // New item highlight logic - apply background color
@@ -844,9 +849,9 @@ window.mapRenderer = {
 
                     gameState.tileCache[y][x] = {
                         span: span,
-                        displayedId: finalDisplayIdForTile, 
-                        sprite: finalSpriteForTile,         
-                        color: finalColorForTile            
+                        displayedId: finalDisplayIdForTile,
+                        sprite: finalSpriteForTile,
+                        color: finalColorForTile
                         // backgroundColor will be managed directly on the span's style
                     };
                     if (fragment) fragment.appendChild(span);
@@ -856,12 +861,12 @@ window.mapRenderer = {
                         const span = cachedCell.span;
                         // Update sprite and color if changed
                         if (cachedCell.sprite !== finalSpriteForTile || cachedCell.color !== finalColorForTile) {
-                            span.textContent = finalSpriteForTile; 
-                            span.style.color = finalColorForTile;   
-                            cachedCell.sprite = finalSpriteForTile; 
-                            cachedCell.color = finalColorForTile;   
+                            span.textContent = finalSpriteForTile;
+                            span.style.color = finalColorForTile;
+                            cachedCell.sprite = finalSpriteForTile;
+                            cachedCell.color = finalColorForTile;
                         }
-                        cachedCell.displayedId = finalDisplayIdForTile; 
+                        cachedCell.displayedId = finalDisplayIdForTile;
 
                         // New item highlight logic - apply background color
                         let tileHighlightColor = "";
@@ -946,13 +951,13 @@ window.mapRenderer = {
                         const isTargetingCursorHere = gameState.isTargetingMode && npcX === gameState.targetingCoords.x && npcY === gameState.targetingCoords.y;
 
                         if (!roofObscures && !playerIsHere && !isTargetingCursorHere) {
-                           const cachedCell = gameState.tileCache[npcY]?.[npcX];
-                           if (cachedCell && cachedCell.span) {
-                               cachedCell.span.textContent = npc.sprite;
-                               cachedCell.span.style.color = npc.color;
-                               cachedCell.sprite = npc.sprite;
-                               cachedCell.color = npc.color;
-                           }
+                            const cachedCell = gameState.tileCache[npcY]?.[npcX];
+                            if (cachedCell && cachedCell.span) {
+                                cachedCell.span.textContent = npc.sprite;
+                                cachedCell.span.style.color = npc.color;
+                                cachedCell.sprite = npc.sprite;
+                                cachedCell.color = npc.color;
+                            }
                         }
                     }
                 }
@@ -1059,7 +1064,7 @@ window.mapRenderer = {
         // If there are still active animations, schedule another render frame
         // to continue updating and drawing them.
         if (window.gameState && window.gameState.activeAnimations && window.gameState.activeAnimations.length > 0) {
-            window.mapRenderer.scheduleRender(); 
+            window.mapRenderer.scheduleRender();
         }
     },
 
