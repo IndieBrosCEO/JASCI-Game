@@ -1117,16 +1117,20 @@
 
         // --- MELEE SWING ANIMATION --- 
         if (attackType === 'melee' && window.animationManager) {
+            const attackerNameForLog = (attacker === this.gameState) ? "Player" : (attacker.name || attacker.id);
+            const animX = (attacker === this.gameState) ? this.gameState.playerPos.x : (attacker.mapPos ? attacker.mapPos.x : 0); 
+            const animY = (attacker === this.gameState) ? this.gameState.playerPos.y : (attacker.mapPos ? attacker.mapPos.y : 0); 
+            console.log(`[CombatManager] processAttack: PRE-AWAIT meleeSwing. Attacker: ${attackerNameForLog}, Type: meleeSwing, Pos: (${animX},${animY}), Duration: 300`);
             console.log('[CombatManager] processAttack: About to play animation - meleeSwing for weapon:', (weapon ? weapon.name : 'unarmed'));
             const attackerSprite = (attacker === this.gameState) ? '☻' : (attacker.sprite || '?');
             const attackerColor = (attacker === this.gameState) ? 'green' : (attacker.color || 'white');
-            window.animationManager.playAnimation('meleeSwing', { // Removed await
-                attacker: attacker, // Pass the attacker object
-                x: attacker.mapPos ? attacker.mapPos.x : (this.gameState.playerPos.x), // Ensure position is valid
-                y: attacker.mapPos ? attacker.mapPos.y : (this.gameState.playerPos.y),
-                originalSprite: attackerSprite,
-                originalColor: attackerColor,
-                duration: 300
+            await window.animationManager.playAnimation('meleeSwing', { 
+                attacker: attacker, 
+                x: animX, 
+                y: animY,
+                originalSprite: attackerSprite, // Keep these if MeleeSwingAnimation uses them
+                originalColor: attackerColor,  // Keep these
+                duration: 600
             });
             console.log('[CombatManager] processAttack: Finished awaiting animation - meleeSwing');
         }
@@ -1134,24 +1138,26 @@
 
         // --- THROWING ANIMATION ---
         if (weapon && weapon.type && weapon.type.includes("thrown") && window.animationManager) {
-            const attackerPosition = (attacker === this.gameState) ? this.gameState.playerPos : (attacker.mapPos || this.gameState.attackerMapPos);
-            let targetPosition = null;
+            const attackerPosition = (attacker === this.gameState) ? this.gameState.playerPos : (attacker.mapPos || this.gameState.attackerMapPos); 
+            let targetPosition = null; 
             if (this.gameState.pendingCombatAction && this.gameState.pendingCombatAction.targetTile) {
                 targetPosition = { ...this.gameState.pendingCombatAction.targetTile };
             } else if (defender && defender.mapPos) {
                 targetPosition = { ...defender.mapPos };
-            } else if (this.gameState.defenderMapPos) { // Fallback to gameState's defenderMapPos
+            } else if (this.gameState.defenderMapPos) {
                 targetPosition = { ...this.gameState.defenderMapPos };
             }
 
             if (attackerPosition && targetPosition) {
+                const attackerNameForLog = (attacker === this.gameState) ? "Player" : (attacker.name || attacker.id);
+                console.log(`[CombatManager] processAttack: PRE-AWAIT throwing. Attacker: ${attackerNameForLog}, Type: throwing, Start: (${attackerPosition.x},${attackerPosition.y}), End: (${targetPosition.x},${targetPosition.y}), Duration: 300`);
                 console.log('[CombatManager] processAttack: About to play animation - throwing for weapon:', weapon.name);
-                window.animationManager.playAnimation('throwing', { // Removed await
+                await window.animationManager.playAnimation('throwing', { 
                     startPos: attackerPosition,
                     endPos: targetPosition,
-                    sprite: (weapon.sprite || 'o'), // Use weapon's sprite or default
+                    sprite: (weapon.sprite || 'o'), 
                     color: (weapon.color || 'cyan'),   // Use weapon's color or default
-                    duration: 300, // Duration for the thrown item to reach target
+                    duration: 600, // Duration for the thrown item to reach target
                     attacker: attacker,
                     defender: defender
                 });
@@ -1165,18 +1171,19 @@
             !(weapon.type.includes("thrown")) &&
             !(weapon.tags && weapon.tags.includes("launcher_treated_as_rifle")) &&
             window.animationManager) {
-
-            const attackerPosition = (attacker === this.gameState) ? this.gameState.playerPos : (attacker.mapPos || this.gameState.attackerMapPos);
-            const defenderPosition = (defender === this.gameState) ? this.gameState.playerPos : (defender.mapPos || this.gameState.defenderMapPos);
+            const attackerPosition = (attacker === this.gameState) ? this.gameState.playerPos : (attacker.mapPos || this.gameState.attackerMapPos); 
+            const defenderPosition = (defender === this.gameState) ? this.gameState.playerPos : (defender.mapPos || this.gameState.defenderMapPos); 
 
             if (attackerPosition && defenderPosition) {
+                const attackerNameForLog = (attacker === this.gameState) ? "Player" : (attacker.name || attacker.id);
+                console.log(`[CombatManager] processAttack: PRE-AWAIT rangedBullet. Attacker: ${attackerNameForLog}, Type: rangedBullet, Start: (${attackerPosition.x},${attackerPosition.y}), End: (${defenderPosition.x},${defenderPosition.y}), Duration: 200`);
                 console.log('[CombatManager] processAttack: About to play animation - rangedBullet for weapon:', weapon.name);
-                window.animationManager.playAnimation('rangedBullet', { // Removed await
+                await window.animationManager.playAnimation('rangedBullet', { 
                     startPos: { ...attackerPosition },
                     endPos: { ...defenderPosition },
-                    sprite: '*', // Standard bullet sprite
+                    sprite: '*', 
                     color: 'yellow', // Standard bullet color
-                    duration: 200, // Short duration for quick bullet travel
+                    duration: 400, // Short duration for quick bullet travel
                     attacker: attacker,
                     defender: defender
                 });
@@ -1213,7 +1220,9 @@
 
         if (attackType === 'melee' && defender) {
             const attackerMapPos = (attacker === this.gameState) ? this.gameState.playerPos : attacker.mapPos;
-            const defenderMapPos = defender.mapPos;
+            const defenderMapPos = (defender === this.gameState) ? 
+                                   this.gameState.playerPos : 
+                                   defender.mapPos;
             if (attackerMapPos && defenderMapPos) {
                 const manhattanDistance = Math.abs(attackerMapPos.x - defenderMapPos.x) + Math.abs(attackerMapPos.y - defenderMapPos.y);
                 if (manhattanDistance > 1) {
@@ -1380,13 +1389,13 @@
 
                 // --- EXPLOSION ANIMATION ---
                 if (explosiveProperties.burstRadiusFt > 0 && window.animationManager) {
+                    const attackerNameForLog = (attacker === this.gameState) ? "Player" : (attacker.name || attacker.id);
+                    console.log(`[CombatManager] processAttack: PRE-AWAIT explosion. Attacker: ${attackerNameForLog}, Type: explosion, Center: (${determinedImpactTile.x},${determinedImpactTile.y}), Duration: 500`);
                     console.log('[CombatManager] processAttack: About to play animation - explosion for weapon:', (weapon ? weapon.name : 'unknown explosive'));
-                    window.animationManager.playAnimation('explosion', { // Removed await
+                    await window.animationManager.playAnimation('explosion', { 
                         centerPos: { ...determinedImpactTile },
-                        radius: burstRadiusTiles,
-                        // explosionSprites: ['·', 'o', 'O', '*', 'X', '*', 'O', 'o', '·'], // Default in class
-                        // color: 'orange', // Default in class
-                        duration: 500, // Default in class is 1000, 500ms might be better
+                        radius: burstRadiusTiles, 
+                        duration: 1000, 
                         sourceWeapon: weapon
                     });
                     console.log('[CombatManager] processAttack: Finished awaiting animation - explosion');
@@ -2150,13 +2159,13 @@
         }
 
         if (moved && window.animationManager) {
-            window.animationManager.playAnimation('movement', { // Removed await
+            await window.animationManager.playAnimation('movement', { 
                 entity: npc,
                 startPos: originalPos,
                 endPos: newPos,
                 sprite: npc.sprite,
                 color: npc.color,
-                duration: 150
+                duration: 300
             });
             npc.mapPos.x = newPos.x;
             npc.mapPos.y = newPos.y;

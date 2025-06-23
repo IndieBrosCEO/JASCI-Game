@@ -118,16 +118,16 @@ async function move_internal(direction) {
     }
 
     // --- Animation Call ---
-    if (window.animationManager) {
-        window.animationManager.playAnimation('movement', { // Removed await
-            entity: gameState,
-            startPos: originalPos,
-            endPos: newPos,
-            sprite: '☻', // This is a JS string, should be fine.
-            color: 'green',
-            duration: 150
-        });
-    }
+    // if (window.animationManager) {
+    //     await window.animationManager.playAnimation('movement', { // Removed await
+    //         entity: gameState,
+    //         startPos: originalPos,
+    //         endPos: newPos,
+    //         sprite: '☻', // This is a JS string, should be fine.
+    //         color: 'green',
+    //         duration: 150
+    //     });
+    // }
     // --- End Animation Call ---
 
     gameState.playerPos = newPos;

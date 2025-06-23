@@ -57,10 +57,10 @@
       "MeleeWeapons": 20,
       "Guns": 0
     },
-    "equippedWeaponId": "club",
+    "equippedWeaponId": "desert_eagle_50ae",
     "defaultActionPoints": 1,
-    "defaultMovementPoints": 4,
-    "tags": [ "dummy", "target", "hostile", "melee" ],
+    "defaultMovementPoints": 6,
+    "tags": [ "dummy", "target", "hostile", "ranged" ],
     "teamId": 1
   },
   {
@@ -124,7 +124,7 @@
     },
     "equippedWeaponId": "club",
     "defaultActionPoints": 1,
-    "defaultMovementPoints": 3,
+    "defaultMovementPoints": 6,
     "tags": [ "hostile", "scavenger", "melee" ],
     "teamId": 2
   },
@@ -189,7 +189,7 @@
     },
     "equippedWeaponId": "club",
     "defaultActionPoints": 1,
-    "defaultMovementPoints": 3,
+    "defaultMovementPoints": 6,
     "tags": [ "hostile", "scavenger", "melee" ],
     "teamId": 2
   },
@@ -254,7 +254,7 @@
     },
     "equippedWeaponId": "club",
     "defaultActionPoints": 1,
-    "defaultMovementPoints": 3,
+    "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "militia" ],
     "teamId": 3
   },
@@ -319,7 +319,7 @@
     },
     "equippedWeaponId": "club",
     "defaultActionPoints": 1,
-    "defaultMovementPoints": 3,
+    "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "militia" ],
     "teamId": 3
   },
@@ -381,9 +381,9 @@
       "MeleeWeapons": 10,
       "Guns": 20
     },
-    "equippedWeaponId": "bow",
+    "equippedWeaponId": "crossbow",
     "defaultActionPoints": 1,
-    "defaultMovementPoints": 4,
+    "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "bandit", "ranged" ],
     "teamId": 4
   },
@@ -447,7 +447,7 @@
     },
     "equippedWeaponId": "mace",
     "defaultActionPoints": 1,
-    "defaultMovementPoints": 3,
+    "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "bandit", "melee" ],
     "teamId": 4
   }

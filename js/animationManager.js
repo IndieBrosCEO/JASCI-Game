@@ -13,6 +13,8 @@ class AnimationManager {
     }
 
     playAnimation(animationType, data) {
+        const attackerName = data.attacker ? (data.attacker === this.gameState ? "Player" : (data.attacker.name || data.attacker.id)) : (data.entity === this.gameState ? "Player" : (data.entity ? (data.entity.name || data.entity.id) : "N/A"));
+        console.log(`[AnimationManager] playAnimation ENTERED. Type: ${animationType}, Attacker/Entity: ${attackerName}`);
         // Safely log data
         let dataForLog = {};
         for (const key in data) {
@@ -149,7 +151,68 @@ class Animation {
         this.promise = new Promise((resolve) => {
             this.resolvePromise = resolve;
         });
-        console.log('[Animation] CREATED:', this.type, 'Duration:', this.duration, 'Sprite:', this.sprite, 'Pos: (', this.x, ',', this.y, '), Visible:', this.visible, 'Data:', JSON.stringify(data));
+
+        // ADD THIS LOG:
+        const entityNameForLog = data.entity ? (data.entity === this.gameState ? "Player" : (data.entity.name || data.entity.id)) : (data.attacker ? (data.attacker === this.gameState ? "Player" : (data.attacker.name || data.attacker.id)) : "N/A");
+        console.log(`[Animation CONSTRUCTOR] New Animation: Type=${this.type}, Visible=${this.visible}, X=${this.x}, Y=${this.y}, Duration=${this.duration}, Entity/Attacker=${entityNameForLog}`);
+
+        // Safely log data, similar to AnimationManager.playAnimation
+        let dataForLog = {};
+        if (typeof data === 'object' && data !== null) {
+            for (const key in data) {
+                if (Object.hasOwnProperty.call(data, key)) {
+                    const value = data[key];
+                    if (key === 'entity' || key === 'attacker' || key === 'defender' || key === 'target') {
+                        if (value) {
+                            dataForLog[key] = value.id || value.name || `[${key}_object_no_id_name]`;
+                        } else {
+                            dataForLog[key] = null;
+                        }
+                    } else if (value === window.gameState || value === this.gameState) {
+                        dataForLog[key] = '[gameState_reference]';
+                    } else if (key === 'pendingCombatAction' && typeof value === 'object' && value !== null) {
+                        dataForLog[key] = '{...pendingCombatAction_details...}'; // Placeholder for complex object
+                    } else if (typeof value === 'function') {
+                        dataForLog[key] = '[function]';
+                    } else {
+                        // For simple serializable properties or complex ones that stringify can handle if not circular
+                        dataForLog[key] = value;
+                    }
+                }
+            }
+        } else {
+            dataForLog = data; // If data is not an object (e.g. primitive), log as is
+        }
+        
+        const customReplacerForAnimation = (key, value) => {
+            if (value === window.gameState || value === this.gameState) { // Check against this.gameState as well
+                return '[gameState_global_ref]';
+            }
+            // Add more specific checks if 'pendingCombatAction' or other known complex objects
+            // are directly inside 'data' and need custom handling beyond what dataForLog does.
+            // This basic replacer primarily handles direct gameState references.
+            // The main protection comes from dataForLog not deeply copying problematic structures.
+            if (value && typeof value === 'object' && !Array.isArray(value)) {
+                // Heuristic: if an object still has an 'entity' key that refers to something complex,
+                // or a 'pendingCombatAction' key, it might be part of a circular path not caught by dataForLog.
+                // This is a fallback; ideally, dataForLog pre-processes these.
+                if (value.entity && (value.entity === window.gameState || value.entity === this.gameState || value.entity === this.data.entity)) {
+                    return '[Circular:object_with_entity_ref]';
+                }
+                if (value.pendingCombatAction) {
+                     return '[Circular:object_with_pendingCombatAction]';
+                }
+            }
+            return value;
+        };
+
+        try {
+            console.log('[Animation] CREATED:', this.type, 'Duration:', this.duration, 'Sprite:', this.sprite, 'Pos: (', this.x, ',', this.y, '), Visible:', this.visible, 'Data:', JSON.stringify(dataForLog, customReplacerForAnimation, 2));
+        } catch (e) {
+            console.error('[Animation] CREATED: Error stringifying dataForLog - ', e);
+            // Fallback log if stringify still fails
+            console.log('[Animation] CREATED (Fallback log):', this.type, 'Data Keys:', (typeof data === 'object' && data !== null ? Object.keys(data) : 'N/A'));
+        }
     }
 
     update() {
@@ -179,6 +242,10 @@ class MovementAnimation extends Animation {
     }
 
     update() {
+        const attackerName = this.data.attacker ? (this.data.attacker === this.gameState ? "Player" : (this.data.attacker.name || this.data.attacker.id)) : "N/A";
+        if (attackerName === "Player") { // Log only for player for now to reduce noise
+           console.log(`[MeleeSwingAnimation UPDATE] For Player. Finished: ${this.finished}, Visible: ${this.visible}, SpriteIdx: ${this.currentSpriteIndex}`);
+        }
         if (this.finished) {
             this.visible = false;
             return;

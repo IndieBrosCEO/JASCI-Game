@@ -506,11 +506,6 @@ window.mapRenderer = {
     },
 
     renderMapLayers: function () {
-        // NEW: Call updateAnimations at the start of the render cycle
-        if (window.animationManager && typeof window.animationManager.updateAnimations === 'function') {
-            window.animationManager.updateAnimations();
-        }
-
         const PLAYER_VISION_RADIUS = 120;
         const container = document.getElementById("mapContainer");
         const mapData = window.mapRenderer.getCurrentMapData();
@@ -769,44 +764,49 @@ window.mapRenderer = {
                     }
                 }
 
-                targetSprite = displaySprite;
-                targetColor = displayColor;
-                targetDisplayId = displayId;
+                let finalSpriteForTile = displaySprite;
+                let finalColorForTile = displayColor;
+                let finalDisplayIdForTile = displayId;
 
-                const isPlayerActuallyAtThisTile = (gameState.playerPos && x === gameState.playerPos.x && y === gameState.playerPos.y);
-                let hideStaticPlayer = false;
+                const isPlayerCurrentlyOnThisTile = (gameState.playerPos && x === gameState.playerPos.x && y === gameState.playerPos.y);
 
-                if (isPlayerActuallyAtThisTile && gameState.activeAnimations && gameState.activeAnimations.length > 0) {
-                    const playerMoveAnim = gameState.activeAnimations.find(anim =>
-                        anim.type === 'movement' &&
-                        anim.data.entity === gameState &&
-                        anim.visible
-                    );
-                    if (playerMoveAnim) {
-                        hideStaticPlayer = true;
+                if (isPlayerCurrentlyOnThisTile) {
+                    const playerFowStatus = (gameState.fowData && gameState.fowData[y] && typeof gameState.fowData[y][x] !== 'undefined') ? gameState.fowData[y][x] : 'hidden';
+                    const roofIsObscuringPlayer = gameState.showRoof && mapData.layers.roof?.[y]?.[x];
+
+                    if (playerFowStatus === 'visible' && !roofIsObscuringPlayer) {
+                        let drawStaticPlayer = true;
+
+                        // Check if player has an active combat animation on THIS tile
+                        if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
+                            const playerCombatAnim = gameState.activeAnimations.find(anim =>
+                                anim.visible &&
+                                (anim.type === 'meleeSwing' || anim.type === 'rangedBullet' || anim.type === 'throwing') && 
+                                anim.data.attacker === gameState && // Animation is for the player
+                                Math.floor(anim.x) === x && Math.floor(anim.y) === y // Animation is on this tile
+                            );
+                            if (playerCombatAnim) {
+                                drawStaticPlayer = false; // Let animation render the player action
+                            }
+                        }
+
+                        if (drawStaticPlayer) {
+                            finalSpriteForTile = "☻";
+                            finalColorForTile = "green";
+                            finalDisplayIdForTile = "PLAYER_STATIC"; 
+                        }
+                        // If drawStaticPlayer is false, finalSprite/Color/DisplayId remain the base tile's.
+                        // The animation loop later will draw the animation sprite.
                     }
                 }
-
-                if (isPlayerActuallyAtThisTile && !hideStaticPlayer && !(gameState.showRoof && mapData.layers.roof?.[y]?.[x])) {
-                    let playerTileFowStatus = 'hidden';
-                    if (gameState.fowData && gameState.fowData[y] && typeof gameState.fowData[y][x] !== 'undefined') {
-                        playerTileFowStatus = gameState.fowData[y][x];
-                    }
-
-                    if (playerTileFowStatus === 'visible') {
-                        targetSprite = "☻";
-                        targetColor = "green";
-                        targetDisplayId = "PLAYER";
-                    }
-                }
-
+                
                 if (isInitialRender) {
                     const span = document.createElement("span");
                     span.className = "tile";
                     span.dataset.x = x;
                     span.dataset.y = y;
-                    span.textContent = targetSprite;
-                    span.style.color = targetColor;
+                    span.textContent = finalSpriteForTile; 
+                    span.style.color = finalColorForTile;
 
                     // New item highlight logic - apply background color
                     let tileHighlightColor = "";
@@ -844,9 +844,9 @@ window.mapRenderer = {
 
                     gameState.tileCache[y][x] = {
                         span: span,
-                        displayedId: targetDisplayId,
-                        sprite: targetSprite,
-                        color: targetColor
+                        displayedId: finalDisplayIdForTile, 
+                        sprite: finalSpriteForTile,         
+                        color: finalColorForTile            
                         // backgroundColor will be managed directly on the span's style
                     };
                     if (fragment) fragment.appendChild(span);
@@ -855,13 +855,13 @@ window.mapRenderer = {
                     if (cachedCell && cachedCell.span) {
                         const span = cachedCell.span;
                         // Update sprite and color if changed
-                        if (cachedCell.sprite !== targetSprite || cachedCell.color !== targetColor) {
-                            span.textContent = targetSprite;
-                            span.style.color = targetColor;
-                            cachedCell.sprite = targetSprite;
-                            cachedCell.color = targetColor;
+                        if (cachedCell.sprite !== finalSpriteForTile || cachedCell.color !== finalColorForTile) {
+                            span.textContent = finalSpriteForTile; 
+                            span.style.color = finalColorForTile;   
+                            cachedCell.sprite = finalSpriteForTile; 
+                            cachedCell.color = finalColorForTile;   
                         }
-                        cachedCell.displayedId = targetDisplayId; // Always update displayedId
+                        cachedCell.displayedId = finalDisplayIdForTile; 
 
                         // New item highlight logic - apply background color
                         let tileHighlightColor = "";
@@ -916,22 +916,43 @@ window.mapRenderer = {
 
         if (gameState.npcs && gameState.npcs.length > 0 && gameState.tileCache) {
             gameState.npcs.forEach(npc => {
-                if (npc.mapPos) {
+                if (!npc.mapPos) return; // Skip if no mapPos
+
+                // Check for an active movement animation for this NPC
+                let isBeingAnimated = false;
+                if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
+                    const npcMoveAnim = gameState.activeAnimations.find(anim =>
+                        anim.type === 'movement' &&
+                        anim.data.entity === npc && // Check if the animation is for this specific NPC
+                        anim.visible
+                    );
+                    if (npcMoveAnim) {
+                        isBeingAnimated = true;
+                    }
+                }
+
+                if (isBeingAnimated) {
+                    // If animated, do nothing here; animation loop will render it.
+                } else {
+                    // No active movement animation for this NPC, draw it statically.
                     const npcX = npc.mapPos.x;
                     const npcY = npc.mapPos.y;
+                    // W and H are defined in the outer scope of renderMapLayers
                     if (npcX >= 0 && npcX < W && npcY >= 0 && npcY < H) {
                         const roofObscures = gameState.showRoof && mapData.layers.roof?.[npcY]?.[npcX];
+                        // Ensure player or targeting cursor doesn't override NPC if they are on same tile
+                        // and NPC isn't animated (player/cursor take precedence for rendering on a tile)
                         const playerIsHere = (npcX === gameState.playerPos.x && npcY === gameState.playerPos.y);
                         const isTargetingCursorHere = gameState.isTargetingMode && npcX === gameState.targetingCoords.x && npcY === gameState.targetingCoords.y;
 
                         if (!roofObscures && !playerIsHere && !isTargetingCursorHere) {
-                            const cachedCell = gameState.tileCache[npcY]?.[npcX];
-                            if (cachedCell && cachedCell.span) {
-                                cachedCell.span.textContent = npc.sprite;
-                                cachedCell.span.style.color = npc.color;
-                                cachedCell.sprite = npc.sprite;
-                                cachedCell.color = npc.color;
-                            }
+                           const cachedCell = gameState.tileCache[npcY]?.[npcX];
+                           if (cachedCell && cachedCell.span) {
+                               cachedCell.span.textContent = npc.sprite;
+                               cachedCell.span.style.color = npc.color;
+                               cachedCell.sprite = npc.sprite;
+                               cachedCell.color = npc.color;
+                           }
                         }
                     }
                 }
@@ -962,6 +983,8 @@ window.mapRenderer = {
                                     if (cachedCell && cachedCell.span) {
                                         cachedCell.span.textContent = spriteToRender;
                                         cachedCell.span.style.color = colorToRender;
+                                        cachedCell.sprite = spriteToRender; // Update cache
+                                        cachedCell.color = colorToRender;   // Update cache
                                     }
                                 }
                             }
@@ -976,6 +999,8 @@ window.mapRenderer = {
                         if (cachedCell && cachedCell.span) {
                             cachedCell.span.textContent = anim.sprite;
                             cachedCell.span.style.color = anim.color;
+                            cachedCell.sprite = anim.sprite; // Update cache
+                            cachedCell.color = anim.color;   // Update cache
                         }
                     }
                 }
@@ -1030,6 +1055,12 @@ window.mapRenderer = {
             }
         }
         this.updateMapHighlight();
+
+        // If there are still active animations, schedule another render frame
+        // to continue updating and drawing them.
+        if (window.gameState && window.gameState.activeAnimations && window.gameState.activeAnimations.length > 0) {
+            window.mapRenderer.scheduleRender(); 
+        }
     },
 
     updateMapHighlight: function () {

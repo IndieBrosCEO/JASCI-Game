@@ -15,6 +15,16 @@ let isConsoleOpen = false;
 const COMBAT_ALERT_RADIUS = 10;
 
 /**************************************************************
+ * Animation Loop
+ **************************************************************/
+function animationTickLoop() {
+    if (window.animationManager && typeof window.animationManager.updateAnimations === 'function') {
+        window.animationManager.updateAnimations();
+    }
+    requestAnimationFrame(animationTickLoop);
+}
+
+/**************************************************************
  * Clothing System Constants and Initialization
  **************************************************************/
 // ClothingLayers is now in js/gameState.js
@@ -1025,6 +1035,8 @@ async function initialize() { // Made async
         window.updateInventoryUI(); // Initialize inventory display (now from js/inventory.js)
         updatePlayerStatusDisplay(); // Initial display of clock and needs
 
+        requestAnimationFrame(animationTickLoop); // Start the dedicated animation loop
+        logToConsole("Dedicated animation loop started."); // Optional: for confirmation
 
     } catch (error) {
         console.error("Error during game initialization:", error);
