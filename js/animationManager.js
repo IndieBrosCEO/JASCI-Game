@@ -91,6 +91,12 @@ class AnimationManager {
         console.log('[AnimationManager] playAnimation PUSHED:', animationType, 'New active count:', this.gameState.activeAnimations.length);
         this.gameState.isAnimationPlaying = true; // Set flag when an animation starts
         console.log('[AnimationManager] playAnimation END: isAnimationPlaying SET TO TRUE. Flag:', this.gameState.isAnimationPlaying);
+
+        // Ensure a render is scheduled immediately when an animation starts
+        if (window.mapRenderer) {
+            window.mapRenderer.scheduleRender();
+        }
+
         return animationInstance.promise;
     }
 

@@ -506,6 +506,8 @@ window.mapRenderer = {
     },
 
     renderMapLayers: function () {
+        // Animation updates are now handled by the main gameLoop in script.js
+
         const PLAYER_VISION_RADIUS = 120;
         const container = document.getElementById("mapContainer");
         const mapData = window.mapRenderer.getCurrentMapData();

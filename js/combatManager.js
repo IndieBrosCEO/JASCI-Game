@@ -1124,7 +1124,7 @@
             console.log('[CombatManager] processAttack: About to play animation - meleeSwing for weapon:', (weapon ? weapon.name : 'unarmed'));
             const attackerSprite = (attacker === this.gameState) ? '☻' : (attacker.sprite || '?');
             const attackerColor = (attacker === this.gameState) ? 'green' : (attacker.color || 'white');
-            await window.animationManager.playAnimation('meleeSwing', { 
+            window.animationManager.playAnimation('meleeSwing', {
                 attacker: attacker, 
                 x: animX, 
                 y: animY,
@@ -1152,7 +1152,7 @@
                 const attackerNameForLog = (attacker === this.gameState) ? "Player" : (attacker.name || attacker.id);
                 console.log(`[CombatManager] processAttack: PRE-AWAIT throwing. Attacker: ${attackerNameForLog}, Type: throwing, Start: (${attackerPosition.x},${attackerPosition.y}), End: (${targetPosition.x},${targetPosition.y}), Duration: 300`);
                 console.log('[CombatManager] processAttack: About to play animation - throwing for weapon:', weapon.name);
-                await window.animationManager.playAnimation('throwing', { 
+                window.animationManager.playAnimation('throwing', {
                     startPos: attackerPosition,
                     endPos: targetPosition,
                     sprite: (weapon.sprite || 'o'), 
@@ -1178,7 +1178,7 @@
                 const attackerNameForLog = (attacker === this.gameState) ? "Player" : (attacker.name || attacker.id);
                 console.log(`[CombatManager] processAttack: PRE-AWAIT rangedBullet. Attacker: ${attackerNameForLog}, Type: rangedBullet, Start: (${attackerPosition.x},${attackerPosition.y}), End: (${defenderPosition.x},${defenderPosition.y}), Duration: 200`);
                 console.log('[CombatManager] processAttack: About to play animation - rangedBullet for weapon:', weapon.name);
-                await window.animationManager.playAnimation('rangedBullet', { 
+                window.animationManager.playAnimation('rangedBullet', {
                     startPos: { ...attackerPosition },
                     endPos: { ...defenderPosition },
                     sprite: '*', 
@@ -1392,7 +1392,7 @@
                     const attackerNameForLog = (attacker === this.gameState) ? "Player" : (attacker.name || attacker.id);
                     console.log(`[CombatManager] processAttack: PRE-AWAIT explosion. Attacker: ${attackerNameForLog}, Type: explosion, Center: (${determinedImpactTile.x},${determinedImpactTile.y}), Duration: 500`);
                     console.log('[CombatManager] processAttack: About to play animation - explosion for weapon:', (weapon ? weapon.name : 'unknown explosive'));
-                    await window.animationManager.playAnimation('explosion', { 
+                    window.animationManager.playAnimation('explosion', {
                         centerPos: { ...determinedImpactTile },
                         radius: burstRadiusTiles, 
                         duration: 1000, 
