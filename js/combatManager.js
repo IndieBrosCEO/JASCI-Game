@@ -1115,26 +1115,45 @@
             skillToUse: this.gameState.pendingCombatAction.skillToUse
         };
 
-        // --- MELEE SWING ANIMATION --- 
-        if (attackType === 'melee' && window.animationManager) {
-            const attackerNameForLog = (attacker === this.gameState) ? "Player" : (attacker.name || attacker.id);
-            const animX = (attacker === this.gameState) ? this.gameState.playerPos.x : (attacker.mapPos ? attacker.mapPos.x : 0);
-            const animY = (attacker === this.gameState) ? this.gameState.playerPos.y : (attacker.mapPos ? attacker.mapPos.y : 0);
-            console.log(`[CombatManager] processAttack: PRE-AWAIT meleeSwing. Attacker: ${attackerNameForLog}, Type: meleeSwing, Pos: (${animX},${animY}), Duration: 300`);
-            console.log('[CombatManager] processAttack: About to play animation - meleeSwing for weapon:', (weapon ? weapon.name : 'unarmed'));
-            const attackerSprite = (attacker === this.gameState) ? '☻' : (attacker.sprite || '?');
-            const attackerColor = (attacker === this.gameState) ? 'green' : (attacker.color || 'white');
-            window.animationManager.playAnimation('meleeSwing', {
-                attacker: attacker,
-                x: animX,
-                y: animY,
-                originalSprite: attackerSprite, // Keep these if MeleeSwingAnimation uses them
-                originalColor: attackerColor,  // Keep these
-                duration: 600
-            });
-            console.log('[CombatManager] processAttack: Finished awaiting animation - meleeSwing');
+        // --- MELEE SWING / WHIP CRACK / CHAINSAW ATTACK ANIMATION (Jules) ---
+        if (attackType === 'melee' && window.animationManager && defender) {
+            if (weapon && weapon.id === 'chain_saw_melee') {
+                console.log('[CombatManager] processAttack: About to play animation - chainsawAttack');
+                window.animationManager.playAnimation('chainsawAttack', {
+                    attacker: attacker, // For context, though animation is on defender
+                    defender: defender,
+                    duration: 800, // Duration of the grinding visual
+                    frameDuration: 40 // Faster flicker for chainsaw
+                });
+            } else if (weapon && weapon.id === 'whip') {
+                console.log('[CombatManager] processAttack: About to play animation - whipCrack');
+                window.animationManager.playAnimation('whipCrack', {
+                    attacker: attacker,
+                    defender: defender,
+                    duration: 700 // Duration for the whip crack sequence
+                });
+            } else {
+                // Existing MeleeSwing logic for other melee weapons
+                const attackerNameForLog = (attacker === this.gameState) ? "Player" : (attacker.name || attacker.id);
+                const animX = (attacker === this.gameState) ? this.gameState.playerPos.x : (attacker.mapPos ? attacker.mapPos.x : 0);
+                const animY = (attacker === this.gameState) ? this.gameState.playerPos.y : (attacker.mapPos ? attacker.mapPos.y : 0);
+                console.log(`[CombatManager] processAttack: PRE-AWAIT meleeSwing. Attacker: ${attackerNameForLog}, Type: meleeSwing, Pos: (${animX},${animY}), Duration: 300`);
+                console.log('[CombatManager] processAttack: About to play animation - meleeSwing for weapon:', (weapon ? weapon.name : 'unarmed'));
+                const attackerSprite = (attacker === this.gameState) ? '☻' : (attacker.sprite || '?');
+                const attackerColor = (attacker === this.gameState) ? 'green' : (attacker.color || 'white');
+                window.animationManager.playAnimation('meleeSwing', {
+                    attacker: attacker,
+                    x: animX,
+                    y: animY,
+                    originalSprite: attackerSprite,
+                    originalColor: attackerColor,
+                    duration: 600
+                });
+                // Note: MeleeSwing is not awaited by default in this structure, it plays and resolves.
+                // If whipCrack needs awaiting, this overall block might need adjustment or rely on nextTurn's animation check.
+            }
         }
-        // --- END MELEE SWING ANIMATION ---
+        // --- END MELEE SWING ANIMATION / WHIP CRACK ANIMATION ---
 
         // --- THROWING ANIMATION ---
         if (weapon && weapon.type && weapon.type.includes("thrown") && window.animationManager) {
@@ -1181,16 +1200,128 @@
                 window.animationManager.playAnimation('rangedBullet', {
                     startPos: { ...attackerPosition },
                     endPos: { ...defenderPosition },
-                    sprite: '*',
-                    color: 'yellow', // Standard bullet color
-                    duration: 400, // Short duration for quick bullet travel
+                    sprite: weapon.projectileSprite || '*', // Use item's sprite or default (Jules)
+                    color: weapon.projectileColor || 'yellow', // Use item's color or default (Jules)
+                    duration: 400,
                     attacker: attacker,
                     defender: defender
                 });
-                console.log('[CombatManager] processAttack: Finished awaiting animation - rangedBullet');
+                // RangedBulletAnimation is not awaited by default here.
             }
         }
         // --- END RANGED BULLET ANIMATION ---
+
+        // --- FLAMETHROWER ANIMATION TRIGGER (Jules) ---
+        else if (weapon && weapon.id === 'flamethrower' && window.animationManager) {
+            const attackerPosition = (attacker === this.gameState) ? this.gameState.playerPos : (attacker.mapPos || this.gameState.attackerMapPos);
+            // Target position for flamethrower is the tile the defender is on, or the targeted tile.
+            const targetPosition = this.gameState.defenderMapPos || (defender ? defender.mapPos : null) || this.gameState.pendingCombatAction.targetTile;
+
+            if (attackerPosition && targetPosition) {
+                console.log('[CombatManager] processAttack: About to play animation - flamethrower');
+                window.animationManager.playAnimation('flamethrower', {
+                    attacker: attacker,
+                    targetPos: targetPosition, // Tile position the flame is aimed at
+                    duration: 1500, // Duration of the flame effect itself
+                    particleSpawnRate: 10,
+                    particleLifetime: 500,
+                    coneAngle: Math.PI / 6, // 30 degree cone
+                    maxRange: 6 // Max range of flame particles in tiles
+                });
+            }
+        }
+        // --- END FLAMETHROWER ANIMATION TRIGGER ---
+
+        // --- TASER/STUN GUN ANIMATION TRIGGER (Jules) ---
+        else if (weapon && (weapon.id === 'taser' || weapon.id === 'stun_gun_melee') && window.animationManager && defender) {
+            const isMeleeTaser = weapon.id === 'stun_gun_melee';
+            console.log(`[CombatManager] processAttack: About to play animation - taser (melee: ${isMeleeTaser})`);
+            window.animationManager.playAnimation('taser', {
+                attacker: attacker,
+                defender: defender,
+                duration: 500, // Short, sharp effect
+                isMelee: isMeleeTaser
+            });
+        }
+        // --- END TASER/STUN GUN ANIMATION TRIGGER ---
+
+        // --- GAS CLOUD / CHEMICAL SPRAY ANIMATION TRIGGER (Jules) ---
+        else if (weapon && (weapon.id === 'smoke_grenade_thrown' || weapon.id === 'tear_gas_grenade_thrown' || weapon.id === 'pepper_spray') && window.animationManager) {
+            let cloudParams = {
+                attacker: attacker, // Needed for cone direction if pepper spray
+                duration: 5000, // General cloud persistence
+                activeSpawningDuration: 1000, // How long it actively grows/emits
+                particleSpriteOptions: ['░', '▒', '▓'],
+                particleLifetime: 4000,
+                expansionSpeed: 0.03,
+                spawnRate: 15
+            };
+
+            if (weapon.id === 'smoke_grenade_thrown') {
+                cloudParams.centerPos = this.gameState.defenderMapPos || (defender ? defender.mapPos : null) || this.gameState.pendingCombatAction.targetTile || attacker.mapPos;
+                cloudParams.maxRadius = (weapon.burstRadiusFt || 20) / 5; // Convert feet to tiles, default 4 tiles
+                cloudParams.particleColor = 'grey';
+                console.log('[CombatManager] processAttack: About to play animation - gasCloud (Smoke)');
+                window.animationManager.playAnimation('gasCloud', cloudParams);
+            } else if (weapon.id === 'tear_gas_grenade_thrown') {
+                cloudParams.centerPos = this.gameState.defenderMapPos || (defender ? defender.mapPos : null) || this.gameState.pendingCombatAction.targetTile || attacker.mapPos;
+                cloudParams.maxRadius = (weapon.burstRadiusFt || 20) / 5;
+                cloudParams.particleColor = 'yellow'; // Or a sickly green
+                cloudParams.particleSpriteOptions = ['%', '§'];
+                console.log('[CombatManager] processAttack: About to play animation - gasCloud (Tear Gas)');
+                window.animationManager.playAnimation('gasCloud', cloudParams);
+            } else if (weapon.id === 'pepper_spray') {
+                // Pepper spray is a directed cone from the attacker
+                cloudParams.centerPos = (attacker === this.gameState) ? this.gameState.playerPos : attacker.mapPos;
+                cloudParams.coneDirection = this.gameState.defenderMapPos || (defender ? defender.mapPos : null); // Target tile determines direction
+                if (!cloudParams.coneDirection) { // If no specific target tile, spray forward from attacker (e.g. based on attacker orientation if available, or default)
+                    // This part would need attacker orientation or a default direction.
+                    // For now, if no defenderMapPos, it might not spray correctly.
+                    // Let's assume defenderMapPos is usually set for aimed attacks.
+                    console.warn("[CombatManager] Pepper spray used without a clear target direction for cone.");
+                    // Fallback: make it a small radial burst around attacker if no direction
+                    cloudParams.coneDirection = { x: cloudParams.centerPos.x + 1, y: cloudParams.centerPos.y }; // Default right
+                }
+                cloudParams.maxRadius = 1.5; // Small cone "length"
+                cloudParams.duration = 1500;
+                cloudParams.activeSpawningDuration = 500;
+                cloudParams.particleLifetime = 1000;
+                cloudParams.particleColor = 'orange';
+                cloudParams.particleSpriteOptions = ['.', ':', ';'];
+                cloudParams.coneAngle = Math.PI / 6; // 30 degree cone
+                cloudParams.spawnRate = 20;
+                console.log('[CombatManager] processAttack: About to play animation - gasCloud (Pepper Spray Cone)');
+                window.animationManager.playAnimation('gasCloud', cloudParams);
+            }
+        }
+        // --- END GAS CLOUD / CHEMICAL SPRAY ANIMATION TRIGGER ---
+
+        // --- LIQUID SPLASH ANIMATION TRIGGER (Jules for Acid) ---
+        if (weapon && weapon.id === 'acid_mild_thrown' && window.animationManager) {
+            // Determine impact position: if there's a defender at a tile, use that.
+            // Otherwise, use the target tile from pendingCombatAction if it's a ground target.
+            const impactPos = (defender && defender.mapPos) ?
+                { ...defender.mapPos } :
+                (this.gameState.pendingCombatAction.targetTile ?
+                    { ...this.gameState.pendingCombatAction.targetTile } :
+                    null);
+
+            if (impactPos) {
+                console.log('[CombatManager] processAttack: About to play animation - liquidSplash (Acid)');
+                // This animation plays after the ThrowingAnimation (triggered earlier for thrown weapons)
+                // and conceptually at the moment of impact/damage.
+                window.animationManager.playAnimation('liquidSplash', {
+                    impactPos: impactPos,
+                    duration: 800, // Duration for splash and potential sizzle
+                    splashSprites: ['∴', '※', '*', '.'], // Acidic splash sprites
+                    sizzleSprites: ['.', '◦', ' '], // Sizzle/fade effect
+                    color: 'limegreen' // Acidic green color
+                });
+            } else {
+                console.warn('[CombatManager] Acid thrown but no clear impact position determined for splash animation.');
+            }
+        }
+        // --- END LIQUID SPLASH ANIMATION TRIGGER ---
 
         if (this.gameState.pendingCombatAction.actionType === "attack") {
             if (attacker === this.gameState) {
@@ -1365,9 +1496,34 @@
         let explosionProcessed = false;
         let determinedImpactTile = null;
 
+        // --- LAUNCHER PROJECTILE ANIMATION (Jules) ---
+        // Check if it's a launcher that's not thrown (i.e., fired like a rifle)
+        // and has explosive properties, but before processing the explosion itself.
+        if (isImpactLauncher && !isThrownExplosive && weapon && window.animationManager && explosiveProperties && explosiveProperties.burstRadiusFt > 0) {
+            const attackerPosition = (attacker === this.gameState) ? this.gameState.playerPos : (attacker.mapPos || this.gameState.attackerMapPos);
+            const defenderPosition = (defender === this.gameState) ? this.gameState.playerPos : (defender.mapPos || this.gameState.defenderMapPos);
+
+            if (attackerPosition && defenderPosition) {
+                console.log('[CombatManager] processAttack: About to play animation - launcherProjectile for weapon:', weapon.name);
+                // Await the projectile animation before proceeding to explosion
+                await window.animationManager.playAnimation('launcherProjectile', {
+                    startPos: { ...attackerPosition },
+                    endPos: { ...defenderPosition },
+                    sprite: weapon.projectileSprite || '►', // Use sprite from item.json or default
+                    color: weapon.projectileColor || 'orange', // Use color from item.json or default
+                    duration: 600, // Duration for projectile travel
+                    attacker: attacker,
+                    defender: defender // For context if needed by animation
+                });
+                console.log('[CombatManager] processAttack: Finished awaiting animation - launcherProjectile');
+            }
+        }
+        // --- END LAUNCHER PROJECTILE ANIMATION ---
+
+
         if (explosiveProperties && explosiveProperties.burstRadiusFt > 0) {
             let explosionReason = "";
-            if (isThrownExplosive) {
+            if (isThrownExplosive) { // For thrown explosives, the ThrowingAnimation is already played earlier
                 determinedImpactTile = this.gameState.pendingCombatAction.targetTile ||
                     (defender && defender.mapPos) ||
                     (attacker === this.gameState ? this.gameState.playerPos : (attacker.mapPos || this.gameState.playerPos));
@@ -1492,6 +1648,26 @@
         }
 
         if (hit && defender && defender.health && !explosionProcessed) { // Check if target was hit and is a defender (not just a tile)
+            // --- MOLOTOV COCKTAIL FIRE EFFECT (Jules) ---
+            if (weapon && weapon.id === 'molotov_cocktail_thrown' && window.animationManager) {
+                const impactTileForMolotov = defender.mapPos || this.gameState.defenderMapPos || this.gameState.pendingCombatAction.targetTile;
+                if (impactTileForMolotov) {
+                    logToConsole(`INFO: Molotov cocktail ${weapon.name} shatters and ignites at X:${impactTileForMolotov.x}, Y:${impactTileForMolotov.y}.`, 'orange');
+                    window.animationManager.playAnimation('explosion', {
+                        centerPos: { ...impactTileForMolotov },
+                        radius: 1, // Small radius for a puddle of fire
+                        explosionSprites: ['~', '≈', '*', '#'], // Fire-like sprites
+                        color: 'orange', // Predominantly orange/red
+                        duration: 1500, // Burning duration
+                        sourceWeapon: weapon,
+                        attacker: attacker // Added attacker
+                    });
+                    // Note: The actual fire damage over time or ground effect would need separate game logic.
+                    // This just adds the visual animation.
+                }
+            }
+            // --- END MOLOTOV COCKTAIL FIRE EFFECT ---
+
             const finalTargetPartKey = actualTargetBodyPartForDamage.toLowerCase().replace(/\s/g, ''); // Normalize key
             if (defender.health[finalTargetPartKey] && defender.health[finalTargetPartKey].current <= 0) {
                 logToConsole(`CRITICAL DAMAGE (Post-Direct Attack): ${defenderName}'s ${finalTargetPartKey} is destroyed!`, defender === this.gameState ? 'red' : 'orangered');
@@ -1871,6 +2047,21 @@
             defender.statusEffects.grappledBy = (attacker === this.gameState) ? "player" : (attacker.id || "npc"); // Store who is grappling
 
             logToConsole(`RESULT: Grapple Succeeded! ${defenderDisplayName} is grappled by ${attackerDisplayName}.`, attacker === this.gameState ? 'lightgreen' : 'orange');
+
+            // --- GRAPPLE ANIMATION TRIGGER (Jules) ---
+            if (window.animationManager) {
+                console.log('[CombatManager] processGrapple: About to play animation - grapple');
+                window.animationManager.playAnimation('grapple', {
+                    attacker: attacker,
+                    defender: defender,
+                    duration: 800 // Duration for the grapple hold visual
+                });
+                // Note: processGrapple is not async, so this animation will play,
+                // and the game flow continues. The animation itself will resolve.
+                // nextTurn() has a loop to wait for animations if needed.
+            }
+            // --- END GRAPPLE ANIMATION TRIGGER ---
+
         } else {
             logToConsole("RESULT: Grapple Failed!", attacker === this.gameState ? 'orange' : 'lightgreen');
         }

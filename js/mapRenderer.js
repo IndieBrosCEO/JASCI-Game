@@ -992,6 +992,60 @@ window.mapRenderer = {
                             }
                         }
                     }
+                } else if (anim.type === 'flamethrower') { // Added by Jules for Flamethrower
+                    if (anim.flameParticles && anim.flameParticles.length > 0) {
+                        anim.flameParticles.forEach(particle => {
+                            const particleX = Math.floor(particle.x);
+                            const particleY = Math.floor(particle.y);
+                            // W and H are map dimensions, available in this scope
+                            if (particleX >= 0 && particleX < W && particleY >= 0 && particleY < H) {
+                                const cachedCell = gameState.tileCache[particleY]?.[particleX];
+                                if (cachedCell && cachedCell.span) {
+                                    // Render particle on top
+                                    cachedCell.span.textContent = particle.sprite;
+                                    cachedCell.span.style.color = particle.color;
+                                    // We don't permanently update the tileCache's main sprite/color with the particle's,
+                                    // as particles are transient and multiple could be on one tile.
+                                    // The next full tile render will restore the base tile if no particle is there.
+                                }
+                            }
+                        });
+                    }
+                } else if (anim.type === 'gasCloud') { // Added by Jules for GasCloudAnimation
+                    if (anim.particles && anim.particles.length > 0) {
+                        anim.particles.forEach(particle => {
+                            if (particle.opacity <= 0) return; // Skip fully transparent particles
+
+                            const particleX = Math.floor(particle.x);
+                            const particleY = Math.floor(particle.y);
+                            // W and H are map dimensions, available in this scope
+                            if (particleX >= 0 && particleX < W && particleY >= 0 && particleY < H) {
+                                const cachedCell = gameState.tileCache[particleY]?.[particleX];
+                                if (cachedCell && cachedCell.span) {
+                                    // Render particle on top
+                                    cachedCell.span.textContent = particle.sprite;
+                                    // Apply opacity to the color. Assumes color is hex.
+                                    // This is a simple way; proper RGBA handling with canvas would be better.
+                                    // For DOM elements, we might need to set span.style.opacity if partial char transparency is hard.
+                                    // However, for ASCII, changing color intensity based on opacity is common.
+                                    let r = parseInt(particle.color.substring(1, 3), 16);
+                                    let g = parseInt(particle.color.substring(3, 5), 16);
+                                    let b = parseInt(particle.color.substring(5, 7), 16);
+
+                                    // Blend with a background color (e.g., black or the tile's actual current bg)
+                                    // For simplicity, let's assume blending towards a dark grey for fading.
+                                    // A more accurate approach would get the current tile's background from cache/map.
+                                    const bgR = 50, bgG = 50, bgB = 50; // Dark grey
+
+                                    r = Math.floor(r * particle.opacity + bgR * (1 - particle.opacity));
+                                    g = Math.floor(g * particle.opacity + bgG * (1 - particle.opacity));
+                                    b = Math.floor(b * particle.opacity + bgB * (1 - particle.opacity));
+
+                                    cachedCell.span.style.color = `rgb(${r},${g},${b})`;
+                                }
+                            }
+                        });
+                    }
                 } else if (anim.sprite) { // Handle other single-sprite animations
                     const animX = Math.floor(anim.x);
                     const animY = Math.floor(anim.y);

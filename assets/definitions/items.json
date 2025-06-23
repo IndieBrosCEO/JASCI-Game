@@ -937,7 +937,9 @@
     "rateOfFire": "Single",
     "magazineSize": "1 int.",
     "burstRadiusFt": 10,
-    "explodesOnImpact": true
+    "explodesOnImpact": true,
+    "projectileSprite": "►",
+    "projectileColor": "darkorange"
   },
   {
     "id": "m79_grenade_launcher",
@@ -956,12 +958,16 @@
       "modern",
       "launcher_treated_as_rifle"
     ],
-    "damage": "See Grenade",
-    "damageType": "Explosive",
+    "quantity": 1,
+    "damage": "3d6",
+    "damageType": "Slashing",
+    "burstRadiusFt": 10,
     "rateOfFire": "Single",
     "magazineSize": "1 int.",
     "ammoType": "40mm_grenade",
-    "explodesOnImpact": true
+    "explodesOnImpact": true,
+    "projectileSprite": "●",
+    "projectileColor": "olive"
   },
   {
     "id": "compound_bow",
@@ -983,7 +989,9 @@
     "damageType": "Piercing",
     "rateOfFire": "Single",
     "magazineSize": "N/A",
-    "ammoType": "arrow"
+    "ammoType": "arrow",
+    "projectileSprite": "|",
+    "projectileColor": "burlywood"
   },
   {
     "id": "crossbow",
@@ -1005,7 +1013,9 @@
     "damageType": "Piercing",
     "rateOfFire": "Single",
     "magazineSize": "1 int.",
-    "ammoType": "crossbow_bolt"
+    "ammoType": "crossbow_bolt",
+    "projectileSprite": "-",
+    "projectileColor": "sienna"
   },
   {
     "id": "flamethrower",
