@@ -81,6 +81,15 @@ class AnimationManager {
             case 'explosion':
                 animationInstance = new ExplosionAnimation(animationType, data, this.gameState);
                 break;
+            case 'grapple': // Added by Jules
+                animationInstance = new GrappleAnimation(animationType, data, this.gameState);
+                break;
+            case 'flamethrower': // Added by Jules
+                animationInstance = new FlamethrowerAnimation(animationType, data, this.gameState);
+                break;
+            case 'taser': // Added by Jules
+                animationInstance = new TaserAnimation(animationType, data, this.gameState);
+                break;
             default:
                 console.warn(`AnimationManager: Unknown animation type: ${animationType}. Using generic Animation.`);
                 animationInstance = new Animation(animationType, data, this.gameState);
@@ -465,6 +474,243 @@ class ExplosionAnimation extends Animation {
     }
 }
 window.ExplosionAnimation = ExplosionAnimation; // Export ExplosionAnimation
+
+// --- GrappleAnimation Class ---
+class GrappleAnimation extends Animation {
+    constructor(type, data, gameStateRef) {
+        // data: attacker, defender, duration
+        const attackerPos = data.attacker && data.attacker.mapPos ? data.attacker.mapPos : { x: 0, y: 0 };
+        if (!(data.attacker && data.attacker.mapPos)) {
+            console.warn("[GrappleAnimation] Attacker mapPos is undefined. Defaulting to {x:0, y:0}. Attacker:", data.attacker);
+        }
+        super(type, { ...data, x: attackerPos.x, y: attackerPos.y }, gameStateRef);
+
+        this.attacker = data.attacker;
+        this.defender = data.defender;
+        this.grappleSprites = ['⊃', '⊂', '∪', '∩']; // Symbols representing grappling/holding
+        this.currentSpriteIndex = 0;
+        this.frameDuration = Math.floor(this.duration / (this.grappleSprites.length * 2)); // Cycle through sprites and then hold
+        this.lastFrameTime = this.startTime;
+        this.color = 'grey'; // Grapple effect color
+        this.visible = true;
+
+        // Position will be between attacker and defender, or on defender
+        // Safeguard mapPos access (Jules)
+        const safeAttackerPos = this.attacker && this.attacker.mapPos ? this.attacker.mapPos : { x: attackerPos.x, y: attackerPos.y }; // Use initial attackerPos as fallback
+        const safeDefenderPos = this.defender && this.defender.mapPos ? this.defender.mapPos : safeAttackerPos; // Default defender to attacker if missing
+
+        if (!(this.attacker && this.attacker.mapPos)) {
+            console.warn("[GrappleAnimation] Attacker mapPos undefined during position calculation. Using initial animation x,y or fallback.");
+        }
+        if (!(this.defender && this.defender.mapPos)) {
+            console.warn("[GrappleAnimation] Defender mapPos undefined during position calculation. Defaulting to attacker's position.");
+        }
+
+        this.x = (safeAttackerPos.x + safeDefenderPos.x) / 2;
+        this.y = (safeAttackerPos.y + safeDefenderPos.y) / 2;
+        this.sprite = this.grappleSprites[0];
+        const attackerName = this.attacker ? (this.attacker.name || this.attacker.id) : "Unknown Attacker";
+        const defenderName = this.defender ? (this.defender.name || this.defender.id) : "Unknown Defender";
+        console.log(`[GrappleAnimation CONSTRUCTOR] Created for ${attackerName} and ${defenderName} at (${this.x.toFixed(2)}, ${this.y.toFixed(2)})`);
+    }
+
+    update() {
+        if (this.finished) {
+            this.visible = false;
+            return;
+        }
+
+        const now = Date.now();
+        // const elapsedTime = now - this.startTime; // elapsedTime not used directly here after change
+
+        // Animation logic: cycle through sprites quickly, then hold the last one
+        if (this.currentSpriteIndex < this.grappleSprites.length - 1) { // Still cycling
+            if (now - this.lastFrameTime >= this.frameDuration) {
+                this.currentSpriteIndex++;
+                this.sprite = this.grappleSprites[this.currentSpriteIndex];
+                this.lastFrameTime = now;
+            }
+        } else { // Holding the last sprite
+            this.sprite = this.grappleSprites[this.grappleSprites.length - 1];
+            // Optional: could add a slight visual pulse or something here if desired
+        }
+
+        // Update position to stay between/on entities if they move (simplified)
+        // Safeguard mapPos access (Jules)
+        const currentAttackerPos = this.attacker && this.attacker.mapPos ? this.attacker.mapPos : { x: this.x, y: this.y }; // Fallback to current anim pos
+        const currentDefenderPos = this.defender && this.defender.mapPos ? this.defender.mapPos : currentAttackerPos; // Default to attacker
+
+        if (this.attacker && !this.attacker.mapPos) {
+            // console.warn("[GrappleAnimation UPDATE] Attacker mapPos undefined."); // Potentially spammy
+        }
+        if (this.defender && !this.defender.mapPos) {
+            // console.warn("[GrappleAnimation UPDATE] Defender mapPos undefined."); // Potentially spammy
+        }
+
+        this.x = (currentAttackerPos.x + currentDefenderPos.x) / 2;
+        this.y = (currentAttackerPos.y + currentDefenderPos.y) / 2;
+        this.visible = true;
+
+        super.update(); // Handles finishing based on duration
+    }
+}
+window.GrappleAnimation = GrappleAnimation;
+
+// --- FlamethrowerAnimation Class ---
+class FlamethrowerAnimation extends Animation {
+    constructor(type, data, gameStateRef) {
+        // data: attacker, targetPos (or direction), duration, ?particlesPerFrame
+        super(type, { ...data, x: data.attacker.mapPos.x, y: data.attacker.mapPos.y }, gameStateRef);
+        this.attackerPos = data.attacker.mapPos;
+        this.targetPos = data.targetPos; // This should be the tile the flamethrower is aimed at
+        this.flameParticles = []; // Array to hold individual flame particle objects
+        this.particleSpawnRate = data.particleSpawnRate || 5; // How many particles per update call (if active)
+        this.particleLifetime = data.particleLifetime || 300; // ms
+        this.flameSpriteOptions = ['░', '▒', '▓', '~'];
+        this.flameColorOptions = ['red', 'orange', 'yellow'];
+        this.coneAngle = data.coneAngle || Math.PI / 4; // e.g., 45 degrees spread
+        this.maxRange = data.maxRange || 5; // Max distance flame particles travel
+
+        this.x = this.attackerPos.x; // Animation anchor point is the attacker
+        this.y = this.attackerPos.y;
+        this.sprite = ''; // Not a single sprite, but a collection of particles
+        this.visible = true; // The animation effect is visible, particles manage their own visibility
+        console.log(`[FlamethrowerAnimation CONSTRUCTOR] Created for ${data.attacker.name || data.attacker.id} targeting towards (${this.targetPos.x}, ${this.targetPos.y})`);
+    }
+
+    update() {
+        if (this.finished) {
+            this.visible = this.flameParticles.length > 0; // Animation is visible if particles are still active
+            return;
+        }
+        const now = Date.now();
+
+        // Spawn new particles if the animation (e.g. firing duration) is active
+        if (now - this.startTime < this.duration) {
+            for (let i = 0; i < this.particleSpawnRate; i++) {
+                const angleOffset = (Math.random() - 0.5) * this.coneAngle;
+                const baseAngle = Math.atan2(this.targetPos.y - this.attackerPos.y, this.targetPos.x - this.attackerPos.x);
+                const particleAngle = baseAngle + angleOffset;
+
+                this.flameParticles.push({
+                    startX: this.attackerPos.x,
+                    startY: this.attackerPos.y,
+                    x: this.attackerPos.x,
+                    y: this.attackerPos.y,
+                    sprite: this.flameSpriteOptions[Math.floor(Math.random() * this.flameSpriteOptions.length)],
+                    color: this.flameColorOptions[Math.floor(Math.random() * this.flameColorOptions.length)],
+                    spawnTime: now,
+                    angle: particleAngle,
+                    speed: 0.1 + Math.random() * 0.1, // Tiles per update call for particle
+                    currentRange: 0
+                });
+            }
+        }
+
+        // Update existing particles
+        for (let i = this.flameParticles.length - 1; i >= 0; i--) {
+            const p = this.flameParticles[i];
+            const particleElapsedTime = now - p.spawnTime;
+
+            if (particleElapsedTime >= this.particleLifetime || p.currentRange >= this.maxRange) {
+                this.flameParticles.splice(i, 1); // Remove old particles
+                continue;
+            }
+
+            const moveDistance = p.speed * (1 - particleElapsedTime / this.particleLifetime); // Slow down over time
+            p.x += Math.cos(p.angle) * moveDistance;
+            p.y += Math.sin(p.angle) * moveDistance;
+            p.currentRange += moveDistance;
+        }
+
+        // The animation itself is "finished" when its main duration is up.
+        // Particles might live longer, but the spawning stops.
+        // The AnimationManager will remove this FlamethrowerAnimation instance once its main duration is complete.
+        // The rendering of remaining particles will be handled by the fact that this.flameParticles is still populated
+        // and mapRenderer will iterate through activeAnimations and call their draw method (which we'll need to ensure mapRenderer does).
+        super.update();
+
+        if (this.finished && this.flameParticles.length === 0) {
+             this.visible = false; // Only truly invisible when all particles are gone AND duration is up.
+        }
+    }
+}
+window.FlamethrowerAnimation = FlamethrowerAnimation;
+
+
+// --- TaserAnimation Class ---
+class TaserAnimation extends Animation {
+    constructor(type, data, gameStateRef) {
+        // data: attacker, defender (target entity), duration, isMelee
+        super(type, { ...data, x: data.attacker.mapPos.x, y: data.attacker.mapPos.y }, gameStateRef);
+        this.attacker = data.attacker;
+        this.defender = data.defender;
+        this.isMelee = data.isMelee; // To differentiate between ranged taser and contact stun gun
+
+        this.boltSprites = ['~', '↯', '-']; // Electrical bolt/spark sprites
+        this.currentSpriteIndex = 0;
+        this.frameDuration = 50; // Fast flicker
+        this.lastFrameTime = this.startTime;
+
+        this.color = 'cyan';
+        this.visible = true;
+
+        if (this.isMelee) {
+            // For melee, effect is on the defender
+            this.x = this.defender.mapPos.x;
+            this.y = this.defender.mapPos.y;
+            this.sprite = this.boltSprites[0];
+        } else {
+            // For ranged, it's a projectile, then effect on defender
+            this.startPos = data.attacker.mapPos;
+            this.endPos = data.defender.mapPos;
+            this.x = this.startPos.x;
+            this.y = this.startPos.y;
+            this.sprite = '*'; // Initial projectile sprite
+        }
+        console.log(`[TaserAnimation CONSTRUCTOR] Created. Melee: ${this.isMelee}`);
+    }
+
+    update() {
+        if (this.finished) {
+            this.visible = false;
+            return;
+        }
+        const now = Date.now();
+        const elapsedTime = now - this.startTime;
+        let progress = elapsedTime / this.duration;
+        if (progress > 1) progress = 1;
+
+        if (this.isMelee) {
+            // Effect on defender
+            this.x = this.defender.mapPos.x;
+            this.y = this.defender.mapPos.y;
+            if (now - this.lastFrameTime >= this.frameDuration) {
+                this.currentSpriteIndex = (this.currentSpriteIndex + 1) % this.boltSprites.length;
+                this.sprite = this.boltSprites[this.currentSpriteIndex];
+                this.lastFrameTime = now;
+            }
+        } else { // Ranged Taser
+            const impactTimeRatio = 0.6; // 60% of duration for travel, 40% for effect on target
+            if (progress < impactTimeRatio) { // Projectile travel
+                this.x = this.startPos.x + (this.endPos.x - this.startPos.x) * (progress / impactTimeRatio);
+                this.y = this.startPos.y + (this.endPos.y - this.startPos.y) * (progress / impactTimeRatio);
+                this.sprite = '~'; // Traveling bolt sprite
+            } else { // Effect on target
+                this.x = this.endPos.x;
+                this.y = this.endPos.y;
+                if (now - this.lastFrameTime >= this.frameDuration) {
+                    this.currentSpriteIndex = (this.currentSpriteIndex + 1) % this.boltSprites.length;
+                    this.sprite = this.boltSprites[this.currentSpriteIndex];
+                    this.lastFrameTime = now;
+                }
+            }
+        }
+        this.visible = true;
+        super.update();
+    }
+}
+window.TaserAnimation = TaserAnimation;
 
 
 window.AnimationManager = AnimationManager;

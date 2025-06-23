@@ -1192,6 +1192,40 @@
         }
         // --- END RANGED BULLET ANIMATION ---
 
+            // --- FLAMETHROWER ANIMATION TRIGGER (Jules) ---
+            else if (weapon && weapon.id === 'flamethrower' && window.animationManager) {
+                const attackerPosition = (attacker === this.gameState) ? this.gameState.playerPos : (attacker.mapPos || this.gameState.attackerMapPos);
+                // Target position for flamethrower is the tile the defender is on, or the targeted tile.
+                const targetPosition = this.gameState.defenderMapPos || (defender ? defender.mapPos : null) || this.gameState.pendingCombatAction.targetTile;
+
+                if (attackerPosition && targetPosition) {
+                    console.log('[CombatManager] processAttack: About to play animation - flamethrower');
+                    window.animationManager.playAnimation('flamethrower', {
+                        attacker: attacker,
+                        targetPos: targetPosition, // Tile position the flame is aimed at
+                        duration: 1500, // Duration of the flame effect itself
+                        particleSpawnRate: 10,
+                        particleLifetime: 500,
+                        coneAngle: Math.PI / 6, // 30 degree cone
+                        maxRange: 6 // Max range of flame particles in tiles
+                    });
+                }
+            }
+            // --- END FLAMETHROWER ANIMATION TRIGGER ---
+
+            // --- TASER/STUN GUN ANIMATION TRIGGER (Jules) ---
+            else if (weapon && (weapon.id === 'taser' || weapon.id === 'stun_gun_melee') && window.animationManager && defender) {
+                const isMeleeTaser = weapon.id === 'stun_gun_melee';
+                console.log(`[CombatManager] processAttack: About to play animation - taser (melee: ${isMeleeTaser})`);
+                window.animationManager.playAnimation('taser', {
+                    attacker: attacker,
+                    defender: defender,
+                    duration: 500, // Short, sharp effect
+                    isMelee: isMeleeTaser
+                });
+            }
+            // --- END TASER/STUN GUN ANIMATION TRIGGER ---
+
         if (this.gameState.pendingCombatAction.actionType === "attack") {
             if (attacker === this.gameState) {
                 if (this.gameState.actionPointsRemaining <= 0) {
@@ -1492,6 +1526,26 @@
         }
 
         if (hit && defender && defender.health && !explosionProcessed) { // Check if target was hit and is a defender (not just a tile)
+            // --- MOLOTOV COCKTAIL FIRE EFFECT (Jules) ---
+            if (weapon && weapon.id === 'molotov_cocktail_thrown' && window.animationManager) {
+                const impactTileForMolotov = defender.mapPos || this.gameState.defenderMapPos || this.gameState.pendingCombatAction.targetTile;
+                if (impactTileForMolotov) {
+                    logToConsole(`INFO: Molotov cocktail ${weapon.name} shatters and ignites at X:${impactTileForMolotov.x}, Y:${impactTileForMolotov.y}.`, 'orange');
+                    window.animationManager.playAnimation('explosion', {
+                        centerPos: { ...impactTileForMolotov },
+                        radius: 1, // Small radius for a puddle of fire
+                        explosionSprites: ['~', '≈', '*', '#'], // Fire-like sprites
+                        color: 'orange', // Predominantly orange/red
+                        duration: 1500, // Burning duration
+                        sourceWeapon: weapon,
+                        attacker: attacker // Added attacker
+                    });
+                    // Note: The actual fire damage over time or ground effect would need separate game logic.
+                    // This just adds the visual animation.
+                }
+            }
+            // --- END MOLOTOV COCKTAIL FIRE EFFECT ---
+
             const finalTargetPartKey = actualTargetBodyPartForDamage.toLowerCase().replace(/\s/g, ''); // Normalize key
             if (defender.health[finalTargetPartKey] && defender.health[finalTargetPartKey].current <= 0) {
                 logToConsole(`CRITICAL DAMAGE (Post-Direct Attack): ${defenderName}'s ${finalTargetPartKey} is destroyed!`, defender === this.gameState ? 'red' : 'orangered');
@@ -1871,6 +1925,21 @@
             defender.statusEffects.grappledBy = (attacker === this.gameState) ? "player" : (attacker.id || "npc"); // Store who is grappling
 
             logToConsole(`RESULT: Grapple Succeeded! ${defenderDisplayName} is grappled by ${attackerDisplayName}.`, attacker === this.gameState ? 'lightgreen' : 'orange');
+
+            // --- GRAPPLE ANIMATION TRIGGER (Jules) ---
+            if (window.animationManager) {
+                console.log('[CombatManager] processGrapple: About to play animation - grapple');
+                window.animationManager.playAnimation('grapple', {
+                    attacker: attacker,
+                    defender: defender,
+                    duration: 800 // Duration for the grapple hold visual
+                });
+                // Note: processGrapple is not async, so this animation will play,
+                // and the game flow continues. The animation itself will resolve.
+                // nextTurn() has a loop to wait for animations if needed.
+            }
+            // --- END GRAPPLE ANIMATION TRIGGER ---
+
         } else {
             logToConsole("RESULT: Grapple Failed!", attacker === this.gameState ? 'orange' : 'lightgreen');
         }

@@ -992,6 +992,25 @@ window.mapRenderer = {
                             }
                         }
                     }
+                } else if (anim.type === 'flamethrower') { // Added by Jules for Flamethrower
+                    if (anim.flameParticles && anim.flameParticles.length > 0) {
+                        anim.flameParticles.forEach(particle => {
+                            const particleX = Math.floor(particle.x);
+                            const particleY = Math.floor(particle.y);
+                            // W and H are map dimensions, available in this scope
+                            if (particleX >= 0 && particleX < W && particleY >= 0 && particleY < H) {
+                                const cachedCell = gameState.tileCache[particleY]?.[particleX];
+                                if (cachedCell && cachedCell.span) {
+                                    // Render particle on top
+                                    cachedCell.span.textContent = particle.sprite;
+                                    cachedCell.span.style.color = particle.color;
+                                    // We don't permanently update the tileCache's main sprite/color with the particle's,
+                                    // as particles are transient and multiple could be on one tile.
+                                    // The next full tile render will restore the base tile if no particle is there.
+                                }
+                            }
+                        });
+                    }
                 } else if (anim.sprite) { // Handle other single-sprite animations
                     const animX = Math.floor(anim.x);
                     const animY = Math.floor(anim.y);
