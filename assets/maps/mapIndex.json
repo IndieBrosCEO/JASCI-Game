@@ -1,5 +1,12 @@
 ﻿[
   {
+    "id": "Valley",
+    "name": "Valley"
+  },{
+    "id": "Slope",
+    "name": "Slope"
+  },
+  {
     "id": "portals",
     "name": "Portals"
   },

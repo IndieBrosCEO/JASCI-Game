@@ -51,7 +51,7 @@ h1 {
     margin: 10px 0;
 }
 
-.palette {
+.palette-tile {
     display: inline-block;
     margin-right: 5px;
     padding: 5px;
@@ -62,7 +62,7 @@ h1 {
     cursor: pointer;
 }
 
-    .palette.selected {
+    .palette-tile.selected {
         background-color: #555;
     }
 

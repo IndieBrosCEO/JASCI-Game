@@ -1,0 +1,767 @@
+// mapMaker/eventHandlers.js
+"use strict";
+
+// Data Management Imports
+import { getMapData, snapshot, undo as undoData, redo as redoData, setPlayerStart as setPlayerStartInData, addPortalToMap, removePortalFromMap, updatePortalInMap, getNextPortalId as getNextPortalIdFromData, deleteZLevel as deleteZLevelFromData } from './mapDataManager.js';
+
+// Tile Logic Imports
+import { placeTile, ensureTileIsObject, getTopmostTileAt } from './tileManager.js'; // Assuming getTopmostTileAt is in tileManager
+
+// UI Update Function Imports
+import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerStartDisplay, updateToolButtonUI, updateSelectedPortalInfoUI, updateContainerInventoryUI, updateLockPropertiesUI, updateTilePropertyEditorUI, getRect3DDepth, updateUIFromLoadedMap, populateItemSelectDropdown } from './uiManager.js';
+
+// Tool Logic Imports
+import { handlePlayerStartTool, handlePortalToolClick, handleSelectInspectTool, floodFill2D, floodFill3D, drawLine, drawRect, defineStamp, applyStamp } from './toolManager.js';
+
+// Configuration and Utilities
+import { LAYER_TYPES, LOG_MSG, ERROR_MSG, DEFAULT_3D_DEPTH } from './config.js';
+import { logToConsole } from './config.js'; // Assuming logToConsole is also in config.js or a utility module
+
+// Import/Export Logic
+import { convertAndSetLoadedMapData, exportMapFile } from './importExport.js';
+
+
+// --- Module-Scoped State References (to be initialized) ---
+let assetManagerInstance = null; // Reference to the global AssetManager
+let appState = null;             // Holds currentTool, currentTileId, selections, grid dimensions, current Z, etc.
+// This will replace individual currentUiState and mapContext type variables.
+
+// --- Initialization ---
+/**
+ * Initializes the event handling module with necessary application state and asset manager.
+ * Sets up all static DOM event listeners.
+ * @param {object} assetManager - The main AssetManager instance.
+ * @param {object} applicationState - The central object holding UI and map context state.
+ */
+export function initializeEventHandlers(assetManager, applicationState) {
+    assetManagerInstance = assetManager;
+    appState = applicationState;
+
+    // Grid Interaction (Mouse move/leave are on the container; mousedown/up are delegated from cells by UIManager)
+    const gridContainer = document.getElementById("grid");
+    if (gridContainer) {
+        gridContainer.addEventListener("mousemove", handleGridMouseMove);
+        gridContainer.addEventListener("mouseleave", handleGridMouseLeave);
+    } else {
+        console.error("EventHandlers: Grid container not found. Mouse move/leave events will not work.");
+    }
+
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    setupButtonEventListeners();
+    logToConsole("Event handlers initialized.");
+}
+
+// --- Grid Cell Mouse Event Handlers (called by UIManager when cells are created/clicked) ---
+
+export function handleCellMouseDown(event) {
+    const x = +event.target.dataset.x;
+    const y = +event.target.dataset.y;
+    // Z is taken from appState.currentEditingZ
+    const z = appState.currentEditingZ;
+    const mapData = getMapData();
+
+    // Common logic: Clear selections if not using a selection-type tool.
+    if (appState.currentTool !== "selectInspect" && appState.currentTool !== "portal") {
+        clearAllSelections(); // Helper function to clear selection states and update their UIs
+    }
+
+    // Interface for tool functions to interact with map context and UI rendering.
+    const toolInteractionInterface = {
+        getMapContext: () => ({
+            ensureLayersForZ: appState.ensureLayersForZ, // Assuming ensureLayersForZ is part of appState or accessible via it
+            gridWidth: appState.gridWidth,
+            gridHeight: appState.gridHeight
+        }),
+        getUIRenderers: () => ({
+            renderGrid: triggerFullGridRender,
+            updateAllEditorUIs: triggerAllEditorUIsUpdate
+        }),
+        // Potentially add access to assetManagerInstance if tools need it directly, though often passed
+    };
+
+    switch (appState.currentTool) {
+        case "brush":
+            snapshot(); // Create undo state
+            placeTile(x, y, z, appState.currentTileId, mapData, /* assetManagerInstance removed */ appState.ensureLayersForZ, appState.gridWidth, appState.gridHeight, triggerFullGridRender);
+            // Check if the placed tile is a container/lockable to auto-select for property editing
+            const placedTileInfo = getTopmostTileAt(x, y, z, mapData, assetManagerInstance);
+            if (placedTileInfo?.definition?.tags && (placedTileInfo.definition.tags.includes('container') || placedTileInfo.definition.tags.includes('door') || placedTileInfo.definition.tags.includes('window'))) {
+                appState.selectedTileForInventory = { x, y, z, layerName: placedTileInfo.layer };
+            } else {
+                appState.selectedTileForInventory = null;
+            }
+            updateContainerInventoryUI(appState.selectedTileForInventory, mapData); // Update only relevant UI
+            break;
+        case "playerStart":
+            handlePlayerStartTool(x, y, z, mapData, triggerFullGridRender, updatePlayerStartDisplay);
+            break;
+        case "portal":
+            handlePortalToolClick(x, y, z, mapData, appState, triggerFullGridRender, updateSelectedPortalInfoUI, clearAllSelections);
+            break;
+        case "selectInspect":
+            handleSelectInspectTool(x, y, z, mapData, appState, assetManagerInstance, toolInteractionInterface);
+            break;
+        case "fill":
+            floodFill2D(x, y, z, appState.currentTileId, mapData, assetManagerInstance, toolInteractionInterface);
+            clearAllSelections(); // Fill usually deselects
+            break;
+        case "fill3d":
+            floodFill3D(x, y, z, appState.currentTileId, mapData, assetManagerInstance, toolInteractionInterface);
+            clearAllSelections();
+            break;
+        case "line":
+        case "rect":
+        case "stamp":
+            if (appState.dragStart === null) {
+                appState.dragStart = { x, y, z }; // Store z for stamp copy start point
+                clearAllSelections(); // Start of a drag operation usually deselects other things
+            }
+            break;
+        default:
+            logToConsole(`Warning: Unknown tool '${appState.currentTool}' activated on mousedown.`);
+            snapshot(); // Fallback for unknown tools that might modify data
+            break;
+    }
+}
+
+export function handleCellMouseUp(event) {
+    const x = +event.target.dataset.x;
+    const y = +event.target.dataset.y;
+    const z = appState.currentEditingZ; // For line/rect, z is currentEditingZ. For stamp apply, it's also currentEditingZ.
+    const mapData = getMapData();
+
+    const toolInteractionInterface = {
+        getMapContext: () => ({ ensureLayersForZ: appState.ensureLayersForZ, gridWidth: appState.gridWidth, gridHeight: appState.gridHeight }),
+        getUIRenderers: () => ({ renderGrid: triggerFullGridRender })
+    };
+
+    // Only proceed if a drag was initiated for relevant tools, or if it's a stamp application.
+    if (appState.dragStart === null && appState.currentTool !== "stamp") return;
+
+    switch (appState.currentTool) {
+        case "line":
+            if (appState.dragStart) { // Ensure drag was started for line
+                drawLine(appState.dragStart.x, appState.dragStart.y, z, x, y, appState.currentTileId, mapData, assetManagerInstance, toolInteractionInterface);
+            }
+            break;
+        case "rect":
+            if (appState.dragStart) { // Ensure drag was started for rect
+                const depth = getRect3DDepth(); // Assumes UIManager.getRect3DDepth() exists and is correct
+                drawRect(appState.dragStart.x, appState.dragStart.y, z, x, y, depth, appState.currentTileId, mapData, assetManagerInstance, toolInteractionInterface);
+            }
+            break;
+        case "stamp":
+            const stampDepth = getRect3DDepth();
+            if (!appState.stampData3D && appState.dragStart) { // Define stamp phase
+                // Use appState.dragStart.z as the starting Z for copying from the map
+                defineStamp(appState.dragStart.x, appState.dragStart.y, appState.dragStart.z, x, y, stampDepth, mapData, appState, toolInteractionInterface);
+            } else if (appState.stampData3D) { // Apply stamp phase
+                applyStamp(x, y, z, appState.stampData3D, mapData, assetManagerInstance, toolInteractionInterface);
+            }
+            // For stamp, dragStart is cleared after defining. Applying doesn't use dragStart in the same way.
+            // If current logic is: drag to define, then click to apply, dragStart should be null for apply.
+            // If it's drag to define, then drag again to position & apply on mouseup, this needs adjustment.
+            // Assuming dragStart is for definition phase only here.
+            break;
+    }
+    appState.dragStart = null; // Clear drag start for line, rect, and stamp definition.
+    // Individual tool functions now call renderGrid if needed.
+}
+
+// --- Grid Container Mouse Event Handlers ---
+function handleGridMouseMove(event) {
+    if (appState.currentTool === "stamp" && appState.stampData3D) {
+        const cell = event.target.closest(".cell");
+        appState.previewPos = cell ? { x: +cell.dataset.x, y: +cell.dataset.y, z: +cell.dataset.z } : null;
+        triggerFullGridRender();
+    }
+    // Could add preview logic for line/rect drag here if desired.
+}
+
+function handleGridMouseLeave() {
+    if (appState.currentTool === "stamp") {
+        appState.previewPos = null; // Clear preview when mouse leaves grid
+        triggerFullGridRender();
+    }
+}
+
+// --- Global Keyboard Event Handler ---
+function handleGlobalKeyDown(event) {
+    const mapData = getMapData(); // Get fresh mapData for undo/redo context
+    // Handle Ctrl/Cmd + Z/Y for undo/redo
+    if (event.ctrlKey || event.metaKey) {
+        if (event.key.toLowerCase() === "z") {
+            event.preventDefault();
+            if (undoData((restoredMapData) => updateUIFromLoadedMap(restoredMapData, appState.currentEditingZ, appState.currentTool))) {
+                triggerFullGridRender();
+                triggerAllEditorUIsUpdate(); // Ensure editors reflect undone state
+            }
+        } else if (event.key.toLowerCase() === "y") {
+            event.preventDefault();
+            if (redoData((restoredMapData) => updateUIFromLoadedMap(restoredMapData, appState.currentEditingZ, appState.currentTool))) {
+                triggerFullGridRender();
+                triggerAllEditorUIsUpdate();
+            }
+        }
+        return; // Don't process other shortcuts if modifier was used for undo/redo
+    }
+
+    // Tool selection shortcuts (only if not typing in an input field)
+    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.isContentEditable) {
+        return;
+    }
+
+    let newTool = null;
+    switch (event.key.toLowerCase()) {
+        case "b": newTool = "brush"; break;
+        case "f": newTool = "fill"; break;
+        case "l": newTool = "line"; break;
+        case "r": newTool = "rect"; break;
+        case "s": newTool = "stamp"; break;
+        case "p": newTool = "portal"; break;
+        case "i": newTool = "selectInspect"; break;
+        case "e": // Eraser tile selection + brush tool
+            appState.currentTileId = ""; // Select eraser tile
+            updatePaletteSelectionUI(""); // Update palette UI
+            newTool = "brush"; // Switch to brush tool
+            break;
+        case "escape":
+            handleEscapeKey();
+            break;
+    }
+
+    if (newTool) {
+        appState.currentTool = newTool;
+        updateToolButtonUI(newTool);
+        // If switching to a non-selection tool, clear current selections
+        if (newTool !== "selectInspect" && newTool !== "portal") {
+            clearAllSelections();
+        }
+        logToConsole(`Tool switched to: ${newTool} via keyboard shortcut.`);
+        triggerFullGridRender(); // Update grid if selection highlights changed
+    }
+}
+
+function handleEscapeKey() {
+    if (appState.dragStart) {
+        appState.dragStart = null;
+        logToConsole("Drag operation cancelled.");
+        triggerFullGridRender(); // Remove any visual drag cues
+    } else if (appState.selectedPortal || appState.selectedNpc || appState.selectedTileForInventory || appState.selectedGenericTile) {
+        clearAllSelections();
+        logToConsole("All selections cleared via Escape key.");
+        triggerFullGridRender(); // Update visual selections on grid
+    } else if (appState.stampData3D) {
+        appState.stampData3D = null;
+        appState.previewPos = null;
+        logToConsole("Defined stamp data cleared via Escape key.");
+        triggerFullGridRender();
+    }
+}
+
+
+// --- Setup for Static UI Element Event Listeners ---
+function setupButtonEventListeners() {
+    const el = (id, event, handler) => {
+        const element = document.getElementById(id);
+        if (element) element.addEventListener(event, handler);
+        else console.warn(`EventHandlers: Element with ID '${id}' not found for listener setup.`);
+    };
+
+    // Map Dimensions & Resize
+    el("resizeBtn", "click", handleResizeButtonClick);
+
+    // Tool Buttons (Individual listeners for specific double-click behaviors like clearing stamp)
+    document.querySelectorAll(".toolBtn").forEach(btn => {
+        btn.addEventListener("click", () => handleToolButtonClick(btn.dataset.tool));
+    });
+
+    // Z-Level Controls
+    el("zLevelInput", "change", handleZLevelInputChange);
+    el("zLevelUpBtn", "click", () => handleZLevelChange(1));
+    el("zLevelDownBtn", "click", () => handleZLevelChange(-1));
+    el("addZLevelBtn", "click", handleAddZLevelClick);
+    el("deleteZLevelBtn", "click", handleDeleteZLevelClick);
+
+    // Layer Visibility Toggles
+    [LAYER_TYPES.BOTTOM, LAYER_TYPES.MIDDLE].forEach(layerName => {
+        const visCheckbox = document.getElementById(`vis_${layerName}`);
+        if (visCheckbox) {
+            visCheckbox.addEventListener('change', () => {
+                appState.layerVisibility[layerName] = visCheckbox.checked;
+                triggerFullGridRender();
+            });
+            // Initialize from HTML state during appState setup, not here directly
+        }
+    });
+
+    // Import/Export
+    el("exportBtn", "click", handleExportMap);
+    el("loadBtn", "click", () => document.getElementById("mapFileInput")?.click()); // Trigger hidden file input
+    el("mapFileInput", "change", handleLoadMapFile);
+
+
+    // Palette Tag Filters
+    document.querySelectorAll(".tagFilterCheckbox").forEach(checkbox => {
+        checkbox.addEventListener('change', handleTagFilterChange);
+    });
+    el('clearTagFiltersBtn', 'click', handleClearTagFilters);
+
+    // Onion Skinning Controls
+    el('enableOnionSkinCheckbox', 'change', handleOnionSkinEnableChange);
+    el('onionLayersBelowInput', 'change', () => handleOnionSkinDepthChange('layersBelow'));
+    el('onionLayersAboveInput', 'change', () => handleOnionSkinDepthChange('layersAbove'));
+
+    // Container Inventory & Lock Properties Editor
+    el('addItemToContainerBtn', 'click', handleAddItemToContainerClick);
+    el('isLockedCheckbox', 'change', handleToggleLockStateClick);
+    el('lockDifficultyInput', 'input', handleChangeLockDcInput);
+    // Note: Remove item from container is handled via dynamically created buttons in UIManager.
+    // Those buttons will call `interactionDispatcher.removeItemFromContainer(index)`.
+
+    // Portal Properties Editor
+    el('savePortalPropertiesBtn', 'click', handleSavePortalPropertiesClick);
+    el('removePortalBtn', 'click', handleRemoveSelectedPortalClick);
+
+    // Tile Instance Properties Editor
+    el('saveTileInstancePropertiesBtn', 'click', handleSaveTileInstancePropsClick);
+    el('clearTileInstancePropertiesBtn', 'click', handleClearTileInstancePropsClick);
+}
+
+// --- Specific Click/Change Handlers for UI Elements ---
+
+function handleResizeButtonClick() {
+    const wInput = document.getElementById("inputWidth");
+    const hInput = document.getElementById("inputHeight");
+    if (!wInput || !hInput) return;
+
+    const w = parseInt(wInput.value, 10);
+    const h = parseInt(hInput.value, 10);
+
+    if (w > 0 && h > 0 && (w !== appState.gridWidth || h !== appState.gridHeight)) {
+        snapshot();
+        const oldW = appState.gridWidth;
+        const oldH = appState.gridHeight;
+        appState.gridWidth = w;
+        appState.gridHeight = h;
+        document.documentElement.style.setProperty("--cols", appState.gridWidth);
+
+        const mapData = getMapData();
+        mapData.width = w;
+        mapData.height = h;
+
+        // Adjust existing Z-levels. This is a complex operation.
+        // A simple approach: recreate layers, data outside new bounds is lost.
+        // A better approach: copy existing data within new bounds.
+        Object.keys(mapData.levels).forEach(zKey => {
+            const z = parseInt(zKey, 10);
+            // For simplicity, let's assume ensureLayersForZ with forceRecreate handles it
+            // or a dedicated resize function is called.
+            appState.ensureLayersForZ(z, w, h, mapData, true /* force recreate for resize */);
+        });
+        triggerFullGridRender();
+        logToConsole(`Map resized from ${oldW}x${oldH} to ${w}x${h}. Layer data potentially adjusted.`);
+    }
+}
+
+function handleToolButtonClick(toolName) {
+    if (appState.currentTool === toolName && toolName === "stamp") {
+        appState.stampData3D = null; // Double-click stamp tool to clear defined stamp
+        appState.previewPos = null;
+        logToConsole("Stamp data cleared by re-clicking tool button.");
+        triggerFullGridRender(); // Clear preview
+    }
+    appState.currentTool = toolName;
+    updateToolButtonUI(toolName);
+    if (toolName !== "selectInspect" && toolName !== "portal") {
+        clearAllSelections();
+    }
+    if (toolName === "stamp" && appState.dragStart) { // If switching to stamp while a drag was active
+        appState.dragStart = null;
+    }
+    logToConsole(`Tool changed to: ${toolName}`);
+}
+
+function handleZLevelInputChange(event) {
+    const newZ = parseInt(event.target.value, 10);
+    if (!isNaN(newZ) && newZ !== appState.currentEditingZ) {
+        appState.currentEditingZ = newZ;
+        appState.ensureLayersForZ(appState.currentEditingZ, appState.gridWidth, appState.gridHeight, getMapData());
+        clearAllSelectionsAndPreviews();
+        triggerFullGridRender();
+        logToConsole(LOG_MSG.CURRENT_Z_CHANGED(appState.currentEditingZ));
+    }
+}
+
+function handleZLevelChange(delta) {
+    appState.currentEditingZ += delta;
+    document.getElementById("zLevelInput").value = appState.currentEditingZ; // Update input field
+    appState.ensureLayersForZ(appState.currentEditingZ, appState.gridWidth, appState.gridHeight, getMapData());
+    clearAllSelectionsAndPreviews();
+    triggerFullGridRender();
+    logToConsole(LOG_MSG.CURRENT_Z_CHANGED(appState.currentEditingZ));
+}
+
+function handleAddZLevelClick() {
+    const mapData = getMapData();
+    const existingZs = Object.keys(mapData.levels).map(Number);
+    const defaultNewZ = existingZs.length > 0 ? Math.max(...existingZs) + 1 : 0;
+    const newZStr = prompt("Enter Z-level index to add (integer):", defaultNewZ.toString());
+    if (newZStr === null) return; // User cancelled
+    const newZ = parseInt(newZStr, 10);
+
+    if (isNaN(newZ)) {
+        alert(ERROR_MSG.INVALID_Z_LEVEL_INPUT); return;
+    }
+    if (mapData.levels[newZ.toString()]) {
+        alert(ERROR_MSG.Z_LEVEL_EXISTS(newZ)); return;
+    }
+    snapshot();
+    appState.currentEditingZ = newZ;
+    appState.ensureLayersForZ(newZ, appState.gridWidth, appState.gridHeight, mapData);
+    document.getElementById("zLevelInput").value = appState.currentEditingZ;
+    clearAllSelectionsAndPreviews();
+    triggerFullGridRender();
+    logToConsole(LOG_MSG.ADDED_Z_LEVEL(appState.currentEditingZ));
+}
+
+function handleDeleteZLevelClick() {
+    const mapData = getMapData();
+    const zToDelete = appState.currentEditingZ;
+    if (Object.keys(mapData.levels).length <= 1) {
+        alert(ERROR_MSG.CANNOT_DELETE_LAST_Z); return;
+    }
+    if (!mapData.levels[zToDelete.toString()]) {
+        alert(ERROR_MSG.Z_LEVEL_DOES_NOT_EXIST(zToDelete)); return;
+    }
+    if (!confirm(ERROR_MSG.CONFIRM_DELETE_Z_LEVEL(zToDelete))) return;
+
+    // deleteZLevelFromData handles snapshotting
+    const result = deleteZLevelFromData(zToDelete, mapData, appState.gridWidth, appState.gridHeight);
+
+    if (result.success) {
+        appState.currentEditingZ = result.newCurrentEditingZ;
+        document.getElementById("zLevelInput").value = appState.currentEditingZ;
+        // Ensure the new current Z is valid and its layers exist (should be handled by deleteZLevelFromData if it creates a new default)
+        appState.ensureLayersForZ(appState.currentEditingZ, appState.gridWidth, appState.gridHeight, mapData);
+
+        // Clear selections that might have been on the deleted Z level
+        if (appState.selectedPortal?.z === zToDelete) appState.selectedPortal = null;
+        if (appState.selectedNpc?.mapPos?.z === zToDelete) appState.selectedNpc = null;
+        if (appState.selectedTileForInventory?.z === zToDelete) appState.selectedTileForInventory = null;
+        if (appState.selectedGenericTile?.z === zToDelete) appState.selectedGenericTile = null;
+
+        clearAllSelectionsAndPreviews(); // General cleanup and UI update
+        triggerFullGridRender();
+    } else if (result.error) {
+        alert(result.error);
+    }
+}
+
+function handleExportMap() {
+    const mapData = getMapData();
+    mapData.width = appState.gridWidth; // Ensure mapData has latest dimensions
+    mapData.height = appState.gridHeight;
+    // mapData.startPos is already part of mapData and should be current.
+    exportMapFile(mapData);
+}
+
+async function handleLoadMapFile(event) {
+    const fileInput = event.target;
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert(ERROR_MSG.SELECT_JSON_FILE); return;
+    }
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const rawJson = JSON.parse(e.target.result);
+            const uiUpdaters = {
+                updateUIFromLoadedMap, triggerFullGridRender, triggerAllEditorUIsUpdate,
+                buildPalette: () => buildPalette(appState.currentTileId, appState.activeTagFilters),
+                populateItemSelectDropdown
+            };
+            const loadResult = await convertAndSetLoadedMapData(rawJson, assetManagerInstance, appState, uiUpdaters);
+
+            if (loadResult.success) {
+                alert(ERROR_MSG.MAP_LOADED_SUCCESS(loadResult.mapNameId, appState.currentEditingZ));
+            } else {
+                alert(loadResult.error || "Unknown error during map load and conversion.");
+            }
+        } catch (err) {
+            alert(ERROR_MSG.ERROR_PARSING_MAP(err.message));
+            console.error("Error parsing map file:", err);
+        } finally {
+            fileInput.value = ""; // Reset file input to allow reloading the same file
+        }
+    };
+    reader.readAsText(file);
+}
+
+function handleTagFilterChange() {
+    appState.activeTagFilters = Array.from(document.querySelectorAll(".tagFilterCheckbox:checked")).map(cb => cb.value);
+    buildPalette(appState.currentTileId, appState.activeTagFilters); // Rebuild palette with new filters
+}
+
+function handleClearTagFilters() {
+    document.querySelectorAll(".tagFilterCheckbox").forEach(checkbox => checkbox.checked = false);
+    appState.activeTagFilters = [];
+    buildPalette(appState.currentTileId, appState.activeTagFilters);
+}
+
+function handleOnionSkinEnableChange(event) {
+    appState.onionSkinState.enabled = event.target.checked;
+    triggerFullGridRender();
+}
+
+function handleOnionSkinDepthChange(direction) { // direction is 'layersBelow' or 'layersAbove'
+    const inputElement = document.getElementById(`onion${direction.charAt(0).toUpperCase() + direction.slice(1)}Input`);
+    if (inputElement) {
+        appState.onionSkinState[direction] = parseInt(inputElement.value, 10) || 0;
+        if (appState.onionSkinState.enabled) triggerFullGridRender();
+    }
+}
+
+function handleAddItemToContainerClick() {
+    const mapData = getMapData();
+    if (!appState.selectedTileForInventory || !mapData) {
+        alert("No container tile selected."); return;
+    }
+    const { x, y, z, layerName } = appState.selectedTileForInventory;
+
+    let tileData = mapData.levels[z.toString()]?.[layerName]?.[y]?.[x];
+    const baseTileId = (typeof tileData === 'object' && tileData?.tileId) ? tileData.tileId : tileData;
+    const tileDef = assetManagerInstance.tilesets[baseTileId];
+
+    if (!tileDef?.tags?.includes('container')) {
+        alert(ERROR_MSG.INVALID_CONTAINER_TYPE_ERROR); return;
+    }
+
+    // Ensure tileData is an object and has containerInventory array
+    if (typeof tileData === 'string') {
+        snapshot();
+        tileData = { tileId: baseTileId, containerInventory: [] };
+        mapData.levels[z.toString()][layerName][y][x] = tileData;
+    } else if (typeof tileData !== 'object' || tileData === null) {
+        alert(ERROR_MSG.CANNOT_ADD_ITEM_INVALID_TILE); return;
+    }
+    if (!Array.isArray(tileData.containerInventory)) { // Ensure it's an array
+        snapshot();
+        tileData.containerInventory = [];
+    }
+
+    const itemId = document.getElementById('itemSelectForContainer').value;
+    const quantityInput = document.getElementById('itemQuantityForContainer');
+    const quantity = parseInt(quantityInput.value, 10);
+
+    if (!itemId || itemId === "") { alert("Please select an item."); return; }
+    if (isNaN(quantity) || quantity < 1) { alert("Please enter a valid quantity (1 or more)."); return; }
+
+    snapshot();
+    const existingItem = tileData.containerInventory.find(item => item.id === itemId);
+    if (existingItem) {
+        existingItem.quantity += quantity;
+    } else {
+        tileData.containerInventory.push({ id: itemId, quantity: quantity });
+    }
+    logToConsole(LOG_MSG.ADDED_ITEM_TO_CONTAINER(itemId, quantity, x, y, layerName));
+    updateContainerInventoryUI(appState.selectedTileForInventory, mapData);
+    quantityInput.value = 1; // Reset quantity input
+}
+
+// This function is called by buttons created dynamically in UIManager
+export function removeItemFromContainerByIndex(itemIndex) {
+    const mapData = getMapData();
+    if (!appState.selectedTileForInventory || !mapData) return;
+    const { x, y, z, layerName } = appState.selectedTileForInventory;
+    let tileData = mapData.levels[z.toString()]?.[layerName]?.[y]?.[x];
+
+    if (typeof tileData === 'object' && Array.isArray(tileData.containerInventory)) {
+        snapshot();
+        tileData.containerInventory.splice(itemIndex, 1);
+        logToConsole(`Item at index ${itemIndex} removed from container at (${x},${y},Z${z}).`);
+        updateContainerInventoryUI(appState.selectedTileForInventory, mapData);
+    }
+}
+
+function handleToggleLockStateClick(event) {
+    const mapData = getMapData();
+    if (!appState.selectedTileForInventory || !mapData) return;
+    const { x, y, z, layerName } = appState.selectedTileForInventory;
+
+    let tileObject = ensureTileIsObject(x, y, z, layerName, mapData); // ensureTileIsObject modifies mapData
+    if (!tileObject) {
+        logToConsole(ERROR_MSG.INVALID_TILE_FOR_LOCK_ERROR(x, y, z));
+        event.target.checked = !event.target.checked; // Revert checkbox
+        return;
+    }
+    const tileDef = assetManagerInstance.tilesets[tileObject.tileId];
+    if (!tileDef?.tags || !(tileDef.tags.includes('door') || tileDef.tags.includes('window') || tileDef.tags.includes('container'))) {
+        logToConsole(ERROR_MSG.NON_LOCKABLE_TILE_ERROR(tileObject.tileId));
+        event.target.checked = !event.target.checked; return;
+    }
+
+    snapshot();
+    tileObject.isLocked = event.target.checked;
+    if (!tileObject.isLocked) {
+        delete tileObject.lockDC; // Remove DC if unlocked
+    } else if (tileObject.lockDC === undefined || tileObject.lockDC === 0) {
+        tileObject.lockDC = DEFAULT_LOCK_DC; // Set default DC when locking
+    }
+    updateLockPropertiesUI(appState.selectedTileForInventory, tileObject, tileDef);
+}
+
+function handleChangeLockDcInput(event) {
+    const mapData = getMapData();
+    const lockDifficultyInput = event.target;
+    if (!appState.selectedTileForInventory || lockDifficultyInput.disabled || !mapData) return;
+    const { x, y, z, layerName } = appState.selectedTileForInventory;
+
+    let tileObject = ensureTileIsObject(x, y, z, layerName, mapData);
+    if (!tileObject) { logToConsole(ERROR_MSG.INVALID_TILE_FOR_LOCK_ERROR(x, y, z)); return; }
+    // No need to check tileDef again as it's implied by isLockedCheckbox being enabled.
+
+    snapshot();
+    tileObject.lockDC = parseInt(lockDifficultyInput.value, 10) || 0;
+    logToConsole(`Lock DC for tile at (${x},${y},Z${z}) changed to ${tileObject.lockDC}.`);
+}
+
+function handleSavePortalPropertiesClick() {
+    if (!appState.selectedPortal) { alert("No portal selected."); return; }
+    snapshot();
+    const portalDataUpdates = {
+        targetMapId: document.getElementById('portalTargetMapId').value.trim().replace(/\.json$/i, ""),
+        targetX: parseInt(document.getElementById('portalTargetX').value, 10) || 0,
+        targetY: parseInt(document.getElementById('portalTargetY').value, 10) || 0,
+        targetZ: parseInt(document.getElementById('portalTargetZ').value, 10) || 0,
+        name: document.getElementById('portalNameInput').value.trim() || ''
+    };
+    updatePortalInMap(appState.selectedPortal.id, portalDataUpdates); // Updates mapData
+    Object.assign(appState.selectedPortal, portalDataUpdates); // Keep UI state ref in sync
+    updateSelectedPortalInfoUI(appState.selectedPortal); // Refresh editor UI
+    logToConsole(LOG_MSG.PORTAL_PROPS_SAVED(appState.selectedPortal.id));
+}
+
+function handleRemoveSelectedPortalClick() {
+    if (!appState.selectedPortal) { alert("No portal selected to remove."); return; }
+    if (!confirm(`Are you sure you want to remove portal "${appState.selectedPortal.name || appState.selectedPortal.id}"?`)) return;
+
+    snapshot();
+    removePortalFromMap(appState.selectedPortal.id); // Removes from mapData
+    logToConsole(LOG_MSG.REMOVED_PORTAL(appState.selectedPortal.id));
+    appState.selectedPortal = null; // Clear selection
+    updateSelectedPortalInfoUI(null); // Update editor UI
+    triggerFullGridRender(); // Update grid to remove portal marker
+}
+
+function handleSaveTileInstancePropsClick() {
+    const mapData = getMapData();
+    if (!appState.selectedGenericTile || !mapData) {
+        alert(ERROR_MSG.SAVE_PROPS_NO_TILE_SELECTED); return;
+    }
+    const { x, y, z, layerName } = appState.selectedGenericTile;
+
+    // ensureTileIsObject will convert string ID to object if necessary, and take a snapshot
+    let tileObject = ensureTileIsObject(x, y, z, layerName, mapData);
+    if (!tileObject) { // Should only happen if trying to add props to an empty cell that wasn't converted
+        logToConsole(ERROR_MSG.SAVE_PROPS_NO_BASE_ID(mapData.levels[z.toString()]?.[layerName]?.[y]?.[x]));
+        return;
+    }
+    snapshot(); // Take snapshot *after* potential conversion by ensureTileIsObject if it wasn't an object
+
+    const newInstanceName = document.getElementById('tileInstanceName').value.trim();
+    const newInstanceTagsStr = document.getElementById('tileInstanceTags').value.trim();
+    const newInstanceTagsArray = newInstanceTagsStr === "" ? [] : newInstanceTagsStr.split(',').map(tag => tag.trim()).filter(Boolean);
+
+    if (newInstanceName) tileObject.instanceName = newInstanceName;
+    else delete tileObject.instanceName;
+
+    if (newInstanceTagsArray.length > 0) tileObject.instanceTags = newInstanceTagsArray;
+    else delete tileObject.instanceTags;
+
+    // Optional: Revert to string ID if no custom properties remain AND it's not special (container/lockable)
+    const { tileId, instanceName: currentInstName, instanceTags: currentInstTags, ...otherProps } = tileObject;
+    const isSpecial = tileObject.hasOwnProperty('containerInventory') || tileObject.hasOwnProperty('isLocked') || tileObject.hasOwnProperty('lockDC');
+    if (Object.keys(otherProps).length === 0 && !currentInstName && (!currentInstTags || currentInstTags.length === 0) && !isSpecial) {
+        mapData.levels[z.toString()][layerName][y][x] = tileId; // Revert to string ID
+        logToConsole(LOG_MSG.CLEARED_TILE_PROPS_REVERTED(x, y, z, layerName, tileId));
+    } else {
+        logToConsole(LOG_MSG.SAVED_TILE_PROPS(x, y, z, layerName, tileObject));
+    }
+    updateTilePropertyEditorUI(appState.selectedGenericTile, mapData); // Refresh editor
+}
+
+function handleClearTileInstancePropsClick() {
+    const mapData = getMapData();
+    if (!appState.selectedGenericTile || !mapData) {
+        alert(ERROR_MSG.CLEAR_PROPS_NO_TILE_SELECTED); return;
+    }
+    const { x, y, z, layerName } = appState.selectedGenericTile;
+    let tileData = mapData.levels[z.toString()]?.[layerName]?.[y]?.[x];
+
+    if (typeof tileData === 'object' && tileData?.tileId) {
+        snapshot();
+        const baseTileId = tileData.tileId;
+        delete tileData.instanceName;
+        delete tileData.instanceTags;
+
+        const { tileId, instanceName, instanceTags, ...otherProps } = tileData;
+        const isSpecial = tileData.hasOwnProperty('containerInventory') || tileData.hasOwnProperty('isLocked') || tileData.hasOwnProperty('lockDC');
+        if (Object.keys(otherProps).length === 0 && !instanceName && (!instanceTags || instanceTags.length === 0) && !isSpecial) {
+            mapData.levels[z.toString()][layerName][y][x] = baseTileId;
+            logToConsole(LOG_MSG.CLEARED_TILE_PROPS_REVERTED(x, y, z, layerName, baseTileId));
+        } else {
+            logToConsole(LOG_MSG.CLEARED_TILE_PROPS_RETAINED(x, y, z, layerName, tileData));
+        }
+        updateTilePropertyEditorUI(appState.selectedGenericTile, mapData);
+    } else if (typeof tileData === 'string') {
+        alert(ERROR_MSG.CLEAR_PROPS_NO_CUSTOM_PROPS(x, y, z, layerName));
+    } else {
+        alert(ERROR_MSG.CLEAR_PROPS_INVALID_DATA(tileData));
+    }
+}
+
+// --- Helper Functions for Triggering UI Updates ---
+/** Centralized function to trigger a full grid re-render. */
+function triggerFullGridRender() {
+    const mapData = getMapData();
+    renderMergedGrid(
+        mapData,
+        appState.currentEditingZ,
+        appState.gridWidth,
+        appState.gridHeight,
+        appState.layerVisibility,
+        appState.onionSkinState,
+        appState.previewPos,
+        appState.stampData3D,
+        appState.currentTool
+    );
+}
+
+/** Centralized function to update all editor panel UIs. */
+function triggerAllEditorUIsUpdate() {
+    const mapData = getMapData();
+    updateSelectedPortalInfoUI(appState.selectedPortal);
+    updateContainerInventoryUI(appState.selectedTileForInventory, mapData); // Also calls updateLockPropertiesUI
+    updateTilePropertyEditorUI(appState.selectedGenericTile, mapData);
+    // if (typeof updateSelectedNpcInfoUI === 'function') updateSelectedNpcInfoUI(appState.selectedNpc, mapData);
+    updatePlayerStartDisplay(mapData.startPos); // Though less an "editor", it's part of selected state display
+}
+
+/** Clears all selection states and updates relevant UI parts. */
+function clearAllSelections() {
+    appState.selectedPortal = null;
+    appState.selectedNpc = null;
+    appState.selectedTileForInventory = null;
+    appState.selectedGenericTile = null;
+    triggerAllEditorUIsUpdate(); // This will hide/clear editor panels
+}
+
+/** Clears selections and also any active previews (like stamp preview). */
+function clearAllSelectionsAndPreviews() {
+    clearAllSelections();
+    appState.previewPos = null;
+    // Consider if stampData3D should be cleared here or only by explicit stamp tool action/escape.
+    // For now, changing Z-level doesn't auto-clear defined stamp.
+    // triggerFullGridRender(); // Is usually called by the function that calls this helper
+}

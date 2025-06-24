@@ -83,8 +83,7 @@
               "ViewState": "AgIAAIEAAAAAAAAAAAAUwIoAAAAOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-06-24T05:06:48.847Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -96,8 +95,7 @@
               "RelativeToolTip": "assets\\definitions\\tileset.json",
               "ViewState": "AgIAAJ8DAAAAAAAAAAAAAJsAAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-06-24T05:27:46.61Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-24T05:27:46.61Z"
             },
             {
               "$type": "Document",
@@ -109,8 +107,7 @@
               "RelativeToolTip": "js\\mapRenderer.js",
               "ViewState": "AgIAADUBAAAAAAAAAAAAAEMBAAA9AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-06-24T04:49:25.622Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-24T04:49:25.622Z"
             },
             {
               "$type": "Document",
@@ -122,8 +119,7 @@
               "RelativeToolTip": "js\\turnManager.js",
               "ViewState": "AgIAAMQAAAAAAAAAAAAiwMcAAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-06-24T05:15:35.218Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-24T05:15:35.218Z"
             },
             {
               "$type": "Document",
@@ -135,8 +131,7 @@
               "RelativeToolTip": "Maps\\Small_Map.json",
               "ViewState": "AgIAABcAAAAAAAAAAAAAACkAAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-06-24T05:43:57.227Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-24T05:43:57.227Z"
             },
             {
               "$type": "Document",
@@ -146,7 +141,7 @@
               "RelativeDocumentMoniker": "mapMaker\\mapMaker.html",
               "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\mapMaker\\mapMaker.html",
               "RelativeToolTip": "mapMaker\\mapMaker.html",
-              "ViewState": "AgIAAI0AAAAAAAAAAAAUwJcAAAAOAAAAAAAAAA==",
+              "ViewState": "AgIAAI0AAAAAAAAAAAAUwJMAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-06-24T05:40:43.056Z",
               "EditorCaption": ""
@@ -159,7 +154,7 @@
               "RelativeDocumentMoniker": "mapMaker\\mapMaker.js",
               "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\mapMaker\\mapMaker.js",
               "RelativeToolTip": "mapMaker\\mapMaker.js",
-              "ViewState": "AgIAADYJAAAAAAAAAAAkwEoJAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAA0JAAAAAAAAAAAAABwJAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2025-06-24T06:12:57.377Z",
               "EditorCaption": ""

@@ -1,0 +1,792 @@
+﻿// mapMaker/uiManager.js
+"use strict";
+
+import { getMapData, getPlayerStart } from './mapDataManager.js'; // For mapData access
+import { LAYER_TYPES, PLAYER_START_SPRITE, PLAYER_START_COLOR, PLAYER_START_BG_COLOR, ONION_BELOW_COLOR, ONION_ABOVE_COLOR, ERROR_MSG, LOG_MSG, DEFAULT_3D_DEPTH, DEFAULT_ONION_LAYERS_BELOW, DEFAULT_ONION_LAYERS_ABOVE } from './config.js';
+import { getEffectiveTileForDisplay } from './tileManager.js'; // For rendering logic
+import { logToConsole } from './config.js';
+
+
+// Module-level references to be set by initializeUIManager
+let assetManagerInstance = null;
+let uiStateHolder = null;         // Holds currentTool, currentTileId, selections, etc.
+let interactionDispatcher = null; // For functions like handleCellMouseDown, handleCellMouseUp
+
+/**
+ * Initializes the UIManager with necessary references.
+ * @param {object} assetManager - The global AssetManager instance.
+ * @param {object} uiState - An object holding UI-related state (currentTool, selections, etc.).
+ * @param {object} interactionFns - An object mapping interaction functions (e.g., handleCellMouseDown).
+ */
+export function initializeUIManager(assetManager, uiState, interactionFns) {
+    assetManagerInstance = assetManager;
+    uiStateHolder = uiState;
+    interactionDispatcher = interactionFns;
+    logToConsole("UIManager initialized.");
+}
+
+// --- Palette Management ---
+const paletteContainer = document.getElementById("paletteContainer");
+
+/**
+ * Builds and displays the tile palette based on loaded assets and active tag filters.
+ * @param {string} currentSelectedTileId - The ID of the currently selected tile in the palette.
+ * @param {string[]} activeTagFilters - An array of tags to filter the palette by.
+ */
+export function buildPalette(currentSelectedTileId, activeTagFilters = []) {
+    if (!assetManagerInstance || !uiStateHolder || !interactionDispatcher) {
+        console.error("UIManager: Not fully initialized. Cannot build palette.");
+        if (paletteContainer) paletteContainer.innerHTML = `<p>Error: UI Manager not initialized.</p>`;
+        return;
+    }
+    if (!paletteContainer) {
+        console.error("UIManager: paletteContainer DOM element not found.");
+        return;
+    }
+    paletteContainer.innerHTML = ""; // Clear existing palette
+
+    const eraser = document.createElement("div");
+    eraser.className = "palette-tile"; // Consistent class naming
+    eraser.dataset.tileId = ""; // Eraser represented by empty string
+    eraser.textContent = "✖";
+    eraser.title = "Eraser (Clear Tile at X,Y,Z on all layers)";
+    eraser.onclick = () => {
+        uiStateHolder.currentTileId = "";
+        updatePaletteSelectionUI(uiStateHolder.currentTileId);
+        if (interactionDispatcher.onPaletteTileSelect) {
+            interactionDispatcher.onPaletteTileSelect(""); // Notify main logic of selection
+        }
+    };
+    paletteContainer.appendChild(eraser);
+
+    if (assetManagerInstance.tilesets && Object.keys(assetManagerInstance.tilesets).length > 0) {
+        Object.entries(assetManagerInstance.tilesets).forEach(([id, tileDef]) => {
+            let showInPalette = true;
+            if (activeTagFilters.length > 0) {
+                showInPalette = activeTagFilters.every(filterTag => tileDef.tags && tileDef.tags.includes(filterTag));
+            }
+            if (!showInPalette) return;
+
+            // Optionally skip tiles that are purely for auto-tiling results (e.g., specific corner pieces not meant for direct use)
+            if (tileDef.tags?.includes('auto_tile_result_only')) {
+                return;
+            }
+
+            const tileElement = document.createElement("div");
+            tileElement.className = "palette-tile";
+            tileElement.dataset.tileId = id;
+            tileElement.textContent = tileDef.sprite || '?'; // Fallback sprite
+            tileElement.style.color = tileDef.color || 'black'; // Fallback color
+            tileElement.title = `${tileDef.name || 'Unnamed Tile'} (${id})\nTags: ${(tileDef.tags || ['none']).join(', ')}`;
+            tileElement.onclick = () => {
+                uiStateHolder.currentTileId = id;
+                updatePaletteSelectionUI(uiStateHolder.currentTileId);
+                if (interactionDispatcher.onPaletteTileSelect) {
+                    interactionDispatcher.onPaletteTileSelect(id);
+                }
+            };
+            paletteContainer.appendChild(tileElement);
+        });
+    } else {
+        paletteContainer.innerHTML = `<p>${ERROR_MSG.NO_TILES_LOADED}</p>`;
+    }
+    updatePaletteSelectionUI(currentSelectedTileId);
+}
+
+/**
+ * Updates the visual selection highlight in the tile palette.
+ * @param {string} currentSelectedTileId - The ID of the tile to mark as selected.
+ */
+export function updatePaletteSelectionUI(currentSelectedTileId) {
+    document.querySelectorAll(".palette-tile").forEach(el => {
+        el.classList.toggle("selected", el.dataset.tileId === currentSelectedTileId);
+    });
+}
+
+// --- Grid Rendering Sub-Functions ---
+
+/**
+ * Determines the content (sprite, color, title info) of a single cell based on current Z-level tiles
+ * and potentially tiles from Z-1 (for see-through effect).
+ * @returns {object} An object with { sprite, color, tileNameForTitle, originalDisplayIdForTitle, appliedSolidTopRuleOnCurrentZ, isCurrentCellEffectivelyTransparent }
+ */
+function renderCellBaseContent(x, y, mapData, currentEditingZ, layerVisibility) {
+    const zStr = currentEditingZ.toString();
+    const currentLevelData = mapData.levels[zStr];
+
+    let displayInfo = {
+        sprite: ' ',
+        color: '#000000',
+        tileNameForTitle: 'Empty',
+        originalDisplayIdForTitle: '',
+        appliedSolidTopRuleOnCurrentZ: false,
+        isCurrentCellEffectivelyTransparent: true // Assume transparent until proven otherwise
+    };
+
+    if (!currentLevelData) return displayInfo; // Should be caught by renderMergedGrid main check
+
+    const tileOnMiddleRaw = layerVisibility[LAYER_TYPES.MIDDLE] && currentLevelData.middle?.[y]?.[x] ? currentLevelData.middle[y][x] : "";
+    const tileOnBottomRaw = layerVisibility[LAYER_TYPES.BOTTOM] && currentLevelData.bottom?.[y]?.[x] ? currentLevelData.bottom[y][x] : "";
+
+    const baseIdMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw?.tileId) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
+    const baseIdBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw?.tileId) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
+
+    const defMiddle = assetManagerInstance.tilesets[baseIdMiddle];
+    const defBottom = assetManagerInstance.tilesets[baseIdBottom];
+
+    let finalTileDefOnCurrentZ = null;
+    if (baseIdMiddle && defMiddle) {
+        finalTileDefOnCurrentZ = defMiddle;
+        displayInfo.originalDisplayIdForTitle = baseIdMiddle;
+        displayInfo.tileNameForTitle = defMiddle.name || baseIdMiddle;
+    } else if (baseIdBottom && defBottom) {
+        finalTileDefOnCurrentZ = defBottom;
+        displayInfo.originalDisplayIdForTitle = baseIdBottom;
+        displayInfo.tileNameForTitle = defBottom.name || baseIdBottom;
+    }
+
+    if (finalTileDefOnCurrentZ) {
+        displayInfo.isCurrentCellEffectivelyTransparent = finalTileDefOnCurrentZ.tags?.includes('transparent_floor') || finalTileDefOnCurrentZ.tags?.includes('allows_vision');
+        if (finalTileDefOnCurrentZ.tags?.includes('solid_terrain_top')) {
+            displayInfo.sprite = '▓';
+            displayInfo.color = finalTileDefOnCurrentZ.color || '#808080';
+            displayInfo.appliedSolidTopRuleOnCurrentZ = true;
+            displayInfo.isCurrentCellEffectivelyTransparent = false; // Solid top overrides transparency for Z-1 view
+        } else {
+            displayInfo.sprite = finalTileDefOnCurrentZ.sprite || '?';
+            displayInfo.color = finalTileDefOnCurrentZ.color || '#000000';
+        }
+    } else {
+        displayInfo.isCurrentCellEffectivelyTransparent = true; // Empty is transparent
+    }
+
+    // Check Z-1 if current cell is transparent and no solid_terrain_top rule applied on current Z
+    if (!displayInfo.appliedSolidTopRuleOnCurrentZ && displayInfo.isCurrentCellEffectivelyTransparent) {
+        const zBelow = currentEditingZ - 1;
+        const levelBelowData = mapData.levels[zBelow.toString()];
+        if (levelBelowData) {
+            const tileMiddleBelowRaw = layerVisibility[LAYER_TYPES.MIDDLE] && levelBelowData.middle?.[y]?.[x] ? levelBelowData.middle[y][x] : "";
+            const baseIdMiddleBelow = (typeof tileMiddleBelowRaw === 'object' && tileMiddleBelowRaw?.tileId) ? tileMiddleBelowRaw.tileId : tileMiddleBelowRaw;
+            const defMiddleBelow = assetManagerInstance.tilesets[baseIdMiddleBelow];
+
+            const tileBottomBelowRaw = layerVisibility[LAYER_TYPES.BOTTOM] && levelBelowData.bottom?.[y]?.[x] ? levelBelowData.bottom[y][x] : "";
+            const baseIdBottomBelow = (typeof tileBottomBelowRaw === 'object' && tileBottomBelowRaw?.tileId) ? tileBottomBelowRaw.tileId : tileBottomBelowRaw;
+            const defBottomBelow = assetManagerInstance.tilesets[baseIdBottomBelow];
+
+            let tileDefFromBelowToDisplay = null;
+            let idFromBelowToDisplay = "";
+
+            if (defMiddleBelow?.tags?.includes('solid_terrain_top')) {
+                tileDefFromBelowToDisplay = defMiddleBelow;
+                idFromBelowToDisplay = baseIdMiddleBelow;
+            } else if (defBottomBelow?.tags?.includes('solid_terrain_top')) {
+                tileDefFromBelowToDisplay = defBottomBelow;
+                idFromBelowToDisplay = baseIdBottomBelow;
+            }
+
+            if (tileDefFromBelowToDisplay) {
+                displayInfo.sprite = tileDefFromBelowToDisplay.sprite || '▓';
+                displayInfo.color = tileDefFromBelowToDisplay.color || '#606060';
+                displayInfo.tileNameForTitle = `${tileDefFromBelowToDisplay.name || idFromBelowToDisplay} (from Z${zBelow})`;
+                displayInfo.originalDisplayIdForTitle = idFromBelowToDisplay;
+                // This doesn't make the current cell itself solid for onion skinning from above
+            }
+        }
+    }
+    return displayInfo;
+}
+
+function applyOnionSkinning(cellElement, x, y, mapData, currentEditingZ, onionSkinState, baseDisplayInfo) {
+    if (!onionSkinState.enabled) return;
+
+    // Render Layers Below
+    if (baseDisplayInfo.isCurrentCellEffectivelyTransparent && !baseDisplayInfo.appliedSolidTopRuleOnCurrentZ) {
+        for (let i = 1; i <= onionSkinState.layersBelow; i++) {
+            const zLayerToRender = currentEditingZ - i;
+            const effectiveTileBelow = getEffectiveTileForDisplay(x, y, zLayerToRender, LAYER_TYPES.MIDDLE, LAYER_TYPES.BOTTOM, mapData);
+            if (effectiveTileBelow?.definition) {
+                cellElement.textContent = effectiveTileBelow.definition.sprite || '?';
+                cellElement.style.color = ONION_BELOW_COLOR;
+                baseDisplayInfo.tileNameForTitle += ` / Onion: ${effectiveTileBelow.definition.name || effectiveTileBelow.baseId} (Z${zLayerToRender})`;
+                break;
+            }
+        }
+    }
+    // Render Layers Above (overwrites current display if tile found)
+    for (let i = 1; i <= onionSkinState.layersAbove; i++) {
+        const zLayerToRender = currentEditingZ + i;
+        const effectiveTileAbove = getEffectiveTileForDisplay(x, y, zLayerToRender, LAYER_TYPES.MIDDLE, LAYER_TYPES.BOTTOM, mapData);
+        if (effectiveTileAbove?.definition) {
+            let spriteForAbove = effectiveTileAbove.definition.sprite || '?';
+            if (effectiveTileAbove.definition.tags?.includes('solid_terrain_top')) {
+                spriteForAbove = '▓';
+            }
+            cellElement.textContent = spriteForAbove;
+            cellElement.style.color = ONION_ABOVE_COLOR;
+            baseDisplayInfo.tileNameForTitle = `Onion: ${effectiveTileAbove.definition.name || effectiveTileAbove.baseId} (Z${zLayerToRender}) (Above)`;
+            break;
+        }
+    }
+}
+
+function applyPlayerStartMarker(cellElement, x, y, currentEditingZ, baseDisplayInfo) {
+    const playerStartPos = getPlayerStart(); // From mapDataManager
+    if (playerStartPos && x === playerStartPos.x && y === playerStartPos.y && currentEditingZ === playerStartPos.z) {
+        cellElement.textContent = PLAYER_START_SPRITE;
+        cellElement.style.color = PLAYER_START_COLOR;
+        cellElement.style.backgroundColor = PLAYER_START_BG_COLOR;
+        baseDisplayInfo.tileNameForTitle = `Player Start (X:${playerStartPos.x}, Y:${playerStartPos.y}, Z:${playerStartPos.z})`;
+    }
+}
+
+function applyStampPreview(cellElement, x, y, currentTool, stampData3D, previewPos) {
+    if (currentTool !== "stamp" || !stampData3D || !previewPos ||
+        x < previewPos.x || x >= previewPos.x + stampData3D.w ||
+        y < previewPos.y || y >= previewPos.y + stampData3D.h) {
+        return;
+    }
+
+    const stampRelativeX = x - previewPos.x;
+    const stampRelativeY = y - previewPos.y;
+
+    if (stampData3D.levels[0]) { // Previewing the stamp's own z=0 slice
+        let tileIdToPreviewFromStamp = "";
+        if (stampData3D.levels[0][LAYER_TYPES.MIDDLE]?.[stampRelativeY]?.[stampRelativeX]) {
+            tileIdToPreviewFromStamp = stampData3D.levels[0][LAYER_TYPES.MIDDLE][stampRelativeY][stampRelativeX];
+        } else if (stampData3D.levels[0][LAYER_TYPES.BOTTOM]?.[stampRelativeY]?.[stampRelativeX]) {
+            tileIdToPreviewFromStamp = stampData3D.levels[0][LAYER_TYPES.BOTTOM][stampRelativeY][stampRelativeX];
+        }
+
+        const effectivePreviewId = (typeof tileIdToPreviewFromStamp === 'object' && tileIdToPreviewFromStamp?.tileId)
+            ? tileIdToPreviewFromStamp.tileId
+            : tileIdToPreviewFromStamp;
+
+        if (effectivePreviewId && effectivePreviewId !== "") {
+            const stampTileDef = assetManagerInstance.tilesets[effectivePreviewId];
+            if (stampTileDef) {
+                cellElement.textContent = stampTileDef.sprite || '?';
+                cellElement.style.color = stampTileDef.color || '#000000';
+                cellElement.classList.add("stamp-preview");
+            }
+        } else if (tileIdToPreviewFromStamp === "") {
+            cellElement.textContent = ' ';
+            cellElement.classList.add("stamp-preview");
+        }
+    }
+}
+
+function renderOverlays(gridContainer, mapData, currentEditingZ, selectedPortal, selectedNpc) {
+    // Portals
+    (mapData.portals || []).forEach(portal => {
+        if (portal.z === currentEditingZ) {
+            const cell = gridContainer.querySelector(`.cell[data-x='${portal.x}'][data-y='${portal.y}'][data-z='${currentEditingZ}']`);
+            if (cell) {
+                const portalMarker = document.createElement('div');
+                portalMarker.className = 'portal-marker';
+                portalMarker.textContent = 'P';
+                portalMarker.title = `Portal: ${portal.name || portal.id}\nTarget: ${portal.targetMapId || 'N/A'} at (${portal.targetX},${portal.targetY},Z${portal.targetZ})`;
+                if (selectedPortal?.id === portal.id) {
+                    cell.classList.add('selected-portal-cell');
+                }
+                cell.appendChild(portalMarker);
+            }
+        }
+    });
+
+    // NPCs
+    (mapData.npcs || []).forEach(npc => {
+        if (npc.mapPos?.z === currentEditingZ) {
+            const cell = gridContainer.querySelector(`.cell[data-x='${npc.mapPos.x}'][data-y='${npc.mapPos.y}'][data-z='${currentEditingZ}']`);
+            if (cell) {
+                const npcMarker = document.createElement('div');
+                npcMarker.className = 'npc-marker';
+                const npcDef = assetManagerInstance.npcDefinitions?.[npc.definitionId];
+                npcMarker.textContent = npcDef?.sprite || 'N';
+                npcMarker.style.color = npcDef?.color || 'purple';
+                npcMarker.title = `NPC: ${npc.name || npc.id} (Def: ${npc.definitionId})`;
+                if (selectedNpc?.id === npc.id) {
+                    cell.classList.add('selected-npc-cell');
+                }
+                cell.appendChild(npcMarker);
+            }
+        }
+    });
+}
+
+
+// --- Grid Rendering (Main Function) ---
+const gridContainer = document.getElementById("grid");
+
+/**
+ * Renders the main map grid, including tiles, player start, portals, and previews.
+ * Delegates parts of the rendering to sub-functions.
+ */
+export function renderMergedGrid(mapData, currentEditingZ, gridWidth, gridHeight, layerVisibility, onionSkinState, previewPos, stampData3D, currentTool) {
+    if (!assetManagerInstance || !uiStateHolder || !interactionDispatcher || !gridContainer) {
+        console.error("UIManager: Not fully initialized or gridContainer missing. Cannot render grid.");
+        if (gridContainer) gridContainer.innerHTML = "<p>Error: UI Manager not initialized or grid container missing.</p>";
+        return;
+    }
+    gridContainer.innerHTML = "";
+
+    const currentLevelData = mapData.levels[currentEditingZ.toString()];
+    if (!currentLevelData) {
+        gridContainer.innerHTML = `<p class="error-message">${ERROR_MSG.NO_DATA_FOR_ZLEVEL(currentEditingZ)}</p>`;
+        return;
+    }
+
+    for (let y = 0; y < gridHeight; y++) {
+        for (let x = 0; x < gridWidth; x++) {
+            const cellElement = document.createElement("div");
+            cellElement.className = "cell";
+            cellElement.dataset.x = x;
+            cellElement.dataset.y = y;
+            cellElement.dataset.z = currentEditingZ;
+
+            let cellDisplayInfo = renderCellBaseContent(x, y, mapData, currentEditingZ, layerVisibility);
+
+            cellElement.textContent = cellDisplayInfo.sprite;
+            cellElement.style.color = cellDisplayInfo.color;
+
+            applyOnionSkinning(cellElement, x, y, mapData, currentEditingZ, onionSkinState, cellDisplayInfo);
+            applyPlayerStartMarker(cellElement, x, y, currentEditingZ, cellDisplayInfo); // Modifies cell & cellDisplayInfo.title
+            applyStampPreview(cellElement, x, y, currentTool, stampData3D, previewPos); // Modifies cell
+
+            cellElement.title = cellDisplayInfo.tileNameForTitle; // Set final title
+
+            cellElement.onmousedown = (e) => interactionDispatcher.handleCellMouseDown(e);
+            cellElement.onmouseup = (e) => interactionDispatcher.handleCellMouseUp(e);
+            gridContainer.appendChild(cellElement);
+        }
+    }
+    renderOverlays(gridContainer, mapData, currentEditingZ, uiStateHolder.selectedPortal, uiStateHolder.selectedNpc);
+}
+
+
+// --- Player Start Display ---
+/**
+ * Updates the display of the player's start coordinates.
+ * @param {MapPosition | undefined} startPos - The player's start position object.
+ */
+export function updatePlayerStartDisplay(startPos) {
+    const el = (id) => document.getElementById(id);
+    if (el("playerStartXDisplay")) el("playerStartXDisplay").textContent = startPos?.x ?? 'N/A';
+    if (el("playerStartYDisplay")) el("playerStartYDisplay").textContent = startPos?.y ?? 'N/A';
+    if (el("playerStartZDisplay")) el("playerStartZDisplay").textContent = startPos?.z ?? 'N/A';
+}
+
+// --- Tool Button UI ---
+/**
+ * Updates the visual state of tool buttons to reflect the currently selected tool.
+ * @param {string} currentToolName - The name of the currently selected tool.
+ */
+export function updateToolButtonUI(currentToolName) {
+    document.querySelectorAll(".toolBtn").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.tool === currentToolName);
+    });
+}
+
+
+// --- Portal Editor UI ---
+/**
+ * Updates the portal editor UI elements based on the currently selected portal.
+ * @param {object | null} selectedPortal - The selected portal object, or null if none.
+ */
+export function updateSelectedPortalInfoUI(selectedPortal) {
+    const el = (id) => document.getElementById(id);
+    const portalConfigDiv = el('portalConfigControls');
+    const selectedInfoDiv = el('selectedPortalInfo'); // Displays basic info like ID and current position
+    const removeBtn = el('removePortalBtn');
+
+    if (!portalConfigDiv || !selectedInfoDiv || !removeBtn) {
+        console.warn("UIManager: Portal editor DOM elements not found.");
+        return;
+    }
+
+    const fields = {
+        editingPortalId: el('editingPortalId'),
+        editingPortalPos: el('editingPortalPos'),
+        portalTargetMapId: el('portalTargetMapId'),
+        portalTargetX: el('portalTargetX'),
+        portalTargetY: el('portalTargetY'),
+        portalTargetZ: el('portalTargetZ'),
+        portalNameInput: el('portalNameInput')
+    };
+
+    if (selectedPortal) {
+        selectedInfoDiv.textContent = `Selected Portal: ${selectedPortal.name || selectedPortal.id} at (${selectedPortal.x}, ${selectedPortal.y}, Z:${selectedPortal.z})`;
+        portalConfigDiv.style.display = 'block';
+        removeBtn.style.display = 'inline-block'; // Or 'block'
+        if (fields.editingPortalId) fields.editingPortalId.textContent = selectedPortal.id;
+        if (fields.editingPortalPos) fields.editingPortalPos.textContent = `(${selectedPortal.x}, ${selectedPortal.y}, Z:${selectedPortal.z})`;
+        if (fields.portalTargetMapId) fields.portalTargetMapId.value = selectedPortal.targetMapId || '';
+        if (fields.portalTargetX) fields.portalTargetX.value = selectedPortal.targetX ?? '';
+        if (fields.portalTargetY) fields.portalTargetY.value = selectedPortal.targetY ?? '';
+        if (fields.portalTargetZ) fields.portalTargetZ.value = selectedPortal.targetZ ?? 0;
+        if (fields.portalNameInput) fields.portalNameInput.value = selectedPortal.name || '';
+    } else {
+        selectedInfoDiv.textContent = "Selected Portal: None";
+        portalConfigDiv.style.display = 'none';
+        removeBtn.style.display = 'none';
+        if (fields.editingPortalId) fields.editingPortalId.textContent = "N/A";
+        if (fields.editingPortalPos) fields.editingPortalPos.textContent = "N/A";
+        // Clear input fields
+        Object.values(fields).forEach(input => {
+            if (input && typeof input.value !== 'undefined') input.value = (input.type === 'number' ? 0 : '');
+        });
+        if (fields.portalTargetZ) fields.portalTargetZ.value = 0; // Default Z to 0
+    }
+}
+
+// --- Container/Lock Editor UI ---
+/**
+ * Updates the UI for editing container inventory and lock properties.
+ * @param {object | null} selectedTileForInventory - Object with {x,y,z,layerName} of the selected tile, or null.
+ * @param {MapData | null} mapData - The current map data.
+ */
+export function updateContainerInventoryUI(selectedTileForInventory, mapData) {
+    const controlsDiv = document.getElementById('containerInventoryControls');
+    const itemListDiv = document.getElementById('itemInContainerList'); // UL or OL element
+    const containerNameSpan = document.getElementById('editingContainerName');
+    const containerPosSpan = document.getElementById('editingContainerPos');
+
+    if (!controlsDiv || !itemListDiv || !containerNameSpan || !containerPosSpan) {
+        console.warn("UIManager: Container editor DOM elements not found.");
+        updateLockPropertiesUI(null, null, null); // Ensure lock UI is also hidden
+        return;
+    }
+    itemListDiv.innerHTML = ''; // Clear previous items
+
+    if (!selectedTileForInventory || !mapData || !assetManagerInstance) {
+        controlsDiv.style.display = 'none';
+        updateLockPropertiesUI(null, null, null);
+        return;
+    }
+
+    const { x, y, z, layerName } = selectedTileForInventory;
+    const tileData = mapData.levels[z.toString()]?.[layerName]?.[y]?.[x];
+    const baseTileId = (typeof tileData === 'object' && tileData?.tileId) ? tileData.tileId : tileData;
+    const tileDef = assetManagerInstance.tilesets[baseTileId];
+
+    if (!tileDef) {
+        controlsDiv.style.display = 'none';
+        updateLockPropertiesUI(null, null, null);
+        return;
+    }
+
+    const isContainer = tileDef.tags?.includes('container');
+    // Doors, windows, and containers can be lockable.
+    const isPotentiallyLockable = tileDef.tags?.includes('door') || tileDef.tags?.includes('window') || isContainer;
+
+    if (!isContainer && !isPotentiallyLockable) { // If not a container AND not otherwise lockable
+        controlsDiv.style.display = 'none';
+        updateLockPropertiesUI(null, null, null);
+        return;
+    }
+
+    controlsDiv.style.display = 'block';
+    containerNameSpan.textContent = tileDef.name || baseTileId;
+    containerPosSpan.textContent = `(${x}, ${y}, Z:${z}) on layer: ${layerName}`;
+
+    const containerInventory = (isContainer && typeof tileData === 'object' && Array.isArray(tileData.containerInventory)) ? tileData.containerInventory : [];
+
+    // Show/hide UI parts related to container-specific features
+    document.getElementById('itemInContainerList').style.display = isContainer ? 'block' : 'none';
+    document.getElementById('addItemToContainerForm').style.display = isContainer ? 'block' : 'none';
+    const h3Title = controlsDiv.querySelector('h3[data-purpose="container-title"]');
+    if (h3Title) h3Title.style.display = isContainer ? 'block' : 'none';
+
+    if (isContainer) {
+        if (containerInventory.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = "No items in container.";
+            itemListDiv.appendChild(li);
+        } else {
+            containerInventory.forEach((itemInstance, index) => {
+                const itemDef = assetManagerInstance.itemsById[itemInstance.id];
+                const li = document.createElement('li');
+                li.textContent = `${itemDef?.name || itemInstance.id} (Qty: ${itemInstance.quantity}) `;
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.className = 'button-small'; // For styling
+                removeBtn.style.marginLeft = '10px';
+                removeBtn.onclick = () => {
+                    if (interactionDispatcher?.removeItemFromContainer) {
+                        interactionDispatcher.removeItemFromContainer(index); // index is passed to eventHandler
+                    }
+                };
+                li.appendChild(removeBtn);
+                itemListDiv.appendChild(li);
+            });
+        }
+    }
+    // Always update lock properties if the tile is potentially lockable
+    updateLockPropertiesUI(selectedTileForInventory, tileData, tileDef);
+}
+
+/**
+ * Updates the lock properties UI section (isLocked checkbox, lockDC input).
+ * @param {object | null} selectedTile - The selected tile object {x,y,z,layerName}.
+ * @param {string | object | null} tileData - The actual data of the tile from mapData.
+ * @param {object | null} tileDef - The definition of the tile from AssetManager.
+ */
+export function updateLockPropertiesUI(selectedTile, tileData, tileDef) {
+    const lockControlsDiv = document.getElementById('lockControls');
+    const isLockedCheckbox = document.getElementById('isLockedCheckbox');
+    const lockDifficultyInput = document.getElementById('lockDifficultyInput');
+
+    if (!lockControlsDiv || !isLockedCheckbox || !lockDifficultyInput) {
+        console.warn("UIManager: Lock properties DOM elements not found.");
+        return;
+    }
+
+    if (!selectedTile || !tileDef) { // No selection or definition means no lock UI
+        lockControlsDiv.style.display = 'none';
+        return;
+    }
+
+    const isLockable = tileDef.tags?.includes('door') || tileDef.tags?.includes('window') || tileDef.tags?.includes('container');
+
+    if (!isLockable) {
+        lockControlsDiv.style.display = 'none';
+        return;
+    }
+    lockControlsDiv.style.display = 'block'; // Show lock controls
+
+    // If tileData is an object, it might have lock properties.
+    // If it's a string ID, it's considered not locked by default, or needs conversion to object.
+    if (typeof tileData === 'object' && tileData !== null) {
+        isLockedCheckbox.checked = tileData.isLocked || false;
+        lockDifficultyInput.value = tileData.lockDC ?? DEFAULT_LOCK_DC; // Use configured default
+        lockDifficultyInput.disabled = !isLockedCheckbox.checked;
+    } else {
+        isLockedCheckbox.checked = false;
+        lockDifficultyInput.value = DEFAULT_LOCK_DC;
+        lockDifficultyInput.disabled = true;
+    }
+}
+
+
+// --- Tile Property Editor UI ---
+/**
+ * Updates the generic tile property editor UI.
+ * @param {object | null} selectedGenericTile - Object with {x,y,z,layerName} of the selected tile, or null.
+ * @param {MapData | null} mapData - The current map data.
+ */
+export function updateTilePropertyEditorUI(selectedGenericTile, mapData) {
+    const el = (id) => document.getElementById(id);
+    const editorDiv = el('tilePropertyEditorControls');
+
+    if (!editorDiv) { console.warn("UIManager: Tile Property Editor DOM elements not found."); return; }
+
+    if (!selectedGenericTile || !mapData || !assetManagerInstance) {
+        editorDiv.style.display = 'none';
+        return;
+    }
+
+    const fields = {
+        baseIdSpan: el('selectedTileBaseId'),
+        baseNameSpan: el('selectedTileBaseName'),
+        baseTagsSpan: el('selectedTileBaseTags'),
+        coordsSpan: el('selectedTileCoords'),
+        instanceNameInput: el('tileInstanceName'),
+        instanceTagsInput: el('tileInstanceTags')
+    };
+    // Basic check for existence of critical elements
+    if (!fields.baseIdSpan || !fields.instanceNameInput) {
+        console.warn("UIManager: Critical Tile Property Editor DOM elements missing.");
+        editorDiv.style.display = 'none';
+        return;
+    }
+
+
+    editorDiv.style.display = 'block';
+    const { x, y, z, layerName } = selectedGenericTile;
+    if (fields.coordsSpan) fields.coordsSpan.textContent = `(${x}, ${y}, Z:${z}) on layer: ${layerName}`;
+
+    const tileData = mapData.levels[z.toString()]?.[layerName]?.[y]?.[x];
+    let baseTileId = '';
+    let instanceName = '';
+    let instanceTagsArray = [];
+
+    if (typeof tileData === 'object' && tileData?.tileId) {
+        baseTileId = tileData.tileId;
+        instanceName = tileData.instanceName || ''; // Default to empty string if not present
+        instanceTagsArray = Array.isArray(tileData.instanceTags) ? tileData.instanceTags : [];
+    } else if (typeof tileData === 'string' && tileData !== "") {
+        baseTileId = tileData;
+        // Defaults for instanceName and instanceTagsArray remain empty
+    } else {
+        // Invalid tile data or empty cell selected for property editing
+        editorDiv.style.display = 'none';
+        logToConsole("Tile Property Editor: No valid tile data to display for selection.", selectedGenericTile);
+        return;
+    }
+
+    fields.baseIdSpan.textContent = baseTileId;
+    const baseTileDef = assetManagerInstance.tilesets[baseTileId];
+
+    if (baseTileDef) {
+        if (fields.baseNameSpan) fields.baseNameSpan.textContent = baseTileDef.name || baseTileId;
+        if (fields.baseTagsSpan) fields.baseTagsSpan.textContent = (baseTileDef.tags || ['none']).join(', ');
+    } else {
+        if (fields.baseNameSpan) fields.baseNameSpan.textContent = `(Definition not found for ${baseTileId})`;
+        if (fields.baseTagsSpan) fields.baseTagsSpan.textContent = 'N/A';
+    }
+
+    fields.instanceNameInput.value = instanceName;
+    fields.instanceTagsInput.value = instanceTagsArray.join(', ');
+}
+
+// --- Item Select Dropdown for Containers ---
+/**
+ * Populates the dropdown list of items available to be added to containers.
+ */
+export function populateItemSelectDropdown() {
+    const itemSelect = document.getElementById('itemSelectForContainer');
+    if (!itemSelect) { console.warn("UIManager: itemSelectForContainer DOM element not found."); return; }
+    if (!assetManagerInstance) { console.error("UIManager: AssetManager not initialized. Cannot populate item select."); return; }
+
+    itemSelect.innerHTML = ''; // Clear previous options
+
+    if (assetManagerInstance.itemsById && Object.keys(assetManagerInstance.itemsById).length > 0) {
+        const defaultOption = document.createElement('option');
+        defaultOption.value = ""; // Important for validation (empty means no selection)
+        defaultOption.textContent = "-- Select Item --";
+        itemSelect.appendChild(defaultOption);
+
+        for (const itemId in assetManagerInstance.itemsById) {
+            const itemDef = assetManagerInstance.itemsById[itemId];
+            const option = document.createElement('option');
+            option.value = itemId;
+            option.textContent = `${itemDef.name || itemId} (Size: ${itemDef.size ?? 1}, W: ${itemDef.weightLbs ?? 'N/A'}lbs)`;
+            itemSelect.appendChild(option);
+        }
+    } else {
+        const errorOption = document.createElement('option');
+        errorOption.value = "";
+        errorOption.textContent = ERROR_MSG.NO_ITEMS_LOADED_WARNING; // More descriptive
+        itemSelect.appendChild(errorOption);
+        const errorDisplay = document.getElementById('errorMessageDisplayMapMaker');
+        if (errorDisplay) {
+            errorDisplay.textContent = ERROR_MSG.ITEM_SELECTION_EMPTY_WARNING; // User-visible warning
+        }
+    }
+}
+
+// --- General UI Updates on Load/Init ---
+/**
+ * Resets various UI elements to their default states, typically for a new map.
+ * @param {number} defaultGridWidth - Default width for the grid.
+ * @param {number} defaultGridHeight - Default height for the grid.
+ * @param {number} defaultZ - Default Z-level.
+ * @param {string} defaultTool - The default tool to be selected.
+ */
+export function resetUIForNewMap(defaultGridWidth, defaultGridHeight, defaultZ, defaultTool) {
+    const el = (id) => document.getElementById(id);
+    if (el("inputWidth")) el("inputWidth").value = defaultGridWidth;
+    if (el("inputHeight")) el("inputHeight").value = defaultGridHeight;
+    document.documentElement.style.setProperty("--cols", defaultGridWidth);
+    if (el("zLevelInput")) el("zLevelInput").value = defaultZ;
+
+    updateToolButtonUI(defaultTool);
+    // buildPalette and renderMergedGrid will be called by the main initialization logic after mapData is ready.
+
+    // Clear selection states (assuming uiStateHolder is correctly managing these)
+    if (uiStateHolder) {
+        uiStateHolder.selectedTileForInventory = null;
+        uiStateHolder.selectedPortal = null;
+        uiStateHolder.selectedNpc = null;
+        uiStateHolder.selectedGenericTile = null;
+        uiStateHolder.activeTagFilters = [];
+        uiStateHolder.onionSkinState = {
+            enabled: false,
+            layersBelow: DEFAULT_ONION_LAYERS_BELOW,
+            layersAbove: DEFAULT_ONION_LAYERS_ABOVE
+        };
+        uiStateHolder.dragStart = null;
+        uiStateHolder.previewPos = null;
+        uiStateHolder.stampData3D = null;
+    }
+    // Update UI sections related to these cleared states
+    updateContainerInventoryUI(null, getMapData()); // Pass current (empty) mapData
+    updateSelectedPortalInfoUI(null);
+    updateTilePropertyEditorUI(null, getMapData());
+    // if (typeof updateSelectedNpcInfoUI === 'function') updateSelectedNpcInfoUI(null, getMapData());
+
+    if (el('rect3dDepthInput')) el('rect3dDepthInput').value = DEFAULT_3D_DEPTH;
+    document.querySelectorAll(".tagFilterCheckbox").forEach(checkbox => checkbox.checked = false);
+
+    const onionEnableCheckbox = el('enableOnionSkinCheckbox');
+    const onionBelowInput = el('onionLayersBelowInput');
+    const onionAboveInput = el('onionLayersAboveInput');
+    if (onionEnableCheckbox) onionEnableCheckbox.checked = false;
+    if (onionBelowInput) onionBelowInput.value = DEFAULT_ONION_LAYERS_BELOW;
+    if (onionAboveInput) onionAboveInput.value = DEFAULT_ONION_LAYERS_ABOVE;
+
+    logToConsole("UI reset for new map.");
+}
+
+/**
+ * Updates UI elements based on data from a newly loaded map.
+ * @param {MapData} loadedMapData - The map data that was loaded.
+ * @param {number} newCurrentEditingZ - The Z-level to set as current.
+ * @param {string} currentToolName - The tool that should be active.
+ */
+export function updateUIFromLoadedMap(loadedMapData, newCurrentEditingZ, currentToolName) {
+    const el = (id) => document.getElementById(id);
+    if (el("inputWidth")) el("inputWidth").value = loadedMapData.width;
+    if (el("inputHeight")) el("inputHeight").value = loadedMapData.height;
+    document.documentElement.style.setProperty("--cols", loadedMapData.width);
+    if (el("zLevelInput")) el("zLevelInput").value = newCurrentEditingZ;
+
+    updatePlayerStartDisplay(loadedMapData.startPos);
+    updateToolButtonUI(currentToolName);
+    // buildPalette and renderMergedGrid are called by the main load function after this.
+
+    // Clear any existing selections from a previous map state
+    if (uiStateHolder) {
+        uiStateHolder.selectedTileForInventory = null;
+        uiStateHolder.selectedPortal = null;
+        uiStateHolder.selectedNpc = null;
+        uiStateHolder.selectedGenericTile = null;
+        // Reset other interaction states
+        uiStateHolder.dragStart = null;
+        uiStateHolder.previewPos = null;
+        uiStateHolder.stampData3D = null;
+    }
+    updateContainerInventoryUI(null, loadedMapData);
+    updateSelectedPortalInfoUI(null);
+    updateTilePropertyEditorUI(null, loadedMapData);
+    // if (typeof updateSelectedNpcInfoUI === 'function') updateSelectedNpcInfoUI(null, loadedMapData);
+    logToConsole("UI updated from loaded map data.");
+}
+
+/**
+ * Updates UI elements related to grid dimensions.
+ * @param {number} newGridWidth - The new grid width.
+ * @param {number} newGridHeight - The new grid height.
+ */
+export function updateGridDimensionsUI(newGridWidth, newGridHeight) {
+    const el = (id) => document.getElementById(id);
+    if (el("inputWidth")) el("inputWidth").value = newGridWidth;
+    if (el("inputHeight")) el("inputHeight").value = newGridHeight;
+    document.documentElement.style.setProperty("--cols", newGridWidth);
+}
+
+/**
+ * Gets the desired depth for 3D operations from the UI input.
+ * @returns {number} The depth value, defaulting to DEFAULT_3D_DEPTH if input is invalid or not found.
+ */
+export function getRect3DDepth() {
+    const depthInput = document.getElementById("rect3dDepthInput");
+    if (depthInput) {
+        let depth = parseInt(depthInput.value, 10);
+        if (isNaN(depth) || depth < 1) {
+            depth = DEFAULT_3D_DEPTH; // Use configured default
+            depthInput.value = depth; // Correct UI if invalid
+        }
+        return depth;
+    }
+    return DEFAULT_3D_DEPTH; // Default if input not found
+}

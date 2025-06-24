@@ -96,64 +96,7 @@
             }
         }
         console.log("Base asset definitions loaded.");
-
-        // Load user definitions (override/extend base definitions)
-        console.log("Attempting to load user-generated definitions...");
-        const userDefinitionFiles = ['tileset.json', 'items.json', 'npcs.json', 'clothing.json']; // Added clothing.json
-
-        for (const filename of userDefinitionFiles) {
-            const url = `/user_assets/definitions/${filename}?t=${Date.now()}`;
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        console.log(`User definition file ${filename} not found, skipping.`);
-                    } else {
-                        throw new Error(`HTTP error! status: ${response.status} for user definition ${filename}`);
-                    }
-                    continue; // Skip to next file
-                }
-                const parsedJson = await response.json();
-                console.log(`Successfully loaded user definition file ${filename}.`);
-
-                if (filename === 'tileset.json') {
-                    this.tilesets = parsedJson; // User tileset replaces base
-                    console.log("AssetManager: User tilesets loaded:", this.tilesets); // Added for debugging
-                    console.log("User tileset.json loaded, replacing base tileset.");
-                } else if (filename === 'items.json') {
-                    if (Array.isArray(parsedJson)) {
-                        parsedJson.forEach(item => { tempItemsById[item.id] = item; });
-                        console.log("User items.json loaded, items merged/overridden.");
-                    } else {
-                        console.warn(`User items.json for ${filename} was not an array. Skipping merge.`);
-                    }
-                } else if (filename === 'npcs.json') {
-                    if (Array.isArray(parsedJson)) {
-                        parsedJson.forEach(npc => {
-                            if (this.npcsById[npc.id]) {
-                                console.warn(`AssetManager: User NPC ID ${npc.id} from npcs.json already exists. Overwriting.`);
-                            }
-                            this.npcsById[npc.id] = npc; // Add/override NPCs
-                        });
-                        console.log("User npcs.json loaded, NPCs merged/overridden.");
-                    } else {
-                        console.warn(`User npcs.json for ${filename} was not an array. Skipping merge.`);
-                    }
-                } else if (filename === 'clothing.json') {
-                    if (Array.isArray(parsedJson)) {
-                        parsedJson.forEach(item => { tempItemsById[item.id] = item; });
-                        console.log("User clothing.json loaded, items merged/overridden into itemsById.");
-                    } else {
-                        console.warn(`User clothing.json for ${filename} was not an array. Skipping merge.`);
-                    }
-                }
-                // Extend for other definition files as they are added
-            } catch (error) {
-                console.error(`Failed to load or process user definition file ${filename}:`, error);
-            }
-        }
         this.itemsById = tempItemsById;
-        console.log("User-generated content definition loading complete.");
     }
 
     getTileset(tilesetId) { // tilesetId is optional, will return all tilesets if not provided
@@ -184,46 +127,22 @@
         let mapJsonData;
         let loadedFromPath = '';
 
-        // Try fetching from user assets first
-        const userMapPath = `/user_assets/maps/${mapId}.json?t=${Date.now()}`;
-        console.log(`AssetManager.loadMap: Attempting to load user map from: ${userMapPath}`);
+        const baseMapPath = `/Maps/${mapId}.json?t=${Date.now()}`;
+        console.log(`AssetManager.loadMap: Attempting to load base map from: ${baseMapPath}`);
         try {
-            const response = await fetch(userMapPath);
-            if (response.ok) {
-                mapJsonData = await response.json();
-                loadedFromPath = userMapPath;
-                console.log(`AssetManager.loadMap: User map '${mapId}' data fetched successfully from ${userMapPath}.`);
-            } else if (response.status !== 404) {
-                // Create an error object that includes the response status if possible
-                const error = new Error(`HTTP error! status: ${response.status} for user map ${mapId} at ${userMapPath}`);
-                error.response = response; // Attach response for more details in catch
+            const response = await fetch(baseMapPath);
+            if (!response.ok) {
+                const error = new Error(`HTTP error! status: ${response.status} for base map ${mapId} at ${baseMapPath}`);
+                error.response = response;
                 throw error;
             }
-            // If 404, mapJsonData remains undefined, proceed to base path
+            mapJsonData = await response.json();
+            loadedFromPath = baseMapPath;
+            console.log(`AssetManager.loadMap: Base map '${mapId}' data fetched successfully from ${baseMapPath}.`);
         } catch (error) {
-            console.log(`AssetManager.loadMap: User map not loaded or failed. Error: ${error.message}. Falling back to base map.`);
-            // No need to re-throw, just proceed to base map loading
-        }
-
-        // Fallback to base assets if user map not found or failed to load
-        if (!mapJsonData) {
-            const baseMapPath = `/Maps/${mapId}.json?t=${Date.now()}`;
-            console.log(`AssetManager.loadMap: Attempting to load base map from: ${baseMapPath}`);
-            try {
-                const response = await fetch(baseMapPath);
-                if (!response.ok) {
-                    const error = new Error(`HTTP error! status: ${response.status} for base map ${mapId} at ${baseMapPath}`);
-                    error.response = response;
-                    throw error;
-                }
-                mapJsonData = await response.json();
-                loadedFromPath = baseMapPath;
-                console.log(`AssetManager.loadMap: Base map '${mapId}' data fetched successfully from ${baseMapPath}.`);
-            } catch (error) {
-                console.error(`AssetManager.loadMap: Base map fetch failed for '${baseMapPath}'. Error: ${error.message}, Status: ${error.response ? error.response.status : 'N/A'}`);
-                this.currentMap = null;
-                return false; // Indicate failure
-            }
+            console.error(`AssetManager.loadMap: Base map fetch failed for '${baseMapPath}'. Error: ${error.message}, Status: ${error.response ? error.response.status : 'N/A'}`);
+            this.currentMap = null;
+            return false; // Indicate failure
         }
 
         if (!mapJsonData) {

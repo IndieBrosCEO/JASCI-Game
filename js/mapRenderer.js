@@ -638,39 +638,40 @@ window.mapRenderer = {
         });
         console.log("Base map options populated.");
 
-        const userMapIndexUrl = `/user_assets/maps/mapIndex.json?t=${Date.now()}`;
-        let userMapIndex = [];
-        try {
-            const userResponse = await fetch(userMapIndexUrl);
-            if (userResponse.ok) {
-                userMapIndex = await userResponse.json();
-                if (userMapIndex && userMapIndex.length > 0) {
-                    console.log("User map index found, adding to selector.");
-                    if (baseMapIndex.length > 0 && userMapIndex.length > 0) {
-                        const separator = document.createElement('option');
-                        separator.disabled = true;
-                        separator.textContent = '--- User Maps ---';
-                        mapSelector.appendChild(separator);
-                    }
-                    userMapIndex.forEach(mapInfo => {
-                        const option = document.createElement('option');
-                        option.value = mapInfo.id;
-                        option.textContent = `[User] ${mapInfo.name}`;
-                        mapSelector.appendChild(option);
-                    });
-                    console.log("User maps added to selector.");
-                    if (baseMapIndex.length === 0) {
-                        assetManagerInstance.setMapIndexData(userMapIndex);
-                    }
-                }
-            } else if (userResponse.status === 404) {
-                console.log("User map index file (/user_assets/maps/mapIndex.json) not found, skipping.");
-            } else {
-                throw new Error(`HTTP error! status: ${userResponse.status} for user mapIndex.json`);
-            }
-        } catch (error) {
-            console.error("Failed to load or process user map index:", error);
-        }
+        // Removed user_assets loading logic
+        // const userMapIndexUrl = `/user_assets/maps/mapIndex.json?t=${Date.now()}`;
+        // let userMapIndex = [];
+        // try {
+        //     const userResponse = await fetch(userMapIndexUrl);
+        //     if (userResponse.ok) {
+        //         userMapIndex = await userResponse.json();
+        //         if (userMapIndex && userMapIndex.length > 0) {
+        //             console.log("User map index found, adding to selector.");
+        //             if (baseMapIndex.length > 0 && userMapIndex.length > 0) {
+        //                 const separator = document.createElement('option');
+        //                 separator.disabled = true;
+        //                 separator.textContent = '--- User Maps ---';
+        //                 mapSelector.appendChild(separator);
+        //             }
+        //             userMapIndex.forEach(mapInfo => {
+        //                 const option = document.createElement('option');
+        //                 option.value = mapInfo.id;
+        //                 option.textContent = `[User] ${mapInfo.name}`;
+        //                 mapSelector.appendChild(option);
+        //             });
+        //             console.log("User maps added to selector.");
+        //             if (baseMapIndex.length === 0) {
+        //                 assetManagerInstance.setMapIndexData(userMapIndex);
+        //             }
+        //         }
+        //     } else if (userResponse.status === 404) {
+        //         console.log("User map index file (/user_assets/maps/mapIndex.json) not found, skipping.");
+        //     } else {
+        //         throw new Error(`HTTP error! status: ${userResponse.status} for user mapIndex.json`);
+        //     }
+        // } catch (error) {
+        //     console.error("Failed to load or process user map index:", error);
+        // }
         console.log("Map selector setup complete.");
     },
 
@@ -953,8 +954,10 @@ window.mapRenderer = {
                     fowStatus = currentFowData[y][x];
                 }
 
-                let displaySprite = originalSprite;
-                let displayColor = originalColor;
+                // displaySprite is already declared earlier in the function
+                displaySprite = originalSprite;
+                // displayColor is already declared earlier in the function
+                displayColor = originalColor;
                 let displayId = finalTileId || "";
 
                 // --- TEMPORARY DEBUGGING FOR CONTAINERS ---
@@ -995,7 +998,7 @@ window.mapRenderer = {
                     let isLit = false;
                     if (lightsOnCurrentZ.length > 0) {
                         for (const source of lightsOnCurrentZ) {
-                            if (isTileIlluminated(x, y, source)) { // isTileIlluminated needs to be Z-aware or receive currentLevelData
+                            if (isTileIlluminated(x, y, currentZ, source)) {
                                 isLit = true;
                                 break;
                             }
@@ -1006,7 +1009,7 @@ window.mapRenderer = {
                         if (isLit) {
                             let activeLight = null;
                             for (const source of lightsOnCurrentZ) {
-                                if (isTileIlluminated(x, y, source)) { activeLight = source; break; }
+                                if (isTileIlluminated(x, y, currentZ, source)) { activeLight = source; break; }
                             }
                             if (activeLight && activeLight.color && typeof activeLight.intensity === 'number') {
                                 const brightenedBase = brightenColor(originalColor, LIGHT_SOURCE_BRIGHTNESS_BOOST);
@@ -1021,7 +1024,7 @@ window.mapRenderer = {
                         if (isLit) {
                             let activeLight = null;
                             for (const source of lightsOnCurrentZ) {
-                                if (isTileIlluminated(x, y, source)) { activeLight = source; break; }
+                                if (isTileIlluminated(x, y, currentZ, source)) { activeLight = source; break; }
                             }
                             if (activeLight && activeLight.color && typeof activeLight.intensity === 'number') {
                                 const slightlyBrightenedVisited = brightenColor(displayColor, LIGHT_SOURCE_BRIGHTNESS_BOOST / 2);
