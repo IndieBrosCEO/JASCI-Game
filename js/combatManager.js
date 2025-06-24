@@ -17,7 +17,7 @@
         weaponSelect.appendChild(unarmedOption);
         const handSlots = this.gameState.inventory.handSlots;
         [handSlots[0], handSlots[1]].forEach(item => {
-            if (item && item.type && (item.type.includes("melee") || item.type.includes("firearm") || item.type.includes("bow") || item.type.includes("crossbow") || item.type.includes("thrown") || item.type.includes("weapon_ranged_other"))) {
+            if (item && item.type && (item.type.includes("melee") || item.type.includes("firearm") || item.type.includes("bow") || item.type.includes("crossbow") || item.type.includes("thrown") || item.type.includes("weapon_ranged_other") || item.type.includes("weapon_utility_spray"))) {
                 const weaponOption = document.createElement('option');
                 weaponOption.value = item.id || item.name;
                 weaponOption.textContent = item.name;
