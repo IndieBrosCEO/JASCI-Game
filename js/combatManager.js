@@ -633,6 +633,36 @@
             if (entity === this.gameState && window.renderCharacterInfo) window.renderCharacterInfo();
             if (entity === this.gameState && window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
         });
+
+        // Handle Lingering Acid Burn specifically if not covered by the loop (e.g. direct hit of acid_mild_thrown)
+        // This ensures the DoT is applied to the primary target even if it wasn't in a generic "affectedEntities" list for some reason
+        // or if the specialEffect string wasn't processed for it in the loop.
+        if (item.id === "acid_mild_thrown" && effectString === "Lingering Acid Burn" && targetEntity) {
+            if (!targetEntity.statusEffects) targetEntity.statusEffects = {};
+            let existingAcidEffect = targetEntity.statusEffects["acid_burn"];
+            const acidDuration = 3; // Duration in turns
+            const acidDmgPerTurn = Math.max(1, rollDie(2)); // 1d2, min 1 damage per turn
+
+            if (!existingAcidEffect) {
+                targetEntity.statusEffects["acid_burn"] = {
+                    id: "acid_burn",
+                    displayName: "Acid Burn",
+                    duration: acidDuration,
+                    sourceItemId: item.id,
+                    damagePerTurn: acidDmgPerTurn,
+                    damageType: "Acid",
+                    description: `Corrosive acid burns, ${acidDmgPerTurn} Acid dmg/turn.`
+                };
+            } else {
+                existingAcidEffect.duration = Math.max(existingAcidEffect.duration, acidDuration);
+                existingAcidEffect.damagePerTurn = Math.max(existingAcidEffect.damagePerTurn, acidDmgPerTurn); // Or sum, or refresh; max seems reasonable
+            }
+            const entityNameForLog = targetEntity === this.gameState ? "Player" : (targetEntity.name || targetEntity.id);
+            logToConsole(`${entityNameForLog} ${existingAcidEffect ? 'acid burn refreshed/intensified' : 'suffering acid burn!'}. Dmg/turn: ${targetEntity.statusEffects["acid_burn"].damagePerTurn}.`, 'darkgreen');
+
+            if (targetEntity === this.gameState && window.renderCharacterInfo) window.renderCharacterInfo();
+            if (targetEntity === this.gameState && window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
+        }
     }
 
     calculateAndApplyMeleeDamage(attacker, target, weapon, hitSuccess, attackNaturalRoll, defenseNaturalRoll, targetBodyPartForDamage) {
@@ -733,7 +763,7 @@
             window.animationManager.playAnimation('gasCloud', cloudParams);
         } else if (weapon?.id === 'acid_mild_thrown' && window.animationManager) {
             const impactPos = defender?.mapPos || this.gameState.pendingCombatAction?.targetTile;
-            if (impactPos) window.animationManager.playAnimation('liquidSplash', { impactPos, duration: 800, splashSprites: ['∴', '※', '*', '.'], sizzleSprites: ['.', '◦', ' '], color: 'limegreen' });
+            if (impactPos) window.animationManager.playAnimation('liquidSplash', { impactPos, duration: 800, splashSprites: ['∴', '※', '*', '.'], sizzleSprites: ['.', '◦', '.'], color: 'limegreen' });
         }
 
         if (actionType === "attack" && attacker === this.gameState) {
