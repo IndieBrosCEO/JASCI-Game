@@ -573,74 +573,71 @@ function renderMergedGrid() {
             // Visually indicate Player Start Position (overrides tile display)
         }
     }
-}
+    // --- End Onion Skinning Logic ---
+
+
+    // Visually indicate Player Start Position (overrides tile display)
+    if (mapData.startPos && x === mapData.startPos.x && y === mapData.startPos.y && currentEditingZ === mapData.startPos.z) {
+        c.textContent = '☻'; // Player sprite
+        c.style.color = 'lime'; // Bright color for player start
+        c.style.backgroundColor = 'rgba(0, 255, 0, 0.2)'; // Slight background highlight
+        c.title = `Player Start (X:${mapData.startPos.x}, Y:${mapData.startPos.y}, Z:${mapData.startPos.z})`;
+    } else {
+        c.title = `${tileNameForTitle} (${originalDisplayIdForTitle || 'Empty'}) at X:${x}, Y:${y}, Z:${currentEditingZ}`;
+    }
+
+
+    // stamp preview (operates on currentEditingZ)
+    if (currentTool === "stamp" && stampData3D && previewPos) {
+        const dx = x - previewPos.x;
+        const dy = y - previewPos.y;
+        // For 3D stamp, preview the slice corresponding to the current Z level
+        // relative to where the stamp would start if previewPos was the anchor.
+        // This preview is simplified to show only one layer of the stamp's current Z-slice.
+        const stampZSliceIndex = currentEditingZ - previewPos.z; // This interpretation is if previewPos also had a Z.
+        // However, previewPos is just {x,y} from mousemove on current grid.
+        // So, we preview the stamp's zi=0 slice (its base)
+
+        if (dx >= 0 && dy >= 0 && dx < stampData3D.w && dy < stampData3D.h && stampData3D.levels[0]) { // Preview base layer of stamp
+            let tileIdToPreview = "";
+            // Try to get a prominent layer for preview, e.g., building or landscape from the stamp's base (zi=0)
+            if (stampData3D.levels[0]["building"] && stampData3D.levels[0]["building"][dy]?.[dx]) {
+                tileIdToPreview = stampData3D.levels[0]["building"][dy][dx];
+            } else if (stampData3D.levels[0]["landscape"] && stampData3D.levels[0]["landscape"][dy]?.[dx]) {
+                tileIdToPreview = stampData3D.levels[0]["landscape"][dy][dx];
+            } else if (stampData3D.levels[0]["item"] && stampData3D.levels[0]["item"][dy]?.[dx]) {
+                tileIdToPreview = stampData3D.levels[0]["item"][dy][dx];
+            } else if (stampData3D.levels[0]["roof"] && stampData3D.levels[0]["roof"][dy]?.[dx]) {
+                tileIdToPreview = stampData3D.levels[0]["roof"][dy][dx];
             }
-// --- End Onion Skinning Logic ---
 
+            // tileIdToPreview might be an object {tileId: "..."} or a string
+            const effectivePreviewId = (typeof tileIdToPreview === 'object' && tileIdToPreview !== null && tileIdToPreview.tileId !== undefined)
+                ? tileIdToPreview.tileId
+                : tileIdToPreview;
 
-// Visually indicate Player Start Position (overrides tile display)
-if (mapData.startPos && x === mapData.startPos.x && y === mapData.startPos.y && currentEditingZ === mapData.startPos.z) {
-    c.textContent = '☻'; // Player sprite
-    c.style.color = 'lime'; // Bright color for player start
-    c.style.backgroundColor = 'rgba(0, 255, 0, 0.2)'; // Slight background highlight
-    c.title = `Player Start (X:${mapData.startPos.x}, Y:${mapData.startPos.y}, Z:${mapData.startPos.z})`;
-} else {
-    c.title = `${tileNameForTitle} (${originalDisplayIdForTitle || 'Empty'}) at X:${x}, Y:${y}, Z:${currentEditingZ}`;
-}
-
-
-// stamp preview (operates on currentEditingZ)
-if (currentTool === "stamp" && stampData3D && previewPos) {
-    const dx = x - previewPos.x;
-    const dy = y - previewPos.y;
-    // For 3D stamp, preview the slice corresponding to the current Z level
-    // relative to where the stamp would start if previewPos was the anchor.
-    // This preview is simplified to show only one layer of the stamp's current Z-slice.
-    const stampZSliceIndex = currentEditingZ - previewPos.z; // This interpretation is if previewPos also had a Z.
-    // However, previewPos is just {x,y} from mousemove on current grid.
-    // So, we preview the stamp's zi=0 slice (its base)
-
-    if (dx >= 0 && dy >= 0 && dx < stampData3D.w && dy < stampData3D.h && stampData3D.levels[0]) { // Preview base layer of stamp
-        let tileIdToPreview = "";
-        // Try to get a prominent layer for preview, e.g., building or landscape from the stamp's base (zi=0)
-        if (stampData3D.levels[0]["building"] && stampData3D.levels[0]["building"][dy]?.[dx]) {
-            tileIdToPreview = stampData3D.levels[0]["building"][dy][dx];
-        } else if (stampData3D.levels[0]["landscape"] && stampData3D.levels[0]["landscape"][dy]?.[dx]) {
-            tileIdToPreview = stampData3D.levels[0]["landscape"][dy][dx];
-        } else if (stampData3D.levels[0]["item"] && stampData3D.levels[0]["item"][dy]?.[dx]) {
-            tileIdToPreview = stampData3D.levels[0]["item"][dy][dx];
-        } else if (stampData3D.levels[0]["roof"] && stampData3D.levels[0]["roof"][dy]?.[dx]) {
-            tileIdToPreview = stampData3D.levels[0]["roof"][dy][dx];
-        }
-
-        // tileIdToPreview might be an object {tileId: "..."} or a string
-        const effectivePreviewId = (typeof tileIdToPreview === 'object' && tileIdToPreview !== null && tileIdToPreview.tileId !== undefined)
-            ? tileIdToPreview.tileId
-            : tileIdToPreview;
-
-        if (effectivePreviewId && effectivePreviewId !== "") {
-            const stampTileDef = assetManager.tilesets[effectivePreviewId];
-            if (stampTileDef) {
-                c.textContent = stampTileDef.sprite;
-                c.style.color = stampTileDef.color;
-                c.classList.add("preview");
-            } else {
-                c.textContent = '!'; // Def not found
-                c.style.color = 'orange';
-                c.classList.add("preview");
+            if (effectivePreviewId && effectivePreviewId !== "") {
+                const stampTileDef = assetManager.tilesets[effectivePreviewId];
+                if (stampTileDef) {
+                    c.textContent = stampTileDef.sprite;
+                    c.style.color = stampTileDef.color;
+                    c.classList.add("preview");
+                } else {
+                    c.textContent = '!'; // Def not found
+                    c.style.color = 'orange';
+                    c.classList.add("preview");
+                }
+            } else if (tileIdToPreview === "") { // Explicitly empty in stamp
+                // c.textContent = ' '; // Show empty from stamp
+                // c.classList.add("preview"); // Optional: style empty preview
             }
-        } else if (tileIdToPreview === "") { // Explicitly empty in stamp
-            // c.textContent = ' '; // Show empty from stamp
-            // c.classList.add("preview"); // Optional: style empty preview
         }
     }
-}
 
-c.onmousedown = handleMouseDown;
-c.onmouseup = handleMouseUp;
-gridContainer.appendChild(c);
-        }
-    }
+    c.onmousedown = handleMouseDown;
+    c.onmouseup = handleMouseUp;
+    gridContainer.appendChild(c);
+}
 
 // Draw portals on top, only if portal's Z matches currentEditingZ
 if (mapData.portals) {
@@ -665,7 +662,7 @@ if (mapData.portals) {
         } // Closing brace for if (portal.z === currentEditingZ)
     }); // Closing brace for mapData.portals.forEach
 } // Closing brace for if (mapData.portals)
-}
+// Removed extraneous '}' that closed renderMergedGrid, as per user feedback.
 
 // --- UI Update Functions ---
 
@@ -1857,10 +1854,13 @@ async function initMap() {
     undoStack.length = 0;
     redoStack.length = 0;
 
-    layerVisibility.landscape = document.getElementById('vis_landscape').checked;
-    layerVisibility.building = document.getElementById('vis_building').checked;
-    layerVisibility.item = document.getElementById('vis_item').checked;
-    layerVisibility.roof = document.getElementById('vis_roof').checked;
+    // The following lines were causing an error because vis_landscape, etc. elements no longer exist.
+    // layerVisibility.landscape = document.getElementById('vis_landscape').checked;
+    // layerVisibility.building = document.getElementById('vis_building').checked;
+    // layerVisibility.item = document.getElementById('vis_item').checked;
+    // layerVisibility.roof = document.getElementById('vis_roof').checked;
+    // The layerVisibility for 'bottom' and 'middle' is correctly initialized by the
+    // forEach loop later in this initMap function (and also globally).
 
     if (typeof updateSelectedNpcInfo === 'function') updateSelectedNpcInfo();
     updateContainerInventoryUI();
@@ -2331,48 +2331,3 @@ function updateContainerInventoryUI() {
 
     updateLockPropertiesUI();
 }
-
-// instead of only setting currentLayer…
-// This handler was already correctly defined earlier using currentLayerType.
-// The duplicate one below is likely an older version or a copy-paste error.
-// I will remove this duplicate block.
-// document.getElementById("layerSelect").onchange = e => {
-//     currentLayer = e.target.value; // This should be currentLayerType
-//     selectedTileForInventory = null;
-//     updateContainerInventoryUI();
-
-//     selectedPortal = null;
-//     addingPortalMode = false;
-//     document.getElementById('toggleAddPortalModeBtn').textContent = "Add Portal";
-//     updateSelectedPortalInfo();
-
-//     if (selectedGenericTile) {
-//         selectedGenericTile = null;
-//         updateTilePropertyEditorUI(); // Hide tile editor
-//     }
-
-//     buildPalette();
-//     renderMergedGrid();
-// };
-
-// The correct handler is already present around line 1008:
-// document.getElementById("layerSelect").onchange = e => {
-// currentLayerType = e.target.value; // Changed from currentLayer
-// ...
-// };
-// No changes needed here, only removal of the duplicate if it were truly a separate conflicting block.
-// For the purpose of this diff, assuming the SEARCH block is the one to be removed or confirmed as already correct.
-// Since the plan is to fix `layers` references, and this block doesn't use `mapData.levels`
-// but rather implies a global `layers` through its potential interaction if `currentLayer` was used directly as an index,
-// it's best to ensure it's either correct or removed if redundant.
-// Given the earlier `layerSelect.onchange` uses `currentLayerType` and seems more complete,
-// this trailing block is suspicious.
-// For safety and to ensure no `layers` related error from this, I will effectively comment it out / remove it
-// by making the SEARCH block result in no replacement code, assuming the earlier one is canonical.
-// If this was the *only* handler, I'd fix it. But since there's one above, this is likely dead/old.
-
-// Corrected understanding: The original file has TWO `layerSelect.onchange` assignments.
-// The first one (around line 1008) correctly uses `currentLayerType`.
-// The second one (at the very end) incorrectly uses `currentLayer`.
-// The fix is to remove the second, incorrect one.
-// The tool will achieve this if the REPLACE block is empty.
