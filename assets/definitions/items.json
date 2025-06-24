@@ -1325,7 +1325,9 @@
     "damage": "1d6",
     "damageType": "Acid",
     "rangeIncrementFt": 10,
-    "splashDamage": "1"
+    "splashDamage": "1",
+    "sprite": "◦",
+    "projectileColor": "limegreen"
   },
   {
     "id": "molotov_cocktail_thrown",

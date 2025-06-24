@@ -865,12 +865,34 @@ window.GasCloudAnimation = GasCloudAnimation;
 // --- WhipCrackAnimation Class (Jules) ---
 class WhipCrackAnimation extends Animation {
     constructor(type, data, gameStateRef) {
-        // data: attacker, defender (target), duration
-        // The whip crack animation will occur primarily at the defender's location,
-        // after a visual "reach" from the attacker.
-        super(type, { ...data, x: data.attacker.mapPos.x, y: data.attacker.mapPos.y }, gameStateRef);
-        this.attackerPos = data.attacker.mapPos;
-        this.defenderPos = data.defender.mapPos;
+        // data: attacker (entity), defender (entity), duration
+
+        // Robustly get attacker and defender positions
+        let attackerPosition, defenderPosition;
+
+        if (data.attacker === gameStateRef) { // Check if attacker is player
+            attackerPosition = gameStateRef.playerPos;
+        } else if (data.attacker && data.attacker.mapPos) {
+            attackerPosition = data.attacker.mapPos;
+        } else {
+            console.error("[WhipCrackAnimation] Attacker position is undefined!", data.attacker);
+            attackerPosition = { x: 0, y: 0 }; // Fallback
+        }
+
+        if (data.defender === gameStateRef) { // Check if defender is player
+            defenderPosition = gameStateRef.playerPos;
+        } else if (data.defender && data.defender.mapPos) {
+            defenderPosition = data.defender.mapPos;
+        } else {
+            console.error("[WhipCrackAnimation] Defender position is undefined!", data.defender);
+            defenderPosition = attackerPosition; // Fallback to attacker's position if defender's is missing
+        }
+
+        // Pass the resolved attackerPosition.x and y to the super constructor
+        super(type, { ...data, x: attackerPosition.x, y: attackerPosition.y }, gameStateRef);
+
+        this.attackerPos = attackerPosition;
+        this.defenderPos = defenderPosition;
 
         // Sprites: initial reach, extend, crack, retract
         this.whipSprites = ['~', '-', '¬', "'", "-"];
