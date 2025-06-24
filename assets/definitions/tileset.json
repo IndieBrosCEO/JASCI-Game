@@ -1233,5 +1233,45 @@
     "lightColor": "#FF0000",
     "lightRadius": 5,
     "lightIntensity": 0.8
+  },
+  "ST_U": {
+    "sprite": "▲",
+    "name": "Stairs Up",
+    "color": "#C0C0C0",
+    "tags": [ "building", "z_transition", "stairs" ],
+    "target_dz": 1,
+    "z_cost": 2
+  },
+  "ST_D": {
+    "sprite": "▼",
+    "name": "Stairs Down",
+    "color": "#A0A0A0",
+    "tags": [ "building", "z_transition", "stairs" ],
+    "target_dz": -1,
+    "z_cost": 1
+  },
+  "LA_U": {
+    "sprite": "H",
+    "name": "Ladder Up",
+    "color": "#8B4513",
+    "tags": [ "building", "item", "z_transition", "ladder" ],
+    "target_dz": 1,
+    "z_cost": 3
+  },
+  "LA_D": {
+    "sprite": "H",
+    "name": "Ladder Down",
+    "color": "#8B4513",
+    "tags": [ "building", "item", "z_transition", "ladder" ],
+    "target_dz": -1,
+    "z_cost": 1
+  },
+  "HOLE": {
+    "sprite": "O",
+    "name": "Hole",
+    "color": "#303030",
+    "tags": [ "landscape", "z_transition", "hole", "transparent_floor", "allows_vision" ],
+    "target_dz": -1,
+    "z_cost": 1
   }
 }

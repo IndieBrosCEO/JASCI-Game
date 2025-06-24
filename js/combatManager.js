@@ -796,7 +796,8 @@
                 }
             }
         }
-        let coverBonus = (defender && defender.mapPos) ? this.getDefenderCoverBonus(defender) : 0; // Cover is complex in 3D, placeholder
+        // Pass attacker to getDefenderCoverBonus for 3D cover calculation
+        let coverBonus = (defender && defender.mapPos && attacker && attacker.mapPos) ? this.getDefenderCoverBonus(attacker, defender) : 0;
         if (attackType === 'ranged' && weapon) {
             const attackerMapPos = attacker.mapPos || this.gameState.playerPos; // Includes .z
             const targetMapPos = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos; // Includes .z
@@ -1083,19 +1084,77 @@
 
     getDefenderCoverBonus(defender) {
         let coverBonus = 0;
-        if (defender?.mapPos && this.gameState.layers && this.assetManager?.getTileset()) {
-            const { x, y } = defender.mapPos;
-            ['building', 'object', 'landscape'].forEach(layerName => {
-                const tileId = this.gameState.layers[layerName]?.[y]?.[x];
-                if (tileId) {
-                    const tileDef = this.assetManager.getTileset()[tileId];
-                    if (tileDef?.coverBonus) coverBonus = Math.max(coverBonus, parseInt(tileDef.coverBonus, 10) || 0);
+        if (defender?.mapPos && defender.mapPos.z !== undefined && this.gameState.mapLevels && this.assetManager?.getTileset()) {
+            const { x, y, z } = defender.mapPos;
+            const zStr = z.toString();
+            const levelData = this.gameState.mapLevels[zStr];
+
+            if (levelData) {
+                // Define which layers on the defender's Z-level provide cover.
+                // This might need to be more sophisticated later, considering attacker's angle.
+                const layersToCheckForCover = ['building', 'item', 'landscape']; // 'object' was mentioned, ensure 'item' covers it.
+                for (const layerName of layersToCheckForCover) {
+                    const tileId = levelData[layerName]?.[y]?.[x];
+                    if (tileId) {
+                        const baseTileId = (typeof tileId === 'object' && tileId.tileId) ? tileId.tileId : tileId;
+                        const tileDef = this.assetManager.getTileset()[baseTileId];
+                        if (tileDef?.coverBonus) {
+                            coverBonus = Math.max(coverBonus, parseInt(tileDef.coverBonus, 10) || 0);
+                        }
+                    }
                 }
-            });
+            }
         }
-        if (coverBonus > 0) logToConsole(`${defender.name || "Defender"} gets +${coverBonus} cover bonus.`, 'grey');
+        if (coverBonus > 0) logToConsole(`${defender.name || "Defender"} gets +${coverBonus} cover bonus from tile at their position. (Note: 3D cover relative to attacker not yet fully implemented)`, 'grey');
         return coverBonus;
     }
+
+    // Updated getDefenderCoverBonus to consider attacker's position for 3D cover
+    getDefenderCoverBonus(attacker, defender) {
+        if (!attacker || !attacker.mapPos || !defender || !defender.mapPos) return 0;
+
+        const losLine = getLine3D(attacker.mapPos.x, attacker.mapPos.y, attacker.mapPos.z,
+            defender.mapPos.x, defender.mapPos.y, defender.mapPos.z);
+        if (!losLine || losLine.length < 2) return 0; // No line or only start/end point
+
+        let maxCoverBonus = 0;
+
+        // Iterate LOS path, excluding start (attacker) and end (defender) points
+        for (let i = 1; i < losLine.length - 1; i++) {
+            const point = losLine[i];
+            const tileDef = this._getTileProperties(window.mapRenderer.getCollisionTileAt(point.x, point.y, point.z));
+            // Check all layers at this point for cover
+            // This simplified check uses getCollisionTileAt which returns the first impassable tile.
+            // A more thorough check might iterate layers at point.x, point.y, point.z.
+
+            if (tileDef && tileDef.coverBonus) {
+                // Potentially, if a tile provides cover, it might fully obscure, or offer partial.
+                // For now, take the highest cover bonus found along the path.
+                // More complex: accumulate cover or check if LOS is fully blocked.
+                maxCoverBonus = Math.max(maxCoverBonus, parseInt(tileDef.coverBonus, 10) || 0);
+                // If a very high cover is found, we might consider the target obscured.
+                // For now, just accumulate the highest bonus.
+            }
+            // Also check the landscape layer specifically if not returned by getCollisionTileAt (e.g. a berm)
+            const zStr = point.z.toString();
+            const mapLevels = window.mapRenderer.getCurrentMapData()?.levels;
+            if (mapLevels && mapLevels[zStr] && mapLevels[zStr].landscape) {
+                const landscapeTileId = mapLevels[zStr].landscape[point.y]?.[point.x];
+                if (landscapeTileId) {
+                    const landscapeTileDef = this._getTileProperties(landscapeTileId);
+                    if (landscapeTileDef && landscapeTileDef.coverBonus) {
+                        maxCoverBonus = Math.max(maxCoverBonus, parseInt(landscapeTileDef.coverBonus, 10) || 0);
+                    }
+                }
+            }
+        }
+
+        if (maxCoverBonus > 0) {
+            logToConsole(`${defender.name || "Defender"} gets +${maxCoverBonus} 3D cover bonus against ${attacker.name || "Attacker"}.`, 'grey');
+        }
+        return maxCoverBonus;
+    }
+
 
     getCharactersInBlastRadius(impactTile, burstRadiusTiles) { // impactTile should have x, y, z
         const affected = [];
@@ -1162,32 +1221,91 @@
     }
 
     _getTileProperties(tileId) { return tileId && this.assetManager.tilesets ? this.assetManager.tilesets[tileId] : null; }
-    _isTilePassable(x, y) {
-        if (!this.gameState.layers || x < 0 || y < 0 || !this.gameState.layers.landscape || y >= this.gameState.layers.landscape.length || x >= this.gameState.layers.landscape[0].length) return false;
-        for (const layerName of ['building', 'item']) {
-            const tileId = this.gameState.layers[layerName]?.[y]?.[x];
-            if (tileId && this._getTileProperties(tileId)?.tags?.includes("impassable")) return false;
+
+    _isTilePassable(x, y, z) {
+        const zStr = z.toString();
+        const levelData = this.gameState.mapLevels?.[zStr];
+        if (!levelData || x < 0 || y < 0 || y >= this.gameState.mapLevels[zStr].landscape.length || x >= this.gameState.mapLevels[zStr].landscape[0].length) {
+            return false;
+        }
+        // Check relevant layers for impassable tiles
+        for (const layerName of ['building', 'item']) { // Landscape is generally passable unless specific tile says otherwise
+            const tileId = levelData[layerName]?.[y]?.[x];
+            if (tileId) {
+                const baseTileId = (typeof tileId === 'object' && tileId.tileId) ? tileId.tileId : tileId;
+                if (this._getTileProperties(baseTileId)?.tags?.includes("impassable")) return false;
+            }
+        }
+        // Check if landscape itself is impassable (e.g. deep water, mountain wall)
+        const landscapeTileId = levelData.landscape?.[y]?.[x];
+        if (landscapeTileId) {
+            const baseLandscapeTileId = (typeof landscapeTileId === 'object' && landscapeTileId.tileId) ? landscapeTileId.tileId : landscapeTileId;
+            if (this._getTileProperties(baseLandscapeTileId)?.tags?.includes("impassable")) return false;
         }
         return true;
     }
-    _isTileOccupiedByOtherNpc(x, y, currentNpcId) { return this.gameState.npcs.some(npc => npc.id !== currentNpcId && npc.mapPos?.x === x && npc.mapPos?.y === y && npc.health?.torso?.current > 0); }
-    _isTilePassableAndUnoccupiedForNpc(x, y, npcId) { return this._isTilePassable(x, y) && !this._isTileOccupiedByOtherNpc(x, y, npcId); }
 
-    async moveNpcTowardsTarget(npc, targetPos) {
-        if (!npc.mapPos || npc.currentMovementPoints <= 0) return false;
-        const originalPos = { ...npc.mapPos };
-        const dx = targetPos.x - npc.mapPos.x, dy = targetPos.y - npc.mapPos.y;
-        let moved = false, newPos = { ...originalPos };
-        const tryMove = (nx, ny) => { if (this._isTilePassableAndUnoccupiedForNpc(nx, ny, npc.id)) { newPos = { x: nx, y: ny }; return true; } return false; };
-        if (Math.abs(dx) > Math.abs(dy)) { if (dx !== 0) moved = tryMove(npc.mapPos.x + Math.sign(dx), npc.mapPos.y); if (!moved && dy !== 0) moved = tryMove(npc.mapPos.x, npc.mapPos.y + Math.sign(dy)); }
-        else { if (dy !== 0) moved = tryMove(npc.mapPos.x, npc.mapPos.y + Math.sign(dy)); if (!moved && dx !== 0) moved = tryMove(npc.mapPos.x + Math.sign(dx), npc.mapPos.y); }
-        if (moved) {
-            if (window.animationManager) await window.animationManager.playAnimation('movement', { entity: npc, startPos: originalPos, endPos: newPos, sprite: npc.sprite, color: npc.color, duration: 300 });
-            npc.mapPos.x = newPos.x; npc.mapPos.y = newPos.y; npc.currentMovementPoints--; npc.movedThisTurn = true;
-            logToConsole(`ACTION: ${npc.name || npc.id} moves to (${npc.mapPos.x},${npc.mapPos.y}). MP Left: ${npc.currentMovementPoints}`, 'gold');
-            this.gameState.attackerMapPos = { ...npc.mapPos }; window.mapRenderer.scheduleRender();
+    _isTileOccupiedByOtherNpc(x, y, z, currentNpcId) {
+        return this.gameState.npcs.some(npc =>
+            npc.id !== currentNpcId &&
+            npc.mapPos?.x === x &&
+            npc.mapPos?.y === y &&
+            npc.mapPos?.z === z && // Check Z coordinate
+            npc.health?.torso?.current > 0 // Consider only live NPCs
+        );
+    }
+
+    _isTilePassableAndUnoccupiedForNpc(x, y, z, npcId) {
+        return this._isTilePassable(x, y, z) && !this._isTileOccupiedByOtherNpc(x, y, z, npcId);
+    }
+
+    async moveNpcTowardsTarget(npc, targetPos) { // targetPos can have x,y,z
+        if (!npc.mapPos || npc.currentMovementPoints <= 0 || !targetPos) return false;
+
+        const path = window.findPath3D(npc.mapPos, targetPos, npc, window.mapRenderer.getCurrentMapData(), this.assetManager.tilesets);
+
+        if (!path || path.length <= 1) { // No path or already at target (path includes start)
+            logToConsole(`NPC ${npc.name || npc.id}: No path to target or already at target. Path: ${JSON.stringify(path)}`, 'grey');
+            return false;
         }
-        return moved;
+
+        // Path[0] is current location, path[1] is the next step.
+        const nextStep = path[1];
+
+        if (!this._isTilePassableAndUnoccupiedForNpc(nextStep.x, nextStep.y, nextStep.z, npc.id)) {
+            logToConsole(`NPC ${npc.name || npc.id}: Next step (${nextStep.x},${nextStep.y},${nextStep.z}) on path is blocked or occupied. Recalculate or wait.`, 'orange');
+            // TODO: Handle blocked path, e.g., by trying to find an alternative or waiting.
+            return false;
+        }
+
+        const originalPos = { ...npc.mapPos };
+
+        // The animation 'movement' should ideally handle Z if it can.
+        if (window.animationManager) {
+            await window.animationManager.playAnimation('movement', {
+                entity: npc,
+                startPos: originalPos,
+                endPos: nextStep, // nextStep includes x, y, z
+                sprite: npc.sprite,
+                color: npc.color,
+                duration: 300
+            });
+        }
+
+        npc.mapPos.x = nextStep.x;
+        npc.mapPos.y = nextStep.y;
+        npc.mapPos.z = nextStep.z; // Update Z based on path
+
+        npc.currentMovementPoints--; // Assume 1 MP per step for now. Path cost can be integrated later.
+        npc.movedThisTurn = true;
+
+        logToConsole(`ACTION: ${npc.name || npc.id} moves to (${npc.mapPos.x},${npc.mapPos.y}, Z:${npc.mapPos.z}) via path. MP Left: ${npc.currentMovementPoints}`, 'gold');
+
+        if (this.gameState.combatCurrentAttacker === npc) { // If this NPC is the current attacker in combat
+            this.gameState.attackerMapPos = { ...npc.mapPos };
+        }
+        window.mapRenderer.scheduleRender();
+        return true; // Moved successfully
     }
 
     _npcSelectTarget(npc) {

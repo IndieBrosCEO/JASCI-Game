@@ -450,5 +450,69 @@
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "bandit", "melee" ],
     "teamId": 4
+  },
+  {
+    "id": "cellar_dweller",
+    "name": "Cellar Dweller",
+    "sprite": "c",
+    "color": "darkgreen",
+    "health": {
+      "head": {
+        "max": 4,
+        "current": 4,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "torso": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftArm": {
+        "max": 6,
+        "current": 6,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightArm": {
+        "max": 6,
+        "current": 6,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftLeg": {
+        "max": 6,
+        "current": 6,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightLeg": {
+        "max": 6,
+        "current": 6,
+        "armor": 0,
+        "crisisTimer": 0
+      }
+    },
+    "stats": {
+      "Strength": 3,
+      "Intelligence": 2,
+      "Dexterity": 3,
+      "Constitution": 3,
+      "Perception": 3,
+      "Willpower": 2,
+      "Charisma": 1,
+      "Marksmanship": 2
+    },
+    "skills": {
+      "Unarmed": 15,
+      "MeleeWeapons": 10,
+      "Guns": 5
+    },
+    "equippedWeaponId": "knife_melee",
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 5,
+    "tags": [ "hostile", "mutant", "melee" ],
+    "teamId": 5
   }
 ]

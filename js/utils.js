@@ -385,3 +385,148 @@ function getDistance3D(pos1, pos2) {
     return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 window.getDistance3D = getDistance3D;
+
+/**
+ * Placeholder for a 3D A* pathfinding algorithm.
+ * 
+ * @param {object} startPos - The starting position {x, y, z}.
+ * @param {object} endPos - The target position {x, y, z}.
+ * @param {object} entity - The entity for whom the path is being calculated (optional, for entity-specific movement rules).
+ * @param {object} mapData - The complete map data, including all Z-levels.
+ * @param {object} tileset - The tileset definitions.
+ * @returns {Array<object>|null} An array of {x, y, z} points representing the path, or null if no path is found.
+ */
+function findPath3D(startPos, endPos, entity, mapData, tileset) {
+    if (!mapData || !mapData.levels || !mapData.dimensions || !tileset) {
+        logToConsole("findPath3D: Missing mapData, levels, dimensions, or tileset.", "error");
+        return null;
+    }
+
+    const openSet = [];
+    const closedSet = new Set(); // Stores string keys "x,y,z"
+
+    const startNode = {
+        x: startPos.x, y: startPos.y, z: startPos.z,
+        g: 0,
+        h: heuristic(startPos, endPos),
+        f: heuristic(startPos, endPos),
+        parent: null
+    };
+    openSet.push(startNode);
+
+    function heuristic(posA, posB) {
+        // Manhattan distance for 3D
+        return Math.abs(posA.x - posB.x) + Math.abs(posA.y - posB.y) + Math.abs(posA.z - posB.z);
+    }
+
+    function getNodeKey(node) {
+        return `${node.x},${node.y},${node.z}`;
+    }
+
+    function getTileDef(x, y, z) {
+        const zStr = z.toString();
+        if (!mapData.levels[zStr]) return null;
+
+        // Check layers in order of precedence for what defines the tile's nature for pathing
+        const layersToCheck = ['building', 'item', 'landscape'];
+        for (const layerName of layersToCheck) {
+            const tileId = mapData.levels[zStr][layerName]?.[y]?.[x];
+            if (tileId) {
+                const baseTileId = (typeof tileId === 'object' && tileId.tileId) ? tileId.tileId : tileId;
+                if (tileset[baseTileId]) return tileset[baseTileId];
+            }
+        }
+        return null; // Or return landscape tile if nothing else found
+    }
+
+    function isWalkable(x, y, z) {
+        if (x < 0 || x >= mapData.dimensions.width || y < 0 || y >= mapData.dimensions.height) {
+            return false; // Out of bounds
+        }
+        const tileDef = getTileDef(x, y, z);
+        return tileDef && (!tileDef.tags || !tileDef.tags.includes('impassable'));
+    }
+
+    while (openSet.length > 0) {
+        openSet.sort((a, b) => a.f - b.f); // Sort by F cost to get the best node
+        const currentNode = openSet.shift();
+        const currentKey = getNodeKey(currentNode);
+
+        if (currentNode.x === endPos.x && currentNode.y === endPos.y && currentNode.z === endPos.z) {
+            // Path found, reconstruct it
+            const path = [];
+            let temp = currentNode;
+            while (temp) {
+                path.push({ x: temp.x, y: temp.y, z: temp.z });
+                temp = temp.parent;
+            }
+            return path.reverse();
+        }
+
+        closedSet.add(currentKey);
+
+        const neighbors = [];
+        // Cardinal directions (X, Y movement on current Z)
+        const cardinalMoves = [
+            { dx: 0, dy: -1, dz: 0 }, { dx: 0, dy: 1, dz: 0 },
+            { dx: -1, dy: 0, dz: 0 }, { dx: 1, dy: 0, dz: 0 }
+        ];
+
+        for (const move of cardinalMoves) {
+            const nextX = currentNode.x + move.dx;
+            const nextY = currentNode.y + move.dy;
+            const nextZ = currentNode.z + move.dz; // Stays the same for cardinal moves
+
+            if (isWalkable(nextX, nextY, nextZ)) {
+                neighbors.push({ x: nextX, y: nextY, z: nextZ, cost: 1 });
+            }
+        }
+
+        // Z-transitions
+        const currentTileDef = getTileDef(currentNode.x, currentNode.y, currentNode.z);
+        if (currentTileDef && currentTileDef.tags && currentTileDef.tags.includes('z_transition')) {
+            if (currentTileDef.target_dz !== undefined) {
+                const nextZ = currentNode.z + currentTileDef.target_dz;
+                // Assume Z-transition implies walkability to the target Z tile at same X,Y
+                // A more robust check would verify the destination tile on the new Z is also walkable.
+                // For now, if it's a z_transition tile, we assume it leads somewhere valid.
+                if (mapData.levels[nextZ.toString()]) { // Check if target Z-level exists
+                    neighbors.push({
+                        x: currentNode.x, y: currentNode.y, z: nextZ,
+                        cost: currentTileDef.z_cost || 1 // Use z_cost if defined, else 1
+                    });
+                }
+            }
+        }
+
+        for (const neighborPos of neighbors) {
+            const neighborKey = getNodeKey(neighborPos);
+            if (closedSet.has(neighborKey)) {
+                continue;
+            }
+
+            const gCost = currentNode.g + neighborPos.cost;
+            let existingNeighbor = openSet.find(node => node.x === neighborPos.x && node.y === neighborPos.y && node.z === neighborPos.z);
+
+            if (!existingNeighbor || gCost < existingNeighbor.g) {
+                if (existingNeighbor) {
+                    existingNeighbor.g = gCost;
+                    existingNeighbor.f = gCost + existingNeighbor.h;
+                    existingNeighbor.parent = currentNode;
+                } else {
+                    const newNode = {
+                        x: neighborPos.x, y: neighborPos.y, z: neighborPos.z,
+                        g: gCost,
+                        h: heuristic(neighborPos, endPos),
+                        f: gCost + heuristic(neighborPos, endPos),
+                        parent: currentNode
+                    };
+                    openSet.push(newNode);
+                }
+            }
+        }
+    }
+    logToConsole(`findPath3D: No path found from (${startPos.x},${startPos.y},${startPos.z}) to (${endPos.x},${endPos.y},${endPos.z}).`, "orange");
+    return null; // No path found
+}
+window.findPath3D = findPath3D;

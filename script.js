@@ -595,34 +595,49 @@ function handleKeyDown(event) {
             return; // Cannot move target if no map
         }
         let movedTarget = false;
-        switch (event.key) {
-            case 'ArrowUp': case 'w': case 'W':
-                if (gameState.targetingCoords.y > 0) {
-                    gameState.targetingCoords.y--;
+        // Z-level targeting with Shift + Up/Down or Shift + W/S
+        if (event.shiftKey) {
+            switch (event.key) {
+                case 'ArrowUp': case 'w': case 'W':
+                    gameState.targetingCoords.z++;
                     movedTarget = true;
-                }
-                break;
-            case 'ArrowDown': case 's': case 'S':
-                if (gameState.targetingCoords.y < currentMapData.dimensions.height - 1) {
-                    gameState.targetingCoords.y++;
+                    break;
+                case 'ArrowDown': case 's': case 'S':
+                    gameState.targetingCoords.z--;
                     movedTarget = true;
-                }
-                break;
-            case 'ArrowLeft': case 'a': case 'A':
-                if (gameState.targetingCoords.x > 0) {
-                    gameState.targetingCoords.x--;
-                    movedTarget = true;
-                }
-                break;
-            case 'ArrowRight': case 'd': case 'D':
-                if (gameState.targetingCoords.x < currentMapData.dimensions.width - 1) {
-                    gameState.targetingCoords.x++;
-                    movedTarget = true;
-                }
-                break;
+                    break;
+            }
+        } else {
+            // Normal X/Y targeting
+            switch (event.key) {
+                case 'ArrowUp': case 'w': case 'W':
+                    if (gameState.targetingCoords.y > 0) {
+                        gameState.targetingCoords.y--;
+                        movedTarget = true;
+                    }
+                    break;
+                case 'ArrowDown': case 's': case 'S':
+                    if (gameState.targetingCoords.y < currentMapData.dimensions.height - 1) {
+                        gameState.targetingCoords.y++;
+                        movedTarget = true;
+                    }
+                    break;
+                case 'ArrowLeft': case 'a': case 'A':
+                    if (gameState.targetingCoords.x > 0) {
+                        gameState.targetingCoords.x--;
+                        movedTarget = true;
+                    }
+                    break;
+                case 'ArrowRight': case 'd': case 'D':
+                    if (gameState.targetingCoords.x < currentMapData.dimensions.width - 1) {
+                        gameState.targetingCoords.x++;
+                        movedTarget = true;
+                    }
+                    break;
+            }
         }
         if (movedTarget) {
-            logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}`);
+            logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}, Z=${gameState.targetingCoords.z}`);
             window.mapRenderer.scheduleRender();
             event.preventDefault();
             return; // Prevent player movement or other actions
@@ -632,16 +647,16 @@ function handleKeyDown(event) {
     // Z-Level view controls (should take precedence over movement if not in targeting mode or other UI modes)
     if (!isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isTargetingMode) {
         let viewChanged = false;
-        const currentMap = window.mapRenderer.getCurrentMapData();
+        const currentMap = window.mapRenderer.getCurrentMapData(); // Get current map data once
         const H = currentMap ? currentMap.dimensions.height : 0;
         const W = currentMap ? currentMap.dimensions.width : 0;
 
-        if (event.key === '<' || event.key === ',') {
+        if (event.key === '<' || event.key === ',') { // Use ',' as well for convenience
             gameState.currentViewZ--;
             gameState.viewFollowsPlayerZ = false; // Player is manually controlling view
             logToConsole(`View Z changed to: ${gameState.currentViewZ}. View no longer follows player.`);
             viewChanged = true;
-        } else if (event.key === '>' || event.key === '.') {
+        } else if (event.key === '>' || event.key === '.') { // Use '.' as well
             gameState.currentViewZ++;
             gameState.viewFollowsPlayerZ = false; // Player is manually controlling view
             logToConsole(`View Z changed to: ${gameState.currentViewZ}. View no longer follows player.`);
@@ -654,16 +669,39 @@ function handleKeyDown(event) {
         }
 
         if (viewChanged) {
+            // Ensure FOW data for the new currentViewZ is initialized if it doesn't exist
             const newViewZStr = gameState.currentViewZ.toString();
             if (H > 0 && W > 0 && !gameState.fowData[newViewZStr]) {
                 gameState.fowData[newViewZStr] = Array(H).fill(null).map(() => Array(W).fill('hidden'));
-                logToConsole(`FOW data initialized for newly viewed Z-level ${newViewZStr}.`);
+                logToConsole(`FOW data initialized for newly viewed Z-level ${newViewZStr} via key press.`);
             }
+            updatePlayerStatusDisplay(); // Update Z displays
             window.mapRenderer.scheduleRender();
             event.preventDefault();
-            return; // Consume the event
+            return; // Consume the event, preventing other actions
         }
     }
+
+    // Logic for player Z change following
+    // This should be triggered when playerPos.z changes, typically after a move action that involves Z-transition.
+    // For now, we'll just ensure that if viewFollowsPlayerZ is true, currentViewZ is synced.
+    // The actual sync point after playerPos.z changes will be handled when Z-transition moves are implemented.
+    if (gameState.viewFollowsPlayerZ && gameState.currentViewZ !== gameState.playerPos.z) {
+        gameState.currentViewZ = gameState.playerPos.z;
+        // Ensure FOW for this new Z is also initialized if needed (though player movement should handle its own Z's FOW)
+        const playerZStr = gameState.playerPos.z.toString();
+        const currentMap = window.mapRenderer.getCurrentMapData();
+        const H = currentMap ? currentMap.dimensions.height : 0;
+        const W = currentMap ? currentMap.dimensions.width : 0;
+        if (H > 0 && W > 0 && !gameState.fowData[playerZStr]) {
+            gameState.fowData[playerZStr] = Array(H).fill(null).map(() => Array(W).fill('hidden'));
+            logToConsole(`FOW data initialized for player's new Z-level ${playerZStr} due to view following.`);
+        }
+        logToConsole(`View Z updated to follow player Z: ${gameState.currentViewZ}.`);
+        updatePlayerStatusDisplay(); // Update Z displays
+        window.mapRenderer.scheduleRender(); // Re-render if view Z changed
+    }
+
 
     // Default game actions (player movement, interaction, etc.)
     // This block is processed if not in targeting mode OR if in targeting mode but no targeting movement key was pressed,
@@ -1173,6 +1211,16 @@ async function initialize() { // Made async
         } else if (thirstElement) {
             thirstElement.textContent = "Thirst N/A";
             thirstElement.style.color = ""; // Reset color if N/A
+        }
+
+        // Update Z-Level Displays
+        const playerZElement = document.getElementById('playerZDisplay');
+        if (playerZElement) {
+            playerZElement.textContent = `Player Z: ${gameState.playerPos.z}`;
+        }
+        const viewZElement = document.getElementById('viewZDisplay');
+        if (viewZElement) {
+            viewZElement.textContent = `View Z: ${gameState.currentViewZ}`;
         }
     }
     window.updatePlayerStatusDisplay = updatePlayerStatusDisplay; // Make it globally accessible if needed elsewhere

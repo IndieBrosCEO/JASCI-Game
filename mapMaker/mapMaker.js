@@ -176,14 +176,14 @@ function undo() {
     mapData = undoStack.pop(); // Restore previous state
     // Update UI elements that depend on mapData state (like Z-level input, grid dimensions)
     document.getElementById("inputWidth").value = mapData.width;
+    document.getElementById("inputWidth").value = mapData.width;
     document.getElementById("inputHeight").value = mapData.height;
     gridWidth = mapData.width;
     gridHeight = mapData.height;
     document.documentElement.style.setProperty("--cols", gridWidth);
-    currentEditingZ = mapData.startPos.z; // Or persist last editing Z, but startPos.z is safer
+    currentEditingZ = mapData.startPos.z !== undefined ? mapData.startPos.z : 0;
     document.getElementById("zLevelInput").value = currentEditingZ;
-    document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
-    // Ensure the current editing Z has its layers initialized if they were removed by an undo
+    updatePlayerStartDisplay(); // Ensures X,Y,Z are all updated
     ensureLayersForZ(currentEditingZ);
     renderMergedGrid();
 }
@@ -201,6 +201,15 @@ function redo() {
     document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
     ensureLayersForZ(currentEditingZ);
     renderMergedGrid();
+}
+
+function updatePlayerStartDisplay() {
+    const startXDisp = document.getElementById("playerStartXDisplay");
+    const startYDisp = document.getElementById("playerStartYDisplay");
+    const startZDisp = document.getElementById("playerStartZDisplay");
+    if (startXDisp) startXDisp.textContent = mapData.startPos && mapData.startPos.x !== undefined ? mapData.startPos.x : 'N/A';
+    if (startYDisp) startYDisp.textContent = mapData.startPos && mapData.startPos.y !== undefined ? mapData.startPos.y : 'N/A';
+    if (startZDisp) startZDisp.textContent = mapData.startPos && mapData.startPos.z !== undefined ? mapData.startPos.z : 'N/A';
 }
 
 // --- 6) Palette ---
@@ -847,15 +856,14 @@ document.getElementById("zLevelInput").addEventListener('change', (e) => {
     const newZ = parseInt(e.target.value, 10);
     if (!isNaN(newZ)) {
         currentEditingZ = newZ;
-        ensureLayersForZ(currentEditingZ); // Important for new or unvisited Z-levels
-        mapData.startPos.z = currentEditingZ; // Also update player start Z when manually changing view, could be optional
-        document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+        ensureLayersForZ(currentEditingZ);
+        // mapData.startPos.z = currentEditingZ; // Let Set Player Start button handle this explicitly for Z.
+        updatePlayerStartDisplay(); // Reflects current mapData.startPos
         console.log(`Current editing Z-level changed to: ${currentEditingZ}`);
-        selectedGenericTile = null; updateTilePropertyEditorUI(); // Clear selections when Z changes
+        selectedGenericTile = null; updateTilePropertyEditorUI();
         selectedTileForInventory = null; updateContainerInventoryUI();
         selectedPortal = null; updateSelectedPortalInfo();
-        // selectedNpc = null; if (typeof updateSelectedNpcInfo === 'function') updateSelectedNpcInfo();
-        buildPalette(); // Palette might change if layer types are Z-specific in future
+        buildPalette();
         renderMergedGrid();
     }
 });
@@ -864,8 +872,8 @@ document.getElementById("zLevelUpBtn").addEventListener('click', () => {
     currentEditingZ++;
     document.getElementById("zLevelInput").value = currentEditingZ;
     ensureLayersForZ(currentEditingZ);
-    mapData.startPos.z = currentEditingZ;
-    document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+    // mapData.startPos.z = currentEditingZ;
+    updatePlayerStartDisplay();
     selectedGenericTile = null; updateTilePropertyEditorUI();
     selectedTileForInventory = null; updateContainerInventoryUI();
     selectedPortal = null; updateSelectedPortalInfo();
@@ -877,8 +885,8 @@ document.getElementById("zLevelDownBtn").addEventListener('click', () => {
     currentEditingZ--;
     document.getElementById("zLevelInput").value = currentEditingZ;
     ensureLayersForZ(currentEditingZ);
-    mapData.startPos.z = currentEditingZ;
-    document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+    // mapData.startPos.z = currentEditingZ;
+    updatePlayerStartDisplay();
     selectedGenericTile = null; updateTilePropertyEditorUI();
     selectedTileForInventory = null; updateContainerInventoryUI();
     selectedPortal = null; updateSelectedPortalInfo();
@@ -888,7 +896,7 @@ document.getElementById("zLevelDownBtn").addEventListener('click', () => {
 
 document.getElementById("addZLevelBtn").addEventListener('click', () => {
     const newZStr = prompt("Enter Z-level index to add (integer):", (Object.keys(mapData.levels).length > 0 ? Math.max(...Object.keys(mapData.levels).map(Number)) + 1 : 0).toString());
-    if (newZStr === null) return; // User cancelled
+    if (newZStr === null) return;
     const newZ = parseInt(newZStr, 10);
     if (isNaN(newZ)) {
         alert("Invalid Z-level. Please enter an integer.");
@@ -900,10 +908,10 @@ document.getElementById("addZLevelBtn").addEventListener('click', () => {
     }
     snapshot();
     currentEditingZ = newZ;
-    ensureLayersForZ(currentEditingZ); // This creates the level
+    ensureLayersForZ(currentEditingZ);
     document.getElementById("zLevelInput").value = currentEditingZ;
-    mapData.startPos.z = currentEditingZ; // Optionally set new Z as start Z
-    document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+    // mapData.startPos.z = currentEditingZ; // New Z doesn't automatically become start Z
+    updatePlayerStartDisplay();
     logToConsole(`Added and switched to Z-level: ${currentEditingZ}`);
     selectedGenericTile = null; updateTilePropertyEditorUI();
     selectedTileForInventory = null; updateContainerInventoryUI();
@@ -924,22 +932,59 @@ document.getElementById("deleteZLevelBtn").addEventListener('click', () => {
     }
     if (confirm(`Are you sure you want to delete Z-level ${currentEditingZ}? This cannot be undone easily.`)) {
         snapshot();
+        const zToDelete = currentEditingZ; // Store before changing currentEditingZ
         delete mapData.levels[zToDeleteStr];
-        logToConsole(`Deleted Z-level: ${currentEditingZ}`);
+        logToConsole(`Deleted Z-level: ${zToDelete}`);
+
+        // Remove NPCs on the deleted Z-level
+        const initialNpcCount = mapData.npcs.length;
+        mapData.npcs = mapData.npcs.filter(npc => npc.mapPos.z !== zToDelete);
+        if (mapData.npcs.length < initialNpcCount) {
+            logToConsole(`Removed ${initialNpcCount - mapData.npcs.length} NPCs from deleted Z-level ${zToDelete}.`);
+        }
+
+        // Remove Portals on the deleted Z-level
+        const initialPortalCount = mapData.portals.length;
+        mapData.portals = mapData.portals.filter(portal => portal.z !== zToDelete);
+        if (mapData.portals.length < initialPortalCount) {
+            logToConsole(`Removed ${initialPortalCount - mapData.portals.length} portals from deleted Z-level ${zToDelete}.`);
+        }
+        if (selectedPortal && selectedPortal.z === zToDelete) {
+            selectedPortal = null; // Clear selection if it was on the deleted Z
+        }
+        // If selectedNpc is a global variable for the map maker, clear it too if it was on the deleted Z
+        // if (selectedNpc && selectedNpc.mapPos.z === zToDelete) {
+        //     selectedNpc = null; 
+        //     if(typeof updateSelectedNpcInfo === 'function') updateSelectedNpcInfo();
+        // }
+
 
         // Switch to a default or existing Z-level
-        currentEditingZ = mapData.startPos.z; // Try startPos.z first
-        if (!mapData.levels[currentEditingZ.toString()]) { // If startPos.z was deleted or invalid
-            currentEditingZ = parseInt(Object.keys(mapData.levels)[0], 10); // Fallback to first available Z
+        if (mapData.startPos.z === zToDelete) { // If the player start Z was the one deleted
+            // Try to find another existing Z-level, or default to 0 if all else fails
+            const remainingZLevels = Object.keys(mapData.levels).map(Number);
+            if (remainingZLevels.length > 0) {
+                mapData.startPos.z = remainingZLevels.includes(0) ? 0 : remainingZLevels[0];
+            } else {
+                mapData.startPos.z = 0; // Should not happen due to "cannot delete last Z-level" check
+            }
+            logToConsole(`Player start Z was on deleted level. Reset to Z=${mapData.startPos.z}.`);
         }
-        if (isNaN(currentEditingZ) || !mapData.levels[currentEditingZ.toString()]) { // If still no valid Z (e.g. mapData.levels became empty, though prevented)
-            currentEditingZ = 0; // Absolute fallback
-            ensureLayersForZ(currentEditingZ); // Ensure 0 exists if all else fails
+
+        currentEditingZ = mapData.startPos.z;
+        if (!mapData.levels[currentEditingZ.toString()]) {
+            currentEditingZ = parseInt(Object.keys(mapData.levels)[0], 10);
+        }
+        // This fallback to 0 should ideally not be needed if the "Cannot delete last Z-level" check works.
+        // However, if mapData.levels somehow became empty or only had non-integer keys (which is unlikely here),
+        // this ensures currentEditingZ is a valid number and that Z=0 is re-initialized if needed.
+        if (isNaN(currentEditingZ) || !mapData.levels[currentEditingZ.toString()]) {
+            currentEditingZ = 0;
+            ensureLayersForZ(currentEditingZ);
         }
 
         document.getElementById("zLevelInput").value = currentEditingZ;
-        // mapData.startPos.z might need updating if the start Z was deleted. For now, keep it.
-        // document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+        updatePlayerStartDisplay(); // Update X,Y,Z display
 
         selectedGenericTile = null; updateTilePropertyEditorUI();
         selectedTileForInventory = null; updateContainerInventoryUI();
@@ -1032,7 +1077,7 @@ document.getElementById("loadBtn").onclick = () => {
             document.getElementById("inputHeight").value = gridHeight;
             document.documentElement.style.setProperty("--cols", gridWidth);
             document.getElementById("zLevelInput").value = currentEditingZ;
-            document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+            updatePlayerStartDisplay(); // Update X,Y,Z display
 
             // Ensure all Z-levels mentioned (e.g. in startPos) have their layer structure initialized
             Object.keys(mapData.levels).forEach(zKey => ensureLayersForZ(parseInt(zKey, 10)));
@@ -1105,7 +1150,7 @@ async function initMap() {
         portals: []
     };
     ensureLayersForZ(currentEditingZ); // Initialize layers for Z=0
-    document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+    updatePlayerStartDisplay();
 
 
     currentLayerType = "landscape";

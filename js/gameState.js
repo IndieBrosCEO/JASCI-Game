@@ -128,7 +128,7 @@ const gameState = {
 
     // Targeting System State
     isTargetingMode: false,
-    targetingCoords: { x: 0, y: 0 }, // Initialized to a default, will be updated when entering targeting mode
+    targetingCoords: { x: 0, y: 0, z: 0 }, // Initialized to a default, will be updated when entering targeting mode
     targetingType: null, // Can be 'ranged' or 'melee'
     targetConfirmed: false,
     selectedTargetEntity: null,

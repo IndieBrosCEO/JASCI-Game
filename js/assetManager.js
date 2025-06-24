@@ -294,31 +294,46 @@
     }
 
     _validateMapTiles(mapData) {
-        if (!mapData || !mapData.id || !mapData.layers) { // Added mapData.id check for better warning
-            console.warn(`Invalid map data for validation: ${mapData ? mapData.id : 'unknown map'}`);
+        if (!mapData || !mapData.id || !mapData.levels) { // Check for .levels now
+            console.warn(`Invalid map data for validation (missing id or levels): ${mapData ? mapData.id : 'unknown map'}`);
             return;
         }
 
-        // Assuming this.tilesets is the direct content of 'tileset.json'
-        // and it contains tile definitions where keys are tile IDs.
-        // const availableTileIds = Object.keys(this.tilesets); // No longer needed directly here
+        for (const zLevelKey in mapData.levels) {
+            if (mapData.levels.hasOwnProperty(zLevelKey)) {
+                const levelData = mapData.levels[zLevelKey];
+                if (!levelData) {
+                    console.warn(`Missing level data for Z-level '${zLevelKey}' in map '${mapData.id}'.`);
+                    continue;
+                }
+                // Define the layers to check within each Z-level
+                const layersToValidate = ['landscape', 'building', 'item', 'roof'];
+                for (const layerName of layersToValidate) {
+                    if (levelData.hasOwnProperty(layerName)) {
+                        const layer = levelData[layerName];
+                        if (Array.isArray(layer)) {
+                            for (let r = 0; r < layer.length; r++) {
+                                const row = layer[r];
+                                if (Array.isArray(row)) {
+                                    for (let c = 0; c < row.length; c++) {
+                                        const tileData = row[c];
+                                        // Tile data can be a string ID or an object { tileId: "ID", ... }
+                                        const tileId = (typeof tileData === 'object' && tileData !== null && tileData.tileId !== undefined)
+                                            ? tileData.tileId
+                                            : tileData;
 
-        for (const layerName in mapData.layers) {
-            if (mapData.layers.hasOwnProperty(layerName)) {
-                const layer = mapData.layers[layerName];
-                if (Array.isArray(layer)) {
-                    for (let r = 0; r < layer.length; r++) {
-                        const row = layer[r];
-                        if (Array.isArray(row)) {
-                            for (let c = 0; c < row.length; c++) {
-                                const tileId = row[c];
-                                // Check if tileId is defined, not null, not an empty string,
-                                // and not resolvable via getTileDefinition (which checks direct and aliases)
-                                if (tileId !== null && tileId !== "" && !this.getTileDefinition(tileId)) {
-                                    console.warn(`Unknown tile ID: '${tileId}' in map '${mapData.id}', layer '${layerName}', at [${r},${c}] (after alias check)`);
+                                        if (tileId !== null && tileId !== "" && !this.getTileDefinition(tileId)) {
+                                            console.warn(`Unknown tile ID: '${tileId}' in map '${mapData.id}', Z-level '${zLevelKey}', layer '${layerName}', at [${r},${c}] (after alias check)`);
+                                        }
+                                    }
                                 }
                             }
+                        } else if (layer !== undefined && layer !== null) {
+                            console.warn(`Layer '${layerName}' in Z-level '${zLevelKey}' of map '${mapData.id}' is not an array.`);
                         }
+                    } else {
+                        // It's okay if a layer like 'roof' or 'item' is missing, but landscape/building should ideally be present.
+                        // console.log(`Layer '${layerName}' not present in Z-level '${zLevelKey}' of map '${mapData.id}'.`);
                     }
                 }
             }

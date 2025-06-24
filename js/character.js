@@ -365,41 +365,63 @@ window.formatBodyPartName = formatBodyPartName;
 window.gameOver = gameOver;
 window.applyHungerThirstDamage = applyHungerThirstDamage;
 
-// Add this function at the end of js/character.js, before any exports if present,
-// or just at the end of the file.
-function getTileLightingLevel(tileX, tileY, currentGameState) {
-    if (!currentGameState || !currentGameState.fowData || !currentGameState.fowData[tileY] || typeof currentGameState.fowData[tileY][tileX] === 'undefined') {
-        // console.warn(`getTileLightingLevel: FOW data missing for ${tileX},${tileY}. Assuming dark.`);
-        return 'dark'; // Default to dark if FOW data is unavailable
+// Add this function at the end of js/character.js
+function getTileLightingLevel(tileX, tileY, tileZ, currentGameState) {
+    if (!currentGameState || !currentGameState.fowData) {
+        // console.warn(`getTileLightingLevel: Game state or FOW data missing. Assuming dark for ${tileX},${tileY},${tileZ}.`);
+        return 'dark';
     }
 
-    const fowStatus = currentGameState.fowData[tileY][tileX];
+    const zStr = tileZ.toString();
+    const fowDataForZ = currentGameState.fowData[zStr];
+
+    if (!fowDataForZ || !fowDataForZ[tileY] || typeof fowDataForZ[tileY][tileX] === 'undefined') {
+        // console.warn(`getTileLightingLevel: FOW data missing for Z-level ${tileZ} at ${tileX},${tileY}. Assuming dark.`);
+        return 'dark'; // Default to dark if FOW data for the specific Z-level or tile is unavailable
+    }
+
+    const fowStatus = fowDataForZ[tileY][tileX];
     if (fowStatus === 'hidden') {
         return 'dark'; // Hidden areas are considered dark for gameplay penalties
     }
 
+    // Check dynamic light sources
     if (currentGameState.lightSources && currentGameState.lightSources.length > 0) {
         for (const source of currentGameState.lightSources) {
-            if (typeof source.x !== 'number' || typeof source.y !== 'number' || typeof source.radius !== 'number' || source.radius <= 0) {
+            // Ensure light source has all necessary properties, including z
+            if (typeof source.x !== 'number' || typeof source.y !== 'number' || typeof source.z !== 'number' ||
+                typeof source.radius !== 'number' || source.radius <= 0) {
                 continue;
             }
-            const distanceToLight = Math.sqrt(Math.pow(tileX - source.x, 2) + Math.pow(tileY - source.y, 2));
+            // Use isTileIlluminated (which should be 3D and Z-aware) if available,
+            // otherwise, fallback to a 3D distance check for lighting.
+            // isTileIlluminated is in mapRenderer.js, so direct call might not be ideal here.
+            // For now, let's use a 3D distance check.
+            const distanceToLight = getDistance3D({ x: tileX, y: tileY, z: tileZ }, source); // getDistance3D is in utils.js
+
             if (distanceToLight <= source.radius) {
-                return 'bright'; // Tile is directly lit
+                // Basic check: if within radius, it's bright.
+                // A more advanced check would use isTileIlluminated from mapRenderer to check for obstructions.
+                // This function is primarily for determining gameplay penalties, so direct line of sight for light
+                // might be implicitly handled by the FOW 'visible' status. If a tile is 'visible', it has LOS.
+                // If it's 'visited' but not 'visible', it might be dark even if near a light due to obstruction.
+                // For simplicity now: if in radius of any light AND not FOW-hidden, consider it bright.
+                return 'bright';
             }
-            // Optional: Add 'dim' light logic here if desired. 
-            // For example, if distanceToLight <= source.radius + DIM_LIGHT_EXTENSION_RADIUS, return 'dim'
-            // For now, only 'bright' and 'dark' (if not hidden) are implemented.
         }
     }
 
-    // If not hidden and not directly lit by any source, it's considered 'dark' for penalty purposes.
-    // This could also be 'ambient' or 'dim' in a more complex system.
-    return 'dark';
+    // Consider ambient light from map definition or time of day if not directly lit
+    // For now, if not FOW-hidden and not lit by a dynamic source, assume 'dark' for penalties.
+    // A more complex system could return 'dim' based on ambient conditions.
+    // Example: check currentGameState.currentTime.hours for day/night cycle.
+    // const ambientLight = getAmbientLightColor(currentGameState.currentTime.hours); // from mapRenderer
+    // if (ambientLight !== '#303045') return 'dim'; // If not night time, could be dim
+
+    return 'dark'; // Default to dark if not hidden and not lit by any source
 }
 
-// Make it globally accessible if character.js doesn't use a module system.
-// If other files need to call it directly:
+// Make it globally accessible
 if (typeof window !== 'undefined') {
     window.getTileLightingLevel = getTileLightingLevel;
 }

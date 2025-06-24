@@ -86,16 +86,16 @@ async function move_internal(direction) {
 
     switch (direction) {
         case 'up': case 'w': case 'ArrowUp':
-            if (newPos.y > 0 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x, newPos.y - 1))) newPos.y--;
+            if (newPos.y > 0 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x, newPos.y - 1, gameState.playerPos.z))) newPos.y--;
             break;
         case 'down': case 's': case 'ArrowDown':
-            if (newPos.y < height - 1 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x, newPos.y + 1))) newPos.y++;
+            if (newPos.y < height - 1 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x, newPos.y + 1, gameState.playerPos.z))) newPos.y++;
             break;
         case 'left': case 'a': case 'ArrowLeft':
-            if (newPos.x > 0 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x - 1, newPos.y))) newPos.x--;
+            if (newPos.x > 0 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x - 1, newPos.y, gameState.playerPos.z))) newPos.x--;
             break;
         case 'right': case 'd': case 'ArrowRight':
-            if (newPos.x < width - 1 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x + 1, newPos.y))) newPos.x++;
+            if (newPos.x < width - 1 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x + 1, newPos.y, gameState.playerPos.z))) newPos.x++;
             break;
         default:
             return;
@@ -130,19 +130,55 @@ async function move_internal(direction) {
     // }
     // --- End Animation Call ---
 
-    gameState.playerPos = newPos;
+    gameState.playerPos.x = newPos.x;
+    gameState.playerPos.y = newPos.y;
+    // gameState.playerPos.z remains the same unless a Z-transition occurs below
+
+    // Check for Z-transition
+    const currentTileId = window.mapRenderer.getCollisionTileAt(newPos.x, newPos.y, gameState.playerPos.z) ||
+        currentMap.levels[gameState.playerPos.z.toString()]?.landscape?.[newPos.y]?.[newPos.x] ||
+        currentMap.levels[gameState.playerPos.z.toString()]?.item?.[newPos.y]?.[newPos.x] ||
+        currentMap.levels[gameState.playerPos.z.toString()]?.building?.[newPos.y]?.[newPos.x];
+
+
+    // assetManager should be globally available (from script.js)
+    if (currentTileId && window.assetManager && window.assetManager.tilesets) {
+        const tileDef = window.assetManager.tilesets[currentTileId];
+        if (tileDef && tileDef.tags && tileDef.tags.includes('z_transition') && tileDef.target_dz !== undefined) {
+            const oldZ = gameState.playerPos.z;
+            gameState.playerPos.z += tileDef.target_dz;
+            logToConsole(`Player used Z-transition: ${tileDef.name}. Moved from Z=${oldZ} to Z=${gameState.playerPos.z}.`, "cyan");
+
+            if (gameState.viewFollowsPlayerZ) {
+                gameState.currentViewZ = gameState.playerPos.z;
+                // Ensure FOW for the new Z-level is initialized
+                const newPlayerZStr = gameState.playerPos.z.toString();
+                const mapData = window.mapRenderer.getCurrentMapData();
+                if (mapData && mapData.dimensions) {
+                    const H = mapData.dimensions.height;
+                    const W = mapData.dimensions.width;
+                    if (H > 0 && W > 0 && !gameState.fowData[newPlayerZStr]) {
+                        gameState.fowData[newPlayerZStr] = Array(H).fill(null).map(() => Array(W).fill('hidden'));
+                        logToConsole(`FOW data initialized for Z-level ${newPlayerZStr} after Z-transition.`);
+                    }
+                }
+            }
+            // Note: z_cost from tileDef is not used yet, movement cost is 1 MP per Z-transition move.
+        }
+    }
+
     if (gameState.isInCombat &&
         gameState.combatCurrentAttacker === gameState) {
-        gameState.attackerMapPos = { ...gameState.playerPos };
+        gameState.attackerMapPos = { ...gameState.playerPos }; // Update with new x, y, and potentially z
     }
     gameState.movementPointsRemaining--;
     gameState.playerMovedThisTurn = true;
-    logToConsole(`Moved to (${newPos.x}, ${newPos.y}). Moves left: ${gameState.movementPointsRemaining}`);
+    logToConsole(`Moved to (${gameState.playerPos.x}, ${gameState.playerPos.y}, Z:${gameState.playerPos.z}). Moves left: ${gameState.movementPointsRemaining}`);
 
     updateTurnUI_internal();
     window.mapRenderer.scheduleRender();
-    window.interaction.detectInteractableItems();
-    window.interaction.showInteractableItems();
+    window.interaction.detectInteractableItems(); // This should also become Z-aware eventually
+    window.interaction.showInteractableItems();   // This should also become Z-aware
 }
 
 window.turnManager = {
