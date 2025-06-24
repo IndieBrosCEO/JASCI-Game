@@ -1063,7 +1063,7 @@
     "id": "pepper_spray",
     "name": "Pepper spray",
     "description": "A spray that causes temporary blindness and irritation.",
-    "type": "weapon_ranged_other",
+    "type": "weapon_utility_spray",
     "canEquip": true,
     "isClothing": false,
     "size": 1,
@@ -1072,13 +1072,17 @@
       "weapon",
       "less_lethal",
       "chemical",
-      "modern"
+      "modern",
+      "spray"
     ],
     "damage": "0",
     "damageType": "Chemical",
     "rateOfFire": "S",
     "magazineSize": "1 int.",
-    "specialEffect": "Temporary Blindness and Irritation"
+    "specialEffect": "Temporary Blindness and Irritation",
+    "burstRadiusFt": 7,
+    "particleColor": "orange",
+    "particleSpriteOptions": [ "*", "⁂", "※" ]
   },
   {
     "id": "shuriken",
@@ -1327,7 +1331,8 @@
     "rangeIncrementFt": 10,
     "splashDamage": "1",
     "sprite": "◦",
-    "projectileColor": "limegreen"
+    "projectileColor": "limegreen",
+    "specialEffect": "Lingering Acid Burn"
   },
   {
     "id": "molotov_cocktail_thrown",

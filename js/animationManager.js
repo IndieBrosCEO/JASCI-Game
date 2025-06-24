@@ -831,7 +831,7 @@ class GasCloudAnimation extends Animation {
                     sprite: this.particleSpriteOptions[Math.floor(Math.random() * this.particleSpriteOptions.length)],
                     color: this.particleColor,
                     spawnTime: now,
-                    initialOpacity: 0.5 + Math.random() * 0.5 // Start with some transparency
+                    initialOpacity: 1.0 // For testing visibility - ensure particles start fully opaque
                 });
             }
         }
@@ -999,12 +999,14 @@ class LiquidSplashAnimation extends Animation {
         this.sizzleSprites = data.sizzleSprites || ['', '◦', '.']; // Optional, for lingering effect
         this.hasSizzleEffect = Array.isArray(data.sizzleSprites) && data.sizzleSprites.length > 0;
 
-        this.color = data.color || 'blue'; // Default to water-like blue
+        this.baseColor = data.color || 'blue'; // Default to water-like blue
+        this.sizzleColor = data.sizzleColor || (this.baseColor === 'limegreen' ? 'darkgreen' : 'darkgrey'); // Specific color for sizzle
+        this.color = this.baseColor; // Initial color
 
         this.phaseDuration = this.duration / (this.hasSizzleEffect ? 2 : 1); // Duration for splash, then optionally for sizzle
-        this.spriteChangeInterval = this.phaseDuration / this.splashSprites.length;
+        this.spriteChangeInterval = this.splashSprites.length > 0 ? this.phaseDuration / this.splashSprites.length : this.phaseDuration;
         if (this.hasSizzleEffect) {
-            this.sizzleSpriteChangeInterval = this.phaseDuration / this.sizzleSprites.length;
+            this.sizzleSpriteChangeInterval = this.sizzleSprites.length > 0 ? this.phaseDuration / this.sizzleSprites.length : this.phaseDuration;
         }
 
         this.currentSpriteIndex = 0;
@@ -1038,8 +1040,9 @@ class LiquidSplashAnimation extends Animation {
                     // Splash phase ended
                     if (this.hasSizzleEffect) {
                         this.phase = 'sizzling';
-                        this.currentSpriteIndex = 0; // Reset for sizzle sprites
-                        this.sprite = this.sizzleSprites[0] || '';
+                        this.color = this.sizzleColor; // Change color for sizzle phase
+                        this.currentSizzleSpriteIndex = 0; // Use currentSizzleSpriteIndex
+                        this.sprite = this.sizzleSprites[this.currentSizzleSpriteIndex] || '';
                         this.lastFrameTime = now;
                     } else {
                         this.finished = true; // No sizzle, animation ends after splash

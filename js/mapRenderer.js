@@ -912,6 +912,63 @@ window.mapRenderer = {
             }
         }
 
+        // --- START: Render Environmental Effects (Smoke) ---
+        if (gameState.environmentalEffects && gameState.environmentalEffects.smokeTiles && gameState.tileCache) {
+            gameState.environmentalEffects.smokeTiles.forEach(smokeTile => {
+                if (smokeTile.duration > 0) {
+                    const x = smokeTile.x;
+                    const y = smokeTile.y;
+                    if (y >= 0 && y < H && x >= 0 && x < W) { // Check bounds
+                        const fowStatus = gameState.fowData?.[y]?.[x];
+                        if (fowStatus === 'visible' || fowStatus === 'visited') { // Only draw if tile itself is not hidden by FOW
+                            const cachedCell = gameState.tileCache[y]?.[x];
+                            if (cachedCell && cachedCell.span) {
+                                const smokeSprites = ['░', '▒', '▓'];
+                                const smokeSprite = smokeSprites[Math.floor(Math.random() * smokeSprites.length)];
+                                // We are drawing smoke on top, so we don't change the cache's base sprite/color,
+                                // but directly modify the span for this frame.
+                                // If smoke should obscure underlying items for targeting, more complex logic is needed.
+                                // For now, it's a visual overlay.
+                                cachedCell.span.textContent = smokeSprite;
+                                cachedCell.span.style.color = '#888888'; // A medium grey for smoke
+                                // No need to update cachedCell.sprite/color here if it's an overlay effect.
+                                // If it *replaces* the tile content visually, then update cache.
+                                // Let's assume it replaces for now for simplicity with current cache structure.
+                                cachedCell.sprite = smokeSprite;
+                                cachedCell.color = '#888888';
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        // --- END: Render Environmental Effects (Smoke) ---
+
+        // --- START: Render Environmental Effects (Tear Gas) ---
+        if (gameState.environmentalEffects && gameState.environmentalEffects.tearGasTiles && gameState.tileCache) {
+            gameState.environmentalEffects.tearGasTiles.forEach(gasTile => {
+                if (gasTile.duration > 0) {
+                    const x = gasTile.x;
+                    const y = gasTile.y;
+                    if (y >= 0 && y < H && x >= 0 && x < W) { // Check bounds
+                        const fowStatus = gameState.fowData?.[y]?.[x];
+                        if (fowStatus === 'visible' || fowStatus === 'visited') {
+                            const cachedCell = gameState.tileCache[y]?.[x];
+                            if (cachedCell && cachedCell.span) {
+                                const gasSprites = ['~', ';', ',']; // Different sprites for tear gas
+                                const gasSprite = gasSprites[Math.floor(Math.random() * gasSprites.length)];
+                                cachedCell.span.textContent = gasSprite;
+                                cachedCell.span.style.color = '#B8B868'; // Desaturated yellow-green/khaki for tear gas
+                                cachedCell.sprite = gasSprite;
+                                cachedCell.color = '#B8B868';
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        // --- END: Render Environmental Effects (Tear Gas) ---
+
         if (isInitialRender && container && fragment) {
             container.appendChild(fragment);
         }
