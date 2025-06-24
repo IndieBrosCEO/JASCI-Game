@@ -95,41 +95,50 @@ function isTileBlockingLight(tileX, tileY, tileZ) { // Added tileZ
     }
 
     const levelData = mapData.levels[tileZ.toString()];
-    if (!levelData) return true; // Treat missing Z-levels as blocking light solid by default
+    if (!levelData || !levelData.bottom || !levelData.middle) return true; // Treat missing Z-levels or layers as blocking
 
-    // Define which layers on a given Z-level can block light
-    const layersToConsider = ['landscape', 'building']; // TODO: Adapt to new layer categories
-    if (gameState.showRoof && levelData.roof) { // Check roof on the specific Z-level
-        layersToConsider.push('roof');
-    }
-
-    for (const layerName of layersToConsider) {
-        const layer = levelData[layerName];
-        if (layer && layer[tileY] && typeof layer[tileY][tileX] !== 'undefined' && layer[tileY][tileX] !== null && layer[tileY][tileX] !== "") {
-            const tileId = layer[tileY][tileX];
-            if (tileId) {
-                const tileDef = currentAssetManager.tilesets[tileId];
-                if (tileDef && tileDef.tags) {
-                    // Using 'transparent_to_light' or similar specific tag would be better.
-                    // For now, piggyback on 'allows_vision' or 'transparent' for light passage.
-                    if (tileDef.tags.includes('allows_vision') || tileDef.tags.includes('transparent') || tileDef.tags.includes('transparent_to_light')) {
-                        continue; // This tile on this layer doesn't block light, check other layers on same tile.
-                    }
-                    // A specific 'blocks_light' tag could be added.
-                    // For now, 'impassable' or 'blocks_vision' are good indicators of light blocking.
-                    if (tileDef.tags.includes('impassable') || tileDef.tags.includes('blocks_vision') || tileDef.tags.includes('blocks_light')) {
-                        return true; // This tile is a solid light blocker.
-                    }
-                } else if (tileDef && !tileDef.tags) {
-                    // Default behavior for untagged tiles (similar to vision)
-                    if (layerName !== 'landscape' || (tileDef.name && !tileDef.name.toLowerCase().includes("floor"))) {
-                        // return true; // Default to blocking for non-floor, non-tagged items. Might be too aggressive.
-                    }
-                }
+    // Check middle layer first
+    const tileOnMiddleRaw = levelData.middle[tileY]?.[tileX];
+    const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
+    if (effectiveTileOnMiddle && effectiveTileOnMiddle !== "") {
+        const tileDefMiddle = currentAssetManager.tilesets[effectiveTileOnMiddle];
+        if (tileDefMiddle && tileDefMiddle.tags) {
+            if (tileDefMiddle.tags.includes('transparent_to_light') || tileDefMiddle.tags.includes('transparent') || tileDefMiddle.tags.includes('allows_vision')) {
+                // Middle tile is transparent to light, passes through IT. Now check bottom layer.
+            } else if (tileDefMiddle.tags.includes('blocks_light') || tileDefMiddle.tags.includes('blocks_vision') || tileDefMiddle.tags.includes('impassable')) {
+                return true; // Middle tile blocks light
+            } else {
+                // Default: if it's on middle and not explicitly transparent to light, assume it blocks.
+                return true;
             }
+        } else if (tileDefMiddle) { // Has a def but no tags
+            return true; // Untagged middle items generally block light
         }
     }
-    return false; // No explicitly light-blocking tile found at this (x,y,z)
+
+    // If middle layer was empty or transparent, check bottom layer
+    const tileOnBottomRaw = levelData.bottom[tileY]?.[tileX];
+    const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
+    if (effectiveTileOnBottom && effectiveTileOnBottom !== "") {
+        const tileDefBottom = currentAssetManager.tilesets[effectiveTileOnBottom];
+        if (tileDefBottom && tileDefBottom.tags) {
+            if (tileDefBottom.tags.includes('transparent_to_light') || tileDefBottom.tags.includes('transparent_floor') || tileDefBottom.tags.includes('transparent') || tileDefBottom.tags.includes('allows_vision')) {
+                return false; // Bottom tile is transparent to light.
+            }
+            // If it's a floor (most bottom tiles are), and not transparent to light, it blocks light to Z-1.
+            if (tileDefBottom.tags.includes('floor')) {
+                return true;
+            }
+            // Other bottom layer types that aren't floors and aren't transparent to light might exist. Assume they block.
+            return true;
+        } else if (tileDefBottom) { // Has a def but no tags
+            // Untagged bottom items, if not floors, might be rare. If it's a floor by name, it blocks.
+            if (tileDefBottom.name && tileDefBottom.name.toLowerCase().includes("floor")) return true;
+            return false; // Otherwise, untagged non-floor on bottom, assume non-blocking for light.
+        }
+    }
+
+    return false; // Default: tile does not block light if no specific blocking condition met (e.g., empty cell)
 }
 
 // Updated isTileIlluminated to be 3D
@@ -290,54 +299,52 @@ function isTileBlockingVision(tileX, tileY, tileZ) { // Added tileZ parameter
     }
 
     const levelData = mapData.levels[tileZ.toString()];
-    if (!levelData) return true; // Treat missing Z-levels as blocking
+    if (!levelData || !levelData.bottom || !levelData.middle) return true; // Treat missing Z-levels or layers as blocking
 
-    // Define which layers on a given Z-level can block vision
-    // Considering your new layer categories: 'Constructions' would be primary.
-    // 'Landscape' might block if it's a mountain/hill tile.
-    const layersToConsider = ['landscape', 'building']; // TODO: Adapt to new layer categories based on tile tags
-    if (gameState.showRoof && levelData.roof) { // Roofs are specific to a Z-level now
-        layersToConsider.push('roof');
-    }
-
-    for (const layerName of layersToConsider) {
-        const layer = levelData[layerName];
-        if (layer && layer[tileY] && typeof layer[tileY][tileX] !== 'undefined' && layer[tileY][tileX] !== null && layer[tileY][tileX] !== "") {
-            const tileId = layer[tileY][tileX];
-            if (tileId) {
-                const tileDef = currentAssetManager.tilesets[tileId];
-                if (tileDef && tileDef.tags) {
-                    if (tileDef.tags.includes('allows_vision') || tileDef.tags.includes('transparent')) {
-                        // This specific tile on this layer is transparent, so it doesn't block.
-                        // However, another layer on the same (x,y,z) might block.
-                        // For now, if any part of the stack at (x,y,z) is transparent, assume vision passes *through this tile*.
-                        // The line of sight will check multiple points.
-                        continue; // Check next layer on this tile, or if this is the most "solid" transparent, it allows vision.
-                    }
-                    if (tileDef.tags.includes('impassable') || tileDef.tags.includes('blocks_vision')) {
-                        return true; // This tile is a solid vision blocker.
-                    }
-                    // If it's a floor tile and not explicitly transparent, it blocks vision.
-                    // This handles constructed floors acting as ceilings/solid surfaces.
-                    if (tileDef.tags.includes('floor') && !tileDef.tags.includes('transparent_floor') && !tileDef.tags.includes('allows_vision')) {
-                        return true;
-                    }
-                } else if (tileDef && !tileDef.tags) {
-                    // Default behavior for untagged tiles:
-                    // Assume non-landscape, non-"floor"-named tiles block vision.
-                    if (layerName !== 'landscape' || (tileDef.name && !tileDef.name.toLowerCase().includes("floor"))) {
-                        // return true; // This default might be too aggressive. Better to rely on explicit tags.
-                        // For now, let's assume untagged non-landscape-floor tiles are solid.
-                        // This helps catch cases where 'blocks_vision' might be missing but implied.
-                        // However, the most robust approach is to ensure all tiles are appropriately tagged.
-                        // If it's a building layer and untagged, it's likely a wall/solid.
-                        if (layerName === 'building' || layerName === 'roof') return true;
-                    }
-                }
+    // Check middle layer first
+    const tileOnMiddleRaw = levelData.middle[tileY]?.[tileX];
+    const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
+    if (effectiveTileOnMiddle && effectiveTileOnMiddle !== "") {
+        const tileDefMiddle = currentAssetManager.tilesets[effectiveTileOnMiddle];
+        if (tileDefMiddle && tileDefMiddle.tags) {
+            if (tileDefMiddle.tags.includes('allows_vision') || tileDefMiddle.tags.includes('transparent')) {
+                // Middle tile is transparent, vision passes through IT. Now check bottom layer.
+            } else if (tileDefMiddle.tags.includes('impassable') || tileDefMiddle.tags.includes('blocks_vision')) {
+                return true; // Middle tile blocks vision
+            } else {
+                // Default: if it's on middle and not explicitly transparent, assume it blocks vision (e.g. furniture, walls)
+                return true;
             }
+        } else if (tileDefMiddle) { // Has a def but no tags
+            return true; // Untagged middle items generally block vision
         }
     }
-    return false; // Default: tile does not block vision if no specific blocking condition met
+
+    // If middle layer was empty or transparent, check bottom layer
+    const tileOnBottomRaw = levelData.bottom[tileY]?.[tileX];
+    const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
+    if (effectiveTileOnBottom && effectiveTileOnBottom !== "") {
+        const tileDefBottom = currentAssetManager.tilesets[effectiveTileOnBottom];
+        if (tileDefBottom && tileDefBottom.tags) {
+            if (tileDefBottom.tags.includes('allows_vision') || tileDefBottom.tags.includes('transparent') || tileDefBottom.tags.includes('transparent_floor')) {
+                return false; // Bottom tile is transparent, does not block vision through to Z-1
+            }
+            // If it's a floor (most bottom tiles are), and not transparent, it blocks vision to Z-1.
+            if (tileDefBottom.tags.includes('floor')) {
+                return true;
+            }
+            // Other bottom layer types that aren't floors and aren't transparent might exist,
+            // but typically bottom is floor. If it's something else and not transparent, assume it blocks.
+            return true; // Default for non-floor, non-transparent bottom items
+        } else if (tileDefBottom) { // Has a def but no tags
+            // Untagged bottom items, if not floors, might be rare. If it's a floor by name, it blocks.
+            if (tileDefBottom.name && tileDefBottom.name.toLowerCase().includes("floor")) return true;
+            // Otherwise, an untagged non-floor on bottom... treat as non-blocking for now.
+            return false;
+        }
+    }
+
+    return false; // Default: tile does not block vision if no specific blocking condition met (e.g., empty cell)
 }
 
 function isTileVisible(playerX, playerY, playerZ, targetX, targetY, targetZ, visionRadius) {
@@ -417,16 +424,22 @@ window.mapRenderer = {
                 if (mapData.levels.hasOwnProperty(zLevelKey)) {
                     const z = parseInt(zLevelKey, 10);
                     const levelData = mapData.levels[zLevelKey];
-                    const layersToScanForLights = ['landscape', 'building', 'item'];
+                    // Scan new 'bottom' and 'middle' layers for lights
+                    const layersToScanForLights = ['bottom', 'middle'];
 
                     for (const layerName of layersToScanForLights) {
                         const layer = levelData[layerName];
                         if (layer) {
                             for (let r = 0; r < H; r++) {
                                 for (let c = 0; c < W; c++) {
-                                    const tileId = layer[r]?.[c];
-                                    if (tileId && assetManagerInstance && assetManagerInstance.tilesets) {
-                                        const tileDef = assetManagerInstance.tilesets[tileId];
+                                    // tileId can now be an object {tileId: "...", ...} or string ID
+                                    const tileData = layer[r]?.[c];
+                                    const baseTileId = (typeof tileData === 'object' && tileData !== null && tileData.tileId !== undefined)
+                                        ? tileData.tileId
+                                        : tileData;
+
+                                    if (baseTileId && assetManagerInstance && assetManagerInstance.tilesets) {
+                                        const tileDef = assetManagerInstance.tilesets[baseTileId];
                                         if (tileDef && tileDef.emitsLight === true && typeof tileDef.lightRadius === 'number' && tileDef.lightRadius > 0) {
                                             const lightSource = {
                                                 x: c,
@@ -454,17 +467,25 @@ window.mapRenderer = {
                 if (mapData.levels.hasOwnProperty(zLevelKey)) {
                     const z = parseInt(zLevelKey, 10);
                     const levelData = mapData.levels[zLevelKey];
-                    const layersToScanForContainers = ['item', 'building'];
+                    // Scan new 'bottom' and 'middle' layers for containers
+                    const layersToScanForContainers = ['bottom', 'middle'];
 
                     for (const layerName of layersToScanForContainers) {
                         const layer = levelData[layerName];
                         if (layer) {
                             for (let r = 0; r < H; r++) {
                                 for (let c = 0; c < W; c++) {
-                                    const tileId = layer[r]?.[c];
-                                    if (tileId && assetManagerInstance && assetManagerInstance.tilesets && assetManagerInstance.items) {
-                                        const tileDef = assetManagerInstance.tilesets[tileId];
+                                    const tileData = layer[r]?.[c];
+                                    const baseTileId = (typeof tileData === 'object' && tileData !== null && tileData.tileId !== undefined)
+                                        ? tileData.tileId
+                                        : tileData;
+
+                                    if (baseTileId && assetManagerInstance && assetManagerInstance.tilesets && assetManagerInstance.items) {
+                                        const tileDef = assetManagerInstance.tilesets[baseTileId];
                                         if (tileDef && tileDef.tags && tileDef.tags.includes('container')) {
+                                            // Instance properties like uniqueID, contents should be on tileData if it's an object
+                                            // For now, this logic assumes they might be on tileDef or itemDef if not on tileData.
+                                            // This part might need more refinement if instance-specific container data is stored on the tileData object.
                                             let capacity = 0;
                                             let itemName = tileDef.name;
                                             const linkedItemId = tileDef.itemLink;
@@ -852,22 +873,80 @@ window.mapRenderer = {
                 if (finalTileId === "") finalTileId = baseTileId;
 
 
-                let originalSprite = "";
-                let originalColor = "";
+                // NEW LOGIC for bottom/middle and solid_terrain_top rendering
+                let displaySprite = ' ';
+                let displayColor = '#000000'; // Default for empty space
+                // let tileNameForTitle = 'Empty'; // Not used in game renderer currently
+                // let originalDisplayIdForTitle = ''; // Not used in game renderer currently
+                let isSolidTerrainTopOnCurrentZ = false;
+                let finalTileDefOnCurrentZ = null; // Definition of the tile that dictates rendering for current Z
 
-                if (finalTileId) { // If there's any tile to render
-                    const def = assetManagerInstance.tilesets[finalTileId]; // Use getTileDefinition if aliases are needed
-                    if (def) {
-                        originalSprite = def.sprite;
-                        originalColor = def.color;
-                    } else {
-                        originalSprite = '?'; // Unknown tile
-                        originalColor = 'magenta';
-                    }
-                } else {
-                    originalSprite = ' '; // Empty space
-                    originalColor = 'black'; // Or background color
+                // 1. Determine tile from current Z-level (middle layer takes precedence over bottom)
+                let tileOnBottomRaw = currentLevelData.bottom?.[y]?.[x] || "";
+                let tileOnMiddleRaw = currentLevelData.middle?.[y]?.[x] || "";
+
+                let effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
+                let effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
+
+                let tileDefOnBottom = assetManagerInstance.tilesets[effectiveTileOnBottom];
+                let tileDefOnMiddle = assetManagerInstance.tilesets[effectiveTileOnMiddle];
+
+                if (effectiveTileOnMiddle && tileDefOnMiddle) {
+                    finalTileDefOnCurrentZ = tileDefOnMiddle;
+                } else if (effectiveTileOnBottom && tileDefOnBottom) {
+                    finalTileDefOnCurrentZ = tileDefOnBottom;
                 }
+                // If both are empty, finalTileDefOnCurrentZ remains null.
+
+                // 2. Apply solid_terrain_top Rule 1 (tile on current Z is solid_terrain_top)
+                if (finalTileDefOnCurrentZ && finalTileDefOnCurrentZ.tags && finalTileDefOnCurrentZ.tags.includes('solid_terrain_top')) {
+                    displaySprite = '▓';
+                    displayColor = finalTileDefOnCurrentZ.color;
+                    isSolidTerrainTopOnCurrentZ = true;
+                } else if (finalTileDefOnCurrentZ) {
+                    displaySprite = finalTileDefOnCurrentZ.sprite;
+                    displayColor = finalTileDefOnCurrentZ.color;
+                }
+                // else, displaySprite and displayColor remain ' ' and 'black' for empty
+
+                // 3. Apply solid_terrain_top Rule 2 (viewing top of Z-1)
+                let isCurrentCellSeeThrough = (!finalTileDefOnCurrentZ);
+                if (finalTileDefOnCurrentZ && finalTileDefOnCurrentZ.tags &&
+                    (finalTileDefOnCurrentZ.tags.includes('transparent_floor') || finalTileDefOnCurrentZ.tags.includes('allows_vision'))) {
+                    if (!isSolidTerrainTopOnCurrentZ) isCurrentCellSeeThrough = true;
+                }
+
+                if (!isSolidTerrainTopOnCurrentZ && isCurrentCellSeeThrough) {
+                    const zBelowStr = (currentZ - 1).toString();
+                    const levelBelow = fullMapData.levels[zBelowStr];
+                    if (levelBelow) {
+                        let tileBottomBelowRaw = levelBelow.bottom?.[y]?.[x] || "";
+                        let tileMiddleBelowRaw = levelBelow.middle?.[y]?.[x] || "";
+                        let effTileBottomBelow = (typeof tileBottomBelowRaw === 'object' && tileBottomBelowRaw !== null && tileBottomBelowRaw.tileId !== undefined) ? tileBottomBelowRaw.tileId : tileBottomBelowRaw;
+                        let effTileMiddleBelow = (typeof tileMiddleBelowRaw === 'object' && tileMiddleBelowRaw !== null && tileMiddleBelowRaw.tileId !== undefined) ? tileMiddleBelowRaw.tileId : tileMiddleBelowRaw;
+
+                        let tileDefBelowToConsider = null;
+
+                        if (effTileMiddleBelow && assetManagerInstance.tilesets[effTileMiddleBelow]?.tags.includes('solid_terrain_top')) {
+                            tileDefBelowToConsider = assetManagerInstance.tilesets[effTileMiddleBelow];
+                        } else if (effTileBottomBelow && assetManagerInstance.tilesets[effTileBottomBelow]?.tags.includes('solid_terrain_top')) {
+                            tileDefBelowToConsider = assetManagerInstance.tilesets[effTileBottomBelow];
+                        }
+
+                        if (tileDefBelowToConsider) {
+                            displaySprite = tileDefBelowToConsider.sprite;
+                            displayColor = tileDefBelowToConsider.color;
+                            // Update finalTileDefOnCurrentZ to what's shown, for lighting/FOW
+                            finalTileDefOnCurrentZ = tileDefBelowToConsider;
+                        }
+                    }
+                }
+
+                // `originalSprite` and `originalColor` are used by subsequent lighting/FOW logic
+                // They should reflect the state *before* FOW, but *after* structural rendering (bottom/middle + solid_terrain_top rules)
+                let originalSprite = displaySprite;
+                let originalColor = displayColor;
+                // END OF NEW LOGIC
 
                 let fowStatus = 'hidden';
                 if (currentFowData && currentFowData[y] && typeof currentFowData[y][x] !== 'undefined') {
@@ -1138,6 +1217,73 @@ window.mapRenderer = {
         const Z_ABOVE_TINT_COLOR = '#7070A0';
         const Z_ABOVE_TINT_FACTOR = 0.5;
 
+        // New logic for rendering solid_terrain_top from below as a floor
+        const levelDataBelowForSolidTop = fullMapData.levels[(currentZ - 1).toString()];
+        if (levelDataBelowForSolidTop && tileCacheData) {
+            for (let y = 0; y < H; y++) {
+                for (let x = 0; x < W; x++) {
+                    if (!tileCacheData[y] || !tileCacheData[y][x]) continue;
+
+                    const currentCachedCell = tileCacheData[y][x];
+                    const currentSpan = currentCachedCell.span;
+
+                    // Determine if the current Z-level tile at (x,y) is "see-through"
+                    let isCurrentTileSeeThrough = false;
+                    const currentTileIdOnViewZ = currentCachedCell.displayedId;
+
+                    if (!currentTileIdOnViewZ || currentTileIdOnViewZ === "FOW_HIDDEN" || currentTileIdOnViewZ === "PLAYER_STATIC" || currentTileIdOnViewZ.startsWith("NPC_")) {
+                        const landscapeIdCurrentZ = currentLevelData.landscape?.[y]?.[x];
+                        if (!currentLevelData.building?.[y]?.[x] &&
+                            !currentLevelData.item?.[y]?.[x] &&
+                            !(gameState.showRoof && currentLevelData.roof?.[y]?.[x])) {
+                            if (!landscapeIdCurrentZ) {
+                                isCurrentTileSeeThrough = true;
+                            } else {
+                                const landscapeDef = assetManagerInstance.tilesets[landscapeIdCurrentZ];
+                                if (landscapeDef && landscapeDef.tags && (landscapeDef.tags.includes('transparent_floor') || landscapeDef.tags.includes('allows_vision'))) {
+                                    isCurrentTileSeeThrough = true;
+                                }
+                            }
+                        }
+                    } else {
+                        const currentDef = assetManagerInstance.tilesets[currentTileIdOnViewZ];
+                        if (currentDef && currentDef.tags && (currentDef.tags.includes('transparent_floor') || currentDef.tags.includes('allows_vision'))) {
+                            isCurrentTileSeeThrough = true;
+                        } else if (!currentTileIdOnViewZ) {
+                            isCurrentTileSeeThrough = true;
+                        }
+                    }
+
+                    if (isCurrentTileSeeThrough) {
+                        // Check the tile directly below on relevant layers (landscape, building)
+                        let tileBelowId = null;
+                        const landscapeBelow = levelDataBelowForSolidTop.landscape?.[y]?.[x];
+                        const buildingBelow = levelDataBelowForSolidTop.building?.[y]?.[x];
+                        // Prioritize building if it exists, then landscape
+                        tileBelowId = buildingBelow || landscapeBelow;
+
+
+                        if (tileBelowId) {
+                            const tileDefBelow = assetManagerInstance.tilesets[tileBelowId];
+                            if (tileDefBelow && tileDefBelow.tags && tileDefBelow.tags.includes('solid_terrain_top')) {
+                                // Render the top-view sprite of the solid_terrain_top tile from below
+                                currentSpan.textContent = tileDefBelow.sprite; // Original sprite
+                                currentSpan.style.color = tileDefBelow.color;
+                                // Update cache to reflect this visual change if necessary,
+                                // or ensure it's treated as a "floor" for subsequent logic.
+                                // For now, this primarily affects visuals. Walkability is separate.
+                                currentCachedCell.sprite = tileDefBelow.sprite;
+                                currentCachedCell.color = tileDefBelow.color;
+                                // Potentially update displayedId if this should "override" transparent things on current Z
+                                // currentCachedCell.displayedId = tileBelowId; // This might be too much, could hide actual items on current Z
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
         const overlayAdjacentTile = (x, y, adjacentLevelData, isAboveLayer) => {
             if (!adjacentLevelData || !tileCacheData[y] || !tileCacheData[y][x]) return;
 
@@ -1208,20 +1354,21 @@ window.mapRenderer = {
         const levelDataBelow = fullMapData.levels[belowZLevelKey];
         const levelDataAbove = fullMapData.levels[aboveZLevelKey];
 
-        if (levelDataBelow) {
-            for (let y = 0; y < H; y++) {
-                for (let x = 0; x < W; x++) {
-                    overlayAdjacentTile(x, y, levelDataBelow, false);
-                }
-            }
-        }
-        if (levelDataAbove) {
-            for (let y = 0; y < H; y++) {
-                for (let x = 0; x < W; x++) {
-                    overlayAdjacentTile(x, y, levelDataAbove, true);
-                }
-            }
-        }
+        // Temporarily disable old overlayAdjacentTile calls to avoid conflict with new solid_terrain_top logic
+        // if (levelDataBelow) {
+        //     for (let y = 0; y < H; y++) {
+        //         for (let x = 0; x < W; x++) {
+        //             overlayAdjacentTile(x, y, levelDataBelow, false);
+        //         }
+        //     }
+        // }
+        // if (levelDataAbove) {
+        //     for (let y = 0; y < H; y++) {
+        //         for (let x = 0; x < W; x++) {
+        //             overlayAdjacentTile(x, y, levelDataAbove, true);
+        //         }
+        //     }
+        // }
 
         // NPC Rendering: Only NPCs on the current Z-level
         if (gameState.npcs && gameState.npcs.length > 0 && tileCacheData) {
@@ -1492,24 +1639,36 @@ window.mapRenderer = {
         const tilesets = assetManagerInstance?.tilesets;
         if (!tilesets) return ""; // Tileset definitions not available
 
-        // Define layer precedence for collision. Building > Item > Landscape.
-        // Roofs are generally not collision objects unless they are floors of an upper level.
-        // This function checks for collision *on the given Z level*.
-        const collisionLayerOrder = ['building', 'item', 'landscape'];
+        // Primarily check the 'middle' layer for impassable tiles.
+        // 'bottom' layer tiles (floors) are generally not collision objects themselves,
+        // but something on the 'middle' layer above a floor would be.
+        const tileOnMiddleRaw = levelData.middle?.[y]?.[x];
+        const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined)
+            ? tileOnMiddleRaw.tileId
+            : tileOnMiddleRaw;
 
-        for (const layerName of collisionLayerOrder) {
-            const layer = levelData[layerName];
-            const tileId = layer?.[y]?.[x];
-            if (tileId) {
-                // Handle cases where tileId might be an object (e.g. from map maker instance properties)
-                const baseTileId = (typeof tileId === 'object' && tileId.tileId) ? tileId.tileId : tileId;
-                const tileDef = tilesets[baseTileId];
-                if (tileDef && tileDef.tags && tileDef.tags.includes('impassable')) {
-                    return baseTileId; // Found an impassable tile
-                }
+        if (effectiveTileOnMiddle && effectiveTileOnMiddle !== "") {
+            const tileDefMiddle = tilesets[effectiveTileOnMiddle];
+            if (tileDefMiddle && tileDefMiddle.tags && tileDefMiddle.tags.includes('impassable')) {
+                return effectiveTileOnMiddle; // Found an impassable tile on the middle layer
             }
         }
-        return ""; // No impassable tile found at this x,y,z on the checked layers
+
+        // Optionally, check 'bottom' layer if some bottom tiles can be inherently impassable (e.g. spikes on floor)
+        // For now, assuming 'bottom' layer is generally passable and 'middle' contains primary obstacles.
+        // If a bottom tile like 'spikes' should be impassable, it might be better on 'middle' conceptually,
+        // or this function would need to check bottom as well.
+        // Example:
+        // const tileOnBottomRaw = levelData.bottom?.[y]?.[x];
+        // const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && ... ) ? ... : tileOnBottomRaw;
+        // if (effectiveTileOnBottom && ...) {
+        //     const tileDefBottom = tilesets[effectiveTileOnBottom];
+        //     if (tileDefBottom && tileDefBottom.tags && tileDefBottom.tags.includes('impassable_bottom_tile')) {
+        //         return effectiveTileOnBottom;
+        //     }
+        // }
+
+        return ""; // No impassable tile found at this x,y,z on the primary collision layer (middle)
     },
 
     isWalkable: function (x, y, z) {
@@ -1523,85 +1682,78 @@ window.mapRenderer = {
 
         // 1. Handle Out-of-Bounds for x, y
         if (x < 0 || y < 0 || y >= mapData.dimensions.height || x >= mapData.dimensions.width) {
-            // console.log(`isWalkable: Out of bounds (x,y): ${x},${y} for Z=${z}`);
             return false;
         }
 
         const zStr = z.toString();
         const levelData = mapData.levels[zStr];
 
-        // If the target Z-level itself doesn't exist, it's not walkable.
-        if (!levelData) {
-            // console.log(`isWalkable: Target Z-level ${z} does not exist.`);
+        // If the target Z-level itself or its bottom/middle layers don't exist, it's not walkable.
+        if (!levelData || !levelData.bottom || !levelData.middle) {
             return false;
         }
 
-        // Layer check order: items, then building, then landscape for impassable checks at (x,y,z)
-        const layersAtZ = ['item', 'building', 'landscape'];
-        for (const layerName of layersAtZ) {
-            const layer = levelData[layerName];
-            const tileId = layer?.[y]?.[x];
-            if (tileId) {
-                const tileDef = tilesets[tileId];
-                if (tileDef && tileDef.tags) {
-                    if (tileDef.tags.includes("impassable") && !tileDef.tags.includes("z_transition")) {
-                        // console.log(`isWalkable: Impassable tile '${tileId}' found at ${x},${y},${z} on layer ${layerName}.`);
-                        return false; // Directly impassable tile at (x,y,z)
-                    }
-                    // Furniture rule: if it's furniture and NOT explicitly a floor, it's not walkable on top.
-                    if (tileDef.tags.includes("furniture") && !tileDef.tags.includes("floor") && !tileDef.tags.includes("transparent_floor")) {
-                        // console.log(`isWalkable: Furniture tile '${tileId}' found at ${x},${y},${z} on layer ${layerName}, not walkable on top.`);
-                        return false;
-                    }
+        // 2. Check for blocking elements on the 'middle' layer at (x,y,z)
+        const tileOnMiddleRaw = levelData.middle[y]?.[x];
+        const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
+        if (effectiveTileOnMiddle && effectiveTileOnMiddle !== "") {
+            const tileDefMiddle = tilesets[effectiveTileOnMiddle];
+            if (tileDefMiddle && tileDefMiddle.tags) {
+                // If it's impassable AND not a Z-transition point, it blocks.
+                if (tileDefMiddle.tags.includes("impassable") && !tileDefMiddle.tags.includes("z_transition")) {
+                    return false;
                 }
+                // Furniture rule: if it's furniture and NOT explicitly a floor (which is rare for furniture), it's not walkable on top.
+                // Most furniture will also be "impassable". This is a stricter check for non-impassable furniture.
+                if (tileDefMiddle.tags.includes("furniture") && !tileDefMiddle.tags.includes("floor")) {
+                    return false;
+                }
+            } else if (tileDefMiddle) { // Untagged middle tile
+                return false; // Assume untagged middle items are obstacles.
             }
         }
 
-        // 2. Check for explicit "floor" tags at (x,y,z)
-        // Check landscape first for floors, then other layers if needed.
-        // Typically, floors are on 'landscape' or 'building' layers.
-        const floorLayers = ['landscape', 'building', 'item']; // Item layer for things like rugs that are floors
-        for (const layerName of floorLayers) {
-            const layer = levelData[layerName];
-            const tileId = layer?.[y]?.[x];
-            if (tileId) {
-                const tileDef = tilesets[tileId];
-                if (tileDef && tileDef.tags && (tileDef.tags.includes("floor") || tileDef.tags.includes("transparent_floor") || tileDef.tags.includes("z_transition"))) {
-                    // console.log(`isWalkable: Explicit floor/z_transition tile '${tileId}' found at ${x},${y},${z} on layer ${layerName}.`);
-                    return true; // Walkable due to explicit floor/transition tile.
-                }
+        // 3. Check for a walkable surface on the 'bottom' layer at (x,y,z)
+        const tileOnBottomRaw = levelData.bottom[y]?.[x];
+        const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
+        if (effectiveTileOnBottom && effectiveTileOnBottom !== "") {
+            const tileDefBottom = tilesets[effectiveTileOnBottom];
+            if (tileDefBottom && tileDefBottom.tags &&
+                (tileDefBottom.tags.includes("floor") || tileDefBottom.tags.includes("transparent_floor") || tileDefBottom.tags.includes("z_transition"))) {
+                // Found a floor on the bottom layer, and middle layer was clear or passable.
+                return true;
             }
         }
 
-        // 3. Check for "wall" or "solid_terrain_top" at (x,y,z-1)
-        // This means we are trying to stand on top of something from the level below.
+        // 4. Check for support from Z-1 (standing on top of a wall, solid terrain, or solid roof from below)
         const zBelowStr = (z - 1).toString();
         const levelDataBelow = mapData.levels[zBelowStr];
 
-        if (levelDataBelow) {
-            // Check layers in levelDataBelow that can form a solid top.
-            // Primarily 'building' (for walls) and 'landscape' (for terrain).
-            // Roofs of z-1 can also be floors for z.
-            const providingLayersBelow = ['building', 'landscape', 'roof'];
-            for (const layerName of providingLayersBelow) {
-                const layer = levelDataBelow[layerName];
-                const tileIdBelow = layer?.[y]?.[x];
-                if (tileIdBelow) {
-                    const tileDefBelow = tilesets[tileIdBelow];
-                    if (tileDefBelow && tileDefBelow.tags) {
-                        // Tags that indicate a solid surface to stand on:
-                        if (tileDefBelow.tags.includes("wall") ||
-                            tileDefBelow.tags.includes("solid_terrain_top") ||
-                            (layerName === 'roof' && !tileDefBelow.tags.includes("transparent"))) { // A solid roof below is a floor above
-                            // console.log(`isWalkable: Standing on solid tile '${tileIdBelow}' from Z-1 (${z-1}) at ${x},${y}. Tile was on layer ${layerName}.`);
-                            return true; // Walkable by standing on top of a wall/solid terrain/roof from z-1.
-                        }
+        if (levelDataBelow && levelDataBelow.bottom && levelDataBelow.middle) {
+            // Check middle layer of Z-1
+            const tileOnMiddleBelowRaw = levelDataBelow.middle[y]?.[x];
+            const effMidBelow = (typeof tileOnMiddleBelowRaw === 'object' && tileOnMiddleBelowRaw !== null && tileOnMiddleBelowRaw.tileId !== undefined) ? tileOnMiddleBelowRaw.tileId : tileOnMiddleBelowRaw;
+            if (effMidBelow && effMidBelow !== "") {
+                const tileDefMidBelow = tilesets[effMidBelow];
+                if (tileDefMidBelow && tileDefMidBelow.tags) {
+                    if (tileDefMidBelow.tags.includes("wall") ||
+                        tileDefMidBelow.tags.includes("solid_terrain_top") ||
+                        (tileDefMidBelow.tags.includes("roof") && !tileDefMidBelow.tags.includes("transparent"))) { // Solid roof
+                        return true;
                     }
+                }
+            }
+            // Check bottom layer of Z-1 (e.g. solid_terrain_top dirt)
+            const tileOnBottomBelowRaw = levelDataBelow.bottom[y]?.[x];
+            const effBotBelow = (typeof tileOnBottomBelowRaw === 'object' && tileOnBottomBelowRaw !== null && tileOnBottomBelowRaw.tileId !== undefined) ? tileOnBottomBelowRaw.tileId : tileOnBottomBelowRaw;
+            if (effBotBelow && effBotBelow !== "") {
+                const tileDefBotBelow = tilesets[effBotBelow];
+                if (tileDefBotBelow && tileDefBotBelow.tags && tileDefBotBelow.tags.includes("solid_terrain_top")) {
+                    return true;
                 }
             }
         }
 
-        // console.log(`isWalkable: No walkable condition met for ${x},${y},${z}.`);
         return false; // Default to not walkable if no rule is met.
     }
 };
