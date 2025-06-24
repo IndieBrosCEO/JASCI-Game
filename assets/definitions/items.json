@@ -1063,7 +1063,7 @@
     "id": "pepper_spray",
     "name": "Pepper spray",
     "description": "A spray that causes temporary blindness and irritation.",
-    "type": "weapon_thrown_utility",
+    "type": "weapon_utility_spray",
     "canEquip": true,
     "isClothing": false,
     "size": 1,

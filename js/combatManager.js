@@ -724,11 +724,11 @@
             if (weapon?.id === 'chain_saw_melee') window.animationManager.playAnimation('chainsawAttack', { attacker, defender, duration: 800, frameDuration: 40 });
             else if (weapon?.id === 'whip') window.animationManager.playAnimation('whipCrack', { attacker, defender, duration: 700 });
             else window.animationManager.playAnimation('meleeSwing', { attacker, x: attacker.mapPos?.x ?? this.gameState.playerPos.x, y: attacker.mapPos?.y ?? this.gameState.playerPos.y, originalSprite: (attacker === this.gameState ? '☻' : (attacker.sprite || '?')), originalColor: (attacker === this.gameState ? 'green' : (attacker.color || 'white')), duration: 600 });
-        } else if (weapon?.type?.includes("thrown") && window.animationManager) {
+        } else if (weapon?.type?.includes("thrown") && weapon.type !== "weapon_utility_spray" && window.animationManager) { // Exclude spray types from generic throwing
             const attackerPos = attacker.mapPos || this.gameState.playerPos;
             let targetPos = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || this.gameState.defenderMapPos;
             if (attackerPos && targetPos) window.animationManager.playAnimation('throwing', { startPos: attackerPos, endPos: targetPos, sprite: (weapon.sprite || 'o'), color: (weapon.color || 'cyan'), duration: 600, attacker, defender });
-        } else if (attackType === 'ranged' && weapon && !weapon.type.includes("thrown") && !weapon.tags?.includes("launcher_treated_as_rifle") && window.animationManager) {
+        } else if (attackType === 'ranged' && weapon && !weapon.type?.includes("thrown") && weapon.type !== "weapon_utility_spray" && !weapon.tags?.includes("launcher_treated_as_rifle") && window.animationManager) {
             const attackerPos = attacker.mapPos || this.gameState.playerPos;
             const defenderPos = defender?.mapPos || this.gameState.defenderMapPos;
             if (attackerPos && defenderPos) window.animationManager.playAnimation('rangedBullet', { startPos: attackerPos, endPos: defenderPos, sprite: weapon.projectileSprite || '*', color: weapon.projectileColor || 'yellow', duration: 400, attacker, defender });
