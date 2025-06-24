@@ -82,103 +82,142 @@ async function move_internal(direction) {
     const width = currentMap.dimensions.width;
     const height = currentMap.dimensions.height;
     const originalPos = { ...gameState.playerPos };
-    const newPos = { ...gameState.playerPos };
+    let targetX = originalPos.x;
+    let targetY = originalPos.y;
+    let targetZ = originalPos.z; // Start with current Z
 
     switch (direction) {
-        case 'up': case 'w': case 'ArrowUp':
-            if (newPos.y > 0 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x, newPos.y - 1, gameState.playerPos.z))) newPos.y--;
-            break;
-        case 'down': case 's': case 'ArrowDown':
-            if (newPos.y < height - 1 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x, newPos.y + 1, gameState.playerPos.z))) newPos.y++;
-            break;
-        case 'left': case 'a': case 'ArrowLeft':
-            if (newPos.x > 0 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x - 1, newPos.y, gameState.playerPos.z))) newPos.x--;
-            break;
-        case 'right': case 'd': case 'ArrowRight':
-            if (newPos.x < width - 1 && window.mapRenderer.isPassable(window.mapRenderer.getCollisionTileAt(newPos.x + 1, newPos.y, gameState.playerPos.z))) newPos.x++;
-            break;
-        default:
-            return;
+        case 'up': case 'w': case 'ArrowUp': targetY--; break;
+        case 'down': case 's': case 'ArrowDown': targetY++; break;
+        case 'left': case 'a': case 'ArrowLeft': targetX--; break;
+        case 'right': case 'd': case 'ArrowRight': targetX++; break;
+        default: return; // Unknown direction
     }
 
-    // Check for NPC occupation at newPos
+    // Boundary checks (already handled by isWalkable, but good for early exit)
+    if (targetX < 0 || targetX >= width || targetY < 0 || targetY >= height) {
+        logToConsole("Can't move that way (map boundary).");
+        return;
+    }
+
+    // Check for NPC occupation at the target XY on the current Z.
+    // This check happens before Z-transition or walkability for simplicity.
+    // If moving through a Z-transition, NPC collision at the destination Z is more complex.
     if (gameState.npcs && gameState.npcs.length > 0) {
         for (const npc of gameState.npcs) {
-            if (npc.mapPos && npc.mapPos.x === newPos.x && npc.mapPos.y === newPos.y &&
+            if (npc.mapPos && npc.mapPos.x === targetX && npc.mapPos.y === targetY && npc.mapPos.z === targetZ &&
                 npc.health && npc.health.torso && npc.health.torso.current > 0) {
-                logToConsole(`Cannot move to (${newPos.x},${newPos.y}): Tile occupied by ${npc.name}.`);
+                logToConsole(`Cannot move to (${targetX},${targetY},${targetZ}): Tile occupied by ${npc.name}.`);
                 return; // Prevent movement
             }
         }
     }
 
-    if (newPos.x === originalPos.x && newPos.y === originalPos.y) {
-        logToConsole("Can't move that way.");
-        return;
-    }
-
-    // --- Animation Call ---
-    // if (window.animationManager) {
-    //     await window.animationManager.playAnimation('movement', { // Removed await
-    //         entity: gameState,
-    //         startPos: originalPos,
-    //         endPos: newPos,
-    //         sprite: '☻', // This is a JS string, should be fine.
-    //         color: 'green',
-    //         duration: 150
-    //     });
-    // }
-    // --- End Animation Call ---
-
-    gameState.playerPos.x = newPos.x;
-    gameState.playerPos.y = newPos.y;
-    // gameState.playerPos.z remains the same unless a Z-transition occurs below
-
-    // Check for Z-transition
-    const currentTileId = window.mapRenderer.getCollisionTileAt(newPos.x, newPos.y, gameState.playerPos.z) ||
-        currentMap.levels[gameState.playerPos.z.toString()]?.landscape?.[newPos.y]?.[newPos.x] ||
-        currentMap.levels[gameState.playerPos.z.toString()]?.item?.[newPos.y]?.[newPos.x] ||
-        currentMap.levels[gameState.playerPos.z.toString()]?.building?.[newPos.y]?.[newPos.x];
-
-
-    // assetManager should be globally available (from script.js)
-    if (currentTileId && window.assetManager && window.assetManager.tilesets) {
-        const tileDef = window.assetManager.tilesets[currentTileId];
-        if (tileDef && tileDef.tags && tileDef.tags.includes('z_transition') && tileDef.target_dz !== undefined) {
-            const oldZ = gameState.playerPos.z;
-            gameState.playerPos.z += tileDef.target_dz;
-            logToConsole(`Player used Z-transition: ${tileDef.name}. Moved from Z=${oldZ} to Z=${gameState.playerPos.z}.`, "cyan");
-
-            if (gameState.viewFollowsPlayerZ) {
-                gameState.currentViewZ = gameState.playerPos.z;
-                // Ensure FOW for the new Z-level is initialized
-                const newPlayerZStr = gameState.playerPos.z.toString();
-                const mapData = window.mapRenderer.getCurrentMapData();
-                if (mapData && mapData.dimensions) {
-                    const H = mapData.dimensions.height;
-                    const W = mapData.dimensions.width;
-                    if (H > 0 && W > 0 && !gameState.fowData[newPlayerZStr]) {
-                        gameState.fowData[newPlayerZStr] = Array(H).fill(null).map(() => Array(W).fill('hidden'));
-                        logToConsole(`FOW data initialized for Z-level ${newPlayerZStr} after Z-transition.`);
-                    }
-                }
-            }
-            // Note: z_cost from tileDef is not used yet, movement cost is 1 MP per Z-transition move.
+    // 1. Check for Z-Transition Tile at (targetX, targetY, currentZ)
+    // This needs to check multiple layers for a z_transition tile.
+    // Simplified: get the "topmost" tile ID that might be a transition.
+    // More robust would be to iterate layers if needed.
+    let transitionTileId = null;
+    const zTransitionCheckLayers = ['item', 'building', 'landscape']; // Order might matter if transitions can overlap
+    for (const layerName of zTransitionCheckLayers) {
+        const layer = currentMap.levels[targetZ.toString()]?.[layerName];
+        const tileId = layer?.[targetY]?.[targetX];
+        if (tileId && window.assetManager && window.assetManager.tilesets[tileId]?.tags?.includes('z_transition')) {
+            transitionTileId = tileId;
+            break;
         }
     }
 
-    if (gameState.isInCombat &&
-        gameState.combatCurrentAttacker === gameState) {
-        gameState.attackerMapPos = { ...gameState.playerPos }; // Update with new x, y, and potentially z
-    }
-    gameState.movementPointsRemaining--;
-    gameState.playerMovedThisTurn = true;
-    logToConsole(`Moved to (${gameState.playerPos.x}, ${gameState.playerPos.y}, Z:${gameState.playerPos.z}). Moves left: ${gameState.movementPointsRemaining}`);
+    if (transitionTileId) {
+        const tileDef = window.assetManager.tilesets[transitionTileId];
+        if (tileDef && tileDef.target_dz !== undefined) {
+            const cost = tileDef.z_cost || 1; // Default z_cost to 1 if not defined
+            if (gameState.movementPointsRemaining < cost) {
+                logToConsole("Not enough movement points for Z-transition.");
+                return;
+            }
 
-    updateTurnUI_internal();
-    window.mapRenderer.scheduleRender();
-    window.interaction.detectInteractableItems(); // This should also become Z-aware eventually
-    window.interaction.showInteractableItems();   // This should also become Z-aware
+            const finalDestZ = targetZ + tileDef.target_dz;
+            // Check if the destination of the Z-transition is walkable
+            if (window.mapRenderer.isWalkable(targetX, targetY, finalDestZ)) {
+                // Also check for NPC at destination of Z-transition
+                let npcAtFinalDest = false;
+                if (gameState.npcs && gameState.npcs.length > 0) {
+                    for (const npc of gameState.npcs) {
+                        if (npc.mapPos && npc.mapPos.x === targetX && npc.mapPos.y === targetY && npc.mapPos.z === finalDestZ &&
+                            npc.health && npc.health.torso && npc.health.torso.current > 0) {
+                            logToConsole(`Cannot use Z-transition to (${targetX},${targetY},${finalDestZ}): Destination occupied by ${npc.name}.`);
+                            npcAtFinalDest = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!npcAtFinalDest) {
+                    gameState.playerPos = { x: targetX, y: targetY, z: finalDestZ };
+                    gameState.movementPointsRemaining -= cost;
+                    logToConsole(`Player used Z-transition: ${tileDef.name}. Moved from Z=${targetZ} to Z=${finalDestZ}. Cost: ${cost} MP.`, "cyan");
+
+                    if (gameState.viewFollowsPlayerZ) {
+                        gameState.currentViewZ = finalDestZ;
+                        const newPlayerZStr = finalDestZ.toString();
+                        if (currentMap.dimensions) { // currentMap is already defined
+                            const H = currentMap.dimensions.height;
+                            const W = currentMap.dimensions.width;
+                            if (H > 0 && W > 0 && !gameState.fowData[newPlayerZStr]) {
+                                gameState.fowData[newPlayerZStr] = Array(H).fill(null).map(() => Array(W).fill('hidden'));
+                                logToConsole(`FOW data initialized for Z-level ${newPlayerZStr} after Z-transition.`);
+                            }
+                        }
+                    }
+                    // Common post-move updates
+                    if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) {
+                        gameState.attackerMapPos = { ...gameState.playerPos };
+                    }
+                    gameState.playerMovedThisTurn = true;
+                    updateTurnUI_internal();
+                    window.mapRenderer.scheduleRender();
+                    window.interaction.detectInteractableItems();
+                    window.interaction.showInteractableItems();
+                    return; // Movement action complete
+                }
+            } else {
+                logToConsole(`Z-transition '${tileDef.name}' destination (${targetX},${targetY},${finalDestZ}) is not walkable.`);
+                // Do not proceed with this move. Player stays put.
+                return;
+            }
+        }
+    }
+
+    // 2. Standard Horizontal Movement (if no Z-transition was taken)
+    if (window.mapRenderer.isWalkable(targetX, targetY, targetZ)) {
+        // NPC check was already done above for the current Z target.
+        // If isWalkable is true, and no NPC, proceed.
+        if (targetX === originalPos.x && targetY === originalPos.y && targetZ === originalPos.z) {
+            // This case should ideally not be reached if isWalkable failed for a different tile
+            // or if boundary checks failed. But as a fallback:
+            logToConsole("Can't move that way (already there or initial check failed).");
+            return;
+        }
+
+        gameState.playerPos = { x: targetX, y: targetY, z: targetZ };
+        gameState.movementPointsRemaining--;
+        logToConsole(`Moved to (${gameState.playerPos.x}, ${gameState.playerPos.y}, Z:${gameState.playerPos.z}). Moves left: ${gameState.movementPointsRemaining}`);
+
+        // Common post-move updates
+        if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) {
+            gameState.attackerMapPos = { ...gameState.playerPos };
+        }
+        gameState.playerMovedThisTurn = true;
+        updateTurnUI_internal();
+        window.mapRenderer.scheduleRender();
+        window.interaction.detectInteractableItems();
+        window.interaction.showInteractableItems();
+        return; // Movement action complete
+    }
+
+    // 3. Invalid Move (if neither Z-transition nor standard horizontal move was successful)
+    logToConsole("Can't move that way (target is not walkable or z-transition failed).");
 }
 
 window.turnManager = {

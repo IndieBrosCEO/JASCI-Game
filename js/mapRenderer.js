@@ -317,17 +317,27 @@ function isTileBlockingVision(tileX, tileY, tileZ) { // Added tileZ parameter
                     if (tileDef.tags.includes('impassable') || tileDef.tags.includes('blocks_vision')) {
                         return true; // This tile is a solid vision blocker.
                     }
+                    // If it's a floor tile and not explicitly transparent, it blocks vision.
+                    // This handles constructed floors acting as ceilings/solid surfaces.
+                    if (tileDef.tags.includes('floor') && !tileDef.tags.includes('transparent_floor') && !tileDef.tags.includes('allows_vision')) {
+                        return true;
+                    }
                 } else if (tileDef && !tileDef.tags) {
-                    // If tile has a definition but no tags, assume it blocks vision by default if it's not landscape floor.
-                    // This is a heuristic. Ideally, all tiles that should not block vision are tagged 'allows_vision' or 'transparent'.
+                    // Default behavior for untagged tiles:
+                    // Assume non-landscape, non-"floor"-named tiles block vision.
                     if (layerName !== 'landscape' || (tileDef.name && !tileDef.name.toLowerCase().includes("floor"))) {
-                        // return true; // Default to blocking for non-floor, non-tagged items. Might be too aggressive.
+                        // return true; // This default might be too aggressive. Better to rely on explicit tags.
+                        // For now, let's assume untagged non-landscape-floor tiles are solid.
+                        // This helps catch cases where 'blocks_vision' might be missing but implied.
+                        // However, the most robust approach is to ensure all tiles are appropriately tagged.
+                        // If it's a building layer and untagged, it's likely a wall/solid.
+                        if (layerName === 'building' || layerName === 'roof') return true;
                     }
                 }
             }
         }
     }
-    return false;
+    return false; // Default: tile does not block vision if no specific blocking condition met
 }
 
 function isTileVisible(playerX, playerY, playerZ, targetX, targetY, targetZ, visionRadius) {
@@ -1500,5 +1510,98 @@ window.mapRenderer = {
             }
         }
         return ""; // No impassable tile found at this x,y,z on the checked layers
+    },
+
+    isWalkable: function (x, y, z) {
+        const mapData = this.getCurrentMapData();
+        const tilesets = assetManagerInstance ? assetManagerInstance.tilesets : null;
+
+        if (!mapData || !mapData.levels || !mapData.dimensions || !tilesets) {
+            // console.warn(`isWalkable: Missing mapData, levels, dimensions, or tilesets. Args: ${x},${y},${z}`);
+            return false; // Cannot determine walkability
+        }
+
+        // 1. Handle Out-of-Bounds for x, y
+        if (x < 0 || y < 0 || y >= mapData.dimensions.height || x >= mapData.dimensions.width) {
+            // console.log(`isWalkable: Out of bounds (x,y): ${x},${y} for Z=${z}`);
+            return false;
+        }
+
+        const zStr = z.toString();
+        const levelData = mapData.levels[zStr];
+
+        // If the target Z-level itself doesn't exist, it's not walkable.
+        if (!levelData) {
+            // console.log(`isWalkable: Target Z-level ${z} does not exist.`);
+            return false;
+        }
+
+        // Layer check order: items, then building, then landscape for impassable checks at (x,y,z)
+        const layersAtZ = ['item', 'building', 'landscape'];
+        for (const layerName of layersAtZ) {
+            const layer = levelData[layerName];
+            const tileId = layer?.[y]?.[x];
+            if (tileId) {
+                const tileDef = tilesets[tileId];
+                if (tileDef && tileDef.tags) {
+                    if (tileDef.tags.includes("impassable") && !tileDef.tags.includes("z_transition")) {
+                        // console.log(`isWalkable: Impassable tile '${tileId}' found at ${x},${y},${z} on layer ${layerName}.`);
+                        return false; // Directly impassable tile at (x,y,z)
+                    }
+                    // Furniture rule: if it's furniture and NOT explicitly a floor, it's not walkable on top.
+                    if (tileDef.tags.includes("furniture") && !tileDef.tags.includes("floor") && !tileDef.tags.includes("transparent_floor")) {
+                        // console.log(`isWalkable: Furniture tile '${tileId}' found at ${x},${y},${z} on layer ${layerName}, not walkable on top.`);
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // 2. Check for explicit "floor" tags at (x,y,z)
+        // Check landscape first for floors, then other layers if needed.
+        // Typically, floors are on 'landscape' or 'building' layers.
+        const floorLayers = ['landscape', 'building', 'item']; // Item layer for things like rugs that are floors
+        for (const layerName of floorLayers) {
+            const layer = levelData[layerName];
+            const tileId = layer?.[y]?.[x];
+            if (tileId) {
+                const tileDef = tilesets[tileId];
+                if (tileDef && tileDef.tags && (tileDef.tags.includes("floor") || tileDef.tags.includes("transparent_floor") || tileDef.tags.includes("z_transition"))) {
+                    // console.log(`isWalkable: Explicit floor/z_transition tile '${tileId}' found at ${x},${y},${z} on layer ${layerName}.`);
+                    return true; // Walkable due to explicit floor/transition tile.
+                }
+            }
+        }
+
+        // 3. Check for "wall" or "solid_terrain_top" at (x,y,z-1)
+        // This means we are trying to stand on top of something from the level below.
+        const zBelowStr = (z - 1).toString();
+        const levelDataBelow = mapData.levels[zBelowStr];
+
+        if (levelDataBelow) {
+            // Check layers in levelDataBelow that can form a solid top.
+            // Primarily 'building' (for walls) and 'landscape' (for terrain).
+            // Roofs of z-1 can also be floors for z.
+            const providingLayersBelow = ['building', 'landscape', 'roof'];
+            for (const layerName of providingLayersBelow) {
+                const layer = levelDataBelow[layerName];
+                const tileIdBelow = layer?.[y]?.[x];
+                if (tileIdBelow) {
+                    const tileDefBelow = tilesets[tileIdBelow];
+                    if (tileDefBelow && tileDefBelow.tags) {
+                        // Tags that indicate a solid surface to stand on:
+                        if (tileDefBelow.tags.includes("wall") ||
+                            tileDefBelow.tags.includes("solid_terrain_top") ||
+                            (layerName === 'roof' && !tileDefBelow.tags.includes("transparent"))) { // A solid roof below is a floor above
+                            // console.log(`isWalkable: Standing on solid tile '${tileIdBelow}' from Z-1 (${z-1}) at ${x},${y}. Tile was on layer ${layerName}.`);
+                            return true; // Walkable by standing on top of a wall/solid terrain/roof from z-1.
+                        }
+                    }
+                }
+            }
+        }
+
+        // console.log(`isWalkable: No walkable condition met for ${x},${y},${z}.`);
+        return false; // Default to not walkable if no rule is met.
     }
 };
