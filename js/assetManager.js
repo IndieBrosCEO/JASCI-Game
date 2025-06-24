@@ -242,33 +242,46 @@
             }
         }
 
-        let width = mapJsonData.width;
+        let width = mapJsonData.width; // Width and height are still relevant for the 2D plane of each Z-level
         let height = mapJsonData.height;
 
-        // Infer dimensions from landscape layer if not directly available
-        if ((width === undefined || height === undefined) && mapJsonData.layers && mapJsonData.layers.landscape) {
-            const landscapeLayer = mapJsonData.layers.landscape;
-            if (Array.isArray(landscapeLayer) && landscapeLayer.length > 0 && Array.isArray(landscapeLayer[0])) {
-                height = landscapeLayer.length;
-                width = landscapeLayer[0].length;
-                console.log(`Map dimensions for '${mapId}' inferred from landscape layer: ${width}x${height}`);
+        // Infer dimensions from the first Z-level's landscape layer if not directly available
+        if ((width === undefined || height === undefined) && mapJsonData.levels) {
+            const firstZLevelKey = Object.keys(mapJsonData.levels)[0];
+            if (firstZLevelKey && mapJsonData.levels[firstZLevelKey] && mapJsonData.levels[firstZLevelKey].landscape) {
+                const landscapeLayer = mapJsonData.levels[firstZLevelKey].landscape;
+                if (Array.isArray(landscapeLayer) && landscapeLayer.length > 0 && Array.isArray(landscapeLayer[0])) {
+                    height = landscapeLayer.length;
+                    width = landscapeLayer[0].length;
+                    console.log(`Map dimensions for '${mapId}' inferred from Z-level '${firstZLevelKey}' landscape layer: ${width}x${height}`);
+                } else {
+                    console.warn(`Map dimensions could not be inferred for map '${mapId}' from Z-level '${firstZLevelKey}'. Using 0x0.`);
+                    width = 0; height = 0;
+                }
             } else {
-                console.warn(`Map dimensions could not be inferred from landscape layer for map '${mapId}'. Using 0x0.`);
-                width = 0;
-                height = 0;
+                console.warn(`Map dimensions could not be inferred for map '${mapId}' as levels or landscape data is missing. Using 0x0.`);
+                width = 0; height = 0;
             }
         } else if (width === undefined || height === undefined) {
-            // This case handles if mapJsonData.layers or mapJsonData.layers.landscape is missing when width/height are missing
             console.warn(`Map dimensions (width/height) missing for map '${mapId}' and could not be inferred. Using 0x0.`);
-            width = 0;
-            height = 0;
+            width = 0; height = 0;
         }
 
-        processedMapData.dimensions = { width, height };
-        processedMapData.layers = mapJsonData.layers || {}; // Ensure layers object exists
+        processedMapData.dimensions = { width, height }; // These are per-Z-level dimensions
+        processedMapData.levels = mapJsonData.levels || {}; // Store the Z-levels structure
+        processedMapData.startPos = mapJsonData.startPos || { x: 0, y: 0, z: 0 }; // Include Z in startPos
+
         processedMapData.portals = mapJsonData.portals || [];
-        processedMapData.npcs = mapJsonData.npcs || [];
-        processedMapData.container_instances = mapJsonData.container_instances || [];
+        // Ensure NPCs have Z coordinate, default to 0 if missing from old map formats during transition
+        processedMapData.npcs = (mapJsonData.npcs || []).map(npc => ({
+            ...npc,
+            pos: {
+                x: npc.pos ? npc.pos.x : 0,
+                y: npc.pos ? npc.pos.y : 0,
+                z: npc.pos && npc.pos.z !== undefined ? npc.pos.z : 0 // Default Z to 0 if not specified
+            }
+        }));
+        processedMapData.container_instances = mapJsonData.container_instances || []; // Future: may need Z
         processedMapData.tileset = mapJsonData.tileset || null; // Or a default tileset ID
 
         this.currentMap = processedMapData;

@@ -776,37 +776,55 @@
         let attackResult, defenseResult;
 
         if (attackType === 'melee' && defender) {
-            const attackerMapPos = attacker.mapPos || this.gameState.playerPos;
-            const defenderMapPos = defender.mapPos || this.gameState.playerPos;
-            if (attackerMapPos && defenderMapPos && (Math.abs(attackerMapPos.x - defenderMapPos.x) + Math.abs(attackerMapPos.y - defenderMapPos.y) > 1)) {
-                logToConsole(`MELEE FAIL: ${attackerName}'s attack on ${defenderName} fails (Out of Range).`, 'orange');
-                if (attacker === this.gameState) {
-                    if (this.gameState.actionPointsRemaining > 0) this.promptPlayerAttackDeclaration();
-                    else if (this.gameState.movementPointsRemaining > 0) this.gameState.combatPhase = 'playerPostAction';
-                    else this.nextTurn(attacker);
-                } else this.nextTurn(attacker); return;
+            const attackerMapPos = attacker.mapPos || this.gameState.playerPos; // Includes .z
+            const defenderMapPos = defender.mapPos; // Includes .z
+            if (attackerMapPos && defenderMapPos) {
+                const distance3D = getDistance3D(attackerMapPos, defenderMapPos);
+                // Melee range could be slightly more than 1 for diagonal in 3D, e.g., sqrt(1^2+1^2+1^2) approx 1.73
+                // For simplicity, let's say direct adjacency in 3D (Manhattan distance of 1 for x,y,z combined, or stricter like current)
+                // Current check is Manhattan distance > 1 on XY plane. Let's make it 3D Manhattan.
+                const manhattanDistance3D = Math.abs(attackerMapPos.x - defenderMapPos.x) +
+                    Math.abs(attackerMapPos.y - defenderMapPos.y) +
+                    Math.abs(attackerMapPos.z - defenderMapPos.z);
+                if (manhattanDistance3D > 1) { // Only allow melee if directly adjacent in 3D
+                    logToConsole(`MELEE FAIL: ${attackerName}'s attack on ${defenderName} fails (Out of Range - Dist: ${distance3D.toFixed(1)}, Manhattan: ${manhattanDistance3D}).`, 'orange');
+                    if (attacker === this.gameState) {
+                        if (this.gameState.actionPointsRemaining > 0) this.promptPlayerAttackDeclaration();
+                        else if (this.gameState.movementPointsRemaining > 0) this.gameState.combatPhase = 'playerPostAction';
+                        else this.nextTurn(attacker);
+                    } else this.nextTurn(attacker); return;
+                }
             }
         }
-        let coverBonus = (defender && defender.mapPos) ? this.getDefenderCoverBonus(defender) : 0;
+        let coverBonus = (defender && defender.mapPos) ? this.getDefenderCoverBonus(defender) : 0; // Cover is complex in 3D, placeholder
         if (attackType === 'ranged' && weapon) {
-            const attackerMapPos = attacker.mapPos || this.gameState.playerPos;
-            const targetMapPos = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos;
+            const attackerMapPos = attacker.mapPos || this.gameState.playerPos; // Includes .z
+            const targetMapPos = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos; // Includes .z
+
             if (attackerMapPos && targetMapPos) {
-                const distance = Math.sqrt(Math.pow(targetMapPos.x - attackerMapPos.x, 2) + Math.pow(targetMapPos.y - attackerMapPos.y, 2));
+                const distance = getDistance3D(attackerMapPos, targetMapPos); // Use 3D distance
                 actionContext.isGrappling = attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === (defender === this.gameState ? 'player' : defender?.id);
-                if (distance <= 1) actionContext.rangeModifier = (weapon.tags?.includes("requires_grapple_for_point_blank") && defender && actionContext.isGrappling) ? 15 : (weapon.tags?.includes("requires_grapple_for_point_blank") ? 0 : 15);
-                else if (distance <= 3) actionContext.rangeModifier = 5; else if (distance <= 6) actionContext.rangeModifier = 0;
-                else if (distance <= 20) actionContext.rangeModifier = -5; else if (distance <= 60) actionContext.rangeModifier = -10;
-                else actionContext.rangeModifier = -15;
-                if (distance > 6) {
+
+                // Range modifiers based on 3D distance (these are examples, can be tuned)
+                // Effective range of weapons might be defined in weapon stats later.
+                if (distance <= 1.8) actionContext.rangeModifier = (weapon.tags?.includes("requires_grapple_for_point_blank") && defender && actionContext.isGrappling) ? 15 : (weapon.tags?.includes("requires_grapple_for_point_blank") ? 0 : 15); // Point blank
+                else if (distance <= weapon.optimalRange || 10) actionContext.rangeModifier = 5; // Optimal/Short
+                else if (distance <= weapon.effectiveRange || 30) actionContext.rangeModifier = 0; // Medium / Effective
+                else if (distance <= weapon.maxRange || 60) actionContext.rangeModifier = -5; // Long
+                else actionContext.rangeModifier = -10; // Extreme
+
+                // Weapon-specific range adjustments (example)
+                if (distance > (weapon.effectiveRange || 30)) { // If beyond effective range
                     let mod = 0;
-                    if (weapon.type.includes("bow")) mod = -3; else if (weapon.type.includes("shotgun")) mod = -2;
-                    else if (weapon.type.includes("rifle") && !weapon.tags?.includes("sniper")) mod = 2; else if (weapon.tags?.includes("sniper")) mod = 5;
+                    if (weapon.type.includes("bow")) mod = -3;
+                    else if (weapon.type.includes("shotgun")) mod = -5; // Shotguns drop off faster
+                    else if (weapon.type.includes("rifle") && !weapon.tags?.includes("sniper")) mod = 0; // Rifles maintain better
+                    else if (weapon.tags?.includes("sniper")) mod = 2; // Snipers excel at range
                     actionContext.rangeModifier += mod;
                 }
-                logToConsole(`Ranged attack: Dist=${distance.toFixed(1)}, RangeMod=${actionContext.rangeModifier}`, 'grey');
+                logToConsole(`Ranged attack: Dist3D=${distance.toFixed(1)}, RangeMod=${actionContext.rangeModifier}`, 'grey');
             }
-            if (weapon.type.includes("firearm")) {
+            if (weapon.type.includes("firearm") || weapon.tags?.includes("launcher_treated_as_rifle")) {
                 if (fireMode === "burst") { actionContext.attackModifier = -5; actionContext.isBurst = true; }
                 else if (fireMode === "auto") { actionContext.attackModifier = -8; actionContext.isAutomatic = true; }
             }
@@ -1079,17 +1097,27 @@
         return coverBonus;
     }
 
-    getCharactersInBlastRadius(impactTile, burstRadiusTiles) {
+    getCharactersInBlastRadius(impactTile, burstRadiusTiles) { // impactTile should have x, y, z
         const affected = [];
-        const { x: impX, y: impY } = impactTile;
-        const checkEntity = (entity, entityPos) => {
-            if (entity && entityPos && (Math.abs(entityPos.x - impX) + Math.abs(entityPos.y - impY) <= burstRadiusTiles) && entity.health?.torso?.current > 0 && entity.health?.head?.current > 0) {
+        const { x: impX, y: impY, z: impZ } = impactTile; // Expect impactTile to have x, y, z
+
+        const checkEntity = (entity, entityPos) => { // entityPos should have x, y, z
+            if (!entity || !entityPos || entityPos.x === undefined || entityPos.y === undefined || entityPos.z === undefined) return;
+
+            // For a spherical blast, use 3D distance
+            const distance = getDistance3D(impactTile, entityPos);
+
+            if (distance <= burstRadiusTiles && entity.health?.torso?.current > 0 && entity.health?.head?.current > 0) {
                 affected.push(entity);
             }
         };
+
+        // Check player
         checkEntity(this.gameState, this.gameState.playerPos);
+        // Check NPCs
         this.gameState.npcs.forEach(npc => checkEntity(npc, npc.mapPos));
-        logToConsole(`Blast radius check at (${impX},${impY}) with ${burstRadiusTiles}t radius found ${affected.length} characters.`, 'grey');
+
+        logToConsole(`Blast radius check at (${impX},${impY},${impZ}) with ${burstRadiusTiles}t radius found ${affected.length} characters.`, 'grey');
         return affected;
     }
 

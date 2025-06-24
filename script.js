@@ -147,17 +147,26 @@ function calculateDefenseRoll(defender, defenseType, attackerWeapon, actionConte
 
 async function handleMapSelectionChangeWrapper(mapId) { // Made async to handle map loading properly
     if (window.mapRenderer && typeof window.mapRenderer.handleMapSelectionChange === 'function') {
-        const loadedMapData = await window.mapRenderer.handleMapSelectionChange(mapId);
+        const loadedMapData = await window.mapRenderer.handleMapSelectionChange(mapId); // assetManager.loadMap now returns .levels and .startPos.z
         if (loadedMapData) {
-            // These are already set by mapRenderer.initializeCurrentMap via handleMapSelectionChange,
-            // but explicit sync here ensures script.js's direct gameState manipulations are aligned.
-            gameState.layers = loadedMapData.layers;
-            gameState.playerPos = loadedMapData.startPos || { x: 2, y: 2 };
+            // Sync gameState with the new Z-level structure
+            gameState.mapLevels = loadedMapData.levels;
+            gameState.playerPos = loadedMapData.startPos || { x: 2, y: 2, z: 0 }; // Ensure Z is part of playerPos
+            gameState.currentViewZ = gameState.playerPos.z; // Default view to player's Z
 
-            // Spawn NPCs for the new map
-            spawnNpcsFromMapData(loadedMapData); // Ensures gameState.npcs is fresh for the new map
+            // Ensure fowData for the new player Z-level is initialized if not already by initializeCurrentMap
+            const playerZStr = gameState.playerPos.z.toString();
+            if (loadedMapData.dimensions && loadedMapData.dimensions.height > 0 && loadedMapData.dimensions.width > 0) {
+                if (!gameState.fowData[playerZStr]) {
+                    gameState.fowData[playerZStr] =
+                        Array(loadedMapData.dimensions.height).fill(null).map(() =>
+                            Array(loadedMapData.dimensions.width).fill('hidden'));
+                    logToConsole(`FOW data initialized for Z-level ${playerZStr} in handleMapSelectionChangeWrapper.`);
+                }
+            }
 
-            // Re-render and update UI based on new map
+            spawnNpcsFromMapData(loadedMapData); // spawnNpcsFromMapData will need to handle npc.pos.z
+
             window.mapRenderer.scheduleRender();
             window.interaction.detectInteractableItems();
             window.interaction.showInteractableItems();
@@ -181,13 +190,16 @@ function spawnNpcsFromMapData(mapData) {
 
     if (mapData && mapData.npcs && Array.isArray(mapData.npcs)) {
         logToConsole(`Spawning NPCs from map data for map: ${mapData.name || mapData.id}`);
-        mapData.npcs.forEach(npcPlacementInfo => {
-            const npcDefinition = assetManager.getNpc(npcPlacementInfo.id); // Changed getNpcDefinition to getNpc
+        mapData.npcs.forEach(npcPlacementInfo => { // npcPlacementInfo.pos should now include .z from assetManager
+            const npcDefinition = assetManager.getNpc(npcPlacementInfo.id);
             if (npcDefinition) {
-                const newNpc = JSON.parse(JSON.stringify(npcDefinition)); // Deep clone definition
-                newNpc.mapPos = { ...npcPlacementInfo.pos }; // Assign position from map data
+                const newNpc = JSON.parse(JSON.stringify(npcDefinition));
+                newNpc.mapPos = {
+                    x: npcPlacementInfo.pos.x,
+                    y: npcPlacementInfo.pos.y,
+                    z: npcPlacementInfo.pos.z !== undefined ? npcPlacementInfo.pos.z : 0 // Ensure Z is set, default to 0
+                };
 
-                // Initialize health and aggroList
                 if (typeof window.initializeHealth === 'function') {
                     window.initializeHealth(newNpc);
                 } else {
@@ -204,9 +216,9 @@ function spawnNpcsFromMapData(mapData) {
                 }
 
                 gameState.npcs.push(newNpc);
-                logToConsole(`Spawned NPC: ${newNpc.name || newNpc.id} (ID: ${newNpc.id}, Team: ${newNpc.teamId}) at (X:${newNpc.mapPos.x}, Y:${newNpc.mapPos.y})`);
+                logToConsole(`Spawned NPC: ${newNpc.name || newNpc.id} (ID: ${newNpc.id}, Team: ${newNpc.teamId}) at (X:${newNpc.mapPos.x}, Y:${newNpc.mapPos.y}, Z:${newNpc.mapPos.z})`);
             } else {
-                console.warn(`NPC definition not found for ID: ${npcPlacementInfo.id} in map data.`);
+                console.warn(`NPC definition not found for ID: ${npcPlacementInfo.id} in map data for map ${mapData.name || mapData.id}.`);
             }
         });
     } else {
@@ -617,9 +629,46 @@ function handleKeyDown(event) {
         }
     }
 
+    // Z-Level view controls (should take precedence over movement if not in targeting mode or other UI modes)
+    if (!isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isTargetingMode) {
+        let viewChanged = false;
+        const currentMap = window.mapRenderer.getCurrentMapData();
+        const H = currentMap ? currentMap.dimensions.height : 0;
+        const W = currentMap ? currentMap.dimensions.width : 0;
+
+        if (event.key === '<' || event.key === ',') {
+            gameState.currentViewZ--;
+            gameState.viewFollowsPlayerZ = false; // Player is manually controlling view
+            logToConsole(`View Z changed to: ${gameState.currentViewZ}. View no longer follows player.`);
+            viewChanged = true;
+        } else if (event.key === '>' || event.key === '.') {
+            gameState.currentViewZ++;
+            gameState.viewFollowsPlayerZ = false; // Player is manually controlling view
+            logToConsole(`View Z changed to: ${gameState.currentViewZ}. View no longer follows player.`);
+            viewChanged = true;
+        } else if (event.key === '/') {
+            gameState.currentViewZ = gameState.playerPos.z;
+            gameState.viewFollowsPlayerZ = true; // View now follows player
+            logToConsole(`View Z reset to player Z: ${gameState.currentViewZ}. View now follows player.`);
+            viewChanged = true;
+        }
+
+        if (viewChanged) {
+            const newViewZStr = gameState.currentViewZ.toString();
+            if (H > 0 && W > 0 && !gameState.fowData[newViewZStr]) {
+                gameState.fowData[newViewZStr] = Array(H).fill(null).map(() => Array(W).fill('hidden'));
+                logToConsole(`FOW data initialized for newly viewed Z-level ${newViewZStr}.`);
+            }
+            window.mapRenderer.scheduleRender();
+            event.preventDefault();
+            return; // Consume the event
+        }
+    }
+
     // Default game actions (player movement, interaction, etc.)
-    // This block is processed if not in targeting mode OR if in targeting mode but no targeting movement key was pressed.
-    if (!gameState.isActionMenuActive && !gameState.isTargetingMode) { // Ensure not in targeting mode for player movement
+    // This block is processed if not in targeting mode OR if in targeting mode but no targeting movement key was pressed,
+    // AND if no Z-level view key was pressed.
+    if (!gameState.isActionMenuActive && !gameState.isTargetingMode) {
         switch (event.key) {
             case 'ArrowUp': case 'w': case 'W':
             case 'ArrowDown': case 's': case 'S':
@@ -1017,30 +1066,42 @@ async function initialize() { // Made async
 
         if (initialMapId) {
             console.log(`Loading initial map: ${initialMapId}`);
-            const loadedMapData = await assetManager.loadMap(initialMapId);
+            const loadedMapData = await assetManager.loadMap(initialMapId); // assetManager.loadMap now returns .levels and .startPos.z
             if (loadedMapData) {
-                window.mapRenderer.initializeCurrentMap(loadedMapData); // Initialize mapRenderer's currentMapData
-                gameState.layers = loadedMapData.layers; // Sync gameState.layers
-                gameState.playerPos = loadedMapData.startPos || { x: 2, y: 2 }; // Update playerPos
-                gameState.currentMapId = loadedMapData.id || initialMapId; // Set currentMapId
-                console.log("Initial map loaded:", loadedMapData.name, "ID:", gameState.currentMapId);
-                // Spawn NPCs from the newly loaded map data
-                spawnNpcsFromMapData(loadedMapData); // Ensures gameState.npcs is fresh for the new map
+                window.mapRenderer.initializeCurrentMap(loadedMapData);
+                gameState.mapLevels = loadedMapData.levels;
+                gameState.playerPos = loadedMapData.startPos || { x: 2, y: 2, z: 0 }; // Ensure Z
+                gameState.currentViewZ = gameState.playerPos.z; // Set initial view Z
+                gameState.currentMapId = loadedMapData.id || initialMapId;
+
+                // Ensure fowData for the initial player Z-level is initialized
+                const playerZStr = gameState.playerPos.z.toString();
+                if (loadedMapData.dimensions && loadedMapData.dimensions.height > 0 && loadedMapData.dimensions.width > 0) {
+                    if (!gameState.fowData[playerZStr]) {
+                        gameState.fowData[playerZStr] =
+                            Array(loadedMapData.dimensions.height).fill(null).map(() =>
+                                Array(loadedMapData.dimensions.width).fill('hidden'));
+                        logToConsole(`FOW data initialized for Z-level ${playerZStr} in initialize().`);
+                    }
+                }
+                console.log("Initial map loaded:", loadedMapData.name, "ID:", gameState.currentMapId, "Player Z:", gameState.playerPos.z);
+                spawnNpcsFromMapData(loadedMapData);
             } else {
                 console.error(`Failed to load initial map: ${initialMapId}`);
-                gameState.npcs = []; // Clear NPCs if map fails to load
-                window.mapRenderer.initializeCurrentMap(null); // Ensure mapRenderer knows map is cleared
+                gameState.npcs = [];
+                window.mapRenderer.initializeCurrentMap(null);
                 const errorDisplay = document.getElementById('errorMessageDisplay');
                 if (errorDisplay) errorDisplay.textContent = `Failed to load initial map: ${initialMapId}.`;
-                gameState.layers = { landscape: [], building: [], item: [], roof: [] }; // Clear gameState layers
+                gameState.mapLevels = {}; // Clear gameState mapLevels
+                gameState.fowData = {}; // Clear fowData
             }
         } else {
             console.warn("No initial map selected or map selector is empty. No map loaded at startup.");
-            window.mapRenderer.initializeCurrentMap(null); // Ensure mapRenderer knows map is cleared
-            gameState.layers = { landscape: [], building: [], item: [], roof: [] }; // Clear gameState layers
+            window.mapRenderer.initializeCurrentMap(null);
+            gameState.mapLevels = {};
+            gameState.fowData = {};
         }
 
-        // renderTables is now in js/character.js, call it with gameState
         window.renderTables(gameState);
         // window.mapRenderer.scheduleRender(); // Initial render of the map (or empty state) - gameLoop will handle this
         window.updateInventoryUI(); // Initialize inventory display (now from js/inventory.js)
@@ -1207,54 +1268,36 @@ function startGame() {
     // const gameControls = document.getElementById('game-controls'); // This ID does not exist in index.html right-panel is used.
 
     // Ensure currentMapData is loaded (now via window.mapRenderer.getCurrentMapData())
-    let currentMap = window.mapRenderer.getCurrentMapData(); // Use getter from mapRenderer.js
+    let currentMap = window.mapRenderer.getCurrentMapData();
     if (!currentMap) {
-        console.warn("startGame called but no map data loaded from mapRenderer. Attempting to load from selector.");
-        const mapSelector = document.getElementById('mapSelector');
-        let initialMapId = mapSelector?.value;
-        if (mapSelector && (!initialMapId || mapSelector.options[mapSelector.selectedIndex]?.disabled)) {
-            initialMapId = "";
-            for (let i = 0; i < mapSelector.options.length; i++) {
-                if (mapSelector.options[i].value && !mapSelector.options[i].disabled) {
-                    initialMapId = mapSelector.options[i].value;
-                    break;
-                }
-            }
-        }
-
-        if (initialMapId) {
-            assetManager.loadMap(initialMapId).then(loadedMapData => {
-                if (loadedMapData) {
-                    window.mapRenderer.initializeCurrentMap(loadedMapData);
-                    currentMap = window.mapRenderer.getCurrentMapData();    // Update local reference
-                    if (currentMap) { // Check if currentMap is now valid
-                        gameState.layers = currentMap.layers;
-                        gameState.playerPos = currentMap.startPos || { x: 2, y: 2 };
-                        // window.mapRenderer.scheduleRender(); // gameLoop handles this
-                        window.interaction.detectInteractableItems(); // <<< CORRECTED
-                        window.interaction.showInteractableItems();   // <<< CORRECTED
-                        logToConsole(`Map ${currentMap.name} loaded in startGame.`);
-                    }
-                } else {
-                    logToConsole(`Failed to load map ${initialMapId} in startGame.`);
-                    window.mapRenderer.initializeCurrentMap(null);
-                }
-            }).catch(error => {
-                console.error(`Error loading map in startGame: ${error}`);
-                window.mapRenderer.initializeCurrentMap(null);
-            });
-        } else {
-            logToConsole("No map selected in startGame, map display might be empty.");
-            window.mapRenderer.initializeCurrentMap(null);
-        }
-    } else {
-        // Map is already loaded via initialize(), ensure layers and playerPos are synced
-        gameState.layers = currentMap.layers;
-        gameState.playerPos = currentMap.startPos || { x: 2, y: 2 };
+        console.warn("startGame called but no map data loaded from mapRenderer. This should have been handled by initialize().");
+        // Attempt to gracefully handle or rely on initialize() having set defaults
+        // Forcing a load here might be redundant if initialize worked or failed informatively.
+        // If initialize() failed to load any map, currentMap will be null.
+        // Game might not be in a playable state if no map is loaded.
     }
 
+    // Ensure gameState reflects the currently loaded map's Z-level structure
+    // This might be redundant if initialize() and handleMapSelectionChangeWrapper() are correctly setting these.
+    if (currentMap && currentMap.levels && currentMap.startPos) {
+        gameState.mapLevels = currentMap.levels;
+        gameState.playerPos = { ...currentMap.startPos }; // Ensure we have x, y, and z
+        gameState.currentViewZ = currentMap.startPos.z;
+    } else if (currentMap) {
+        // If currentMap exists but is missing Z-level data (e.g. old format map somehow loaded)
+        // Log a warning and try to set defaults.
+        console.warn("startGame: currentMap is loaded but missing Z-level data (levels or startPos.z). Attempting to use defaults.");
+        gameState.mapLevels = currentMap.layers ? { "0": currentMap.layers } : { "0": { landscape: [], building: [], item: [], roof: [] } };
+        gameState.playerPos = { x: (currentMap.startPos?.x || 2), y: (currentMap.startPos?.y || 2), z: 0 };
+        gameState.currentViewZ = 0;
+    } else {
+        // No map loaded at all
+        console.error("startGame: No map data is available. Cannot properly initialize game state for map.");
+        gameState.mapLevels = { "0": { landscape: [], building: [], item: [], roof: [] } }; // Default empty level
+        gameState.playerPos = { x: 2, y: 2, z: 0 };
+        gameState.currentViewZ = 0;
+    }
 
-    // Logic for item creation (using assetManager to get item definitions)
     // Ensure gameState.inventory.container is initialized before trying to modify it or call functions like addItem.
     // OLD BACKPACK UPGRADE LOGIC REMOVED
 

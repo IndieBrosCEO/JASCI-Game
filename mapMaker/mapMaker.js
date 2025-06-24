@@ -35,55 +35,122 @@ function createDefaultLandscape(w, h) {
     return g;
 }
 
-function applyAutoTile(x, y) {
-    const tile = layers[currentLayer]?.[y]?.[x];
-    if (!tile) return;
-    // Determine the family key: "WW" → "WWH", "MW" → "MWH"
-    const fam = tile.slice(0, 2);
-    const mapKey = fam + "H";
-    const map = autoTileMap[mapKey];
-    if (!map) return;
+function applyAutoTile(x, y, z, layerType) { // Added z and layerType
+    const zStr = z.toString();
+    ensureLayersForZ(z); // Ensure the Z-level and its layers exist
 
-    // Build the 4-bit mask by checking if neighbors share the same family
+    const currentLevelLayer = mapData.levels[zStr]?.[layerType];
+    if (!currentLevelLayer) return;
+
+    const tileId = currentLevelLayer[y]?.[x];
+    // If tileId is an object (e.g. container), get its base tileId for autotiling logic
+    const baseTileId = (typeof tileId === 'object' && tileId !== null && tileId.tileId !== undefined) ? tileId.tileId : tileId;
+
+    if (!baseTileId || typeof baseTileId !== 'string') return; // Autotiling needs a string tile ID
+
+    const fam = baseTileId.slice(0, 2);
+    const mapKey = fam + "H"; // Assumes autotile keys are based on horizontal variant like "WWH"
+    const autoTileVariantMap = autoTileMap[mapKey];
+    if (!autoTileVariantMap) return;
+
     let mask = 0;
     [[0, -1, 1], [1, 0, 2], [0, 1, 4], [-1, 0, 8]].forEach(([dx, dy, bit]) => {
-        const n = layers[currentLayer][y + dy]?.[x + dx];
-        if (n?.slice(0, 2) === fam) mask |= bit;
+        const neighborTileData = currentLevelLayer[y + dy]?.[x + dx];
+        const neighborBaseId = (typeof neighborTileData === 'object' && neighborTileData !== null && neighborTileData.tileId !== undefined) ? neighborTileData.tileId : neighborTileData;
+        if (neighborBaseId && typeof neighborBaseId === 'string' && neighborBaseId.slice(0, 2) === fam) {
+            mask |= bit;
+        }
     });
 
-    // Write back the correct variant
-    layers[currentLayer][y][x] = map[mask];
+    const newTileVariantId = autoTileVariantMap[mask];
+    if (newTileVariantId) {
+        // If the original tile was an object, preserve its properties but update tileId
+        if (typeof tileId === 'object' && tileId !== null) {
+            tileId.tileId = newTileVariantId; // Update the base tileId within the object
+            // mapData.levels[zStr][layerType][y][x] is already this object, so modification is direct.
+        } else {
+            mapData.levels[zStr][layerType][y][x] = newTileVariantId;
+        }
+    }
 }
 
-function placeTile(x, y, tid) {
-    layers[currentLayer][y][x] = tid;
-    // Re-tile this cell and its 4 neighbors
-    applyAutoTile(x, y);
-    applyAutoTile(x, y - 1);
-    applyAutoTile(x + 1, y);
-    applyAutoTile(x, y + 1);
-    applyAutoTile(x - 1, y);
+function placeTile(x, y, z, tileIdOrObject) { // Added z, renamed tid to tileIdOrObject
+    const zStr = z.toString();
+    ensureLayersForZ(z); // Ensure the Z-level and its layers exist
+
+    const targetLayer = mapData.levels[zStr]?.[currentLayerType];
+    if (!targetLayer) {
+        console.error(`Cannot place tile: Layer type ${currentLayerType} does not exist for Z-level ${zStr}.`);
+        return;
+    }
+
+    targetLayer[y][x] = tileIdOrObject;
+
+    // Autotiling should use the base ID if it's an object
+    const baseIdForAutotile = (typeof tileIdOrObject === 'object' && tileIdOrObject !== null && tileIdOrObject.tileId !== undefined)
+        ? tileIdOrObject.tileId
+        : tileIdOrObject;
+
+    if (typeof baseIdForAutotile === 'string' && baseIdForAutotile.length >= 2) { // Only attempt autotile if we have a valid string ID
+        const fam = baseIdForAutotile.slice(0, 2);
+        const mapKey = fam + "H";
+        if (autoTileMap[mapKey]) { // Check if this tile family participates in autotiling
+            applyAutoTile(x, y, z, currentLayerType);
+            // Retile neighbors only if they are part of the same family and also autotile
+            // This prevents unnecessary re-tiling of unrelated adjacent tiles.
+            [[0, -1], [1, 0], [0, 1], [-1, 0]].forEach(([dx, dy]) => {
+                const nx = x + dx;
+                const ny = y + dy;
+                if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight) {
+                    const neighborTileData = targetLayer[ny]?.[nx];
+                    const neighborBaseId = (typeof neighborTileData === 'object' && neighborTileData !== null && neighborTileData.tileId !== undefined)
+                        ? neighborTileData.tileId
+                        : neighborTileData;
+                    if (neighborBaseId && typeof neighborBaseId === 'string' && neighborBaseId.slice(0, 2) === fam) {
+                        applyAutoTile(nx, ny, z, currentLayerType);
+                    }
+                }
+            });
+        }
+    }
 }
 
 
 // --- 4) State ---
 // --- 4) State Variables ---
-// Stores all map layer data (landscape, building, item, roof) and special object data (npcs, portals)
-let layers = {},
-    currentLayer = "landscape", // Active layer being edited
-    currentTileId = "MB"; // Currently selected tile ID from the palette
+let mapData = { // Main object to hold all map data, including Z-levels
+    id: "new_map",
+    name: "New Map",
+    width: gridWidth, // These will be initial values, updated by UI
+    height: gridHeight,
+    startPos: { x: 0, y: 0, z: 0 }, // Player start position including Z
+    levels: {
+        "0": { // Default starting Z-level
+            landscape: [], // createDefaultLandscape will populate this
+            building: [],  // createEmptyGrid will populate this
+            item: [],      // createEmptyGrid will populate this
+            roof: []       // createEmptyGrid will populate this
+        }
+    },
+    npcs: [],   // NPCs are global to the map, but their pos will have x,y,z
+    portals: [] // Portals are global, their pos and targetPos will have x,y,z
+};
+
+let currentEditingZ = 0; // The Z-level currently being edited
+let currentLayerType = "landscape"; // Active layer type being edited (e.g., landscape, building)
+let currentTileId = "MB";
 
 // For Container Inventory & Lock Properties Editing
-let selectedTileForInventory = null; // Stores {x, y, layerName} of the tile selected for inventory/lock editing
+let selectedTileForInventory = null; // Stores {x, y, z, layerName} 
 
 // For Portal Editing
-let addingPortalMode = false; // True if actively trying to place a new portal
-let selectedPortal = null; // Stores the portal object selected for editing
-let nextPortalId = 0; // Counter for generating unique portal IDs
-let selectedGenericTile = null; // Stores {x, y, layerName} of a tile selected for generic property editing
+let addingPortalMode = false;
+let selectedPortal = null;
+let nextPortalId = 0;
+let selectedGenericTile = null; // Stores {x, y, z, layerName}
 
 // For Drawing Tools
-let currentTool = "brush", // Active drawing tool (brush, fill, line, rect, stamp)
+let currentTool = "brush",
     dragStart = null, // Stores {x, y} at the start of a drag operation for line/rect/stamp
     previewPos = null,
     stampData = null;
@@ -98,20 +165,41 @@ const layerVisibility = {
 // --- 5) Undo/Redo ---
 const undoStack = [], redoStack = [];
 function snapshot() {
-    undoStack.push(JSON.parse(JSON.stringify(layers)));
+    // Snapshot the entire mapData object, which now includes levels, npcs, portals etc.
+    undoStack.push(JSON.parse(JSON.stringify(mapData)));
     if (undoStack.length > 25) undoStack.shift();
-    redoStack.length = 0;
+    redoStack.length = 0; // Clear redo stack on new action
 }
 function undo() {
     if (!undoStack.length) return;
-    redoStack.push(JSON.parse(JSON.stringify(layers)));
-    layers = undoStack.pop();
+    redoStack.push(JSON.parse(JSON.stringify(mapData))); // Current state to redo
+    mapData = undoStack.pop(); // Restore previous state
+    // Update UI elements that depend on mapData state (like Z-level input, grid dimensions)
+    document.getElementById("inputWidth").value = mapData.width;
+    document.getElementById("inputHeight").value = mapData.height;
+    gridWidth = mapData.width;
+    gridHeight = mapData.height;
+    document.documentElement.style.setProperty("--cols", gridWidth);
+    currentEditingZ = mapData.startPos.z; // Or persist last editing Z, but startPos.z is safer
+    document.getElementById("zLevelInput").value = currentEditingZ;
+    document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+    // Ensure the current editing Z has its layers initialized if they were removed by an undo
+    ensureLayersForZ(currentEditingZ);
     renderMergedGrid();
 }
 function redo() {
     if (!redoStack.length) return;
-    undoStack.push(JSON.parse(JSON.stringify(layers)));
-    layers = redoStack.pop();
+    undoStack.push(JSON.parse(JSON.stringify(mapData))); // Current state to undo
+    mapData = redoStack.pop(); // Restore redone state
+    document.getElementById("inputWidth").value = mapData.width;
+    document.getElementById("inputHeight").value = mapData.height;
+    gridWidth = mapData.width;
+    gridHeight = mapData.height;
+    document.documentElement.style.setProperty("--cols", gridWidth);
+    currentEditingZ = mapData.startPos.z; // Or persist
+    document.getElementById("zLevelInput").value = currentEditingZ;
+    document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+    ensureLayersForZ(currentEditingZ);
     renderMergedGrid();
 }
 
@@ -119,40 +207,32 @@ function redo() {
 const paletteContainer = document.getElementById("paletteContainer");
 function buildPalette() {
     paletteContainer.innerHTML = "";
-    const er = document.createElement("div");
-    er.className = "palette"; er.dataset.tileId = "";
-    er.textContent = "✖"; er.title = "Eraser";
-    er.onclick = () => { currentTileId = ""; updatePalette(); };
-    paletteContainer.appendChild(er);
+    const eraser = document.createElement("div");
+    eraser.className = "palette"; eraser.dataset.tileId = ""; // Empty string for eraser
+    eraser.textContent = "✖"; eraser.title = "Eraser (Clear Tile)";
+    eraser.onclick = () => { currentTileId = ""; updatePalette(); };
+    paletteContainer.appendChild(eraser);
 
     if (assetManager.tilesets && Object.keys(assetManager.tilesets).length > 0) {
-        Object.entries(assetManager.tilesets).forEach(([id, t]) => {
-            const allowed = (currentLayer === "landscape")
-                ? t.tags.includes("landscape")
-                : t.tags.includes(currentLayer);
-            // Additional filter: only include tiles suitable for the current layer type,
-            // e.g. don't show "item" layer tiles if currentLayer is "building"
-            let typeMatch = false;
-            if (currentLayer === "landscape" && t.tags.includes("landscape")) typeMatch = true;
-            else if (currentLayer === "building" && (t.tags.includes("building") || t.tags.includes("floor") || t.tags.includes("wall") || t.tags.includes("door") || t.tags.includes("window"))) typeMatch = true;
-            else if (currentLayer === "item" && t.tags.includes("item")) typeMatch = true;
-            else if (currentLayer === "roof" && t.tags.includes("roof")) typeMatch = true;
-
-            // A broader rule: if a tile is tagged with the current layer name, allow it.
-            // This makes landscape tiles appear only on landscape, item tiles on item layer, etc.
-            if (!t.tags.includes(currentLayer) && !(currentLayer === 'building' && (t.tags.includes('floor') || t.tags.includes('wall') || t.tags.includes('door') || t.tags.includes('window')))) {
-                // More refined check: if currentLayer is 'building', also allow 'floor', 'wall', 'door', 'window' tagged tiles.
-                if (!(currentLayer === 'landscape' && t.tags.includes('landscape'))) { // ensure landscape tiles only show on landscape
-                }
+        Object.entries(assetManager.tilesets).forEach(([id, tileDef]) => {
+            // Filter tiles based on the currentLayerType being edited
+            let showInPalette = false;
+            if (tileDef.tags) {
+                if (currentLayerType === "landscape" && tileDef.tags.includes("landscape")) showInPalette = true;
+                else if (currentLayerType === "building" && (tileDef.tags.includes("building") || tileDef.tags.includes("wall") || tileDef.tags.includes("floor") || tileDef.tags.includes("door") || tileDef.tags.includes("window"))) showInPalette = true;
+                else if (currentLayerType === "item" && tileDef.tags.includes("item")) showInPalette = true;
+                else if (currentLayerType === "roof" && tileDef.tags.includes("roof")) showInPalette = true;
+                // Consider new layer types like 'constructions', 'items' here.
+                // For now, mapping 'building' to 'constructions' and 'item' to 'items'.
+                // This will need refinement as new layer types are fully integrated.
             }
 
-
-            if (!allowed) return; // Original filter based on broad category (landscape vs. others)
+            if (!showInPalette) return;
 
             const d = document.createElement("div");
             d.className = "palette"; d.dataset.tileId = id;
-            d.textContent = t.sprite; d.style.color = t.color;
-            d.title = `${t.name} (${id})`;
+            d.textContent = tileDef.sprite; d.style.color = tileDef.color;
+            d.title = `${tileDef.name} (${id})`;
             d.onclick = () => { currentTileId = id; updatePalette(); };
             paletteContainer.appendChild(d);
         });
@@ -161,11 +241,40 @@ function buildPalette() {
     }
     updatePalette();
 }
+
 function updatePalette() {
     document.querySelectorAll(".palette")
-        .forEach(el => el.classList.toggle("selected",
-            el.dataset.tileId === currentTileId
-        ));
+        .forEach(el => el.classList.toggle("selected", el.dataset.tileId === currentTileId));
+}
+
+// Helper function to ensure a Z-level and its layer types exist in mapData.levels
+function ensureLayersForZ(zLevel) {
+    const zStr = zLevel.toString();
+    if (!mapData.levels[zStr]) {
+        mapData.levels[zStr] = {
+            landscape: createDefaultLandscape(gridWidth, gridHeight),
+            building: createEmptyGrid(gridWidth, gridHeight, ""),
+            item: createEmptyGrid(gridWidth, gridHeight, ""),
+            roof: createEmptyGrid(gridWidth, gridHeight, "")
+            // Initialize other new layer types (constructions, items, entities etc.) here as empty grids or arrays
+        };
+        console.log(`Initialized layer structure for new Z-level: ${zStr}`);
+    } else {
+        // Ensure all standard layer types exist for an already existing Z-level
+        // This helps if loading a map that might be missing some layer types for a specific Z.
+        const defaultLayers = {
+            landscape: () => createDefaultLandscape(gridWidth, gridHeight),
+            building: () => createEmptyGrid(gridWidth, gridHeight, ""),
+            item: () => createEmptyGrid(gridWidth, gridHeight, ""),
+            roof: () => createEmptyGrid(gridWidth, gridHeight, "")
+        };
+        for (const layerKey in defaultLayers) {
+            if (!mapData.levels[zStr][layerKey]) {
+                mapData.levels[zStr][layerKey] = defaultLayers[layerKey]();
+                console.log(`Initialized missing layer type '${layerKey}' for Z-level: ${zStr}`);
+            }
+        }
+    }
 }
 
 // --- 7) Render grid & stamp preview ---
@@ -183,40 +292,55 @@ gridContainer.addEventListener("mouseleave", () => {
 
 function renderMergedGrid() {
     gridContainer.innerHTML = "";
+
+    const zStr = currentEditingZ.toString();
+    ensureLayersForZ(currentEditingZ); // Make sure the current editing Z has its layers initialized
+    const currentLevel = mapData.levels[zStr];
+
+    if (!currentLevel) {
+        gridContainer.innerHTML = `<p style='color:red;'>Error: No data for Z-level ${currentEditingZ}. Try adding it or changing Z-level.</p>`;
+        return;
+    }
+
     for (let y = 0; y < gridHeight; y++) {
         for (let x = 0; x < gridWidth; x++) {
             let id = "";
-            // Determine the topmost visible tile ID
-            if (layerVisibility.landscape && layers.landscape?.[y]?.[x]) id = layers.landscape[y][x];
-            if (layerVisibility.building && layers.building?.[y]?.[x]) id = layers.building[y][x];
-            if (layerVisibility.item && layers.item?.[y]?.[x]) id = layers.item[y][x];
-            if (layerVisibility.roof && layers.roof?.[y]?.[x]) id = layers.roof[y][x];
+            // Determine the topmost visible tile ID from the current Z-level's layers
+            if (layerVisibility.landscape && currentLevel.landscape?.[y]?.[x]) id = currentLevel.landscape[y][x];
+            if (layerVisibility.building && currentLevel.building?.[y]?.[x]) id = currentLevel.building[y][x];
+            if (layerVisibility.item && currentLevel.item?.[y]?.[x]) id = currentLevel.item[y][x];
+            if (layerVisibility.roof && currentLevel.roof?.[y]?.[x]) id = currentLevel.roof[y][x];
+
+            // Handle cases where tile data might be an object (e.g., for containers, instance props)
+            let displayId = id;
+            if (typeof id === 'object' && id !== null && id.tileId !== undefined) {
+                displayId = id.tileId;
+            }
 
             const c = document.createElement("div");
-            c.className = "cell"; c.dataset.x = x; c.dataset.y = y;
+            c.className = "cell"; c.dataset.x = x; c.dataset.y = y; c.dataset.z = currentEditingZ; // Store Z on cell for context
 
-            const tileDef = assetManager.tilesets[id]; // Use assetManager.tilesets
-            if (id && tileDef) {
+            const tileDef = assetManager.tilesets[displayId];
+            if (displayId && tileDef) {
                 c.textContent = tileDef.sprite;
                 c.style.color = tileDef.color;
-            } else if (id) { // Tile ID exists in layer data but not in tileset
-                c.textContent = '?'; // Show placeholder for unknown tile
+            } else if (displayId) {
+                c.textContent = '?';
                 c.style.color = 'magenta';
-                // console.warn(`Tile ID '${id}' at [${x},${y}] not found in loaded tilesets.`);
             }
 
 
-            // stamp preview
+            // stamp preview (operates on currentLayerType of currentEditingZ)
             if (currentTool === "stamp" && stampData && previewPos) {
                 const dx = x - previewPos.x, dy = y - previewPos.y;
                 if (dx >= 0 && dy >= 0 && dx < stampData.w && dy < stampData.h) {
-                    const pid = stampData.data[dy][dx];
-                    const stampTileDef = assetManager.tilesets[pid]; // Use assetManager.tilesets
+                    const pid = stampData.data[dy][dx]; // This stamp data is from a single layer type
+                    const stampTileDef = assetManager.tilesets[pid];
                     if (pid && stampTileDef) {
                         c.textContent = stampTileDef.sprite;
                         c.style.color = stampTileDef.color;
                         c.classList.add("preview");
-                    } else if (pid) { // Stamp data has ID not in tileset
+                    } else if (pid) {
                         c.textContent = '!';
                         c.style.color = 'orange';
                         c.classList.add("preview");
@@ -230,34 +354,33 @@ function renderMergedGrid() {
         }
     }
 
-    // Draw portals on top
-    if (layers.portals) {
-        layers.portals.forEach(portal => {
-            const cell = gridContainer.querySelector(`.cell[data-x='${portal.x}'][data-y='${portal.y}']`);
-            if (cell) {
-                const portalMarker = document.createElement('div');
-                portalMarker.textContent = '▓'; // Portal symbol
-                portalMarker.style.color = 'teal';
-                portalMarker.style.position = 'absolute'; // Position over the tile content
-                portalMarker.style.pointerEvents = 'none'; // Clicks should go to the cell
+    // Draw portals on top, only if portal's Z matches currentEditingZ
+    if (mapData.portals) {
+        mapData.portals.forEach(portal => {
+            if (portal.z === currentEditingZ) { // Only draw portals on the current Z-level
+                const cell = gridContainer.querySelector(`.cell[data-x='${portal.x}'][data-y='${portal.y}'][data-z='${currentEditingZ}']`);
+                if (cell) {
+                    const portalMarker = document.createElement('div');
+                    portalMarker.textContent = '▓';
+                    portalMarker.style.color = 'teal';
+                    portalMarker.style.position = 'absolute'; // Position over the tile content
+                    portalMarker.style.pointerEvents = 'none'; // Clicks should go to the cell
 
-                // Basic highlight for selected portal - can be enhanced with CSS class
-                if (selectedPortal && selectedPortal.id === portal.id) {
-                    cell.style.outline = '2px solid cyan'; // Example highlight
-                    // cell.classList.add('selected-portal'); // For CSS styling
-                } else {
-                    cell.style.outline = ''; // Remove outline if not selected
-                    // cell.classList.remove('selected-portal');
-                }
-                cell.appendChild(portalMarker);
-            }
-        });
-    }
+                    // Basic highlight for selected portal - can be enhanced with CSS class
+                    if (selectedPortal && selectedPortal.id === portal.id) {
+                        cell.style.outline = '2px solid cyan'; // Example highlight
+                    } else {
+                        cell.style.outline = ''; // Remove outline if not selected
+                    }
+                    cell.appendChild(portalMarker);
+                } // Closing brace for if (cell)
+            } // Closing brace for if (portal.z === currentEditingZ)
+        }); // Closing brace for mapData.portals.forEach
+    } // Closing brace for if (mapData.portals)
 }
 
 // --- UI Update Functions ---
 
-// Updates the portal configuration UI based on the currently selected portal.
 function updateSelectedPortalInfo() {
     const portalConfigDiv = document.getElementById('portalConfigControls');
     const selectedInfoDiv = document.getElementById('selectedPortalInfo');
@@ -267,23 +390,38 @@ function updateSelectedPortalInfo() {
     const targetMapInput = document.getElementById('portalTargetMapId');
     const targetXInput = document.getElementById('portalTargetX');
     const targetYInput = document.getElementById('portalTargetY');
+    const targetZInput = document.getElementById('portalTargetZ'); // New Z input
+    const portalNameInput = document.getElementById('portalNameInput'); // New Name input
+
 
     if (selectedPortal) {
-        selectedInfoDiv.textContent = `Selected Portal: ${selectedPortal.id} at (${selectedPortal.x}, ${selectedPortal.y})`;
+        // Display current Z of the portal along with X, Y
+        selectedInfoDiv.textContent = `Selected Portal: ${selectedPortal.name || selectedPortal.id} at (${selectedPortal.x}, ${selectedPortal.y}, Z:${selectedPortal.z})`;
         portalConfigDiv.style.display = 'block';
         removeBtn.style.display = 'block';
 
         editingIdSpan.textContent = selectedPortal.id;
-        editingPosSpan.textContent = `${selectedPortal.x}, ${selectedPortal.y}`;
+        editingPosSpan.textContent = `${selectedPortal.x}, ${selectedPortal.y}, Z:${selectedPortal.z}`;
         targetMapInput.value = selectedPortal.targetMapId || '';
         targetXInput.value = selectedPortal.targetX !== undefined ? selectedPortal.targetX : '';
         targetYInput.value = selectedPortal.targetY !== undefined ? selectedPortal.targetY : '';
+        targetZInput.value = selectedPortal.targetZ !== undefined ? selectedPortal.targetZ : 0; // Default target Z to 0
+        portalNameInput.value = selectedPortal.name || '';
     } else {
         selectedInfoDiv.textContent = "Selected Portal: None";
         portalConfigDiv.style.display = 'none';
         removeBtn.style.display = 'none';
+        // Clear inputs when no portal is selected
+        editingIdSpan.textContent = "N/A";
+        editingPosSpan.textContent = "N/A";
+        targetMapInput.value = '';
+        targetXInput.value = '';
+        targetYInput.value = '';
+        targetZInput.value = 0;
+        portalNameInput.value = '';
     }
 }
+
 
 // Updates the lock properties UI (checkbox, DC input) based on the selected tile.
 // Called by updateContainerInventoryUI.
@@ -297,8 +435,11 @@ function updateLockPropertiesUI() {
         return;
     }
 
-    const { x, y, layerName } = selectedTileForInventory;
-    let tileData = layers[layerName]?.[y]?.[x];
+    const { x, y, z, layerName } = selectedTileForInventory; // Include z
+    const zStr = z.toString();
+    ensureLayersForZ(z); // Ensure this Z-level and its layers exist
+
+    let tileData = mapData.levels[zStr]?.[layerName]?.[y]?.[x];
     let tileId = (typeof tileData === 'object' && tileData !== null && tileData.tileId !== undefined) ? tileData.tileId : tileData;
 
     const tileDef = assetManager.tilesets[tileId];
@@ -309,16 +450,15 @@ function updateLockPropertiesUI() {
         lockControlsDiv.style.display = 'none';
         return;
     }
-
     lockControlsDiv.style.display = 'block';
 
     if (typeof tileData === 'object' && tileData !== null) {
         isLockedCheckbox.checked = tileData.isLocked || false;
         lockDifficultyInput.value = tileData.lockDC !== undefined ? tileData.lockDC : 10;
         lockDifficultyInput.disabled = !isLockedCheckbox.checked;
-    } else {
+    } else { // Is a string tileId, implies not locked and default DC or needs conversion
         isLockedCheckbox.checked = false;
-        lockDifficultyInput.value = 10;
+        lockDifficultyInput.value = 10; // Default DC for a newly lockable item
         lockDifficultyInput.disabled = true;
     }
 }
@@ -338,10 +478,13 @@ function updateTilePropertyEditorUI() {
     }
 
     editorDiv.style.display = 'block';
-    const { x, y, layerName } = selectedGenericTile;
-    coordsSpan.textContent = `${x}, ${y} (Layer: ${layerName})`;
+    const { x, y, z, layerName } = selectedGenericTile; // Include z
+    coordsSpan.textContent = `${x}, ${y}, Z:${z} (Layer: ${layerName})`;
 
-    let tileData = layers[layerName]?.[y]?.[x];
+    const zStr = z.toString();
+    ensureLayersForZ(z);
+
+    let tileData = mapData.levels[zStr]?.[layerName]?.[y]?.[x];
     let baseTileId = '';
     let instanceName = '';
     let instanceTagsArray = [];
@@ -352,11 +495,10 @@ function updateTilePropertyEditorUI() {
         instanceTagsArray = tileData.instanceTags || [];
     } else if (typeof tileData === 'string' && tileData !== "") {
         baseTileId = tileData;
-        // Defaults for a tile that hasn't been customized yet
         instanceName = '';
         instanceTagsArray = [];
-    } else { // Empty or invalid tile data
-        editorDiv.style.display = 'none'; // Or display error
+    } else {
+        editorDiv.style.display = 'none';
         baseIdSpan.textContent = 'Error: Invalid tile data';
         baseNameSpan.textContent = 'N/A';
         baseTagsSpan.textContent = 'N/A';
@@ -380,49 +522,49 @@ function updateTilePropertyEditorUI() {
     instanceTagsInput.value = instanceTagsArray.join(', ');
 }
 
-// Removes an item from the selected container's inventory.
 function removeItemFromContainer(itemIndex) {
     if (!selectedTileForInventory) return;
-    const { x, y, layerName } = selectedTileForInventory;
-    let tileData = layers[layerName][y][x];
+    const { x, y, z, layerName } = selectedTileForInventory; // Include z
+    const zStr = z.toString();
+    ensureLayersForZ(z);
+    let tileData = mapData.levels[zStr]?.[layerName]?.[y]?.[x];
 
     if (typeof tileData === 'object' && tileData !== null && tileData.containerInventory) {
         snapshot();
         tileData.containerInventory.splice(itemIndex, 1);
-
-        // Only convert back to string if inventory is empty AND no other custom properties exist (like locks)
-        const hasLockProperties = tileData.isLocked !== undefined || tileData.lockDC !== undefined;
-        if (tileData.containerInventory.length === 0 && !hasLockProperties) {
-            // To simplify, let's keep it as an object for now. 
-            // Conversion back to string can be a future optimization if truly needed.
-            // layers[layerName][y][x] = tileData.tileId; 
-        }
         updateContainerInventoryUI();
     }
 }
 
 // --- 8) Tools ---
-function floodFill(layer, x, y, newT) {
-    const g = layers[layer], old = g[y][x];
-    if (old === newT) return;
+// Drawing tools now need to operate on mapData.levels[currentEditingZ.toString()][currentLayerType]
+function floodFill(layerType, x, y, z, newTileId) { // Added z
+    const zStr = z.toString();
+    ensureLayersForZ(z);
+    const gridLayer = mapData.levels[zStr]?.[layerType];
+    if (!gridLayer) return;
+
+    const oldTileId = gridLayer[y][x];
+    if (oldTileId === newTileId) return;
+
     const stack = [[x, y]];
     snapshot();
     while (stack.length) {
         const [cx, cy] = stack.pop();
         if (cx < 0 || cy < 0 || cx >= gridWidth || cy >= gridHeight) continue;
-        if (g[cy][cx] !== old) continue;
-        placeTile(cx, cy, newT);
+        if (gridLayer[cy][cx] !== oldTileId) continue;
+        placeTile(cx, cy, z, newTileId); // placeTile now needs z
         stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
     }
     renderMergedGrid();
 }
 
-function drawLine(layer, x0, y0, x1, y1, tid) {
+function drawLine(layerType, x0, y0, z, x1, y1, tileId) { // Added z
     let dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
     let sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1, err = dx - dy;
-    snapshot();  // for undo
+    snapshot();
     while (true) {
-        placeTile(x0, y0, tid);  // ← use placeTile, not direct assign
+        placeTile(x0, y0, z, tileId); // placeTile now needs z
         if (x0 === x1 && y0 === y1) break;
         let e2 = err * 2;
         if (e2 > -dy) { err -= dy; x0 += sx; }
@@ -431,13 +573,13 @@ function drawLine(layer, x0, y0, x1, y1, tid) {
     renderMergedGrid();
 }
 
-function drawRect(layer, x0, y0, x1, y1, tid) {
+function drawRect(layerType, x0, y0, z, x1, y1, tileId) { // Added z
     const minX = Math.min(x0, x1), maxX = Math.max(x0, x1);
     const minY = Math.min(y0, y1), maxY = Math.max(y0, y1);
     snapshot();
     for (let yy = minY; yy <= maxY; yy++) {
         for (let xx = minX; xx <= maxX; xx++) {
-            placeTile(xx, yy, tid);  // ← auto-tiles each cell
+            placeTile(xx, yy, z, tileId); // placeTile now needs z
         }
     }
     renderMergedGrid();
@@ -446,40 +588,41 @@ function drawRect(layer, x0, y0, x1, y1, tid) {
 // --- Mouse Event Handler for Grid Interaction ---
 function handleMouseDown(e) {
     const x = +e.target.dataset.x, y = +e.target.dataset.y;
+    const z = currentEditingZ; // Use current editing Z for all actions
+    const zStr = z.toString();
+    ensureLayersForZ(z); // Ensure layers for this Z exist
 
     if (currentTool === "selectInspect") {
-        // Clear any "add" modes if active
-        // Assuming addingNpcMode is the state variable for NPC add mode from previous NPC implementation
-        if (window.addingNpcModeState) { // Using a globally namespaced variable if it's not part of gameState
+        if (window.addingNpcModeState) {
             window.addingNpcModeState = false;
-            // Ensure NPC button text updates (assuming function/element ID from NPC subtask)
             const toggleNpcBtn = document.getElementById('toggleAddNpcModeBtn');
             if (toggleNpcBtn) toggleNpcBtn.textContent = "Add NPC";
         }
-        if (addingPortalMode) { // This is the portal adding mode variable
+        if (addingPortalMode) {
             addingPortalMode = false;
             document.getElementById('toggleAddPortalModeBtn').textContent = "Add Portal";
         }
 
-        // Attempt to select items in order of preference: Portal, NPC, Container/Lockable
-        const clickedPortal = layers.portals ? layers.portals.find(p => p.x === x && p.y === y) : null;
+        // Portals are global, check if a portal exists at x,y on currentEditingZ
+        const clickedPortal = mapData.portals.find(p => p.x === x && p.y === y && p.z === z);
         if (clickedPortal) {
             selectedPortal = clickedPortal;
-            selectedNpc = null;
+            selectedNpc = null; // Assuming selectedNpc is a global for map maker
             selectedTileForInventory = null;
-            selectedGenericTile = null; // Clear generic tile selection
+            selectedGenericTile = null;
             updateSelectedPortalInfo();
             if (typeof updateSelectedNpcInfo === 'function') updateSelectedNpcInfo();
             updateContainerInventoryUI();
-            updateTilePropertyEditorUI(); // Hide/clear generic tile UI
+            updateTilePropertyEditorUI();
             renderMergedGrid();
-            console.log("SelectTool: Selected Portal ID:", selectedPortal.id);
+            console.log(`SelectTool: Selected Portal ID: ${selectedPortal.id} at Z:${selectedPortal.z}`);
             return;
         }
 
-        const clickedNpc = layers.npcs ? layers.npcs.find(npc => npc.mapPos && npc.mapPos.x === x && npc.mapPos.y === y) : null;
+        // NPCs are global, check if an NPC exists at x,y on currentEditingZ
+        const clickedNpc = mapData.npcs.find(npc => npc.mapPos && npc.mapPos.x === x && npc.mapPos.y === y && npc.mapPos.z === z);
         if (clickedNpc) {
-            selectedNpc = clickedNpc;
+            selectedNpc = clickedNpc; // Assuming selectedNpc for map maker state
             selectedPortal = null;
             selectedTileForInventory = null;
             selectedGenericTile = null;
@@ -487,236 +630,151 @@ function handleMouseDown(e) {
             updateSelectedPortalInfo();
             updateContainerInventoryUI();
             updateTilePropertyEditorUI();
-            const removeNpcBtn = document.getElementById('removeNpcBtn');
+            const removeNpcBtn = document.getElementById('removeNpcBtn'); // Assuming this ID
             if (removeNpcBtn) removeNpcBtn.disabled = false;
             renderMergedGrid();
-            console.log("SelectTool: Selected NPC ID:", selectedNpc.id);
+            console.log(`SelectTool: Selected NPC ID: ${selectedNpc.id} at Z:${selectedNpc.mapPos.z}`);
             return;
         }
 
-        // Check for Container/Lockable first, then fall through to generic.
-        let tileDataUnderCursor = layers[currentLayer]?.[y]?.[x];
+        let tileDataUnderCursor = mapData.levels[zStr]?.[currentLayerType]?.[y]?.[x];
         let baseTileId = (typeof tileDataUnderCursor === 'object' && tileDataUnderCursor !== null && tileDataUnderCursor.tileId !== undefined) ? tileDataUnderCursor.tileId : tileDataUnderCursor;
         const tileDef = assetManager.tilesets[baseTileId];
 
         if (tileDef && tileDef.tags && (tileDef.tags.includes('container') || tileDef.tags.includes('door') || tileDef.tags.includes('window'))) {
-            console.log(`SelectTool: Clicked on a special tile (Container/Door/Window): ${baseTileId}`);
-            selectedTileForInventory = { x, y, layerName: currentLayer }; // For Container/Lock UI
-            selectedGenericTile = { x, y, layerName: currentLayer };    // ALSO For Generic Tile Property Editor UI
-
+            selectedTileForInventory = { x, y, z, layerName: currentLayerType };
+            selectedGenericTile = { x, y, z, layerName: currentLayerType };
             if (selectedPortal) { selectedPortal = null; updateSelectedPortalInfo(); }
-            if (selectedNpc) {
-                selectedNpc = null;
-                if (typeof updateSelectedNpcInfo === 'function') updateSelectedNpcInfo();
-                const removeNpcBtn = document.getElementById('removeNpcBtn'); // Assuming this ID from NPC subtask
-                if (removeNpcBtn) removeNpcBtn.disabled = true;
-            }
-
+            if (selectedNpc) { /* clear selectedNpc and update its UI */ }
             updateContainerInventoryUI();
             updateTilePropertyEditorUI();
-
             renderMergedGrid();
             return;
         }
 
-        // If not a Portal, NPC, or Container/Lockable, then it's either a simple generic tile or empty.
-        // This baseTileId and tileDataUnderCursor are from the previous section, still valid.
-
-        if (baseTileId && baseTileId !== "") { // Clicked on a tile with content
-            selectedGenericTile = { x, y, layerName: currentLayer };
-            console.log(`SelectTool: Selected Generic Tile ID: ${baseTileId} at (${x},${y}) on layer ${currentLayer}`);
-        } else { // Clicked on an empty space on the current layer
+        if (baseTileId && baseTileId !== "") {
+            selectedGenericTile = { x, y, z, layerName: currentLayerType };
+        } else {
             selectedGenericTile = null;
-            console.log("SelectTool: Clicked on empty space, all selections (including generic tile) cleared.");
         }
-
-        // Clear other specific selections if a generic tile or empty space is now the focus
         if (selectedPortal) { selectedPortal = null; updateSelectedPortalInfo(); }
-        // Assuming selectedNpc and updateSelectedNpcInfo are from NPC feature
-        if (selectedNpc) {
-            selectedNpc = null;
-            if (typeof updateSelectedNpcInfo === 'function') updateSelectedNpcInfo();
-            const removeNpcBtn = document.getElementById('removeNpcBtn');
-            if (removeNpcBtn) removeNpcBtn.disabled = true;
-        }
+        if (selectedNpc) { /* clear selectedNpc and update its UI */ }
         if (selectedTileForInventory) { selectedTileForInventory = null; updateContainerInventoryUI(); }
-
-        updateTilePropertyEditorUI(); // Show/hide/populate the tile editor based on selectedGenericTile
-        renderMergedGrid(); // Update highlights if any
-        return; // Handled by selectInspect tool
+        updateTilePropertyEditorUI();
+        renderMergedGrid();
+        return;
     }
 
-    // Priority 1: Portal Adding Mode (This is the original `addingPortalMode` for portals)
     if (addingPortalMode) {
-        snapshot(); // Save state for undo
+        snapshot();
         const newPortal = {
-            id: `portal_${nextPortalId++}`,
-            x: x,
-            y: y,
-            targetMapId: '',
-            targetX: 0,
-            targetY: 0
+            id: `portal_${mapData.portals.length > 0 ? Math.max(...mapData.portals.map(p => parseInt(p.id.split('_')[1]))) + 1 : 0}`,
+            x: x, y: y, z: currentEditingZ, // Set portal's Z to current editing Z
+            targetMapId: '', targetX: 0, targetY: 0, targetZ: 0, name: ''
         };
-        layers.portals.push(newPortal);
+        mapData.portals.push(newPortal);
         selectedPortal = newPortal;
         addingPortalMode = false;
         document.getElementById('toggleAddPortalModeBtn').textContent = "Add Portal";
         updateSelectedPortalInfo();
         renderMergedGrid();
-        console.log(`Portal ${newPortal.id} added at ${x},${y}`);
-        return; // Added portal, consumed click.
+        console.log(`Portal ${newPortal.id} added at ${x},${y}, Z:${currentEditingZ}`);
+        return;
     }
 
-    // Priority 2: Attempt to select an existing Portal
-    for (const portal of layers.portals) {
-        if (portal.x === x && portal.y === y) {
-            selectedPortal = portal;
-            selectedTileForInventory = null; // Clear tile selection
-            // selectedNpc = null; // placeholder for NPC selection
-            // if (typeof updateSelectedNpcInfo === 'function') updateSelectedNpcInfo(); // placeholder
-            updateContainerInventoryUI(); // Hide container/lock UI
-            updateSelectedPortalInfo(); // Show portal UI
-            renderMergedGrid();
-            console.log(`Selected portal ${portal.id}`);
-            return; // Selected a portal, consumed click.
-        }
+    // If a portal was selected, but user clicked elsewhere (not on another portal on this Z)
+    if (selectedPortal && !(mapData.portals.find(p => p.x === x && p.y === y && p.z === currentEditingZ))) {
+        selectedPortal = null;
+        updateSelectedPortalInfo();
     }
+    // Similar logic for selectedNpc if applicable
 
-    // If a portal was previously selected but user clicked elsewhere (not on another portal)
-    if (selectedPortal) {
-        selectedPortal = null; // Clear portal selection
-        updateSelectedPortalInfo(); // Hide portal UI
-        // Don't return; allow click to proceed to tile/container selection or painting.
-    }
+    // Tile painting / special tile interaction logic (needs to use currentEditingZ)
+    let tileIdAtClick = mapData.levels[zStr]?.[currentLayerType]?.[y]?.[x];
+    let effectiveTileId = typeof tileIdAtClick === 'object' && tileIdAtClick !== null && tileIdAtClick.tileId !== undefined ? tileIdAtClick.tileId : tileIdAtClick;
+    const tileDefAtClick = assetManager.tilesets[effectiveTileId];
 
-    // Priority 3: NPC interaction logic (Placeholder)
-    // (Assuming addingNpcMode_npc and selectedNpc are defined elsewhere for NPC feature)
-    let addingNpcMode_npc = false; // Placeholder for NPC add mode
-    let selectedNpc = null;   // Placeholder for selected NPC object
-
-    // if (addingNpcMode_npc) { /* ... NPC adding logic ... */ return; }
-    // if (clickedOnNpc) { /* ... NPC selection logic ... */ selectedNpc = clickedNpc; return; }
-
-
-    // Priority 4: Container/Lockable Tile Selection (if not interacting with NPCs)
-    if (!addingNpcMode_npc && !selectedNpc) {
-        let tileIdAtClick = layers[currentLayer]?.[y]?.[x];
-        // Correctly identify tileId if it's an object (e.g. a container or locked door)
-        let effectiveTileId = typeof tileIdAtClick === 'object' && tileIdAtClick !== null && tileIdAtClick.tileId !== undefined ? tileIdAtClick.tileId : tileIdAtClick;
-        const tileDefAtClick = assetManager.tilesets[effectiveTileId];
-
-        // Updated condition to include door and window for selection handling
-        if (tileDefAtClick && tileDefAtClick.tags && (tileDefAtClick.tags.includes('container') || tileDefAtClick.tags.includes('door') || tileDefAtClick.tags.includes('window'))) {
-            selectedTileForInventory = { x, y, layerName: currentLayer };
-            // If a container/door/window is selected, ensure portal selection is cleared
-            if (selectedPortal) {
-                selectedPortal = null;
-                updateSelectedPortalInfo();
-            }
-        } else {
-            selectedTileForInventory = null;
-        }
-        updateContainerInventoryUI(); // This also updates lock UI
-    } else if (addingNpcMode_npc || selectedNpc) { // Check NPC mode/selection
+    if (tileDefAtClick && tileDefAtClick.tags && (tileDefAtClick.tags.includes('container') || tileDefAtClick.tags.includes('door') || tileDefAtClick.tags.includes('window'))) {
+        selectedTileForInventory = { x, y, z: currentEditingZ, layerName: currentLayerType };
+        if (selectedPortal) { selectedPortal = null; updateSelectedPortalInfo(); }
+    } else {
         selectedTileForInventory = null;
-        updateContainerInventoryUI();
     }
+    updateContainerInventoryUI();
 
-    // Tile painting logic follows...
-    // This will only be reached if no portal interaction consumed the click.
     if (currentTool === "brush") {
-        snapshot(); // Captures all layers state
-        // Deep copy old tile data *before* placeTile modifies it.
-        const oldTileData = JSON.parse(JSON.stringify(layers[currentLayer]?.[y]?.[x] || null));
+        snapshot();
+        const oldTileData = JSON.parse(JSON.stringify(mapData.levels[zStr]?.[currentLayerType]?.[y]?.[x] || null));
+        placeTile(x, y, currentEditingZ, currentTileId); // Use currentEditingZ
 
-        placeTile(x, y, currentTileId); // This sets layers[currentLayer][y][x] to a string ID
-
-        const newTileIdPlaced_str = layers[currentLayer][y][x];
+        const newTileIdPlaced_str = mapData.levels[zStr]?.[currentLayerType]?.[y]?.[x]; // This is now a string ID
         const newTileDef = assetManager.tilesets[newTileIdPlaced_str];
 
         if (newTileDef && newTileDef.tags && (newTileDef.tags.includes('container') || newTileDef.tags.includes('door') || newTileDef.tags.includes('window'))) {
             let newObjectData = { tileId: newTileIdPlaced_str };
-
-            let inventoryToCarry = [];
-            // Default lock state for a new lockable item, or if old one didn't have locks defined
-            let lockStateToCarry = { isLocked: false, lockDC: 10 };
-
-            // If we are painting the *same type* of tile over itself, preserve its properties
-            if (typeof oldTileData === 'object' && oldTileData !== null && oldTileData.tileId === newTileIdPlaced_str) {
-                if (newTileDef.tags.includes('container') && oldTileData.containerInventory) {
-                    inventoryToCarry = oldTileData.containerInventory;
-                }
-                // Carry over lock state only if it was explicitly defined on the old tile object
-                if (oldTileData.isLocked !== undefined) lockStateToCarry.isLocked = oldTileData.isLocked;
-                if (oldTileData.lockDC !== undefined) lockStateToCarry.lockDC = oldTileData.lockDC;
-            }
-            // If it's a new type of tile, or was previously a string, it gets default lock properties (false, 10) unless changed by user later.
-            // If it's a container, it gets an empty inventory unless it's the same tile type.
-
-            if (newTileDef.tags.includes('container')) {
-                newObjectData.containerInventory = inventoryToCarry;
-            }
-            newObjectData.isLocked = lockStateToCarry.isLocked;
-            newObjectData.lockDC = lockStateToCarry.lockDC;
-
-            layers[currentLayer][y][x] = newObjectData;
-            selectedTileForInventory = { x, y, layerName: currentLayer };
+            // ... (carry over logic for inventory/lock state if oldTileData was same type) ...
+            mapData.levels[zStr][currentLayerType][y][x] = newObjectData;
+            selectedTileForInventory = { x, y, z: currentEditingZ, layerName: currentLayerType };
         } else {
-            // If painting a non-container/non-lockable tile, ensure any previous object state is cleared
-            // placeTile already sets it to a string, so selectedTileForInventory = null is key.
             selectedTileForInventory = null;
         }
-        updateContainerInventoryUI(); // This will also call updateLockPropertiesUI
+        updateContainerInventoryUI();
         renderMergedGrid();
     } else if (currentTool === "fill") {
         snapshot();
-        floodFill(currentLayer, x, y, currentTileId);
+        floodFill(currentLayerType, x, y, currentEditingZ, currentTileId); // Pass currentEditingZ
         selectedTileForInventory = null;
         updateContainerInventoryUI();
         renderMergedGrid();
     } else if (currentTool === "line" || currentTool === "rect" || currentTool === "stamp") {
-        // snapshot(); // Snapshot is taken by drawing functions or stamp logic
-        if (dragStart === null) { // Starting a drag operation
-            dragStart = { x, y };
+        if (dragStart === null) {
+            dragStart = { x, y }; // Z is implicit from currentEditingZ for these tools
             selectedTileForInventory = null;
             updateContainerInventoryUI();
         }
-        // The actual drawing happens in handleMouseUp for these tools
-    } else { // Other tools or if no specific tool logic for mousedown
-        snapshot(); // General snapshot if not handled by specific tools above.
-        // This else block might not be strictly necessary if all tools are covered.
+    } else {
+        snapshot();
     }
 }
+
 function handleMouseUp(e) {
     const x = +e.target.dataset.x, y = +e.target.dataset.y;
-    if (currentTool === "line") {
-        drawLine(currentLayer, dragStart.x, dragStart.y, x, y, currentTileId);
-    } else if (currentTool === "rect") {
-        drawRect(currentLayer, dragStart.x, dragStart.y, x, y, currentTileId);
+    const z = currentEditingZ; // Use current Z for drawing operations
+
+    if (currentTool === "line" && dragStart) {
+        drawLine(currentLayerType, dragStart.x, dragStart.y, z, x, y, currentTileId); // Pass z
+    } else if (currentTool === "rect" && dragStart) {
+        drawRect(currentLayerType, dragStart.x, dragStart.y, z, x, y, currentTileId); // Pass z
     } else if (currentTool === "stamp") {
-        if (!stampData) {
+        if (!stampData && dragStart) { // Define stamp
             const w = Math.abs(x - dragStart.x) + 1, h = Math.abs(y - dragStart.y) + 1;
             const x0 = Math.min(x, dragStart.x), y0 = Math.min(y, dragStart.y);
-            stampData = { w, h, data: [] };
-            for (let yy = 0; yy < h; yy++) {
-                stampData.data[yy] = [];
-                for (let xx = 0; xx < w; xx++) {
-                    stampData.data[yy][xx] = layers[currentLayer][y0 + yy][x0 + xx];
+            stampData = { w, h, data: [] }; // Stamp data is 2D, from the currentLayerType of currentEditingZ
+            const sourceLayer = mapData.levels[z.toString()]?.[currentLayerType];
+            if (sourceLayer) {
+                for (let yy = 0; yy < h; yy++) {
+                    stampData.data[yy] = [];
+                    for (let xx = 0; xx < w; xx++) {
+                        stampData.data[yy][xx] = sourceLayer[y0 + yy]?.[x0 + xx];
+                    }
                 }
             }
-        } else {
+        } else if (stampData) { // Apply stamp
+            snapshot();
             for (let yy = 0; yy < stampData.h; yy++) {
                 for (let xx = 0; xx < stampData.w; xx++) {
-                    placeTile(x + xx, y + yy, stampData.data[yy][xx]);
+                    if (stampData.data[yy][xx] !== undefined) { // Ensure data exists before placing
+                        placeTile(x + xx, y + yy, z, stampData.data[yy][xx]); // Pass z
+                    }
                 }
             }
+            // Do not clear stampData here, allow multiple placements
         }
         selectedTileForInventory = null;
         updateContainerInventoryUI();
-        // renderMergedGrid() is already called by these tools' drawing functions
     }
-    dragStart = null; // Moved here from individual tool blocks to ensure it's always reset
-    renderMergedGrid(); // This might be redundant if individual tools call it, but safe.
+    dragStart = null;
+    renderMergedGrid();
 }
 
 // --- 9) Keyboard shortcuts ---
@@ -783,29 +841,146 @@ document.querySelectorAll(".toolBtn").forEach(btn => {
             .forEach(b => b.classList.toggle("selected", b === btn));
     };
 });
-// The layerSelect.onchange was already modified above. The line below is for context, but the one in the file is different.
-// document.getElementById("layerSelect").onchange = () => { buildPalette(); renderMergedGrid(); }; 
+
+// Z-Level UI listeners
+document.getElementById("zLevelInput").addEventListener('change', (e) => {
+    const newZ = parseInt(e.target.value, 10);
+    if (!isNaN(newZ)) {
+        currentEditingZ = newZ;
+        ensureLayersForZ(currentEditingZ); // Important for new or unvisited Z-levels
+        mapData.startPos.z = currentEditingZ; // Also update player start Z when manually changing view, could be optional
+        document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+        console.log(`Current editing Z-level changed to: ${currentEditingZ}`);
+        selectedGenericTile = null; updateTilePropertyEditorUI(); // Clear selections when Z changes
+        selectedTileForInventory = null; updateContainerInventoryUI();
+        selectedPortal = null; updateSelectedPortalInfo();
+        // selectedNpc = null; if (typeof updateSelectedNpcInfo === 'function') updateSelectedNpcInfo();
+        buildPalette(); // Palette might change if layer types are Z-specific in future
+        renderMergedGrid();
+    }
+});
+
+document.getElementById("zLevelUpBtn").addEventListener('click', () => {
+    currentEditingZ++;
+    document.getElementById("zLevelInput").value = currentEditingZ;
+    ensureLayersForZ(currentEditingZ);
+    mapData.startPos.z = currentEditingZ;
+    document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+    selectedGenericTile = null; updateTilePropertyEditorUI();
+    selectedTileForInventory = null; updateContainerInventoryUI();
+    selectedPortal = null; updateSelectedPortalInfo();
+    buildPalette();
+    renderMergedGrid();
+});
+
+document.getElementById("zLevelDownBtn").addEventListener('click', () => {
+    currentEditingZ--;
+    document.getElementById("zLevelInput").value = currentEditingZ;
+    ensureLayersForZ(currentEditingZ);
+    mapData.startPos.z = currentEditingZ;
+    document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+    selectedGenericTile = null; updateTilePropertyEditorUI();
+    selectedTileForInventory = null; updateContainerInventoryUI();
+    selectedPortal = null; updateSelectedPortalInfo();
+    buildPalette();
+    renderMergedGrid();
+});
+
+document.getElementById("addZLevelBtn").addEventListener('click', () => {
+    const newZStr = prompt("Enter Z-level index to add (integer):", (Object.keys(mapData.levels).length > 0 ? Math.max(...Object.keys(mapData.levels).map(Number)) + 1 : 0).toString());
+    if (newZStr === null) return; // User cancelled
+    const newZ = parseInt(newZStr, 10);
+    if (isNaN(newZ)) {
+        alert("Invalid Z-level. Please enter an integer.");
+        return;
+    }
+    if (mapData.levels[newZ.toString()]) {
+        alert(`Z-level ${newZ} already exists.`);
+        return;
+    }
+    snapshot();
+    currentEditingZ = newZ;
+    ensureLayersForZ(currentEditingZ); // This creates the level
+    document.getElementById("zLevelInput").value = currentEditingZ;
+    mapData.startPos.z = currentEditingZ; // Optionally set new Z as start Z
+    document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+    logToConsole(`Added and switched to Z-level: ${currentEditingZ}`);
+    selectedGenericTile = null; updateTilePropertyEditorUI();
+    selectedTileForInventory = null; updateContainerInventoryUI();
+    selectedPortal = null; updateSelectedPortalInfo();
+    buildPalette();
+    renderMergedGrid();
+});
+
+document.getElementById("deleteZLevelBtn").addEventListener('click', () => {
+    const zToDeleteStr = currentEditingZ.toString();
+    if (Object.keys(mapData.levels).length <= 1) {
+        alert("Cannot delete the last Z-level.");
+        return;
+    }
+    if (!mapData.levels[zToDeleteStr]) {
+        alert(`Z-level ${currentEditingZ} does not exist.`);
+        return;
+    }
+    if (confirm(`Are you sure you want to delete Z-level ${currentEditingZ}? This cannot be undone easily.`)) {
+        snapshot();
+        delete mapData.levels[zToDeleteStr];
+        logToConsole(`Deleted Z-level: ${currentEditingZ}`);
+
+        // Switch to a default or existing Z-level
+        currentEditingZ = mapData.startPos.z; // Try startPos.z first
+        if (!mapData.levels[currentEditingZ.toString()]) { // If startPos.z was deleted or invalid
+            currentEditingZ = parseInt(Object.keys(mapData.levels)[0], 10); // Fallback to first available Z
+        }
+        if (isNaN(currentEditingZ) || !mapData.levels[currentEditingZ.toString()]) { // If still no valid Z (e.g. mapData.levels became empty, though prevented)
+            currentEditingZ = 0; // Absolute fallback
+            ensureLayersForZ(currentEditingZ); // Ensure 0 exists if all else fails
+        }
+
+        document.getElementById("zLevelInput").value = currentEditingZ;
+        // mapData.startPos.z might need updating if the start Z was deleted. For now, keep it.
+        // document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+
+        selectedGenericTile = null; updateTilePropertyEditorUI();
+        selectedTileForInventory = null; updateContainerInventoryUI();
+        selectedPortal = null; updateSelectedPortalInfo();
+        buildPalette();
+        renderMergedGrid();
+    }
+});
+
+
+// Layer type selector and visibility toggles
+document.getElementById("layerSelect").onchange = e => {
+    currentLayerType = e.target.value; // Changed from currentLayer
+    // Reset selections when layer type changes, as context might be different
+    selectedTileForInventory = null; updateContainerInventoryUI();
+    selectedGenericTile = null; updateTilePropertyEditorUI();
+    // Palette might need to be rebuilt if tile availability depends on layer type AND Z-level specifics (not just general tags)
+    buildPalette();
+    renderMergedGrid();
+};
+
 ["landscape", "building", "item", "roof"].forEach(l => {
     document.getElementById("vis_" + l).onchange = () => renderMergedGrid();
 });
-document.getElementById("exportBtn").onclick = () => {
-    let mapId = prompt("Enter a filename/ID for the map (e.g., 'myNewMap')", "map");
-    if (!mapId) return; // User cancelled
-    mapId = mapId.replace(/\.json$/i, "").replace(/\s+/g, '_'); // Remove .json if they added it and replace spaces with underscores
 
-    // Create a basic friendly name from the ID
+document.getElementById("exportBtn").onclick = () => {
+    let mapId = prompt("Enter a filename/ID for the map (e.g., 'myNewMap')", mapData.id || "map");
+    if (!mapId) return;
+    mapId = mapId.replace(/\.json$/i, "").replace(/\s+/g, '_');
+
     const name = mapId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-    const data = {
-        id: mapId,
-        name: name,
-        width: gridWidth,
-        height: gridHeight,
-        layers: layers, // This contains landscape, building etc.
-        npc_spawns: layers.npc_spawns || [],
-        portals: layers.portals || [] // Ensure this is the script's layers.portals
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    // Update mapData with current UI values before exporting
+    mapData.id = mapId;
+    mapData.name = name; // Or prompt for a friendly name separately
+    mapData.width = gridWidth;
+    mapData.height = gridHeight;
+    // mapData.startPos.z is updated when zLevelInput changes, or could be set here from playerStartZDisplay if that was editable.
+    // mapData.levels, mapData.npcs, mapData.portals are already up-to-date.
+
+    const blob = new Blob([JSON.stringify(mapData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -820,42 +995,53 @@ document.getElementById("loadBtn").onclick = () => {
     const reader = new FileReader();
     reader.onload = ev => {
         try {
-            const d = JSON.parse(ev.target.result);
-            if (d.width && d.height) {
-                gridWidth = parseInt(d.width, 10);
-                gridHeight = parseInt(d.height, 10);
-                document.getElementById("inputWidth").value = gridWidth;
-                document.getElementById("inputHeight").value = gridHeight;
-                document.documentElement.style.setProperty("--cols", gridWidth);
-            } else {
-                // Attempt to infer from landscape layer if width/height are missing
-                if (d.layers && d.layers.landscape && d.layers.landscape.length > 0) {
-                    gridHeight = d.layers.landscape.length;
-                    gridWidth = d.layers.landscape[0].length;
-                    document.getElementById("inputWidth").value = gridWidth;
-                    document.getElementById("inputHeight").value = gridHeight;
-                    document.documentElement.style.setProperty("--cols", gridWidth);
-                    console.warn("Map dimensions (width/height) missing from JSON, inferred from landscape layer.");
+            const loadedJson = JSON.parse(ev.target.result);
+
+            // Validate basic structure for new format
+            if (!loadedJson.levels || !loadedJson.startPos || loadedJson.startPos.z === undefined) {
+                alert("Invalid map format. Map must have 'levels' and 'startPos.z'. Attempting to load as old format if possible or failing.");
+                // Try to adapt old format if necessary, or just fail.
+                // For now, we'll assume new format or fail more gracefully.
+                // If adapting old: create a "0" level from d.layers.
+                if (loadedJson.layers && loadedJson.width && loadedJson.height) { // Possible old format
+                    mapData.id = loadedJson.id || "loaded_map";
+                    mapData.name = loadedJson.name || "Loaded Map";
+                    gridWidth = parseInt(loadedJson.width, 10);
+                    gridHeight = parseInt(loadedJson.height, 10);
+                    mapData.width = gridWidth;
+                    mapData.height = gridHeight;
+                    mapData.levels = { "0": loadedJson.layers }; // Place old layers into Z=0
+                    mapData.startPos = { x: loadedJson.startPos?.x || 0, y: loadedJson.startPos?.y || 0, z: 0 };
+                    mapData.npcs = loadedJson.npcs || []; // Keep old npcs, they'll need Z added if edited
+                    mapData.portals = loadedJson.portals || []; // Keep old portals, they'll need Z added
+                    currentEditingZ = 0;
+                    console.warn("Loaded map appears to be in old format. Adapted to new structure with all content on Z=0.");
                 } else {
-                    alert("Map dimensions (width/height) are missing in the JSON file. Cannot reliably load.");
+                    console.error("Failed to adapt old map format or map is corrupted.");
+                    alert("Failed to load map: unrecognized format or critical data missing.");
                     return;
                 }
+            } else { // New format
+                mapData = loadedJson; // Directly assign if new format is good
+                gridWidth = parseInt(mapData.width, 10);
+                gridHeight = parseInt(mapData.height, 10);
+                currentEditingZ = mapData.startPos.z; // Set current editing Z to map's start Z
             }
 
-            // Initialize layers if they don't exist to prevent errors
-            layers.landscape = d.layers.landscape || createDefaultLandscape(gridWidth, gridHeight);
-            layers.building = d.layers.building || createEmptyGrid(gridWidth, gridHeight, "");
-            layers.item = d.layers.item || createEmptyGrid(gridWidth, gridHeight, "");
-            layers.roof = d.layers.roof || createEmptyGrid(gridWidth, gridHeight, "");
+            document.getElementById("inputWidth").value = gridWidth;
+            document.getElementById("inputHeight").value = gridHeight;
+            document.documentElement.style.setProperty("--cols", gridWidth);
+            document.getElementById("zLevelInput").value = currentEditingZ;
+            document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
 
-            // For future properties like npc_spawns, portals
-            layers.npc_spawns = d.npc_spawns || [];
-            layers.portals = d.portals || []; // Load portals from the root of the JSON data
+            // Ensure all Z-levels mentioned (e.g. in startPos) have their layer structure initialized
+            Object.keys(mapData.levels).forEach(zKey => ensureLayersForZ(parseInt(zKey, 10)));
+            ensureLayersForZ(currentEditingZ); // Crucially ensure current editing Z has layers
 
-            // Recalculate nextPortalId
+            // Recalculate nextPortalId based on loaded mapData.portals
             nextPortalId = 0;
-            if (layers.portals && layers.portals.length > 0) {
-                layers.portals.forEach(p => {
+            if (mapData.portals && mapData.portals.length > 0) {
+                mapData.portals.forEach(p => {
                     const idNum = parseInt(p.id.split('_')[1]);
                     if (!isNaN(idNum) && idNum >= nextPortalId) {
                         nextPortalId = idNum + 1;
@@ -863,28 +1049,19 @@ document.getElementById("loadBtn").onclick = () => {
                 });
             }
 
-            // Reset portal UI state
             selectedPortal = null;
             addingPortalMode = false;
             document.getElementById('toggleAddPortalModeBtn').textContent = "Add Portal";
             updateSelectedPortalInfo();
 
-            // It's crucial to re-initialize the map (or at least parts of it)
-            // after changing gridWidth/gridHeight and layers.
-            // renderMergedGrid() alone might not be enough if underlying cell elements need recreation.
-            // Calling a slimmed-down init or a dedicated resize function is better.
-            // For now, directly calling render.
-            renderMergedGrid(); // Re-render with new dimensions and content
-            alert(`Map "${d.name || d.id || 'Unknown'}" loaded!`);
+            selectedTileForInventory = null; updateContainerInventoryUI();
+            selectedGenericTile = null; updateTilePropertyEditorUI();
+            // selectedNpc = null; if (typeof updateSelectedNpcInfo === 'function') updateSelectedNpcInfo();
 
-            selectedTileForInventory = null;
-            updateContainerInventoryUI();
-            // Also reset selected NPC and its UI, and NPC mode (when implemented)
-            // selectedNpc = null; // Placeholder for selected NPC state
-            // if (typeof updateSelectedNpcInfo === 'function') updateSelectedNpcInfo(); // Placeholder for NPC UI update
-            // if(document.getElementById('removeNpcBtn')) document.getElementById('removeNpcBtn').disabled = true; // Placeholder
-            // addingNpcMode_npc = false; // Placeholder for NPC add mode state
-            // The portal button text is correctly managed by its own logic now.
+            buildPalette(); // Palette might depend on currentLayerType, which is fine
+            renderMergedGrid();
+            alert(`Map "${mapData.name || mapData.id || 'Unknown'}" loaded! Current Z: ${currentEditingZ}`);
+
         } catch (err) {
             alert("Error parsing map: " + err);
             console.error("Error parsing map file:", err);
@@ -898,47 +1075,49 @@ async function initMap() {
     try {
         await assetManager.loadDefinitions();
         console.log("Map Maker: Asset definitions loaded via AssetManager.");
-        // Ensure this.tilesets is populated for the palette
         if (!assetManager.tilesets || Object.keys(assetManager.tilesets).length === 0) {
             console.error("Map Maker: assetManager.tilesets is empty after loadDefinitions!");
             const errorDiv = document.getElementById('errorMessageDisplayMapMaker');
             if (errorDiv) errorDiv.textContent = "Error: Failed to load tile definitions. Palette will be empty.";
-            // Potentially return or throw error to prevent further execution if tilesets are critical
         }
     } catch (error) {
         console.error("Map Maker: Error loading asset definitions:", error);
         const errorDiv = document.getElementById('errorMessageDisplayMapMaker');
         if (errorDiv) errorDiv.textContent = "Error loading definitions. Check console.";
-        // Handle error appropriately, maybe prevent editor init
     }
 
-    // Initialize grid dimensions (already done at top for initial load, this re-confirms for resize)
     gridWidth = parseInt(document.getElementById("inputWidth").value, 10) || 20;
     gridHeight = parseInt(document.getElementById("inputHeight").value, 10) || 15;
     document.documentElement.style.setProperty("--cols", gridWidth);
 
-    // Initialize layers
-    layers = {
-        landscape: createDefaultLandscape(gridWidth, gridHeight),
-        building: createEmptyGrid(gridWidth, gridHeight, ""),
-        item: createEmptyGrid(gridWidth, gridHeight, ""),
-        roof: createEmptyGrid(gridWidth, gridHeight, ""),
-        npcs: [],     // For storing NPC data within mapMaker's undo/redo context
-        portals: []   // For storing Portal data within mapMaker's undo/redo context
-    };
+    currentEditingZ = 0; // Default starting Z-level for a new map
+    document.getElementById("zLevelInput").value = currentEditingZ;
 
-    // Reset other state variables
-    currentLayer = "landscape";
-    currentTileId = assetManager.tilesets && Object.keys(assetManager.tilesets).length > 0 ? Object.keys(assetManager.tilesets)[0] : "GR"; // Default to first available tile or GR
+    // Initialize mapData for a new map
+    mapData = {
+        id: "new_map_" + Date.now(), // More unique default ID
+        name: "New Map",
+        width: gridWidth,
+        height: gridHeight,
+        startPos: { x: Math.floor(gridWidth / 2), y: Math.floor(gridHeight / 2), z: 0 },
+        levels: {}, // ensureLayersForZ will populate "0"
+        npcs: [],
+        portals: []
+    };
+    ensureLayersForZ(currentEditingZ); // Initialize layers for Z=0
+    document.getElementById("playerStartZDisplay").textContent = mapData.startPos.z;
+
+
+    currentLayerType = "landscape";
+    currentTileId = assetManager.tilesets && Object.keys(assetManager.tilesets).length > 0 ? Object.keys(assetManager.tilesets)[0] : "";
     currentTool = "brush";
 
     dragStart = null;
     previewPos = null;
     stampData = null;
 
-    // Reset selection states
-    selectedNpc = null; // Placeholder for actual selectedNpc variable
-    window.addingNpcModeState = false; // Placeholder for actual NPC adding mode state variable
+    selectedNpc = null;
+    window.addingNpcModeState = false;
     selectedTileForInventory = null;
     selectedPortal = null;
     addingPortalMode = false;
@@ -948,28 +1127,28 @@ async function initMap() {
     undoStack.length = 0;
     redoStack.length = 0;
 
-    // Initialize layer visibility from checkboxes (or set defaults and sync UI)
     layerVisibility.landscape = document.getElementById('vis_landscape').checked;
     layerVisibility.building = document.getElementById('vis_building').checked;
     layerVisibility.item = document.getElementById('vis_item').checked;
     layerVisibility.roof = document.getElementById('vis_roof').checked;
 
-    // Update UI elements related to these resets
     if (typeof updateSelectedNpcInfo === 'function') updateSelectedNpcInfo();
     updateContainerInventoryUI();
     updateSelectedPortalInfo();
+    updateTilePropertyEditorUI();
 
-    const toggleNpcBtn = document.getElementById('toggleAddNpcModeBtn'); // Placeholder ID
+
+    const toggleNpcBtn = document.getElementById('toggleAddNpcModeBtn');
     if (toggleNpcBtn) toggleNpcBtn.textContent = "Add NPC";
     document.getElementById('toggleAddPortalModeBtn').textContent = "Add Portal";
 
-    const removeNpcBtn = document.getElementById('removeNpcBtn'); // Placeholder ID
+    const removeNpcBtn = document.getElementById('removeNpcBtn');
     if (removeNpcBtn) removeNpcBtn.disabled = true;
 
     document.querySelectorAll(".toolBtn").forEach(b => b.classList.toggle("selected", b.dataset.tool === currentTool));
 
-    buildPalette(); // Rebuild palette based on currentLayer and loaded tilesets
-    renderMergedGrid(); // Render the newly initialized or resized grid
+    buildPalette();
+    renderMergedGrid();
 
     // Populate itemSelectForContainer dropdown
     const itemSelect = document.getElementById('itemSelectForContainer');

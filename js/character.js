@@ -296,14 +296,55 @@ function formatBodyPartName(part) {
 // Game over logic placeholder, now accepts a character
 function gameOver(character) {
     const characterName = (character === gameState) ? 'Player' : (character.name || character.id || 'Unknown NPC');
-    logToConsole(`GAME OVER for ${characterName}.`);
-    // Further game-over logic here
-    // For player (gameState), this might mean stopping the game.
-    // For NPCs, it might mean removing them from combat or the map.
+    logToConsole(`GAME OVER for ${characterName}.`, 'darkred', true); // Ensure critical message is visible
+
     if (character === gameState) { // Check if the character that died is the player
-        // alert("You have succumbed to your injuries. GAME OVER.");
-        // Potentially disable further input, show a game over screen, etc.
-        gameState.gameStarted = false; // Example of a game-ending state change
+        logToConsole("Player has died. Cleaning up combat state and ending game.", 'darkred');
+        gameState.gameStarted = false;
+        gameState.isWaitingForPlayerCombatInput = false; // Crucial for unblocking
+        gameState.isInCombat = false; // Explicitly set, though endCombat should also do this
+
+        // Attempt to clear any active animations forcefully if animationManager exists
+        if (window.animationManager && typeof window.animationManager.clearAllAnimations === 'function') {
+            logToConsole("Clearing all active animations on player game over.", 'darkred');
+            window.animationManager.clearAllAnimations();
+        }
+        gameState.isAnimationPlaying = false; // Reset this flag too
+
+        // Hide combat UI elements
+        const attackDeclUI = document.getElementById('attackDeclarationUI');
+        if (attackDeclUI) attackDeclUI.classList.add('hidden');
+        const defenseDeclUI = document.getElementById('defenseDeclarationUI');
+        if (defenseDeclUI) defenseDeclUI.classList.add('hidden');
+        const combatControls = document.getElementById('combatControls');
+        if (combatControls) combatControls.style.display = 'none';
+
+
+        // Display a game over message prominently
+        const gameOverMessageElement = document.getElementById('gameOverMessage'); // Assuming such an element exists or can be added
+        if (gameOverMessageElement) {
+            gameOverMessageElement.textContent = "YOU HAVE DIED. GAME OVER.";
+            gameOverMessageElement.style.display = 'block';
+        } else {
+            // Fallback if no dedicated element
+            const consoleElement = document.getElementById('console');
+            if (consoleElement) {
+                const p = document.createElement('p');
+                p.style.color = 'red';
+                p.style.fontWeight = 'bold';
+                p.style.fontSize = '20px';
+                p.textContent = "YOU HAVE DIED. GAME OVER.";
+                consoleElement.appendChild(p);
+                consoleElement.scrollTop = consoleElement.scrollHeight;
+            }
+        }
+
+        // If there's a specific combat manager instance available and an endCombat method.
+        // This is a bit indirect; ideally, combatManager handles its own cleanup when player dies.
+        // The call in applyDamage should be sufficient.
+    } else {
+        // Logic for NPC death (e.g., remove from map, drop loot)
+        // This is mostly handled in combatManager's applyDamage/nextTurn.
     }
 }
 

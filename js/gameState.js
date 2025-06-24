@@ -20,18 +20,24 @@ const InventorySizes = {
 };
 
 const gameState = {
-    // Instead of a single 'map', we now have separate layers.
-    // These will be populated from currentMapData.layers when a map is loaded.
-    layers: {
-        landscape: [],
-        building: [],
-        item: [],
-        roof: []
-    },
-    fowData: [], // Added for Fog of War
+    // mapLevels will store the tile data for all Z-levels of the current map.
+    // It's a dictionary where keys are Z-indices (e.g., "0", "1", "-1")
+    // and values are objects containing layer types (landscape, building, etc.).
+    // This replaces the old 'layers' object.
+    mapLevels: {}, // Example: { "0": { landscape: [[]], building: [[]] }, "1": { ... } }
+
+    // fowData is now a dictionary keyed by Z-level.
+    // e.g., fowData["0"] = Array(H).fill(null).map(() => Array(W).fill('hidden'))
+    fowData: {}, // Fog of War data, per Z-level
+
+    // lightSources will now contain objects with x, y, z coordinates.
     lightSources: [], // Added for lighting system
+
     // Player positioning and game status
-    playerPos: { x: 2, y: 2 }, // Will be updated when a map is loaded
+    playerPos: { x: 2, y: 2, z: 0 }, // Player position with Z-coordinate
+    currentViewZ: 0, // The Z-level the player is currently viewing
+    viewFollowsPlayerZ: true, // Flag to indicate if currentViewZ should automatically follow playerPos.z
+
     gameStarted: false,
     currentMapId: null, // Will be set when a map is loaded for portal tracking
     awaitingPortalConfirmation: false, // True if player is on a portal and confirm prompt is active

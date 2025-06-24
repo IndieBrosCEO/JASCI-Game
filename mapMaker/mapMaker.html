@@ -18,24 +18,35 @@
             Height: <input type="number" id="inputHeight" value="15" min="1" />
         </label>
         <button id="resizeBtn">Resize Map</button>
+        <hr />
+
+        <!-- Z-Level Controls -->
+        <label for="zLevelInput">Current Z-Level:</label>
+        <input type="number" id="zLevelInput" value="0" style="width: 60px;" />
+        <button id="zLevelUpBtn">&uarr; (Z+1)</button>
+        <button id="zLevelDownBtn">&darr; (Z-1)</button>
+        <button id="addZLevelBtn">Add New Z-Level</button>
+        <button id="deleteZLevelBtn">Delete Current Z-Level</button>
+        <span style="margin-left: 10px;">Player Start Z: <span id="playerStartZDisplay">0</span></span>
 
         <hr />
 
-        <!-- 2. Layer selector + visibility -->
-        <label for="layerSelect">Edit Layer:</label>
+        <!-- 2. Layer selector + visibility (Now per Z-level, implicitly) -->
+        <label for="layerSelect">Edit Layer Type:</label>
         <select id="layerSelect">
             <option value="landscape">Landscape</option>
-            <option value="building">Building</option>
-            <option value="item">Item</option>
-            <option value="roof">Roof</option>
+            <option value="building">Building</option> <!-- Will become "Constructions" -->
+            <option value="item">Item</option>     <!-- Will become "Items" -->
+            <option value="roof">Roof</option>       <!-- May be merged or part of "Constructions" -->
+            <!-- Add new layer types based on feedback: Entities, Effects, Animations, Liquid, Fire later if needed for direct placement -->
         </select>
         <div id="visibilityToggles">
             <label><input type="checkbox" id="vis_landscape" checked> Landscape</label>
             <label><input type="checkbox" id="vis_building" checked> Building</label>
             <label><input type="checkbox" id="vis_item" checked> Item</label>
             <label><input type="checkbox" id="vis_roof" checked> Roof</label>
+            <!-- Add visibility toggles for other layers like Z-1, Z+1 if direct multi-Z view is implemented -->
         </div>
-
         <hr />
 
         <!-- 3. Tool buttons -->
@@ -96,6 +107,11 @@
             <input type="number" id="portalTargetX" min="0" style="width: 60px;" />
             <label for="portalTargetY" style="margin-left: 5px;">Target Y:</label>
             <input type="number" id="portalTargetY" min="0" style="width: 60px;" />
+            <label for="portalTargetZ" style="margin-left: 5px;">Target Z:</label>
+            <input type="number" id="portalTargetZ" value="0" style="width: 60px;" />
+            <br />
+            <label for="portalNameInput">Portal Name:</label>
+            <input type="text" id="portalNameInput" placeholder="Optional name for this portal" style="width: 200px; margin-top: 5px;" />
             <br />
             <button id="savePortalPropertiesBtn" style="margin-top: 5px;">Save Portal</button>
         </div>

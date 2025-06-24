@@ -370,3 +370,18 @@ function populateWorldContainers(mapData, itemDefinitions, tileset) {
     }
 }
 window.populateWorldContainers = populateWorldContainers;
+
+// Calculate 3D Euclidean distance
+function getDistance3D(pos1, pos2) {
+    if (!pos1 || !pos2 ||
+        pos1.x === undefined || pos1.y === undefined || pos1.z === undefined ||
+        pos2.x === undefined || pos2.y === undefined || pos2.z === undefined) {
+        console.error("getDistance3D: Invalid input positions.", pos1, pos2);
+        return Infinity; // Return Infinity or handle error as appropriate
+    }
+    const dx = pos1.x - pos2.x;
+    const dy = pos1.y - pos2.y;
+    const dz = pos1.z - pos2.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+}
+window.getDistance3D = getDistance3D;
