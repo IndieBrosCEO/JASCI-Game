@@ -32,31 +32,26 @@ This document outlines the features of the JASCI TRPG Adventure game, intended f
 *   **Attack Mechanics**:
     *   **Melee Attacks**: Using equipped melee weapons or unarmed.
     *   **Ranged Attacks**: Using firearms, bows, crossbows, thrown weapons, and launchers.
-    *   **Targeting**:
+    *   **Targeting (3D)**:
         *   Players can target specific body parts (Head, Torso, Arms, Legs), incurring accuracy modifiers.
-        *   Targeting mode for ranged and melee attacks allows players to select targets on the map.
-    *   **Attack Rolls**: Based on a d20 roll + relevant skill modifier (e.g., Guns, Melee Weapons, Unarmed) + situational modifiers (range, body part, movement, lighting, status effects).
-    *   **Critical Hits/Misses**: Natural 20 on attack roll is a critical hit (if not disadvantaged); natural 1 is a critical miss.
+        *   Targeting mode allows selection of X, Y, and Z coordinates on the map.
+        *   Targets can be selected across different Z-levels if there is a valid line of sight and they are within weapon range.
+    *   **Attack Rolls**: Based on a d20 roll + relevant skill modifier + situational modifiers (3D range, body part, movement, 3D lighting, status effects, 3D cover).
+    *   **Critical Hits/Misses**: (As before)
 *   **Defense Mechanics**:
-    *   **Defense Rolls**: Based on a d20 roll + relevant skill/stat modifier.
-    *   **Defense Types**:
-        *   **Dodge**: Based on Dexterity and Unarmed skill.
-        *   **Block (Unarmed)**: Based on Constitution and Unarmed skill. Can specify blocking limb.
-        *   **Block (Armed)**: Based on Melee Weapons skill. Dual wielding melee weapons can provide a bonus.
-        *   **Passive Defense (vs. Ranged)**: No active roll, but cover provides bonuses.
-    *   **Critical Success/Failure**: Natural 20 on defense roll is a critical success; natural 1 is a critical failure.
-*   **Damage & Armor**:
-    *   Damage is rolled based on weapon stats.
-    *   Damage is reduced by the target's armor value on the hit body part.
-    *   Various damage types exist (e.g., Ballistic, Slashing, Bludgeoning, Piercing, Explosive, Fire, Chemical, Acid, Electricity).
+    *   **Defense Rolls**: (As before)
+    *   **Defense Types**: (As before)
+    *   **Passive Defense (vs. Ranged)**: No active roll, but 3D cover provides bonuses.
+    *   **Critical Success/Failure**: (As before)
+*   **Damage & Armor**: (As before)
 *   **Weapon Properties**:
-    *   **Fire Modes (Firearms)**: Single, Burst, Auto, each with different AP costs/effects and accuracy modifiers.
-    *   **Ammunition**: Firearms and some ranged weapons require specific ammo types and have magazine capacities. Reloading is an action.
-    *   **Thrown Weapons**: Have range increments and may have special effects (e.g., explosions, smoke).
-    *   **Launchers**: Can fire explosive projectiles.
-*   **Cover**: Tiles can provide cover bonuses to defense against ranged attacks.
+    *   **Fire Modes (Firearms)**: (As before)
+    *   **Ammunition**: (As before)
+    *   **Thrown Weapons**: Have 3D range increments. Area effects (`burstRadiusFt`) are spherical.
+    *   **Launchers**: Fire projectiles that can have spherical area effects (`burstRadiusFt`).
+*   **Cover (3D)**: Tiles can provide cover. Cover bonus is calculated based on 3D line of sight from attacker to defender, considering intervening cover-providing tiles on any Z-level.
 *   **Status Effects**:
-    *   Combatants can suffer from status effects (e.g., Blinded, Irritated by Tear Gas, In Smoke, Acid Burn) that can impact stats, accuracy, or cause damage over time.
+    *   Combatants can suffer from status effects (e.g., Blinded, Irritated by Tear Gas, In Smoke, Acid Burn) that can impact stats, accuracy, or cause damage over time. Area effects applying these (e.g. smoke, gas) are spherical.
     *   Effects can have durations and be applied by items or environmental conditions.
 *   **Grappling**:
     *   Players can attempt to grapple opponents as a combat action.
@@ -80,38 +75,46 @@ This document outlines the features of the JASCI TRPG Adventure game, intended f
 *   **Dropping Items**: Player can drop items from their inventory onto the floor at their current location.
 
 ### 4. Map & Interaction System
-*   **Grid-Based Movement**: Characters move on a 2D grid.
+*   **Grid-Based Movement (3D)**: Characters move on a 3D grid, with coordinates (X, Y, Z). Player and NPC positions include a Z-level.
+*   **Z-Level Navigation (Player View)**:
+    *   Player can change their current view Z-level up or down using '<' and '>' keys respectively. This detaches the view from the player's actual Z-level.
+    *   Pressing '/' key syncs the view Z-level to the player's current Z-level and enables "follow player Z" mode.
+    *   When "follow player Z" mode is active, the view automatically changes if the player moves to a different Z-level.
+    *   The current view Z-level and player's actual Z-level are displayed in the UI.
 *   **Tile Interaction**:
-    *   Players can interact with objects on the map within a certain range.
-    *   Interactive objects include doors, windows, containers, and potentially other elements.
-    *   Actions depend on the object (e.g., open/close door, loot container).
-*   **Multi-Layered Maps**: Maps are composed of multiple layers:
-    *   `landscape`: Base terrain.
-    *   `building`: Walls, doors, structural elements.
-    *   `item`: Objects, furniture, lootable items on the map.
-    *   `roof`: Roof tiles, can be toggled for visibility.
-*   **Fog of War (FOW)**:
+    *   Players can interact with objects on the map within a certain 3D range.
+    *   Interactive objects include doors, windows, containers, and Z-transition tiles (stairs, ladders).
+    *   Actions depend on the object (e.g., open/close door, loot container, use stairs).
+*   **Multi-Z-Level Maps**: Maps are composed of multiple Z-levels (e.g., floors of a building, underground areas).
+    *   Each Z-level (e.g., "0", "1", "-1") contains its own set of tile layers:
+        *   `landscape`: Base terrain for that Z-level.
+        *   `building`: Walls, doors, structural elements for that Z-level.
+        *   `item`: Objects, furniture, lootable items on that Z-level.
+        *   `roof`: Roof tiles for that Z-level (can be toggled for visibility).
+    *   Z-levels have no predefined height limit.
+*   **Z-Transitions**:
+    *   Special tiles (e.g., stairs, ladders, holes) allow movement between Z-levels.
+    *   These tiles are defined in `tileset.json` with tags like `z_transition`, `is_stairs_up`, `is_ladder_down` and properties like `target_dz` (e.g., +1, -1) and `z_cost` (movement point cost).
+*   **Fog of War (FOW) (3D)**:
+    *   Each Z-level has its own FOW data.
     *   Tiles can be `hidden`, `visited`, or `visible`.
-    *   Visibility is determined by line of sight from the player within a defined vision radius.
-    *   Obstacles (walls, etc.) can block line of sight.
-*   **Lighting System**:
-    *   **Dynamic Lights**: Some items (e.g., flashlight, lantern, candle) and map tiles (e.g., lamps, fires) can emit light with a specific radius, intensity, and color.
-    *   **Ambient Light**: The overall map brightness changes based on the in-game time (day/night cycle).
-    *   **Visibility Penalties**: Darkness can impose penalties on actions like combat targeting.
-    *   Light sources can be blocked by vision-blocking tiles.
+    *   Visibility is determined by 3D line of sight from the player (on their current `playerPos.z`) within a spherical vision radius.
+    *   Obstacles (walls, solid floors/ceilings between Z-levels, etc.) can block line of sight.
+    *   The rendered map displays FOW for the `currentViewZ`.
+*   **Lighting System (3D)**:
+    *   **Dynamic Lights**: Light sources (items, map tiles) have X, Y, Z coordinates and emit light spherically.
+    *   Light propagation uses 3D line of sight and can be blocked by opaque tiles on any Z-level.
+    *   **Ambient Light**: Affects all Z-levels, changes with the day/night cycle.
+    *   **Visibility Penalties**: Darkness (low ambient light or lack of dynamic sources) can impose penalties.
+    *   **Rendering Glimpse**: When viewing a Z-level, if tiles are transparent (e.g., grates, empty floor space), a glimpse of the Z-level below (rendered darker) and the Z-level above (rendered darker and tinted) is shown.
 
 ### 5. NPC (Non-Player Character) System
-*   **Variety**: Different types of NPCs are defined with unique:
-    *   Names and visual sprites/colors.
-    *   Base stats and skills.
-    *   Health pools for body parts.
-    *   Equipped weapons and default action/movement points.
-    *   Tags defining behavior or type (e.g., "hostile", "dummy", "melee", "ranged").
+*   **Variety**: (As before)
 *   **AI Behavior**:
-    *   **Aggro System**: NPCs target enemies based on a threat list.
-    *   **Team Affiliation**: NPCs belong to teams (e.g., teamId 1 for player, teamId 2 for scavengers), influencing combat allegiances.
-    *   **Combat AI**: NPCs will move towards targets, attack, and potentially use equipped items or skills (though specific advanced tactics are not deeply detailed).
-*   **Spawning**: NPCs are defined in map data and spawned when a map is loaded.
+    *   **Aggro System**: (As before)
+    *   **Team Affiliation**: (As before)
+    *   **Combat AI (3D Pathfinding)**: NPCs use a 3D A* pathfinding algorithm to navigate the multi-Z-level map, including using Z-transition tiles (stairs, ladders) to reach targets on different Z-levels.
+*   **Spawning**: NPCs are defined in map data with X, Y, and Z coordinates for their starting position.
 
 ### 6. Time System
 *   **In-Game Clock**: Tracks days, hours, and minutes.
@@ -380,15 +383,21 @@ A separate map maker tool (`mapMaker.html`, `mapMaker.js`) is available for crea
 
 ### 1. User Interface & Canvas
 *   **Web-Based Tool**: Accessed via an HTML page.
-*   **Grid-Based Canvas**: Visual representation of the map where tiles are placed.
+*   **Grid-Based Canvas**: Visual representation of the map where tiles are placed, displaying one Z-level at a time.
 *   **Dimension Controls**:
-    *   Input fields for setting map `width` and `height`.
-    *   `Resize Map` button to apply new dimensions (re-initializes map).
-*   **Layer Management**:
-    *   Dropdown to select the active editing layer: `Landscape`, `Building`, `Item`, `Roof`.
-    *   Checkboxes to toggle visibility of each layer on the canvas.
+    *   Input fields for setting map `width` and `height` (these apply to all Z-levels).
+    *   `Resize Map` button to apply new dimensions.
+*   **Z-Level Management**:
+    *   Input field to set the `currentEditingZ` level.
+    *   Buttons to navigate up (`Z+1`) and down (`Z-1`) through Z-levels.
+    *   Buttons to `Add New Z-Level` and `Delete Current Z-Level`.
+    *   Display for the map's designated Player Start Position (X, Y, Z).
+    *   Button to `Set Player Start Here` (sets player start X,Y to current selection/center on `currentEditingZ`).
+*   **Layer Type Management (per Z-level)**:
+    *   Dropdown to select the active editing layer type for the `currentEditingZ`: `Landscape`, `Building`, `Item`, `Roof`.
+    *   Checkboxes to toggle visibility of each layer type on the canvas for the `currentEditingZ`.
 *   **Tool Palette**:
-    *   Buttons for selecting drawing tools: `Brush`, `Fill`, `Line`, `Rect` (Rectangle), `Stamp`, `Select/Inspect`.
+    *   Buttons for selecting drawing tools: `Brush`, `Fill`, `Line`, `Rect` (Rectangle), `Stamp`, `Select/Inspect`. Tiles are placed on the `currentLayerType` of the `currentEditingZ`.
 *   **Tile Palette**:
     *   Displays available tiles (sprite and color) from the loaded `tileset.json`.
     *   Dynamically filtered based on the currently selected editing layer (e.g., only "landscape" tagged tiles for the landscape layer).
@@ -420,53 +429,31 @@ A separate map maker tool (`mapMaker.html`, `mapMaker.js`) is available for crea
 
 ### 3. Special Object & Property Editing
 *   **NPC Placement & Management**:
-    *   (Assumed from `npc_spawns` in export and references to NPC add mode buttons in mapMaker.js comments, though the direct UI for NPC type selection and placement isn't fully detailed in the provided `mapMaker.html` snippet itself).
-    *   Likely allows selecting an NPC type and placing it on the map.
-    *   Placed NPCs are stored with their ID and map coordinates in the `npc_spawns` array of the map data.
-    *   Selected NPCs on the map can likely be removed or have their properties edited.
+    *   NPCs are placed with X, Y coordinates on the `currentEditingZ` level.
+    *   Stored in `mapData.npcs` with `mapPos: {x, y, z}`.
+    *   (Other details as before)
 *   **Portal Placement & Configuration**:
-    *   `Add Portal` mode: Allows clicking on the map to place a new portal.
+    *   Portals are placed with X, Y coordinates on the `currentEditingZ` level.
     *   `Portal Configuration UI`:
-        *   Displays ID and coordinates of the selected portal.
-        *   Input fields for `Target Map ID` (filename of the destination map, without .json).
-        *   Input fields for `Target X` and `Target Y` coordinates on the destination map.
-        *   `Save Portal` button to apply changes.
-    *   `Remove Selected Portal` button.
-    *   Portals are visually marked on the map editor canvas.
+        *   Displays ID and coordinates (X,Y,Z) of the selected portal.
+        *   Input fields for `Target Map ID`.
+        *   Input fields for `Target X`, `Target Y`, and `Target Z` coordinates on the destination map.
+        *   (Other details as before)
 *   **Container Inventory & Lock Management**:
-    *   When a tile tagged as `container`, `door`, or `window` is selected with the `Select/Inspect` tool:
-        *   **Container Name & Position**: Displays the name and coordinates of the selected container tile.
-        *   **Lock Properties (for containers, doors, windows)**:
-            *   `Is Locked` checkbox.
-            *   `Lock DC` (Difficulty Class) numerical input (enabled when "Is Locked" is checked).
-        *   **Item List (for containers only)**: Displays items currently inside the selected container tile.
-            *   Allows removing items from the container.
-        *   **Add Item Form (for containers only)**:
-            *   Dropdown to select an item ID from the loaded `items.json`.
-            *   Input for item `quantity`.
-            *   `Add Item` button to add the selected item/quantity to the container.
-    *   Container data (inventory, lock status) is stored as an object on the tile data if customized, otherwise the tile is just its string ID.
+    *   When a tile is selected, its X, Y, and Z coordinates (from `currentEditingZ`) are used to identify it for property editing.
+    *   (Other details as before)
 *   **Tile Instance Property Editor**:
-    *   When any tile is selected with the `Select/Inspect` tool (and it's not an NPC or Portal being primarily edited):
-        *   Displays `Base Tile ID`, `Base Name`, and `Base Tags` (from `tileset.json`).
-        *   `Instance Name` input: Optional custom name for this specific tile instance.
-        *   `Instance Tags` input: Comma-separated list of custom tags to apply to this specific tile instance (e.g., "quest_item", "fragile").
-        *   `Save Tile Properties` button.
-        *   `Clear Custom Properties` button: Removes instance-specific name and tags, reverting to base tile behavior (may convert tile data back to string ID if no other special properties like container/lock info exist).
-    *   This allows individual tiles on the map to have unique characteristics beyond their base definition.
+    *   When any tile is selected, its X, Y, and Z coordinates (from `currentEditingZ`) are used.
+    *   `Instance Tags` input can be used to define Z-transition properties (e.g., `is_stairs_up`, `target_dz: 1`, `z_cost: 2`).
+    *   (Other details as before)
 
 ### 4. Data Structure
 *   **Map JSON Format**:
-    *   `id`: Unique map identifier (string).
-    *   `name`: Friendly display name for the map (string).
-    *   `width`: Map width in tiles (number).
-    *   `height`: Map height in tiles (number).
-    *   `layers`: An object containing 2D arrays for each layer:
-        *   `landscape`: Array of tile IDs/objects.
-        *   `building`: Array of tile IDs/objects.
-        *   `item`: Array of tile IDs/objects.
-        *   `roof`: Array of tile IDs/objects.
-        *   (Tile data within layers can be a string ID or an object if it has instance-specific properties like custom name/tags, container inventory, or lock status).
-    *   `npc_spawns`: Array of objects, each specifying an NPC `id` and its `mapPos` (`{x, y}`).
-    *   `portals`: Array of portal objects, each with `id`, `x`, `y`, `targetMapId`, `targetX`, `targetY`.
-*   **Asset Dependency**: Relies on `tileset.json` for tile definitions (sprites, colors, tags) and `items.json` for item definitions used in containers.
+    *   `id`, `name`, `width`, `height`: (As before)
+    *   `startPos`: An object `{x, y, z}` defining the player's starting position.
+    *   `levels`: An object where keys are Z-level indices (as strings, e.g., "0", "-1", "1") and values are objects representing that Z-level.
+        *   Each Z-level object contains 2D arrays for layer types: `landscape`, `building`, `item`, `roof`.
+        *   Tile data within these layers can be a string ID or an object for instance-specific properties.
+    *   `npcs`: Array of objects, each specifying an NPC `id` and its `mapPos` (`{x, y, z}`).
+    *   `portals`: Array of portal objects, each with `id`, `x`, `y`, `z`, `targetMapId`, `targetX`, `targetY`, `targetZ`.
+*   **Asset Dependency**: Relies on `tileset.json` (which can now include Z-transition tags like `is_stairs_up`, `target_dz`, `z_cost`) and `items.json`.

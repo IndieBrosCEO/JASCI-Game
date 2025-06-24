@@ -333,9 +333,21 @@ function renderMergedGrid() {
             if (displayId && tileDef) {
                 c.textContent = tileDef.sprite;
                 c.style.color = tileDef.color;
-            } else if (displayId) {
-                c.textContent = '?';
+            } else if (displayId) { // Should only be empty string if no tile from layers
+                c.textContent = '?'; // Should not happen if displayId has value but no def
                 c.style.color = 'magenta';
+            } else {
+                c.textContent = ' '; // Explicitly empty for truly empty cells
+            }
+
+            // Visually indicate Player Start Position
+            if (mapData.startPos && x === mapData.startPos.x && y === mapData.startPos.y && currentEditingZ === mapData.startPos.z) {
+                c.textContent = '☻'; // Player sprite
+                c.style.color = 'lime'; // Bright color for player start
+                c.style.backgroundColor = 'rgba(0, 255, 0, 0.2)'; // Slight background highlight
+                c.title = `Player Start (X:${mapData.startPos.x}, Y:${mapData.startPos.y}, Z:${mapData.startPos.z})`;
+            } else if (tileDef) { // Add title only if it's a regular tile, not overridden by player start
+                c.title = `${tileDef.name} (${displayId}) at X:${x}, Y:${y}, Z:${currentEditingZ}`;
             }
 
 
