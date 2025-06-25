@@ -2,6 +2,10 @@
 
 // Assumes gameState, logToConsole, window.mapRenderer, window.interaction, window.character are globally available
 
+// Define movement costs for automatic Z-stepping
+const Z_STEP_UP_COST = 2;
+const Z_STEP_DOWN_COST = 1;
+
 function updateTurnUI_internal() {
     const movementUI = document.getElementById("movementPointsUI");
     const actionUI = document.getElementById("actionPointsUI");
@@ -100,87 +104,208 @@ async function move_internal(direction) {
         return;
     }
 
-    // Check for NPC occupation at the target XY on the current Z.
-    // This check happens before Z-transition or walkability for simplicity.
-    // If moving through a Z-transition, NPC collision at the destination Z is more complex.
+    // Check for NPC occupation at the target XY on the current Z for standard horizontal moves.
+    // For Z-transitions or slope movements, NPC check will be done for the *final* destination.
+    let npcBlockingHorizontalMove = false;
     if (gameState.npcs && gameState.npcs.length > 0) {
         for (const npc of gameState.npcs) {
             if (npc.mapPos && npc.mapPos.x === targetX && npc.mapPos.y === targetY && npc.mapPos.z === targetZ &&
                 npc.health && npc.health.torso && npc.health.torso.current > 0) {
-                logToConsole(`Cannot move to (${targetX},${targetY},${targetZ}): Tile occupied by ${npc.name}.`);
-                return; // Prevent movement
+                // This specific log will be conditional later if slope logic bypasses this exact targetZ check
+                // logToConsole(`NPC ${npc.name} is at potential horizontal target (${targetX},${targetY},${targetZ}).`);
+                npcBlockingHorizontalMove = true; // Mark for now, will be used if standard horizontal move is attempted
+                break;
             }
         }
     }
 
-    // 1. Check for Z-Transition Tile at (targetX, targetY, currentZ = targetZ here)
-    let tileDef = null;
-    const currentLevelDataForTransition = currentMap.levels[targetZ.toString()];
-    console.log(`[TurnManager] move_internal: Checking for Z-transition at (${targetX},${targetY},${targetZ}). Current Z: ${targetZ}`);
+    // --- NEW: Slope Movement Logic ---
+    const playerCurrentLevelData = currentMap.levels[originalPos.z.toString()];
+    let playerIsOnSlope = null;
+    let slopeDef = null;
 
-    if (currentLevelDataForTransition) {
-        console.log(`[TurnManager] move_internal: Found levelData for Z: ${targetZ}`);
-        // Check middle layer first for the transition tile
-        let tileOnMiddleRaw = currentLevelDataForTransition.middle?.[targetY]?.[targetX];
-        let baseIdMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined)
-            ? tileOnMiddleRaw.tileId
-            : tileOnMiddleRaw;
-        console.log(`[TurnManager] move_internal: Middle layer tileIdRaw: ${tileOnMiddleRaw}, baseIdMiddle: ${baseIdMiddle}`);
-
-        if (baseIdMiddle && window.assetManager?.tilesets[baseIdMiddle]?.tags?.includes('z_transition')) {
-            tileDef = window.assetManager.tilesets[baseIdMiddle];
-            console.log(`[TurnManager] move_internal: Found z_transition on middle: ${baseIdMiddle}`, tileDef);
+    if (playerCurrentLevelData && window.assetManager?.tilesets) {
+        // Check middle layer of player's current tile for slope
+        let playerTileOnMiddleRaw = playerCurrentLevelData.middle?.[originalPos.y]?.[originalPos.x];
+        let playerBaseIdMiddle = (typeof playerTileOnMiddleRaw === 'object' && playerTileOnMiddleRaw !== null && playerTileOnMiddleRaw.tileId !== undefined)
+            ? playerTileOnMiddleRaw.tileId
+            : playerTileOnMiddleRaw;
+        if (playerBaseIdMiddle && window.assetManager.tilesets[playerBaseIdMiddle]?.tags?.includes('slope')) {
+            slopeDef = window.assetManager.tilesets[playerBaseIdMiddle];
         }
 
-        // If not found on middle, or middle is empty, check bottom layer
-        if (!tileDef) {
-            console.log(`[TurnManager] move_internal: No z_transition on middle or middle empty, checking bottom.`);
-            let tileOnBottomRaw = currentLevelDataForTransition.bottom?.[targetY]?.[targetX];
-            let baseIdBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined)
-                ? tileOnBottomRaw.tileId
-                : tileOnBottomRaw;
-            console.log(`[TurnManager] move_internal: Bottom layer tileIdRaw: ${tileOnBottomRaw}, baseIdBottom: ${baseIdBottom}`);
-
-            if (baseIdBottom && window.assetManager?.tilesets[baseIdBottom]?.tags?.includes('z_transition')) {
-                tileDef = window.assetManager.tilesets[baseIdBottom];
-                console.log(`[TurnManager] move_internal: Found z_transition on bottom: ${baseIdBottom}`, tileDef);
+        // If not on middle or middle not a slope, check bottom layer of player's current tile
+        if (!slopeDef) {
+            let playerTileOnBottomRaw = playerCurrentLevelData.bottom?.[originalPos.y]?.[originalPos.x];
+            let playerBaseIdBottom = (typeof playerTileOnBottomRaw === 'object' && playerTileOnBottomRaw !== null && playerTileOnBottomRaw.tileId !== undefined)
+                ? playerTileOnBottomRaw.tileId
+                : playerTileOnBottomRaw;
+            if (playerBaseIdBottom && window.assetManager.tilesets[playerBaseIdBottom]?.tags?.includes('slope')) {
+                slopeDef = window.assetManager.tilesets[playerBaseIdBottom];
             }
         }
-    } else {
-        console.log(`[TurnManager] move_internal: No currentLevelDataForTransition for Z: ${targetZ}`);
     }
 
-    console.log(`[TurnManager] move_internal: Final tileDef for Z-transition check:`, tileDef);
+    if (slopeDef && slopeDef.target_dz !== undefined) {
+        playerIsOnSlope = true;
+        logToConsole(`Player is on a slope: ${slopeDef.name} with target_dz: ${slopeDef.target_dz}`);
 
-    if (tileDef && tileDef.target_dz !== undefined) {
-        console.log(`[TurnManager] move_internal: Valid z_transition tile found. Name: ${tileDef.name}, target_dz: ${tileDef.target_dz}`);
-        const cost = tileDef.z_cost || 1;
+        const adjacentTileLevelData = currentMap.levels[originalPos.z.toString()]; // Adjacent tile check is on the same Z initially
+        let adjacentTileDef = null;
+        if (adjacentTileLevelData && window.assetManager?.tilesets) {
+            // Check middle layer of adjacent tile
+            let adjTileOnMiddleRaw = adjacentTileLevelData.middle?.[targetY]?.[targetX];
+            let adjBaseIdMiddle = (typeof adjTileOnMiddleRaw === 'object' && adjTileOnMiddleRaw !== null && adjTileOnMiddleRaw.tileId !== undefined)
+                ? adjTileOnMiddleRaw.tileId
+                : adjTileOnMiddleRaw;
+            if (adjBaseIdMiddle && window.assetManager.tilesets[adjBaseIdMiddle]) {
+                adjacentTileDef = window.assetManager.tilesets[adjBaseIdMiddle];
+            }
+
+            // If not on middle or middle empty, check bottom layer of adjacent tile
+            if (!adjacentTileDef || !adjacentTileDef.tags?.includes('solid_terrain_top')) { // Only check bottom if middle wasn't solid_terrain_top
+                let adjTileOnBottomRaw = adjacentTileLevelData.bottom?.[targetY]?.[targetX];
+                let adjBaseIdBottom = (typeof adjTileOnBottomRaw === 'object' && adjTileOnBottomRaw !== null && adjTileOnBottomRaw.tileId !== undefined)
+                    ? adjTileOnBottomRaw.tileId
+                    : adjTileOnBottomRaw;
+                if (adjBaseIdBottom && window.assetManager.tilesets[adjBaseIdBottom]) {
+                    // If middle was something (but not solid_terrain_top), don't let bottom override unless bottom is solid_terrain_top
+                    // If middle was empty, then bottom can define the tile.
+                    if (!adjacentTileDef || (adjacentTileDef && window.assetManager.tilesets[adjBaseIdBottom].tags?.includes('solid_terrain_top'))) {
+                        adjacentTileDef = window.assetManager.tilesets[adjBaseIdBottom];
+                    }
+                }
+            }
+        }
+
+        if (adjacentTileDef && adjacentTileDef.tags?.includes('solid_terrain_top')) {
+            logToConsole(`Adjacent tile (${targetX},${targetY},${originalPos.z}) is solid_terrain_top: ${adjacentTileDef.name}`);
+            const cost = slopeDef.z_cost || 1; // Use slope's z_cost
+            if (gameState.movementPointsRemaining < cost) {
+                logToConsole("Not enough movement points for slope Z-transition.");
+                return;
+            }
+
+            const finalDestZ = originalPos.z + slopeDef.target_dz;
+            logToConsole(`Attempting slope movement to (${targetX},${targetY},${finalDestZ})`);
+
+            // Simplified walkability check for the destination:
+            // Check if the tile at finalDestZ is not 'impassable' on its middle layer.
+            // And ensure it's generally a walkable spot (e.g. has a floor or is supported)
+            let isFinalDestWalkable = false;
+            const finalDestLevelData = currentMap.levels[finalDestZ.toString()];
+            if (finalDestLevelData) {
+                let finalDestTileOnMiddleRaw = finalDestLevelData.middle?.[targetY]?.[targetX];
+                let finalDestBaseIdMiddle = (typeof finalDestTileOnMiddleRaw === 'object' && finalDestTileOnMiddleRaw !== null && finalDestTileOnMiddleRaw.tileId !== undefined)
+                    ? finalDestTileOnMiddleRaw.tileId
+                    : finalDestTileOnMiddleRaw;
+
+                let isBlockedByImpassableMiddle = false;
+                if (finalDestBaseIdMiddle && window.assetManager?.tilesets[finalDestBaseIdMiddle]?.tags?.includes('impassable')) {
+                    isBlockedByImpassableMiddle = true;
+                }
+
+                if (!isBlockedByImpassableMiddle) {
+                    // Use the more comprehensive isWalkable for the final destination.
+                    // This ensures there's a floor or it's supported from below at the new Z level.
+                    isFinalDestWalkable = window.mapRenderer.isWalkable(targetX, targetY, finalDestZ);
+                }
+            }
+
+
+            if (isFinalDestWalkable) {
+                let npcAtFinalDest = false;
+                if (gameState.npcs && gameState.npcs.length > 0) {
+                    for (const npc of gameState.npcs) {
+                        if (npc.mapPos && npc.mapPos.x === targetX && npc.mapPos.y === targetY && npc.mapPos.z === finalDestZ &&
+                            npc.health && npc.health.torso && npc.health.torso.current > 0) {
+                            logToConsole(`Cannot use slope to (${targetX},${targetY},${finalDestZ}): Destination occupied by ${npc.name}.`);
+                            npcAtFinalDest = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!npcAtFinalDest) {
+                    gameState.playerPos = { x: targetX, y: targetY, z: finalDestZ };
+                    gameState.movementPointsRemaining -= cost;
+                    logToConsole(`Player used slope ${slopeDef.name} to move onto ${adjacentTileDef.name}. Moved from Z=${originalPos.z} to Z=${finalDestZ}. Cost: ${cost} MP.`, "green");
+
+                    if (gameState.viewFollowsPlayerZ) {
+                        gameState.currentViewZ = finalDestZ;
+                        const newPlayerZStr = finalDestZ.toString();
+                        if (currentMap.dimensions) {
+                            const H = currentMap.dimensions.height;
+                            const W = currentMap.dimensions.width;
+                            if (H > 0 && W > 0 && !gameState.fowData[newPlayerZStr]) {
+                                gameState.fowData[newPlayerZStr] = Array(H).fill(null).map(() => Array(W).fill('hidden'));
+                                logToConsole(`FOW data initialized for Z-level ${newPlayerZStr} after slope Z-transition.`);
+                            }
+                        }
+                    }
+                    // Common post-move updates
+                    if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) {
+                        gameState.attackerMapPos = { ...gameState.playerPos };
+                    }
+                    gameState.playerMovedThisTurn = true;
+                    updateTurnUI_internal();
+                    window.mapRenderer.scheduleRender();
+                    window.interaction.detectInteractableItems();
+                    window.interaction.showInteractableItems();
+                    return; // Slope movement action complete
+                }
+            } else {
+                logToConsole(`Slope movement destination (${targetX},${targetY},${finalDestZ}) is not walkable or is blocked.`);
+                // Do not return yet, fall through to standard z-transition/horizontal checks
+            }
+        }
+    }
+    // --- END OF NEW Slope Movement Logic ---
+
+    // --- Existing Z-Transition Logic (Stairs, Ladders) ---
+    // This logic is for explicit z-transition tiles AT the target location.
+    let explicitZTransitionDef = null;
+    const levelDataForExplicitZ = currentMap.levels[originalPos.z.toString()];
+
+    if (levelDataForExplicitZ) {
+        let tileOnMiddleRaw = levelDataForExplicitZ.middle?.[targetY]?.[targetX];
+        let baseIdMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
+        if (baseIdMiddle && window.assetManager?.tilesets[baseIdMiddle]?.tags?.includes('z_transition') && !window.assetManager?.tilesets[baseIdMiddle]?.tags?.includes('slope')) {
+            explicitZTransitionDef = window.assetManager.tilesets[baseIdMiddle];
+        }
+        if (!explicitZTransitionDef) {
+            let tileOnBottomRaw = levelDataForExplicitZ.bottom?.[targetY]?.[targetX];
+            let baseIdBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
+            if (baseIdBottom && window.assetManager?.tilesets[baseIdBottom]?.tags?.includes('z_transition') && !window.assetManager?.tilesets[baseIdBottom]?.tags?.includes('slope')) {
+                explicitZTransitionDef = window.assetManager.tilesets[baseIdBottom];
+            }
+        }
+    }
+
+    if (explicitZTransitionDef) {
+        const cost = explicitZTransitionDef.z_cost || 1;
         if (gameState.movementPointsRemaining < cost) {
-            logToConsole("Not enough movement points for Z-transition.");
+            logToConsole("Not enough movement points for explicit Z-transition.");
             return;
         }
-
-        const finalDestZ = targetZ + tileDef.target_dz;
-        // Check if the destination of the Z-transition is walkable
+        const finalDestZ = originalPos.z + explicitZTransitionDef.target_dz;
         if (window.mapRenderer.isWalkable(targetX, targetY, finalDestZ)) {
-            // Also check for NPC at destination of Z-transition
             let npcAtFinalDest = false;
+            // NPC Check for explicit Z-transition destination
             if (gameState.npcs && gameState.npcs.length > 0) {
                 for (const npc of gameState.npcs) {
-                    if (npc.mapPos && npc.mapPos.x === targetX && npc.mapPos.y === targetY && npc.mapPos.z === finalDestZ &&
-                        npc.health && npc.health.torso && npc.health.torso.current > 0) {
-                        logToConsole(`Cannot use Z-transition to (${targetX},${targetY},${finalDestZ}): Destination occupied by ${npc.name}.`);
+                    if (npc.mapPos && npc.mapPos.x === targetX && npc.mapPos.y === targetY && npc.mapPos.z === finalDestZ && npc.health?.torso?.current > 0) {
+                        logToConsole(`Cannot use explicit Z-transition to (${targetX},${targetY},${finalDestZ}): Destination occupied by ${npc.name}.`);
                         npcAtFinalDest = true;
                         break;
                     }
                 }
             }
-
             if (!npcAtFinalDest) {
                 gameState.playerPos = { x: targetX, y: targetY, z: finalDestZ };
                 gameState.movementPointsRemaining -= cost;
-                logToConsole(`Player used Z-transition: ${tileDef.name}. Moved from Z=${targetZ} to Z=${finalDestZ}. Cost: ${cost} MP.`, "cyan");
-
+                logToConsole(`Player used explicit Z-transition: ${explicitZTransitionDef.name}. Moved from Z=${originalPos.z} to Z=${finalDestZ}. Cost: ${cost} MP.`, "cyan");
+                // Common post-move updates
                 if (gameState.viewFollowsPlayerZ) {
                     gameState.currentViewZ = finalDestZ;
                     const newPlayerZStr = finalDestZ.toString();
@@ -193,55 +318,141 @@ async function move_internal(direction) {
                         }
                     }
                 }
-                // Common post-move updates
-                if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) {
-                    gameState.attackerMapPos = { ...gameState.playerPos };
-                }
+                if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) gameState.attackerMapPos = { ...gameState.playerPos };
                 gameState.playerMovedThisTurn = true;
                 updateTurnUI_internal();
                 window.mapRenderer.scheduleRender();
                 window.interaction.detectInteractableItems();
                 window.interaction.showInteractableItems();
-                return; // Movement action complete
+                return;
             }
-            // If npcAtFinalDest is true, we fall through here, and the Z-transition is aborted.
-            // The code will then attempt standard horizontal movement.
         } else {
-            logToConsole(`Z-transition '${tileDef.name}' destination (${targetX},${targetY},${finalDestZ}) is not walkable.`);
-            return; // Z-transition failed due to unwalkable destination.
+            logToConsole(`Explicit Z-transition '${explicitZTransitionDef.name}' destination (${targetX},${targetY},${finalDestZ}) is not walkable.`);
+            // Do not return yet, allow falling through to auto step up/down or horizontal.
         }
     }
-    // If no z-transition was found OR if it was found but aborted (e.g. NPC at dest), try horizontal move.
 
-    // 2. Standard Horizontal Movement 
-    if (window.mapRenderer.isWalkable(targetX, targetY, targetZ)) {
-        // NPC check was already done above for the current Z target.
-        // If isWalkable is true, and no NPC, proceed.
-        if (targetX === originalPos.x && targetY === originalPos.y && targetZ === originalPos.z) {
-            // This case should ideally not be reached if isWalkable failed for a different tile
-            // or if boundary checks failed. But as a fallback:
-            logToConsole("Can't move that way (already there or initial check failed).");
-            return;
+    // --- New Step-Up/Step-Down Logic ---
+    const Z_STEP_UP_COST = 2; // Define cost for stepping up
+    const Z_STEP_DOWN_COST = 1; // Define cost for stepping down
+
+    // Attempt 1: Move on Current Z-Level (targetZ is originalPos.z here)
+    let movedHorizontally = false;
+    if (!npcBlockingHorizontalMove && window.mapRenderer.isWalkable(targetX, targetY, originalPos.z)) {
+        if (!(targetX === originalPos.x && targetY === originalPos.y)) { // Ensure actual movement
+            gameState.playerPos = { x: targetX, y: targetY, z: originalPos.z };
+            gameState.movementPointsRemaining--; // Standard horizontal cost
+            logToConsole(`Moved horizontally to (${gameState.playerPos.x}, ${gameState.playerPos.y}, Z:${gameState.playerPos.z}). Moves left: ${gameState.movementPointsRemaining}`);
+            movedHorizontally = true;
         }
+    }
 
-        gameState.playerPos = { x: targetX, y: targetY, z: targetZ };
-        gameState.movementPointsRemaining--;
-        logToConsole(`Moved to (${gameState.playerPos.x}, ${gameState.playerPos.y}, Z:${gameState.playerPos.z}). Moves left: ${gameState.movementPointsRemaining}`);
-
+    if (movedHorizontally) {
         // Common post-move updates
-        if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) {
-            gameState.attackerMapPos = { ...gameState.playerPos };
-        }
+        if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) gameState.attackerMapPos = { ...gameState.playerPos };
         gameState.playerMovedThisTurn = true;
         updateTurnUI_internal();
         window.mapRenderer.scheduleRender();
         window.interaction.detectInteractableItems();
         window.interaction.showInteractableItems();
-        return; // Movement action complete
+        return;
     }
 
-    // 3. Invalid Move (if neither Z-transition nor standard horizontal move was successful)
-    logToConsole("Can't move that way (target is not walkable or z-transition failed).");
+    // If horizontal move on current Z didn't happen (blocked or occupied by NPC for horizontal)
+    // Attempt 2: Step Up
+    if (gameState.movementPointsRemaining >= Z_STEP_UP_COST) {
+        const zUp = originalPos.z + 1;
+        let isTargetCurrentZBlocked = !window.mapRenderer.isWalkable(targetX, targetY, originalPos.z); // Check if current Z is blocked
+        // Further refine "blocked": is it a low obstacle? For now, any non-walkable tile at current Z is a candidate for stepping over.
+        // This could be enhanced by checking the specific type of tile at (targetX, targetY, originalPos.z)
+
+        if (isTargetCurrentZBlocked && window.mapRenderer.isWalkable(targetX, targetY, zUp)) {
+            let npcAtStepUpDest = false;
+            if (gameState.npcs && gameState.npcs.length > 0) {
+                for (const npc of gameState.npcs) {
+                    if (npc.mapPos && npc.mapPos.x === targetX && npc.mapPos.y === targetY && npc.mapPos.z === zUp && npc.health?.torso?.current > 0) {
+                        npcAtStepUpDest = true; break;
+                    }
+                }
+            }
+            if (!npcAtStepUpDest) {
+                gameState.playerPos = { x: targetX, y: targetY, z: zUp };
+                gameState.movementPointsRemaining -= Z_STEP_UP_COST;
+                logToConsole(`Stepped UP to (${targetX},${targetY},${zUp}). Cost: ${Z_STEP_UP_COST} MP.`, "blue");
+                // Common post-move updates
+                if (gameState.viewFollowsPlayerZ) {
+                    gameState.currentViewZ = zUp;
+                    const newPlayerZStr = zUp.toString();
+                    if (currentMap.dimensions) {
+                        const H = currentMap.dimensions.height;
+                        const W = currentMap.dimensions.width;
+                        if (H > 0 && W > 0 && !gameState.fowData[newPlayerZStr]) {
+                            gameState.fowData[newPlayerZStr] = Array(H).fill(null).map(() => Array(W).fill('hidden'));
+                            logToConsole(`FOW data initialized for Z-level ${newPlayerZStr} after step-up.`);
+                        }
+                    }
+                }
+                if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) gameState.attackerMapPos = { ...gameState.playerPos };
+                gameState.playerMovedThisTurn = true;
+                updateTurnUI_internal();
+                window.mapRenderer.scheduleRender();
+                window.interaction.detectInteractableItems();
+                window.interaction.showInteractableItems();
+                return;
+            }
+        }
+    }
+
+    // Attempt 3: Step Down
+    if (gameState.movementPointsRemaining >= Z_STEP_DOWN_COST) {
+        const zDown = originalPos.z - 1;
+        // Condition for stepping down: current Z is "empty" or "void-like"
+        // This can be inferred if (targetX, targetY, originalPos.z) is NOT walkable,
+        // AND there isn't a high wall/solid_terrain_top preventing downward view/movement.
+        // For simplicity, we'll use !isWalkable for current Z again.
+        // A more precise check might involve looking at tile tags at (targetX, targetY, originalPos.z) for 'transparent_floor' or similar.
+        let isTargetCurrentZEmptyOrVoid = !window.mapRenderer.isWalkable(targetX, targetY, originalPos.z);
+
+
+        if (isTargetCurrentZEmptyOrVoid && window.mapRenderer.isWalkable(targetX, targetY, zDown)) {
+            let npcAtStepDownDest = false;
+            if (gameState.npcs && gameState.npcs.length > 0) {
+                for (const npc of gameState.npcs) {
+                    if (npc.mapPos && npc.mapPos.x === targetX && npc.mapPos.y === targetY && npc.mapPos.z === zDown && npc.health?.torso?.current > 0) {
+                        npcAtStepDownDest = true; break;
+                    }
+                }
+            }
+            if (!npcAtStepDownDest) {
+                gameState.playerPos = { x: targetX, y: targetY, z: zDown };
+                gameState.movementPointsRemaining -= Z_STEP_DOWN_COST;
+                logToConsole(`Stepped DOWN to (${targetX},${targetY},${zDown}). Cost: ${Z_STEP_DOWN_COST} MP.`, "purple");
+                // Common post-move updates
+                if (gameState.viewFollowsPlayerZ) {
+                    gameState.currentViewZ = zDown;
+                    const newPlayerZStr = zDown.toString();
+                    if (currentMap.dimensions) {
+                        const H = currentMap.dimensions.height;
+                        const W = currentMap.dimensions.width;
+                        if (H > 0 && W > 0 && !gameState.fowData[newPlayerZStr]) {
+                            gameState.fowData[newPlayerZStr] = Array(H).fill(null).map(() => Array(W).fill('hidden'));
+                            logToConsole(`FOW data initialized for Z-level ${newPlayerZStr} after step-down.`);
+                        }
+                    }
+                }
+                if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) gameState.attackerMapPos = { ...gameState.playerPos };
+                gameState.playerMovedThisTurn = true;
+                updateTurnUI_internal();
+                window.mapRenderer.scheduleRender();
+                window.interaction.detectInteractableItems();
+                window.interaction.showInteractableItems();
+                return;
+            }
+        }
+    }
+
+    // If none of the above movements were successful
+    logToConsole("Can't move that way (target is not walkable, slope/z-transition failed, step-up/down failed, or occupied).");
 }
 
 window.turnManager = {
