@@ -41,19 +41,38 @@ function _getActionsForItem(it) {
 }
 
 function _performAction(action, it) {
-    const { x, y, id } = it;
+    const { x, y, z, id } = it; // 'it' now contains x, y, z, id, name
 
-    const currentMap = window.mapRenderer.getCurrentMapData(); // Assumes mapRenderer is globally available
-    if (!currentMap || !currentMap.layers.building) {
-        logToConsole("Error: Building layer not found in current map data."); // Assumes logToConsole is global
+    const currentMap = window.mapRenderer.getCurrentMapData();
+    if (!currentMap || !currentMap.levels) {
+        logToConsole("Error: Map data or levels not found for _performAction.");
         return;
     }
-    const B = currentMap.layers.building;
-    let targetTileId = B[y]?.[x];
 
-    // Added check for it.id !== "FLOOR_PROXY" because FLOOR_PROXY won't have a targetTileId in the building layer
-    if (!targetTileId && it.id !== "FLOOR_PROXY") {
-        logToConsole(`Error: No building tile found at ${x},${y} to perform action.`);
+    const zStr = z.toString();
+    const levelData = currentMap.levels[zStr];
+    if (!levelData || !levelData.middle) { // Assuming doors/interactables that change state are on 'middle'
+        logToConsole(`Error: Level data or middle layer not found for Z-level ${z} at (${x},${y}) to perform action.`);
+        return;
+    }
+
+    // Get the actual tile ID from the map (it might be an object)
+    let tileOnMapRaw = levelData.middle[y]?.[x];
+    // TODO: Determine if we need to check 'bottom' as well, or if 'middle' is always the target for state changes.
+    // For doors, 'middle' is correct. For items that might be on 'bottom', this needs thought.
+    // For now, focusing on 'middle' as doors are the primary issue.
+
+    let currentTileIdOnMap = (typeof tileOnMapRaw === 'object' && tileOnMapRaw !== null && tileOnMapRaw.tileId !== undefined)
+        ? tileOnMapRaw.tileId
+        : tileOnMapRaw;
+
+    // it.id is the ID of the tile definition (e.g., "WDH"). 
+    // currentTileIdOnMap is what's currently on the map at that x,y,z.
+    // For state changes (like opening a door), currentTileIdOnMap is what we compare against DOOR_OPEN_MAP etc.
+    // And it.id (the definition ID) is used for getting the name.
+
+    if (!currentTileIdOnMap && action !== "Cancel") { // Allow "Cancel" even if tile somehow vanished
+        logToConsole(`Error: No tile found on middle layer at (${x},${y}, Z:${z}) to perform action '${action}'. Expected tile around ID: ${id}`);
         return;
     }
 
@@ -61,16 +80,17 @@ function _performAction(action, it) {
         console.error("Interaction module not initialized with AssetManager for _performAction.");
         return;
     }
-    const tileName = assetManagerInstance.tilesets[id]?.name || id;
+    const tileName = assetManagerInstance.tilesets[id]?.name || id; // Use 'id' from 'it' for the base name
 
-    if (action === "Open" && DOOR_OPEN_MAP[targetTileId]) {
-        B[y][x] = DOOR_OPEN_MAP[targetTileId];
+    // Actions that modify the map state
+    if (action === "Open" && DOOR_OPEN_MAP[currentTileIdOnMap]) {
+        levelData.middle[y][x] = DOOR_OPEN_MAP[currentTileIdOnMap];
         logToConsole(`Opened ${tileName}`);
-    } else if (action === "Close" && DOOR_CLOSE_MAP[targetTileId]) {
-        B[y][x] = DOOR_CLOSE_MAP[targetTileId];
+    } else if (action === "Close" && DOOR_CLOSE_MAP[currentTileIdOnMap]) {
+        levelData.middle[y][x] = DOOR_CLOSE_MAP[currentTileIdOnMap];
         logToConsole(`Closed ${tileName}`);
-    } else if (action === "Break Down" && DOOR_BREAK_MAP[targetTileId]) {
-        B[y][x] = DOOR_BREAK_MAP[targetTileId];
+    } else if (action === "Break Down" && DOOR_BREAK_MAP[currentTileIdOnMap]) {
+        levelData.middle[y][x] = DOOR_BREAK_MAP[currentTileIdOnMap];
         logToConsole(`Broke ${tileName}`);
     } else if (action === "Inspect" || action === "Loot") {
         // Get tile definition to check its tags
@@ -118,40 +138,88 @@ window.interaction = {
     },
 
     detectInteractableItems: function () {
-        console.log("detectInteractableItems called. Current assetManagerInstance:", assetManagerInstance);
-        const R = 1;
-        const { x: px, y: py } = gameState.playerPos; // Assumes gameState is global
+        // console.log("detectInteractableItems called. Current assetManagerInstance:", assetManagerInstance);
+        const R = 1; // Interaction radius
+        const playerPos = gameState.playerPos;
+
+        if (!playerPos || typeof playerPos.x !== 'number' || typeof playerPos.y !== 'number' || typeof playerPos.z !== 'number') {
+            // console.warn("detectInteractableItems: Player position is invalid or incomplete.", playerPos);
+            gameState.interactableItems = [];
+            return;
+        }
+
+        const { x: px, y: py, z: pz } = playerPos;
         gameState.interactableItems = [];
 
-        const currentMap = window.mapRenderer.getCurrentMapData(); // Assumes mapRenderer is global
-        if (!currentMap || !currentMap.layers || !currentMap.dimensions) return;
+        const currentMap = window.mapRenderer.getCurrentMapData();
+        if (!currentMap || !currentMap.levels || !currentMap.dimensions) {
+            // console.warn("detectInteractableItems: Map data is invalid or incomplete.");
+            return;
+        }
 
-        if (!assetManagerInstance) {
-            console.error("Interaction module not initialized with AssetManager for detectInteractableItems.");
+        if (!assetManagerInstance || typeof assetManagerInstance.getTileset !== 'function') {
+            console.error("Interaction module's assetManagerInstance is not valid for detectInteractableItems.");
             return;
         }
 
         const mapHeight = currentMap.dimensions.height;
         const mapWidth = currentMap.dimensions.width;
+        const currentZ = pz; // Interact on the player's current Z level
+        const zStr = currentZ.toString();
+        const levelData = currentMap.levels[zStr];
+
+        if (!levelData) {
+            // console.warn(`detectInteractableItems: No level data for Z-level ${currentZ}.`);
+            return;
+        }
 
         for (let y_scan = Math.max(0, py - R); y_scan <= Math.min(mapHeight - 1, py + R); y_scan++) {
             for (let x_scan = Math.max(0, px - R); x_scan <= Math.min(mapWidth - 1, px + R); x_scan++) {
-                let tileId = null;
-                if (currentMap.layers.item?.[y_scan]?.[x_scan]) {
-                    tileId = currentMap.layers.item[y_scan][x_scan];
-                } else if (currentMap.layers.building?.[y_scan]?.[x_scan]) {
-                    tileId = currentMap.layers.building[y_scan][x_scan];
+                let tileIdFromMap = null;
+                let sourceLayer = null; // To help debug or prioritize if needed
+
+                // Prioritize 'middle' layer for interactables like doors, containers
+                if (levelData.middle?.[y_scan]?.[x_scan]) {
+                    tileIdFromMap = levelData.middle[y_scan][x_scan];
+                    sourceLayer = 'middle';
+                }
+                // If nothing on 'middle', check 'bottom' (e.g., for items on the floor)
+                else if (levelData.bottom?.[y_scan]?.[x_scan]) {
+                    tileIdFromMap = levelData.bottom[y_scan][x_scan];
+                    sourceLayer = 'bottom';
                 }
 
-                if (!tileId) continue;
+                if (!tileIdFromMap) continue;
 
-                const tileDef = assetManagerInstance.tilesets[tileId];
-                if (tileDef && tileDef.tags && tileDef.tags.includes("interactive")) {
-                    gameState.interactableItems.push({ x: x_scan, y: y_scan, id: tileId, name: tileDef.name });
+                // Handle cases where tileIdFromMap might be an object {tileId: "actualID", ...}
+                const baseTileId = (typeof tileIdFromMap === 'object' && tileIdFromMap !== null && tileIdFromMap.tileId !== undefined)
+                    ? tileIdFromMap.tileId
+                    : tileIdFromMap;
+
+                if (!baseTileId) continue; // Skip if after extraction, baseTileId is empty or null
+
+                const tileDef = assetManagerInstance.tilesets[baseTileId];
+
+                if (tileDef && tileDef.tags &&
+                    (tileDef.tags.includes("interactive") || tileDef.tags.includes("door") || tileDef.tags.includes("container"))) {
+
+                    // Ensure the item isn't already added (e.g. if player is standing on it and it's in 0,0 relative)
+                    // This check is basic; more robust might involve unique IDs if items could stack or have instances
+                    const alreadyExists = gameState.interactableItems.some(item => item.x === x_scan && item.y === y_scan && item.z === currentZ && item.id === baseTileId);
+                    if (!alreadyExists) {
+                        gameState.interactableItems.push({
+                            x: x_scan,
+                            y: y_scan,
+                            z: currentZ,
+                            id: baseTileId,
+                            name: tileDef.name || baseTileId, // Fallback to ID if name is missing
+                            // originalTileData: tileIdFromMap // Optionally store the raw tile data from map
+                        });
+                    }
                 }
             }
         }
-        // Removed FLOOR_PROXY detection logic
+        // console.log("Interactable items detected:", gameState.interactableItems);
     },
 
     showInteractableItems: function () {

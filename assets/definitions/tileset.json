@@ -1281,5 +1281,21 @@
     "tags": [ "landscape", "z_transition", "hole", "transparent_floor", "allows_vision" ],
     "target_dz": -1,
     "z_cost": 1
+  },
+  "DSL_U": {
+    "sprite": "▲",
+    "name": "Dirt Slope Up",
+    "color": "#A52A2A",
+    "tags": [ "landscape", "z_transition", "slope", "dirt_slope" ],
+    "target_dz": 1,
+    "z_cost": 2
+  },
+  "DSL_D": {
+    "sprite": "▼",
+    "name": "Dirt Slope Down",
+    "color": "#A52A2A",
+    "tags": [ "landscape", "z_transition", "slope", "dirt_slope" ],
+    "target_dz": -1,
+    "z_cost": 1
   }
 }
