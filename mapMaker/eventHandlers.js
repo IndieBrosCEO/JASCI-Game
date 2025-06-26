@@ -2,19 +2,19 @@
 "use strict";
 
 // Data Management Imports
-import { getMapData, snapshot, undo as undoData, redo as redoData, setPlayerStart as setPlayerStartInData, addPortalToMap, removePortalFromMap, updatePortalInMap, getNextPortalId as getNextPortalIdFromData, deleteZLevel as deleteZLevelFromData } from './mapDataManager.js';
+import { getMapData, snapshot, undo as undoData, redo as redoData, setPlayerStart as setPlayerStartInData, addPortalToMap, removePortalFromMap, updatePortalInMap, getNextPortalId as getNextPortalIdFromData, deleteZLevel as deleteZLevelFromData, addNpcToMap, removeNpcFromMap, getNextNpcId as getNextNpcIdFromData } from './mapDataManager.js'; // Added NPC data functions
 
 // Tile Logic Imports
 import { placeTile, ensureTileIsObject, getTopmostTileAt } from './tileManager.js'; // Assuming getTopmostTileAt is in tileManager
 
 // UI Update Function Imports
-import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerStartDisplay, updateToolButtonUI, updateSelectedPortalInfoUI, updateContainerInventoryUI, updateLockPropertiesUI, updateTilePropertyEditorUI, getRect3DDepth, updateUIFromLoadedMap, populateItemSelectDropdown } from './uiManager.js';
+import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerStartDisplay, updateToolButtonUI, updateSelectedPortalInfoUI, updateContainerInventoryUI, updateLockPropertiesUI, updateTilePropertyEditorUI, getRect3DDepth, updateUIFromLoadedMap, populateItemSelectDropdown, updateSelectedNpcInfoUI, populateNpcBaseTypeDropdown } from './uiManager.js'; // Added NPC UI functions
 
 // Tool Logic Imports
-import { handlePlayerStartTool, handlePortalToolClick, handleSelectInspectTool, floodFill2D, floodFill3D, drawLine, drawRect, defineStamp, applyStamp } from './toolManager.js';
+import { handlePlayerStartTool, handlePortalToolClick, handleSelectInspectTool, floodFill2D, floodFill3D, drawLine, drawRect, defineStamp, applyStamp, handleNpcToolClick } from './toolManager.js'; // Added handleNpcToolClick
 
 // Configuration and Utilities
-import { LAYER_TYPES, LOG_MSG, ERROR_MSG, DEFAULT_3D_DEPTH } from './config.js';
+import { LAYER_TYPES, LOG_MSG, ERROR_MSG, DEFAULT_3D_DEPTH, NPC_ID_PREFIX } from './config.js'; // Added NPC_ID_PREFIX
 import { logToConsole } from './config.js'; // Assuming logToConsole is also in config.js or a utility module
 
 // Import/Export Logic
@@ -25,6 +25,13 @@ import { convertAndSetLoadedMapData, exportMapFile } from './importExport.js';
 let assetManagerInstance = null; // Reference to the global AssetManager
 let appState = null;             // Holds currentTool, currentTileId, selections, grid dimensions, current Z, etc.
 // This will replace individual currentUiState and mapContext type variables.
+
+// Helper function to get the currently selected base NPC ID from the dropdown
+function getSelectedBaseNpcId() {
+    const selectElement = document.getElementById('npcBaseTypeSelect');
+    return selectElement ? selectElement.value : null;
+}
+
 
 // --- Initialization ---
 /**
@@ -61,7 +68,7 @@ export function handleCellMouseDown(event) {
     const mapData = getMapData();
 
     // Common logic: Clear selections if not using a selection-type tool.
-    if (appState.currentTool !== "selectInspect" && appState.currentTool !== "portal") {
+    if (appState.currentTool !== "selectInspect" && appState.currentTool !== "portal" && appState.currentTool !== "npc") {
         clearAllSelections(); // Helper function to clear selection states and update their UIs
     }
 
@@ -134,6 +141,16 @@ export function handleCellMouseDown(event) {
             break;
         case "selectInspect":
             handleSelectInspectTool(x, y, z, mapData, appState, assetManagerInstance, toolInteractionInterface);
+            break;
+        case "npc": // Added NPC tool case
+            // The toolInteractionInterface needs to include updateNpcEditorUI
+            const npcToolInteractionInterface = {
+                ...toolInteractionInterface.getUIRenderers(), // renderGrid
+                updateNpcEditorUI: (npc, npcDefs) => updateSelectedNpcInfoUI(npc, npcDefs || assetManagerInstance.npcDefinitions),
+                clearOtherSelections: clearAllSelections, // or a more specific version if needed
+                showStatusMessage: (message, type) => { /* TODO: Implement showStatusMessage if desired */ console.log(`Status (${type}): ${message}`); }
+            };
+            handleNpcToolClick(x, y, z, mapData, appState, assetManagerInstance, npcToolInteractionInterface);
             break;
         case "fill":
             floodFill2D(x, y, z, appState.currentTileId, mapData, assetManagerInstance, toolInteractionInterface);
@@ -336,6 +353,7 @@ function handleGlobalKeyDown(event) {
         case "s": newTool = "stamp"; break;
         case "p": newTool = "portal"; break;
         case "i": newTool = "selectInspect"; break;
+        case "n": newTool = "npc"; break; // Added N for NPC tool
         case "e": // Eraser tile selection + brush tool
             appState.currentTileId = ""; // Select eraser tile
             updatePaletteSelectionUI(""); // Update palette UI
@@ -363,8 +381,12 @@ function handleEscapeKey() {
         appState.dragStart = null;
         logToConsole("Drag operation cancelled.");
         triggerFullGridRender(); // Remove any visual drag cues
-    } else if (appState.selectedPortal || appState.selectedNpc || appState.selectedTileForInventory || appState.selectedGenericTile) {
-        clearAllSelections();
+    } else if (appState.selectedPortal || appState.selectedNpc || appState.selectedTileForInventory || appState.selectedGenericTile) { // selectedNpc check is implicitly handled by clearAllSelections if tool is not NPC
+        clearAllSelections(); // This will call triggerAllEditorUIsUpdate, which updates NPC panel too
+        if (appState.selectedNpc) { // If NPC tool is active, clearAllSelections might not clear selectedNpc
+            appState.selectedNpc = null;
+            updateSelectedNpcInfoUI(null, assetManagerInstance.npcDefinitions); // Explicitly update NPC UI
+        }
         logToConsole("All selections cleared via Escape key.");
         triggerFullGridRender(); // Update visual selections on grid
     } else if (appState.stampData3D) {
@@ -456,6 +478,13 @@ function setupButtonEventListeners() {
 
     // Brush Size
     el('brushSizeInput', 'change', handleBrushSizeChange);
+
+    // NPC Configuration Panel
+    el('saveNpcPropertiesBtn', 'click', handleSaveNpcPropertiesClick);
+    el('removeNpcBtn', 'click', handleRemoveSelectedNpcClick);
+    el('toggleNpcConfigBtn', 'click', () => toggleSectionVisibility('npcConfigContent', 'toggleNpcConfigBtn', 'NPC'));
+    // Optional: Listener for npcBaseTypeSelect if needed for immediate UI changes upon selection
+    // el('npcBaseTypeSelect', 'change', handleNpcBaseTypeChange); 
 }
 
 // --- Generic Toggle Function ---
@@ -519,9 +548,18 @@ function handleToolButtonClick(toolName) {
     }
     appState.currentTool = toolName;
     updateToolButtonUI(toolName);
-    if (toolName !== "selectInspect" && toolName !== "portal") {
-        clearAllSelections();
+
+    if (toolName !== "selectInspect" && toolName !== "portal" && toolName !== "npc") {
+        clearAllSelections(); // This will also call updateSelectedNpcInfoUI
+    } else if (toolName === "npc") {
+        // When NPC tool is selected, ensure panel is visible (updateSelectedNpcInfoUI handles this based on selectedNpc)
+        updateSelectedNpcInfoUI(appState.selectedNpc, assetManagerInstance.npcDefinitions);
+    } else if (appState.selectedNpc && toolName !== "npc" && toolName !== "selectInspect") {
+        // If switching away from NPC tool (and not to selectInspect which might keep it), clear selection
+        appState.selectedNpc = null;
+        updateSelectedNpcInfoUI(null, assetManagerInstance.npcDefinitions); // Hide panel
     }
+
 
     // If switching away from a tool that uses dragStart, or to a tool that clears it (like stamp)
     if ((appState.currentTool === "line" || appState.currentTool === "rect") && toolName !== appState.currentTool) {
@@ -912,20 +950,24 @@ function triggerFullGridRender() {
 /** Centralized function to update all editor panel UIs. */
 function triggerAllEditorUIsUpdate() {
     const mapData = getMapData();
+    const npcDefs = assetManagerInstance ? assetManagerInstance.npcDefinitions : {};
     updateSelectedPortalInfoUI(appState.selectedPortal);
     updateContainerInventoryUI(appState.selectedTileForInventory, mapData); // Also calls updateLockPropertiesUI
     updateTilePropertyEditorUI(appState.selectedGenericTile, mapData);
-    // if (typeof updateSelectedNpcInfoUI === 'function') updateSelectedNpcInfoUI(appState.selectedNpc, mapData);
+    updateSelectedNpcInfoUI(appState.selectedNpc, npcDefs); // Updated to pass npcDefs
     updatePlayerStartDisplay(mapData.startPos); // Though less an "editor", it's part of selected state display
 }
 
 /** Clears all selection states and updates relevant UI parts. */
 function clearAllSelections() {
     appState.selectedPortal = null;
-    appState.selectedNpc = null;
+    // appState.selectedNpc = null; // This is now handled by updateSelectedNpcInfoUI when tool changes or selection is made
+    if (appState.currentTool !== 'npc') { // Only clear selectedNpc if not actively using NPC tool
+        appState.selectedNpc = null;
+    }
     appState.selectedTileForInventory = null;
     appState.selectedGenericTile = null;
-    triggerAllEditorUIsUpdate(); // This will hide/clear editor panels
+    triggerAllEditorUIsUpdate(); // This will hide/clear editor panels, including NPC panel if selectedNpc is null
 }
 
 /** Clears selections and also any active previews (like stamp preview). */
@@ -983,4 +1025,70 @@ function handleSaveMapMetadataClick() {
     // For example, if there's a title showing the current map name.
     // updatePlayerStartDisplay(mapData.startPos); // This also updates map name if it was part of it
     // For now, export will pick up the new name.
+}
+
+
+// --- NPC Panel Event Handlers ---
+
+function handleSaveNpcPropertiesClick() {
+    const mapData = getMapData();
+    if (!assetManagerInstance.npcDefinitions) {
+        alert(ERROR_MSG.NO_NPC_DEFINITIONS_LOADED || "NPC definitions not loaded, cannot save NPC.");
+        return;
+    }
+
+    const selectedBaseId = getSelectedBaseNpcId();
+    const instanceName = document.getElementById('npcInstanceNameInput')?.value.trim();
+
+    if (appState.selectedNpc) { // Editing existing NPC
+        snapshot();
+        const npcToUpdate = mapData.npcs.find(n => n.id === appState.selectedNpc.id);
+        if (npcToUpdate) {
+            npcToUpdate.name = instanceName || (assetManagerInstance.npcDefinitions[npcToUpdate.definitionId]?.name || npcToUpdate.id); // Instance name or fallback to base or ID
+            // If base type changed in UI (not standard for this simple setup, but if it were):
+            // npcToUpdate.definitionId = selectedBaseId;
+            // Then re-template other properties if needed, or just update sprite/color if they are also editable instance props.
+            // For now, only name is directly instanced. Sprite/color will come from definitionId.
+
+            // Example if sprite/color were instance-editable:
+            // npcToUpdate.sprite = document.getElementById('npcSpriteInput')?.value || assetManagerInstance.npcDefinitions[npcToUpdate.definitionId]?.sprite;
+            // npcToUpdate.color = document.getElementById('npcColorInput')?.value || assetManagerInstance.npcDefinitions[npcToUpdate.definitionId]?.color;
+
+            logToConsole(LOG_MSG.NPC_PROPS_SAVED(npcToUpdate.id));
+            appState.selectedNpc = npcToUpdate; // Ensure appState ref is the one from mapData
+        } else {
+            alert("Error: Selected NPC not found in map data. Cannot save.");
+            return;
+        }
+    } else { // Placing a new NPC (This case is primarily handled by handleNpcToolClick, but save could finalize)
+        // This block might be redundant if handleNpcToolClick fully creates and selects the NPC.
+        // However, if the NPC tool only sets a "pending placement" state, this would be where it's finalized.
+        // For now, assume handleNpcToolClick does the creation.
+        // If we allow creating an NPC from the panel without a map click, this would be different.
+        // For now, this primarily handles updates.
+        alert("No NPC selected to save. Use the NPC tool to place an NPC first.");
+        return;
+    }
+
+    updateSelectedNpcInfoUI(appState.selectedNpc, assetManagerInstance.npcDefinitions);
+    triggerFullGridRender();
+}
+
+function handleRemoveSelectedNpcClick() {
+    if (!appState.selectedNpc) {
+        alert("No NPC selected to remove.");
+        return;
+    }
+    if (!confirm(`Are you sure you want to remove NPC "${appState.selectedNpc.name || appState.selectedNpc.id}"?`)) {
+        return;
+    }
+
+    snapshot();
+    const removed = removeNpcFromMap(appState.selectedNpc.id); // Removes from mapData
+    if (removed) {
+        logToConsole(LOG_MSG.REMOVED_NPC(appState.selectedNpc.id));
+    }
+    appState.selectedNpc = null; // Clear selection
+    updateSelectedNpcInfoUI(null, assetManagerInstance.npcDefinitions); // Update editor UI
+    triggerFullGridRender(); // Update grid to remove NPC marker
 }

@@ -1,9 +1,9 @@
 // mapMaker/toolManager.js
 "use strict";
 
-import { snapshot, setPlayerStart as setPlayerStartInData, addPortalToMap, getNextPortalId as getNextPortalIdFromData } from './mapDataManager.js';
+import { snapshot, setPlayerStart as setPlayerStartInData, addPortalToMap, getNextPortalId as getNextPortalIdFromData, addNpcToMap, getNextNpcId as getNextNpcIdFromData } from './mapDataManager.js'; // Added addNpcToMap and getNextNpcId
 import { placeTile, getTopmostTileAt, getLayerForTile } from './tileManager.js'; // Added getLayerForTile
-import { DEFAULT_PORTAL_TARGET_MAP_ID, DEFAULT_PORTAL_TARGET_X, DEFAULT_PORTAL_TARGET_Y, DEFAULT_PORTAL_TARGET_Z, DEFAULT_PORTAL_NAME, PORTAL_ID_PREFIX, LAYER_TYPES, LOG_MSG, ERROR_MSG, STAMP_COPY_LAYERS } from './config.js';
+import { DEFAULT_PORTAL_TARGET_MAP_ID, DEFAULT_PORTAL_TARGET_X, DEFAULT_PORTAL_TARGET_Y, DEFAULT_PORTAL_TARGET_Z, DEFAULT_PORTAL_NAME, PORTAL_ID_PREFIX, NPC_ID_PREFIX, LAYER_TYPES, LOG_MSG, ERROR_MSG, STAMP_COPY_LAYERS } from './config.js'; // Added NPC_ID_PREFIX
 import { logToConsole } from './config.js';
 import { createEmptyGrid } from './gridUtils.js';
 
@@ -124,6 +124,63 @@ export function handleSelectInspectTool(x, y, z, mapData, uiState, assetManager,
 
     if (interactionRefs.updateAllEditorUIs) interactionRefs.updateAllEditorUIs();
     if (interactionRefs.renderGrid) interactionRefs.renderGrid(); // To show selection highlights
+}
+
+
+/**
+ * Handles clicks for the NPC tool.
+ * If an NPC exists at the click location, it's selected.
+ * Otherwise, if a base NPC type is selected in the NPC panel, a new NPC is created.
+ * @param {number} x - Clicked X-coordinate.
+ * @param {number} y - Clicked Y-coordinate.
+ * @param {number} z - Current editing Z-level.
+ * @param {MapData} mapData - The current map data.
+ * @param {object} appState - The main application state (uiStateHolder in some contexts).
+ * @param {object} assetManager - Instance of the AssetManager for NPC definitions.
+ * @param {object} interactionFns - Object containing callbacks like updateNpcEditorUI, renderGrid, clearOtherSelections.
+ */
+export function handleNpcToolClick(x, y, z, mapData, appState, assetManager, interactionFns) {
+    snapshot(); // For undo functionality
+
+    const { updateNpcEditorUI, renderGrid, clearOtherSelections } = interactionFns;
+
+    const existingNpc = mapData.npcs.find(npc => npc.mapPos?.x === x && npc.mapPos?.y === y && npc.mapPos?.z === z);
+
+    if (existingNpc) {
+        appState.selectedNpc = existingNpc;
+        logToConsole(LOG_MSG.NPC_TOOL_SELECTED_EXISTING(existingNpc.id, existingNpc.mapPos.z));
+    } else {
+        // Logic to place a new NPC
+        const selectedBaseNpcId = document.getElementById('npcBaseTypeSelect')?.value;
+        if (!selectedBaseNpcId || !assetManager.npcDefinitions || !assetManager.npcDefinitions[selectedBaseNpcId]) {
+            logToConsole("NPC Tool: No base NPC type selected in the panel, or definitions missing. Cannot place new NPC.", "warn");
+            // Optionally, provide user feedback via a status message
+            if (interactionFns.showStatusMessage) {
+                interactionFns.showStatusMessage("Select a base NPC type from the NPC panel to place a new NPC.", "warn");
+            }
+            appState.selectedNpc = null; // Ensure nothing is selected if placement fails
+        } else {
+            const baseNpcDef = assetManager.npcDefinitions[selectedBaseNpcId];
+            // Deep copy the base NPC definition
+            const newNpcInstance = JSON.parse(JSON.stringify(baseNpcDef));
+
+            newNpcInstance.id = `${NPC_ID_PREFIX}${appState.nextNpcId++}`; // Assign a unique ID
+            newNpcInstance.mapPos = { x, y, z };
+            // Instance-specific name can be set here or default to base name, editable later
+            newNpcInstance.name = newNpcInstance.name || baseNpcDef.name;
+            // Ensure definitionId is stored on the instance if not already part of baseNpcDef structure
+            newNpcInstance.definitionId = selectedBaseNpcId;
+
+
+            addNpcToMap(newNpcInstance); // Add to mapData.npcs
+            appState.selectedNpc = newNpcInstance; // Select the newly created NPC
+            logToConsole(LOG_MSG.NPC_TOOL_ADDED_NEW(newNpcInstance.id, x, y, z, selectedBaseNpcId));
+        }
+    }
+
+    if (clearOtherSelections) clearOtherSelections(); // Clear portal, tile selections
+    if (updateNpcEditorUI) updateNpcEditorUI(appState.selectedNpc, assetManager.npcDefinitions);
+    if (renderGrid) renderGrid(); // Update grid to show NPC selection/marker
 }
 
 

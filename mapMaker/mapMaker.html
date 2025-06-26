@@ -64,6 +64,7 @@
             <button class="toolBtn" data-tool="selectInspect">Select</button>
             <button class="toolBtn" data-tool="playerStart" id="setPlayerStartToolBtn" title="Set Player Start Position (☻)">P☻</button>
             <button class="toolBtn" data-tool="portal" title="Add/Edit Portal (▓)">Portal</button>
+            <button class="toolBtn" data-tool="npc" title="Place NPC (N)">NPC</button> <!-- New NPC Button -->
             <label for="brushSizeInput" style="margin-left: 15px;">Brush Size:</label>
             <input type="number" id="brushSizeInput" value="1" min="1" max="10" style="width: 50px;" title="Set brush size (1-10)" />
         </div>
@@ -178,6 +179,42 @@
         </div> <!-- Closing portalConfigContent -->
     </div>
     <hr />
+
+    <!-- NPC Configuration Panel -->
+    <div id="npcToolsContainer" style="display:none; padding: 10px; border: 1px solid #ccc; margin-top: 10px;">
+        <h3>NPC Configuration <button id="toggleNpcConfigBtn" style="font-size: 0.8em; margin-left: 10px;">Hide</button></h3>
+        <div id="npcConfigContent">
+            <div id="npcConfigControls" style="margin-top: 10px; padding: 10px; border: 1px solid #ddd;">
+                <h4>Configure Selected/New NPC</h4>
+                <div>Editing NPC: <strong id="editingNpcId">N/A</strong> at (<span id="editingNpcPos">N/A</span>)</div>
+
+                <label for="npcBaseTypeSelect">Base NPC Type:</label>
+                <select id="npcBaseTypeSelect" style="margin-bottom: 5px;"></select>
+                <br />
+
+                <label for="npcInstanceNameInput">NPC Name:</label>
+                <input type="text" id="npcInstanceNameInput" placeholder="Optional specific name" style="width: 200px; margin-bottom: 5px;" />
+                <br />
+
+                <!-- Add more editable properties here as needed -->
+                <!-- For example:
+                <label for="npcSpriteInput">Sprite:</label>
+                <input type="text" id="npcSpriteInput" style="width: 50px; margin-bottom: 5px;" />
+                <br />
+                <label for="npcColorInput">Color:</label>
+                <input type="color" id="npcColorInput" style="margin-bottom: 5px;" />
+                <br />
+                -->
+                <button id="saveNpcPropertiesBtn" style="margin-top: 5px;">Save NPC</button>
+            </div>
+            <div id="selectedNpcInfo" style="margin-top: 5px; padding: 5px; border: 1px solid #eee;">
+                Selected NPC: None
+            </div>
+            <button id="removeNpcBtn" style="display:none; margin-top: 5px;">Remove Selected NPC</button>
+        </div>
+    </div>
+    <hr />
+
     <div id="tilePropertyEditorControls" style="display:none; padding: 10px; border: 1px solid #ccc; margin-top: 10px;">
         <h3>Tile Instance Properties</h3>
         <div style="margin-bottom: 5px;">

@@ -418,6 +418,27 @@ export function getPlayerStart() {
     return mapData.startPos;
 }
 
+/**
+ * Calculates the next available NPC ID based on existing NPCs.
+ * Assumes NPC IDs are in the format "npc_NUMBER".
+ * @returns {number} The next integer to use for a new NPC ID.
+ */
+export function getNextNpcId() {
+    if (!mapData.npcs || mapData.npcs.length === 0) return 0;
+    const maxIdNum = Math.max(-1, ...mapData.npcs.map(npc => {
+        if (npc.id && typeof npc.id === 'string') {
+            const idParts = npc.id.split('_');
+            if (idParts.length > 1) {
+                const idNum = parseInt(idParts[idParts.length - 1], 10);
+                return isNaN(idNum) ? -1 : idNum;
+            }
+        }
+        return -1; // Default if ID format is unexpected
+    }));
+    return maxIdNum + 1;
+}
+
+
 // --- Tile Data Access (Raw) ---
 // These are low-level accessors. More complex tile operations (like placing with auto-tiling)
 // belong in tileManager.js.

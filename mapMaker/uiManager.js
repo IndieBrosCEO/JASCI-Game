@@ -311,12 +311,14 @@ function renderOverlays(gridContainer, mapData, currentEditingZ, selectedPortal,
             if (cell) {
                 const npcMarker = document.createElement('div');
                 npcMarker.className = 'npc-marker';
-                const npcDef = assetManagerInstance.npcDefinitions?.[npc.definitionId];
-                npcMarker.textContent = npcDef?.sprite || 'N';
-                npcMarker.style.color = npcDef?.color || 'purple';
-                npcMarker.title = `NPC: ${npc.name || npc.id} (Def: ${npc.definitionId})`;
+                const npcBaseDef = assetManagerInstance.npcDefinitions?.[npc.definitionId];
+                npcMarker.textContent = npc.sprite || npcBaseDef?.sprite || 'N'; // Instance sprite, then base sprite, then fallback
+                npcMarker.style.color = npc.color || npcBaseDef?.color || 'purple'; // Instance color, then base color, then fallback
+                npcMarker.title = `NPC: ${npc.name || npcBaseDef?.name || npc.id} (Def: ${npc.definitionId})`;
                 if (selectedNpc?.id === npc.id) {
-                    cell.classList.add('selected-npc-cell');
+                    cell.classList.add('selected-npc-cell'); // CSS handles the outline for selected NPC
+                } else {
+                    cell.classList.remove('selected-npc-cell'); // Ensure it's removed if not selected
                 }
                 cell.appendChild(npcMarker);
             }
@@ -826,9 +828,122 @@ export function resetUIForNewMap(defaultGridWidth, defaultGridHeight, defaultZ, 
     if (onionAboveInput) onionAboveInput.value = DEFAULT_ONION_LAYERS_ABOVE;
 
     updateMapMetadataEditorUI(getMapData()); // Update with current (newly initialized) mapData
+    updateSelectedNpcInfoUI(null, assetManagerInstance ? assetManagerInstance.npcDefinitions : {}); // Reset NPC UI
 
     logToConsole("UI reset for new map.");
 }
+
+// --- NPC Editor UI ---
+/**
+ * Populates the NPC base type dropdown in the NPC configuration panel.
+ * @param {object} npcDefinitions - An object where keys are NPC IDs and values are NPC definition objects.
+ */
+export function populateNpcBaseTypeDropdown(npcDefinitions) {
+    const selectElement = document.getElementById('npcBaseTypeSelect');
+    if (!selectElement) {
+        console.warn("UIManager: npcBaseTypeSelect DOM element not found.");
+        return;
+    }
+    selectElement.innerHTML = ''; // Clear existing options
+
+    if (npcDefinitions && Object.keys(npcDefinitions).length > 0) {
+        const defaultOption = document.createElement('option');
+        defaultOption.value = "";
+        defaultOption.textContent = "-- Select Base NPC --";
+        selectElement.appendChild(defaultOption);
+
+        for (const npcId in npcDefinitions) {
+            const npcDef = npcDefinitions[npcId];
+            const option = document.createElement('option');
+            option.value = npcId;
+            option.textContent = `${npcDef.name || npcId} (ID: ${npcId})`;
+            selectElement.appendChild(option);
+        }
+    } else {
+        const errorOption = document.createElement('option');
+        errorOption.value = "";
+        errorOption.textContent = "No NPC definitions loaded.";
+        selectElement.appendChild(errorOption);
+        logToConsole(ERROR_MSG.NO_NPC_DEFINITIONS_LOADED || "Error: No NPC definitions loaded for dropdown.", "warn");
+    }
+}
+
+
+/**
+ * Updates the NPC editor UI elements based on the currently selected NPC.
+ * @param {object | null} selectedNpc - The selected NPC object instance, or null if none.
+ * @param {object} baseNpcDefinitions - All available NPC base definitions from assetManager.
+ */
+export function updateSelectedNpcInfoUI(selectedNpc, baseNpcDefinitions) {
+    const el = (id) => document.getElementById(id);
+    const npcConfigContainer = el('npcToolsContainer'); // The main container for the NPC panel
+    const npcConfigControlsDiv = el('npcConfigControls'); // The div with form inputs
+    const selectedInfoDiv = el('selectedNpcInfo');
+    const removeBtn = el('removeNpcBtn');
+
+    if (!npcConfigContainer || !npcConfigControlsDiv || !selectedInfoDiv || !removeBtn) {
+        console.warn("UIManager: NPC editor DOM elements not found.");
+        return;
+    }
+
+    const fields = {
+        editingNpcId: el('editingNpcId'),
+        editingNpcPos: el('editingNpcPos'),
+        npcBaseTypeSelect: el('npcBaseTypeSelect'),
+        npcInstanceNameInput: el('npcInstanceNameInput')
+        // Add sprite and color inputs here if they become directly editable on instance
+    };
+
+    // Populate dropdown if it's empty and definitions are available
+    // This is a bit of a safety net; ideally, it's populated once at init.
+    if (fields.npcBaseTypeSelect && fields.npcBaseTypeSelect.options.length <= 1 && baseNpcDefinitions) {
+        populateNpcBaseTypeDropdown(baseNpcDefinitions);
+    }
+
+    if (uiStateHolder && uiStateHolder.currentTool === 'npc' && !selectedNpc) {
+        // NPC tool is active, but no NPC is selected (likely preparing to place a new one)
+        npcConfigContainer.style.display = 'block';
+        npcConfigControlsDiv.style.display = 'block'; // Show controls for selection
+        selectedInfoDiv.textContent = "Selected NPC: None (Click on map to place)";
+        removeBtn.style.display = 'none';
+
+        if (fields.editingNpcId) fields.editingNpcId.textContent = "N/A (New)";
+        if (fields.editingNpcPos) fields.editingNpcPos.textContent = "N/A";
+        if (fields.npcInstanceNameInput) fields.npcInstanceNameInput.value = '';
+        // Base type might be pre-selected or user needs to choose
+        // if (fields.npcBaseTypeSelect) fields.npcBaseTypeSelect.value = ''; // Don't reset if user picked one
+
+    } else if (selectedNpc) {
+        npcConfigContainer.style.display = 'block';
+        npcConfigControlsDiv.style.display = 'block';
+        selectedInfoDiv.textContent = `Selected NPC: ${selectedNpc.name || selectedNpc.id} (Base: ${selectedNpc.definitionId}) at (${selectedNpc.mapPos.x}, ${selectedNpc.mapPos.y}, Z:${selectedNpc.mapPos.z})`;
+        removeBtn.style.display = 'inline-block';
+
+        if (fields.editingNpcId) fields.editingNpcId.textContent = selectedNpc.id;
+        if (fields.editingNpcPos) fields.editingNpcPos.textContent = `(${selectedNpc.mapPos.x}, ${selectedNpc.mapPos.y}, Z:${selectedNpc.mapPos.z})`;
+
+        // Set the dropdown to the NPC's base definition type
+        if (fields.npcBaseTypeSelect) fields.npcBaseTypeSelect.value = selectedNpc.definitionId || "";
+
+        // NPC name: instance specific name if it exists, otherwise fallback to base name from definition
+        let displayName = selectedNpc.name; // This should be the instance name
+        if (!displayName && selectedNpc.definitionId && baseNpcDefinitions && baseNpcDefinitions[selectedNpc.definitionId]) {
+            displayName = baseNpcDefinitions[selectedNpc.definitionId].name; // Fallback to base definition name
+        }
+        if (fields.npcInstanceNameInput) fields.npcInstanceNameInput.value = displayName || '';
+
+
+    } else { // No NPC selected and NPC tool not active (or some other state)
+        npcConfigContainer.style.display = 'none'; // Hide the whole panel
+        selectedInfoDiv.textContent = "Selected NPC: None";
+        removeBtn.style.display = 'none';
+        if (fields.editingNpcId) fields.editingNpcId.textContent = "N/A";
+        if (fields.editingNpcPos) fields.editingNpcPos.textContent = "N/A";
+        if (fields.npcInstanceNameInput) fields.npcInstanceNameInput.value = '';
+        if (fields.npcBaseTypeSelect) fields.npcBaseTypeSelect.value = '';
+    }
+}
+
 
 /**
  * Updates the map metadata editor UI fields with values from the provided mapData.
@@ -877,7 +992,7 @@ export function updateUIFromLoadedMap(loadedMapData, newCurrentEditingZ, current
     updateContainerInventoryUI(null, loadedMapData);
     updateSelectedPortalInfoUI(null);
     updateTilePropertyEditorUI(null, loadedMapData);
-    // if (typeof updateSelectedNpcInfoUI === 'function') updateSelectedNpcInfoUI(null, loadedMapData);
+    updateSelectedNpcInfoUI(null, assetManagerInstance ? assetManagerInstance.npcDefinitions : {}); // Reset NPC UI
     logToConsole("UI updated from loaded map data.");
 }
 

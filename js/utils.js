@@ -396,11 +396,17 @@ window.getDistance3D = getDistance3D;
  * @param {object} tileset - The tileset definitions.
  * @returns {Array<object>|null} An array of {x, y, z} points representing the path, or null if no path is found.
  */
-function findPath3D(startPos, endPos, entity, mapData, tileset) {
-    if (!mapData || !mapData.levels || !mapData.dimensions || !tileset) {
-        logToConsole("findPath3D: Missing mapData, levels, dimensions, or tileset.", "error");
+function findPath3D(startPos, endPos, entity, mapData, tileset) { // tileset might not be directly needed if mapRenderer functions are used
+    if (!window.mapRenderer || typeof window.mapRenderer.isWalkable !== 'function' || typeof window.mapRenderer.isTileEmpty !== 'function') {
+        logToConsole("findPath3D: mapRenderer.isWalkable or mapRenderer.isTileEmpty is not available.", "error");
         return null;
     }
+    if (!mapData || !mapData.levels || !mapData.dimensions) { // Removed tileset from this direct check
+        logToConsole("findPath3D: Missing mapData, levels, or dimensions.", "error");
+        return null;
+    }
+    // assetManagerInstance is used by mapRenderer functions, ensure it's available globally or passed.
+    // It's typically available via `window.assetManagerInstance`.
 
     const openSet = [];
     const closedSet = new Set(); // Stores string keys "x,y,z"
@@ -423,29 +429,30 @@ function findPath3D(startPos, endPos, entity, mapData, tileset) {
         return `${node.x},${node.y},${node.z}`;
     }
 
-    function getTileDef(x, y, z) {
+    // Internal getTileDef can still be useful for checking z_transition tags locally
+    // but actual walkability is deferred to mapRenderer.isWalkable.
+    function getTileDefFromMapData(x, y, z, currentMapData, currentTileset) {
         const zStr = z.toString();
-        if (!mapData.levels[zStr]) return null;
-
-        // Check layers in order of precedence for what defines the tile's nature for pathing
-        const layersToCheck = ['building', 'item', 'landscape'];
-        for (const layerName of layersToCheck) {
-            const tileId = mapData.levels[zStr][layerName]?.[y]?.[x];
-            if (tileId) {
-                const baseTileId = (typeof tileId === 'object' && tileId.tileId) ? tileId.tileId : tileId;
-                if (tileset[baseTileId]) return tileset[baseTileId];
-            }
+        if (!currentMapData.levels[zStr]) return null;
+        // Check middle layer first, then bottom for z_transition properties
+        let tileIdRaw = currentMapData.levels[zStr].middle?.[y]?.[x];
+        let tileDef = null;
+        if (tileIdRaw) {
+            const baseId = (typeof tileIdRaw === 'object' && tileIdRaw.tileId) ? tileIdRaw.tileId : tileIdRaw;
+            if (currentTileset[baseId]) tileDef = currentTileset[baseId];
         }
-        return null; // Or return landscape tile if nothing else found
+        if (tileDef && tileDef.tags && (tileDef.tags.includes('z_transition_up') || tileDef.tags.includes('z_transition_down'))) {
+            return tileDef;
+        }
+
+        tileIdRaw = currentMapData.levels[zStr].bottom?.[y]?.[x];
+        if (tileIdRaw) {
+            const baseId = (typeof tileIdRaw === 'object' && tileIdRaw.tileId) ? tileIdRaw.tileId : tileIdRaw;
+            if (currentTileset[baseId]) tileDef = currentTileset[baseId];
+        }
+        return tileDef; // This might be null if no tile or no relevant z_transition tags
     }
 
-    function isWalkable(x, y, z) {
-        if (x < 0 || x >= mapData.dimensions.width || y < 0 || y >= mapData.dimensions.height) {
-            return false; // Out of bounds
-        }
-        const tileDef = getTileDef(x, y, z);
-        return tileDef && (!tileDef.tags || !tileDef.tags.includes('impassable'));
-    }
 
     while (openSet.length > 0) {
         openSet.sort((a, b) => a.f - b.f); // Sort by F cost to get the best node
@@ -475,29 +482,48 @@ function findPath3D(startPos, endPos, entity, mapData, tileset) {
         for (const move of cardinalMoves) {
             const nextX = currentNode.x + move.dx;
             const nextY = currentNode.y + move.dy;
-            const nextZ = currentNode.z + move.dz; // Stays the same for cardinal moves
+            const nextZ = currentNode.z; // Stays the same for cardinal moves
 
-            if (isWalkable(nextX, nextY, nextZ)) {
+            // Use window.mapRenderer.isWalkable for horizontal movement
+            if (window.mapRenderer.isWalkable(nextX, nextY, nextZ)) {
                 neighbors.push({ x: nextX, y: nextY, z: nextZ, cost: 1 });
             }
         }
 
-        // Z-transitions
-        const currentTileDef = getTileDef(currentNode.x, currentNode.y, currentNode.z);
-        if (currentTileDef && currentTileDef.tags && currentTileDef.tags.includes('z_transition')) {
-            if (currentTileDef.target_dz !== undefined) {
-                const nextZ = currentNode.z + currentTileDef.target_dz;
-                // Assume Z-transition implies walkability to the target Z tile at same X,Y
-                // A more robust check would verify the destination tile on the new Z is also walkable.
-                // For now, if it's a z_transition tile, we assume it leads somewhere valid.
-                if (mapData.levels[nextZ.toString()]) { // Check if target Z-level exists
-                    neighbors.push({
-                        x: currentNode.x, y: currentNode.y, z: nextZ,
-                        cost: currentTileDef.z_cost || 1 // Use z_cost if defined, else 1
-                    });
+        // Z-transitions logic using mapRenderer.isWalkable and mapRenderer.isTileEmpty
+        // Requires assetManagerInstance to be available for mapRenderer functions
+        const currentTileset = window.assetManagerInstance ? window.assetManagerInstance.tilesets : null;
+        if (currentTileset) { // Ensure tileset is loaded
+            const currentTileDef = getTileDefFromMapData(currentNode.x, currentNode.y, currentNode.z, mapData, currentTileset);
+
+            if (currentTileDef && currentTileDef.tags) {
+                // Check for Z-UP transition
+                if (currentTileDef.tags.includes('z_transition_up')) {
+                    const targetZUp = currentNode.z + 1;
+                    // Check headroom at current X,Y,Z+1 AND walkability of the destination tile (X,Y,Z+1)
+                    if (window.mapRenderer.isTileEmpty(currentNode.x, currentNode.y, targetZUp) &&
+                        window.mapRenderer.isWalkable(currentNode.x, currentNode.y, targetZUp)) {
+                        neighbors.push({
+                            x: currentNode.x, y: currentNode.y, z: targetZUp,
+                            cost: currentTileDef.z_cost || 1 // Use z_cost if defined, else 1
+                        });
+                    }
+                }
+                // Check for Z-DOWN transition
+                if (currentTileDef.tags.includes('z_transition_down')) {
+                    const targetZDown = currentNode.z - 1;
+                    // Check emptiness of destination tile (X,Y,Z-1) AND walkability of the destination tile (X,Y,Z-1)
+                    if (window.mapRenderer.isTileEmpty(currentNode.x, currentNode.y, targetZDown) &&
+                        window.mapRenderer.isWalkable(currentNode.x, currentNode.y, targetZDown)) {
+                        neighbors.push({
+                            x: currentNode.x, y: currentNode.y, z: targetZDown,
+                            cost: currentTileDef.z_cost || 1 // Use z_cost if defined, else 1
+                        });
+                    }
                 }
             }
         }
+
 
         for (const neighborPos of neighbors) {
             const neighborKey = getNodeKey(neighborPos);

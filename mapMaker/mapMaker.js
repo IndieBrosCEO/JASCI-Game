@@ -40,6 +40,7 @@ import {
     renderMergedGrid,
     resetUIForNewMap,
     populateItemSelectDropdown,
+    populateNpcBaseTypeDropdown, // Added for NPC dropdown
     updatePlayerStartDisplay,
     updateGridDimensionsUI,
     updateToolButtonUI, // Needed for direct tool changes by shortcut if not fully in eventHandlers
@@ -80,7 +81,7 @@ const appState = {
     // Selections for editors
     selectedTileForInventory: null,
     selectedPortal: null,
-    selectedNpc: null,
+    selectedNpc: null, // This was already here, good.
     selectedGenericTile: null,
 
     // Interaction states for tools
@@ -91,6 +92,7 @@ const appState = {
     mouseOverGridPos: null, // For brush preview
 
     nextPortalId: 0,
+    nextNpcId: 0, // Added for unique NPC IDs
 
     // Method to ensure layers for Z exist, bound to mapDataManager's function
     // This provides a consistent way for modules to call this, ensuring the main mapData is used.
@@ -194,6 +196,11 @@ async function initializeMapMaker() {
     updateGridDimensionsUI(appState.gridWidth, appState.gridHeight);
 
     populateItemSelectDropdown();
+    if (assetManager.npcDefinitions) { // Ensure NPC defs are loaded before populating
+        populateNpcBaseTypeDropdown(assetManager.npcDefinitions);
+    } else {
+        logToConsole("NPC definitions not available on assetManager at init time for dropdown.", "warn");
+    }
     buildPalette(appState.currentTileId, appState.activeTagFilters);
 
     appState.triggerFullGridRender(); // Initial render

@@ -90,7 +90,7 @@
           "WF",
           "WF",
           "WF",
-          "WF",
+          "",
           "WF",
           "",
           ""
@@ -174,9 +174,9 @@
           "MWV",
           "LADR",
           "",
-          "CB",
           "",
-          "STLMP",
+          "",
+          "",
           "ST_U",
           "MWV",
           ""
@@ -197,10 +197,10 @@
           "",
           "WinCV",
           "",
-          "GC",
-          "WinCV",
           "",
-          "RF",
+          "",
+          "",
+          "",
           "",
           "WinCV",
           ""
@@ -2180,7 +2180,7 @@
           "MU",
           "MU",
           "MU",
-          "MU",
+          "",
           "MU",
           "MU",
           "MU"
@@ -2426,7 +2426,7 @@
           "MU",
           "MU",
           "MU",
-          "MU",
+          "",
           "MU",
           "MU",
           "MU"
@@ -2633,7 +2633,39 @@
           "MU",
           "MU",
           "MU",
+          "",
+          "",
+          "",
+          "",
           "MU",
+          "MU",
+          "MU"
+        ],
+        [
+          "MU",
+          "MU",
+          "MU",
+          "",
+          "MU",
+          "MU",
+          "",
+          "",
+          {
+            "tileId": "GC",
+            "containerInventory": [
+              {
+                "id": "canned_beans_food",
+                "quantity": 1
+              }
+            ]
+          },
+          "MU"
+        ],
+        [
+          "MU",
+          "MU",
+          "MU",
+          "",
           "MU",
           "MU",
           "MU",
@@ -2645,34 +2677,10 @@
           "MU",
           "MU",
           "MU",
-          "MU",
-          "MU",
-          "MU",
-          "MU",
-          "MU",
-          "MU",
-          "MU"
-        ],
-        [
-          "MU",
-          "MU",
-          "MU",
-          "MU",
-          "MU",
-          "MU",
-          "MU",
-          "MU",
-          "MU",
-          "MU"
-        ],
-        [
-          "MU",
-          "MU",
-          "MU",
-          "MU",
-          "MU",
-          "MU",
-          "MU",
+          "",
+          "",
+          "",
+          "",
           "MU",
           "MU",
           "MU"
@@ -2714,9 +2722,480 @@
           "MU"
         ]
       ]
+    },
+    "-4": {
+      "bottom": [
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      ],
+      "middle": [
+        [
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI"
+        ],
+        [
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI"
+        ],
+        [
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI"
+        ],
+        [
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI"
+        ],
+        [
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI"
+        ],
+        [
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI"
+        ],
+        [
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI"
+        ],
+        [
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI"
+        ],
+        [
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI"
+        ],
+        [
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI",
+          "DI"
+        ]
+      ]
     }
   },
-  "npcs": [],
+  "npcs": [
+    {
+      "id": "npc_3",
+      "name": "Militia Man",
+      "sprite": "M",
+      "color": "blue",
+      "health": {
+        "head": {
+          "max": 5,
+          "current": 5,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "torso": {
+          "max": 8,
+          "current": 8,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "leftArm": {
+          "max": 7,
+          "current": 7,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "rightArm": {
+          "max": 7,
+          "current": 7,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "leftLeg": {
+          "max": 7,
+          "current": 7,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "rightLeg": {
+          "max": 7,
+          "current": 7,
+          "armor": 0,
+          "crisisTimer": 0
+        }
+      },
+      "stats": {
+        "Strength": 3,
+        "Intelligence": 3,
+        "Dexterity": 3,
+        "Constitution": 3,
+        "Perception": 3,
+        "Willpower": 3,
+        "Charisma": 3,
+        "Marksmanship": 3
+      },
+      "skills": {
+        "Unarmed": 10,
+        "MeleeWeapons": 15,
+        "Guns": 10,
+        "Explosives": 0
+      },
+      "equippedWeaponId": "club",
+      "defaultActionPoints": 1,
+      "defaultMovementPoints": 6,
+      "tags": [
+        "hostile",
+        "humanoid",
+        "militia"
+      ],
+      "teamId": 3,
+      "mapPos": {
+        "x": 3,
+        "y": 6,
+        "z": 1
+      },
+      "definitionId": "militia_man"
+    },
+    {
+      "id": "npc_4",
+      "name": "Militia Man",
+      "sprite": "M",
+      "color": "blue",
+      "health": {
+        "head": {
+          "max": 5,
+          "current": 5,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "torso": {
+          "max": 8,
+          "current": 8,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "leftArm": {
+          "max": 7,
+          "current": 7,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "rightArm": {
+          "max": 7,
+          "current": 7,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "leftLeg": {
+          "max": 7,
+          "current": 7,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "rightLeg": {
+          "max": 7,
+          "current": 7,
+          "armor": 0,
+          "crisisTimer": 0
+        }
+      },
+      "stats": {
+        "Strength": 3,
+        "Intelligence": 3,
+        "Dexterity": 3,
+        "Constitution": 3,
+        "Perception": 3,
+        "Willpower": 3,
+        "Charisma": 3,
+        "Marksmanship": 3
+      },
+      "skills": {
+        "Unarmed": 10,
+        "MeleeWeapons": 15,
+        "Guns": 10,
+        "Explosives": 0
+      },
+      "equippedWeaponId": "club",
+      "defaultActionPoints": 1,
+      "defaultMovementPoints": 6,
+      "tags": [
+        "hostile",
+        "humanoid",
+        "militia"
+      ],
+      "teamId": 3,
+      "mapPos": {
+        "x": 6,
+        "y": 4,
+        "z": 1
+      },
+      "definitionId": "militia_man"
+    },
+    {
+      "id": "npc_5",
+      "name": "Cellar Dweller",
+      "sprite": "c",
+      "color": "darkgreen",
+      "health": {
+        "head": {
+          "max": 4,
+          "current": 4,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "torso": {
+          "max": 7,
+          "current": 7,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "leftArm": {
+          "max": 6,
+          "current": 6,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "rightArm": {
+          "max": 6,
+          "current": 6,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "leftLeg": {
+          "max": 6,
+          "current": 6,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "rightLeg": {
+          "max": 6,
+          "current": 6,
+          "armor": 0,
+          "crisisTimer": 0
+        }
+      },
+      "stats": {
+        "Strength": 3,
+        "Intelligence": 2,
+        "Dexterity": 3,
+        "Constitution": 3,
+        "Perception": 3,
+        "Willpower": 2,
+        "Charisma": 1,
+        "Marksmanship": 2
+      },
+      "skills": {
+        "Unarmed": 15,
+        "MeleeWeapons": 10,
+        "Guns": 5
+      },
+      "equippedWeaponId": "knife_melee",
+      "defaultActionPoints": 1,
+      "defaultMovementPoints": 5,
+      "tags": [
+        "hostile",
+        "mutant",
+        "melee"
+      ],
+      "teamId": 5,
+      "mapPos": {
+        "x": 7,
+        "y": 4,
+        "z": -3
+      },
+      "definitionId": "cellar_dweller"
+    }
+  ],
   "portals": [],
   "description": "",
   "author": "",

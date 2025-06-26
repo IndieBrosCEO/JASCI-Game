@@ -51,6 +51,9 @@ export const DEFAULT_PORTAL_TARGET_Z = 0;
 export const DEFAULT_PORTAL_NAME = '';
 export const PORTAL_ID_PREFIX = 'portal_';
 
+// Default attributes for NPCs
+export const NPC_ID_PREFIX = 'npc_'; // Added for NPCs
+
 // Default depth for 3D drawing tools like rectangle and stamp
 export const DEFAULT_3D_DEPTH = 1;
 
@@ -95,7 +98,8 @@ export const ERROR_MSG = {
     CLEAR_PROPS_NO_CUSTOM_PROPS: (x, y, z, layer) => `Tile at (${x},${y}, Z:${z}) on layer '${layer}' has no custom instance properties to clear.`,
     CLEAR_PROPS_INVALID_DATA: (tileData) => `Cannot clear properties: Selected tile data is invalid or not an object. Data: ${JSON.stringify(tileData)}`,
     FLOOD_FILL_LAYER_MISSING: (layerType, zStr) => `Flood fill error: Layer '${layerType}' does not exist for Z-level ${zStr}.`,
-    FILL_TOOL_EMPTY_AREA: "Fill tool clicked on an empty area on all layers. No action taken for 2D fill."
+    FILL_TOOL_EMPTY_AREA: "Fill tool clicked on an empty area on all layers. No action taken for 2D fill.",
+    NO_NPC_DEFINITIONS_LOADED: "Asset Warning: NPC definitions are empty. NPC panel will be limited."
 };
 
 // Centralized console log messages. Can be prefixed or conditionally disabled.
@@ -126,7 +130,11 @@ export const LOG_MSG = {
     PORTAL_TOOL_SELECTED_EXISTING: (id, z) => `Portal Tool: Selected existing Portal ID '${id}' at Z:${z}`,
     PORTAL_TOOL_ADDED_NEW: (id, x, y, z) => `Portal Tool: Added new Portal ID '${id}' at (${x},${y}, Z:${z})`,
     SELECT_TOOL_SELECTED_PORTAL: (id, z) => `Select/Inspect Tool: Selected Portal ID '${id}' at Z:${z}`,
-    SELECT_TOOL_SELECTED_NPC: (id, z) => `Select/Inspect Tool: Selected NPC ID '${id}' at Z:${z}`
+    SELECT_TOOL_SELECTED_NPC: (id, z) => `Select/Inspect Tool: Selected NPC ID '${id}' at Z:${z}`,
+    NPC_TOOL_SELECTED_EXISTING: (id, z) => `NPC Tool: Selected existing NPC ID '${id}' at Z:${z}`,
+    NPC_TOOL_ADDED_NEW: (id, x, y, z, baseId) => `NPC Tool: Added new NPC ID '${id}' (Base: ${baseId}) at (${x},${y}, Z:${z})`,
+    NPC_PROPS_SAVED: (id) => `NPC properties saved for ID: ${id}`,
+    REMOVED_NPC: (id) => `Removed NPC with ID: ${id}`
 };
 
 /**

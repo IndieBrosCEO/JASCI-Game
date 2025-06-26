@@ -2,7 +2,7 @@
     constructor() {
         this.tilesets = {};
         this.itemsById = {};
-        this.npcsById = {};
+        this.npcDefinitions = {}; // Renamed from npcsById
         this.mapsById = {};
         this.currentMap = null;
         this.mapIndexData = null; // For storing mapIndex.json content
@@ -62,7 +62,7 @@
     async loadDefinitions() {
         this.tilesets = {};
         this.itemsById = {};
-        this.npcsById = {};
+        this.npcDefinitions = {}; // Ensure this is initialized
         let tempItemsById = {};
 
         const definitionFiles = ['tileset.json', 'items.json', 'npcs.json', 'clothing.json']; // Added clothing.json
@@ -82,7 +82,7 @@
                 } else if (filename === 'items.json') {
                     parsedJson.forEach(item => { tempItemsById[item.id] = item; });
                 } else if (filename === 'npcs.json') {
-                    this.npcsById = Object.fromEntries(parsedJson.map(npc => [npc.id, npc]));
+                    this.npcDefinitions = Object.fromEntries(parsedJson.map(npc => [npc.id, npc])); // Use npcDefinitions
                 } else if (filename === 'clothing.json') {
                     if (Array.isArray(parsedJson)) {
                         parsedJson.forEach(item => { tempItemsById[item.id] = item; });
@@ -119,7 +119,7 @@
     }
 
     getNpc(npcId) {
-        return this.npcsById[npcId] || null;
+        return this.npcDefinitions[npcId] || null; // Use npcDefinitions
     }
 
     async loadMap(mapId) {
@@ -192,14 +192,23 @@
 
         processedMapData.portals = mapJsonData.portals || [];
         // Ensure NPCs have Z coordinate, default to 0 if missing from old map formats during transition
-        processedMapData.npcs = (mapJsonData.npcs || []).map(npc => ({
-            ...npc,
-            pos: {
-                x: npc.pos ? npc.pos.x : 0,
-                y: npc.pos ? npc.pos.y : 0,
-                z: npc.pos && npc.pos.z !== undefined ? npc.pos.z : 0 // Default Z to 0 if not specified
+        processedMapData.npcs = (mapJsonData.npcs || []).map(npc => {
+            // Prioritize npc.mapPos (from map maker format), then npc.pos (older/other format), then default.
+            const positionData = npc.mapPos || npc.pos || { x: 0, y: 0, z: 0 };
+            const finalNpc = {
+                ...npc, // Spread all original properties from the map file's NPC entry
+                pos: {  // Ensure the final structure uses 'pos' for consistency downstream
+                    x: positionData.x !== undefined ? positionData.x : 0,
+                    y: positionData.y !== undefined ? positionData.y : 0,
+                    z: positionData.z !== undefined ? positionData.z : 0
+                }
+            };
+            // Remove mapPos if it exists to avoid confusion, as 'pos' is now the standard
+            if (finalNpc.hasOwnProperty('mapPos')) {
+                delete finalNpc.mapPos;
             }
-        }));
+            return finalNpc;
+        });
         processedMapData.container_instances = mapJsonData.container_instances || []; // Future: may need Z
         processedMapData.tileset = mapJsonData.tileset || null; // Or a default tileset ID
 
@@ -290,9 +299,9 @@
         }
         const lowerCaseTag = tag.toLowerCase();
         const foundNpcs = [];
-        for (const npcId in this.npcsById) {
-            if (this.npcsById.hasOwnProperty(npcId)) {
-                const npc = this.npcsById[npcId];
+        for (const npcId in this.npcDefinitions) { // Use npcDefinitions
+            if (this.npcDefinitions.hasOwnProperty(npcId)) {
+                const npc = this.npcDefinitions[npcId];
                 if (npc && Array.isArray(npc.tags)) {
                     if (npc.tags.some(t => typeof t === 'string' && t.toLowerCase() === lowerCaseTag)) {
                         foundNpcs.push(npc);
@@ -342,9 +351,9 @@
 
         // Search NPCs
         if (searchAllTypes || typesToSearch.has('npc')) {
-            for (const npcId in this.npcsById) {
-                if (this.npcsById.hasOwnProperty(npcId)) {
-                    const npc = this.npcsById[npcId];
+            for (const npcId in this.npcDefinitions) { // Use npcDefinitions
+                if (this.npcDefinitions.hasOwnProperty(npcId)) {
+                    const npc = this.npcDefinitions[npcId];
                     if (!npc) continue;
 
                     let match = false;

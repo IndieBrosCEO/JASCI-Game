@@ -190,18 +190,40 @@ function spawnNpcsFromMapData(mapData) {
 
     if (mapData && mapData.npcs && Array.isArray(mapData.npcs)) {
         logToConsole(`Spawning NPCs from map data for map: ${mapData.name || mapData.id}`);
-        mapData.npcs.forEach(npcPlacementInfo => { // npcPlacementInfo.pos should now include .z from assetManager
-            const npcDefinition = assetManager.getNpc(npcPlacementInfo.id);
+        mapData.npcs.forEach(npcPlacementInfo => {
+            // Use definitionId (or a similar field) from the map's NPC instance data to look up the base definition.
+            // The 'id' field on npcPlacementInfo is the unique instance ID (e.g., "npc_3").
+            const definitionIdToLookup = npcPlacementInfo.definitionId || npcPlacementInfo.baseId || npcPlacementInfo.type;
+
+            if (!definitionIdToLookup) {
+                console.warn(`NPC instance ID '${npcPlacementInfo.id}' in map '${mapData.name || mapData.id}' is missing a definitionId/baseId/type. Cannot spawn.`);
+                return; // Skip this NPC
+            }
+
+            const npcDefinition = assetManager.getNpc(definitionIdToLookup);
+
             if (npcDefinition) {
-                const newNpc = JSON.parse(JSON.stringify(npcDefinition));
+                const newNpc = JSON.parse(JSON.stringify(npcDefinition)); // Base properties
+
+                // Assign instance-specific properties
+                newNpc.id = npcPlacementInfo.id; // This is the unique instance ID like "npc_3"
+                newNpc.definitionId = definitionIdToLookup; // Store the base definition ID
+
                 newNpc.mapPos = {
                     x: npcPlacementInfo.pos.x,
                     y: npcPlacementInfo.pos.y,
-                    z: npcPlacementInfo.pos.z !== undefined ? npcPlacementInfo.pos.z : 0 // Ensure Z is set, default to 0
+                    z: npcPlacementInfo.pos.z !== undefined ? npcPlacementInfo.pos.z : 0
                 };
 
+                // Override name if provided in instance data, otherwise use definition's name
+                newNpc.name = npcPlacementInfo.name || npcDefinition.name;
+
+                // Copy other potential overrides from npcPlacementInfo (e.g., specific stats, health, inventory)
+                // This part needs to be selective based on what properties map instances can override.
+                // For now, we've handled id, definitionId, mapPos, and name.
+
                 if (typeof window.initializeHealth === 'function') {
-                    window.initializeHealth(newNpc);
+                    window.initializeHealth(newNpc); // Initializes health based on (now potentially overridden) stats
                 } else {
                     console.error(`initializeHealth function not found for NPC: ${newNpc.id}`);
                     // Basic fallback if initializeHealth is missing
