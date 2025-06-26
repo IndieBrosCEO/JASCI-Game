@@ -92,9 +92,6 @@ This document outlines the features of the JASCI TRPG Adventure game, intended f
         *   `item`: Objects, furniture, lootable items on that Z-level.
         *   `roof`: Roof tiles for that Z-level (can be toggled for visibility).
     *   Z-levels have no predefined height limit.
-*   **Z-Transitions**:
-    *   Special tiles (e.g., stairs, ladders, holes) allow movement between Z-levels.
-    *   These tiles are defined in `tileset.json` with tags like `z_transition`, `is_stairs_up`, `is_ladder_down` and properties like `target_dz` (e.g., +1, -1) and `z_cost` (movement point cost).
 *   **Fog of War (FOW) (3D)**:
     *   Each Z-level has its own FOW data.
     *   Tiles can be `hidden`, `visited`, or `visible`.
@@ -124,6 +121,75 @@ This document outlines the features of the JASCI TRPG Adventure game, intended f
     *   Player needs (hunger, thirst) decrease over time (hourly).
     *   Environmental effects or game events could potentially be tied to the time of day (not explicitly detailed but system allows for it).
     *   The `wait` command allows players to pass a specified number of hours.
+
+## Movement & Navigation System
+
+This section details how characters move around the 3D game world.
+
+### 1. General Movement
+*   **Grid-Based**: Characters occupy a single tile on a 3D grid (X, Y, Z).
+*   **Movement Points (MP)**: Player characters have a set number of MP per turn (typically 6). Moving one tile horizontally typically costs 1 MP. Z-axis movements may have different costs.
+*   **Attempting a Move**: When a player attempts to move to an adjacent tile (targetX, targetY) from their current position (originalX, originalY, originalZ):
+    *   Boundary checks prevent moving off the map.
+    *   The system then evaluates various movement possibilities in a specific order.
+
+### 2. Impassable Terrain & Obstacles
+*   **Strictly Impassable Tiles**:
+    *   A target tile `(targetX, targetY, originalZ)` is considered "strictly impassable" if its definition in `tileset.json` includes an `"impassable"` tag on its `middle` or `bottom` layer.
+    *   If a player attempts to move into a strictly impassable tile, the movement is blocked. The player does not move, and no fall check occurs.
+    *   Example: Walking into a solid wall.
+*   **NPC Collision**: Characters cannot move into a tile already occupied by another character (NPC or player) on the *final destination tile* of any movement type.
+
+### 3. Z-Transitions (Vertical Movement)
+
+Z-transitions allow movement between different Z-levels. Slopes are treated as a type of z_transition.
+
+#### 3.1. Player Standing ON a `z_transition` Tile
+This logic applies when the tile the player currently occupies `(originalX, originalY, originalZ)` has the `z_transition` tag. The `z_cost` property from this tile's definition is used.
+
+*   **Moving Up (e.g., stepping up onto a ledge or low obstacle, climbing a short slope section):**
+    *   **Preconditions** (checked at player's current Z-level `originalZ`):
+        1.  The target tile `(targetX, targetY, originalZ)` must be "strictly impassable" (e.g., a low wall, a solid block that forms the base of the higher level). This is the surface the player is stepping *onto* at Z+1.
+        2.  The tile space directly above the player `(originalX, originalY, originalZ + 1)` must be "empty" (i.e., clear headroom, checked by `mapRenderer.isTileEmpty`).
+        3.  The tile the player will land on `(targetX, targetY, originalZ + 1)` must be "walkable" (checked by `mapRenderer.isWalkable`).
+    *   **Effect**: If all preconditions are met and the destination is not NPC-occupied, the player moves to `(targetX, targetY, originalZ + 1)`.
+*   **Moving Down (e.g., stepping off a ledge, descending a short slope section):**
+    *   **Preconditions** (checked at player's current Z-level `originalZ`):
+        1.  The target tile `(targetX, targetY, originalZ)` must be "empty" (i.e., the player is stepping into open space at their current Z-level).
+        2.  The tile the player will land on `(targetX, targetY, originalZ - 1)` must be "walkable".
+    *   **Effect**: If all preconditions are met and the destination is not NPC-occupied, the player moves to `(targetX, targetY, originalZ - 1)`.
+
+#### 3.2. Player Moving INTO an Explicit `z_transition` Tile
+This logic applies when the *target tile* `(targetX, targetY, originalZ)` itself has the `z_transition` tag (e.g., walking onto the base of a staircase, or onto a ladder tile that isn't climbed automatically by being "on" it).
+*   The `target_dz` property from the target tile's definition determines the change in Z-level.
+*   The `z_cost` property from the target tile's definition is used.
+*   The final destination `(targetX, targetY, originalZ + target_dz)` must be "walkable" and not NPC-occupied.
+*   **Effect**: Player moves to the final destination.
+
+### 4. `solid_terrain_top` Tiles
+These tiles (e.g., dirt blocks, large boulders, some rooftops) have special interaction with Z-levels:
+*   **Impassable at Own Z-Level**: A character cannot walk *into* or *through* a `solid_terrain_top` tile at its own Z-level. It is considered "strictly impassable" at `(targetX, targetY, Z_object)`.
+    *   Example: Player at `Z=0` cannot walk into a `solid_terrain_top` tile also at `Z=0`.
+*   **Walkable at Z+1**: The top surface of a `solid_terrain_top` tile is walkable. If a `solid_terrain_top` tile exists at `(X, Y, Z_object)`, then the tile `(X, Y, Z_object + 1)` becomes walkable (assuming nothing else is blocking that Z+1 space).
+    *   Example: Player at `Z=1` can walk on top of a `solid_terrain_top` tile located at `Z=0`.
+*   **Rendering**:
+    *   When viewed from their own Z-level, `solid_terrain_top` tiles are rendered as '▓'.
+    *   When viewed from Z+1 (looking down onto them), they are rendered with their custom sprite and no special tint/darkening if the intervening space is clear.
+
+### 5. Standard Horizontal Movement
+*   If no Z-transition or slope logic applies (either player is not on such a tile, or conditions for Z-movement were not met), the system attempts a standard horizontal move.
+*   The target tile `(targetX, targetY, originalZ)` must:
+    1.  NOT be "strictly impassable".
+    2.  Be "walkable" as determined by `mapRenderer.isWalkable(targetX, targetY, originalZ)`.
+    3.  Not be occupied by an NPC.
+*   **Effect**: Player moves to `(targetX, targetY, originalZ)`, costing 1 MP.
+
+### 6. Falling
+*   A fall check is initiated if:
+    1.  All prior movement attempts (Z-transitions, slope, explicit Z-trans, standard horizontal) have failed or were not applicable.
+    2.  The target tile `(targetX, targetY, originalZ)` was NOT "strictly impassable" (i.e., not a solid wall).
+    3.  The target tile `(targetX, targetY, originalZ)` is NOT "walkable" (e.g., it's empty air, a pit without a `z_transition` tag).
+*   The `initiateFallCheck` function (in `character.js`) then calls `handleFalling` to determine the landing Z-level and apply any fall damage.
 
 ## Item & Equipment Features
 
