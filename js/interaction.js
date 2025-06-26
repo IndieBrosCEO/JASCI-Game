@@ -18,13 +18,13 @@ const DOOR_BREAK_MAP = {
 // --- Internal Helper Functions ---
 // (Prefixed with _ to indicate they are intended for internal use within this module)
 function _getActionsForItem(it) {
-    if (!assetManagerInstance) {
-        console.error("Interaction module not initialized with AssetManager for _getActionsForItem.");
+    if (!assetManagerInstance || !assetManagerInstance.tilesets) { // Added check for tilesets
+        console.error("Interaction module or assetManagerInstance.tilesets not ready for _getActionsForItem.");
         return ["Cancel"];
     }
 
     const tileDef = assetManagerInstance.tilesets[it.id];
-    if (!tileDef) return ["Cancel"]; // Now this is safe
+    if (!tileDef) return ["Cancel"];
 
     const tags = tileDef.tags || [];
     const actions = ["Cancel"];
@@ -80,8 +80,8 @@ function _performAction(action, it) {
         return;
     }
 
-    if (!assetManagerInstance) {
-        console.error("Interaction module not initialized with AssetManager for _performAction.");
+    if (!assetManagerInstance || !assetManagerInstance.tilesets) { // Added check for tilesets
+        console.error("Interaction module or assetManagerInstance.tilesets not ready for _performAction.");
         return;
     }
     const tileName = assetManagerInstance.tilesets[id]?.name || id; // Use 'id' from 'it' for the base name
@@ -118,14 +118,55 @@ function _performAction(action, it) {
     } else if (action === "Climb Up") {
         if (tileDef && tileDef.tags && tileDef.tags.includes("climbable")) {
             const targetZ = z + 1; // Ladders typically go up by 1 Z-level
-            // Check if the destination is walkable (or at least not solid blocking)
-            // For climb up, the tile at (x,y,targetZ) should be empty or allow standing.
+            // Precondition: Tile above player's current position must be empty.
+            // Player's current position is gameState.playerPos.x, gameState.playerPos.y, gameState.playerPos.z
+            // The tile to check is (playerX, playerY, playerZ + 1)
+            // Note: 'z' here is the Z-level of the interactable tile (e.g., the ladder base).
+            // The player is standing at (gameState.playerPos.x, gameState.playerPos.y, z) to interact with it.
+            const spaceAbovePlayerX = gameState.playerPos.x;
+            const spaceAbovePlayerY = gameState.playerPos.y;
+            const spaceAbovePlayerZ = gameState.playerPos.z + 1;
+
+            let isSpaceAbovePlayerObstructed = true; // Assume obstructed initially
+
+            // Check if the space above the player is another climbable tile
+            const mapDataForAboveCheck = window.mapRenderer.getCurrentMapData();
+            let tileAbovePlayerDef = null;
+            if (mapDataForAboveCheck && mapDataForAboveCheck.levels[spaceAbovePlayerZ.toString()]) {
+                const levelAbovePlayerData = mapDataForAboveCheck.levels[spaceAbovePlayerZ.toString()];
+                // Check middle layer first, then bottom, for a climbable tile
+                let tileIdAbovePlayerRaw = levelAbovePlayerData.middle?.[spaceAbovePlayerY]?.[spaceAbovePlayerX] || levelAbovePlayerData.bottom?.[spaceAbovePlayerY]?.[spaceAbovePlayerX];
+                let tileIdAbovePlayer = (typeof tileIdAbovePlayerRaw === 'object' && tileIdAbovePlayerRaw !== null && tileIdAbovePlayerRaw.tileId !== undefined)
+                    ? tileIdAbovePlayerRaw.tileId
+                    : tileIdAbovePlayerRaw;
+
+                if (tileIdAbovePlayer && assetManagerInstance && assetManagerInstance.tilesets) {
+                    tileAbovePlayerDef = assetManagerInstance.tilesets[tileIdAbovePlayer];
+                }
+            }
+
+            if (tileAbovePlayerDef && tileAbovePlayerDef.tags && tileAbovePlayerDef.tags.includes('climbable')) {
+                // If the space above is another part of a ladder/climbable structure, it's not considered obstructed for this check.
+                isSpaceAbovePlayerObstructed = false;
+                logToConsole(`Space above player is another climbable tile ('${tileAbovePlayerDef.name}'), proceeding with climb check.`);
+            } else if (window.mapRenderer.isTileEmpty(spaceAbovePlayerX, spaceAbovePlayerY, spaceAbovePlayerZ)) {
+                // If not a climbable tile, check if it's generally empty.
+                isSpaceAbovePlayerObstructed = false;
+            }
+
+            if (isSpaceAbovePlayerObstructed) {
+                logToConsole(`Cannot climb up: The space directly above you (at X:${spaceAbovePlayerX} Y:${spaceAbovePlayerY} Z:${spaceAbovePlayerZ}) is not empty or part of a continued climbable path.`);
+                return; // Abort climb
+            }
+
+            // Check if the destination tile itself at (x,y,targetZ) is walkable.
+            // 'x' and 'y' are the coordinates of the ladder tile.
             if (window.mapRenderer.isWalkable(x, y, targetZ)) {
-                gameState.playerPos = { x: x, y: y, z: targetZ };
+                gameState.playerPos = { x: x, y: y, z: targetZ }; // Player moves to the ladder's X,Y at the new Z
                 if (gameState.viewFollowsPlayerZ) gameState.currentViewZ = targetZ;
                 logToConsole(`Climbed up the ${tileName} to Z:${targetZ}.`);
             } else {
-                logToConsole(`Cannot climb up: The space above (Z:${targetZ}) is blocked or not walkable.`);
+                logToConsole(`Cannot climb up: The destination space at the top of the ${tileName} (X:${x}, Y:${y}, Z:${targetZ}) is blocked or not walkable.`);
             }
         }
     } else if (action === "Climb Down") {

@@ -92,6 +92,10 @@ const gameState = {
     // Default: hide roof
     showRoof: false,
 
+    // Onion skin settings
+    onionSkinLevelsAbove: 1,
+    onionSkinLevelsBelow: 1,
+
     // Stat/skill limits
     MAX_SKILL_POINTS: 30,
     MAX_STAT_VALUE: 10,

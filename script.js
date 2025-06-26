@@ -589,6 +589,11 @@ function handleKeyDown(event) {
 
     // Targeting Mode: Movement Keys
     if (gameState.isTargetingMode) {
+        if (!window.mapRenderer || typeof window.mapRenderer.getCurrentMapData !== 'function' || typeof window.mapRenderer.scheduleRender !== 'function') {
+            logToConsole("Map renderer not ready for targeting mode movement.", "warn");
+            event.preventDefault();
+            return;
+        }
         let currentMapData = window.mapRenderer.getCurrentMapData();
         if (!currentMapData) {
             logToConsole("Targeting mode movement: No map data available.");
@@ -646,6 +651,11 @@ function handleKeyDown(event) {
 
     // Z-Level view controls (should take precedence over movement if not in targeting mode or other UI modes)
     if (!isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isTargetingMode) {
+        if (!window.mapRenderer || typeof window.mapRenderer.getCurrentMapData !== 'function' || typeof window.mapRenderer.scheduleRender !== 'function') {
+            logToConsole("Map renderer not ready for Z-level view controls.", "warn");
+            event.preventDefault();
+            return;
+        }
         let viewChanged = false;
         const currentMap = window.mapRenderer.getCurrentMapData(); // Get current map data once
         const H = currentMap ? currentMap.dimensions.height : 0;
