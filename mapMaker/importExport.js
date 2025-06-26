@@ -28,7 +28,12 @@ export function exportMapFile(mapDataToExport) {
     // Sanitize filename: replace spaces with underscores, remove .json extension if present
     mapId = mapId.replace(/\s+/g, '_').replace(/\.json$/i, "");
 
-    const mapName = mapDataToExport.name || mapId.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+    const mapName = document.getElementById('mapNameInput')?.value || mapDataToExport.name || mapId.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+    const description = document.getElementById('mapDescriptionInput')?.value || "";
+    const author = document.getElementById('mapAuthorInput')?.value || "";
+    const customTagsRaw = document.getElementById('mapCustomTagsInput')?.value || "";
+    const customTags = customTagsRaw === "" ? [] : customTagsRaw.split(',').map(tag => tag.trim()).filter(Boolean);
+
 
     // Create a clean copy for export, ensuring all necessary fields are present
     const exportData = {
@@ -39,7 +44,10 @@ export function exportMapFile(mapDataToExport) {
         startPos: { ...mapDataToExport.startPos },
         levels: JSON.parse(JSON.stringify(mapDataToExport.levels || {})), // Deep copy levels
         npcs: JSON.parse(JSON.stringify(mapDataToExport.npcs || [])),
-        portals: JSON.parse(JSON.stringify(mapDataToExport.portals || []))
+        portals: JSON.parse(JSON.stringify(mapDataToExport.portals || [])),
+        description: description,
+        author: author,
+        customTags: customTags
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
@@ -194,6 +202,17 @@ export async function convertAndSetLoadedMapData(loadedJson, assetManager, appSt
     appState.gridWidth = newMapDataObject.width;
     appState.gridHeight = newMapDataObject.height;
     // appState.currentEditingZ is already set above based on format or conversion
+
+
+    // Populate metadata fields in the UI
+    // This is done before updateUIFromLoadedMap in case that function relies on these fields being set
+    // or if we want to pass the fully populated newMapDataObject to it.
+    const el = (id) => document.getElementById(id);
+    if (el("mapNameInput")) el("mapNameInput").value = newMapDataObject.name || DEFAULT_MAP_NAME;
+    if (el("mapDescriptionInput")) el("mapDescriptionInput").value = newMapDataObject.description || "";
+    if (el("mapAuthorInput")) el("mapAuthorInput").value = newMapDataObject.author || "";
+    if (el("mapCustomTagsInput")) el("mapCustomTagsInput").value = (newMapDataObject.customTags || []).join(', ');
+
 
     // Ensure all Z-levels mentioned in the loaded map have their layer structures initialized.
     // This includes Z-levels from startPos, portals (source and target), and NPCs.

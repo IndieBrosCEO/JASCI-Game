@@ -1383,7 +1383,7 @@
     "name": "Ladder",
     "sprite": "H",
     "color": "#964B00",
-    "tags": [ "walkable_on_z", "z_transition", "climbable", "interactive", "ladder", "item", "middle" ],
+    "tags": [ "z_transition", "climbable", "interactive", "ladder", "item", "middle" ],
     "target_dz": 1,
     "z_cost": 1,
     "description": "A sturdy ladder allowing travel between Z-levels. Can be climbed up or down."

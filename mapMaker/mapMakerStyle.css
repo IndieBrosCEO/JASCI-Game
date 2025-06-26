@@ -114,3 +114,29 @@ button {
     button:hover {
         background-color: #555;
     }
+
+/* Brush preview style */
+.cell.brush-preview {
+    outline: 1px dashed yellow;
+    /* Alternatively, a semi-transparent background: */
+    /* background-color: rgba(255, 255, 0, 0.15); */
+    /* Ensure this doesn't hide player start bg color if they overlap by making it more transparent or outline only */
+}
+
+/* Line tool preview style */
+.cell.line-preview {
+    background-color: rgba(173, 216, 230, 0.25); /* Light blue, semi-transparent */
+    /* outline: 1px dashed skyblue; */ /* Alternative */
+}
+
+/* Rectangle tool preview style */
+.cell.rect-preview {
+    background-color: rgba(144, 238, 144, 0.25); /* Light green, semi-transparent */
+    /* outline: 1px dashed lightgreen; */ /* Alternative */
+}
+
+/* Fill tool preview style */
+.cell.fill-preview {
+    background-color: rgba(128, 0, 128, 0.3); /* Semi-transparent purple */
+    /* outline: 1px solid purple; */ /* Alternative */
+}

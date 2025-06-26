@@ -4,9 +4,8 @@
     "\\assets",
     "\\assets\\definitions",
     "\\js",
-    "\\mapMaker",
-    "\\Maps"
+    "\\mapMaker"
   ],
-  "SelectedNode": "\\mapMaker\\mapMaker.html",
+  "SelectedNode": "\\mapMaker\\importExport.js",
   "PreviewInSolutionExplorer": false
 }

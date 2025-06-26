@@ -79,6 +79,47 @@ async function move_internal(direction) {
         return;
     }
     const currentMap = window.mapRenderer.getCurrentMapData();
+
+    // Helper function to check for significant solid obstacles at a target location
+    function isTileASignificantSolidObstacle(checkX, checkY, checkZ) {
+        const levelData = currentMap.levels[checkZ.toString()];
+        // If no level data for the checkZ, or assets not loaded, assume it's NOT a significant solid obstacle 
+        // (could be open air, which is handled by isWalkable or fall checks).
+        // For the purpose of "is this a wall I bump into?", missing data means no wall.
+        if (!levelData || !window.assetManager?.tilesets) return false;
+
+        const midTileRaw = levelData.middle?.[checkY]?.[checkX];
+        const midEffId = (typeof midTileRaw === 'object' && midTileRaw?.tileId !== undefined) ? midTileRaw.tileId : midTileRaw;
+        const midDef = window.assetManager.tilesets[midEffId];
+        if (midDef) {
+            const tags = midDef.tags || [];
+            // Significant if impassable, solid_terrain_top, or wall; AND not a z_transition/walkable_on_z/open door/window
+            if ((tags.includes("impassable") || tags.includes("solid_terrain_top") || tags.includes("wall")) &&
+                !tags.includes("z_transition") &&
+                !tags.includes("walkable_on_z") &&
+                !(tags.includes("door") && tags.includes("open")) &&
+                !(tags.includes("window") && tags.includes("open"))) {
+                // logToConsole(`isTileASignificantSolidObstacle: Middle layer ${midEffId} at (${checkX},${checkY},${checkZ}) is significant.`);
+                return true;
+            }
+        }
+        const botTileRaw = levelData.bottom?.[checkY]?.[checkX];
+        const botEffId = (typeof botTileRaw === 'object' && botTileRaw?.tileId !== undefined) ? botTileRaw.tileId : botTileRaw;
+        const botDef = window.assetManager.tilesets[botEffId];
+        if (botDef) {
+            const tags = botDef.tags || [];
+            // A bottom tile is significant if impassable (not z_trans) OR 
+            // solid_terrain_top (not z_trans AND explicitly NOT a standard floor type).
+            if (((tags.includes("impassable") && !tags.includes("z_transition"))) ||
+                (tags.includes("solid_terrain_top") && !tags.includes("z_transition") &&
+                    !tags.includes("floor") && !tags.includes("transparent_floor") && !tags.includes("walkable_surface"))) {
+                // logToConsole(`isTileASignificantSolidObstacle: Bottom layer ${botEffId} at (${checkX},${checkY},${checkZ}) is significant.`);
+                return true;
+            }
+        }
+        // logToConsole(`isTileASignificantSolidObstacle: No significant obstacle at (${checkX},${checkY},${checkZ}).`);
+        return false;
+    }
     if (!currentMap || !currentMap.dimensions) {
         logToConsole("Cannot move: Map data not loaded.");
         return;
@@ -442,13 +483,62 @@ async function move_internal(direction) {
 
     // If horizontal move on current Z didn't happen (blocked or occupied by NPC for horizontal)
     // Attempt 2: Step Up
-    if (gameState.movementPointsRemaining >= Z_STEP_UP_COST) {
-        const zUp = originalPos.z + 1;
-        let isTargetCurrentZBlocked = !window.mapRenderer.isWalkable(targetX, targetY, originalPos.z); // Check if current Z is blocked
-        // Further refine "blocked": is it a low obstacle? For now, any non-walkable tile at current Z is a candidate for stepping over.
-        // This could be enhanced by checking the specific type of tile at (targetX, targetY, originalPos.z)
 
-        if (isTargetCurrentZBlocked && window.mapRenderer.isWalkable(targetX, targetY, zUp)) {
+    // Helper function to check for significant solid obstacles at a target location
+    // This is scoped locally to move_internal for this specific refined check.
+    function isTileASignificantSolidObstacle(checkX, checkY, checkZ) {
+        const levelData = currentMap.levels[checkZ.toString()];
+        if (!levelData || !window.assetManager?.tilesets) return true; // Assume solid if data missing, for safety
+
+        // Check middle layer
+        const midTileRaw = levelData.middle?.[checkY]?.[checkX];
+        const midEffId = (typeof midTileRaw === 'object' && midTileRaw?.tileId !== undefined) ? midTileRaw.tileId : midTileRaw;
+        const midDef = window.assetManager.tilesets[midEffId];
+        if (midDef) {
+            const tags = midDef.tags || [];
+            if ((tags.includes("impassable") || tags.includes("solid_terrain_top") || tags.includes("wall")) && // Added "wall"
+                !tags.includes("z_transition") &&
+                !tags.includes("walkable_on_z") &&
+                !(tags.includes("door") && tags.includes("open")) &&
+                !(tags.includes("window") && tags.includes("open"))) {
+                return true; // It's a significant solid obstacle on the middle layer
+            }
+        }
+
+        // Check bottom layer (less likely for walls, but could be impassable terrain features)
+        const botTileRaw = levelData.bottom?.[checkY]?.[checkX];
+        const botEffId = (typeof botTileRaw === 'object' && botTileRaw?.tileId !== undefined) ? botTileRaw.tileId : botTileRaw;
+        const botDef = window.assetManager.tilesets[botEffId];
+        if (botDef) {
+            const tags = botDef.tags || [];
+            // A bottom tile is a significant obstacle if it's impassable (not z_trans) or solid_terrain_top (not z_trans and not a floor)
+            if (((tags.includes("impassable") && !tags.includes("z_transition"))) ||
+                (tags.includes("solid_terrain_top") && !tags.includes("z_transition") && !tags.includes("floor") && !tags.includes("transparent_floor"))) {
+                // Added check to ensure solid_terrain_top isn't just a floor for this "significant obstacle" check
+                return true;
+            }
+        }
+        return false; // Not a significant solid obstacle
+    }
+
+    // Auto Step-Up: Only if ON a z_transition tile and specific conditions are met (and main Z-rules didn't apply)
+    if (gameState.movementPointsRemaining >= Z_STEP_UP_COST &&
+        playerIsOnZTransition && zTransitionDef && !slopeDef) {
+
+        const zUp = originalPos.z + 1;
+        // Condition for step-up:
+        // 1. Target tile at current Z (originalPos.z) is NOT walkable.
+        // 2. Target tile at current Z is NOT a significant solid obstacle (e.g. it's a low, steppable object).
+        // 3. Tile above player is empty.
+        // 4. Tile at target (targetX, targetY, zUp) is walkable.
+
+        let isTargetNotWalkableCurrentZ = !window.mapRenderer.isWalkable(targetX, targetY, originalPos.z);
+        let isTargetNotSignificantObstacle = !isTileASignificantSolidObstacle(targetX, targetY, originalPos.z);
+        let isAbovePlayerEmpty = window.mapRenderer.isTileEmpty(originalPos.x, originalPos.y, originalPos.z + 1);
+        let isAboveTargetWalkable = window.mapRenderer.isWalkable(targetX, targetY, zUp);
+
+        if (isTargetNotWalkableCurrentZ && isTargetNotSignificantObstacle && isAbovePlayerEmpty && isAboveTargetWalkable) {
+            logToConsole(`Conditions for Step-Up MET: TargetCurrentZ NotWalkable=${isTargetNotWalkableCurrentZ}, NotSigObstacle=${isTargetNotSignificantObstacle}, AbovePlayerEmpty=${isAbovePlayerEmpty}, AboveTargetWalkable=${isAboveTargetWalkable}`);
             let npcAtStepUpDest = false;
             if (gameState.npcs && gameState.npcs.length > 0) {
                 for (const npc of gameState.npcs) {
@@ -485,18 +575,20 @@ async function move_internal(direction) {
         }
     }
 
-    // Attempt 3: Step Down
-    if (gameState.movementPointsRemaining >= Z_STEP_DOWN_COST) {
+    // Auto Step-Down: Only if ON a z_transition tile, specific conditions met, and step-up didn't occur.
+    if (gameState.movementPointsRemaining >= Z_STEP_DOWN_COST &&
+        playerIsOnZTransition && zTransitionDef && !slopeDef &&
+        (gameState.playerPos.x === originalPos.x && gameState.playerPos.y === originalPos.y && gameState.playerPos.z === originalPos.z) // Ensure player hasn't already moved (e.g. by step up)
+    ) {
         const zDown = originalPos.z - 1;
-        // Condition for stepping down: current Z is "empty" or "void-like"
-        // This can be inferred if (targetX, targetY, originalPos.z) is NOT walkable,
-        // AND there isn't a high wall/solid_terrain_top preventing downward view/movement.
-        // For simplicity, we'll use !isWalkable for current Z again.
-        // A more precise check might involve looking at tile tags at (targetX, targetY, originalPos.z) for 'transparent_floor' or similar.
-        let isTargetCurrentZEmptyOrVoid = !window.mapRenderer.isWalkable(targetX, targetY, originalPos.z);
+        // Condition for stepping down: current Z is a low obstacle/void, and space below is walkable
+        let isTargetNotWalkableCurrentZ = !window.mapRenderer.isWalkable(targetX, targetY, originalPos.z);
+        let isTargetNotSignificantObstacle = !isTileASignificantSolidObstacle(targetX, targetY, originalPos.z);
+        // No need for isAbovePlayerEmpty for step-down.
+        let isBelowTargetWalkable = window.mapRenderer.isWalkable(targetX, targetY, zDown);
 
-
-        if (isTargetCurrentZEmptyOrVoid && window.mapRenderer.isWalkable(targetX, targetY, zDown)) {
+        if (isTargetNotWalkableCurrentZ && isTargetNotSignificantObstacle && isBelowTargetWalkable) {
+            logToConsole(`Conditions for Step-Down MET: TargetCurrentZ NotWalkable=${isTargetNotWalkableCurrentZ}, NotSigObstacle=${isTargetNotSignificantObstacle}, BelowTargetWalkable=${isBelowTargetWalkable}`);
             let npcAtStepDownDest = false;
             if (gameState.npcs && gameState.npcs.length > 0) {
                 for (const npc of gameState.npcs) {
@@ -545,55 +637,101 @@ async function move_internal(direction) {
         return;
     }
 
-    // If target (targetX, targetY, originalPos.z) is NOT walkable, determine if it's a solid obstacle or empty air.
-    let isSolidObstacle = false;
+    // If target (targetX, targetY, originalPos.z) is NOT walkable, determine if it's an 'impassable' tagged obstacle or empty air.
+    let isImpassableTaggedObstacle = false;
+    let impassableTileName = '';
     const targetLevelData = currentMap.levels[originalPos.z.toString()];
+
     if (targetLevelData && window.assetManager?.tilesets) {
-        const tileOnMiddleRaw = targetLevelData.middle?.[targetY]?.[targetX];
-        const effMid = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
-        const tileDefMiddle = window.assetManager.tilesets[effMid];
+        let tileIdFound = null; // To store the ID of the found impassable tile for logging
+        let layerFoundOn = "";
 
-        if (tileDefMiddle && (tileDefMiddle.tags?.includes("impassable") || tileDefMiddle.tags?.includes("solid_terrain_top")) &&
-            !tileDefMiddle.tags?.includes("z_transition") && !tileDefMiddle.tags?.includes("walkable_on_z")) {
-            // Consider it a solid obstacle if it's impassable or solid_terrain_top, AND not a special passable type.
-            isSolidObstacle = true;
-            logToConsole(`Target (${targetX},${targetY},Z:${originalPos.z}) blocked by solid obstacle on middle layer: ${effMid}`);
-        }
+        // Check middle layer for 'impassable' tag
+        const midRaw = targetLevelData.middle?.[targetY]?.[targetX];
+        const midId = (typeof midRaw === 'object' && midRaw?.tileId !== undefined) ? midRaw.tileId : midRaw;
+        const midDef = midId ? window.assetManager.tilesets[midId] : null;
 
-        if (!isSolidObstacle) {
-            const tileOnBottomRaw = targetLevelData.bottom?.[targetY]?.[targetX];
-            const effBot = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
-            const tileDefBottom = window.assetManager.tilesets[effBot];
-
-            if (tileDefBottom) {
-                logToConsole(`[TurnManager-ObstacleCheck-Bottom] Tile: ${effBot}, Tags: ${JSON.stringify(tileDefBottom.tags)}`);
-                const hasImpassable = tileDefBottom.tags?.includes("impassable");
-                const isZTransition = tileDefBottom.tags?.includes("z_transition");
-                logToConsole(`[TurnManager-ObstacleCheck-Bottom] HasImpassable: ${hasImpassable}, IsZTransition: ${isZTransition}`);
-
-                if (hasImpassable && !isZTransition) {
-                    isSolidObstacle = true;
-                    logToConsole(`Target (${targetX},${targetY},Z:${originalPos.z}) blocked by IMPASSABLE tile on bottom layer: ${effBot}`);
-                }
-            } else {
-                logToConsole(`[TurnManager-ObstacleCheck-Bottom] No tile definition for '${effBot}'`);
+        if (midDef?.tags?.includes("impassable")) {
+            // Allow open doors/windows to not be impassable here
+            if (!(midDef.tags.includes("door") && midDef.tags.includes("open")) &&
+                !(midDef.tags.includes("window") && midDef.tags.includes("open"))) {
+                isImpassableTaggedObstacle = true;
+                impassableTileName = midDef.name || midId;
+                tileIdFound = midId;
+                layerFoundOn = "middle";
             }
         }
-    } else if (!targetLevelData) {
-        // No data for target Z level at all, implies it's empty air (or beyond map bounds, already checked).
-        // isWalkable would have returned based on supportedFromBelow if this was the case.
-        // This path here means isWalkable returned false for originalPos.z for *some other reason* if targetLevelData is null.
-        // For safety, assume it might be a void if no level data.
-        logToConsole(`Target (${targetX},${targetY},Z:${originalPos.z}) has no level data. Considering for fall check (though isWalkable should have handled this scenario if it was truly empty & supported).`);
+
+        // If not found on middle, check bottom layer for 'impassable' tag
+        if (!isImpassableTaggedObstacle) {
+            const botRaw = targetLevelData.bottom?.[targetY]?.[targetX];
+            const botId = (typeof botRaw === 'object' && botRaw?.tileId !== undefined) ? botRaw.tileId : botRaw;
+            const botDef = botId ? window.assetManager.tilesets[botId] : null;
+
+            if (botDef?.tags?.includes("impassable")) {
+                // An impassable tile on bottom layer.
+                // It blocks unless it's an open door/window OR a z_transition that Rule 3 might use.
+                // Since Rule 3 (step up onto impassable) would have already been checked if player was on a z_transition tile,
+                // any remaining 'impassable' 'z_transition' on bottom should be treated as a blocker here if not open.
+                if (!(botDef.tags.includes("door") && botDef.tags.includes("open")) &&
+                    !(botDef.tags.includes("window") && botDef.tags.includes("open"))
+                    // && !botDef.tags.includes("z_transition") // Keep this commented: if Rule 3 didn't use it, it blocks.
+                ) {
+                    isImpassableTaggedObstacle = true;
+                    impassableTileName = botDef.name || botId;
+                    tileIdFound = botId;
+                    layerFoundOn = "bottom";
+                }
+            }
+        }
+        if (isImpassableTaggedObstacle && tileIdFound) {
+            // This log is now part of the specific blocking message.
+            // logToConsole(`Target (${targetX},${targetY},Z:${originalPos.z}) is an impassable-tagged obstacle (${tileIdFound} on ${layerFoundOn}).`);
+        }
+
+    } else if (!targetLevelData && originalPos.z !== undefined) { // Target Z-level doesn't exist
+        isImpassableTaggedObstacle = false; // It's empty air/void, not an 'impassable' tile.
+        logToConsole(`Target (${targetX},${targetY},Z:${originalPos.z}) has no level data, considered void for impassable check.`);
     }
 
-    if (isSolidObstacle) {
-        logToConsole("Can't move that way (blocked by solid obstacle).");
-        return;
+    if (isImpassableTaggedObstacle) {
+        logToConsole(`Movement blocked by '${impassableTileName}' at (${targetX}, ${targetY}, ${originalPos.z})!`);
+        return; // STOP MOVEMENT because it's an impassable tagged tile.
     } else {
-        // If it's not a solid obstacle at originalPos.z, and also not walkable at originalPos.z,
-        // then it's likely empty air. Initiate fall check.
-        logToConsole(`Target tile (${targetX},${targetY},Z:${originalPos.z}) is not walkable and not a solid obstacle. Initiating fall check.`);
+        // Target is not walkable AND not an 'impassable' tagged obstacle -> implies empty air or other non-blocking non-walkable.
+        // This log indicates the issue if an impassable tile reaches here.
+        // logToConsole(`Target tile (${targetX},${targetY},Z:${originalPos.z}) is not walkable and not an impassable-tagged obstacle. Initiating fall check.`);
+
+        // Before falling, ensure it's truly not an impassable tile that was missed.
+        // This is a redundant check if the isStrictlyImpassableTagged logic above is perfect,
+        // but added for safety given the persistent issue.
+        let trulyIsImpassable = false;
+        let nameOfBlockingTile = "";
+        const lvlData = currentMap.levels[originalPos.z.toString()];
+        if (lvlData && window.assetManager?.tilesets) {
+            const mId = lvlData.middle?.[targetY]?.[targetX]?.tileId || lvlData.middle?.[targetY]?.[targetX];
+            const mDef = mId ? window.assetManager.tilesets[mId] : null;
+            if (mDef?.tags?.includes("impassable") && !(mDef.tags.includes("door") && mDef.tags.includes("open")) && !(mDef.tags.includes("window") && mDef.tags.includes("open"))) {
+                trulyIsImpassable = true;
+                nameOfBlockingTile = mDef.name || mId;
+            }
+            if (!trulyIsImpassable) {
+                const bId = lvlData.bottom?.[targetY]?.[targetX]?.tileId || lvlData.bottom?.[targetY]?.[targetX];
+                const bDef = bId ? window.assetManager.tilesets[bId] : null;
+                if (bDef?.tags?.includes("impassable") && !(bDef.tags.includes("door") && bDef.tags.includes("open")) && !(bDef.tags.includes("window") && bDef.tags.includes("open")) && !bDef.tags.includes("z_transition")) {
+                    trulyIsImpassable = true;
+                    nameOfBlockingTile = bDef.name || bId;
+                }
+            }
+        }
+
+        if (trulyIsImpassable) {
+            logToConsole(`Movement blocked by '${nameOfBlockingTile}' at (${targetX}, ${targetY}, ${originalPos.z})! [Safety Check]`);
+            return;
+        }
+
+        // Proceed with fall check only if confirmed not an impassable tile.
+        logToConsole(`Target tile (${targetX},${targetY},Z:${originalPos.z}) is confirmed not an impassable block. Initiating fall check.`);
         let fallCheckInitiated = false;
         if (typeof window.initiateFallCheck === 'function') {
             fallCheckInitiated = window.initiateFallCheck(gameState, targetX, targetY, originalPos.z);
@@ -615,6 +753,7 @@ async function move_internal(direction) {
             return;
         } else {
             logToConsole("Can't move that way (fall check determined no fall or error in fall logic).");
+            return; // Added return here to ensure movement stops if fall check fails to resolve.
         }
     }
 }

@@ -81,16 +81,50 @@ export function handleCellMouseDown(event) {
 
     switch (appState.currentTool) {
         case "brush":
-            snapshot(); // Create undo state
-            placeTile(x, y, z, appState.currentTileId, mapData, /* assetManagerInstance removed */ appState.ensureLayersForZ, appState.gridWidth, appState.gridHeight, triggerFullGridRender);
-            // Check if the placed tile is a container/lockable to auto-select for property editing
-            const placedTileInfo = getTopmostTileAt(x, y, z, mapData, assetManagerInstance);
-            if (placedTileInfo?.definition?.tags && (placedTileInfo.definition.tags.includes('container') || placedTileInfo.definition.tags.includes('door') || placedTileInfo.definition.tags.includes('window'))) {
-                appState.selectedTileForInventory = { x, y, z, layerName: placedTileInfo.layer };
-            } else {
-                appState.selectedTileForInventory = null;
+            snapshot(); // Create undo state for the entire brush operation
+            const brushSize = appState.brushSize || 1;
+            const halfBrush = Math.floor(brushSize / 2); // For centering odd brushes, adjust for even if needed
+
+            // Calculate top-left starting point for the brush
+            // If brushSize is 1, startX = x, startY = y
+            // If brushSize is 3, centered, startX = x - 1, startY = y - 1
+            // If brushSize is 2, it will effectively be x to x+1, y to y+1 (or could be centered if preferred)
+            // Let's make it so the click is the top-left for even, and center for odd.
+            // Or simpler: click is always top-left of the brush square.
+            // For this implementation, let's make the click the center of the brush area (or as close as possible for even sizes)
+            const startDrawX = x - halfBrush;
+            const startDrawY = y - halfBrush;
+
+            let tilePlaced = false;
+            for (let i = 0; i < brushSize; i++) {
+                for (let j = 0; j < brushSize; j++) {
+                    const currentDrawX = startDrawX + j;
+                    const currentDrawY = startDrawY + i;
+
+                    // Ensure drawing within map bounds
+                    if (currentDrawX >= 0 && currentDrawX < appState.gridWidth &&
+                        currentDrawY >= 0 && currentDrawY < appState.gridHeight) {
+                        // Pass null for renderFn to placeTile to avoid rendering for each sub-tile
+                        placeTile(currentDrawX, currentDrawY, z, appState.currentTileId, mapData, appState.ensureLayersForZ, appState.gridWidth, appState.gridHeight, null);
+                        tilePlaced = true;
+                    }
+                }
             }
-            updateContainerInventoryUI(appState.selectedTileForInventory, mapData); // Update only relevant UI
+
+            if (tilePlaced) {
+                triggerFullGridRender(); // Single render after all tiles in brush are placed
+
+                // Auto-select for property editing if the *clicked* cell (center of brush) results in a special tile
+                // This might need refinement if a multi-tile brush places different things.
+                // For now, check the original clicked cell.
+                const placedTileInfo = getTopmostTileAt(x, y, z, mapData, assetManagerInstance);
+                if (placedTileInfo?.definition?.tags && (placedTileInfo.definition.tags.includes('container') || placedTileInfo.definition.tags.includes('door') || placedTileInfo.definition.tags.includes('window'))) {
+                    appState.selectedTileForInventory = { x, y, z, layerName: placedTileInfo.layer };
+                } else {
+                    appState.selectedTileForInventory = null;
+                }
+                updateContainerInventoryUI(appState.selectedTileForInventory, mapData);
+            }
             break;
         case "playerStart":
             handlePlayerStartTool(x, y, z, mapData, triggerFullGridRender, updatePlayerStartDisplay);
@@ -141,7 +175,8 @@ export function handleCellMouseUp(event) {
     switch (appState.currentTool) {
         case "line":
             if (appState.dragStart) { // Ensure drag was started for line
-                drawLine(appState.dragStart.x, appState.dragStart.y, z, x, y, appState.currentTileId, mapData, assetManagerInstance, toolInteractionInterface);
+                const currentBrushSize = appState.brushSize || 1;
+                drawLine(appState.dragStart.x, appState.dragStart.y, z, x, y, appState.currentTileId, mapData, assetManagerInstance, toolInteractionInterface, currentBrushSize);
             }
             break;
         case "rect":
@@ -170,17 +205,98 @@ export function handleCellMouseUp(event) {
 
 // --- Grid Container Mouse Event Handlers ---
 function handleGridMouseMove(event) {
+    const cell = event.target.closest(".cell");
+    if (!cell) { // Mouse is over the grid container but not a specific cell
+        if (appState.previewPos || appState.mouseOverGridPos) { // If there was a preview, clear it
+            appState.previewPos = null;
+            appState.mouseOverGridPos = null;
+            triggerFullGridRender();
+        }
+        return;
+    }
+
+    const currentMousePos = { x: +cell.dataset.x, y: +cell.dataset.y, z: +cell.dataset.z }; // z might not be needed for brush preview
+
+    let needsRender = false;
+
+    // Stamp Preview Logic
     if (appState.currentTool === "stamp" && appState.stampData3D) {
-        const cell = event.target.closest(".cell");
-        appState.previewPos = cell ? { x: +cell.dataset.x, y: +cell.dataset.y, z: +cell.dataset.z } : null;
+        if (!appState.previewPos || appState.previewPos.x !== currentMousePos.x || appState.previewPos.y !== currentMousePos.y) {
+            appState.previewPos = { x: currentMousePos.x, y: currentMousePos.y, z: currentMousePos.z }; // z from cell for consistency
+            needsRender = true;
+        }
+        // Ensure brush preview is cleared if stamp is active
+        if (appState.mouseOverGridPos) {
+            appState.mouseOverGridPos = null;
+            needsRender = true; // Also needs render to remove brush preview
+        }
+    }
+    // Brush Preview Logic
+    else if (appState.currentTool === "brush" && (appState.brushSize || 1) > 1) {
+        if (!appState.mouseOverGridPos || appState.mouseOverGridPos.x !== currentMousePos.x || appState.mouseOverGridPos.y !== currentMousePos.y) {
+            appState.mouseOverGridPos = { x: currentMousePos.x, y: currentMousePos.y };
+            needsRender = true;
+        }
+        // Ensure stamp preview is cleared if brush is active
+        if (appState.previewPos) {
+            appState.previewPos = null;
+            needsRender = true; // Also needs render to remove stamp preview
+        }
+    }
+    // Line Tool Preview Logic (similar to brush, but depends on dragStart)
+    else if ((appState.currentTool === "line" || appState.currentTool === "rect") && appState.dragStart) {
+        if (!appState.mouseOverGridPos || appState.mouseOverGridPos.x !== currentMousePos.x || appState.mouseOverGridPos.y !== currentMousePos.y) {
+            appState.mouseOverGridPos = { x: currentMousePos.x, y: currentMousePos.y };
+            needsRender = true;
+        }
+        // Ensure other previews are cleared
+        if (appState.previewPos) { // Stamp preview
+            appState.previewPos = null;
+            needsRender = true;
+        }
+        // No need to clear brush preview here as dragStart being active means brush tool isn't the one setting mouseOverGridPos for its own preview
+    }
+    // Fill Tools Preview Logic
+    else if (appState.currentTool === "fill" || appState.currentTool === "fill3d") {
+        if (!appState.mouseOverGridPos || appState.mouseOverGridPos.x !== currentMousePos.x || appState.mouseOverGridPos.y !== currentMousePos.y) {
+            appState.mouseOverGridPos = { x: currentMousePos.x, y: currentMousePos.y };
+            needsRender = true;
+        }
+        // Ensure other previews are cleared
+        if (appState.previewPos) { // Stamp preview
+            appState.previewPos = null;
+            needsRender = true;
+        }
+        // dragStart is not used by fill tools, so no need to check/clear based on it.
+    }
+    // Clear previews if no relevant tool is active or condition met
+    else {
+        if (appState.previewPos) { // Stamp preview
+            appState.previewPos = null;
+            needsRender = true;
+        }
+        if (appState.mouseOverGridPos) {
+            appState.mouseOverGridPos = null;
+            needsRender = true;
+        }
+    }
+
+    if (needsRender) {
         triggerFullGridRender();
     }
-    // Could add preview logic for line/rect drag here if desired.
 }
 
 function handleGridMouseLeave() {
-    if (appState.currentTool === "stamp") {
-        appState.previewPos = null; // Clear preview when mouse leaves grid
+    let needsRender = false;
+    if (appState.previewPos) { // For stamp
+        appState.previewPos = null;
+        needsRender = true;
+    }
+    if (appState.mouseOverGridPos) { // For brush
+        appState.mouseOverGridPos = null;
+        needsRender = true;
+    }
+    if (needsRender) {
         triggerFullGridRender();
     }
 }
@@ -307,6 +423,10 @@ function setupButtonEventListeners() {
     });
     el('clearTagFiltersBtn', 'click', handleClearTagFilters);
 
+    // Palette Search
+    el('paletteSearchInput', 'input', handlePaletteSearchChange);
+    el('clearPaletteSearchBtn', 'click', handleClearPaletteSearch);
+
     // Onion Skinning Controls
     el('enableOnionSkinCheckbox', 'change', handleOnionSkinEnableChange);
     el('onionLayersBelowInput', 'change', () => handleOnionSkinDepthChange('layersBelow'));
@@ -326,7 +446,33 @@ function setupButtonEventListeners() {
     // Tile Instance Properties Editor
     el('saveTileInstancePropertiesBtn', 'click', handleSaveTileInstancePropsClick);
     el('clearTileInstancePropertiesBtn', 'click', handleClearTileInstancePropsClick);
+
+    // Map Metadata Editor
+    el('saveMapMetadataBtn', 'click', handleSaveMapMetadataClick);
+    el('toggleMetadataEditorBtn', 'click', () => toggleSectionVisibility('metadataEditorContent', 'toggleMetadataEditorBtn', 'Metadata'));
+
+    // Portal Configuration
+    el('togglePortalConfigBtn', 'click', () => toggleSectionVisibility('portalConfigContent', 'togglePortalConfigBtn', 'Portals'));
+
+    // Brush Size
+    el('brushSizeInput', 'change', handleBrushSizeChange);
 }
+
+// --- Generic Toggle Function ---
+function toggleSectionVisibility(contentId, buttonId, sectionName) {
+    const contentElement = document.getElementById(contentId);
+    const buttonElement = document.getElementById(buttonId);
+
+    if (contentElement && buttonElement) {
+        const isHidden = contentElement.style.display === 'none';
+        contentElement.style.display = isHidden ? '' : 'none'; // Use '' to revert to default (block, inline, etc.)
+        buttonElement.textContent = isHidden ? 'Hide' : 'Show';
+        logToConsole(`${sectionName} section ${isHidden ? 'shown' : 'hidden'}.`);
+    } else {
+        console.warn(`Toggle Error: Content ('${contentId}') or Button ('${buttonId}') not found for ${sectionName}.`);
+    }
+}
+
 
 // --- Specific Click/Change Handlers for UI Elements ---
 
@@ -376,9 +522,19 @@ function handleToolButtonClick(toolName) {
     if (toolName !== "selectInspect" && toolName !== "portal") {
         clearAllSelections();
     }
-    if (toolName === "stamp" && appState.dragStart) { // If switching to stamp while a drag was active
+
+    // If switching away from a tool that uses dragStart, or to a tool that clears it (like stamp)
+    if ((appState.currentTool === "line" || appState.currentTool === "rect") && toolName !== appState.currentTool) {
         appState.dragStart = null;
+        appState.mouseOverGridPos = null; // Clear potential line/rect preview
+        triggerFullGridRender(); // Update grid to remove preview
+    } else if (toolName === "stamp" && appState.dragStart) {
+        appState.dragStart = null; // Stamp tool itself might use dragStart differently or clear it
+        appState.mouseOverGridPos = null;
+        triggerFullGridRender();
     }
+    // If current tool is brush, and we switch away, mouseOverGridPos for brush is cleared by handleGridMouseMove.
+
     logToConsole(`Tool changed to: ${toolName}`);
 }
 
@@ -507,6 +663,19 @@ function handleClearTagFilters() {
     document.querySelectorAll(".tagFilterCheckbox").forEach(checkbox => checkbox.checked = false);
     appState.activeTagFilters = [];
     buildPalette(appState.currentTileId, appState.activeTagFilters);
+}
+
+function handlePaletteSearchChange() {
+    // buildPalette will read the input value directly from the DOM element
+    buildPalette(appState.currentTileId, appState.activeTagFilters);
+}
+
+function handleClearPaletteSearch() {
+    const searchInput = document.getElementById('paletteSearchInput');
+    if (searchInput) {
+        searchInput.value = ""; // Clear the input field
+    }
+    buildPalette(appState.currentTileId, appState.activeTagFilters); // Rebuild with empty search
 }
 
 function handleOnionSkinEnableChange(event) {
@@ -732,9 +901,11 @@ function triggerFullGridRender() {
         appState.gridHeight,
         appState.layerVisibility,
         appState.onionSkinState,
-        appState.previewPos,
+        appState.previewPos, // For stamp tool
         appState.stampData3D,
-        appState.currentTool
+        appState.currentTool,
+        appState.brushSize, // For brush preview
+        appState.mouseOverGridPos // For brush preview
     );
 }
 
@@ -764,4 +935,52 @@ function clearAllSelectionsAndPreviews() {
     // Consider if stampData3D should be cleared here or only by explicit stamp tool action/escape.
     // For now, changing Z-level doesn't auto-clear defined stamp.
     // triggerFullGridRender(); // Is usually called by the function that calls this helper
+}
+
+function handleBrushSizeChange(event) {
+    const newSize = parseInt(event.target.value, 10);
+    if (!isNaN(newSize) && newSize >= 1 && newSize <= 10) { // Max size 10, or from input's max
+        appState.brushSize = newSize;
+        logToConsole(`Brush size changed to: ${newSize}`);
+    } else {
+        // Reset to a valid value if input is out of range or invalid
+        event.target.value = appState.brushSize;
+        logToConsole(`Invalid brush size input. Kept at: ${appState.brushSize}`);
+    }
+}
+
+function handleSaveMapMetadataClick() {
+    const mapData = getMapData();
+    if (!mapData) {
+        logToConsole("Error: Map data not available to save metadata.");
+        const metadataStatus = document.getElementById('metadataStatus');
+        if (metadataStatus) metadataStatus.textContent = "Error: Map data unavailable.";
+        return;
+    }
+
+    snapshot(); // Save current state for undo
+
+    const newName = document.getElementById('mapNameInput')?.value || mapData.name; // Keep old name if input is somehow empty
+    const newDescription = document.getElementById('mapDescriptionInput')?.value || "";
+    const newAuthor = document.getElementById('mapAuthorInput')?.value || "";
+    const newCustomTagsRaw = document.getElementById('mapCustomTagsInput')?.value || "";
+    const newCustomTags = newCustomTagsRaw === "" ? [] : newCustomTagsRaw.split(',').map(tag => tag.trim()).filter(Boolean);
+
+    mapData.name = newName;
+    mapData.description = newDescription;
+    mapData.author = newAuthor;
+    mapData.customTags = newCustomTags;
+
+    logToConsole("Map metadata updated in mapData object:", { name: newName, description: newDescription, author: newAuthor, customTags: newCustomTags });
+
+    const metadataStatus = document.getElementById('metadataStatus');
+    if (metadataStatus) {
+        metadataStatus.textContent = "Metadata saved to current map session.";
+        setTimeout(() => { metadataStatus.textContent = ""; }, 3000); // Clear status after 3 seconds
+    }
+
+    // If the map name displayed elsewhere in the UI needs updating, trigger that here.
+    // For example, if there's a title showing the current map name.
+    // updatePlayerStartDisplay(mapData.startPos); // This also updates map name if it was part of it
+    // For now, export will pick up the new name.
 }

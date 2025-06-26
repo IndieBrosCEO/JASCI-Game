@@ -33,6 +33,9 @@ import { logToConsole } from './config.js';
  * @property {Object<string, MapLevelLayer>} levels - Contains data for each Z-level, keyed by Z index string.
  * @property {Array<object>} npcs - List of non-player characters on the map.
  * @property {Array<object>} portals - List of portals on the map.
+ * @property {string} [description] - Optional description of the map.
+ * @property {string} [author] - Optional author of the map.
+ * @property {string[]} [customTags] - Optional list of custom tags for the map.
  */
 
 /** @type {MapData} */
@@ -54,9 +57,16 @@ export function getMapData() {
  * @param {MapData} newMapData - The new map data to set.
  */
 export function setMapData(newMapData) {
-    mapData = newMapData;
+    mapData = { ...newMapData }; // Create a copy to avoid direct mutation issues if newMapData is used elsewhere
+
+    // Ensure new metadata fields are present, defaulting if not
+    mapData.name = newMapData.name || DEFAULT_MAP_NAME; // name is already part of core spec
+    mapData.description = newMapData.description || "";
+    mapData.author = newMapData.author || "";
+    mapData.customTags = Array.isArray(newMapData.customTags) ? newMapData.customTags : [];
+
     // Consider adding validation or transformation logic here if needed
-    logToConsole("Map data has been replaced (e.g. by loading a new map).");
+    logToConsole("Map data has been replaced (e.g. by loading a new map). Metadata fields ensured.");
 }
 
 /**
@@ -79,7 +89,10 @@ export function initNewMap(gridWidth, gridHeight, initialZ = DEFAULT_START_POS_Z
         },
         levels: {}, // Z-levels will be added by ensureLayersForZ
         npcs: [],
-        portals: []
+        portals: [],
+        description: "",
+        author: "",
+        customTags: []
     };
     ensureLayersForZ(initialZ, gridWidth, gridHeight, mapData); // Pass mapData to modify
     clearUndoRedoStacks();

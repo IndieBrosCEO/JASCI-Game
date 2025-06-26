@@ -334,10 +334,11 @@ export function floodFill3D(startX, startY, startZ, newTileBrushIdOrObject, mapD
  * @param {object} assetManager - AssetManager instance.
  * @param {object} interactionInterface - For map context and UI renderers.
  */
-export function drawLine(x0, y0, z, x1, y1, tileIdOrObject, mapData, assetManager, interactionInterface) {
+export function drawLine(x0, y0, z, x1, y1, tileIdOrObject, mapData, assetManager, interactionInterface, brushSize = 1) { // Added brushSize
     snapshot();
     const { ensureLayersForZ, gridWidth, gridHeight } = interactionInterface.getMapContext();
     const { renderGrid } = interactionInterface.getUIRenderers();
+    const halfBrush = Math.floor(brushSize / 2);
 
     let currentX = x0;
     let currentY = y0;
@@ -348,9 +349,20 @@ export function drawLine(x0, y0, z, x1, y1, tileIdOrObject, mapData, assetManage
     let error = dx + dy;
 
     while (true) {
-        if (currentX >= 0 && currentX < gridWidth && currentY >= 0 && currentY < gridHeight) {
-            placeTile(currentX, currentY, z, tileIdOrObject, mapData, ensureLayersForZ, gridWidth, gridHeight, null);
+        // For each point on the line, draw a brushSize x brushSize square
+        const startDrawX = currentX - halfBrush;
+        const startDrawY = currentY - halfBrush;
+
+        for (let i = 0; i < brushSize; i++) {
+            for (let j = 0; j < brushSize; j++) {
+                const drawX = startDrawX + j;
+                const drawY = startDrawY + i;
+                if (drawX >= 0 && drawX < gridWidth && drawY >= 0 && drawY < gridHeight) {
+                    placeTile(drawX, drawY, z, tileIdOrObject, mapData, ensureLayersForZ, gridWidth, gridHeight, null);
+                }
+            }
         }
+
         if (currentX === x1 && currentY === y1) break;
         const e2 = 2 * error;
         if (e2 >= dy) {

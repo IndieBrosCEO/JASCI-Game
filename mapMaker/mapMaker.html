@@ -64,6 +64,8 @@
             <button class="toolBtn" data-tool="selectInspect">Select</button>
             <button class="toolBtn" data-tool="playerStart" id="setPlayerStartToolBtn" title="Set Player Start Position (☻)">P☻</button>
             <button class="toolBtn" data-tool="portal" title="Add/Edit Portal (▓)">Portal</button>
+            <label for="brushSizeInput" style="margin-left: 15px;">Brush Size:</label>
+            <input type="number" id="brushSizeInput" value="1" min="1" max="10" style="width: 50px;" title="Set brush size (1-10)" />
         </div>
 
         <hr />
@@ -84,6 +86,11 @@
             <label><input type="checkbox" class="tagFilterCheckbox" value="solid_terrain_top"> Solid Top</label>
             <button id="clearTagFiltersBtn" style="margin-left: 10px;">Clear Filters</button>
         </div>
+        <div id="paletteSearchControls" style="margin-top: 5px; margin-bottom: 5px;">
+            <label for="paletteSearchInput">Search Tiles:</label>
+            <input type="text" id="paletteSearchInput" placeholder="Name or ID..." style="width: 150px; margin-right: 5px;">
+            <button id="clearPaletteSearchBtn">Clear Search</button>
+        </div>
         <div id="paletteContainer"></div>
 
         <hr />
@@ -94,8 +101,34 @@
         <button id="loadBtn">Load Map</button>
     </div>
     <hr />
+
+    <div id="mapMetadataEditorControls" style="padding: 10px; border: 1px solid #ccc; margin-top: 10px;">
+        <h3>Map Metadata <button id="toggleMetadataEditorBtn" style="font-size: 0.8em; margin-left: 10px;">Hide</button></h3>
+        <div id="metadataEditorContent">
+            <div>
+                <label for="mapNameInput">Map Name:</label>
+                <input type="text" id="mapNameInput" style="width: 300px; margin-bottom: 5px;" />
+            </div>
+            <div>
+                <label for="mapDescriptionInput">Description:</label><br />
+                <textarea id="mapDescriptionInput" style="width: 95%; min-height: 60px; margin-bottom: 5px;"></textarea>
+            </div>
+            <div>
+                <label for="mapAuthorInput">Author:</label>
+                <input type="text" id="mapAuthorInput" style="width: 300px; margin-bottom: 5px;" />
+            </div>
+            <div>
+                <label for="mapCustomTagsInput">Custom Tags (comma-separated):</label>
+                <input type="text" id="mapCustomTagsInput" style="width: 300px; margin-bottom: 10px;" />
+            </div>
+            <button id="saveMapMetadataBtn">Save Metadata to Current Map</button>
+            <span id="metadataStatus" style="margin-left: 10px; font-style: italic;"></span>
+        </div>
+    </div>
+    <hr />
+
     <div id="containerInventoryControls" style="display:none; padding: 10px; border: 1px solid #ccc; margin-top: 10px;">
-        <h3>Container Contents</h3>
+        <h3 data-purpose="container-title">Container Contents</h3> <!-- Added data-purpose for specific targeting by UIManager if needed -->
         <div style="margin-bottom: 5px;">Editing for: <strong id="editingContainerName">N/A</strong> at (<span id="editingContainerPos">N/A</span>)</div>
         <div id="lockControls" style="display:none; margin-top: 10px; margin-bottom: 10px; padding-top:10px; border-top: 1px dashed #ccc;">
             <h4>Lock Properties</h4>
@@ -117,30 +150,32 @@
     </div>
     <hr />
     <div id="portalToolsContainer" style="padding: 10px; border: 1px solid #ccc; margin-top: 10px;">
-        <h3>Portal Configuration</h3> <!-- Title changed slightly -->
-        <!-- Add Portal button removed, functionality moved to a tool -->
-        <div id="portalConfigControls" style="display:none; margin-top: 10px; padding: 10px; border: 1px solid #ddd;">
-            <h4>Configure Selected Portal</h4> <!-- Title changed slightly -->
-            <div>Editing Portal: <strong id="editingPortalId">N/A</strong> at (<span id="editingPortalPos">N/A</span>)</div>
-            <label for="portalTargetMapId">Target Map ID:</label>
-            <input type="text" id="portalTargetMapId" placeholder="e.g., another_map_id" />
-            <br />
-            <label for="portalTargetX">Target X:</label>
-            <input type="number" id="portalTargetX" min="0" style="width: 60px;" />
-            <label for="portalTargetY" style="margin-left: 5px;">Target Y:</label>
-            <input type="number" id="portalTargetY" min="0" style="width: 60px;" />
-            <label for="portalTargetZ" style="margin-left: 5px;">Target Z:</label>
-            <input type="number" id="portalTargetZ" value="0" style="width: 60px;" />
-            <br />
-            <label for="portalNameInput">Portal Name:</label>
-            <input type="text" id="portalNameInput" placeholder="Optional name for this portal" style="width: 200px; margin-top: 5px;" />
-            <br />
-            <button id="savePortalPropertiesBtn" style="margin-top: 5px;">Save Portal</button>
-        </div>
-        <div id="selectedPortalInfo" style="margin-top: 5px; padding: 5px; border: 1px solid #eee;">
-            Selected Portal: None
-        </div>
-        <button id="removePortalBtn" style="display:none; margin-top: 5px;">Remove Selected Portal</button>
+        <h3>Portal Configuration <button id="togglePortalConfigBtn" style="font-size: 0.8em; margin-left: 10px;">Hide</button></h3>
+        <div id="portalConfigContent">
+            <!-- Add Portal button removed, functionality moved to a tool -->
+            <div id="portalConfigControls" style="display:none; margin-top: 10px; padding: 10px; border: 1px solid #ddd;">
+                <h4>Configure Selected Portal</h4> <!-- Title changed slightly -->
+                <div>Editing Portal: <strong id="editingPortalId">N/A</strong> at (<span id="editingPortalPos">N/A</span>)</div>
+                <label for="portalTargetMapId">Target Map ID:</label>
+                <input type="text" id="portalTargetMapId" placeholder="e.g., another_map_id" />
+                <br />
+                <label for="portalTargetX">Target X:</label>
+                <input type="number" id="portalTargetX" min="0" style="width: 60px;" />
+                <label for="portalTargetY" style="margin-left: 5px;">Target Y:</label>
+                <input type="number" id="portalTargetY" min="0" style="width: 60px;" />
+                <label for="portalTargetZ" style="margin-left: 5px;">Target Z:</label>
+                <input type="number" id="portalTargetZ" value="0" style="width: 60px;" />
+                <br />
+                <label for="portalNameInput">Portal Name:</label>
+                <input type="text" id="portalNameInput" placeholder="Optional name for this portal" style="width: 200px; margin-top: 5px;" />
+                <br />
+                <button id="savePortalPropertiesBtn" style="margin-top: 5px;">Save Portal</button>
+            </div>
+            <div id="selectedPortalInfo" style="margin-top: 5px; padding: 5px; border: 1px solid #eee;">
+                Selected Portal: None
+            </div>
+            <button id="removePortalBtn" style="display:none; margin-top: 5px;">Remove Selected Portal</button>
+        </div> <!-- Closing portalConfigContent -->
     </div>
     <hr />
     <div id="tilePropertyEditorControls" style="display:none; padding: 10px; border: 1px solid #ccc; margin-top: 10px;">

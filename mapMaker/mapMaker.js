@@ -85,8 +85,10 @@ const appState = {
 
     // Interaction states for tools
     dragStart: null,
-    previewPos: null,
+    previewPos: null, // For stamp tool
     stampData3D: null,
+    brushSize: 1, // Added for adjustable brush size
+    mouseOverGridPos: null, // For brush preview
 
     nextPortalId: 0,
 
@@ -151,6 +153,10 @@ async function initializeMapMaker() {
     if (onionBelowInput) appState.onionSkinState.layersBelow = parseInt(onionBelowInput.value, 10) || DEFAULT_ONION_LAYERS_BELOW;
     const onionAboveInput = document.getElementById('onionLayersAboveInput');
     if (onionAboveInput) appState.onionSkinState.layersAbove = parseInt(onionAboveInput.value, 10) || DEFAULT_ONION_LAYERS_ABOVE;
+
+    const brushSizeInput = document.getElementById('brushSizeInput');
+    if (brushSizeInput) appState.brushSize = parseInt(brushSizeInput.value, 10) || 1;
+
 
     // Initialize Modules
     initializeTileManager(assetManager);

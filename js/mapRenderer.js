@@ -141,6 +141,111 @@ function isTileBlockingLight(tileX, tileY, tileZ) { // Added tileZ
     return false; // Default: tile does not block light if no specific blocking condition met (e.g., empty cell)
 }
 
+// New helper function to check if a tile is "empty" for passage (e.g., for Z-transitions)
+function isTileEmpty(x, y, z) {
+    const mapData = window.mapRenderer.getCurrentMapData();
+    const tilesets = assetManagerInstance ? assetManagerInstance.tilesets : null;
+
+    if (!mapData || !mapData.levels || !mapData.dimensions || !tilesets) {
+        // console.warn(`isTileEmpty: Critical data missing for ${x},${y},${z}. Assuming not empty.`);
+        return false; // Cannot determine, assume not empty for safety
+    }
+
+    if (x < 0 || y < 0 || y >= mapData.dimensions.height || x >= mapData.dimensions.width) {
+        // console.warn(`isTileEmpty: Coordinates ${x},${y},${z} out of bounds. Assuming not empty.`);
+        return false; // Out of bounds
+    }
+
+    const zStr = z.toString();
+    const levelData = mapData.levels[zStr];
+
+    if (!levelData) {
+        // console.log(`isTileEmpty: No level data for Z=${z}. Assuming empty (open air).`);
+        return true; // No level data means it's open air, thus empty
+    }
+
+    // Check middle layer
+    const tileOnMiddleRaw = levelData.middle?.[y]?.[x];
+    const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined)
+        ? tileOnMiddleRaw.tileId
+        : tileOnMiddleRaw;
+
+    if (effectiveTileOnMiddle && effectiveTileOnMiddle !== "") {
+        const tileDefMiddle = tilesets[effectiveTileOnMiddle];
+        if (tileDefMiddle) {
+            // If it's impassable, or blocks vision/light (unless explicitly allows passage like an open door), it's not empty.
+            // Tags like 'allows_vision' or 'transparent' might make an 'impassable' door effectively empty for this check if it's open.
+            // A simple check: if it has 'impassable' and isn't an 'open' door/window, it's not empty.
+            // Or more generally, if it's not tagged as 'transparent' or 'allows_vision' and exists, it's likely not empty.
+            // For "empty" in the context of "can I move through this air space", most things on middle make it not empty.
+            if (tileDefMiddle.tags && (tileDefMiddle.tags.includes('impassable') || tileDefMiddle.tags.includes('blocks_vision'))) {
+                // Further check if it's an open door/window which might be considered "empty" for passage
+                if (tileDefMiddle.tags.includes('door') && tileDefMiddle.tags.includes('open')) {
+                    // Open door, consider it empty for passage
+                } else if (tileDefMiddle.tags.includes('window') && tileDefMiddle.tags.includes('open')) {
+                    // Open window, might be empty depending on size (not modelled), assume empty for now
+                } else {
+                    // console.log(`isTileEmpty: Middle layer at ${x},${y},${z} has blocking tile ${effectiveTileOnMiddle}. Not empty.`);
+                    return false; // Blocking tile on middle
+                }
+            } else if (!tileDefMiddle.tags || (!tileDefMiddle.tags.includes('transparent') && !tileDefMiddle.tags.includes('allows_vision'))) {
+                // Exists, has no tags or is not transparent/allows_vision: likely not empty.
+                // This catches furniture or other non-structural items that still occupy space.
+                // console.log(`isTileEmpty: Middle layer at ${x},${y},${z} has non-transparent/non-allows_vision tile ${effectiveTileOnMiddle}. Not empty.`);
+                return false;
+            }
+        } else {
+            // Unknown tile ID on middle, assume it blocks space
+            // console.log(`isTileEmpty: Middle layer at ${x},${y},${z} has unknown tile ID ${effectiveTileOnMiddle}. Assuming not empty.`);
+            return false;
+        }
+    }
+
+    // Check bottom layer (less likely to make a tile "not empty" for air passage, unless it's a very tall floor item)
+    // For "emptiness" of a space *above* the player, the bottom layer of Z+1 is usually the floor you'd land on.
+    // If we are checking player.Z+1, its bottom layer being a floor is fine.
+    // The rule is "tile above your current position (your.Z+1) is empty".
+    // This means the space at Z+1 should be clear to move *into*.
+    // So, if levelData.bottom[y][x] at Z+1 has a solid floor, that's okay.
+    // The check here is more about if there's something *on* the bottom layer that isn't a floor and blocks.
+    const tileOnBottomRaw = levelData.bottom?.[y]?.[x];
+    const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined)
+        ? tileOnBottomRaw.tileId
+        : tileOnBottomRaw;
+
+    if (effectiveTileOnBottom && effectiveTileOnBottom !== "") {
+        const tileDefBottom = tilesets[effectiveTileOnBottom];
+        if (tileDefBottom) {
+            // If bottom layer has something that's NOT a floor/transparent_floor and is impassable, it might make the space not empty.
+            // This is rare; usually impassable things are on middle.
+            // For this specific "is the space above me empty" check, the "floor" of Z+1 doesn't make Z+1 "not empty".
+            // It's only if there's an *object* on the bottom layer of Z+1 that it would be not empty.
+            // Most "floor" type tiles should not make it "not empty".
+            if (tileDefBottom.tags && (tileDefBottom.tags.includes('floor') || tileDefBottom.tags.includes('transparent_floor') || tileDefBottom.tags.includes('z_transition'))) {
+                // These are fine, don't make the tile "not empty" in terms of passage.
+            } else if (tileDefBottom.tags && tileDefBottom.tags.includes('impassable')) {
+                // An impassable non-floor item on the bottom layer.
+                // console.log(`isTileEmpty: Bottom layer at ${x},${y},${z} has impassable non-floor tile ${effectiveTileOnBottom}. Not empty.`);
+                return false;
+            } else if (!tileDefBottom.tags || (!tileDefBottom.tags.includes('transparent') && !tileDefBottom.tags.includes('allows_vision'))) {
+                // Non-floor, non-transparent item on bottom layer.
+                // console.log(`isTileEmpty: Bottom layer at ${x},${y},${z} has non-floor, non-transparent tile ${effectiveTileOnBottom}. Not empty.`);
+                return false;
+            }
+        } else {
+            // Unknown tile ID on bottom, assume it blocks space if it exists.
+            // console.log(`isTileEmpty: Bottom layer at ${x},${y},${z} has unknown tile ID ${effectiveTileOnBottom}. Assuming not empty.`);
+            return false;
+        }
+    }
+
+    // If both middle and bottom layers are clear or contain only passable/transparent things, the tile is empty.
+    // console.log(`isTileEmpty: Tile ${x},${y},${z} is considered empty.`);
+    return true;
+}
+// window.mapRenderer.isTileEmpty = isTileEmpty; // Expose it -- Will be assigned below
+
+
 // Updated isTileIlluminated to be 3D
 function isTileIlluminated(targetX, targetY, targetZ, lightSource) { // targetZ added, lightSource now includes .z
     const sourceX = lightSource.x;
@@ -1245,18 +1350,33 @@ window.mapRenderer = {
         // It does not create new DOM elements for adjacent layers.
 
         // --- Onion Skinning Logic ---
-        // Layers above should be darker but tinted slightly green.
-        // Layers below should be tinted darker and slightly red.
-        const ONION_SKIN_DARKEN_FACTOR = 0.5; // General darkness for onion layers
-        const ONION_SKIN_ABOVE_TINT_COLOR = '#003300'; // Dark green for tinting above layers
-        const ONION_SKIN_ABOVE_TINT_FACTOR = 0.7;
-        const ONION_SKIN_BELOW_TINT_COLOR = '#330000'; // Dark red for tinting below layers
-        const ONION_SKIN_BELOW_TINT_FACTOR = 0.7;
+        const BASE_ONION_SKIN_DARKEN_FACTOR = 0.5;
+        const EXTRA_DARKEN_PER_LEVEL = 0.1; // Additional darkening for each level away
+        const MAX_ONION_DARKEN_FACTOR = 0.85;
 
+        const ONION_SKIN_ABOVE_TINT_COLOR = '#003300'; // Dark green
+        const BASE_ONION_SKIN_ABOVE_TINT_FACTOR = 0.6;
+        const EXTRA_ABOVE_TINT_PER_LEVEL = 0.1;
+        const MAX_ABOVE_TINT_FACTOR = 0.9;
 
-        // New logic for rendering solid_terrain_top from below as a floor (also part of onion skinning if current tile is transparent)
-        const levelDataBelowForSolidTop = fullMapData.levels[(currentZ - 1).toString()];
-        if (levelDataBelowForSolidTop && tileCacheData) {
+        const ONION_SKIN_BELOW_TINT_COLOR = '#330000'; // Dark red
+        const BASE_ONION_SKIN_BELOW_TINT_FACTOR = 0.6;
+        const EXTRA_BELOW_TINT_PER_LEVEL = 0.1;
+        const MAX_BELOW_TINT_FACTOR = 0.9;
+
+        const maxLevelsAbove = gameState.onionSkinLevelsAbove || 0;
+        const maxLevelsBelow = gameState.onionSkinLevelsBelow || 0;
+
+        // Render Z-levels below (onion skin)
+        for (let zOffset = 1; zOffset <= maxLevelsBelow; zOffset++) {
+            const onionZ = currentZ - zOffset;
+            const levelDataBelow = fullMapData.levels[onionZ.toString()];
+            if (!levelDataBelow || !tileCacheData) continue;
+
+            const distanceFactor = zOffset;
+            const currentDarkenFactor = Math.min(MAX_ONION_DARKEN_FACTOR, BASE_ONION_SKIN_DARKEN_FACTOR + (distanceFactor - 1) * EXTRA_DARKEN_PER_LEVEL);
+            const currentBelowTintFactor = Math.min(MAX_BELOW_TINT_FACTOR, BASE_ONION_SKIN_BELOW_TINT_FACTOR + (distanceFactor - 1) * EXTRA_BELOW_TINT_PER_LEVEL);
+
             for (let y = 0; y < H; y++) {
                 for (let x = 0; x < W; x++) {
                     if (!tileCacheData[y] || !tileCacheData[y][x]) continue;
@@ -1264,48 +1384,59 @@ window.mapRenderer = {
                     const currentCachedCell = tileCacheData[y][x];
                     const currentSpan = currentCachedCell.span;
 
-                    let isCurrentTileSeeThrough = false;
-                    const currentTileIdOnViewZ = currentCachedCell.displayedId;
-                    const currentTileDefOnViewZ = assetManagerInstance.tilesets[currentTileIdOnViewZ];
+                    // Check if the current Z tile (and all layers above it up to currentZ - 1) are see-through for this onion layer
+                    let isPathSeeThrough = true;
+                    for (let interZ = onionZ + 1; interZ <= currentZ; interZ++) {
+                        const interLevelData = fullMapData.levels[interZ.toString()];
+                        const interTileIdOnViewZ = (interZ === currentZ) ? currentCachedCell.displayedId : null; // Use cached for currentZ, else query
+                        const interTileDefOnViewZ = assetManagerInstance.tilesets[interTileIdOnViewZ];
 
-                    // If player or NPC is already rendered on this current Z tile, do not attempt to show Z-1 onion skin here.
-                    if (currentTileIdOnViewZ === "PLAYER_STATIC" || currentTileIdOnViewZ?.startsWith("NPC_")) {
-                        isCurrentTileSeeThrough = false; // Effectively, not see-through for Z-1 onion skin
-                    } else if (!currentTileIdOnViewZ || currentTileIdOnViewZ === "FOW_HIDDEN") {
-                        // If FOW hidden, or no actual structural tile on current Z (empty space)
-                        const landscapeIdCurrentZ = currentLevelData.bottom?.[y]?.[x] || currentLevelData.landscape?.[y]?.[x];
-                        if (!currentLevelData.middle?.[y]?.[x] && !currentLevelData.building?.[y]?.[x] &&
-                            !currentLevelData.item?.[y]?.[x] &&
-                            !(gameState.showRoof && (currentLevelData.roof?.[y]?.[x] || fullMapData.levels[(currentZ + 1).toString()]?.roof?.[y]?.[x]))) {
-                            if (!landscapeIdCurrentZ) { // Truly empty cell on current Z
-                                isCurrentTileSeeThrough = true;
-                            } else { // Landscape tile exists on current Z
-                                const landscapeDef = assetManagerInstance.tilesets[landscapeIdCurrentZ];
-                                if (landscapeDef && landscapeDef.tags && (landscapeDef.tags.includes('transparent_floor') || landscapeDef.tags.includes('allows_vision') || landscapeDef.tags.includes('transparent_bottom'))) {
-                                    isCurrentTileSeeThrough = true;
-                                } else {
-                                    isCurrentTileSeeThrough = false; // Opaque landscape on current Z
-                                }
+                        let isCurrentInterTileSeeThrough = false;
+                        if (interZ === currentZ) { // Use already determined displayedId for current view Z
+                            if (interTileIdOnViewZ === "PLAYER_STATIC" || interTileIdOnViewZ?.startsWith("NPC_") || interTileIdOnViewZ === "FOW_HIDDEN") {
+                                isCurrentInterTileSeeThrough = false;
+                            } else if (!interTileIdOnViewZ) { // Truly empty cell on current Z
+                                isCurrentInterTileSeeThrough = true;
+                            } else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('allows_vision') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) {
+                                isCurrentInterTileSeeThrough = true;
+                            } else {
+                                isCurrentInterTileSeeThrough = false;
                             }
-                        } else { // Middle, building, item, or roof exists on current Z
-                            isCurrentTileSeeThrough = false;
+                        } else { // For intermediate layers between onionZ and currentZ
+                            const interMiddleRaw = interLevelData?.middle?.[y]?.[x];
+                            const interBottomRaw = interLevelData?.bottom?.[y]?.[x];
+                            const effInterMid = (typeof interMiddleRaw === 'object' && interMiddleRaw?.tileId !== undefined) ? interMiddleRaw.tileId : interMiddleRaw;
+                            const effInterBot = (typeof interBottomRaw === 'object' && interBottomRaw?.tileId !== undefined) ? interBottomRaw.tileId : interBottomRaw;
+                            const defInterMid = assetManagerInstance.tilesets[effInterMid];
+                            const defInterBot = assetManagerInstance.tilesets[effInterBot];
+
+                            if (effInterMid && defInterMid && !(defInterMid.tags && (defInterMid.tags.includes('transparent') || defInterMid.tags.includes('allows_vision')))) { // Middle layer blocks
+                                isCurrentInterTileSeeThrough = false;
+                            } else if (effInterBot && defInterBot && !(defInterBot.tags && (defInterBot.tags.includes('transparent_floor') || defInterBot.tags.includes('transparent_bottom') || defInterBot.tags.includes('allows_vision')))) { // Bottom layer blocks
+                                isCurrentInterTileSeeThrough = false;
+                            } else if (!effInterMid && !effInterBot && interLevelData) { // Both empty on existing level
+                                isCurrentInterTileSeeThrough = true;
+                            } else if (!interLevelData) { // Level doesn't exist (void)
+                                isCurrentInterTileSeeThrough = true;
+                            } else { // Default to not see-through if some tile exists but not explicitly transparent
+                                isCurrentInterTileSeeThrough = false;
+                            }
                         }
-                    } else if (currentTileDefOnViewZ) { // Structural tile exists on current Z
-                        if (currentTileDefOnViewZ.tags && (currentTileDefOnViewZ.tags.includes('transparent_floor') || currentTileDefOnViewZ.tags.includes('allows_vision') || currentTileDefOnViewZ.tags.includes('transparent_bottom'))) {
-                            isCurrentTileSeeThrough = true;
-                        } else {
-                            isCurrentTileSeeThrough = false; // Opaque structural tile on current Z
+
+                        if (!isCurrentInterTileSeeThrough) {
+                            isPathSeeThrough = false;
+                            break;
                         }
-                    } else { // No definition for current tile, but not explicitly player/NPC/FOW_HIDDEN - treat as empty/see-through
-                        isCurrentTileSeeThrough = true;
                     }
 
-                    if (isCurrentTileSeeThrough) {
-                        // Check Z-1 (Below)
+                    if (isPathSeeThrough) {
                         let tileBelowId = null;
-                        const middleBelow = levelDataBelowForSolidTop.middle?.[y]?.[x];
-                        const bottomBelow = levelDataBelowForSolidTop.bottom?.[y]?.[x];
-                        tileBelowId = middleBelow || bottomBelow; // Prioritize middle for "objects", then bottom for "floor"
+                        const middleBelow = levelDataBelow.middle?.[y]?.[x];
+                        const bottomBelow = levelDataBelow.bottom?.[y]?.[x];
+                        const effMidBelow = (typeof middleBelow === 'object' && middleBelow?.tileId !== undefined) ? middleBelow.tileId : middleBelow;
+                        const effBotBelow = (typeof bottomBelow === 'object' && bottomBelow?.tileId !== undefined) ? bottomBelow.tileId : bottomBelow;
+
+                        tileBelowId = effMidBelow || effBotBelow;
 
                         if (tileBelowId) {
                             const tileDefBelow = assetManagerInstance.tilesets[tileBelowId];
@@ -1313,18 +1444,14 @@ window.mapRenderer = {
                                 let displayColorBelow = tileDefBelow.color;
                                 let displaySpriteBelow = tileDefBelow.sprite;
 
-                                if (tileDefBelow.tags && tileDefBelow.tags.includes('solid_terrain_top')) {
-                                    // Render solid_terrain_top from below with original color and its actual sprite
-                                    // displayColorBelow remains tileDefBelow.color (no tint/darkening)
-                                    // displaySpriteBelow remains tileDefBelow.sprite (use its original sprite)
+                                if (tileDefBelow.tags && tileDefBelow.tags.includes('solid_terrain_top') && zOffset === 1) {
+                                    // Render solid_terrain_top from one level below with original color and its actual sprite
                                 } else {
-                                    // Standard onion skin for other tiles from below
-                                    displayColorBelow = blendColors(tileDefBelow.color, '#000000', ONION_SKIN_DARKEN_FACTOR);
-                                    displayColorBelow = blendColors(displayColorBelow, ONION_SKIN_BELOW_TINT_COLOR, ONION_SKIN_BELOW_TINT_FACTOR);
+                                    displayColorBelow = blendColors(tileDefBelow.color, '#000000', currentDarkenFactor);
+                                    displayColorBelow = blendColors(displayColorBelow, ONION_SKIN_BELOW_TINT_COLOR, currentBelowTintFactor);
                                 }
                                 currentSpan.textContent = displaySpriteBelow;
                                 currentSpan.style.color = displayColorBelow;
-                                // This is an onion skin, so we don't update the cache's sprite/color/id for the current Z.
                             }
                         }
                     }
@@ -1332,9 +1459,16 @@ window.mapRenderer = {
             }
         }
 
-        // Render Z+1 (Above) if current tile is see-through and conditions met
-        const levelDataAbove = fullMapData.levels[(currentZ + 1).toString()];
-        if (levelDataAbove && tileCacheData) {
+        // Render Z-levels above (onion skin)
+        for (let zOffset = 1; zOffset <= maxLevelsAbove; zOffset++) {
+            const onionZ = currentZ + zOffset;
+            const levelDataAbove = fullMapData.levels[onionZ.toString()];
+            if (!levelDataAbove || !tileCacheData) continue;
+
+            const distanceFactor = zOffset;
+            const currentDarkenFactor = Math.min(MAX_ONION_DARKEN_FACTOR, BASE_ONION_SKIN_DARKEN_FACTOR + (distanceFactor - 1) * EXTRA_DARKEN_PER_LEVEL);
+            const currentAboveTintFactor = Math.min(MAX_ABOVE_TINT_FACTOR, BASE_ONION_SKIN_ABOVE_TINT_FACTOR + (distanceFactor - 1) * EXTRA_ABOVE_TINT_PER_LEVEL);
+
             for (let y = 0; y < H; y++) {
                 for (let x = 0; x < W; x++) {
                     if (!tileCacheData[y] || !tileCacheData[y][x]) continue;
@@ -1342,63 +1476,72 @@ window.mapRenderer = {
                     const currentCachedCell = tileCacheData[y][x];
                     const currentSpan = currentCachedCell.span;
 
-                    let isCurrentTileSeeThroughForAbove = false;
-                    const currentTileIdOnViewZ = currentCachedCell.displayedId;
-                    const currentTileDefOnViewZ = assetManagerInstance.tilesets[currentTileIdOnViewZ];
+                    let isPathSeeThrough = true;
+                    // Check if current Z tile (and all layers below it down to currentZ + 1) are see-through for this onion layer
+                    for (let interZ = onionZ - 1; interZ >= currentZ; interZ--) {
+                        const interLevelData = fullMapData.levels[interZ.toString()];
+                        const interTileIdOnViewZ = (interZ === currentZ) ? currentCachedCell.displayedId : null;
+                        const interTileDefOnViewZ = assetManagerInstance.tilesets[interTileIdOnViewZ];
 
-                    // Conditions for seeing Z+1: current tile must be empty or transparent floor.
-                    if (!currentTileIdOnViewZ || currentTileIdOnViewZ === "FOW_HIDDEN" || currentTileIdOnViewZ === "PLAYER_STATIC" || currentTileIdOnViewZ.startsWith("NPC_")) {
-                        const landscapeIdCurrentZ = currentLevelData.bottom?.[y]?.[x] || currentLevelData.landscape?.[y]?.[x];
-                        if (!currentLevelData.middle?.[y]?.[x] && !currentLevelData.building?.[y]?.[x] &&
-                            !currentLevelData.item?.[y]?.[x] &&
-                            !(currentLevelData.roof?.[y]?.[x])) {
-                            if (!landscapeIdCurrentZ) {
-                                isCurrentTileSeeThroughForAbove = true;
+                        let isCurrentInterTileSeeThrough = false;
+                        if (interZ === currentZ) {
+                            if (interTileIdOnViewZ === "PLAYER_STATIC" || interTileIdOnViewZ?.startsWith("NPC_") || interTileIdOnViewZ === "FOW_HIDDEN") {
+                                isCurrentInterTileSeeThrough = false;
+                            } else if (!interTileIdOnViewZ) {
+                                isCurrentInterTileSeeThrough = true;
+                            } else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('allows_vision') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) {
+                                isCurrentInterTileSeeThrough = true;
                             } else {
-                                const landscapeDef = assetManagerInstance.tilesets[landscapeIdCurrentZ];
-                                if (landscapeDef && landscapeDef.tags && (landscapeDef.tags.includes('transparent_floor') || landscapeDef.tags.includes('allows_vision') || landscapeDef.tags.includes('transparent_bottom'))) {
-                                    isCurrentTileSeeThroughForAbove = true;
-                                }
+                                isCurrentInterTileSeeThrough = false;
+                            }
+                        } else { // For intermediate layers between currentZ and onionZ (above)
+                            const interMiddleRaw = interLevelData?.middle?.[y]?.[x];
+                            const interBottomRaw = interLevelData?.bottom?.[y]?.[x];
+                            const effInterMid = (typeof interMiddleRaw === 'object' && interMiddleRaw?.tileId !== undefined) ? interMiddleRaw.tileId : interMiddleRaw;
+                            const effInterBot = (typeof interBottomRaw === 'object' && interBottomRaw?.tileId !== undefined) ? interBottomRaw.tileId : interBottomRaw;
+                            const defInterMid = assetManagerInstance.tilesets[effInterMid];
+                            const defInterBot = assetManagerInstance.tilesets[effInterBot];
+                            // For seeing "up", the intermediate layer needs to be like a transparent ceiling or empty.
+                            // This is complex. A simple start: if middle is NOT transparent, or bottom is NOT transparent_floor, it blocks.
+                            if (effInterMid && defInterMid && !(defInterMid.tags && (defInterMid.tags.includes('transparent_ceiling') || defInterMid.tags.includes('transparent') || defInterMid.tags.includes('allows_vision')))) {
+                                isCurrentInterTileSeeThrough = false;
+                            } else if (effInterBot && defInterBot && !(defInterBot.tags && (defInterBot.tags.includes('transparent_ceiling') || defInterBot.tags.includes('transparent_floor') || defInterBot.tags.includes('transparent_bottom') || defInterBot.tags.includes('allows_vision')))) {
+                                isCurrentInterTileSeeThrough = false;
+                            } else if (!effInterMid && !effInterBot && interLevelData) { // Both empty
+                                isCurrentInterTileSeeThrough = true;
+                            } else if (!interLevelData) { // Void
+                                isCurrentInterTileSeeThrough = true;
+                            } else {
+                                isCurrentInterTileSeeThrough = false;
                             }
                         }
-                    } else if (currentTileDefOnViewZ) {
-                        if (currentTileDefOnViewZ.tags && (currentTileDefOnViewZ.tags.includes('transparent_floor') || currentTileDefOnViewZ.tags.includes('allows_vision') || currentTileDefOnViewZ.tags.includes('transparent_bottom'))) {
-                            isCurrentTileSeeThroughForAbove = true;
+                        if (!isCurrentInterTileSeeThrough) {
+                            isPathSeeThrough = false;
+                            break;
                         }
-                    } else {
-                        isCurrentTileSeeThroughForAbove = true;
                     }
 
-                    if (isCurrentTileSeeThroughForAbove) {
+                    if (isPathSeeThrough) {
                         let tileAboveId = null;
                         const middleAbove = levelDataAbove.middle?.[y]?.[x];
                         const bottomAbove = levelDataAbove.bottom?.[y]?.[x];
-                        tileAboveId = middleAbove || bottomAbove;
+                        const effMidAbove = (typeof middleAbove === 'object' && middleAbove?.tileId !== undefined) ? middleAbove.tileId : middleAbove;
+                        const effBotAbove = (typeof bottomAbove === 'object' && bottomAbove?.tileId !== undefined) ? bottomAbove.tileId : bottomAbove;
+                        tileAboveId = effMidAbove || effBotAbove;
 
                         if (tileAboveId) {
                             const tileDefAbove = assetManagerInstance.tilesets[tileAboveId];
                             if (tileDefAbove) {
                                 let canShowTileFromAbove = true;
                                 const isRoofTileAbove = tileDefAbove.tags && tileDefAbove.tags.includes('roof');
-                                // A tile on current Z is "truly open" if it's not FOW_HIDDEN and either has no definition or is transparent.
-                                const isCurrentZCellOpenForOverheadView =
-                                    currentTileIdOnViewZ !== "FOW_HIDDEN" &&
-                                    (!currentTileDefOnViewZ ||
-                                        (currentTileDefOnViewZ.tags && (currentTileDefOnViewZ.tags.includes('transparent_floor') || currentTileDefOnViewZ.tags.includes('transparent_bottom') || currentTileDefOnViewZ.tags.includes('allows_vision')))
-                                    );
-
-                                if (isRoofTileAbove && isCurrentZCellOpenForOverheadView && !gameState.showRoof) {
+                                if (isRoofTileAbove && !gameState.showRoof && zOffset === 1) { // Only apply showRoof to immediate Z+1
                                     canShowTileFromAbove = false;
                                 }
 
-                                // Additional check: if the tile from above is solid_terrain_top, it should always show (unless a roof is hiding it per above logic)
-                                // The standard onion skin tinting applies unless special conditions are met.
-                                // The request was specific to solid_terrain_top from *below*. For above, standard tinting applies.
-
                                 if (canShowTileFromAbove) {
-                                    let displayColorAbove = blendColors(tileDefAbove.color, '#000000', ONION_SKIN_DARKEN_FACTOR);
-                                    displayColorAbove = blendColors(displayColorAbove, ONION_SKIN_ABOVE_TINT_COLOR, ONION_SKIN_ABOVE_TINT_FACTOR);
-                                    currentSpan.textContent = tileDefAbove.sprite; // Or '▓' if it's solid_terrain_top and we want consistent look from above
+                                    let displayColorAbove = blendColors(tileDefAbove.color, '#000000', currentDarkenFactor);
+                                    displayColorAbove = blendColors(displayColorAbove, ONION_SKIN_ABOVE_TINT_COLOR, currentAboveTintFactor);
+                                    currentSpan.textContent = tileDefAbove.sprite;
                                     currentSpan.style.color = displayColorAbove;
                                 }
                             }
@@ -1866,5 +2009,6 @@ window.mapRenderer = {
 
         console.log(`${debugPrefix} All checks failed or no explicit walkable surface/support. Not supported from below or current Z is blocked. Result: false`);
         return false;
-    }
+    },
+    isTileEmpty: isTileEmpty // Added isTileEmpty here
 };

@@ -45,6 +45,9 @@ export function buildPalette(currentSelectedTileId, activeTagFilters = []) {
     }
     paletteContainer.innerHTML = ""; // Clear existing palette
 
+    const paletteSearchInput = document.getElementById('paletteSearchInput');
+    const searchTerm = paletteSearchInput ? paletteSearchInput.value.toLowerCase().trim() : "";
+
     const eraser = document.createElement("div");
     eraser.className = "palette-tile"; // Consistent class naming
     eraser.dataset.tileId = ""; // Eraser represented by empty string
@@ -61,11 +64,19 @@ export function buildPalette(currentSelectedTileId, activeTagFilters = []) {
 
     if (assetManagerInstance.tilesets && Object.keys(assetManagerInstance.tilesets).length > 0) {
         Object.entries(assetManagerInstance.tilesets).forEach(([id, tileDef]) => {
-            let showInPalette = true;
+            let matchesTagFilters = true;
             if (activeTagFilters.length > 0) {
-                showInPalette = activeTagFilters.every(filterTag => tileDef.tags && tileDef.tags.includes(filterTag));
+                matchesTagFilters = activeTagFilters.every(filterTag => tileDef.tags && tileDef.tags.includes(filterTag));
             }
-            if (!showInPalette) return;
+
+            let matchesSearchTerm = true;
+            if (searchTerm !== "") {
+                const tileNameLower = (tileDef.name || "").toLowerCase();
+                const tileIdLower = id.toLowerCase();
+                matchesSearchTerm = tileNameLower.includes(searchTerm) || tileIdLower.includes(searchTerm);
+            }
+
+            if (!matchesTagFilters || !matchesSearchTerm) return;
 
             // Optionally skip tiles that are purely for auto-tiling results (e.g., specific corner pieces not meant for direct use)
             if (tileDef.tags?.includes('auto_tile_result_only')) {
@@ -321,7 +332,7 @@ const gridContainer = document.getElementById("grid");
  * Renders the main map grid, including tiles, player start, portals, and previews.
  * Delegates parts of the rendering to sub-functions.
  */
-export function renderMergedGrid(mapData, currentEditingZ, gridWidth, gridHeight, layerVisibility, onionSkinState, previewPos, stampData3D, currentTool) {
+export function renderMergedGrid(mapData, currentEditingZ, gridWidth, gridHeight, layerVisibility, onionSkinState, previewPos, stampData3D, currentTool, brushSize, mouseOverGridPos /*, dragStart - implicitly from uiStateHolder if needed */) {
     if (!assetManagerInstance || !uiStateHolder || !interactionDispatcher || !gridContainer) {
         console.error("UIManager: Not fully initialized or gridContainer missing. Cannot render grid.");
         if (gridContainer) gridContainer.innerHTML = "<p>Error: UI Manager not initialized or grid container missing.</p>";
@@ -350,6 +361,96 @@ export function renderMergedGrid(mapData, currentEditingZ, gridWidth, gridHeight
 
             applyOnionSkinning(cellElement, x, y, mapData, currentEditingZ, onionSkinState, cellDisplayInfo);
             applyPlayerStartMarker(cellElement, x, y, currentEditingZ, cellDisplayInfo); // Modifies cell & cellDisplayInfo.title
+
+            // Apply brush preview if applicable (before stamp, or integrate)
+            if (currentTool === "brush" && (brushSize || 1) > 1 && mouseOverGridPos) {
+                const halfBrush = Math.floor(brushSize / 2);
+                const brushAreaStartX = mouseOverGridPos.x - halfBrush;
+                const brushAreaStartY = mouseOverGridPos.y - halfBrush;
+                const brushAreaEndX = brushAreaStartX + brushSize - 1;
+                const brushAreaEndY = brushAreaStartY + brushSize - 1;
+
+                if (x >= brushAreaStartX && x <= brushAreaEndX && y >= brushAreaStartY && y <= brushAreaEndY) {
+                    cellElement.classList.add("brush-preview");
+                }
+            }
+
+            // Apply Line Preview (if line tool active and dragging)
+            // This needs to be before stamp preview if they can overlap, or handled with z-index/opacity
+            if (currentTool === "line" && uiStateHolder.dragStart && mouseOverGridPos) {
+                const x0 = uiStateHolder.dragStart.x;
+                const y0 = uiStateHolder.dragStart.y;
+                const x1 = mouseOverGridPos.x;
+                const y1 = mouseOverGridPos.y;
+                const currentBrushSize = brushSize || 1;
+                const halfBrush = Math.floor(currentBrushSize / 2);
+
+                // Simplified check: does this cell (x,y) fall within the bounding box of any
+                // brush-sized square along the line? More accurate would be to trace the thick line.
+                // For a quick preview, we can iterate the line points and mark cells.
+                // This is a temporary, less performant way for preview.
+                // A proper line rasterization for the preview itself might be too slow here.
+                // Let's just highlight the direct line path for preview for now, not the thickness.
+                // Actual drawing will be thick.
+
+                // Simple line path for preview (not showing thickness yet for perf reasons in render)
+                // To show thickness, this part needs to be more complex, iterating all cells covered by the thick line.
+                // For now, let's just mark the direct line cells for the preview.
+                // The actual drawLine function handles the thickness.
+                let tempX = x0;
+                let tempY = y0;
+                const dxLine = Math.abs(x1 - tempX);
+                const dyLine = -Math.abs(y1 - tempY);
+                const sxLine = tempX < x1 ? 1 : -1;
+                const syLine = tempY < y1 ? 1 : -1;
+                let errLine = dxLine + dyLine;
+
+                // Create a set of points on the line for quick lookup
+                const linePoints = new Set();
+                while (true) {
+                    // For each point on the line, calculate the brush area
+                    const linePointStartX = tempX - halfBrush;
+                    const linePointStartY = tempY - halfBrush;
+                    for (let i = 0; i < currentBrushSize; i++) {
+                        for (let j = 0; j < currentBrushSize; j++) {
+                            linePoints.add(`${linePointStartX + j},${linePointStartY + i}`);
+                        }
+                    }
+                    if (tempX === x1 && tempY === y1) break;
+                    const e2Line = 2 * errLine;
+                    if (e2Line >= dyLine) { if (tempX === x1) break; errLine += dyLine; tempX += sxLine; }
+                    if (e2Line <= dxLine) { if (tempY === y1) break; errLine += dxLine; tempY += syLine; }
+                }
+                if (linePoints.has(`${x},${y}`)) {
+                    cellElement.classList.add("line-preview");
+                }
+            }
+
+            // Apply Fill Tool Preview (simple_highlight of current cell)
+            if ((currentTool === "fill" || currentTool === "fill3d") && mouseOverGridPos) {
+                if (x === mouseOverGridPos.x && y === mouseOverGridPos.y) {
+                    cellElement.classList.add("fill-preview");
+                }
+            }
+
+            // Apply Rectangle Preview
+            if (currentTool === "rect" && uiStateHolder.dragStart && mouseOverGridPos) {
+                const x0 = uiStateHolder.dragStart.x;
+                const y0 = uiStateHolder.dragStart.y;
+                const x1 = mouseOverGridPos.x;
+                const y1 = mouseOverGridPos.y;
+
+                const minX = Math.min(x0, x1);
+                const maxX = Math.max(x0, x1);
+                const minY = Math.min(y0, y1);
+                const maxY = Math.max(y0, y1);
+
+                if ((x === minX || x === maxX) && (y >= minY && y <= maxY) ||
+                    (y === minY || y === maxY) && (x >= minX && x <= maxX)) {
+                    cellElement.classList.add("rect-preview");
+                }
+            }
+
             applyStampPreview(cellElement, x, y, currentTool, stampData3D, previewPos); // Modifies cell
 
             cellElement.title = cellDisplayInfo.tileNameForTitle; // Set final title
@@ -724,8 +825,25 @@ export function resetUIForNewMap(defaultGridWidth, defaultGridHeight, defaultZ, 
     if (onionBelowInput) onionBelowInput.value = DEFAULT_ONION_LAYERS_BELOW;
     if (onionAboveInput) onionAboveInput.value = DEFAULT_ONION_LAYERS_ABOVE;
 
+    updateMapMetadataEditorUI(getMapData()); // Update with current (newly initialized) mapData
+
     logToConsole("UI reset for new map.");
 }
+
+/**
+ * Updates the map metadata editor UI fields with values from the provided mapData.
+ * @param {MapData} mapData - The map data object.
+ */
+export function updateMapMetadataEditorUI(mapData) {
+    const el = (id) => document.getElementById(id);
+    if (el("mapNameInput")) el("mapNameInput").value = mapData.name || DEFAULT_MAP_NAME; // DEFAULT_MAP_NAME from config.js
+    if (el("mapDescriptionInput")) el("mapDescriptionInput").value = mapData.description || "";
+    if (el("mapAuthorInput")) el("mapAuthorInput").value = mapData.author || "";
+    if (el("mapCustomTagsInput")) el("mapCustomTagsInput").value = (mapData.customTags || []).join(', ');
+    const metadataStatus = el("metadataStatus");
+    if (metadataStatus) metadataStatus.textContent = ""; // Clear any previous status
+}
+
 
 /**
  * Updates UI elements based on data from a newly loaded map.
@@ -740,6 +858,7 @@ export function updateUIFromLoadedMap(loadedMapData, newCurrentEditingZ, current
     document.documentElement.style.setProperty("--cols", loadedMapData.width);
     if (el("zLevelInput")) el("zLevelInput").value = newCurrentEditingZ;
 
+    updateMapMetadataEditorUI(loadedMapData); // Centralized call
     updatePlayerStartDisplay(loadedMapData.startPos);
     updateToolButtonUI(currentToolName);
     // buildPalette and renderMergedGrid are called by the main load function after this.
