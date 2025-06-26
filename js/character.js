@@ -621,3 +621,38 @@ function calculateAndApplyFallDamage(characterOrGameState, levelsFallen) {
     }
 }
 window.calculateAndApplyFallDamage = calculateAndApplyFallDamage;
+
+
+/**
+ * Initiates falling process for a character if they move to an unsupported tile.
+ * This function is typically called after a character attempts a move.
+ * @param {object} characterOrGameState - The character object (NPC) or gameState (for player).
+ * @param {number} targetX - The X coordinate the character attempted to move to.
+ * @param {number} targetY - The Y coordinate the character attempted to move to.
+ * @param {number} targetZ - The Z coordinate the character attempted to move to.
+ * @returns {boolean} True if a fall was initiated and handled, false otherwise (e.g., target was walkable).
+ */
+function initiateFallCheck(characterOrGameState, targetX, targetY, targetZ) {
+    const debugPrefix = `initiateFallCheck (${characterOrGameState === gameState ? "Player" : (characterOrGameState.name || "NPC")} to ${targetX},${targetY},${targetZ}):`;
+    console.log(`${debugPrefix} Called.`);
+
+    if (typeof window.mapRenderer?.isWalkable !== 'function') {
+        console.error(`${debugPrefix} mapRenderer.isWalkable is not available. Cannot check for fall.`);
+        return false;
+    }
+
+    // Check if the target destination (targetX, targetY, targetZ) is actually walkable.
+    // If it is, no fall occurs from this movement.
+    if (window.mapRenderer.isWalkable(targetX, targetY, targetZ)) {
+        console.log(`${debugPrefix} Target tile is walkable. No fall initiated.`);
+        // Update position if it's different (actual move happens before this check in script.js)
+        // This function is more about what happens *after* deciding a tile is the destination.
+        return false;
+    }
+
+    // If the target tile itself is NOT walkable, it means the character is now in "air" at targetZ.
+    // The fall then proceeds downwards from targetZ.
+    console.log(`${debugPrefix} Target tile is NOT walkable. Initiating fall from Z=${targetZ}.`);
+    return handleFalling(characterOrGameState, targetX, targetY, targetZ); // targetZ is the Z-level of the air tile
+}
+window.initiateFallCheck = initiateFallCheck;
