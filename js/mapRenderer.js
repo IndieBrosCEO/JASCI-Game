@@ -1825,22 +1825,31 @@ window.mapRenderer = {
 
         if (effectiveTileOnBottom && effectiveTileOnBottom !== "") {
             const tileDefBottom = tilesets[effectiveTileOnBottom];
-            console.log(`${debugPrefix} Bottom layer at Z=${z} has tile: ${effectiveTileOnBottom}`, tileDefBottom?.tags);
             if (tileDefBottom) {
-                // Check if bottom tile is impassable (and NOT a solid_terrain_top, which is walkable ground at this Z)
-                if (tileDefBottom.tags?.includes("impassable") && !tileDefBottom.tags?.includes("solid_terrain_top") && !tileDefBottom.tags?.includes("floor") && !tileDefBottom.tags?.includes("z_transition")) {
-                    console.log(`${debugPrefix} Bottom layer @Z${z} is impassable ('${effectiveTileOnBottom}'). Result: false`);
+                console.log(`${debugPrefix} Bottom layer at Z=${z} has tile: ${effectiveTileOnBottom}`, tileDefBottom.tags);
+
+                let isImpassableTagPresent = tileDefBottom.tags?.includes("impassable");
+                let isZTransitionTagPresent = tileDefBottom.tags?.includes("z_transition");
+
+                if (isImpassableTagPresent && !isZTransitionTagPresent) {
+                    console.log(`${debugPrefix} Bottom layer @Z${z} ('${effectiveTileOnBottom}') is IMPASSABLE and NOT Z_TRANSITION. Result: false`);
                     return false;
                 }
-                // Check if bottom tile provides a walkable surface
+
+                // If not made impassable by the above, then check if it's a standard walkable surface type.
+                // (A z_transition is inherently walkable. A solid_terrain_top on the bottom layer IS the ground for this Z.)
                 if (tileDefBottom.tags?.includes("floor") ||
                     tileDefBottom.tags?.includes("transparent_floor") ||
-                    tileDefBottom.tags?.includes("z_transition") ||
-                    tileDefBottom.tags?.includes("solid_terrain_top")) { // solid_terrain_top on bottom IS the walkable surface
-                    console.log(`${debugPrefix} Bottom layer at Z=${z} is floor, z_transition, or solid_terrain_top. Result: true`);
+                    isZTransitionTagPresent || // Use the flag here
+                    tileDefBottom.tags?.includes("solid_terrain_top")) {
+                    console.log(`${debugPrefix} Bottom layer at Z=${z} ('${effectiveTileOnBottom}') is a walkable surface type. Result: true`);
                     return true;
                 }
-            } else { // No definition for the tile ID on bottom layer
+                // If it's some other type of tile on the bottom layer not covered above (e.g. just decorative, no 'impassable' or 'floor' tags)
+                // then it doesn't inherently make the tile walkable OR unwalkable. Fall through to check support from below.
+                console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} is not an explicit blocker nor a walkable surface. Checking support from below.`);
+            } else {
+                 // No definition for the tile ID on bottom layer
                 console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} has no definition. Not directly walkable unless supported from Z-1.`);
             }
         } else { // Bottom layer is empty

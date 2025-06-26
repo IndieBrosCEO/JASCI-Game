@@ -537,51 +537,80 @@ async function move_internal(direction) {
     // This implies the player is trying to move to (targetX, targetY) at originalPos.z,
     // but that spot is not directly walkable via the preceding specialized movements.
 
-    // Check if the target tile at the current Z-level (originalPos.z) is walkable.
-    // If it *is* walkable, but we reached here, it means it was blocked by an NPC during the horizontal check,
-    // or some other edge case. In this scenario, no fall should occur.
+    // First, explicitly check if the target (targetX, targetY, originalPos.z) is walkable.
+    // If it IS walkable, but we reached here, it means it was blocked by an NPC earlier,
+    // or some other specific movement logic prevented it. No fall should occur.
     if (window.mapRenderer.isWalkable(targetX, targetY, originalPos.z)) {
-        // This case implies the tile was walkable but blocked by NPC earlier, or some other logic prevented horizontal move.
-        // No fall should occur if the tile itself is solid ground at this Z.
-        logToConsole(`Cannot move to (${targetX},${targetY}, Z:${originalPos.z}): Path blocked or other reason (tile itself is walkable).`);
+        logToConsole(`Cannot move to (${targetX},${targetY}, Z:${originalPos.z}): Path blocked by NPC or other reason (tile itself is walkable).`);
         return;
     }
 
-    // If the target tile at (targetX, targetY, originalPos.z) is NOT walkable,
-    // then it's either a solid obstacle (wall, etc.) or open air.
-    // We need to initiate a fall check. initiateFallCheck (from character.js) will call handleFalling.
-    // handleFalling will then determine if it's actually air and how far the fall is.
-    logToConsole(`Target tile (${targetX},${targetY},Z:${originalPos.z}) is not directly walkable. Attempting fall check.`);
-    let fallCheckInitiated = false;
-    if (typeof window.initiateFallCheck === 'function') {
-        // Pass targetX, targetY, and originalPos.z (the Z-level of the air tile player is stepping into)
-        fallCheckInitiated = window.initiateFallCheck(gameState, targetX, targetY, originalPos.z);
-    } else {
-        logToConsole(`[TURN_MANAGER_CRITICAL] window.initiateFallCheck is NOT a function. Cannot process fall.`, "error");
+    // If target (targetX, targetY, originalPos.z) is NOT walkable, determine if it's a solid obstacle or empty air.
+    let isSolidObstacle = false;
+    const targetLevelData = currentMap.levels[originalPos.z.toString()];
+    if (targetLevelData && window.assetManager?.tilesets) {
+        const tileOnMiddleRaw = targetLevelData.middle?.[targetY]?.[targetX];
+        const effMid = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
+        const tileDefMiddle = window.assetManager.tilesets[effMid];
+
+        if (tileDefMiddle && (tileDefMiddle.tags?.includes("impassable") || tileDefMiddle.tags?.includes("solid_terrain_top")) &&
+            !tileDefMiddle.tags?.includes("z_transition") && !tileDefMiddle.tags?.includes("walkable_on_z")) {
+            // Consider it a solid obstacle if it's impassable or solid_terrain_top, AND not a special passable type.
+            isSolidObstacle = true;
+            logToConsole(`Target (${targetX},${targetY},Z:${originalPos.z}) blocked by solid obstacle on middle layer: ${effMid}`);
+        }
+
+        if (!isSolidObstacle) {
+            const tileOnBottomRaw = targetLevelData.bottom?.[targetY]?.[targetX];
+            const effBot = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
+            const tileDefBottom = window.assetManager.tilesets[effBot];
+
+            // If the bottom tile is present and tagged 'impassable' (and not a z_transition which might allow passing through),
+            // it's a solid obstacle for the purpose of blocking same-Z movement.
+            if (tileDefBottom && tileDefBottom.tags?.includes("impassable") &&
+                !tileDefBottom.tags?.includes("z_transition")) {
+                isSolidObstacle = true;
+                logToConsole(`Target (${targetX},${targetY},Z:${originalPos.z}) blocked by impassable tile on bottom layer: ${effBot}`);
+            }
+        }
+    } else if (!targetLevelData) {
+        // No data for target Z level at all, implies it's empty air (or beyond map bounds, already checked).
+        // isWalkable would have returned based on supportedFromBelow if this was the case.
+        // This path here means isWalkable returned false for originalPos.z for *some other reason* if targetLevelData is null.
+        // For safety, assume it might be a void if no level data.
+        logToConsole(`Target (${targetX},${targetY},Z:${originalPos.z}) has no level data. Considering for fall check (though isWalkable should have handled this scenario if it was truly empty & supported).`);
     }
 
-    if (fallCheckInitiated) {
-        // If initiateFallCheck returns true, it means a fall was processed (or started).
-        // Position, MP, UI, and rendering should be handled by initiateFallCheck/handleFalling.
-        // Consume 1 MP for the action of stepping into the void.
-        if (gameState.movementPointsRemaining > 0) {
-            gameState.movementPointsRemaining--;
-        } else {
-            logToConsole("Stepped into void but had 0 MP. Fall processed, no additional MP cost.", "orange");
-        }
-        // Ensure UI is updated after MP change. handleFalling should schedule render.
-        updateTurnUI_internal();
-        if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) {
-            gameState.attackerMapPos = { ...gameState.playerPos }; // Update attacker pos if in combat
-        }
-        gameState.playerMovedThisTurn = true;
-        return; // Movement (falling) action is complete.
+
+    if (isSolidObstacle) {
+        logToConsole("Can't move that way (blocked by solid obstacle).");
+        return;
     } else {
-        // If fallCheckInitiated is false, it means either:
-        // 1. initiateFallCheck determined no fall (e.g., target was actually walkable after all, or an error in fall logic).
-        // 2. The tile was not air but a solid impassable object (e.g., a wall).
-        // In these cases, the standard "Can't move" message applies.
-        logToConsole("Can't move that way (target is not walkable, slope/z-transition failed, step-up/down failed, fall check determined no fall, or occupied by solid).");
+        // If it's not a solid obstacle at originalPos.z, and also not walkable at originalPos.z,
+        // then it's likely empty air. Initiate fall check.
+        logToConsole(`Target tile (${targetX},${targetY},Z:${originalPos.z}) is not walkable and not a solid obstacle. Initiating fall check.`);
+        let fallCheckInitiated = false;
+        if (typeof window.initiateFallCheck === 'function') {
+            fallCheckInitiated = window.initiateFallCheck(gameState, targetX, targetY, originalPos.z);
+        } else {
+            logToConsole(`[TURN_MANAGER_CRITICAL] window.initiateFallCheck is NOT a function. Cannot process fall.`, "error");
+        }
+
+        if (fallCheckInitiated) {
+            if (gameState.movementPointsRemaining > 0) {
+                gameState.movementPointsRemaining--;
+            } else {
+                logToConsole("Stepped into void but had 0 MP. Fall processed, no additional MP cost.", "orange");
+            }
+            updateTurnUI_internal();
+            if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) {
+                gameState.attackerMapPos = { ...gameState.playerPos };
+            }
+            gameState.playerMovedThisTurn = true;
+            return;
+        } else {
+            logToConsole("Can't move that way (fall check determined no fall or error in fall logic).");
+        }
     }
 }
 
