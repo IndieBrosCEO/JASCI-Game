@@ -1,9 +1,9 @@
-﻿// mapMaker/uiManager.js
+// mapMaker/uiManager.js
 "use strict";
 
 import { getMapData, getPlayerStart } from './mapDataManager.js'; // For mapData access
 import { LAYER_TYPES, PLAYER_START_SPRITE, PLAYER_START_COLOR, PLAYER_START_BG_COLOR, ONION_BELOW_COLOR, ONION_ABOVE_COLOR, ERROR_MSG, LOG_MSG, DEFAULT_3D_DEPTH, DEFAULT_ONION_LAYERS_BELOW, DEFAULT_ONION_LAYERS_ABOVE } from './config.js';
-import { getEffectiveTileForDisplay } from './tileManager.js'; // For rendering logic
+import { getEffectiveTileForDisplay, getLayerForTile } from './tileManager.js'; // Import getLayerForTile
 import { logToConsole } from './config.js';
 
 
@@ -31,12 +31,12 @@ const paletteContainer = document.getElementById("paletteContainer");
 /**
  * Builds and displays the tile palette based on loaded assets and active tag filters.
  * @param {string} currentSelectedTileId - The ID of the currently selected tile in the palette.
- * @param {string[]} activeTagFilters - An array of tags to filter the palette by.
+ * @param {string[]} activeGenericTagFilters - An array of general tags to filter the palette by (secondary filter).
  */
-export function buildPalette(currentSelectedTileId, activeTagFilters = []) {
-    if (!assetManagerInstance || !uiStateHolder || !interactionDispatcher) {
-        console.error("UIManager: Not fully initialized. Cannot build palette.");
-        if (paletteContainer) paletteContainer.innerHTML = `<p>Error: UI Manager not initialized.</p>`;
+export function buildPalette(currentSelectedTileId, activeGenericTagFilters = []) {
+    if (!assetManagerInstance || !uiStateHolder || !interactionDispatcher || typeof getLayerForTile !== 'function') {
+        console.error("UIManager: Not fully initialized or getLayerForTile is not available. Cannot build palette.");
+        if (paletteContainer) paletteContainer.innerHTML = `<p>Error: UI Manager not initialized or missing dependencies.</p>`;
         return;
     }
     if (!paletteContainer) {
@@ -46,28 +46,38 @@ export function buildPalette(currentSelectedTileId, activeTagFilters = []) {
     paletteContainer.innerHTML = ""; // Clear existing palette
 
     const eraser = document.createElement("div");
-    eraser.className = "palette-tile"; // Consistent class naming
-    eraser.dataset.tileId = ""; // Eraser represented by empty string
+    eraser.className = "palette-tile";
+    eraser.dataset.tileId = "";
     eraser.textContent = "✖";
     eraser.title = "Eraser (Clear Tile at X,Y,Z on all layers)";
     eraser.onclick = () => {
         uiStateHolder.currentTileId = "";
         updatePaletteSelectionUI(uiStateHolder.currentTileId);
         if (interactionDispatcher.onPaletteTileSelect) {
-            interactionDispatcher.onPaletteTileSelect(""); // Notify main logic of selection
+            interactionDispatcher.onPaletteTileSelect("");
         }
     };
     paletteContainer.appendChild(eraser);
 
     if (assetManagerInstance.tilesets && Object.keys(assetManagerInstance.tilesets).length > 0) {
         Object.entries(assetManagerInstance.tilesets).forEach(([id, tileDef]) => {
-            let showInPalette = true;
-            if (activeTagFilters.length > 0) {
-                showInPalette = activeTagFilters.every(filterTag => tileDef.tags && tileDef.tags.includes(filterTag));
+            // Primary filter: Tile must belong to the currently selected editing layer type
+            const tileDesignatedLayer = getLayerForTile(tileDef); // tileManager.js function
+            if (tileDesignatedLayer !== uiStateHolder.currentEditingLayerType) {
+                return; // Skip this tile if it doesn't match the active editing layer
             }
-            if (!showInPalette) return;
 
-            // Optionally skip tiles that are purely for auto-tiling results (e.g., specific corner pieces not meant for direct use)
+            // Secondary filter: Apply generic tag filters if any are active
+            let matchesGenericFilters = true;
+            if (activeGenericTagFilters && activeGenericTagFilters.length > 0) {
+                matchesGenericFilters = activeGenericTagFilters.every(filterTag => tileDef.tags && tileDef.tags.includes(filterTag));
+            }
+
+            if (!matchesGenericFilters) {
+                return; // Skip if it doesn't match the generic tag filters
+            }
+
+            // Optionally skip tiles that are purely for auto-tiling results
             if (tileDef.tags?.includes('auto_tile_result_only')) {
                 return;
             }
@@ -75,9 +85,9 @@ export function buildPalette(currentSelectedTileId, activeTagFilters = []) {
             const tileElement = document.createElement("div");
             tileElement.className = "palette-tile";
             tileElement.dataset.tileId = id;
-            tileElement.textContent = tileDef.sprite || '?'; // Fallback sprite
-            tileElement.style.color = tileDef.color || 'black'; // Fallback color
-            tileElement.title = `${tileDef.name || 'Unnamed Tile'} (${id})\nTags: ${(tileDef.tags || ['none']).join(', ')}`;
+            tileElement.textContent = tileDef.sprite || '?';
+            tileElement.style.color = tileDef.color || 'black';
+            tileElement.title = `${tileDef.name || 'Unnamed Tile'} (${id})\nTags: ${(tileDef.tags || ['none']).join(', ')}\nLayer: ${tileDesignatedLayer}`;
             tileElement.onclick = () => {
                 uiStateHolder.currentTileId = id;
                 updatePaletteSelectionUI(uiStateHolder.currentTileId);

@@ -6,7 +6,8 @@
     "tags": [
       "landscape",
       "impassable",
-      "middle"
+      "middle",
+      "floor"
     ]
   },
   "DI": {
@@ -17,7 +18,8 @@
       "landscape",
       "solid_terrain_top",
       "impassable",
-      "middle"
+      "middle",
+      "floor"
     ]
   },
   "GR": {
@@ -26,7 +28,8 @@
     "color": "#008000",
     "tags": [
       "landscape",
-      "bottom"
+      "bottom",
+      "floor"
     ]
   },
   "MU": {
@@ -37,7 +40,8 @@
       "landscape",
       "middle",
       "solid_terrain_top",
-      "impassable"
+      "impassable",
+      "floor"
     ]
   },
   "TGR": {
@@ -46,7 +50,8 @@
     "color": "#008000",
     "tags": [
       "landscape",
-      "bottom"
+      "bottom",
+      "middle"
     ]
   },
   "MSH": {
@@ -55,7 +60,8 @@
     "color": "#2e4b36",
     "tags": [
       "landscape",
-      "bottom"
+      "bottom",
+      "floor"
     ]
   },
   "BOG": {
@@ -64,7 +70,8 @@
     "color": "#006400",
     "tags": [
       "landscape",
-      "bottom"
+      "bottom",
+      "floor"
     ]
   },
   "SA": {
@@ -75,7 +82,8 @@
       "landscape",
       "middle",
       "solid_terrain_top",
-      "impassable"
+      "impassable",
+      "floor"
     ]
   },
   "GV": {
@@ -86,7 +94,8 @@
       "landscape",
       "middle",
       "solid_terrain_top",
-      "impassable"
+      "impassable",
+      "floor"
     ]
   },
   "WS": {
@@ -96,7 +105,8 @@
     "tags": [
       "landscape",
       "water",
-      "bottom"
+      "bottom",
+      "floor"
     ]
   },
   "WD": {
@@ -107,7 +117,8 @@
       "landscape",
       "water",
       "bottom",
-      "impassable"
+      "impassable",
+      "floor"
     ]
   },
   "AR": {
@@ -118,7 +129,8 @@
       "landscape",
       "middle",
       "solid_terrain_top",
-      "impassable"
+      "impassable",
+      "floor"
     ]
   },
   "DRO": {
@@ -129,7 +141,8 @@
       "landscape",
       "middle",
       "solid_terrain_top",
-      "impassable"
+      "impassable",
+      "floor"
     ]
   },
   "TRK": {
@@ -151,7 +164,8 @@
     "color": "#008000",
     "tags": [
       "landscape",
-      "vegetation"
+      "vegetation",
+      "middle"
     ]
   },
   "BLK": {
@@ -172,7 +186,8 @@
     "color": "#808080",
     "tags": [
       "landscape",
-      "bottom"
+      "bottom",
+      "middle"
     ]
   },
   "MH": {
@@ -181,7 +196,8 @@
     "color": "#A9A9A9",
     "tags": [
       "landscape",
-      "bottom"
+      "bottom",
+      "floor"
     ]
   },
   "FL": {
@@ -190,7 +206,8 @@
     "color": "#d3d3d3",
     "tags": [
       "bottom",
-      "building"
+      "building",
+      "floor"
     ]
   },
   "WF": {
@@ -200,7 +217,8 @@
     "tags": [
       "bottom",
       "wood",
-      "building"
+      "building",
+      "floor"
     ]
   },
   "CT": {
@@ -209,7 +227,8 @@
     "color": "#808080",
     "tags": [
       "bottom",
-      "building"
+      "building",
+      "floor"
     ]
   },
   "WWH": {
@@ -217,7 +236,8 @@
     "name": "Wood Wall Hz",
     "color": "#A52A2A",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "wood",
       "impassable",
       "building"
@@ -229,7 +249,8 @@
     "name": "Wood Wall Vt",
     "color": "#A52A2A",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "wood",
       "impassable",
       "building"
@@ -240,7 +261,8 @@
     "name": "Wood Wall Corner TL",
     "color": "#A52A2A",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "wood",
       "impassable",
       "building"
@@ -251,7 +273,8 @@
     "name": "Wood Wall Corner TR",
     "color": "#A52A2A",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "wood",
       "impassable",
       "building"
@@ -262,7 +285,8 @@
     "name": "Wood Wall Corner BL",
     "color": "#A52A2A",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "wood",
       "impassable",
       "building"
@@ -273,7 +297,8 @@
     "name": "Wood Wall Corner BR",
     "color": "#A52A2A",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "wood",
       "impassable",
       "building"
@@ -284,7 +309,8 @@
     "name": "Wood Wall T–East",
     "color": "#A52A2A",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "wood",
       "impassable",
       "building"
@@ -295,7 +321,8 @@
     "name": "Wood Wall T–West",
     "color": "#A52A2A",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "wood",
       "impassable",
       "building"
@@ -306,7 +333,8 @@
     "name": "Wood Wall T–South",
     "color": "#A52A2A",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "wood",
       "impassable",
       "building"
@@ -317,7 +345,8 @@
     "name": "Wood Wall T–North",
     "color": "#A52A2A",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "wood",
       "impassable",
       "building"
@@ -328,7 +357,8 @@
     "name": "Wood Wall Cross",
     "color": "#A52A2A",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "wood",
       "impassable",
       "building"
@@ -339,7 +369,8 @@
     "name": "Metal Wall Hz",
     "color": "#808080",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "metal",
       "impassable",
       "building"
@@ -351,7 +382,8 @@
     "name": "Metal Wall Vt",
     "color": "#808080",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "metal",
       "impassable",
       "building"
@@ -362,7 +394,8 @@
     "name": "Metal Wall Corner TL",
     "color": "#808080",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "metal",
       "impassable",
       "building"
@@ -373,7 +406,8 @@
     "name": "Metal Wall Corner TR",
     "color": "#808080",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "metal",
       "impassable",
       "building"
@@ -384,7 +418,8 @@
     "name": "Metal Wall Corner BL",
     "color": "#808080",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "metal",
       "impassable",
       "building"
@@ -395,7 +430,8 @@
     "name": "Metal Wall Corner BR",
     "color": "#808080",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "metal",
       "impassable",
       "building"
@@ -406,7 +442,8 @@
     "name": "Metal Wall T–East",
     "color": "#808080",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "metal",
       "impassable",
       "building"
@@ -417,7 +454,8 @@
     "name": "Metal Wall T–West",
     "color": "#808080",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "metal",
       "impassable",
       "building"
@@ -428,7 +466,8 @@
     "name": "Metal Wall T–South",
     "color": "#808080",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "metal",
       "impassable",
       "building"
@@ -439,7 +478,8 @@
     "name": "Metal Wall T–North",
     "color": "#808080",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "metal",
       "impassable",
       "building"
@@ -450,7 +490,8 @@
     "name": "Metal Wall Cross",
     "color": "#808080",
     "tags": [
-      "wall", "middle",
+      "wall",
+      "middle",
       "metal",
       "impassable",
       "building"
@@ -461,7 +502,8 @@
     "name": "Wood Door Hz",
     "color": "#A52A2A",
     "tags": [
-      "door", "middle",
+      "door",
+      "middle",
       "wood",
       "closed",
       "impassable",
@@ -475,7 +517,8 @@
     "name": "Wood Door Vt",
     "color": "#A52A2A",
     "tags": [
-      "door", "middle",
+      "door",
+      "middle",
       "wood",
       "closed",
       "impassable",
@@ -489,7 +532,8 @@
     "name": "Wood Door Hz Open",
     "color": "#A52A2A",
     "tags": [
-      "door", "middle",
+      "door",
+      "middle",
       "wood",
       "open",
       "interactive",
@@ -503,7 +547,8 @@
     "name": "Wood Door Vt Open",
     "color": "#A52A2A",
     "tags": [
-      "door", "middle",
+      "door",
+      "middle",
       "wood",
       "open",
       "interactive",
@@ -517,7 +562,8 @@
     "name": "Wood Door Broken",
     "color": "#A52A2A",
     "tags": [
-      "door", "middle",
+      "door",
+      "middle",
       "wood",
       "broken",
       "interactive",
@@ -530,7 +576,8 @@
     "name": "Metal Door Hz",
     "color": "#808080",
     "tags": [
-      "door", "middle",
+      "door",
+      "middle",
       "metal",
       "closed",
       "impassable",
@@ -544,7 +591,8 @@
     "name": "Metal Door Vt",
     "color": "#808080",
     "tags": [
-      "door", "middle",
+      "door",
+      "middle",
       "metal",
       "closed",
       "impassable",
@@ -558,7 +606,8 @@
     "name": "Metal Door Hz Open",
     "color": "#808080",
     "tags": [
-      "door", "middle",
+      "door",
+      "middle",
       "metal",
       "open",
       "interactive",
@@ -572,7 +621,8 @@
     "name": "Metal Door Vt Open",
     "color": "#808080",
     "tags": [
-      "door", "middle",
+      "door",
+      "middle",
       "metal",
       "open",
       "interactive",
@@ -586,7 +636,8 @@
     "name": "Metal Door Broken",
     "color": "#808080",
     "tags": [
-      "door", "middle",
+      "door",
+      "middle",
       "metal",
       "broken",
       "interactive",
@@ -599,7 +650,8 @@
     "name": "Window Hz Closed",
     "color": "#00FFFF",
     "tags": [
-      "window", "middle",
+      "window",
+      "middle",
       "closed",
       "impassable",
       "interactive",
@@ -613,7 +665,8 @@
     "name": "Window Vt Closed",
     "color": "#00FFFF",
     "tags": [
-      "window", "middle",
+      "window",
+      "middle",
       "closed",
       "impassable",
       "interactive",
@@ -627,7 +680,8 @@
     "name": "Window Hz Open",
     "color": "#00FFFF",
     "tags": [
-      "window", "middle",
+      "window",
+      "middle",
       "open",
       "interactive",
       "breakable",
@@ -640,7 +694,8 @@
     "name": "Window Vt Open",
     "color": "#00FFFF",
     "tags": [
-      "window", "middle",
+      "window",
+      "middle",
       "open",
       "interactive",
       "breakable",
@@ -653,7 +708,8 @@
     "name": "Window Broken",
     "color": "#00FFFF",
     "tags": [
-      "window", "middle",
+      "window",
+      "middle",
       "broken",
       "interactive",
       "building",
@@ -665,8 +721,10 @@
     "name": "Roof (Wood)",
     "color": "#A52A2A",
     "tags": [
-      "roof", "bottom",
-      "impassable"
+      "roof",
+      "bottom",
+      "impassable",
+      "middle"
     ]
   },
   "RM": {
@@ -674,8 +732,10 @@
     "name": "Roof (Metal)",
     "color": "#808080",
     "tags": [
-      "roof", "bottom",
-      "impassable"
+      "roof",
+      "bottom",
+      "impassable",
+      "middle"
     ]
   },
   "TRF": {
@@ -683,8 +743,10 @@
     "name": "Tree Leaves",
     "color": "#008000",
     "tags": [
-      "roof", "bottom",
-      "vegetation"
+      "roof",
+      "bottom",
+      "vegetation",
+      "middle"
     ]
   },
   "CN": {
@@ -693,7 +755,8 @@
     "color": "#d3d3d3",
     "tags": [
       "building",
-      "impassable"
+      "impassable",
+      "middle"
     ]
   },
   "CB": {
@@ -706,7 +769,8 @@
       "blocks_vision",
       "impassable",
       "building",
-      "furniture"
+      "furniture",
+      "middle"
     ],
     "itemLink": "cb_container_item",
     "contents": [],
@@ -721,7 +785,8 @@
     "color": "#C0C0C0",
     "tags": [
       "building",
-      "interactive"
+      "interactive",
+      "middle"
     ]
   },
   "DR": {
@@ -732,7 +797,8 @@
       "interactive",
       "container",
       "item",
-      "furniture"
+      "furniture",
+      "middle"
     ],
     "itemLink": "dr_container_item",
     "contents": [],
@@ -751,7 +817,8 @@
       "item",
       "furniture",
       "blocks_vision",
-      "impassable"
+      "impassable",
+      "middle"
     ],
     "itemLink": "gc_container_item",
     "contents": [],
@@ -767,7 +834,8 @@
     "tags": [
       "interactive",
       "container",
-      "item"
+      "item",
+      "middle"
     ],
     "itemLink": "tc_container_item",
     "contents": [],
@@ -787,7 +855,8 @@
       "furniture",
       "blocks_vision",
       "impassable",
-      "metal"
+      "metal",
+      "middle"
     ],
     "itemLink": "sf_container_item",
     "contents": [],
@@ -807,7 +876,8 @@
       "furniture",
       "blocks_vision",
       "impassable",
-      "electronics"
+      "electronics",
+      "middle"
     ],
     "itemLink": "rf_container_item",
     "contents": [],
@@ -827,7 +897,8 @@
       "furniture",
       "blocks_vision",
       "impassable",
-      "electronics"
+      "electronics",
+      "middle"
     ],
     "itemLink": "st_container_item",
     "contents": [],
@@ -845,7 +916,8 @@
       "container",
       "item",
       "furniture",
-      "electronics"
+      "electronics",
+      "middle"
     ],
     "itemLink": "mw_container_item",
     "contents": [],
@@ -860,7 +932,8 @@
     "color": "#800000",
     "tags": [
       "item",
-      "interactive"
+      "interactive",
+      "middle"
     ]
   },
   "CH": {
@@ -869,7 +942,8 @@
     "color": "#800000",
     "tags": [
       "item",
-      "interactive"
+      "interactive",
+      "middle"
     ]
   },
   "TB": {
@@ -878,7 +952,8 @@
     "color": "#A52A2A",
     "tags": [
       "item",
-      "impassable"
+      "impassable",
+      "middle"
     ]
   },
   "TV": {
@@ -887,7 +962,8 @@
     "color": "#808080",
     "tags": [
       "item",
-      "interactive"
+      "interactive",
+      "middle"
     ]
   },
   "STL": {
@@ -900,7 +976,8 @@
       "item",
       "furniture",
       "blocks_vision",
-      "impassable"
+      "impassable",
+      "middle"
     ],
     "itemLink": "stl_container_item",
     "contents": [],
@@ -915,7 +992,8 @@
     "color": "#FF0000",
     "tags": [
       "building",
-      "interactive"
+      "interactive",
+      "middle"
     ]
   },
   "NK": {
@@ -926,7 +1004,8 @@
       "interactive",
       "container",
       "item",
-      "furniture"
+      "furniture",
+      "middle"
     ],
     "itemLink": "nk_container_item",
     "contents": [],
@@ -945,7 +1024,8 @@
       "item",
       "furniture",
       "blocks_vision",
-      "impassable"
+      "impassable",
+      "middle"
     ],
     "itemLink": "drs_container_item",
     "contents": [],
@@ -964,7 +1044,8 @@
       "item",
       "furniture",
       "blocks_vision",
-      "impassable"
+      "impassable",
+      "middle"
     ],
     "itemLink": "dsk_container_item",
     "contents": [],
@@ -979,7 +1060,8 @@
     "color": "#A52A2A",
     "tags": [
       "item",
-      "interactive"
+      "interactive",
+      "middle"
     ]
   },
   "TW": {
@@ -988,7 +1070,8 @@
     "color": "#FFFFFF",
     "tags": [
       "item",
-      "interactive"
+      "interactive",
+      "middle"
     ]
   },
   "SH": {
@@ -997,7 +1080,8 @@
     "color": "#0000FF",
     "tags": [
       "item",
-      "interactive"
+      "interactive",
+      "middle"
     ]
   },
   "BTB": {
@@ -1006,7 +1090,8 @@
     "color": "#FFFFFF",
     "tags": [
       "item",
-      "interactive"
+      "interactive",
+      "middle"
     ]
   },
   "FLR": {
@@ -1015,7 +1100,8 @@
     "color": "#FFFF00",
     "tags": [
       "item",
-      "interactive"
+      "interactive",
+      "middle"
     ],
     "emitsLight": true,
     "lightRadius": 5,
@@ -1027,7 +1113,8 @@
     "name": "Potted Plant",
     "color": "#008000",
     "tags": [
-      "item"
+      "item",
+      "middle"
     ]
   },
   "CP": {
@@ -1036,7 +1123,8 @@
     "color": "#A9A9A9",
     "tags": [
       "item",
-      "interactive"
+      "interactive",
+      "middle"
     ]
   },
   "PR": {
@@ -1045,7 +1133,8 @@
     "color": "#808080",
     "tags": [
       "item",
-      "interactive"
+      "interactive",
+      "middle"
     ]
   },
   "WM": {
@@ -1055,7 +1144,8 @@
     "tags": [
       "item",
       "interactive",
-      "impassable"
+      "impassable",
+      "middle"
     ]
   },
   "DRY": {
@@ -1065,7 +1155,8 @@
     "tags": [
       "item",
       "interactive",
-      "impassable"
+      "impassable",
+      "middle"
     ]
   },
   "FT": {
@@ -1074,7 +1165,8 @@
     "color": "#FF0000",
     "tags": [
       "building",
-      "interactive"
+      "interactive",
+      "middle"
     ]
   },
   "TSL": {
@@ -1085,7 +1177,8 @@
       "landscape",
       "bottom",
       "farmland",
-      "plantable"
+      "plantable",
+      "floor"
     ]
   },
   "WBD": {
@@ -1097,7 +1190,8 @@
       "impassable",
       "wood",
       "cover",
-      "breakable"
+      "breakable",
+      "middle"
     ]
   },
   "TOR": {
@@ -1106,7 +1200,8 @@
     "color": "#FFA500",
     "tags": [
       "item",
-      "interactive"
+      "interactive",
+      "middle"
     ],
     "emitsLight": true,
     "lightRadius": 5,
@@ -1119,7 +1214,8 @@
     "color": "#A0522D",
     "tags": [
       "item",
-      "interactive"
+      "interactive",
+      "middle"
     ],
     "emitsLight": true,
     "lightColor": "#FFA500",
@@ -1131,7 +1227,8 @@
     "name": "Standing Lantern",
     "color": "#808080",
     "tags": [
-      "item"
+      "item",
+      "middle"
     ],
     "emitsLight": true,
     "lightColor": "#FFFFE0",
@@ -1143,7 +1240,8 @@
     "name": "Table Lantern (Placed)",
     "color": "#A52A2A",
     "tags": [
-      "item"
+      "item",
+      "middle"
     ],
     "emitsLight": true,
     "lightColor": "#FFFFE0",
@@ -1155,7 +1253,8 @@
     "name": "Candle (Placed)",
     "color": "#FFFFFF",
     "tags": [
-      "item"
+      "item",
+      "middle"
     ],
     "emitsLight": true,
     "lightColor": "#FFFFE0",
@@ -1168,7 +1267,8 @@
     "color": "#A9A9A9",
     "tags": [
       "structure",
-      "impassable"
+      "impassable",
+      "middle"
     ],
     "emitsLight": true,
     "lightColor": "#FFFF00",
@@ -1180,7 +1280,8 @@
     "name": "Floodlight",
     "color": "#D3D3D3",
     "tags": [
-      "structure"
+      "structure",
+      "middle"
     ],
     "emitsLight": true,
     "lightColor": "#FFFFFF",
@@ -1193,7 +1294,8 @@
     "color": "#FF0000",
     "tags": [
       "item",
-      "decorative"
+      "decorative",
+      "middle"
     ],
     "emitsLight": true,
     "lightColor": "#FF0000",
@@ -1206,7 +1308,8 @@
     "color": "#0000FF",
     "tags": [
       "item",
-      "decorative"
+      "decorative",
+      "middle"
     ],
     "emitsLight": true,
     "lightColor": "#0000FF",
@@ -1219,7 +1322,8 @@
     "color": "#008000",
     "tags": [
       "item",
-      "decorative"
+      "decorative",
+      "middle"
     ],
     "emitsLight": true,
     "lightColor": "#008000",
@@ -1232,7 +1336,8 @@
     "color": "#808080",
     "tags": [
       "item",
-      "emits_at_night"
+      "emits_at_night",
+      "middle"
     ],
     "emitsLight": true,
     "lightColor": "#F0FFF0",
@@ -1245,7 +1350,8 @@
     "color": "#B22222",
     "tags": [
       "item",
-      "flashing_effect"
+      "flashing_effect",
+      "middle"
     ],
     "emitsLight": true,
     "lightColor": "#FF0000",
@@ -1256,7 +1362,7 @@
     "sprite": "▲",
     "name": "Stairs Up",
     "color": "#C0C0C0",
-    "tags": [ "building", "z_transition", "stairs", "middle" ],
+    "tags": [ "building", "z_transition", "stairs", "middle", "floor" ],
     "target_dz": 1,
     "z_cost": 2
   },
@@ -1264,7 +1370,7 @@
     "sprite": "▼",
     "name": "Stairs Down",
     "color": "#A0A0A0",
-    "tags": [ "building", "z_transition", "stairs", "middle" ],
+    "tags": [ "building", "z_transition", "stairs", "middle", "floor" ],
     "target_dz": -1,
     "z_cost": 1
   },
@@ -1272,7 +1378,7 @@
     "sprite": "H",
     "name": "Ladder Up",
     "color": "#8B4513",
-    "tags": [ "building", "item", "z_transition", "ladder", "middle" ],
+    "tags": [ "building", "item", "z_transition", "ladder", "middle", "floor" ],
     "target_dz": 1,
     "z_cost": 3
   },
@@ -1280,7 +1386,7 @@
     "sprite": "H",
     "name": "Ladder Down",
     "color": "#8B4513",
-    "tags": [ "building", "item", "z_transition", "ladder", "middle" ],
+    "tags": [ "building", "item", "z_transition", "ladder", "middle", "floor" ],
     "target_dz": -1,
     "z_cost": 1
   },
@@ -1288,7 +1394,7 @@
     "sprite": "O",
     "name": "Hole",
     "color": "#303030",
-    "tags": [ "landscape", "z_transition", "hole", "transparent_bottom", "allows_vision", "bottom" ],
+    "tags": [ "landscape", "z_transition", "hole", "transparent_bottom", "allows_vision", "bottom", "floor" ],
     "target_dz": -1,
     "z_cost": 1
   },
@@ -1296,7 +1402,7 @@
     "sprite": "▲",
     "name": "Dirt Slope Up",
     "color": "#A52A2A",
-    "tags": [ "landscape", "z_transition", "slope", "dirt_slope", "middle" ],
+    "tags": [ "landscape", "z_transition", "slope", "dirt_slope", "middle", "floor" ],
     "target_dz": 1,
     "z_cost": 2
   },
@@ -1304,7 +1410,7 @@
     "sprite": "▼",
     "name": "Dirt Slope Down",
     "color": "#A52A2A",
-    "tags": [ "landscape", "z_transition", "slope", "dirt_slope", "middle" ],
+    "tags": [ "landscape", "z_transition", "slope", "dirt_slope", "middle", "floor" ],
     "target_dz": -1,
     "z_cost": 1
   }

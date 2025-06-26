@@ -283,15 +283,39 @@ function setupButtonEventListeners() {
     el("addZLevelBtn", "click", handleAddZLevelClick);
     el("deleteZLevelBtn", "click", handleDeleteZLevelClick);
 
+    // Layer Editing Mode Radio Buttons
+    const bottomLayerRadio = document.getElementById('editMode_bottom');
+    const middleLayerRadio = document.getElementById('editMode_middle');
+
+    function handleEditingLayerChange() {
+        if (!appState) return; // Guard against appState not being initialized
+        if (bottomLayerRadio.checked) {
+            appState.currentEditingLayerType = LAYER_TYPES.BOTTOM;
+        } else if (middleLayerRadio.checked) {
+            appState.currentEditingLayerType = LAYER_TYPES.MIDDLE;
+        }
+        logToConsole(`Switched editing layer to: ${appState.currentEditingLayerType}`);
+        // Rebuild palette based on new layer selection and existing generic tag filters
+        if (typeof buildPalette === 'function') { // Ensure buildPalette is accessible from uiManager
+            buildPalette(appState.currentTileId, appState.activeTagFilters);
+        } else {
+            console.error("eventHandlers: buildPalette function not found.");
+        }
+    }
+
+    if (bottomLayerRadio) bottomLayerRadio.addEventListener('change', handleEditingLayerChange);
+    if (middleLayerRadio) middleLayerRadio.addEventListener('change', handleEditingLayerChange);
+
+
     // Layer Visibility Toggles
     [LAYER_TYPES.BOTTOM, LAYER_TYPES.MIDDLE].forEach(layerName => {
         const visCheckbox = document.getElementById(`vis_${layerName}`);
         if (visCheckbox) {
             visCheckbox.addEventListener('change', () => {
+                if (!appState) return;
                 appState.layerVisibility[layerName] = visCheckbox.checked;
                 triggerFullGridRender();
             });
-            // Initialize from HTML state during appState setup, not here directly
         }
     });
 
@@ -316,8 +340,6 @@ function setupButtonEventListeners() {
     el('addItemToContainerBtn', 'click', handleAddItemToContainerClick);
     el('isLockedCheckbox', 'change', handleToggleLockStateClick);
     el('lockDifficultyInput', 'input', handleChangeLockDcInput);
-    // Note: Remove item from container is handled via dynamically created buttons in UIManager.
-    // Those buttons will call `interactionDispatcher.removeItemFromContainer(index)`.
 
     // Portal Properties Editor
     el('savePortalPropertiesBtn', 'click', handleSavePortalPropertiesClick);
@@ -326,11 +348,22 @@ function setupButtonEventListeners() {
     // Tile Instance Properties Editor
     el('saveTileInstancePropertiesBtn', 'click', handleSaveTileInstancePropsClick);
     el('clearTileInstancePropertiesBtn', 'click', handleClearTileInstancePropsClick);
+
+    // Initial UI updates based on default state
+    if (appState) { // Ensure appState is available
+        updateToolButtonUI(appState.currentTool);
+        // buildPalette is typically called after assets are loaded, in mapMaker.js's initializeMapMaker
+        // However, we might want to ensure the palette reflects the default editing layer at init.
+        if (typeof buildPalette === 'function') {
+             buildPalette(appState.currentTileId, appState.activeTagFilters);
+        }
+    }
 }
 
 // --- Specific Click/Change Handlers for UI Elements ---
 
 function handleResizeButtonClick() {
+    if (!appState) return;
     const wInput = document.getElementById("inputWidth");
     const hInput = document.getElementById("inputHeight");
     if (!wInput || !hInput) return;
@@ -350,13 +383,8 @@ function handleResizeButtonClick() {
         mapData.width = w;
         mapData.height = h;
 
-        // Adjust existing Z-levels. This is a complex operation.
-        // A simple approach: recreate layers, data outside new bounds is lost.
-        // A better approach: copy existing data within new bounds.
         Object.keys(mapData.levels).forEach(zKey => {
             const z = parseInt(zKey, 10);
-            // For simplicity, let's assume ensureLayersForZ with forceRecreate handles it
-            // or a dedicated resize function is called.
             appState.ensureLayersForZ(z, w, h, mapData, true /* force recreate for resize */);
         });
         triggerFullGridRender();
@@ -365,6 +393,7 @@ function handleResizeButtonClick() {
 }
 
 function handleToolButtonClick(toolName) {
+    if (!appState) return;
     if (appState.currentTool === toolName && toolName === "stamp") {
         appState.stampData3D = null; // Double-click stamp tool to clear defined stamp
         appState.previewPos = null;
@@ -383,6 +412,7 @@ function handleToolButtonClick(toolName) {
 }
 
 function handleZLevelInputChange(event) {
+    if (!appState) return;
     const newZ = parseInt(event.target.value, 10);
     if (!isNaN(newZ) && newZ !== appState.currentEditingZ) {
         appState.currentEditingZ = newZ;
@@ -394,6 +424,7 @@ function handleZLevelInputChange(event) {
 }
 
 function handleZLevelChange(delta) {
+    if (!appState) return;
     appState.currentEditingZ += delta;
     document.getElementById("zLevelInput").value = appState.currentEditingZ; // Update input field
     appState.ensureLayersForZ(appState.currentEditingZ, appState.gridWidth, appState.gridHeight, getMapData());
@@ -403,6 +434,7 @@ function handleZLevelChange(delta) {
 }
 
 function handleAddZLevelClick() {
+    if (!appState) return;
     const mapData = getMapData();
     const existingZs = Object.keys(mapData.levels).map(Number);
     const defaultNewZ = existingZs.length > 0 ? Math.max(...existingZs) + 1 : 0;
@@ -426,6 +458,7 @@ function handleAddZLevelClick() {
 }
 
 function handleDeleteZLevelClick() {
+    if (!appState) return;
     const mapData = getMapData();
     const zToDelete = appState.currentEditingZ;
     if (Object.keys(mapData.levels).length <= 1) {
@@ -436,22 +469,19 @@ function handleDeleteZLevelClick() {
     }
     if (!confirm(ERROR_MSG.CONFIRM_DELETE_Z_LEVEL(zToDelete))) return;
 
-    // deleteZLevelFromData handles snapshotting
     const result = deleteZLevelFromData(zToDelete, mapData, appState.gridWidth, appState.gridHeight);
 
     if (result.success) {
         appState.currentEditingZ = result.newCurrentEditingZ;
         document.getElementById("zLevelInput").value = appState.currentEditingZ;
-        // Ensure the new current Z is valid and its layers exist (should be handled by deleteZLevelFromData if it creates a new default)
         appState.ensureLayersForZ(appState.currentEditingZ, appState.gridWidth, appState.gridHeight, mapData);
 
-        // Clear selections that might have been on the deleted Z level
         if (appState.selectedPortal?.z === zToDelete) appState.selectedPortal = null;
         if (appState.selectedNpc?.mapPos?.z === zToDelete) appState.selectedNpc = null;
         if (appState.selectedTileForInventory?.z === zToDelete) appState.selectedTileForInventory = null;
         if (appState.selectedGenericTile?.z === zToDelete) appState.selectedGenericTile = null;
 
-        clearAllSelectionsAndPreviews(); // General cleanup and UI update
+        clearAllSelectionsAndPreviews();
         triggerFullGridRender();
     } else if (result.error) {
         alert(result.error);
@@ -459,14 +489,15 @@ function handleDeleteZLevelClick() {
 }
 
 function handleExportMap() {
+    if (!appState) return;
     const mapData = getMapData();
-    mapData.width = appState.gridWidth; // Ensure mapData has latest dimensions
+    mapData.width = appState.gridWidth;
     mapData.height = appState.gridHeight;
-    // mapData.startPos is already part of mapData and should be current.
     exportMapFile(mapData);
 }
 
 async function handleLoadMapFile(event) {
+    if (!appState || !assetManagerInstance) return;
     const fileInput = event.target;
     if (!fileInput.files || fileInput.files.length === 0) {
         alert(ERROR_MSG.SELECT_JSON_FILE); return;
@@ -492,29 +523,33 @@ async function handleLoadMapFile(event) {
             alert(ERROR_MSG.ERROR_PARSING_MAP(err.message));
             console.error("Error parsing map file:", err);
         } finally {
-            fileInput.value = ""; // Reset file input to allow reloading the same file
+            fileInput.value = "";
         }
     };
     reader.readAsText(file);
 }
 
 function handleTagFilterChange() {
+    if (!appState) return;
     appState.activeTagFilters = Array.from(document.querySelectorAll(".tagFilterCheckbox:checked")).map(cb => cb.value);
-    buildPalette(appState.currentTileId, appState.activeTagFilters); // Rebuild palette with new filters
+    buildPalette(appState.currentTileId, appState.activeTagFilters);
 }
 
 function handleClearTagFilters() {
+    if (!appState) return;
     document.querySelectorAll(".tagFilterCheckbox").forEach(checkbox => checkbox.checked = false);
     appState.activeTagFilters = [];
     buildPalette(appState.currentTileId, appState.activeTagFilters);
 }
 
 function handleOnionSkinEnableChange(event) {
+    if (!appState) return;
     appState.onionSkinState.enabled = event.target.checked;
     triggerFullGridRender();
 }
 
-function handleOnionSkinDepthChange(direction) { // direction is 'layersBelow' or 'layersAbove'
+function handleOnionSkinDepthChange(direction) {
+    if (!appState) return;
     const inputElement = document.getElementById(`onion${direction.charAt(0).toUpperCase() + direction.slice(1)}Input`);
     if (inputElement) {
         appState.onionSkinState[direction] = parseInt(inputElement.value, 10) || 0;
@@ -523,6 +558,7 @@ function handleOnionSkinDepthChange(direction) { // direction is 'layersBelow' o
 }
 
 function handleAddItemToContainerClick() {
+    if (!appState || !assetManagerInstance) return;
     const mapData = getMapData();
     if (!appState.selectedTileForInventory || !mapData) {
         alert("No container tile selected."); return;
@@ -537,7 +573,6 @@ function handleAddItemToContainerClick() {
         alert(ERROR_MSG.INVALID_CONTAINER_TYPE_ERROR); return;
     }
 
-    // Ensure tileData is an object and has containerInventory array
     if (typeof tileData === 'string') {
         snapshot();
         tileData = { tileId: baseTileId, containerInventory: [] };
@@ -545,7 +580,7 @@ function handleAddItemToContainerClick() {
     } else if (typeof tileData !== 'object' || tileData === null) {
         alert(ERROR_MSG.CANNOT_ADD_ITEM_INVALID_TILE); return;
     }
-    if (!Array.isArray(tileData.containerInventory)) { // Ensure it's an array
+    if (!Array.isArray(tileData.containerInventory)) {
         snapshot();
         tileData.containerInventory = [];
     }
@@ -566,11 +601,11 @@ function handleAddItemToContainerClick() {
     }
     logToConsole(LOG_MSG.ADDED_ITEM_TO_CONTAINER(itemId, quantity, x, y, layerName));
     updateContainerInventoryUI(appState.selectedTileForInventory, mapData);
-    quantityInput.value = 1; // Reset quantity input
+    quantityInput.value = 1;
 }
 
-// This function is called by buttons created dynamically in UIManager
 export function removeItemFromContainerByIndex(itemIndex) {
+    if (!appState || !assetManagerInstance) return;
     const mapData = getMapData();
     if (!appState.selectedTileForInventory || !mapData) return;
     const { x, y, z, layerName } = appState.selectedTileForInventory;
@@ -585,14 +620,15 @@ export function removeItemFromContainerByIndex(itemIndex) {
 }
 
 function handleToggleLockStateClick(event) {
+    if (!appState || !assetManagerInstance) return;
     const mapData = getMapData();
     if (!appState.selectedTileForInventory || !mapData) return;
     const { x, y, z, layerName } = appState.selectedTileForInventory;
 
-    let tileObject = ensureTileIsObject(x, y, z, layerName, mapData); // ensureTileIsObject modifies mapData
+    let tileObject = ensureTileIsObject(x, y, z, layerName, mapData);
     if (!tileObject) {
         logToConsole(ERROR_MSG.INVALID_TILE_FOR_LOCK_ERROR(x, y, z));
-        event.target.checked = !event.target.checked; // Revert checkbox
+        event.target.checked = !event.target.checked;
         return;
     }
     const tileDef = assetManagerInstance.tilesets[tileObject.tileId];
@@ -604,14 +640,15 @@ function handleToggleLockStateClick(event) {
     snapshot();
     tileObject.isLocked = event.target.checked;
     if (!tileObject.isLocked) {
-        delete tileObject.lockDC; // Remove DC if unlocked
+        delete tileObject.lockDC;
     } else if (tileObject.lockDC === undefined || tileObject.lockDC === 0) {
-        tileObject.lockDC = DEFAULT_LOCK_DC; // Set default DC when locking
+        tileObject.lockDC = DEFAULT_LOCK_DC;
     }
     updateLockPropertiesUI(appState.selectedTileForInventory, tileObject, tileDef);
 }
 
 function handleChangeLockDcInput(event) {
+    if (!appState || !assetManagerInstance) return;
     const mapData = getMapData();
     const lockDifficultyInput = event.target;
     if (!appState.selectedTileForInventory || lockDifficultyInput.disabled || !mapData) return;
@@ -619,7 +656,6 @@ function handleChangeLockDcInput(event) {
 
     let tileObject = ensureTileIsObject(x, y, z, layerName, mapData);
     if (!tileObject) { logToConsole(ERROR_MSG.INVALID_TILE_FOR_LOCK_ERROR(x, y, z)); return; }
-    // No need to check tileDef again as it's implied by isLockedCheckbox being enabled.
 
     snapshot();
     tileObject.lockDC = parseInt(lockDifficultyInput.value, 10) || 0;
@@ -627,6 +663,7 @@ function handleChangeLockDcInput(event) {
 }
 
 function handleSavePortalPropertiesClick() {
+    if (!appState) return;
     if (!appState.selectedPortal) { alert("No portal selected."); return; }
     snapshot();
     const portalDataUpdates = {
@@ -636,38 +673,39 @@ function handleSavePortalPropertiesClick() {
         targetZ: parseInt(document.getElementById('portalTargetZ').value, 10) || 0,
         name: document.getElementById('portalNameInput').value.trim() || ''
     };
-    updatePortalInMap(appState.selectedPortal.id, portalDataUpdates); // Updates mapData
-    Object.assign(appState.selectedPortal, portalDataUpdates); // Keep UI state ref in sync
-    updateSelectedPortalInfoUI(appState.selectedPortal); // Refresh editor UI
+    updatePortalInMap(appState.selectedPortal.id, portalDataUpdates);
+    Object.assign(appState.selectedPortal, portalDataUpdates);
+    updateSelectedPortalInfoUI(appState.selectedPortal);
     logToConsole(LOG_MSG.PORTAL_PROPS_SAVED(appState.selectedPortal.id));
 }
 
 function handleRemoveSelectedPortalClick() {
+    if (!appState) return;
     if (!appState.selectedPortal) { alert("No portal selected to remove."); return; }
     if (!confirm(`Are you sure you want to remove portal "${appState.selectedPortal.name || appState.selectedPortal.id}"?`)) return;
 
     snapshot();
-    removePortalFromMap(appState.selectedPortal.id); // Removes from mapData
+    removePortalFromMap(appState.selectedPortal.id);
     logToConsole(LOG_MSG.REMOVED_PORTAL(appState.selectedPortal.id));
-    appState.selectedPortal = null; // Clear selection
-    updateSelectedPortalInfoUI(null); // Update editor UI
-    triggerFullGridRender(); // Update grid to remove portal marker
+    appState.selectedPortal = null;
+    updateSelectedPortalInfoUI(null);
+    triggerFullGridRender();
 }
 
 function handleSaveTileInstancePropsClick() {
+    if (!appState || !assetManagerInstance) return;
     const mapData = getMapData();
     if (!appState.selectedGenericTile || !mapData) {
         alert(ERROR_MSG.SAVE_PROPS_NO_TILE_SELECTED); return;
     }
     const { x, y, z, layerName } = appState.selectedGenericTile;
 
-    // ensureTileIsObject will convert string ID to object if necessary, and take a snapshot
     let tileObject = ensureTileIsObject(x, y, z, layerName, mapData);
-    if (!tileObject) { // Should only happen if trying to add props to an empty cell that wasn't converted
+    if (!tileObject) {
         logToConsole(ERROR_MSG.SAVE_PROPS_NO_BASE_ID(mapData.levels[z.toString()]?.[layerName]?.[y]?.[x]));
         return;
     }
-    snapshot(); // Take snapshot *after* potential conversion by ensureTileIsObject if it wasn't an object
+    snapshot();
 
     const newInstanceName = document.getElementById('tileInstanceName').value.trim();
     const newInstanceTagsStr = document.getElementById('tileInstanceTags').value.trim();
@@ -679,19 +717,19 @@ function handleSaveTileInstancePropsClick() {
     if (newInstanceTagsArray.length > 0) tileObject.instanceTags = newInstanceTagsArray;
     else delete tileObject.instanceTags;
 
-    // Optional: Revert to string ID if no custom properties remain AND it's not special (container/lockable)
     const { tileId, instanceName: currentInstName, instanceTags: currentInstTags, ...otherProps } = tileObject;
     const isSpecial = tileObject.hasOwnProperty('containerInventory') || tileObject.hasOwnProperty('isLocked') || tileObject.hasOwnProperty('lockDC');
     if (Object.keys(otherProps).length === 0 && !currentInstName && (!currentInstTags || currentInstTags.length === 0) && !isSpecial) {
-        mapData.levels[z.toString()][layerName][y][x] = tileId; // Revert to string ID
+        mapData.levels[z.toString()][layerName][y][x] = tileId;
         logToConsole(LOG_MSG.CLEARED_TILE_PROPS_REVERTED(x, y, z, layerName, tileId));
     } else {
         logToConsole(LOG_MSG.SAVED_TILE_PROPS(x, y, z, layerName, tileObject));
     }
-    updateTilePropertyEditorUI(appState.selectedGenericTile, mapData); // Refresh editor
+    updateTilePropertyEditorUI(appState.selectedGenericTile, mapData);
 }
 
 function handleClearTileInstancePropsClick() {
+    if (!appState || !assetManagerInstance) return;
     const mapData = getMapData();
     if (!appState.selectedGenericTile || !mapData) {
         alert(ERROR_MSG.CLEAR_PROPS_NO_TILE_SELECTED); return;
@@ -724,6 +762,7 @@ function handleClearTileInstancePropsClick() {
 // --- Helper Functions for Triggering UI Updates ---
 /** Centralized function to trigger a full grid re-render. */
 function triggerFullGridRender() {
+    if (!appState) return;
     const mapData = getMapData();
     renderMergedGrid(
         mapData,
@@ -740,28 +779,27 @@ function triggerFullGridRender() {
 
 /** Centralized function to update all editor panel UIs. */
 function triggerAllEditorUIsUpdate() {
+    if (!appState) return;
     const mapData = getMapData();
     updateSelectedPortalInfoUI(appState.selectedPortal);
-    updateContainerInventoryUI(appState.selectedTileForInventory, mapData); // Also calls updateLockPropertiesUI
+    updateContainerInventoryUI(appState.selectedTileForInventory, mapData);
     updateTilePropertyEditorUI(appState.selectedGenericTile, mapData);
-    // if (typeof updateSelectedNpcInfoUI === 'function') updateSelectedNpcInfoUI(appState.selectedNpc, mapData);
-    updatePlayerStartDisplay(mapData.startPos); // Though less an "editor", it's part of selected state display
+    updatePlayerStartDisplay(mapData.startPos);
 }
 
 /** Clears all selection states and updates relevant UI parts. */
 function clearAllSelections() {
+    if (!appState) return;
     appState.selectedPortal = null;
     appState.selectedNpc = null;
     appState.selectedTileForInventory = null;
     appState.selectedGenericTile = null;
-    triggerAllEditorUIsUpdate(); // This will hide/clear editor panels
+    triggerAllEditorUIsUpdate();
 }
 
 /** Clears selections and also any active previews (like stamp preview). */
 function clearAllSelectionsAndPreviews() {
+    if (!appState) return;
     clearAllSelections();
     appState.previewPos = null;
-    // Consider if stampData3D should be cleared here or only by explicit stamp tool action/escape.
-    // For now, changing Z-level doesn't auto-clear defined stamp.
-    // triggerFullGridRender(); // Is usually called by the function that calls this helper
 }

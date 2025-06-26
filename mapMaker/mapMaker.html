@@ -44,12 +44,14 @@
 
         <hr />
 
-        <!-- Layer visibility for new Bottom/Middle structure -->
-        <div id="visibilityToggles">
-            Show Layers:
+        <!-- Layer Editing Mode and Visibility for new Bottom/Middle structure -->
+        <div id="layerControls">
+            Edit Layer:
+            <label><input type="radio" name="editingLayer" value="bottom" id="editMode_bottom" checked> Bottom</label>
+            <label><input type="radio" name="editingLayer" value="middle" id="editMode_middle"> Middle</label>
+            <span style="margin-left: 20px;">Show Layers:</span>
             <label><input type="checkbox" id="vis_bottom" checked> Bottom</label>
             <label><input type="checkbox" id="vis_middle" checked> Middle</label>
-            <!-- Add visibility toggles for other layers like Z-1, Z+1 if direct multi-Z view is implemented -->
         </div>
         <hr />
 

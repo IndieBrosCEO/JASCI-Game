@@ -66,6 +66,7 @@ const appState = {
     currentTool: "brush",
     currentTileId: "",
     activeTagFilters: [],
+    currentEditingLayerType: LAYER_TYPES.BOTTOM, // Default to editing bottom layer
 
     layerVisibility: {
         [LAYER_TYPES.BOTTOM]: true,
