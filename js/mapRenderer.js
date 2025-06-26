@@ -142,18 +142,22 @@ function isTileBlockingLight(tileX, tileY, tileZ) { // Added tileZ
 }
 
 // New helper function to check if a tile is "empty" for passage (e.g., for Z-transitions)
+// Returns true if the tile at x,y,z has NO tile in the bottom or middle layer, false otherwise.
 function isTileEmpty(x, y, z) {
     const mapData = window.mapRenderer.getCurrentMapData();
-    const tilesets = assetManagerInstance ? assetManagerInstance.tilesets : null;
+    // tilesets are not needed for the simplified check, but assetManagerInstance might be used by other functions.
+    // const tilesets = assetManagerInstance ? assetManagerInstance.tilesets : null; 
 
-    if (!mapData || !mapData.levels || !mapData.dimensions || !tilesets) {
-        // console.warn(`isTileEmpty: Critical data missing for ${x},${y},${z}. Assuming not empty.`);
-        return false; // Cannot determine, assume not empty for safety
+    if (!mapData || !mapData.levels || !mapData.dimensions) {
+        // console.warn(`isTileEmpty: Critical data missing for ${x},${y},${z}. Assuming not empty for safety.`);
+        // If map data itself is missing, it's safer to assume not empty than to allow passage into undefined areas.
+        // However, if the specific levelData is missing later, that means open air.
+        return false;
     }
 
     if (x < 0 || y < 0 || y >= mapData.dimensions.height || x >= mapData.dimensions.width) {
         // console.warn(`isTileEmpty: Coordinates ${x},${y},${z} out of bounds. Assuming not empty.`);
-        return false; // Out of bounds
+        return false; // Out of bounds is not empty for passage.
     }
 
     const zStr = z.toString();
@@ -161,86 +165,33 @@ function isTileEmpty(x, y, z) {
 
     if (!levelData) {
         // console.log(`isTileEmpty: No level data for Z=${z}. Assuming empty (open air).`);
-        return true; // No level data means it's open air, thus empty
+        return true; // No level data for this Z means it's open air, thus empty.
     }
 
-    // Check middle layer
+    // Check middle layer for any tile presence
     const tileOnMiddleRaw = levelData.middle?.[y]?.[x];
     const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined)
         ? tileOnMiddleRaw.tileId
         : tileOnMiddleRaw;
 
     if (effectiveTileOnMiddle && effectiveTileOnMiddle !== "") {
-        const tileDefMiddle = tilesets[effectiveTileOnMiddle];
-        if (tileDefMiddle) {
-            // If it's impassable, or blocks vision/light (unless explicitly allows passage like an open door), it's not empty.
-            // Tags like 'allows_vision' or 'transparent' might make an 'impassable' door effectively empty for this check if it's open.
-            // A simple check: if it has 'impassable' and isn't an 'open' door/window, it's not empty.
-            // Or more generally, if it's not tagged as 'transparent' or 'allows_vision' and exists, it's likely not empty.
-            // For "empty" in the context of "can I move through this air space", most things on middle make it not empty.
-            if (tileDefMiddle.tags && (tileDefMiddle.tags.includes('impassable') || tileDefMiddle.tags.includes('blocks_vision'))) {
-                // Further check if it's an open door/window which might be considered "empty" for passage
-                if (tileDefMiddle.tags.includes('door') && tileDefMiddle.tags.includes('open')) {
-                    // Open door, consider it empty for passage
-                } else if (tileDefMiddle.tags.includes('window') && tileDefMiddle.tags.includes('open')) {
-                    // Open window, might be empty depending on size (not modelled), assume empty for now
-                } else {
-                    // console.log(`isTileEmpty: Middle layer at ${x},${y},${z} has blocking tile ${effectiveTileOnMiddle}. Not empty.`);
-                    return false; // Blocking tile on middle
-                }
-            } else if (!tileDefMiddle.tags || (!tileDefMiddle.tags.includes('transparent') && !tileDefMiddle.tags.includes('allows_vision'))) {
-                // Exists, has no tags or is not transparent/allows_vision: likely not empty.
-                // This catches furniture or other non-structural items that still occupy space.
-                // console.log(`isTileEmpty: Middle layer at ${x},${y},${z} has non-transparent/non-allows_vision tile ${effectiveTileOnMiddle}. Not empty.`);
-                return false;
-            }
-        } else {
-            // Unknown tile ID on middle, assume it blocks space
-            // console.log(`isTileEmpty: Middle layer at ${x},${y},${z} has unknown tile ID ${effectiveTileOnMiddle}. Assuming not empty.`);
-            return false;
-        }
+        // console.log(`isTileEmpty: Middle layer at ${x},${y},${z} has tile ${effectiveTileOnMiddle}. Not empty.`);
+        return false; // Any tile on the middle layer makes it not empty.
     }
 
-    // Check bottom layer (less likely to make a tile "not empty" for air passage, unless it's a very tall floor item)
-    // For "emptiness" of a space *above* the player, the bottom layer of Z+1 is usually the floor you'd land on.
-    // If we are checking player.Z+1, its bottom layer being a floor is fine.
-    // The rule is "tile above your current position (your.Z+1) is empty".
-    // This means the space at Z+1 should be clear to move *into*.
-    // So, if levelData.bottom[y][x] at Z+1 has a solid floor, that's okay.
-    // The check here is more about if there's something *on* the bottom layer that isn't a floor and blocks.
+    // Check bottom layer for any tile presence
     const tileOnBottomRaw = levelData.bottom?.[y]?.[x];
     const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined)
         ? tileOnBottomRaw.tileId
         : tileOnBottomRaw;
 
     if (effectiveTileOnBottom && effectiveTileOnBottom !== "") {
-        const tileDefBottom = tilesets[effectiveTileOnBottom];
-        if (tileDefBottom) {
-            // If bottom layer has something that's NOT a floor/transparent_floor and is impassable, it might make the space not empty.
-            // This is rare; usually impassable things are on middle.
-            // For this specific "is the space above me empty" check, the "floor" of Z+1 doesn't make Z+1 "not empty".
-            // It's only if there's an *object* on the bottom layer of Z+1 that it would be not empty.
-            // Most "floor" type tiles should not make it "not empty".
-            if (tileDefBottom.tags && (tileDefBottom.tags.includes('floor') || tileDefBottom.tags.includes('transparent_floor') || tileDefBottom.tags.includes('z_transition'))) {
-                // These are fine, don't make the tile "not empty" in terms of passage.
-            } else if (tileDefBottom.tags && tileDefBottom.tags.includes('impassable')) {
-                // An impassable non-floor item on the bottom layer.
-                // console.log(`isTileEmpty: Bottom layer at ${x},${y},${z} has impassable non-floor tile ${effectiveTileOnBottom}. Not empty.`);
-                return false;
-            } else if (!tileDefBottom.tags || (!tileDefBottom.tags.includes('transparent') && !tileDefBottom.tags.includes('allows_vision'))) {
-                // Non-floor, non-transparent item on bottom layer.
-                // console.log(`isTileEmpty: Bottom layer at ${x},${y},${z} has non-floor, non-transparent tile ${effectiveTileOnBottom}. Not empty.`);
-                return false;
-            }
-        } else {
-            // Unknown tile ID on bottom, assume it blocks space if it exists.
-            // console.log(`isTileEmpty: Bottom layer at ${x},${y},${z} has unknown tile ID ${effectiveTileOnBottom}. Assuming not empty.`);
-            return false;
-        }
+        // console.log(`isTileEmpty: Bottom layer at ${x},${y},${z} has tile ${effectiveTileOnBottom}. Not empty.`);
+        return false; // Any tile on the bottom layer makes it not empty.
     }
 
-    // If both middle and bottom layers are clear or contain only passable/transparent things, the tile is empty.
-    // console.log(`isTileEmpty: Tile ${x},${y},${z} is considered empty.`);
+    // If both middle and bottom layers are clear (no tileId or empty string), the tile is empty.
+    // console.log(`isTileEmpty: Tile ${x},${y},${z} is considered empty (no tiles on middle or bottom).`);
     return true;
 }
 // window.mapRenderer.isTileEmpty = isTileEmpty; // Expose it -- Will be assigned below

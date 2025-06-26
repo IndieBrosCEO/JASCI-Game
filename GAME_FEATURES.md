@@ -152,7 +152,7 @@ This logic applies when the tile the player currently occupies `(originalX, orig
         1.  The target tile `(targetX, targetY, originalZ)` must be "strictly impassable" (e.g., a low wall, a solid block that forms the base of the higher level). This is the surface the player is stepping *onto* at Z+1.
         2.  The tile space directly above the player `(originalX, originalY, originalZ + 1)` must be "empty" (i.e., clear headroom, checked by `mapRenderer.isTileEmpty`).
         3.  The tile the player will land on `(targetX, targetY, originalZ + 1)` must be "walkable" (checked by `mapRenderer.isWalkable`).
-    *   **Effect**: If all preconditions are met and the destination is not NPC-occupied, the player moves to `(targetX, targetY, originalZ + 1)`.
+    *   **Effect**: If all preconditions are met and tvhe destination is not NPC-occupied, the player moves to `(targetX, targetY, originalZ + 1)`.
 *   **Moving Down (e.g., stepping off a ledge, descending a short slope section):**
     *   **Preconditions** (checked at player's current Z-level `originalZ`):
         1.  The target tile `(targetX, targetY, originalZ)` must be "empty" (i.e., the player is stepping into open space at their current Z-level).
