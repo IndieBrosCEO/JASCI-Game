@@ -1734,37 +1734,38 @@ window.mapRenderer = {
 
         if (effectiveTileOnMiddle && effectiveTileOnMiddle !== "") {
             const tileDefMiddle = tilesets[effectiveTileOnMiddle];
-            console.log(`${debugPrefix} Middle layer has tile: ${effectiveTileOnMiddle}`, tileDefMiddle?.tags);
+            console.log(`${debugPrefix} Middle layer at Z=${z} has tile: ${effectiveTileOnMiddle}`, tileDefMiddle?.tags);
             if (tileDefMiddle) {
-                // A solid_terrain_top on the middle layer of the *current* Z is generally not walkable *on*
-                // (it represents the top of something solid at this Z, like a large boulder or platform).
-                // It *provides* support for Z+1.
-                // The only exception is if it's ALSO a z_transition tile (like a ramp end).
-                if (tileDefMiddle.tags?.includes('solid_terrain_top') && !tileDefMiddle.tags?.includes('z_transition')) {
-                    console.log(`${debugPrefix} Middle is solid_terrain_top (not z_transition) at current Z. Result: false (it is the surface, not space above it)`);
-                    return false;
-                }
+                // If middle layer at Z has an impassable object (that's not a z-transition), (X,Y,Z) is not walkable.
+                // This includes 'solid_terrain_top' on the middle layer at Z, as it IS the solid object.
                 if (tileDefMiddle.tags?.includes("impassable") && !tileDefMiddle.tags?.includes("z_transition")) {
-                    console.log(`${debugPrefix} Middle is impassable (not z_transition). Result: false`);
+                    console.log(`${debugPrefix} Middle layer at Z=${z} is impassable (and not z_transition). Result: false`);
                     return false;
                 }
-                // Furniture on middle layer makes the tile not walkable unless it's also tagged 'floor' (unlikely for middle) or 'z_transition'.
+                // If middle layer is furniture (and not a floor/z_transition), not walkable.
                 if (tileDefMiddle.tags?.includes("furniture") && !tileDefMiddle.tags?.includes("floor") && !tileDefMiddle.tags?.includes("z_transition")) {
-                    console.log(`${debugPrefix} Middle is furniture (not floor/z_transition). Result: false`);
+                    console.log(`${debugPrefix} Middle layer at Z=${z} is furniture. Result: false`);
                     return false;
                 }
                 // If the middle tile is a z_transition, it's considered walkable to allow interaction.
                 if (tileDefMiddle.tags?.includes("z_transition")) {
-                    console.log(`${debugPrefix} Middle is z_transition. Result: true`);
-                    return true;
+                    console.log(`${debugPrefix} Middle layer at Z=${z} is z_transition. Result: true (interaction point)`);
+                    return true; // The z-transition tile itself is the point of interaction.
                 }
+                // If it's something else on the middle layer (not impassable, not furniture, not z_transition, not solid_terrain_top)
+                // it implies the space is "occupied" by an object, so not walkable unless supported from below AND this object is passable.
+                // For now, if middle layer has anything not explicitly allowing passage (like a z_transition), and not providing a floor,
+                // we consider it non-walkable unless Z-1 provides the actual surface.
+                // This part is tricky. If middle is empty, we check bottom. If middle has something that's NOT a floor,
+                // then (X,Y,Z) is only walkable if supportedFromBelow.
+                // The current logic: if middle has something, and it's not impassable/furniture, it falls through.
+                // This means if middle has an 'item' that's not furniture/impassable, it might allow walking if bottom is floor OR support from Z-1.
             } else {
-                // Unknown tile ID on middle layer. Assume non-walkable.
-                console.log(`${debugPrefix} Middle tile ${effectiveTileOnMiddle} has no definition. Result: false`);
-                return false;
+                console.log(`${debugPrefix} Middle tile ${effectiveTileOnMiddle} at Z=${z} has no definition. Result: false`);
+                return false; // Undefined tile on middle layer is not walkable.
             }
         } else {
-            console.log(`${debugPrefix} Middle layer is empty at (${x},${y},${z}).`);
+            console.log(`${debugPrefix} Middle layer is empty at Z=${z}.`);
         }
 
         // Check Bottom Layer of Current Z (zStr)
@@ -1775,31 +1776,36 @@ window.mapRenderer = {
             const tileDefBottom = tilesets[effectiveTileOnBottom];
             console.log(`${debugPrefix} Bottom layer at Z=${z} has tile: ${effectiveTileOnBottom}`, tileDefBottom?.tags);
             if (tileDefBottom && tileDefBottom.tags) {
-                // If the bottom layer tile is 'solid_terrain_top', it means this Z-level IS that solid top.
-                // It is walkable unless something impassable is on the middle layer (checked above).
+                // If the bottom layer tile AT Z is 'solid_terrain_top', it means Z *is* that solid top.
+                // As per clarification, this tile ITSELF is not walkable at Z. It makes Z+1 walkable.
+                // So, if we are checking walkability of Z, and its bottom layer IS a solid_terrain_top, then Z is NOT walkable,
+                // UNLESS we are supported from Z-1 (which means Z is the space above Z-1's solid_terrain_top).
+                // This seems contradictory. Let's re-evaluate.
+                // If (x,y,z)'s bottom layer is 'solid_terrain_top', then (x,y,z) IS the solid ground. It IS walkable.
+                // The previous fix was for this.
                 if (tileDefBottom.tags.includes('solid_terrain_top')) {
-                    console.log(`${debugPrefix} Bottom is solid_terrain_top. Result: true (walkable surface at this Z)`);
+                     // And no impassable object on middle layer at Z (checked above)
+                    console.log(`${debugPrefix} Bottom layer at Z=${z} is solid_terrain_top. Result: true`);
                     return true;
                 }
-                // Standard floors or z-transitions on the bottom layer are walkable.
+                // Standard floors or z-transitions on the bottom layer are walkable (if middle is clear).
                 if (tileDefBottom.tags.includes("floor") || tileDefBottom.tags.includes("transparent_floor") || tileDefBottom.tags.includes("z_transition")) {
-                    console.log(`${debugPrefix} Bottom is floor or z_transition. Result: true`);
+                    console.log(`${debugPrefix} Bottom layer at Z=${z} is floor or z_transition. Result: true`);
                     return true;
                 }
             } else if (tileDefBottom) {
-                console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} has definition but no tags. Assuming not a primary walkable surface unless supported from below.`);
+                console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} has definition but no tags. Not a primary walkable surface unless supported from Z-1.`);
             } else {
-                // Unknown tile ID on bottom layer.
-                console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} has no definition. Assuming not walkable unless supported from below.`);
+                console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} has no definition. Not walkable unless supported from Z-1.`);
             }
         } else {
-            console.log(`${debugPrefix} Bottom layer is empty at (${x},${y},${z}).`);
+            console.log(`${debugPrefix} Bottom layer is empty at Z=${z}.`);
         }
 
-        // If we reach here, the current tile (x,y,z) is not directly walkable based on its own bottom/middle layers.
-        // Now, rely purely on support from Z-1.
+        // If we reach here, (x,y,z) is not made walkable by its own bottom/middle layers.
+        // It's only walkable if it's empty space supported by a solid surface at Z-1.
         if (supportedFromBelow) {
-            console.log(`${debugPrefix} No direct walkable surface on current Z (${z}), but supported from Z-1. Result: true`);
+            console.log(`${debugPrefix} Tile at Z=${z} is empty or non-floor, but supported from Z-1. Result: true`);
             return true;
         }
 
