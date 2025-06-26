@@ -452,6 +452,58 @@ async function move_internal(direction) {
     }
 
     // If none of the above movements were successful
+    // --- NEW: Fall Check ---
+    // If, after all other movement attempts, the player is trying to move to a tile
+    // at their current Z that is not walkable, it means they are stepping into open air.
+
+    // --- Start Diagnostic Logging ---
+    let canStand = true; // Assume true if function is missing, to prevent breaking normal movement.
+    if (typeof window.characterCanStandAt === 'function') {
+        canStand = window.characterCanStandAt(targetX, targetY, originalPos.z);
+    } else {
+        logToConsole(`[TURN_MANAGER_CRITICAL] window.characterCanStandAt is NOT a function. Falling logic will be skipped. Type: ${typeof window.characterCanStandAt}`, "error");
+        // Fallback: Check if mapRenderer.isWalkable exists and use it directly as a less ideal fallback
+        if (typeof window.mapRenderer?.isWalkable === 'function') {
+            logToConsole("[TURN_MANAGER_DEBUG] Fallback: Using window.mapRenderer.isWalkable directly for stand check.", "orange");
+            canStand = window.mapRenderer.isWalkable(targetX, targetY, originalPos.z);
+        } else {
+            logToConsole("[TURN_MANAGER_CRITICAL] Fallback failed: window.mapRenderer.isWalkable also not available. Assuming tile is NOT standable to be safe, but this may break movement.", "error");
+            canStand = false; // Default to not standable if everything is missing.
+        }
+    }
+    // --- End Diagnostic Logging ---
+
+    if (!canStand) { // Use the potentially modified 'canStand'
+        logToConsole(`Target tile (${targetX},${targetY},Z:${originalPos.z}) is not walkable (canStand=${canStand}). Initiating fall check.`);
+
+        let fallOccurred = false;
+        if (typeof window.handleFalling === 'function') {
+            fallOccurred = window.handleFalling(gameState, targetX, targetY, originalPos.z); // Pass current Z as initialAirZ
+        } else {
+            logToConsole(`[TURN_MANAGER_CRITICAL] window.handleFalling is NOT a function. Cannot process fall.`, "error");
+        }
+
+        if (fallOccurred) {
+            // If a fall occurred, player's position (especially Z) and view Z should have been updated by handleFalling.
+            // Consume 1 MP for stepping off the ledge.
+            if (gameState.movementPointsRemaining > 0) { // Check if MP is available before decrementing
+                gameState.movementPointsRemaining--;
+            } else {
+                logToConsole("Stepped off ledge but had 0 MP. Position updated by fall, but no MP cost.", "orange");
+            }
+            // Post-fall updates (some might be redundant if handleFalling does them, but ensure they run for player)
+            if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) {
+                gameState.attackerMapPos = { ...gameState.playerPos };
+            }
+            gameState.playerMovedThisTurn = true; // Consider falling as a form of movement for turn state
+            updateTurnUI_internal();
+            // mapRenderer.scheduleRender and interaction updates are handled by handleFalling.
+            return; // Movement (falling) action is complete.
+        }
+        // If fallOccurred is false, it means handleFalling determined no actual fall (e.g., landed immediately),
+        // or an error occurred. The original "Can't move that way" will be logged.
+    }
+
     logToConsole("Can't move that way (target is not walkable, slope/z-transition failed, step-up/down failed, or occupied).");
 }
 

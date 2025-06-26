@@ -425,3 +425,199 @@ function getTileLightingLevel(tileX, tileY, tileZ, currentGameState) {
 if (typeof window !== 'undefined') {
     window.getTileLightingLevel = getTileLightingLevel;
 }
+
+// --- Falling and Fall Damage ---
+
+/**
+ * Checks if a character can stand at the given coordinates.
+ * Currently, this primarily relies on mapRenderer.isWalkable.
+ * Could be expanded for character-specific states (flying, etc.).
+ * @param {number} x - X coordinate.
+ * @param {number} y - Y coordinate.
+ * @param {number} z - Z coordinate.
+ * @returns {boolean} True if the character can stand at the location.
+ */
+function characterCanStandAt(x, y, z) {
+    if (typeof window.mapRenderer?.isWalkable !== 'function') {
+        console.error("characterCanStandAt: mapRenderer.isWalkable is not available.");
+        return false; // Cannot determine, assume not standable
+    }
+    return window.mapRenderer.isWalkable(x, y, z);
+}
+window.characterCanStandAt = characterCanStandAt;
+
+/**
+ * Handles the process of a character falling.
+ * Updates character's Z position and applies fall damage.
+ * @param {object} characterOrGameState - The character object or gameState (for player).
+ * @param {number} startX - The X coordinate where the fall initiates.
+ * @param {number} startY - The Y coordinate where the fall initiates.
+ * @param {number} initialAirZ - The Z level of the air/non-walkable tile the character stepped into.
+ * @returns {boolean} True if a fall occurred and position was updated, false otherwise.
+ */
+function handleFalling(characterOrGameState, startX, startY, initialAirZ) {
+    if (typeof window.mapRenderer?.isWalkable !== 'function' || typeof window.mapRenderer?.getCurrentMapData !== 'function') {
+        console.error("handleFalling: mapRenderer.isWalkable or getCurrentMapData is not available.");
+        return false;
+    }
+
+    let currentMapData = window.mapRenderer.getCurrentMapData();
+    // Determine minimum Z level if mapData is available
+    let minZ = -Infinity; // Default if no map data or levels
+    if (currentMapData && currentMapData.levels) {
+        const zLevels = Object.keys(currentMapData.levels).map(Number);
+        if (zLevels.length > 0) {
+            minZ = Math.min(...zLevels);
+        }
+    }
+
+
+    let currentCheckZ = initialAirZ;
+    let levelsFallen = 0;
+    let landed = false;
+
+    // Loop downwards from the Z-level character stepped into.
+    // The first check is for initialAirZ itself. If it's walkable, no fall.
+    // If not, then character falls at least one level.
+
+    if (window.mapRenderer.isWalkable(startX, startY, initialAirZ)) {
+        // This case should ideally not be reached if called correctly,
+        // as the calling logic should have determined initialAirZ is not walkable.
+        // However, if it happens, it means the character lands immediately or doesn't fall.
+        if (characterOrGameState === gameState) { // Player
+            if (gameState.playerPos.z !== initialAirZ) { // Only update if actually different
+                // This implies player was above initialAirZ and is now landing on it.
+                logToConsole(`Player landed at Z:${initialAirZ} without falling further.`, "info");
+                gameState.playerPos = { x: startX, y: startY, z: initialAirZ };
+                if (gameState.viewFollowsPlayerZ) gameState.currentViewZ = initialAirZ;
+                window.mapRenderer?.scheduleRender();
+                window.interaction?.detectInteractableItems();
+                window.interaction?.showInteractableItems();
+                return true; // Position updated
+            }
+        } else { // NPC
+            if (characterOrGameState.mapPos.z !== initialAirZ) {
+                characterOrGameState.mapPos = { x: startX, y: startY, z: initialAirZ };
+                // NPC view doesn't follow, but render needed if NPC moves
+                window.mapRenderer?.scheduleRender();
+                return true; // Position updated
+            }
+        }
+        return false; // No change in Z, no fall.
+    }
+
+
+    // If initialAirZ is NOT walkable, start the fall search from Z-1 of initialAirZ
+    currentCheckZ = initialAirZ - 1;
+    levelsFallen = 1; // Already fell one level from original Z to initialAirZ
+
+    while (currentCheckZ >= minZ) {
+        if (window.mapRenderer.isWalkable(startX, startY, currentCheckZ)) {
+            landed = true;
+            break;
+        }
+        levelsFallen++;
+        currentCheckZ--;
+        if (levelsFallen > 100) { // Safety break for very deep falls
+            logToConsole("handleFalling: Fall exceeded 100 levels, aborting further descent.", "warn");
+            break;
+        }
+    }
+
+    if (landed) {
+        logToConsole(`${characterOrGameState === gameState ? "Player" : (characterOrGameState.name || "NPC")} fell ${levelsFallen} Z-levels, landing at Z:${currentCheckZ}.`, "orange");
+        if (characterOrGameState === gameState) { // Player
+            gameState.playerPos = { x: startX, y: startY, z: currentCheckZ };
+            if (gameState.viewFollowsPlayerZ) gameState.currentViewZ = currentCheckZ;
+        } else { // NPC
+            characterOrGameState.mapPos = { x: startX, y: startY, z: currentCheckZ };
+        }
+
+        window.calculateAndApplyFallDamage(characterOrGameState, levelsFallen);
+
+        window.mapRenderer?.scheduleRender();
+        if (characterOrGameState === gameState) {
+            window.interaction?.detectInteractableItems();
+            window.interaction?.showInteractableItems();
+            if (typeof window.updatePlayerStatusDisplay === 'function') window.updatePlayerStatusDisplay();
+        }
+        return true; // Fall occurred and position updated
+    } else {
+        // Fell out of the world or hit max fall depth without landing
+        logToConsole(`${characterOrGameState === gameState ? "Player" : (characterOrGameState.name || "NPC")} fell out of the world or too far! Landed at lowest possible Z: ${currentCheckZ + 1}. Max damage applied.`, "red");
+        const lastSafeZ = currentCheckZ + 1; // The Z before falling out
+        if (characterOrGameState === gameState) {
+            gameState.playerPos = { x: startX, y: startY, z: lastSafeZ };
+            if (gameState.viewFollowsPlayerZ) gameState.currentViewZ = lastSafeZ;
+        } else {
+            characterOrGameState.mapPos = { x: startX, y: startY, z: lastSafeZ };
+        }
+        window.calculateAndApplyFallDamage(characterOrGameState, 20 * 2); // Max damage (20d3 implies 40 levels for calc)
+        window.mapRenderer?.scheduleRender();
+        if (characterOrGameState === gameState) {
+            window.interaction?.detectInteractableItems();
+            window.interaction?.showInteractableItems();
+            if (typeof window.updatePlayerStatusDisplay === 'function') window.updatePlayerStatusDisplay();
+        }
+        return true; // Position updated to last safe Z
+    }
+}
+window.handleFalling = handleFalling;
+
+/**
+ * Calculates and applies fall damage to a character.
+ * @param {object} characterOrGameState - The character object or gameState (for player).
+ * @param {number} levelsFallen - The number of Z-levels fallen.
+ */
+function calculateAndApplyFallDamage(characterOrGameState, levelsFallen) {
+    if (levelsFallen < 2) return; // No damage for falls less than 2 levels
+
+    // Damage starts at 1d3 for 2 levels.
+    // Every additional 2 levels adds another d3.
+    // So, 2-3 levels = 1d3; 4-5 levels = 2d3; 6-7 levels = 3d3, etc.
+    let numDice = Math.floor(levelsFallen / 2);
+    numDice = Math.min(numDice, 20); // Max 20d3
+
+    if (numDice <= 0) return;
+
+    let totalDamage = 0;
+    for (let i = 0; i < numDice; i++) {
+        totalDamage += rollDie(3); // rollDie is from utils.js
+    }
+
+    if (totalDamage <= 0) return;
+
+    const health = characterOrGameState.health;
+    if (!health || !health.leftLeg || !health.rightLeg) {
+        logToConsole("Cannot apply fall damage: Character health.legs not defined.", "error");
+        return;
+    }
+
+    // Distribute damage to legs
+    let leftLegDamage = Math.ceil(totalDamage / 2);
+    let rightLegDamage = Math.floor(totalDamage / 2);
+
+    const applyDamageToLeg = (legPart, damage) => {
+        if (legPart.current > 0) {
+            const actualDamage = Math.min(legPart.current, damage); // Don't overkill beyond 0 instantly
+            legPart.current -= actualDamage;
+            logToConsole(`Fall damage to ${legPart === health.leftLeg ? "Left Leg" : "Right Leg"}: ${actualDamage}. HP: ${legPart.current}/${legPart.max}`, "red");
+            if (legPart.current === 0 && legPart.crisisTimer === 0) {
+                legPart.crisisTimer = 3; // Start crisis timer
+                logToConsole(`${legPart === health.leftLeg ? "Left Leg" : "Right Leg"} crippled by fall! Crisis timer started.`, "red");
+            }
+        }
+    };
+
+    // Prioritize applying damage to legs that are not already at 0 HP if possible,
+    // but the current simple distribution is okay for now.
+    applyDamageToLeg(health.leftLeg, leftLegDamage);
+    applyDamageToLeg(health.rightLeg, rightLegDamage);
+
+    logToConsole(`Took ${totalDamage} total fall damage from a ${levelsFallen}-level fall.`, "red");
+
+    if (typeof window.renderHealthTable === 'function') {
+        window.renderHealthTable(characterOrGameState);
+    }
+}
+window.calculateAndApplyFallDamage = calculateAndApplyFallDamage;

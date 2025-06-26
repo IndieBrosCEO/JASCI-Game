@@ -92,8 +92,8 @@ const commandHelpInfo = {
         description: 'Resets all player skills to 0.'
     },
     'teleport': {
-        syntax: 'teleport <x> <y>',
-        description: 'Teleports player to specified map coordinates.'
+        syntax: 'teleport <x> <y> <z>',
+        description: 'Teleports player to specified map coordinates (x, y, z).'
     },
     'heal': {
         syntax: 'heal [amount]',
@@ -334,16 +334,17 @@ function processConsoleCommand(commandText) {
             }
             break;
 
-        case 'teleport': // Syntax: teleport <x> <y>
-            if (args.length < 2) {
-                logToConsoleUI("Usage: teleport <x> <y>", 'error'); // Direct call
+        case 'teleport': // Syntax: teleport <x> <y> <z>
+            if (args.length < 3) {
+                logToConsoleUI("Usage: teleport <x> <y> <z>", 'error'); // Direct call
                 break;
             }
             const targetX = parseInt(args[0], 10);
             const targetY = parseInt(args[1], 10);
+            const targetZ = parseInt(args[2], 10);
 
-            if (isNaN(targetX) || isNaN(targetY)) {
-                logToConsoleUI("Error: X and Y coordinates must be numbers.", 'error'); // Direct call
+            if (isNaN(targetX) || isNaN(targetY) || isNaN(targetZ)) {
+                logToConsoleUI("Error: X, Y, and Z coordinates must be numbers.", 'error'); // Direct call
                 break;
             }
 
@@ -352,12 +353,43 @@ function processConsoleCommand(commandText) {
                 break;
             }
 
+            // Check if target Z-level exists in the mapData
+            const mapData = window.mapRenderer?.getCurrentMapData();
+            if (!mapData || !mapData.levels || !mapData.levels[targetZ.toString()]) {
+                logToConsoleUI(`Error: Z-level ${targetZ} does not exist in the current map. Teleport aborted.`, 'error');
+                break;
+            }
+
+            // Validate coordinates against map dimensions for the target Z-level
+            // Assuming all Z-levels share the same width/height from mapData.dimensions
+            if (mapData.dimensions) {
+                if (targetX < 0 || targetX >= mapData.dimensions.width || targetY < 0 || targetY >= mapData.dimensions.height) {
+                    logToConsoleUI(`Error: Coordinates (${targetX},${targetY}) are out of map bounds for Z-level ${targetZ}. Max X: ${mapData.dimensions.width - 1}, Max Y: ${mapData.dimensions.height - 1}. Teleport aborted.`, 'error');
+                    break;
+                }
+            } else {
+                logToConsoleUI("Warning: Map dimensions not found. Cannot validate teleport coordinates against bounds.", "orange");
+            }
+
+
             gameState.playerPos.x = targetX; // Direct use
             gameState.playerPos.y = targetY; // Direct use
+            gameState.playerPos.z = targetZ; // Update Z coordinate
 
-            logToConsoleUI(`Player teleported to (${targetX}, ${targetY}).`, 'success'); // Direct call
+            // Also update currentViewZ and follow mode
+            gameState.currentViewZ = targetZ;
+            gameState.viewFollowsPlayerZ = true;
 
+
+            logToConsoleUI(`Player teleported to (${targetX}, ${targetY}, Z:${targetZ}). View synced.`, 'success'); // Direct call
+
+            // FOW for the new Z-level will be initialized/updated by renderMapLayers if necessary.
             if (typeof window.mapRenderer !== 'undefined' && typeof window.mapRenderer.scheduleRender === 'function') {
+                // Ensure tile cache is invalidated for the new Z level if it's different
+                if (gameState.tileCache && gameState.tileCache.z !== targetZ) {
+                    gameState.tileCache = null;
+                    logToConsoleUI("Tile cache invalidated due to Z-level change from teleport.", "info");
+                }
                 window.mapRenderer.scheduleRender();
             }
             if (typeof window.interaction !== 'undefined' && typeof window.interaction.detectInteractableItems === 'function') {

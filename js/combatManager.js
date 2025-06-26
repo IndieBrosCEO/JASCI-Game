@@ -1225,38 +1225,53 @@
     _isTilePassable(x, y, z) {
         const zStr = z.toString();
         const levelData = this.gameState.mapLevels?.[zStr];
-        if (!levelData || x < 0 || y < 0 || y >= this.gameState.mapLevels[zStr].landscape.length || x >= this.gameState.mapLevels[zStr].landscape[0].length) {
+        if (!levelData || !levelData.landscape || !levelData.building || !levelData.item || // Ensure all expected layers exist
+            x < 0 || y < 0 ||
+            y >= (levelData.landscape.length || levelData.building.length || levelData.item.length) ||
+            x >= (levelData.landscape[0]?.length || levelData.building[0]?.length || levelData.item[0]?.length)) {
             return false;
         }
         // Check relevant layers for impassable tiles
-        for (const layerName of ['building', 'item']) { // Landscape is generally passable unless specific tile says otherwise
+        // Use new layer names: bottom, middle
+        for (const layerName of [this.gameState.LAYER_TYPES.MIDDLE, this.gameState.LAYER_TYPES.BOTTOM]) {
             const tileId = levelData[layerName]?.[y]?.[x];
             if (tileId) {
                 const baseTileId = (typeof tileId === 'object' && tileId.tileId) ? tileId.tileId : tileId;
                 if (this._getTileProperties(baseTileId)?.tags?.includes("impassable")) return false;
             }
         }
-        // Check if landscape itself is impassable (e.g. deep water, mountain wall)
-        const landscapeTileId = levelData.landscape?.[y]?.[x];
-        if (landscapeTileId) {
-            const baseLandscapeTileId = (typeof landscapeTileId === 'object' && landscapeTileId.tileId) ? landscapeTileId.tileId : landscapeTileId;
-            if (this._getTileProperties(baseLandscapeTileId)?.tags?.includes("impassable")) return false;
-        }
+        // No explicit check for landscape needed if it's now part of "bottom" or "middle"
+        // and impassable landscape tiles are tagged "impassable".
         return true;
     }
 
-    _isTileOccupiedByOtherNpc(x, y, z, currentNpcId) {
-        return this.gameState.npcs.some(npc =>
-            npc.id !== currentNpcId &&
-            npc.mapPos?.x === x &&
-            npc.mapPos?.y === y &&
-            npc.mapPos?.z === z && // Check Z coordinate
-            npc.health?.torso?.current > 0 // Consider only live NPCs
-        );
+    // Renamed and updated to check for player as well
+    isTileOccupied(x, y, z, currentNpcId = null) {
+        // Check if player is at the target location
+        if (this.gameState.playerPos.x === x && this.gameState.playerPos.y === y && this.gameState.playerPos.z === z) {
+            // If an NPC is checking, and player is there, it's occupied.
+            // If player is checking their own spot (not typical for movement validation), it's not "occupied" by another.
+            // This logic assumes currentNpcId is null if player is self-checking, or needs a specific ID.
+            // For NPC movement, currentNpcId will be the NPC's ID.
+            return true; // Occupied by player
+        }
+
+        // Check if any other NPC is at the target location
+        return this.gameState.npcs.some(npc => {
+            // If currentNpcId is provided and matches this NPC, don't count it as occupied by "another"
+            if (currentNpcId && npc.id === currentNpcId) {
+                return false;
+            }
+            return npc.mapPos?.x === x &&
+                npc.mapPos?.y === y &&
+                npc.mapPos?.z === z &&
+                npc.health?.torso?.current > 0; // Consider only live NPCs
+        });
     }
 
     _isTilePassableAndUnoccupiedForNpc(x, y, z, npcId) {
-        return this._isTilePassable(x, y, z) && !this._isTileOccupiedByOtherNpc(x, y, z, npcId);
+        // Use the new isTileOccupied function
+        return this._isTilePassable(x, y, z) && !this.isTileOccupied(x, y, z, npcId);
     }
 
     async moveNpcTowardsTarget(npc, targetPos) { // targetPos can have x,y,z
