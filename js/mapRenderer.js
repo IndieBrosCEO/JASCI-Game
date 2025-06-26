@@ -1800,6 +1800,7 @@ window.mapRenderer = {
                     return true;
                 }
                 // General impassable check (if not covered by specific rules above)
+                console.log(`${debugPrefix} About to check general 'impassable' tag for middle tile: ${effectiveTileOnMiddle}`);
                 if (tileDefMiddle.tags?.includes("impassable")) {
                     console.log(`${debugPrefix} Middle @Z${z} is impassable. Result: false`);
                     return false;
@@ -1818,38 +1819,43 @@ window.mapRenderer = {
             console.log(`${debugPrefix} Middle layer is empty at Z=${z}.`);
         }
 
-        // Check Bottom Layer of Current Z (zStr) for a walkable surface if middle was clear or passable
+        // Check Bottom Layer of Current Z (zStr)
         const tileOnBottomRaw = levelData.bottom[y]?.[x];
         const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
 
         if (effectiveTileOnBottom && effectiveTileOnBottom !== "") {
             const tileDefBottom = tilesets[effectiveTileOnBottom];
             console.log(`${debugPrefix} Bottom layer at Z=${z} has tile: ${effectiveTileOnBottom}`, tileDefBottom?.tags);
-            if (tileDefBottom && tileDefBottom.tags) {
-                if (tileDefBottom.tags.includes("floor") ||
-                    tileDefBottom.tags.includes("transparent_floor") ||
-                    tileDefBottom.tags.includes("z_transition") ||
-                    tileDefBottom.tags.includes("solid_terrain_top")) { // solid_terrain_top on bottom IS the walkable surface
+            if (tileDefBottom) {
+                // Check if bottom tile is impassable (and NOT a solid_terrain_top, which is walkable ground at this Z)
+                if (tileDefBottom.tags?.includes("impassable") && !tileDefBottom.tags?.includes("solid_terrain_top") && !tileDefBottom.tags?.includes("floor") && !tileDefBottom.tags?.includes("z_transition")) {
+                    console.log(`${debugPrefix} Bottom layer @Z${z} is impassable ('${effectiveTileOnBottom}'). Result: false`);
+                    return false;
+                }
+                // Check if bottom tile provides a walkable surface
+                if (tileDefBottom.tags?.includes("floor") ||
+                    tileDefBottom.tags?.includes("transparent_floor") ||
+                    tileDefBottom.tags?.includes("z_transition") ||
+                    tileDefBottom.tags?.includes("solid_terrain_top")) { // solid_terrain_top on bottom IS the walkable surface
                     console.log(`${debugPrefix} Bottom layer at Z=${z} is floor, z_transition, or solid_terrain_top. Result: true`);
                     return true;
                 }
-            } else if (tileDefBottom) {
-                console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} (no tags). Not directly walkable unless supported from Z-1.`);
-            } else {
-                console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} (no def). Not walkable unless supported from Z-1.`);
+            } else { // No definition for the tile ID on bottom layer
+                console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} has no definition. Not directly walkable unless supported from Z-1.`);
             }
-        } else {
+        } else { // Bottom layer is empty
             console.log(`${debugPrefix} Bottom layer is empty at Z=${z}.`);
         }
 
-        // If no walkable surface at Z on its own layers, check if it's supported from Z-1
+        // If no walkable surface at Z on its own layers (middle was clear/passable, bottom was also clear/non-walkable-surface),
+        // then check if it's supported from Z-1
         // This means (x,y,z) is effectively empty air but has a solid floor at (x,y,z-1)
         if (supportedFromBelow) {
-            console.log(`${debugPrefix} Tile at Z=${z} is empty/non-floor, but supported from Z-1. Result: true`);
+            console.log(`${debugPrefix} Tile at Z=${z} is considered empty/non-floor locally, relying on supportFromBelow (${supportedFromBelow}). Result: true`);
             return true;
         }
 
-        console.log(`${debugPrefix} All checks failed or no explicit walkable surface/support. Result: false`);
+        console.log(`${debugPrefix} All checks failed or no explicit walkable surface/support. Not supported from below or current Z is blocked. Result: false`);
         return false;
     }
 };

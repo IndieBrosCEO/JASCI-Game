@@ -123,6 +123,8 @@ async function move_internal(direction) {
     const playerCurrentLevelData = currentMap.levels[originalPos.z.toString()];
     let playerIsOnSlope = null;
     let slopeDef = null;
+    let playerIsOnZTransition = false; // Declare and initialize
+    let zTransitionDef = null;      // Declare and initialize
 
     if (playerCurrentLevelData && window.assetManager?.tilesets) {
         // Check middle layer of player's current tile for slope
