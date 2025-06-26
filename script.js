@@ -1091,6 +1091,7 @@ async function initialize() { // Made async
         console.log("Asset definitions loaded.");
         window.interaction.initInteraction(assetManager);
         window.mapRenderer.initMapRenderer(assetManager); // Initialize mapRenderer with assetManager.
+        window.turnManager.init(assetManager); // Initialize turnManager with assetManager
 
         gameState.inventory.container = new InventoryContainer("Body Pockets", "S"); // Capacity will be updated in startGame based on Strength
 
