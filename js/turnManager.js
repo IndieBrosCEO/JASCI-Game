@@ -637,123 +637,55 @@ async function move_internal(direction) {
         return;
     }
 
-    // If target (targetX, targetY, originalPos.z) is NOT walkable, determine if it's an 'impassable' tagged obstacle or empty air.
-    let isImpassableTaggedObstacle = false;
-    let impassableTileName = '';
+    // If target (targetX, targetY, originalPos.z) is NOT walkable (checked prior to this block),
+    // determine if it's a truly impassable obstacle (like a wall) or something else (like empty air).
+    let isStrictlyImpassable = false;
+    let blockingTileName = '';
     const targetLevelData = currentMap.levels[originalPos.z.toString()];
 
-    if (targetLevelData && window.assetManager?.tilesets) {
-        let tileIdFound = null; // To store the ID of the found impassable tile for logging
-        let layerFoundOn = "";
+    if (targetLevelData && window.assetManager) {
+        const checkTile = (tileId) => {
+            if (!tileId) {
+                return false;
+            }
+            const tileDef = window.assetManager.getTileDefinition(tileId);
+            if (tileDef && tileDef.tags && Array.isArray(tileDef.tags)) {
+                if (tileDef.tags.includes("impassable")) {
+                    blockingTileName = tileDef.name || tileId;
+                    return true;
+                }
+            }
+            return false;
+        };
 
-        // Check middle layer for 'impassable' tag
         const midRaw = targetLevelData.middle?.[targetY]?.[targetX];
         const midId = (typeof midRaw === 'object' && midRaw?.tileId !== undefined) ? midRaw.tileId : midRaw;
-        const midDef = midId ? window.assetManager.tilesets[midId] : null;
-
-        if (midDef?.tags?.includes("impassable")) {
-            // Allow open doors/windows to not be impassable here
-            if (!(midDef.tags.includes("door") && midDef.tags.includes("open")) &&
-                !(midDef.tags.includes("window") && midDef.tags.includes("open"))) {
-                isImpassableTaggedObstacle = true;
-                impassableTileName = midDef.name || midId;
-                tileIdFound = midId;
-                layerFoundOn = "middle";
-            }
+        if (checkTile(midId)) {
+            isStrictlyImpassable = true;
         }
 
-        // If not found on middle, check bottom layer for 'impassable' tag
-        if (!isImpassableTaggedObstacle) {
+        if (!isStrictlyImpassable) {
             const botRaw = targetLevelData.bottom?.[targetY]?.[targetX];
             const botId = (typeof botRaw === 'object' && botRaw?.tileId !== undefined) ? botRaw.tileId : botRaw;
-            const botDef = botId ? window.assetManager.tilesets[botId] : null;
-
-            if (botDef?.tags?.includes("impassable")) {
-                // An impassable tile on bottom layer.
-                // It blocks unless it's an open door/window OR a z_transition that Rule 3 might use.
-                // Since Rule 3 (step up onto impassable) would have already been checked if player was on a z_transition tile,
-                // any remaining 'impassable' 'z_transition' on bottom should be treated as a blocker here if not open.
-                if (!(botDef.tags.includes("door") && botDef.tags.includes("open")) &&
-                    !(botDef.tags.includes("window") && botDef.tags.includes("open"))
-                    // && !botDef.tags.includes("z_transition") // Keep this commented: if Rule 3 didn't use it, it blocks.
-                ) {
-                    isImpassableTaggedObstacle = true;
-                    impassableTileName = botDef.name || botId;
-                    tileIdFound = botId;
-                    layerFoundOn = "bottom";
-                }
+            if (checkTile(botId)) {
+                isStrictlyImpassable = true;
             }
         }
-        if (isImpassableTaggedObstacle && tileIdFound) {
-            // This log is now part of the specific blocking message.
-            // logToConsole(`Target (${targetX},${targetY},Z:${originalPos.z}) is an impassable-tagged obstacle (${tileIdFound} on ${layerFoundOn}).`);
-        }
-
-    } else if (!targetLevelData && originalPos.z !== undefined) { // Target Z-level doesn't exist
-        isImpassableTaggedObstacle = false; // It's empty air/void, not an 'impassable' tile.
+    } else if (!targetLevelData && originalPos.z !== undefined) {
         logToConsole(`Target (${targetX},${targetY},Z:${originalPos.z}) has no level data, considered void for impassable check.`);
+        isStrictlyImpassable = false;
     }
 
-    if (isImpassableTaggedObstacle) {
-        logToConsole(`Movement blocked by '${impassableTileName}' at (${targetX}, ${targetY}, ${originalPos.z})!`);
-        return; // STOP MOVEMENT because it's an impassable tagged tile.
+    if (isStrictlyImpassable) {
+        logToConsole(`Movement blocked by '${blockingTileName}' at (${targetX},${targetY},${originalPos.z})!`);
+        return;
     } else {
-        // Target is not walkable AND not an 'impassable' tagged obstacle -> implies empty air or other non-blocking non-walkable.
-        // This log indicates the issue if an impassable tile reaches here.
-        // logToConsole(`Target tile (${targetX},${targetY},Z:${originalPos.z}) is not walkable and not an impassable-tagged obstacle. Initiating fall check.`);
-
-        // Before falling, ensure it's truly not an impassable tile that was missed.
-        // This is a redundant check if the isStrictlyImpassableTagged logic above is perfect,
-        // but added for safety given the persistent issue.
-        let trulyIsImpassable = false;
-        let nameOfBlockingTile = "";
-        const lvlData = currentMap.levels[originalPos.z.toString()];
-        if (lvlData && window.assetManager?.tilesets) {
-            const mId = lvlData.middle?.[targetY]?.[targetX]?.tileId || lvlData.middle?.[targetY]?.[targetX];
-            const mDef = mId ? window.assetManager.tilesets[mId] : null;
-            if (mDef?.tags?.includes("impassable") && !(mDef.tags.includes("door") && mDef.tags.includes("open")) && !(mDef.tags.includes("window") && mDef.tags.includes("open"))) {
-                trulyIsImpassable = true;
-                nameOfBlockingTile = mDef.name || mId;
-            }
-            if (!trulyIsImpassable) {
-                const bId = lvlData.bottom?.[targetY]?.[targetX]?.tileId || lvlData.bottom?.[targetY]?.[targetX];
-                const bDef = bId ? window.assetManager.tilesets[bId] : null;
-                if (bDef?.tags?.includes("impassable") && !(bDef.tags.includes("door") && bDef.tags.includes("open")) && !(bDef.tags.includes("window") && bDef.tags.includes("open")) && !bDef.tags.includes("z_transition")) {
-                    trulyIsImpassable = true;
-                    nameOfBlockingTile = bDef.name || bId;
-                }
-            }
-        }
-
-        if (trulyIsImpassable) {
-            logToConsole(`Movement blocked by '${nameOfBlockingTile}' at (${targetX}, ${targetY}, ${originalPos.z})! [Safety Check]`);
-            return;
-        }
-
-        // Proceed with fall check only if confirmed not an impassable tile.
-        logToConsole(`Target tile (${targetX},${targetY},Z:${originalPos.z}) is confirmed not an impassable block. Initiating fall check.`);
+        logToConsole(`Target tile (${targetX},${targetY},Z:${originalPos.z}) is not strictly impassable. Initiating fall check.`);
         let fallCheckInitiated = false;
         if (typeof window.initiateFallCheck === 'function') {
             fallCheckInitiated = window.initiateFallCheck(gameState, targetX, targetY, originalPos.z);
         } else {
             logToConsole(`[TURN_MANAGER_CRITICAL] window.initiateFallCheck is NOT a function. Cannot process fall.`, "error");
-        }
-
-        if (fallCheckInitiated) {
-            if (gameState.movementPointsRemaining > 0) {
-                gameState.movementPointsRemaining--;
-            } else {
-                logToConsole("Stepped into void but had 0 MP. Fall processed, no additional MP cost.", "orange");
-            }
-            updateTurnUI_internal();
-            if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) {
-                gameState.attackerMapPos = { ...gameState.playerPos };
-            }
-            gameState.playerMovedThisTurn = true;
-            return;
-        } else {
-            logToConsole("Can't move that way (fall check determined no fall or error in fall logic).");
-            return; // Added return here to ensure movement stops if fall check fails to resolve.
         }
     }
 }
