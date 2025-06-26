@@ -37,11 +37,15 @@ function _getActionsForItem(it) {
     if (tags.includes("container")) {
         actions.push("Inspect", "Loot");
     }
+    if (tags.includes("climbable")) {
+        actions.push("Climb Up", "Climb Down");
+    }
     return actions;
 }
 
 function _performAction(action, it) {
     const { x, y, z, id } = it; // 'it' now contains x, y, z, id, name
+    const tileDef = assetManagerInstance.tilesets[id]; // Get tile definition for properties like target_dz
 
     const currentMap = window.mapRenderer.getCurrentMapData();
     if (!currentMap || !currentMap.levels) {
@@ -111,7 +115,33 @@ function _performAction(action, it) {
             // (or if tileDef is missing for some reason)
             logToConsole(`${action}ing ${tileName}.`); // Added a period for consistency
         }
+    } else if (action === "Climb Up") {
+        if (tileDef && tileDef.tags && tileDef.tags.includes("climbable")) {
+            const targetZ = z + 1; // Ladders typically go up by 1 Z-level
+            // Check if the destination is walkable (or at least not solid blocking)
+            // For climb up, the tile at (x,y,targetZ) should be empty or allow standing.
+            if (window.mapRenderer.isWalkable(x, y, targetZ)) {
+                gameState.playerPos = { x: x, y: y, z: targetZ };
+                if (gameState.viewFollowsPlayerZ) gameState.currentViewZ = targetZ;
+                logToConsole(`Climbed up the ${tileName} to Z:${targetZ}.`);
+            } else {
+                logToConsole(`Cannot climb up: The space above (Z:${targetZ}) is blocked or not walkable.`);
+            }
+        }
+    } else if (action === "Climb Down") {
+        if (tileDef && tileDef.tags && tileDef.tags.includes("climbable")) {
+            const targetZ = z - 1; // Ladders typically go down by 1 Z-level
+            // Check if the destination is walkable
+            if (window.mapRenderer.isWalkable(x, y, targetZ)) {
+                gameState.playerPos = { x: x, y: y, z: targetZ };
+                if (gameState.viewFollowsPlayerZ) gameState.currentViewZ = targetZ;
+                logToConsole(`Climbed down the ${tileName} to Z:${targetZ}.`);
+            } else {
+                logToConsole(`Cannot climb down: The space below (Z:${targetZ}) is blocked or not walkable.`);
+            }
+        }
     }
+
 
     window.mapRenderer.scheduleRender();
     window.interaction.detectInteractableItems();

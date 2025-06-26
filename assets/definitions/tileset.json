@@ -6,8 +6,7 @@
     "tags": [
       "landscape",
       "impassable",
-      "middle",
-      "floor"
+      "middle"
     ]
   },
   "DI": {
@@ -18,8 +17,7 @@
       "landscape",
       "solid_terrain_top",
       "impassable",
-      "middle",
-      "floor"
+      "middle"
     ]
   },
   "GR": {
@@ -28,8 +26,7 @@
     "color": "#008000",
     "tags": [
       "landscape",
-      "bottom",
-      "floor"
+      "bottom"
     ]
   },
   "MU": {
@@ -40,8 +37,7 @@
       "landscape",
       "middle",
       "solid_terrain_top",
-      "impassable",
-      "floor"
+      "impassable"
     ]
   },
   "TGR": {
@@ -50,8 +46,7 @@
     "color": "#008000",
     "tags": [
       "landscape",
-      "bottom",
-      "middle"
+      "bottom"
     ]
   },
   "MSH": {
@@ -60,8 +55,7 @@
     "color": "#2e4b36",
     "tags": [
       "landscape",
-      "bottom",
-      "floor"
+      "bottom"
     ]
   },
   "BOG": {
@@ -70,8 +64,7 @@
     "color": "#006400",
     "tags": [
       "landscape",
-      "bottom",
-      "floor"
+      "bottom"
     ]
   },
   "SA": {
@@ -82,8 +75,7 @@
       "landscape",
       "middle",
       "solid_terrain_top",
-      "impassable",
-      "floor"
+      "impassable"
     ]
   },
   "GV": {
@@ -94,8 +86,7 @@
       "landscape",
       "middle",
       "solid_terrain_top",
-      "impassable",
-      "floor"
+      "impassable"
     ]
   },
   "WS": {
@@ -105,8 +96,7 @@
     "tags": [
       "landscape",
       "water",
-      "bottom",
-      "floor"
+      "bottom"
     ]
   },
   "WD": {
@@ -117,8 +107,7 @@
       "landscape",
       "water",
       "bottom",
-      "impassable",
-      "floor"
+      "impassable"
     ]
   },
   "AR": {
@@ -129,8 +118,7 @@
       "landscape",
       "middle",
       "solid_terrain_top",
-      "impassable",
-      "floor"
+      "impassable"
     ]
   },
   "DRO": {
@@ -141,8 +129,7 @@
       "landscape",
       "middle",
       "solid_terrain_top",
-      "impassable",
-      "floor"
+      "impassable"
     ]
   },
   "TRK": {
@@ -165,7 +152,7 @@
     "tags": [
       "landscape",
       "vegetation",
-      "middle"
+      "bottom"
     ]
   },
   "BLK": {
@@ -185,9 +172,7 @@
     "name": "Spikes",
     "color": "#808080",
     "tags": [
-      "landscape",
-      "bottom",
-      "middle"
+      "bottom"
     ]
   },
   "MH": {
@@ -195,9 +180,7 @@
     "name": "Manhole",
     "color": "#A9A9A9",
     "tags": [
-      "landscape",
-      "bottom",
-      "floor"
+      "bottom"
     ]
   },
   "FL": {
@@ -734,8 +717,7 @@
     "tags": [
       "roof",
       "bottom",
-      "impassable",
-      "middle"
+      "impassable"
     ]
   },
   "TRF": {
@@ -744,7 +726,6 @@
     "color": "#008000",
     "tags": [
       "roof",
-      "bottom",
       "vegetation",
       "middle"
     ]
@@ -1177,8 +1158,7 @@
       "landscape",
       "bottom",
       "farmland",
-      "plantable",
-      "floor"
+      "plantable"
     ]
   },
   "WBD": {
@@ -1362,7 +1342,7 @@
     "sprite": "▲",
     "name": "Stairs Up",
     "color": "#C0C0C0",
-    "tags": [ "building", "z_transition", "stairs", "middle", "floor" ],
+    "tags": [ "building", "z_transition", "stairs", "middle"],
     "target_dz": 1,
     "z_cost": 2
   },
@@ -1370,23 +1350,7 @@
     "sprite": "▼",
     "name": "Stairs Down",
     "color": "#A0A0A0",
-    "tags": [ "building", "z_transition", "stairs", "middle", "floor" ],
-    "target_dz": -1,
-    "z_cost": 1
-  },
-  "LA_U": {
-    "sprite": "H",
-    "name": "Ladder Up",
-    "color": "#8B4513",
-    "tags": [ "building", "item", "z_transition", "ladder", "middle", "floor" ],
-    "target_dz": 1,
-    "z_cost": 3
-  },
-  "LA_D": {
-    "sprite": "H",
-    "name": "Ladder Down",
-    "color": "#8B4513",
-    "tags": [ "building", "item", "z_transition", "ladder", "middle", "floor" ],
+    "tags": [ "building", "z_transition", "stairs", "middle"],
     "target_dz": -1,
     "z_cost": 1
   },
@@ -1394,7 +1358,7 @@
     "sprite": "O",
     "name": "Hole",
     "color": "#303030",
-    "tags": [ "landscape", "z_transition", "hole", "transparent_bottom", "allows_vision", "bottom", "floor" ],
+    "tags": [ "landscape", "z_transition", "hole", "transparent_bottom", "allows_vision", "bottom"],
     "target_dz": -1,
     "z_cost": 1
   },
@@ -1402,7 +1366,7 @@
     "sprite": "▲",
     "name": "Dirt Slope Up",
     "color": "#A52A2A",
-    "tags": [ "landscape", "z_transition", "slope", "dirt_slope", "middle", "floor" ],
+    "tags": [ "landscape", "z_transition", "slope", "dirt_slope", "middle"],
     "target_dz": 1,
     "z_cost": 2
   },
@@ -1410,8 +1374,18 @@
     "sprite": "▼",
     "name": "Dirt Slope Down",
     "color": "#A52A2A",
-    "tags": [ "landscape", "z_transition", "slope", "dirt_slope", "middle", "floor" ],
+    "tags": [ "landscape", "z_transition", "slope", "dirt_slope", "middle"],
     "target_dz": -1,
     "z_cost": 1
+  },
+  "LADR": {
+    "id": "LADR",
+    "name": "Ladder",
+    "sprite": "H",
+    "color": "#964B00",
+    "tags": [ "walkable_on_z", "z_transition", "climbable", "interactive", "ladder", "item", "middle" ],
+    "target_dz": 1,
+    "z_cost": 1,
+    "description": "A sturdy ladder allowing travel between Z-levels. Can be climbed up or down."
   }
 }

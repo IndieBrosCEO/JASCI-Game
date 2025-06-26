@@ -40,7 +40,11 @@ export function getLayerForTile(tileDef) {
     }
     const tags = tileDef.tags;
 
-    // Prioritize 'floor' tag for bottom layer placement.
+    // Prioritize "bottom" or "middle" tags if they exist.
+    if (tags.includes("bottom")) return LAYER_TYPES.BOTTOM;
+    if (tags.includes("middle")) return LAYER_TYPES.MIDDLE;
+
+    // Fallback to existing logic: prioritize 'floor' tag for bottom layer placement.
     if (tags.includes("floor")) return LAYER_TYPES.BOTTOM;
 
     // Most other structural, item, or landscape elements default to middle.

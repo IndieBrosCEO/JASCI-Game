@@ -1394,46 +1394,7 @@ function startGame() {
     });
 
     // Add weapons and ammunition
-    const weaponsAndAmmoToAdd = [
-        // Melee Weapon
-        { id: "knife_melee" },
-
-        // Pistol and Ammo
-        { id: "beretta_92f_9mm" },
-        { id: "ammo_9mm", quantity: 1 }, // Add 2 boxes of 9mm ammo
-
-        // Shotgun and Ammo
-        { id: "mossberg_12ga" },
-        { id: "ammo_12gauge_buckshot", quantity: 1 }, // Add 3 boxes of 12-gauge buckshot
-
-        // Rifle and Ammo
-        { id: "akm_ak47_762mmr" },
-        { id: "ammo_762mmr", quantity: 1 }, // Add 2 boxes of 7.62mmR ammo
-
-        // Sniper Rifle and Ammo
-        { id: "hk_psg1_762mm" },
-        { id: "ammo_762mm", quantity: 1 }, // Add 2 boxes of 7.62mm ammo
-
-
-        // Thrown Weapon
-        { id: "frag_grenade_thrown", quantity: 1 }, // Add 3 frag grenades
-
-
-        // Rocket Launcher (no separate ammo item, it's self-contained)
-        { id: "m72a3_law_rocket_launcher", quantity: 1 }, // Add 2 rocket launchers
-
-        // Grenade Launcher and Ammo
-        { id: "m79_grenade_launcher" },
-        { id: "ammo_40mm_grenade_frag", quantity: 1 }, // Add 3 40mm grenades
-
-        // Bow and Ammo
-        { id: "compound_bow" },
-        { id: "ammo_arrow", quantity: 1 }, // Add 2 bundles of arrows
-
-        // Crossbow and Ammo
-        { id: "crossbow" },
-        { id: "ammo_crossbow_bolt", quantity: 1 }, // Add 2 bundles of crossbow bolts
-    ];
+    const weaponsAndAmmoToAdd = [];
 
     weaponsAndAmmoToAdd.forEach(itemEntry => {
         const itemDef = assetManager.getItem(itemEntry.id);

@@ -711,11 +711,19 @@ window.mapRenderer = {
         const currentLevelData = fullMapData.levels[currentZStr];
 
         if (!currentLevelData) {
-            // If the current view Z-level doesn't exist, we could show a message or render an empty void.
-            // For now, let's clear the container and log, then return.
-            // This might happen if player moves to a Z not defined or view changes to an undefined Z.
-            if (container) container.innerHTML = `<p>No map data for Z-level ${currentZ}.</p>`;
-            console.warn(`renderMapLayers: No data for currentViewZ = ${currentZ}.`);
+            // If the current view Z-level doesn't exist, render an empty void.
+            if (container) {
+                container.innerHTML = ""; // Clear previous content
+                let voidHtml = "";
+                for (let y = 0; y < H; y++) {
+                    for (let x = 0; x < W; x++) {
+                        voidHtml += " "; // Add an empty space for each tile
+                    }
+                    voidHtml += "<br>"; // New line after each row
+                }
+                container.innerHTML = voidHtml;
+                logToConsole(`renderMapLayers: No data for currentViewZ = ${currentZ}. Displaying empty grid.`);
+            }
             gameState.tileCache = null; // Clear cache as the Z-level is not valid for rendering
             return;
         }
@@ -874,49 +882,59 @@ window.mapRenderer = {
 
 
                 // NEW LOGIC for bottom/middle and solid_terrain_top rendering
-                let displaySprite = ' ';
+                let displaySprite = ' '; // Default for empty space
                 let displayColor = '#000000'; // Default for empty space
-                // let tileNameForTitle = 'Empty'; // Not used in game renderer currently
-                // let originalDisplayIdForTitle = ''; // Not used in game renderer currently
-                let isSolidTerrainTopOnCurrentZ = false;
-                let finalTileDefOnCurrentZ = null; // Definition of the tile that dictates rendering for current Z
+                let tileNameForTitle = 'Empty';
+                let originalDisplayIdForTitle = ''; // Not used directly in rendering, but good for debug/title
+                let isSolidTerrainTopDirectlyOnCurrentZ = false;
+                let finalTileDefForLightingAndFow = null; // Definition of the tile that dictates rendering for current Z view
 
                 // 1. Determine tile from current Z-level (middle layer takes precedence over bottom)
-                let tileOnBottomRaw = currentLevelData.bottom?.[y]?.[x] || "";
-                let tileOnMiddleRaw = currentLevelData.middle?.[y]?.[x] || "";
+                let tileOnBottomRawCurrentZ = currentLevelData.bottom?.[y]?.[x] || "";
+                let tileOnMiddleRawCurrentZ = currentLevelData.middle?.[y]?.[x] || "";
 
-                let effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
-                let effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
+                let effectiveTileOnBottomCurrentZ = (typeof tileOnBottomRawCurrentZ === 'object' && tileOnBottomRawCurrentZ !== null && tileOnBottomRawCurrentZ.tileId !== undefined) ? tileOnBottomRawCurrentZ.tileId : tileOnBottomRawCurrentZ;
+                let effectiveTileOnMiddleCurrentZ = (typeof tileOnMiddleRawCurrentZ === 'object' && tileOnMiddleRawCurrentZ !== null && tileOnMiddleRawCurrentZ.tileId !== undefined) ? tileOnMiddleRawCurrentZ.tileId : tileOnMiddleRawCurrentZ;
 
-                let tileDefOnBottom = assetManagerInstance.tilesets[effectiveTileOnBottom];
-                let tileDefOnMiddle = assetManagerInstance.tilesets[effectiveTileOnMiddle];
+                let tileDefOnBottomCurrentZ = assetManagerInstance.tilesets[effectiveTileOnBottomCurrentZ];
+                let tileDefOnMiddleCurrentZ = assetManagerInstance.tilesets[effectiveTileOnMiddleCurrentZ];
 
-                if (effectiveTileOnMiddle && tileDefOnMiddle) {
-                    finalTileDefOnCurrentZ = tileDefOnMiddle;
-                } else if (effectiveTileOnBottom && tileDefOnBottom) {
-                    finalTileDefOnCurrentZ = tileDefOnBottom;
-                }
-                // If both are empty, finalTileDefOnCurrentZ remains null.
-
-                // 2. Apply solid_terrain_top Rule 1 (tile on current Z is solid_terrain_top)
-                if (finalTileDefOnCurrentZ && finalTileDefOnCurrentZ.tags && finalTileDefOnCurrentZ.tags.includes('solid_terrain_top')) {
-                    displaySprite = '▓';
-                    displayColor = finalTileDefOnCurrentZ.color;
-                    isSolidTerrainTopOnCurrentZ = true;
-                } else if (finalTileDefOnCurrentZ) {
-                    displaySprite = finalTileDefOnCurrentZ.sprite;
-                    displayColor = finalTileDefOnCurrentZ.color;
-                }
-                // else, displaySprite and displayColor remain ' ' and 'black' for empty
-
-                // 3. Apply solid_terrain_top Rule 2 (viewing top of Z-1)
-                let isCurrentCellSeeThrough = (!finalTileDefOnCurrentZ);
-                if (finalTileDefOnCurrentZ && finalTileDefOnCurrentZ.tags &&
-                    (finalTileDefOnCurrentZ.tags.includes('transparent_floor') || finalTileDefOnCurrentZ.tags.includes('allows_vision'))) {
-                    if (!isSolidTerrainTopOnCurrentZ) isCurrentCellSeeThrough = true;
+                let primaryTileDefOnCurrentZ = null; // The structural tile on the current Z level
+                if (effectiveTileOnMiddleCurrentZ && tileDefOnMiddleCurrentZ) {
+                    primaryTileDefOnCurrentZ = tileDefOnMiddleCurrentZ;
+                    originalDisplayIdForTitle = effectiveTileOnMiddleCurrentZ;
+                } else if (effectiveTileOnBottomCurrentZ && tileDefOnBottomCurrentZ) {
+                    primaryTileDefOnCurrentZ = tileDefOnBottomCurrentZ;
+                    originalDisplayIdForTitle = effectiveTileOnBottomCurrentZ;
                 }
 
-                if (!isSolidTerrainTopOnCurrentZ && isCurrentCellSeeThrough) {
+                // 2. Apply solid_terrain_top Rule 4 (display '▓' on own Z-level)
+                if (primaryTileDefOnCurrentZ && primaryTileDefOnCurrentZ.tags && primaryTileDefOnCurrentZ.tags.includes('solid_terrain_top')) {
+                    displaySprite = '▓'; // Rule 4a
+                    displayColor = primaryTileDefOnCurrentZ.color;
+                    tileNameForTitle = primaryTileDefOnCurrentZ.name;
+                    isSolidTerrainTopDirectlyOnCurrentZ = true;
+                    finalTileDefForLightingAndFow = primaryTileDefOnCurrentZ;
+                } else if (primaryTileDefOnCurrentZ) {
+                    displaySprite = primaryTileDefOnCurrentZ.sprite;
+                    displayColor = primaryTileDefOnCurrentZ.color;
+                    tileNameForTitle = primaryTileDefOnCurrentZ.name;
+                    finalTileDefForLightingAndFow = primaryTileDefOnCurrentZ;
+                }
+                // else, displaySprite and displayColor remain ' ' and 'black' for empty, tileNameForTitle 'Empty'
+
+                // 3. Apply solid_terrain_top Rule 3 (viewing top of Z-1, render with custom sprite & no tint)
+                // This happens if the current Z-level cell is see-through.
+                let isCurrentCellSeeThrough = (!primaryTileDefOnCurrentZ); // Empty is see-through
+                if (primaryTileDefOnCurrentZ && primaryTileDefOnCurrentZ.tags &&
+                    (primaryTileDefOnCurrentZ.tags.includes('transparent_floor') || primaryTileDefOnCurrentZ.tags.includes('allows_vision') || primaryTileDefOnCurrentZ.tags.includes('transparent_bottom'))) {
+                    // If there's a transparent floor/item on current Z, and it's NOT a solid_terrain_top itself, then it's see-through.
+                    if (!isSolidTerrainTopDirectlyOnCurrentZ) {
+                        isCurrentCellSeeThrough = true;
+                    }
+                }
+
+                if (isCurrentCellSeeThrough) { // Note: isSolidTerrainTopDirectlyOnCurrentZ check is implicitly handled by isCurrentCellSeeThrough logic
                     const zBelowStr = (currentZ - 1).toString();
                     const levelBelow = fullMapData.levels[zBelowStr];
                     if (levelBelow) {
@@ -925,19 +943,28 @@ window.mapRenderer = {
                         let effTileBottomBelow = (typeof tileBottomBelowRaw === 'object' && tileBottomBelowRaw !== null && tileBottomBelowRaw.tileId !== undefined) ? tileBottomBelowRaw.tileId : tileBottomBelowRaw;
                         let effTileMiddleBelow = (typeof tileMiddleBelowRaw === 'object' && tileMiddleBelowRaw !== null && tileMiddleBelowRaw.tileId !== undefined) ? tileMiddleBelowRaw.tileId : tileMiddleBelowRaw;
 
-                        let tileDefBelowToConsider = null;
+                        let tileDefFromBelowToDisplay = null;
+                        let idFromBelowToDisplay = null;
 
+                        // Prefer middle layer of Z-1 if it's solid_terrain_top
                         if (effTileMiddleBelow && assetManagerInstance.tilesets[effTileMiddleBelow]?.tags.includes('solid_terrain_top')) {
-                            tileDefBelowToConsider = assetManagerInstance.tilesets[effTileMiddleBelow];
-                        } else if (effTileBottomBelow && assetManagerInstance.tilesets[effTileBottomBelow]?.tags.includes('solid_terrain_top')) {
-                            tileDefBelowToConsider = assetManagerInstance.tilesets[effTileBottomBelow];
+                            tileDefFromBelowToDisplay = assetManagerInstance.tilesets[effTileMiddleBelow];
+                            idFromBelowToDisplay = effTileMiddleBelow;
+                        }
+                        // Else, check bottom layer of Z-1 if it's solid_terrain_top
+                        else if (effTileBottomBelow && assetManagerInstance.tilesets[effTileBottomBelow]?.tags.includes('solid_terrain_top')) {
+                            tileDefFromBelowToDisplay = assetManagerInstance.tilesets[effTileBottomBelow];
+                            idFromBelowToDisplay = effTileBottomBelow;
                         }
 
-                        if (tileDefBelowToConsider) {
-                            displaySprite = tileDefBelowToConsider.sprite;
-                            displayColor = tileDefBelowToConsider.color;
-                            // Update finalTileDefOnCurrentZ to what's shown, for lighting/FOW
-                            finalTileDefOnCurrentZ = tileDefBelowToConsider;
+                        if (tileDefFromBelowToDisplay) {
+                            displaySprite = tileDefFromBelowToDisplay.sprite; // Rule 4b (custom sprite from Z-1)
+                            displayColor = tileDefFromBelowToDisplay.color;   // Rule 3 (no tint)
+                            tileNameForTitle = tileDefFromBelowToDisplay.name;
+                            originalDisplayIdForTitle = idFromBelowToDisplay; // Update to reflect what's shown
+                            // finalTileDefForLightingAndFow should represent what's visually there.
+                            // If we are seeing the top of Z-1, that's the effective surface for lighting/FOW.
+                            finalTileDefForLightingAndFow = tileDefFromBelowToDisplay;
                         }
                     }
                 }
@@ -946,6 +973,9 @@ window.mapRenderer = {
                 // They should reflect the state *before* FOW, but *after* structural rendering (bottom/middle + solid_terrain_top rules)
                 let originalSprite = displaySprite;
                 let originalColor = displayColor;
+                // The finalTileId used for some item checks later needs to be the ID that corresponds to originalSprite/Color
+                finalTileId = originalDisplayIdForTitle; // Assign to existing finalTileId
+
                 // END OF NEW LOGIC
 
                 let fowStatus = 'hidden';
@@ -1753,25 +1783,34 @@ window.mapRenderer = {
             const tileDefMiddle = tilesets[effectiveTileOnMiddle];
             console.log(`${debugPrefix} Middle layer at Z=${z} has tile: ${effectiveTileOnMiddle}`, tileDefMiddle?.tags);
             if (tileDefMiddle) {
-                if (tileDefMiddle.tags?.includes("impassable") && !tileDefMiddle.tags?.includes("z_transition")) {
-                    console.log(`${debugPrefix} Middle @Z${z} is impassable (not z_transition). Result: false`);
+                // Rule: solid_terrain_top tiles are impassable on their own z level
+                // Rule: solid_terrain_top tiles are impassable on their own z level (unless they are also z_transition)
+                if (tileDefMiddle.tags?.includes("solid_terrain_top") && !tileDefMiddle.tags?.includes("z_transition")) {
+                    console.log(`${debugPrefix} Middle @Z${z} is solid_terrain_top (and not z_transition). Not walkable on this Z. Result: false`);
                     return false;
                 }
-                if (tileDefMiddle.tags?.includes("furniture") && !tileDefMiddle.tags?.includes("floor") && !tileDefMiddle.tags?.includes("z_transition")) {
-                    console.log(`${debugPrefix} Middle @Z${z} is furniture (not floor/z_transition). Result: false`);
-                    return false;
+                // Ladders (walkable_on_z) on the middle layer make the tile walkable.
+                if (tileDefMiddle.tags?.includes("walkable_on_z")) {
+                    console.log(`${debugPrefix} Middle @Z${z} is walkable_on_z (e.g., Ladder). Result: true`);
+                    return true;
                 }
-                // If it's a z_transition on the middle, it's walkable for interaction, even if it's also solid_terrain_top
-                if (tileDefMiddle.tags?.includes("z_transition")) {
+                // Standard z_transition tiles on the middle layer are walkable for interaction.
+                if (tileDefMiddle.tags?.includes("z_transition")) { // This might be redundant if walkable_on_z covers ladders that are z_transitions
                     console.log(`${debugPrefix} Middle @Z${z} is z_transition. Result: true`);
                     return true;
                 }
-                // If it's solid_terrain_top on middle (and not a z_transition), it's the object itself, not walkable *on* at this Z.
-                if (tileDefMiddle.tags?.includes("solid_terrain_top")) {
-                    console.log(`${debugPrefix} Middle @Z${z} is solid_terrain_top (and not z_transition). Result: false`);
+                // General impassable check (if not covered by specific rules above)
+                console.log(`${debugPrefix} About to check general 'impassable' tag for middle tile: ${effectiveTileOnMiddle}`);
+                if (tileDefMiddle.tags?.includes("impassable")) {
+                    console.log(`${debugPrefix} Middle @Z${z} is impassable. Result: false`);
                     return false;
                 }
-                // If middle has other items not explicitly impassable/furniture, the space might still be walkable if bottom is a floor or supported from below.
+                if (tileDefMiddle.tags?.includes("furniture") && !tileDefMiddle.tags?.includes("floor")) { // Furniture that isn't also a floor type
+                    console.log(`${debugPrefix} Middle @Z${z} is furniture (not floor/z_transition/walkable_on_z). Result: false`);
+                    return false;
+                }
+                // If middle has other items not explicitly impassable/furniture/solid_terrain_top/walkable_on_z,
+                // the space might still be walkable if bottom is a floor or supported from below.
             } else {
                 console.log(`${debugPrefix} Middle tile ${effectiveTileOnMiddle} at Z=${z} has no definition. Result: false (assuming non-walkable).`);
                 return false;
@@ -1780,38 +1819,52 @@ window.mapRenderer = {
             console.log(`${debugPrefix} Middle layer is empty at Z=${z}.`);
         }
 
-        // Check Bottom Layer of Current Z (zStr) for a walkable surface if middle was clear or passable
+        // Check Bottom Layer of Current Z (zStr)
         const tileOnBottomRaw = levelData.bottom[y]?.[x];
         const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
 
         if (effectiveTileOnBottom && effectiveTileOnBottom !== "") {
             const tileDefBottom = tilesets[effectiveTileOnBottom];
-            console.log(`${debugPrefix} Bottom layer at Z=${z} has tile: ${effectiveTileOnBottom}`, tileDefBottom?.tags);
-            if (tileDefBottom && tileDefBottom.tags) {
-                if (tileDefBottom.tags.includes("floor") ||
-                    tileDefBottom.tags.includes("transparent_floor") ||
-                    tileDefBottom.tags.includes("z_transition") ||
-                    tileDefBottom.tags.includes("solid_terrain_top")) { // solid_terrain_top on bottom IS the walkable surface
-                    console.log(`${debugPrefix} Bottom layer at Z=${z} is floor, z_transition, or solid_terrain_top. Result: true`);
+            if (tileDefBottom) {
+                console.log(`${debugPrefix} Bottom layer at Z=${z} has tile: ${effectiveTileOnBottom}`, tileDefBottom.tags);
+
+                let isImpassableTagPresent = tileDefBottom.tags?.includes("impassable");
+                let isZTransitionTagPresent = tileDefBottom.tags?.includes("z_transition");
+
+                if (isImpassableTagPresent && !isZTransitionTagPresent) {
+                    console.log(`${debugPrefix} Bottom layer @Z${z} ('${effectiveTileOnBottom}') is IMPASSABLE and NOT Z_TRANSITION. Result: false`);
+                    return false;
+                }
+
+                // If not made impassable by the above, then check if it's a standard walkable surface type.
+                // (A z_transition is inherently walkable. A solid_terrain_top on the bottom layer IS the ground for this Z.)
+                if (tileDefBottom.tags?.includes("floor") ||
+                    tileDefBottom.tags?.includes("transparent_floor") ||
+                    isZTransitionTagPresent || // Use the flag here
+                    tileDefBottom.tags?.includes("solid_terrain_top")) {
+                    console.log(`${debugPrefix} Bottom layer at Z=${z} ('${effectiveTileOnBottom}') is a walkable surface type. Result: true`);
                     return true;
                 }
-            } else if (tileDefBottom) {
-                console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} (no tags). Not directly walkable unless supported from Z-1.`);
+                // If it's some other type of tile on the bottom layer not covered above (e.g. just decorative, no 'impassable' or 'floor' tags)
+                // then it doesn't inherently make the tile walkable OR unwalkable. Fall through to check support from below.
+                console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} is not an explicit blocker nor a walkable surface. Checking support from below.`);
             } else {
-                console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} (no def). Not walkable unless supported from Z-1.`);
+                // No definition for the tile ID on bottom layer
+                console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} has no definition. Not directly walkable unless supported from Z-1.`);
             }
-        } else {
+        } else { // Bottom layer is empty
             console.log(`${debugPrefix} Bottom layer is empty at Z=${z}.`);
         }
 
-        // If no walkable surface at Z on its own layers, check if it's supported from Z-1
+        // If no walkable surface at Z on its own layers (middle was clear/passable, bottom was also clear/non-walkable-surface),
+        // then check if it's supported from Z-1
         // This means (x,y,z) is effectively empty air but has a solid floor at (x,y,z-1)
         if (supportedFromBelow) {
-            console.log(`${debugPrefix} Tile at Z=${z} is empty/non-floor, but supported from Z-1. Result: true`);
+            console.log(`${debugPrefix} Tile at Z=${z} is considered empty/non-floor locally, relying on supportFromBelow (${supportedFromBelow}). Result: true`);
             return true;
         }
 
-        console.log(`${debugPrefix} All checks failed or no explicit walkable surface/support. Result: false`);
+        console.log(`${debugPrefix} All checks failed or no explicit walkable surface/support. Not supported from below or current Z is blocked. Result: false`);
         return false;
     }
 };

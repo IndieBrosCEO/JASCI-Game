@@ -1,5 +1,8 @@
 ﻿[
   {
+    "id": "tallBuilding",
+    "name": "Tall Building"
+  },{
     "id": "slopeTest",
     "name": "Slope Test"
   },{

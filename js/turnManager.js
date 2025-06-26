@@ -123,6 +123,8 @@ async function move_internal(direction) {
     const playerCurrentLevelData = currentMap.levels[originalPos.z.toString()];
     let playerIsOnSlope = null;
     let slopeDef = null;
+    let playerIsOnZTransition = false; // Declare and initialize
+    let zTransitionDef = null;      // Declare and initialize
 
     if (playerCurrentLevelData && window.assetManager?.tilesets) {
         // Check middle layer of player's current tile for slope
@@ -130,21 +132,101 @@ async function move_internal(direction) {
         let playerBaseIdMiddle = (typeof playerTileOnMiddleRaw === 'object' && playerTileOnMiddleRaw !== null && playerTileOnMiddleRaw.tileId !== undefined)
             ? playerTileOnMiddleRaw.tileId
             : playerTileOnMiddleRaw;
-        if (playerBaseIdMiddle && window.assetManager.tilesets[playerBaseIdMiddle]?.tags?.includes('slope')) {
-            slopeDef = window.assetManager.tilesets[playerBaseIdMiddle];
+
+        if (playerBaseIdMiddle && window.assetManager.tilesets[playerBaseIdMiddle]) {
+            const tileDef = window.assetManager.tilesets[playerBaseIdMiddle];
+            if (tileDef.tags?.includes('slope')) {
+                slopeDef = tileDef;
+            }
+            // Check if it's a z_transition tile (but not a slope, as slopes are handled separately)
+            if (tileDef.tags?.includes('z_transition') && !tileDef.tags?.includes('slope')) {
+                zTransitionDef = tileDef; // Player is on a non-slope z_transition tile
+                playerIsOnZTransition = true;
+            }
         }
 
-        // If not on middle or middle not a slope, check bottom layer of player's current tile
-        if (!slopeDef) {
+        // If not on middle or not the right type, check bottom layer of player's current tile
+        if (!slopeDef && !zTransitionDef) { // Only check bottom if nothing relevant found on middle
             let playerTileOnBottomRaw = playerCurrentLevelData.bottom?.[originalPos.y]?.[originalPos.x];
             let playerBaseIdBottom = (typeof playerTileOnBottomRaw === 'object' && playerTileOnBottomRaw !== null && playerTileOnBottomRaw.tileId !== undefined)
                 ? playerTileOnBottomRaw.tileId
                 : playerTileOnBottomRaw;
-            if (playerBaseIdBottom && window.assetManager.tilesets[playerBaseIdBottom]?.tags?.includes('slope')) {
-                slopeDef = window.assetManager.tilesets[playerBaseIdBottom];
+
+            if (playerBaseIdBottom && window.assetManager.tilesets[playerBaseIdBottom]) {
+                const tileDef = window.assetManager.tilesets[playerBaseIdBottom];
+                if (tileDef.tags?.includes('slope')) {
+                    slopeDef = tileDef;
+                }
+                if (tileDef.tags?.includes('z_transition') && !tileDef.tags?.includes('slope')) {
+                    zTransitionDef = tileDef;
+                    playerIsOnZTransition = true;
+                }
             }
         }
     }
+
+    // Rule for z_transition tiles: Player is ON a z_transition tile
+    if (playerIsOnZTransition && zTransitionDef) {
+        logToConsole(`Player is on a Z-Transition tile: ${zTransitionDef.name}`);
+        const cost = zTransitionDef.z_cost || 1;
+        if (gameState.movementPointsRemaining < cost) {
+            logToConsole("Not enough movement points for z_transition assisted move.");
+            // return; // Don't return, allow to fall through to other move types if this fails
+        } else {
+            // Scenario 1: Transitioning to an adjacent "impassable" surface at same Z, landing on Z+1
+            const targetZPlus1 = originalPos.z + 1;
+            const targetTileOnCurrentZ_MiddleRaw = currentMap.levels[originalPos.z.toString()]?.middle?.[targetY]?.[targetX];
+            const targetTileOnCurrentZ_BottomRaw = currentMap.levels[originalPos.z.toString()]?.bottom?.[targetY]?.[targetX];
+
+            const effTargetMiddleCurrentZ = (typeof targetTileOnCurrentZ_MiddleRaw === 'object' && targetTileOnCurrentZ_MiddleRaw?.tileId !== undefined) ? targetTileOnCurrentZ_MiddleRaw.tileId : targetTileOnCurrentZ_MiddleRaw;
+            const effTargetBottomCurrentZ = (typeof targetTileOnCurrentZ_BottomRaw === 'object' && targetTileOnCurrentZ_BottomRaw?.tileId !== undefined) ? targetTileOnCurrentZ_BottomRaw.tileId : targetTileOnCurrentZ_BottomRaw;
+
+            const targetDefMiddleCurrentZ = assetManagerInstance.tilesets[effTargetMiddleCurrentZ];
+            const targetDefBottomCurrentZ = assetManagerInstance.tilesets[effTargetBottomCurrentZ];
+
+            let isTargetImpassableSurfaceCurrentZ = (targetDefMiddleCurrentZ?.tags?.includes('impassable') || targetDefMiddleCurrentZ?.tags?.includes('solid_terrain_top')) ||
+                (targetDefBottomCurrentZ?.tags?.includes('impassable') || targetDefBottomCurrentZ?.tags?.includes('solid_terrain_top'));
+
+            // Ensure the "impassable" surface isn't itself a z_transition that would lead elsewhere
+            if (targetDefMiddleCurrentZ?.tags?.includes('z_transition') || targetDefBottomCurrentZ?.tags?.includes('z_transition')) {
+                isTargetImpassableSurfaceCurrentZ = false;
+            }
+
+            if (isTargetImpassableSurfaceCurrentZ && window.mapRenderer.isWalkable(targetX, targetY, targetZPlus1)) {
+                let npcAtFinalDest = gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === targetZPlus1 && npc.health?.torso?.current > 0);
+                if (!npcAtFinalDest) {
+                    gameState.playerPos = { x: targetX, y: targetY, z: targetZPlus1 };
+                    gameState.movementPointsRemaining -= cost;
+                    logToConsole(`Used z_transition '${zTransitionDef.name}' to step onto surface at Z+1. Cost: ${cost} MP.`, "green");
+                    if (gameState.viewFollowsPlayerZ) gameState.currentViewZ = targetZPlus1;
+                    // Common post-move updates (simplified)
+                    updateTurnUI_internal(); window.mapRenderer.scheduleRender(); window.interaction.detectInteractableItems(); window.interaction.showInteractableItems();
+                    return; // Assisted Z-move complete
+                } else {
+                    logToConsole(`Cannot use z_transition to step onto surface at Z+1: Destination occupied by NPC.`);
+                }
+            }
+
+            // Scenario 2: Transitioning safely downwards to an adjacent Z-1 tile
+            const targetZMinus1 = originalPos.z - 1;
+            if (window.mapRenderer.isWalkable(targetX, targetY, targetZMinus1)) {
+                let npcAtFinalDest = gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === targetZMinus1 && npc.health?.torso?.current > 0);
+                if (!npcAtFinalDest) {
+                    gameState.playerPos = { x: targetX, y: targetY, z: targetZMinus1 };
+                    gameState.movementPointsRemaining -= cost;
+                    logToConsole(`Used z_transition '${zTransitionDef.name}' to step down to Z-1. Cost: ${cost} MP.`, "purple");
+                    if (gameState.viewFollowsPlayerZ) gameState.currentViewZ = targetZMinus1;
+                    // Common post-move updates (simplified)
+                    updateTurnUI_internal(); window.mapRenderer.scheduleRender(); window.interaction.detectInteractableItems(); window.interaction.showInteractableItems();
+                    return; // Assisted Z-move complete
+                } else {
+                    logToConsole(`Cannot use z_transition to step down to Z-1: Destination occupied by NPC.`);
+                }
+            }
+        }
+        // If z_transition assisted move didn't happen, fall through to slope, explicit z-trans, etc.
+    }
+
 
     if (slopeDef && slopeDef.target_dz !== undefined) {
         playerIsOnSlope = true;
@@ -451,60 +533,90 @@ async function move_internal(direction) {
         }
     }
 
-    // If none of the above movements were successful
-    // --- NEW: Fall Check ---
-    // If, after all other movement attempts, the player is trying to move to a tile
-    // at their current Z that is not walkable, it means they are stepping into open air.
+    // If none of the above movements were successful (horizontal, slope, explicit z-trans, step-up, step-down)
+    // This implies the player is trying to move to (targetX, targetY) at originalPos.z,
+    // but that spot is not directly walkable via the preceding specialized movements.
 
-    // --- Start Diagnostic Logging ---
-    let canStand = true; // Assume true if function is missing, to prevent breaking normal movement.
-    if (typeof window.characterCanStandAt === 'function') {
-        canStand = window.characterCanStandAt(targetX, targetY, originalPos.z);
-    } else {
-        logToConsole(`[TURN_MANAGER_CRITICAL] window.characterCanStandAt is NOT a function. Falling logic will be skipped. Type: ${typeof window.characterCanStandAt}`, "error");
-        // Fallback: Check if mapRenderer.isWalkable exists and use it directly as a less ideal fallback
-        if (typeof window.mapRenderer?.isWalkable === 'function') {
-            logToConsole("[TURN_MANAGER_DEBUG] Fallback: Using window.mapRenderer.isWalkable directly for stand check.", "orange");
-            canStand = window.mapRenderer.isWalkable(targetX, targetY, originalPos.z);
-        } else {
-            logToConsole("[TURN_MANAGER_CRITICAL] Fallback failed: window.mapRenderer.isWalkable also not available. Assuming tile is NOT standable to be safe, but this may break movement.", "error");
-            canStand = false; // Default to not standable if everything is missing.
-        }
+    // First, explicitly check if the target (targetX, targetY, originalPos.z) is walkable.
+    // If it IS walkable, but we reached here, it means it was blocked by an NPC earlier,
+    // or some other specific movement logic prevented it. No fall should occur.
+    if (window.mapRenderer.isWalkable(targetX, targetY, originalPos.z)) {
+        logToConsole(`Cannot move to (${targetX},${targetY}, Z:${originalPos.z}): Path blocked by NPC or other reason (tile itself is walkable).`);
+        return;
     }
-    // --- End Diagnostic Logging ---
 
-    if (!canStand) { // Use the potentially modified 'canStand'
-        logToConsole(`Target tile (${targetX},${targetY},Z:${originalPos.z}) is not walkable (canStand=${canStand}). Initiating fall check.`);
+    // If target (targetX, targetY, originalPos.z) is NOT walkable, determine if it's a solid obstacle or empty air.
+    let isSolidObstacle = false;
+    const targetLevelData = currentMap.levels[originalPos.z.toString()];
+    if (targetLevelData && window.assetManager?.tilesets) {
+        const tileOnMiddleRaw = targetLevelData.middle?.[targetY]?.[targetX];
+        const effMid = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
+        const tileDefMiddle = window.assetManager.tilesets[effMid];
 
-        let fallOccurred = false;
-        if (typeof window.handleFalling === 'function') {
-            fallOccurred = window.handleFalling(gameState, targetX, targetY, originalPos.z); // Pass current Z as initialAirZ
-        } else {
-            logToConsole(`[TURN_MANAGER_CRITICAL] window.handleFalling is NOT a function. Cannot process fall.`, "error");
+        if (tileDefMiddle && (tileDefMiddle.tags?.includes("impassable") || tileDefMiddle.tags?.includes("solid_terrain_top")) &&
+            !tileDefMiddle.tags?.includes("z_transition") && !tileDefMiddle.tags?.includes("walkable_on_z")) {
+            // Consider it a solid obstacle if it's impassable or solid_terrain_top, AND not a special passable type.
+            isSolidObstacle = true;
+            logToConsole(`Target (${targetX},${targetY},Z:${originalPos.z}) blocked by solid obstacle on middle layer: ${effMid}`);
         }
 
-        if (fallOccurred) {
-            // If a fall occurred, player's position (especially Z) and view Z should have been updated by handleFalling.
-            // Consume 1 MP for stepping off the ledge.
-            if (gameState.movementPointsRemaining > 0) { // Check if MP is available before decrementing
+        if (!isSolidObstacle) {
+            const tileOnBottomRaw = targetLevelData.bottom?.[targetY]?.[targetX];
+            const effBot = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
+            const tileDefBottom = window.assetManager.tilesets[effBot];
+
+            if (tileDefBottom) {
+                logToConsole(`[TurnManager-ObstacleCheck-Bottom] Tile: ${effBot}, Tags: ${JSON.stringify(tileDefBottom.tags)}`);
+                const hasImpassable = tileDefBottom.tags?.includes("impassable");
+                const isZTransition = tileDefBottom.tags?.includes("z_transition");
+                logToConsole(`[TurnManager-ObstacleCheck-Bottom] HasImpassable: ${hasImpassable}, IsZTransition: ${isZTransition}`);
+
+                if (hasImpassable && !isZTransition) {
+                    isSolidObstacle = true;
+                    logToConsole(`Target (${targetX},${targetY},Z:${originalPos.z}) blocked by IMPASSABLE tile on bottom layer: ${effBot}`);
+                }
+            } else {
+                logToConsole(`[TurnManager-ObstacleCheck-Bottom] No tile definition for '${effBot}'`);
+            }
+        }
+    } else if (!targetLevelData) {
+        // No data for target Z level at all, implies it's empty air (or beyond map bounds, already checked).
+        // isWalkable would have returned based on supportedFromBelow if this was the case.
+        // This path here means isWalkable returned false for originalPos.z for *some other reason* if targetLevelData is null.
+        // For safety, assume it might be a void if no level data.
+        logToConsole(`Target (${targetX},${targetY},Z:${originalPos.z}) has no level data. Considering for fall check (though isWalkable should have handled this scenario if it was truly empty & supported).`);
+    }
+
+    if (isSolidObstacle) {
+        logToConsole("Can't move that way (blocked by solid obstacle).");
+        return;
+    } else {
+        // If it's not a solid obstacle at originalPos.z, and also not walkable at originalPos.z,
+        // then it's likely empty air. Initiate fall check.
+        logToConsole(`Target tile (${targetX},${targetY},Z:${originalPos.z}) is not walkable and not a solid obstacle. Initiating fall check.`);
+        let fallCheckInitiated = false;
+        if (typeof window.initiateFallCheck === 'function') {
+            fallCheckInitiated = window.initiateFallCheck(gameState, targetX, targetY, originalPos.z);
+        } else {
+            logToConsole(`[TURN_MANAGER_CRITICAL] window.initiateFallCheck is NOT a function. Cannot process fall.`, "error");
+        }
+
+        if (fallCheckInitiated) {
+            if (gameState.movementPointsRemaining > 0) {
                 gameState.movementPointsRemaining--;
             } else {
-                logToConsole("Stepped off ledge but had 0 MP. Position updated by fall, but no MP cost.", "orange");
+                logToConsole("Stepped into void but had 0 MP. Fall processed, no additional MP cost.", "orange");
             }
-            // Post-fall updates (some might be redundant if handleFalling does them, but ensure they run for player)
+            updateTurnUI_internal();
             if (gameState.isInCombat && gameState.combatCurrentAttacker === gameState) {
                 gameState.attackerMapPos = { ...gameState.playerPos };
             }
-            gameState.playerMovedThisTurn = true; // Consider falling as a form of movement for turn state
-            updateTurnUI_internal();
-            // mapRenderer.scheduleRender and interaction updates are handled by handleFalling.
-            return; // Movement (falling) action is complete.
+            gameState.playerMovedThisTurn = true;
+            return;
+        } else {
+            logToConsole("Can't move that way (fall check determined no fall or error in fall logic).");
         }
-        // If fallOccurred is false, it means handleFalling determined no actual fall (e.g., landed immediately),
-        // or an error occurred. The original "Can't move that way" will be logged.
     }
-
-    logToConsole("Can't move that way (target is not walkable, slope/z-transition failed, step-up/down failed, or occupied).");
 }
 
 window.turnManager = {
