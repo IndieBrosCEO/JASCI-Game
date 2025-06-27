@@ -3,9 +3,8 @@
     "",
     "\\assets",
     "\\assets\\definitions",
-    "\\js",
-    "\\mapMaker"
+    "\\js"
   ],
-  "SelectedNode": "\\js\\assetManager.js",
+  "SelectedNode": "\\js\\animationManager.js",
   "PreviewInSolutionExplorer": false
 }

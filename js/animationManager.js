@@ -129,7 +129,7 @@ class AnimationManager {
     }
 
     updateAnimations() {
-        console.log('[AnimationManager] updateAnimations CALLED. Active:', this.gameState.activeAnimations.length, 'isAnimationPlaying Flag:', this.gameState.isAnimationPlaying);
+        
         if (!this.gameState.activeAnimations || this.gameState.activeAnimations.length === 0) {
             if (this.gameState.isAnimationPlaying) {
                 this.gameState.isAnimationPlaying = false;
