@@ -790,6 +790,29 @@
         const defenderName = defender ? ((defender === this.gameState) ? "Player" : defender.name) : "Tile";
         let attackResult, defenseResult;
 
+        // --- LOS Check for NPC Attacker ---
+        if (attacker !== this.gameState && defender) { // Check LOS if attacker is NPC and there's a defender
+            const npcPos = attacker.mapPos;
+            const defenderPos = (defender === this.gameState) ? this.gameState.playerPos : defender.mapPos;
+
+            if (npcPos && defenderPos) {
+                if (!window.hasLineOfSight3D(npcPos, defenderPos)) {
+                    logToConsole(`NPC ATTACK CANCELED: ${attackerName} lost Line of Sight to ${defenderName}.`, 'orange');
+                    // NPC should ideally pick a new action here (e.g., move, find new target)
+                    // For now, just end this attack attempt and proceed to next turn segment or next turn.
+                    // This might mean the NPC does nothing if it only had 1 AP.
+                    if (this.gameState.isInCombat) {
+                        // If attacker was NPC, just proceed to next turn, as their action (attack) failed.
+                        this.nextTurn(attacker);
+                    }
+                    return; // Stop further processing of this attack
+                } else {
+                    logToConsole(`NPC ATTACK: ${attackerName} confirmed Line of Sight to ${defenderName}.`, 'grey');
+                }
+            }
+        }
+        // --- End LOS Check ---
+
         if (attackType === 'melee' && defender) {
             const attackerMapPos = attacker.mapPos || this.gameState.playerPos; // Includes .z
             const defenderMapPos = defender.mapPos; // Includes .z
@@ -1309,32 +1332,68 @@
         // findPath3D should ideally also indicate if a Z-move is the primary intent for this step,
         // for now, attemptCharacterMove will handle z-transitions based on the tile.
 
-        if (!direction) {
-            // This might happen if nextStep is a Z-only move, or if already at target (though path.length <=1 handles that)
-            // If findPath3D can return Z-only steps, attemptCharacterMove needs to handle that.
-            // For now, if no cardinal direction, assume something is off or it's a pure Z move not yet supported this way.
-            // However, if the nextStep has a different Z, attemptCharacterMove *might* pick it up if the NPC
-            // is on a z-transition tile or if the target tile itself is a z-transition.
-            // This part might need refinement based on how findPath3D and attemptCharacterMove interact for Z-primary moves.
-            logToConsole(`NPC ${npc.name || npc.id}: No clear cardinal direction to next step (${nextStep.x},${nextStep.y},${nextStep.z}) from (${originalPos.x},${originalPos.y},${originalPos.z}). Trying to move anyway.`, 'grey');
-            // We can still try to proceed if the Z is different, attemptCharacterMove might handle it with z-transition tiles.
-            // If X and Y are same, but Z is different, a 'direction' might not be intuitive.
-            // For now, we'll pick an arbitrary direction if X/Y are same to trigger attemptCharacterMove, which should then look at Z.
-            // This is a placeholder for more sophisticated handling of Z-only path steps.
-            if (nextStep.x === originalPos.x && nextStep.y === originalPos.y && nextStep.z !== originalPos.z) {
-                // If it's a pure Z move, we need a way for attemptCharacterMove to understand this.
-                // For now, let's assume that if the NPC is on a z-transition tile, moving 'into' itself (no direction)
-                // or a nominal direction might trigger the z-transition logic in attemptCharacterMove.
-                // This is a bit of a hack. Ideally, findPath3D would give a "use_stairs_up/down" action.
-                // Let's try to force attemptCharacterMove to evaluate the current tile's z-transition by providing *some* direction.
-                // Or, if the target tile *is* the z-transition, moving towards it.
-                logToConsole(`NPC ${npc.name || npc.id}: Next step is a Z-change. Relying on attemptCharacterMove to handle z-transition tiles.`, 'grey');
-                direction = 'right'; // Arbitrary, as attemptCharacterMove logic for z-transitions is complex.
-                // The hope is it evaluates based on current tile or target tile properties.
-            } else if (!direction) {
-                logToConsole(`NPC ${npc.name || npc.id}: Cannot determine direction for path step. Halting this move.`, 'orange');
+        if (!direction) { // This implies nextStep.x === originalPos.x && nextStep.y === originalPos.y
+            logToConsole(`NPC ${npc.name || npc.id}: No clear cardinal direction to next step (${nextStep.x},${nextStep.y},${nextStep.z}) from (${originalPos.x},${originalPos.y},${originalPos.z}). Evaluating Z-change.`, 'grey');
+
+            if (nextStep.z !== originalPos.z) { // Path indicates a Z-level change at the current X,Y
+                // Check if NPC is currently on a z-transition tile that facilitates this specific move
+                let canTransitionFromCurrentTile = false;
+                const currentTileZStr = originalPos.z.toString();
+                const currentMapData = window.mapRenderer.getCurrentMapData();
+                const currentLevelData = currentMapData?.levels?.[currentTileZStr];
+                let zTransitionDef = null;
+
+                if (currentLevelData && this.assetManager?.tilesets) {
+                    const checkTileForZTransition = (tileIdOnLayer) => {
+                        if (!tileIdOnLayer) return null;
+                        const baseId = (typeof tileIdOnLayer === 'object' && tileIdOnLayer.tileId !== undefined) ? tileIdOnLayer.tileId : tileIdOnLayer;
+                        if (baseId && this.assetManager.tilesets[baseId]) {
+                            const def = this.assetManager.tilesets[baseId];
+                            // Check if it's a z_transition AND if its target_dz matches the intended move direction
+                            if (def.tags?.includes('z_transition') && def.target_dz !== undefined) {
+                                // Check if the tile's dz allows reaching nextStep.z from originalPos.z
+                                if (originalPos.z + def.target_dz === nextStep.z) {
+                                    return def; // This tile allows the specific Z change pathfinding wants
+                                }
+                            }
+                        }
+                        return null;
+                    };
+
+                    let npcTileOnMiddleRaw = currentLevelData.middle?.[originalPos.y]?.[originalPos.x];
+                    zTransitionDef = checkTileForZTransition(npcTileOnMiddleRaw);
+
+                    if (!zTransitionDef) {
+                        let npcTileOnBottomRaw = currentLevelData.bottom?.[originalPos.y]?.[originalPos.x];
+                        zTransitionDef = checkTileForZTransition(npcTileOnBottomRaw);
+                    }
+
+                    if (zTransitionDef) {
+                        canTransitionFromCurrentTile = true;
+                        logToConsole(`NPC ${npc.name || npc.id}: Is on a Z-transition tile ('${zTransitionDef.name}') that allows Z-change from ${originalPos.z} to ${nextStep.z}. Proceeding.`, 'grey');
+                        // Use an arbitrary horizontal direction; attemptCharacterMove section 1 (On Z-transition)
+                        // should handle the vertical movement based on the tile the NPC is ON.
+                        direction = 'right';
+                    } else {
+                        logToConsole(`NPC ${npc.name || npc.id}: Path suggests Z-change from ${originalPos.z} to ${nextStep.z} at same X,Y, but NPC is on solid ground (not a matching Z-transition tile). Move blocked.`, 'orange');
+                        return false; // CRITICAL: Block the move. NPC cannot phase through solid floor.
+                    }
+                } else {
+                    logToConsole(`NPC ${npc.name || npc.id}: Lacking map data or tilesets to verify Z-transition at current location for Z-change. Move blocked for safety.`, 'orange');
+                    return false; // Block if critical data is missing
+                }
+            } else { // nextStep is same X,Y,Z as originalPos - this shouldn't happen if path.length > 1 caught it.
+                logToConsole(`NPC ${npc.name || npc.id}: Path results in no change in X,Y,Z. Halting this move segment.`, 'orange');
                 return false;
             }
+        }
+        // Ensure direction is set if we haven't returned false by now.
+        if (!direction) {
+            // This case should ideally not be reached if the logic above is complete.
+            // It implies a horizontal move was intended but somehow direction wasn't set,
+            // or a Z-move was intended but didn't set direction (which it should if valid).
+            logToConsole(`NPC ${npc.name || npc.id}: Direction not set after evaluating path step. Path: ${JSON.stringify(path)}, OriginalPos: ${JSON.stringify(originalPos)}, NextStep: ${JSON.stringify(nextStep)}. Halting.`, 'red');
+            return false;
         }
 
         const moveSuccessful = await window.attemptCharacterMove(npc, direction, this.assetManager);
