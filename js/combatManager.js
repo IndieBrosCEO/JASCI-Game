@@ -1222,28 +1222,8 @@
 
     _getTileProperties(tileId) { return tileId && this.assetManager.tilesets ? this.assetManager.tilesets[tileId] : null; }
 
-    _isTilePassable(x, y, z) {
-        const zStr = z.toString();
-        const levelData = this.gameState.mapLevels?.[zStr];
-        if (!levelData || !levelData.landscape || !levelData.building || !levelData.item || // Ensure all expected layers exist
-            x < 0 || y < 0 ||
-            y >= (levelData.landscape.length || levelData.building.length || levelData.item.length) ||
-            x >= (levelData.landscape[0]?.length || levelData.building[0]?.length || levelData.item[0]?.length)) {
-            return false;
-        }
-        // Check relevant layers for impassable tiles
-        // Use new layer names: bottom, middle
-        for (const layerName of [this.gameState.LAYER_TYPES.MIDDLE, this.gameState.LAYER_TYPES.BOTTOM]) {
-            const tileId = levelData[layerName]?.[y]?.[x];
-            if (tileId) {
-                const baseTileId = (typeof tileId === 'object' && tileId.tileId) ? tileId.tileId : tileId;
-                if (this._getTileProperties(baseTileId)?.tags?.includes("impassable")) return false;
-            }
-        }
-        // No explicit check for landscape needed if it's now part of "bottom" or "middle"
-        // and impassable landscape tiles are tagged "impassable".
-        return true;
-    }
+    // _isTilePassable is now effectively replaced by mapRenderer.isWalkable for consistency.
+    // isTileOccupied remains relevant.
 
     // Renamed and updated to check for player as well
     isTileOccupied(x, y, z, currentNpcId = null) {
@@ -1294,33 +1274,76 @@
         }
 
         const originalPos = { ...npc.mapPos };
+        let direction = null;
 
-        // The animation 'movement' should ideally handle Z if it can.
-        if (window.animationManager) {
-            await window.animationManager.playAnimation('movement', {
-                entity: npc,
-                startPos: originalPos,
-                endPos: nextStep, // nextStep includes x, y, z
-                sprite: npc.sprite,
-                color: npc.color,
-                duration: 300
-            });
+        if (nextStep.x > originalPos.x) direction = 'right';
+        else if (nextStep.x < originalPos.x) direction = 'left';
+        else if (nextStep.y > originalPos.y) direction = 'down';
+        else if (nextStep.y < originalPos.y) direction = 'up';
+        // findPath3D should ideally also indicate if a Z-move is the primary intent for this step,
+        // for now, attemptCharacterMove will handle z-transitions based on the tile.
+
+        if (!direction) {
+            // This might happen if nextStep is a Z-only move, or if already at target (though path.length <=1 handles that)
+            // If findPath3D can return Z-only steps, attemptCharacterMove needs to handle that.
+            // For now, if no cardinal direction, assume something is off or it's a pure Z move not yet supported this way.
+            // However, if the nextStep has a different Z, attemptCharacterMove *might* pick it up if the NPC
+            // is on a z-transition tile or if the target tile itself is a z-transition.
+            // This part might need refinement based on how findPath3D and attemptCharacterMove interact for Z-primary moves.
+            logToConsole(`NPC ${npc.name || npc.id}: No clear cardinal direction to next step (${nextStep.x},${nextStep.y},${nextStep.z}) from (${originalPos.x},${originalPos.y},${originalPos.z}). Trying to move anyway.`, 'grey');
+            // We can still try to proceed if the Z is different, attemptCharacterMove might handle it with z-transition tiles.
+            // If X and Y are same, but Z is different, a 'direction' might not be intuitive.
+            // For now, we'll pick an arbitrary direction if X/Y are same to trigger attemptCharacterMove, which should then look at Z.
+            // This is a placeholder for more sophisticated handling of Z-only path steps.
+            if (nextStep.x === originalPos.x && nextStep.y === originalPos.y && nextStep.z !== originalPos.z) {
+                // If it's a pure Z move, we need a way for attemptCharacterMove to understand this.
+                // For now, let's assume that if the NPC is on a z-transition tile, moving 'into' itself (no direction)
+                // or a nominal direction might trigger the z-transition logic in attemptCharacterMove.
+                // This is a bit of a hack. Ideally, findPath3D would give a "use_stairs_up/down" action.
+                // Let's try to force attemptCharacterMove to evaluate the current tile's z-transition by providing *some* direction.
+                // Or, if the target tile *is* the z-transition, moving towards it.
+                logToConsole(`NPC ${npc.name || npc.id}: Next step is a Z-change. Relying on attemptCharacterMove to handle z-transition tiles.`, 'grey');
+                direction = 'right'; // Arbitrary, as attemptCharacterMove logic for z-transitions is complex.
+                // The hope is it evaluates based on current tile or target tile properties.
+            } else if (!direction) {
+                logToConsole(`NPC ${npc.name || npc.id}: Cannot determine direction for path step. Halting this move.`, 'orange');
+                return false;
+            }
         }
 
-        npc.mapPos.x = nextStep.x;
-        npc.mapPos.y = nextStep.y;
-        npc.mapPos.z = nextStep.z; // Update Z based on path
+        const moveSuccessful = await window.attemptCharacterMove(npc, direction, this.assetManager);
 
-        npc.currentMovementPoints--; // Assume 1 MP per step for now. Path cost can be integrated later.
-        npc.movedThisTurn = true;
+        if (moveSuccessful) {
+            // npc.mapPos and npc.currentMovementPoints are updated by attemptCharacterMove
+            npc.movedThisTurn = true; // attemptCharacterMove doesn't set this context-specific flag
 
-        logToConsole(`ACTION: ${npc.name || npc.id} moves to (${npc.mapPos.x},${npc.mapPos.y}, Z:${npc.mapPos.z}) via path. MP Left: ${npc.currentMovementPoints}`, 'gold');
+            // Play animation after successful logical move
+            if (window.animationManager) {
+                // originalPos was before the move, npc.mapPos is after.
+                // nextStep might be more accurate if attemptCharacterMove didn't result in a fall to a different Z.
+                // For simplicity, animate from originalPos to current npc.mapPos.
+                await window.animationManager.playAnimation('movement', {
+                    entity: npc,
+                    startPos: originalPos, // Position before attemptCharacterMove
+                    endPos: { ...npc.mapPos }, // Position after attemptCharacterMove
+                    sprite: npc.sprite,
+                    color: npc.color,
+                    duration: 300
+                });
+            }
 
-        if (this.gameState.combatCurrentAttacker === npc) { // If this NPC is the current attacker in combat
-            this.gameState.attackerMapPos = { ...npc.mapPos };
+            logToConsole(`ACTION: ${npc.name || npc.id} attempted move in direction ${direction}. New Pos: (${npc.mapPos.x},${npc.mapPos.y}, Z:${npc.mapPos.z}). MP Left: ${npc.currentMovementPoints}`, 'gold');
+
+            if (this.gameState.combatCurrentAttacker === npc) {
+                this.gameState.attackerMapPos = { ...npc.mapPos };
+            }
+            window.mapRenderer.scheduleRender();
+            if (window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
+            return true;
+        } else {
+            logToConsole(`NPC ${npc.name || npc.id}: attemptCharacterMove failed for direction ${direction}.`, 'orange');
+            return false;
         }
-        window.mapRenderer.scheduleRender();
-        return true; // Moved successfully
     }
 
     _npcSelectTarget(npc) {

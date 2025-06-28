@@ -30,9 +30,9 @@ function logToConsole(message, color) { // color is optional
     }
 
     consoleMessageQueue.push(messageObject);
-    ensureConsoleProcessing(); // This function will be created in the next step
+    ensureConsoleProcessing();
 }
-// window.logToConsole = logToConsole; // This will be reassigned later with other window assignments
+window.logToConsole = logToConsole; // Assign to window immediately after definition
 
 function ensureConsoleProcessing() {
     if (isConsoleProcessing) {
@@ -480,79 +480,241 @@ function findPath3D(startPos, endPos, entity, mapData, tileset) { // tileset mig
         ];
 
         for (const move of cardinalMoves) {
-            const nextX = currentNode.x + move.dx;
-            const nextY = currentNode.y + move.dy;
-            const nextZ = currentNode.z; // Stays the same for cardinal moves
+            // const nextX = currentNode.x + move.dx; // Original declaration for the first loop
+            // const nextY = currentNode.y + move.dy;
+            // const currentZ = currentNode.z; // Original declaration for the first loop
 
-            // Use window.mapRenderer.isWalkable for horizontal movement
-            if (window.mapRenderer.isWalkable(nextX, nextY, nextZ)) {
-                neighbors.push({ x: nextX, y: nextY, z: nextZ, cost: 1 });
+            // Variables for the first loop's context (horizontal moves and explicit z-transitions triggered by them)
+            const hNextX = currentNode.x + move.dx;
+            const hNextY = currentNode.y + move.dy;
+            const hCurrentZ = currentNode.z;
+
+            // Standard horizontal move: is the target tile (hNextX, hNextY, hCurrentZ) walkable?
+            if (window.mapRenderer.isWalkable(hNextX, hNextY, hCurrentZ)) {
+                neighbors.push({ x: hNextX, y: hNextY, z: hCurrentZ, cost: 1 });
+
+                // Additionally, if this walkable horizontal step IS a z-transition tile itself (e.g. base of stairs)
+                // consider the Z-move it enables.
+                const tileset = window.assetManagerInstance?.tilesets;
+                if (tileset) {
+                    let explicitZTransDefAtNextStep = null;
+                    const levelDataForNextStep = mapData.levels[hCurrentZ.toString()];
+                    if (levelDataForNextStep) {
+                        const checkTileForExplicitZ = (tileId) => {
+                            if (tileId && tileset[tileId]) {
+                                const def = tileset[tileId];
+                                if (def.tags?.includes('z_transition') && def.target_dz !== undefined) { // Slopes also have target_dz
+                                    return def;
+                                }
+                            }
+                            return null;
+                        };
+                        const midRaw = levelDataForNextStep.middle?.[hNextY]?.[hNextX];
+                        const midId = (typeof midRaw === 'object' && midRaw?.tileId !== undefined) ? midRaw.tileId : midRaw;
+                        explicitZTransDefAtNextStep = checkTileForExplicitZ(midId);
+                        if (!explicitZTransDefAtNextStep) {
+                            const botRaw = levelDataForNextStep.bottom?.[hNextY]?.[hNextX];
+                            const botId = (typeof botRaw === 'object' && botRaw?.tileId !== undefined) ? botRaw.tileId : botRaw;
+                            explicitZTransDefAtNextStep = checkTileForExplicitZ(botId);
+                        }
+                    }
+
+                    if (explicitZTransDefAtNextStep) {
+                        const finalDestZ = hCurrentZ + explicitZTransDefAtNextStep.target_dz;
+                        // The cost to reach (hNextX, hNextY, hCurrentZ) is 1 (already added for this neighbor implicitly)
+                        // The cost of the z-transition itself is z_cost.
+                        // The path node should represent the state *after* the z-transition.
+                        if (window.mapRenderer.isWalkable(hNextX, hNextY, finalDestZ)) {
+                            // Cost to get onto the z-transition tile (1) + cost of using it
+                            const zCost = explicitZTransDefAtNextStep.z_cost || 1;
+                            neighbors.push({ x: hNextX, y: hNextY, z: finalDestZ, cost: 1 + zCost });
+                            // logToConsole(`findPath3D: Found explicit z-trans at (${hNextX},${hNextY},${hCurrentZ}) to Z=${finalDestZ} with cost ${1 + zCost}`);
+                        }
+                    }
+                }
             }
         }
 
-        // Z-transitions logic using mapRenderer.isWalkable and mapRenderer.isTileEmpty
-        // Requires assetManagerInstance to be available for mapRenderer functions
+        // Z-transitions from the CURRENT node (e.g. standing on a ladder going up/down without horizontal move)
         const currentTileset = window.assetManagerInstance ? window.assetManagerInstance.tilesets : null;
-        if (currentTileset) { // Ensure tileset is loaded
+        if (currentTileset) {
             const currentTileDef = getTileDefFromMapData(currentNode.x, currentNode.y, currentNode.z, mapData, currentTileset);
+            if (currentTileDef && currentTileDef.tags && currentTileDef.target_dz !== undefined && currentTileDef.tags.includes('z_transition')) {
+                const targetZ = currentNode.z + currentTileDef.target_dz;
+                if (window.mapRenderer.isTileEmpty(currentNode.x, currentNode.y, targetZ) &&
+                    window.mapRenderer.isWalkable(currentNode.x, currentNode.y, targetZ)) {
+                    neighbors.push({
+                        x: currentNode.x, y: currentNode.y, z: targetZ,
+                        cost: currentTileDef.z_cost || 1
+                    });
+                }
+            }
+        }
 
-            if (currentTileDef && currentTileDef.tags) {
-                // Check for Z-UP transition
-                if (currentTileDef.tags.includes('z_transition_up')) {
-                    const targetZUp = currentNode.z + 1;
-                    // Check headroom at current X,Y,Z+1 AND walkability of the destination tile (X,Y,Z+1)
-                    if (window.mapRenderer.isTileEmpty(currentNode.x, currentNode.y, targetZUp) &&
-                        window.mapRenderer.isWalkable(currentNode.x, currentNode.y, targetZUp)) {
-                        neighbors.push({
-                            x: currentNode.x, y: currentNode.y, z: targetZUp,
-                            cost: currentTileDef.z_cost || 1 // Use z_cost if defined, else 1
-                        });
-                    }
-                }
-                // Check for Z-DOWN transition
-                if (currentTileDef.tags.includes('z_transition_down')) {
-                    const targetZDown = currentNode.z - 1;
-                    // Check emptiness of destination tile (X,Y,Z-1) AND walkability of the destination tile (X,Y,Z-1)
-                    if (window.mapRenderer.isTileEmpty(currentNode.x, currentNode.y, targetZDown) &&
-                        window.mapRenderer.isWalkable(currentNode.x, currentNode.y, targetZDown)) {
-                        neighbors.push({
-                            x: currentNode.x, y: currentNode.y, z: targetZDown,
-                            cost: currentTileDef.z_cost || 1 // Use z_cost if defined, else 1
-                        });
-                    }
-                }
+        // Consider automatic Z-stepping (like attemptCharacterMove does)
+        for (const move of cardinalMoves) {
+            const stepNextX = currentNode.x + move.dx; // Use different names for this loop's context
+            const stepNextY = currentNode.y + move.dy;
+            const stepCurrentZ = currentNode.z;
+
+            // Check for step UP: target (stepNextX, stepNextY, stepCurrentZ) is impassable low wall,
+            // but (stepNextX, stepNextY, stepCurrentZ + 1) is walkable, and headroom at (currentNode.x, currentNode.y, stepCurrentZ + 1) is clear.
+            const targetUpZ = stepCurrentZ + 1;
+            const impassableInfoCurrentZ = window.mapRenderer.getCollisionTileAt(stepNextX, stepNextY, stepCurrentZ);
+            const isStrictlyImpassableCurrentZ = impassableInfoCurrentZ !== "";
+
+            if (isStrictlyImpassableCurrentZ &&
+                window.mapRenderer.isTileEmpty(currentNode.x, currentNode.y, targetUpZ) &&
+                window.mapRenderer.isWalkable(stepNextX, stepNextY, targetUpZ)) {
+                neighbors.push({ x: stepNextX, y: stepNextY, z: targetUpZ, cost: 2 });
+            }
+
+            // Check for step DOWN: target (stepNextX, stepNextY, stepCurrentZ) is empty air,
+            // and (stepNextX, stepNextY, stepCurrentZ - 1) is walkable.
+            const targetDownZ = stepCurrentZ - 1;
+            if (window.mapRenderer.isTileEmpty(stepNextX, stepNextY, stepCurrentZ) &&
+                !window.mapRenderer.isWalkable(stepNextX, stepNextY, stepCurrentZ) &&
+                window.mapRenderer.isWalkable(stepNextX, stepNextY, targetDownZ)) {
+                neighbors.push({ x: stepNextX, y: stepNextY, z: targetDownZ, cost: 1 });
             }
         }
 
 
         for (const neighborPos of neighbors) {
-            const neighborKey = getNodeKey(neighborPos);
-            if (closedSet.has(neighborKey)) {
-                continue;
-            }
+            neighbors.push({ x: nextX, y: nextY, z: currentZ, cost: 1 });
 
-            const gCost = currentNode.g + neighborPos.cost;
-            let existingNeighbor = openSet.find(node => node.x === neighborPos.x && node.y === neighborPos.y && node.z === neighborPos.z);
-
-            if (!existingNeighbor || gCost < existingNeighbor.g) {
-                if (existingNeighbor) {
-                    existingNeighbor.g = gCost;
-                    existingNeighbor.f = gCost + existingNeighbor.h;
-                    existingNeighbor.parent = currentNode;
-                } else {
-                    const newNode = {
-                        x: neighborPos.x, y: neighborPos.y, z: neighborPos.z,
-                        g: gCost,
-                        h: heuristic(neighborPos, endPos),
-                        f: gCost + heuristic(neighborPos, endPos),
-                        parent: currentNode
+            // Additionally, if this walkable horizontal step IS a z-transition tile itself (e.g. base of stairs)
+            // consider the Z-move it enables.
+            const tileset = window.assetManagerInstance?.tilesets;
+            if (tileset) {
+                let explicitZTransDefAtNextStep = null;
+                const levelDataForNextStep = mapData.levels[currentZ.toString()];
+                if (levelDataForNextStep) {
+                    const checkTileForExplicitZ = (tileId) => {
+                        if (tileId && tileset[tileId]) {
+                            const def = tileset[tileId];
+                            if (def.tags?.includes('z_transition') && def.target_dz !== undefined) { // Slopes also have target_dz
+                                return def;
+                            }
+                        }
+                        return null;
                     };
-                    openSet.push(newNode);
+                    const midRaw = levelDataForNextStep.middle?.[nextY]?.[nextX];
+                    const midId = (typeof midRaw === 'object' && midRaw?.tileId !== undefined) ? midRaw.tileId : midRaw;
+                    explicitZTransDefAtNextStep = checkTileForExplicitZ(midId);
+                    if (!explicitZTransDefAtNextStep) {
+                        const botRaw = levelDataForNextStep.bottom?.[nextY]?.[nextX];
+                        const botId = (typeof botRaw === 'object' && botRaw?.tileId !== undefined) ? botRaw.tileId : botRaw;
+                        explicitZTransDefAtNextStep = checkTileForExplicitZ(botId);
+                    }
+                }
+
+                if (explicitZTransDefAtNextStep) {
+                    const finalDestZ = currentZ + explicitZTransDefAtNextStep.target_dz;
+                    // The cost to reach (nextX, nextY, currentZ) is 1 (already added for this neighbor implicitly)
+                    // The cost of the z-transition itself is z_cost.
+                    // The path node should represent the state *after* the z-transition.
+                    if (window.mapRenderer.isWalkable(nextX, nextY, finalDestZ)) {
+                        // Cost to get onto the z-transition tile (1) + cost of using it
+                        const zCost = explicitZTransDefAtNextStep.z_cost || 1;
+                        neighbors.push({ x: nextX, y: nextY, z: finalDestZ, cost: 1 + zCost });
+                        // logToConsole(`findPath3D: Found explicit z-trans at (${nextX},${nextY},${currentZ}) to Z=${finalDestZ} with cost ${1 + zCost}`);
+                    }
                 }
             }
         }
     }
-    logToConsole(`findPath3D: No path found from (${startPos.x},${startPos.y},${startPos.z}) to (${endPos.x},${endPos.y},${endPos.z}).`, "orange");
-    return null; // No path found
+
+    // Z-transitions from the CURRENT node (e.g. standing on a ladder going up/down without horizontal move)
+    const currentTileset = window.assetManagerInstance ? window.assetManagerInstance.tilesets : null;
+    if (currentTileset) {
+        const currentTileDef = getTileDefFromMapData(currentNode.x, currentNode.y, currentNode.z, mapData, currentTileset);
+        if (currentTileDef && currentTileDef.tags && currentTileDef.target_dz !== undefined && currentTileDef.tags.includes('z_transition')) {
+            // This handles z_transition tiles that imply vertical movement from the current spot
+            // (e.g., 'z_transition_up' or 'z_transition_down' tags if they also have target_dz)
+            // Or generic 'z_transition' with a target_dz (like a teleporter or specific ladder part)
+            const targetZ = currentNode.z + currentTileDef.target_dz;
+
+            // Check if the destination Z is valid to stand on at the *same* X,Y
+            // For stairs, one typically moves horizontally *onto* them. For ladders, one might move vertically.
+            // This logic is for a Z-move at the *current* X,Y.
+            // Example: a tile that says "ladder_up" and target_dz is +1.
+            // isTileEmpty at current X,Y,targetZ (for headroom/clearance)
+            // isWalkable at current X,Y,targetZ (for landing)
+            if (window.mapRenderer.isTileEmpty(currentNode.x, currentNode.y, targetZ) &&
+                window.mapRenderer.isWalkable(currentNode.x, currentNode.y, targetZ)) {
+                neighbors.push({
+                    x: currentNode.x, y: currentNode.y, z: targetZ,
+                    cost: currentTileDef.z_cost || 1
+                });
+                // logToConsole(`findPath3D: Found direct z-trans from current tile to Z=${targetZ} with cost ${currentTileDef.z_cost || 1}`);
+            }
+        }
+    }
+
+    // Consider automatic Z-stepping (like attemptCharacterMove does)
+    // This allows pathing over small ledges (1 Z-level difference)
+    for (const move of cardinalMoves) {
+        const nextX = currentNode.x + move.dx;
+        const nextY = currentNode.y + move.dy;
+        const currentZ = currentNode.z;
+
+        // Check for step UP: target (nextX, nextY, currentZ) is impassable low wall,
+        // but (nextX, nextY, currentZ + 1) is walkable, and headroom at (currentNode.x, currentNode.y, currentZ + 1) is clear.
+        const targetUpZ = currentZ + 1;
+        const impassableInfoCurrentZ = window.mapRenderer.getCollisionTileAt(nextX, nextY, currentZ); // Simplified check
+        const isStrictlyImpassableCurrentZ = impassableInfoCurrentZ !== "";
+
+        if (isStrictlyImpassableCurrentZ && // Target horizontal tile is a low wall
+            window.mapRenderer.isTileEmpty(currentNode.x, currentNode.y, targetUpZ) && // Headroom above current
+            window.mapRenderer.isWalkable(nextX, nextY, targetUpZ)) { // Landing spot on top of wall
+            neighbors.push({ x: nextX, y: nextY, z: targetUpZ, cost: 2 }); // Cost for stepping up
+            // logToConsole(`findPath3D: Considered auto-step UP to (${nextX},${nextY},${targetUpZ})`);
+        }
+
+        // Check for step DOWN: target (nextX, nextY, currentZ) is empty air,
+        // and (nextX, nextY, currentZ - 1) is walkable.
+        const targetDownZ = currentZ - 1;
+        if (window.mapRenderer.isTileEmpty(nextX, nextY, currentZ) && // Space to step into at current Z
+            !window.mapRenderer.isWalkable(nextX, nextY, currentZ) && // Not walkable at current Z (confirming it's a drop)
+            window.mapRenderer.isWalkable(nextX, nextY, targetDownZ)) { // Landing spot one Z-level below
+            // For pathfinding, only consider "safe" 1-level drops.
+            // The actual decision to take a multi-level fall is handled by npcShouldTakeFall at execution time.
+            // findPath3D should only plan paths it knows are mechanically possible without a willpower check.
+            neighbors.push({ x: nextX, y: nextY, z: targetDownZ, cost: 1 }); // Cost for stepping down
+            // logToConsole(`findPath3D: Considered auto-step DOWN to (${nextX},${nextY},${targetDownZ})`);
+        }
+    }
+
+
+    for (const neighborPos of neighbors) {
+        const neighborKey = getNodeKey(neighborPos);
+        if (closedSet.has(neighborKey)) {
+            continue;
+        }
+
+        const gCost = currentNode.g + neighborPos.cost;
+        let existingNeighbor = openSet.find(node => node.x === neighborPos.x && node.y === neighborPos.y && node.z === neighborPos.z);
+
+        if (!existingNeighbor || gCost < existingNeighbor.g) {
+            if (existingNeighbor) {
+                existingNeighbor.g = gCost;
+                existingNeighbor.f = gCost + existingNeighbor.h;
+                existingNeighbor.parent = currentNode;
+            } else {
+                const newNode = {
+                    x: neighborPos.x, y: neighborPos.y, z: neighborPos.z,
+                    g: gCost,
+                    h: heuristic(neighborPos, endPos),
+                    f: gCost + heuristic(neighborPos, endPos),
+                    parent: currentNode
+                };
+                openSet.push(newNode);
+            }
+        }
+    }
+}
+logToConsole(`findPath3D: No path found from (${startPos.x},${startPos.y},${startPos.z}) to (${endPos.x},${endPos.y},${endPos.z}).`, "orange");
+return null; // No path found
 }
 window.findPath3D = findPath3D;
