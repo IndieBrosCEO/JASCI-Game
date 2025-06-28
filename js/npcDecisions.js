@@ -45,38 +45,36 @@ function npcShouldTakeFall(npc, fallHeight) {
     let dc = 10 + ((fallHeight - 1) * 2) - Math.floor(averageLegHealthPercent * 10);
     dc = Math.max(5, Math.min(dc, 25)); // Clamp DC between 5 and 25.
 
-    const willpowerValue = (typeof getStatValue === 'function' && npc.stats) ? getStatValue("Willpower", npc) : 3; // Default to 3 if undefined
-    // The roll is 1d20. No direct stat modifier, using raw stat value as per some RPG systems or a derived modifier.
-    // For simplicity, let's assume Willpower stat itself is added or a modifier derived from it.
-    // If Willpower is a score 1-10, a modifier might be (Willpower - 5).
-    // Let's use Willpower stat directly as a small bonus/penalty relative to an average roll.
-    // Or, more simply, use a modifier like getStatModifier if it exists.
-    // The prompt said "1d20 where the dice challenge is proportionate...". It didn't specify adding willpower to the roll,
-    // but it's a common mechanic. Let's assume willpower directly adds to the roll for now.
-    // If `getStatModifier` is available and appropriate, that's better.
-    // `getStatModifier` from utils.js is (statValue - 5) / 2, rounded down. Let's use raw Willpower value for now as a direct bonus.
-
-    let willpowerBonus = 0;
-    if (npc.stats) { // npc.stats is an object like { Strength: 5, Willpower: 3 }
-        const willpowerStatObj = npc.stats.find(s => s.name === "Willpower"); // If stats is an array of objects
-        if (willpowerStatObj) {
-            willpowerBonus = willpowerStatObj.points || 0;
-        } else if (npc.stats["Willpower"]) { // If stats is a direct key-value map
-            willpowerBonus = npc.stats["Willpower"] || 0;
-        } else {
-            logToConsole(`${logPrefix} NPC has no Willpower stat defined in .stats. Defaulting bonus to 0.`, "orange");
-        }
-    } else {
-        logToConsole(`${logPrefix} NPC has no .stats property. Defaulting Willpower bonus to 0.`, "orange");
+    // Use getStatValue (from utils.js, robust for different stat structures) to get Willpower.
+    // Default to a low value (e.g., 3) if stat is missing, affecting the modifier.
+    const willpowerStatValue = (typeof getStatValue === 'function') ? getStatValue("Willpower", npc) : 3;
+    if (typeof getStatValue !== 'function') {
+        logToConsole(`${logPrefix} CRITICAL: getStatValue function not found. Willpower check will be unreliable.`, "red");
+    }
+    if (npc.stats && ((Array.isArray(npc.stats) && !npc.stats.find(s => s.name === "Willpower")) || (!Array.isArray(npc.stats) && !npc.stats["Willpower"]))) {
+        logToConsole(`${logPrefix} NPC has no Willpower stat defined in .stats. Using default value ${willpowerStatValue} for calculation.`, "orange");
     }
 
-    // Let's adjust the willpower bonus to be a modifier like other stats for consistency.
-    // (Value - 5) / 2, then round down might be too harsh for a 1-10 scale.
-    // Let's just use (Willpower Points - 3) as a simple modifier for now, assuming 3 is average.
-    const willpowerModifier = willpowerBonus - 3;
 
+    // The prompt implies a direct willpower check, not necessarily a modifier added to a roll vs. DC.
+    // However, "1d20 where the dice challenge is proportionate" suggests a roll against a DC.
+    // The existing DC calculation is: dc = 10 + ((fallHeight - 1) * 2) - Math.floor(averageLegHealthPercent * 10);
+    // Let's use a standard stat modifier for Willpower to affect the roll.
+    // getStatModifier(statName, entity) returns Math.floor(statPoints / 2) - 1. (e.g. 3 WP -> 0, 5 WP -> 1, 7 WP-> 2)
+    // This seems more standard than `willpowerPoints - 3`.
+    let willpowerModifier = 0;
+    if (typeof getStatModifier === 'function') {
+        willpowerModifier = getStatModifier("Willpower", npc);
+    } else {
+        logToConsole(`${logPrefix} CRITICAL: getStatModifier function not found. Willpower modifier will be 0.`, "red");
+        // Fallback simple modifier if getStatModifier is missing
+        willpowerModifier = Math.floor(willpowerStatValue / 2) - 1;
+    }
 
     const roll = (typeof rollDie === 'function') ? rollDie(20) : Math.floor(Math.random() * 20) + 1;
+    if (typeof rollDie !== 'function') {
+        logToConsole(`${logPrefix} CRITICAL: rollDie function not found. Using Math.random.`, "red");
+    }
     const totalRoll = roll + willpowerModifier;
 
     const success = totalRoll >= dc;

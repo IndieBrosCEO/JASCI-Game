@@ -1,4 +1,4 @@
-/* Base styles */
+Ôªø/* Base styles */
 body {
     font-family: monospace;
     background-color: #000;
@@ -144,7 +144,7 @@ th, td {
 /* Each tile is one character wide & high */
 .tile {
     display: inline-block;
-    width: 1ch; /* exactly one ì0î width */
+    width: 1ch; /* exactly one ‚Äú0‚Äù width */
     height: 1em; /* exactly one line height */
     font-size: 1em;
     text-align: center;

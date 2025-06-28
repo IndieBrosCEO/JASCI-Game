@@ -792,18 +792,40 @@ function handleKeyDown(event) {
                 logToConsole(`Targeting type: ${gameState.targetingType}`);
 
                 gameState.selectedTargetEntity = null; // Reset before checking
+                // Find entity at target x, y, AND z
                 for (const npc of gameState.npcs) {
-                    if (npc.mapPos && npc.mapPos.x === gameState.targetingCoords.x && npc.mapPos.y === gameState.targetingCoords.y) {
+                    if (npc.mapPos && npc.mapPos.x === gameState.targetingCoords.x &&
+                        npc.mapPos.y === gameState.targetingCoords.y &&
+                        npc.mapPos.z === gameState.targetingCoords.z) {
                         gameState.selectedTargetEntity = npc;
                         break;
                     }
                 }
 
+                // Determine the actual target position (either entity's or tile's)
+                const finalTargetPos = gameState.selectedTargetEntity ? gameState.selectedTargetEntity.mapPos : gameState.targetingCoords;
+
+                // Perform Line of Sight Check
+                if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos)) {
+                    logToConsole(`No line of sight to target at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). Select another target.`, "orange");
+                    // Do not exit targeting mode, allow player to re-target
+                    // gameState.isTargetingMode = true; // Keep it true
+                    // gameState.targetConfirmed = false; // Target not actually confirmed due to LOS
+                    // window.mapRenderer.scheduleRender(); // Re-render to keep 'X'
+                    event.preventDefault();
+                    return; // Stop further processing for this 'f' press
+                }
+
+                // LOS is clear, proceed with target confirmation
+                gameState.targetConfirmed = true;
+                logToConsole(`Target confirmed with LOS at: X=${finalTargetPos.x}, Y=${finalTargetPos.y}, Z=${finalTargetPos.z}`);
+                logToConsole(`Targeting type: ${gameState.targetingType}`);
+
+
                 if (gameState.selectedTargetEntity) {
-                    logToConsole(`Combat would be initiated with ${gameState.selectedTargetEntity.name || gameState.selectedTargetEntity.id} at (${gameState.targetingCoords.x}, ${gameState.targetingCoords.y}).`);
-                    // Future: Call combatManager.initiateCombat(gameState.selectedTargetEntity, gameState.targetingType);
+                    logToConsole(`Combat would be initiated with ${gameState.selectedTargetEntity.name || gameState.selectedTargetEntity.id} at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}).`);
                 } else {
-                    logToConsole(`Targeting tile (${gameState.targetingCoords.x}, ${gameState.targetingCoords.y}). No entity selected. Combat would not be initiated in this manner.`);
+                    logToConsole(`Targeting tile (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). No entity selected. Combat would not be initiated in this manner.`);
                 }
 
                 gameState.isTargetingMode = false; // Exit targeting mode
@@ -815,46 +837,40 @@ function handleKeyDown(event) {
                     allParticipants.push(gameState); // Add player
 
                     if (gameState.selectedTargetEntity) {
-                        // Check if the selected target is already the player (should not happen with NPCs)
-                        // or if it's already in the list (e.g. if gameState itself was somehow a target, which is unlikely for NPCs)
                         if (!allParticipants.includes(gameState.selectedTargetEntity)) {
                             allParticipants.push(gameState.selectedTargetEntity);
                         }
                         logToConsole(`Combat initiated by player targeting ${gameState.selectedTargetEntity.name || gameState.selectedTargetEntity.id}.`);
                     } else {
                         logToConsole("Combat initiated by player targeting a tile.");
+                        // If targeting a tile, still check for nearby NPCs to pull into combat
                     }
 
                     const playerPos = gameState.playerPos;
-                    if (playerPos) { // Ensure playerPos is valid
+                    if (playerPos) {
                         gameState.npcs.forEach(npc => {
-                            // Check if NPC is already included (e.g. was the direct target)
-                            if (allParticipants.includes(npc)) {
-                                return; // Skip if already added
-                            }
-
-                            // Check if NPC is alive
-                            if (!npc.health || !npc.health.torso || npc.health.torso.current <= 0 || !npc.health.head || npc.health.head.current <= 0) {
-                                return; // Skip if not alive
-                            }
+                            if (allParticipants.includes(npc)) return;
+                            if (!npc.health || npc.health.torso.current <= 0 || npc.health.head.current <= 0) return;
 
                             if (npc.mapPos) {
-                                const distance = Math.abs(npc.mapPos.x - playerPos.x) + Math.abs(npc.mapPos.y - playerPos.y);
-                                if (distance <= COMBAT_ALERT_RADIUS) {
-                                    if (!allParticipants.includes(npc)) { // Double check before pushing
-                                        allParticipants.push(npc);
-                                        logToConsole(`${npc.name || npc.id} (Team: ${npc.teamId}) is nearby (distance: ${distance}) and added to combat.`);
+                                // Use 3D distance for combat alert radius, or a more complex check
+                                const distance3D = getDistance3D(playerPos, npc.mapPos);
+                                if (distance3D <= COMBAT_ALERT_RADIUS) {
+                                    // Also check LOS to these nearby NPCs before pulling them in
+                                    if (window.hasLineOfSight3D(playerPos, npc.mapPos) || (gameState.selectedTargetEntity && window.hasLineOfSight3D(gameState.selectedTargetEntity.mapPos, npc.mapPos))) {
+                                        if (!allParticipants.includes(npc)) {
+                                            allParticipants.push(npc);
+                                            logToConsole(`${npc.name || npc.id} (Team: ${npc.teamId}) is nearby (Dist3D: ${distance3D.toFixed(1)}) with LOS and added to combat.`);
+                                        }
+                                    } else {
+                                        logToConsole(`${npc.name || npc.id} is nearby but no LOS, not added to combat.`);
                                     }
                                 }
                             }
                         });
                     }
-
                     combatManager.startCombat(allParticipants);
-                    // combatManager.promptPlayerAttackDeclaration(); // Removed as per refactoring instructions
                 } else {
-                    // If combat is ongoing and 'f' is pressed in targeting mode (e.g. for re-targeting)
-                    // We might need to prompt player attack declaration if it's their turn.
                     if (combatManager.gameState.combatCurrentAttacker === combatManager.gameState &&
                         (combatManager.gameState.combatPhase === 'playerAttackDeclare' || combatManager.gameState.retargetingJustHappened)) {
                         logToConsole("Targeting confirmed mid-combat. Prompting player attack declaration.");
@@ -1191,6 +1207,55 @@ async function initialize() { // Made async
     }
 
     document.addEventListener('keydown', handleKeyDown);
+
+    const mapContainer = document.getElementById('mapContainer');
+    if (mapContainer) {
+        mapContainer.addEventListener('click', (event) => {
+            if (gameState.isRetargeting && combatManager) {
+                const rect = mapContainer.getBoundingClientRect();
+                // Assuming standard rendering where each character is roughly a fixed size cell.
+                // This needs to be adjusted if you have a more complex rendering (e.g., graphical tiles, scaling).
+                // For a text-based map, if each char is, say, 8px wide and 16px high:
+                const TILE_WIDTH = mapContainer.firstChild && mapContainer.firstChild.offsetWidth ? mapContainer.firstChild.offsetWidth : 8; // Approximate width of a character/tile
+                const TILE_HEIGHT = mapContainer.firstChild && mapContainer.firstChild.offsetHeight ? mapContainer.firstChild.offsetHeight / (window.mapRenderer.getCurrentMapData()?.dimensions.height || 1) : 16; // Approximate height
+
+                const x = Math.floor((event.clientX - rect.left) / TILE_WIDTH);
+                const y = Math.floor((event.clientY - rect.top) / TILE_HEIGHT);
+                const z = gameState.currentViewZ; // Target on the current view Z
+
+                if (x >= 0 && x < window.mapRenderer.getCurrentMapData().dimensions.width &&
+                    y >= 0 && y < window.mapRenderer.getCurrentMapData().dimensions.height) {
+
+                    gameState.targetingCoords = { x, y, z };
+                    gameState.selectedTargetEntity = null; // Reset
+                    for (const npc of gameState.npcs) {
+                        if (npc.mapPos && npc.mapPos.x === x && npc.mapPos.y === y && npc.mapPos.z === z) {
+                            gameState.selectedTargetEntity = npc;
+                            break;
+                        }
+                    }
+
+                    const finalTargetPos = gameState.selectedTargetEntity ? gameState.selectedTargetEntity.mapPos : gameState.targetingCoords;
+
+                    if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos)) {
+                        logToConsole(`No line of sight to target at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). Click another target.`, "orange");
+                        // Keep isRetargeting true, allow another click
+                        window.mapRenderer.scheduleRender(); // Update targeting cursor if it moves
+                        return;
+                    }
+
+                    logToConsole(`Clicked target on map at X:${x}, Y:${y}, Z:${z}`);
+                    gameState.targetConfirmed = true;
+                    gameState.isRetargeting = false;
+                    gameState.retargetingJustHappened = true;
+                    combatManager.promptPlayerAttackDeclaration();
+                    window.mapRenderer.scheduleRender(); // To update UI, remove targeting cursor potentially
+                }
+            }
+        });
+    } else {
+        console.error("Map container not found for click listener.");
+    }
 
     // Listen for campaign loaded event
     document.addEventListener('campaignWasLoaded', async (event) => { // made async for handleMapSelectionChangeWrapper

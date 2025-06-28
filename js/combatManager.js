@@ -124,14 +124,24 @@
         } else if (this.gameState.targetConfirmed) {
             if (this.gameState.selectedTargetEntity) {
                 this.gameState.combatCurrentDefender = this.gameState.selectedTargetEntity;
-                this.gameState.defenderMapPos = this.gameState.selectedTargetEntity.mapPos ? { ...this.gameState.selectedTargetEntity.mapPos } : null;
-                logToConsole(`Target acquired via targeting system: ${this.gameState.selectedTargetEntity.name || this.gameState.selectedTargetEntity.id}`, 'lightblue');
+                // Ensure defenderMapPos is correctly 3D from the entity or targetingCoords
+                this.gameState.defenderMapPos = this.gameState.selectedTargetEntity.mapPos ?
+                    { ...this.gameState.selectedTargetEntity.mapPos } :
+                    (this.gameState.targetingCoords || null); // targetingCoords should be 3D
+                logToConsole(`Target acquired via targeting system: ${this.gameState.selectedTargetEntity.name || this.gameState.selectedTargetEntity.id} at Z:${this.gameState.defenderMapPos?.z}`, 'lightblue');
+            } else if (this.gameState.targetingCoords) { // Ensure targetingCoords exists
+                this.gameState.defenderMapPos = { ...this.gameState.targetingCoords }; // targetingCoords is already 3D
+                logToConsole(`Targeting system selected tile at X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}, Z:${this.gameState.defenderMapPos.z}.`, 'lightblue');
             } else {
-                this.gameState.defenderMapPos = { ...this.gameState.targetingCoords };
-                logToConsole(`Targeting system selected tile at X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}.`, 'lightblue');
+                logToConsole("Error: Target confirmed but no selected entity or targetingCoords available.", "red");
+                this.gameState.combatCurrentDefender = null;
+                this.gameState.defenderMapPos = null;
             }
             this.gameState.targetConfirmed = false;
         } else if (!this.gameState.combatCurrentDefender && this.gameState.isInCombat) {
+            // Auto-target logic needs to be 3D LOS aware for the player as well.
+            // For now, this auto-targets the first live NPC, which might not have LOS.
+            // This part is less critical for "player targeting" feature but good to note.
             const liveNpcs = this.initiativeTracker.filter(e => !e.isPlayer && e.entity.health?.torso?.current > 0 && e.entity.health?.head?.current > 0);
             if (liveNpcs.length > 0) {
                 this.gameState.combatCurrentDefender = liveNpcs[0].entity;
@@ -141,9 +151,13 @@
         }
 
         if (defenderDisplay) {
-            if (this.gameState.combatCurrentDefender) defenderDisplay.textContent = `Defender: ${this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id}`;
-            else if (this.gameState.defenderMapPos) defenderDisplay.textContent = `Defender: Tile at X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}`;
-            else defenderDisplay.textContent = "Defender: None (Click on map to target)";
+            if (this.gameState.combatCurrentDefender && this.gameState.defenderMapPos) {
+                defenderDisplay.textContent = `Defender: ${this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id} (Z:${this.gameState.defenderMapPos.z})`;
+            } else if (this.gameState.defenderMapPos) {
+                defenderDisplay.textContent = `Defender: Tile at X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}, Z:${this.gameState.defenderMapPos.z}`;
+            } else {
+                defenderDisplay.textContent = "Defender: None (Click on map to target)";
+            }
         }
         if (attackDeclUI && !this.gameState.isRetargeting) attackDeclUI.classList.remove('hidden');
         this.populateWeaponSelect();
@@ -413,15 +427,16 @@
             this.gameState.pendingCombatAction.skillToUse = skill;
 
             if (this.gameState.combatCurrentDefender && this.gameState.combatCurrentDefender.mapPos) {
+                // Ensure mapPos includes Z, it should if NPCs are correctly initialized
                 this.gameState.pendingCombatAction.targetTile = { ...this.gameState.combatCurrentDefender.mapPos };
-            } else if (this.gameState.defenderMapPos) { // A tile was targeted (defenderMapPos is set from targeting system)
+            } else if (this.gameState.defenderMapPos) {
+                // defenderMapPos should be 3D from targeting system
                 this.gameState.pendingCombatAction.targetTile = { ...this.gameState.defenderMapPos };
-            }
-            else {
-                logToConsole("ERROR: Target tile for thrown item not determined (no defender with pos and no tile target).", 'red');
+            } else {
+                logToConsole("ERROR: Target tile for thrown item not determined (no defender with pos and no 3D tile target).", 'red');
                 this.promptPlayerAttackDeclaration(); return;
             }
-            logToConsole(`Throwing ${weaponObj.name} (Skill: ${skill}) at/towards tile (${this.gameState.pendingCombatAction.targetTile.x},${this.gameState.pendingCombatAction.targetTile.y}).`, 'lightgreen');
+            logToConsole(`Throwing ${weaponObj.name} (Skill: ${skill}) at/towards tile (${this.gameState.pendingCombatAction.targetTile.x},${this.gameState.pendingCombatAction.targetTile.y}, Z:${this.gameState.pendingCombatAction.targetTile.z}).`, 'lightgreen');
         } else { // Not a thrown item, check for dual wield if applicable
             const pHand = this.gameState.inventory.handSlots[0], oHand = this.gameState.inventory.handSlots[1];
             this.gameState.dualWieldPending = pHand?.type.includes("firearm") && oHand?.type.includes("firearm") && weaponObj?.id === pHand.id;
@@ -1250,8 +1265,19 @@
     }
 
     _isTilePassableAndUnoccupiedForNpc(x, y, z, npcId) {
-        // Use the new isTileOccupied function
-        return this._isTilePassable(x, y, z) && !this.isTileOccupied(x, y, z, npcId);
+        // Use window.mapRenderer.isWalkable instead of the removed _isTilePassable
+        const isPassable = window.mapRenderer && typeof window.mapRenderer.isWalkable === 'function' ?
+            window.mapRenderer.isWalkable(x, y, z) : false;
+        if (!isPassable) {
+            // Optional: log if tile is not passable for debugging pathfinding issues
+            // logToConsole(`_isTilePassableAndUnoccupiedForNpc: Tile (${x},${y},${z}) is not walkable.`, 'debug');
+        }
+        const isOccupied = this.isTileOccupied(x, y, z, npcId);
+        if (isOccupied) {
+            // Optional: log if tile is occupied
+            // logToConsole(`_isTilePassableAndUnoccupiedForNpc: Tile (${x},${y},${z}) is occupied.`, 'debug');
+        }
+        return isPassable && !isOccupied;
     }
 
     async moveNpcTowardsTarget(npc, targetPos) { // targetPos can have x,y,z
@@ -1352,28 +1378,45 @@
         if (npc.aggroList?.length > 0) {
             for (const aggroEntry of npc.aggroList) {
                 const target = aggroEntry.entityRef;
-                if (target && target !== npc && target.health?.torso?.current > 0 && target.health?.head?.current > 0 && target.teamId !== npc.teamId && (target.mapPos || target === this.gameState) && this.initiativeTracker.find(e => e.entity === target)) {
-                    this.gameState.combatCurrentDefender = target; this.gameState.defenderMapPos = target === this.gameState ? { ...this.gameState.playerPos } : { ...target.mapPos };
-                    logToConsole(`NPC TARGETING: ${npcName} selected ${target === this.gameState ? "Player" : (target.name || target.id)} from aggro (Threat: ${aggroEntry.threat}).`, 'gold'); return true;
+                const targetPos = target === this.gameState ? this.gameState.playerPos : target.mapPos;
+                if (target && target !== npc && target.health?.torso?.current > 0 && target.health?.head?.current > 0 &&
+                    target.teamId !== npc.teamId && targetPos && this.initiativeTracker.find(e => e.entity === target)) {
+                    if (window.hasLineOfSight3D(npc.mapPos, targetPos)) {
+                        this.gameState.combatCurrentDefender = target;
+                        this.gameState.defenderMapPos = { ...targetPos };
+                        logToConsole(`NPC TARGETING: ${npcName} selected ${target === this.gameState ? "Player" : (target.name || target.id)} from aggro (Threat: ${aggroEntry.threat}) with LOS.`, 'gold');
+                        return true;
+                    } else {
+                        logToConsole(`NPC TARGETING: ${npcName} has no LOS to aggro target ${target === this.gameState ? "Player" : (target.name || target.id)}.`, 'grey');
+                    }
                 }
             }
         }
-        let closestTarget = null, minDistance = Infinity;
+
+        // Fallback to closest enemy with LOS if no aggro target with LOS
+        let validTargets = [];
         this.initiativeTracker.forEach(entry => {
             const candidate = entry.entity;
-            if (candidate !== npc && candidate.health?.torso?.current > 0 && candidate.health?.head?.current > 0 && candidate.teamId !== npc.teamId && npc.mapPos && (candidate.mapPos || candidate === this.gameState)) {
-                const candPos = candidate === this.gameState ? this.gameState.playerPos : candidate.mapPos;
-                if (candPos) {
-                    const dist = Math.abs(npc.mapPos.x - candPos.x) + Math.abs(npc.mapPos.y - candPos.y);
-                    if (dist < minDistance) { minDistance = dist; closestTarget = candidate; }
+            const candPos = candidate === this.gameState ? this.gameState.playerPos : candidate.mapPos;
+            if (candidate !== npc && candidate.health?.torso?.current > 0 && candidate.health?.head?.current > 0 &&
+                candidate.teamId !== npc.teamId && npc.mapPos && candPos) {
+                if (window.hasLineOfSight3D(npc.mapPos, candPos)) {
+                    const dist = getDistance3D(npc.mapPos, candPos); // Use 3D distance
+                    validTargets.push({ entity: candidate, pos: candPos, distance: dist });
                 }
             }
         });
-        if (closestTarget) {
-            this.gameState.combatCurrentDefender = closestTarget; this.gameState.defenderMapPos = closestTarget === this.gameState ? { ...this.gameState.playerPos } : { ...closestTarget.mapPos };
-            logToConsole(`NPC TARGETING: ${npcName} selected nearest enemy: ${closestTarget === this.gameState ? "Player" : (closestTarget.name || closestTarget.id)}.`, 'gold'); return true;
+
+        if (validTargets.length > 0) {
+            validTargets.sort((a, b) => a.distance - b.distance); // Sort by 3D distance
+            const closestTargetWithLOS = validTargets[0];
+            this.gameState.combatCurrentDefender = closestTargetWithLOS.entity;
+            this.gameState.defenderMapPos = { ...closestTargetWithLOS.pos };
+            logToConsole(`NPC TARGETING: ${npcName} selected nearest enemy with LOS: ${closestTargetWithLOS.entity === this.gameState ? "Player" : (closestTargetWithLOS.entity.name || closestTargetWithLOS.entity.id)} (Dist: ${closestTargetWithLOS.distance.toFixed(1)}).`, 'gold');
+            return true;
         }
-        logToConsole(`NPC TARGETING: ${npcName} found no valid targets.`, 'orange');
+
+        logToConsole(`NPC TARGETING: ${npcName} found no valid targets with LOS.`, 'orange');
         return false;
     }
 
