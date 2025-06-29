@@ -228,8 +228,17 @@ function spawnNpcsFromMapData(mapData) {
                     console.error(`initializeHealth function not found for NPC: ${newNpc.id}`);
                     // Basic fallback if initializeHealth is missing
                     newNpc.health = newNpc.health || { head: {}, torso: {}, leftArm: {}, rightArm: {}, leftLeg: {}, rightLeg: {} };
-                    newNpc.aggroList = [];
                 }
+                newNpc.aggroList = [];
+                // Initialize memory for NPC decision making and exploration
+                newNpc.memory = {
+                    lastSeenTargetPos: null,        // {x, y, z} coordinates of the last known position of a hostile target
+                    lastSeenTargetTimestamp: 0,     // Game turn or timestamp when the target was last seen/confirmed
+                    recentlyVisitedTiles: [],       // Array of "x,y,z" string keys representing recently explored tiles to avoid loops
+                    explorationTarget: null,        // Current {x,y,z} coordinates the NPC is moving towards when exploring
+                    lastKnownSafePos: { ...newNpc.mapPos } // Last known position that was safe (e.g., after a successful move)
+                };
+
 
                 // teamId should be copied by JSON.parse(JSON.stringify(npcDefinition))
                 // Log if teamId is unexpectedly missing after cloning and initialization
@@ -240,7 +249,7 @@ function spawnNpcsFromMapData(mapData) {
                 gameState.npcs.push(newNpc);
                 logToConsole(`Spawned NPC: ${newNpc.name || newNpc.id} (ID: ${newNpc.id}, Team: ${newNpc.teamId}) at (X:${newNpc.mapPos.x}, Y:${newNpc.mapPos.y}, Z:${newNpc.mapPos.z})`);
             } else {
-                console.warn(`NPC definition not found for ID: ${npcPlacementInfo.id} in map data for map ${mapData.name || mapData.id}.`);
+                console.warn(`NPC definition not found for ID: ${npcPlacementInfo.definitionId || npcPlacementInfo.baseId || npcPlacementInfo.type} in map data for map ${mapData.name || mapData.id}.`);
             }
         });
     } else {

@@ -1,4 +1,9 @@
-﻿class CombatManager {
+﻿const MEMORY_DURATION_THRESHOLD = 20; // Turns an NPC remembers a last seen position
+const RECENTLY_VISITED_MAX_SIZE = 5; // Max number of tiles to keep in recent memory for exploration
+const NPC_EXPLORATION_RADIUS = 10; // How far an NPC might pick a random exploration point
+const MAX_EXPLORATION_TARGET_ATTEMPTS = 10; // How many times to try finding a new random exploration target
+
+class CombatManager {
     constructor(gameState, assetManager) {
         this.gameState = gameState;
         this.assetManager = assetManager;
@@ -1472,6 +1477,13 @@
             this.gameState.combatCurrentDefender = closestTargetWithLOS.entity;
             this.gameState.defenderMapPos = { ...closestTargetWithLOS.pos };
             logToConsole(`NPC TARGETING: ${npcName} selected nearest enemy with LOS: ${closestTargetWithLOS.entity === this.gameState ? "Player" : (closestTargetWithLOS.entity.name || closestTargetWithLOS.entity.id)} (Dist: ${closestTargetWithLOS.distance.toFixed(1)}).`, 'gold');
+
+            // Update NPC memory upon successful targeting
+            if (npc.memory) {
+                npc.memory.lastSeenTargetPos = { ...this.gameState.defenderMapPos };
+                npc.memory.lastSeenTargetTimestamp = this.gameState.currentTime?.totalTurns || 0;
+                npc.memory.explorationTarget = null; // Clear exploration target
+            }
             return true;
         }
 
@@ -1483,44 +1495,430 @@
         const npcName = npc.name || npc.id || "NPC";
         if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) { logToConsole(`INFO: ${npcName} incapacitated. Skipping turn.`, 'orange'); await this.nextTurn(npc); return; }
         if (!npc.aggroList) npc.aggroList = [];
-        logToConsole(`NPC TURN: ${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints})`, 'gold');
-        if (!this._npcSelectTarget(npc)) { logToConsole(`NPC ACTION: ${npcName} no target. Ending turn.`, 'orange'); await this.nextTurn(npc); return; }
-
-        let turnEnded = !this.gameState.combatCurrentDefender;
-        for (let iter = 0; !turnEnded && (npc.currentActionPoints > 0 || npc.currentMovementPoints > 0) && iter < 10; iter++) {
-            let currentTarget = this.gameState.combatCurrentDefender, currentTargetPos = this.gameState.defenderMapPos;
-            if (!currentTarget || currentTarget.health?.torso?.current <= 0 || currentTarget.health?.head?.current <= 0) {
-                if (!this._npcSelectTarget(npc)) { turnEnded = true; break; }
-                currentTarget = this.gameState.combatCurrentDefender; currentTargetPos = this.gameState.defenderMapPos;
-                if (!currentTarget) { turnEnded = true; break; }
-            }
-            let actionTaken = false;
-            let weaponToUse = npc.equippedWeaponId ? this.assetManager.getItem(npc.equippedWeaponId) : null;
-            let attackType = weaponToUse ? (weaponToUse.type.includes("melee") ? "melee" : (weaponToUse.type.includes("firearm") || weaponToUse.type.includes("bow") || weaponToUse.type.includes("crossbow") || weaponToUse.type.includes("weapon_ranged_other") || weaponToUse.type.includes("thrown") ? "ranged" : "melee")) : "melee";
-            const fireMode = weaponToUse?.fireModes?.includes("burst") ? "burst" : (weaponToUse?.fireModes?.[0] || "single");
-            const distanceToTarget = npc.mapPos && currentTargetPos ? (Math.abs(npc.mapPos.x - currentTargetPos.x) + Math.abs(npc.mapPos.y - currentTargetPos.y)) : Infinity;
-            const canAttack = (attackType === 'melee' && distanceToTarget <= 1) || (attackType === 'ranged');
-
-            if (canAttack && npc.currentActionPoints > 0) {
-                logToConsole(`NPC ACTION: ${npcName} attacks ${currentTarget.name || "Player"} with ${weaponToUse ? weaponToUse.name : "Unarmed"}.`, 'gold');
-                this.gameState.pendingCombatAction = { target: currentTarget, weapon: weaponToUse, attackType, bodyPart: "Torso", fireMode, actionType: "attack", entity: npc, actionDescription: `${attackType} by ${npcName}` };
-                npc.currentActionPoints--; actionTaken = true; this.gameState.combatPhase = 'defenderDeclare';
-                this.handleDefenderActionPrompt();
-                if (this.gameState.combatPhase === 'playerDefenseDeclare') return;
-            } else if (distanceToTarget > 1 && attackType === 'melee' && npc.currentMovementPoints > 0) {
-                if (await this.moveNpcTowardsTarget(npc, currentTargetPos)) actionTaken = true;
-                else { logToConsole(`NPC ACTION: ${npcName} cannot reach target for melee.`, 'orange'); turnEnded = true; }
-            } else if (npc.currentMovementPoints > 0) {
-                if (await this.moveNpcTowardsTarget(npc, currentTargetPos)) actionTaken = true;
-                else { logToConsole(`NPC ACTION: ${npcName} has no clear action and cannot move closer.`, 'orange'); turnEnded = true; }
-            } else {
-                turnEnded = true;
-            }
-            if (!actionTaken && !(npc.currentActionPoints > 0 && canAttack)) turnEnded = true;
-            if (npc.currentActionPoints === 0 && npc.currentMovementPoints === 0) turnEnded = true;
+        if (!npc.memory) { // Ensure memory object exists, crucial for new logic
+            npc.memory = { lastSeenTargetPos: null, lastSeenTargetTimestamp: 0, recentlyVisitedTiles: [], explorationTarget: null, lastKnownSafePos: { ...(npc.mapPos || { x: 0, y: 0, z: 0 }) } };
         }
+        logToConsole(`NPC TURN: ${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints})`, 'gold');
+
+        let turnEnded = false;
+        let actionTakenThisTurn = false; // Tracks if any significant action (attack/move) was taken in the entire turn
+
+        if (this._npcSelectTarget(npc)) { // Found a combat target
+            actionTakenThisTurn = true; // Targeting is an action, loop below will handle attack/move
+            for (let iter = 0; !turnEnded && (npc.currentActionPoints > 0 || npc.currentMovementPoints > 0) && iter < 10; iter++) {
+                let currentTarget = this.gameState.combatCurrentDefender, currentTargetPos = this.gameState.defenderMapPos;
+                if (!currentTarget || currentTarget.health?.torso?.current <= 0 || currentTarget.health?.head?.current <= 0) {
+                    if (!this._npcSelectTarget(npc)) { turnEnded = true; break; } // Try to re-target
+                    currentTarget = this.gameState.combatCurrentDefender; currentTargetPos = this.gameState.defenderMapPos;
+                    if (!currentTarget) { turnEnded = true; break; }
+                }
+                let actionTakenInIter = false;
+                let weaponToUse = npc.equippedWeaponId ? this.assetManager.getItem(npc.equippedWeaponId) : null;
+                let attackType = weaponToUse ? (weaponToUse.type.includes("melee") ? "melee" : (weaponToUse.type.includes("firearm") || weaponToUse.type.includes("bow") || weaponToUse.type.includes("crossbow") || weaponToUse.type.includes("weapon_ranged_other") || weaponToUse.type.includes("thrown") ? "ranged" : "melee")) : "melee";
+                const fireMode = weaponToUse?.fireModes?.includes("burst") ? "burst" : (weaponToUse?.fireModes?.[0] || "single");
+                const distanceToTarget3D = npc.mapPos && currentTargetPos ? getDistance3D(npc.mapPos, currentTargetPos) : Infinity;
+                const canAttack = (attackType === 'melee' && distanceToTarget3D <= 1.8) || (attackType === 'ranged');
+
+                if (canAttack && npc.currentActionPoints > 0) {
+                    logToConsole(`NPC ACTION: ${npcName} attacks ${currentTarget.name || "Player"} with ${weaponToUse ? weaponToUse.name : "Unarmed"}.`, 'gold');
+                    this.gameState.pendingCombatAction = { target: currentTarget, weapon: weaponToUse, attackType, bodyPart: "Torso", fireMode, actionType: "attack", entity: npc, actionDescription: `${attackType} by ${npcName}` };
+                    npc.currentActionPoints--; actionTakenInIter = true; this.gameState.combatPhase = 'defenderDeclare';
+                    this.handleDefenderActionPrompt();
+                    if (this.gameState.combatPhase === 'playerDefenseDeclare') return; // Wait for player defense
+                } else if (npc.currentMovementPoints > 0) {
+                    let dropExecuted = await this._evaluateAndExecuteNpcDrop(npc);
+                    if (dropExecuted) {
+                        actionTakenInIter = true;
+                    } else {
+                        if (await this.moveNpcTowardsTarget(npc, currentTargetPos)) {
+                            actionTakenInIter = true;
+                        }
+                    }
+                }
+
+                if (!actionTakenInIter) turnEnded = true; // If no action in iteration (e.g. cant attack and cant move)
+                if (npc.currentActionPoints === 0 && npc.currentMovementPoints === 0) turnEnded = true;
+            }
+        } else { // No combat target, try exploration/memory
+            logToConsole(`NPC ACTION: ${npcName} no direct combat target. Considering exploration/memory.`);
+            actionTakenThisTurn = true; // Considering exploration is an action for the turn
+            if (npc.currentMovementPoints > 0 && npc.memory) {
+                let pathfindingTarget = null;
+                const currentTime = this.gameState.currentTime?.totalTurns || 0;
+
+                if (npc.memory.lastSeenTargetPos && (currentTime - npc.memory.lastSeenTargetTimestamp < MEMORY_DURATION_THRESHOLD)) {
+                    pathfindingTarget = npc.memory.lastSeenTargetPos;
+                    logToConsole(`${npcName} moving towards last known target pos: (${pathfindingTarget.x},${pathfindingTarget.y},${pathfindingTarget.z})`);
+                } else {
+                    if (npc.memory.lastSeenTargetPos) logToConsole(`${npcName} memory of last target faded.`);
+                    npc.memory.lastSeenTargetPos = null;
+                }
+
+                if (!pathfindingTarget && npc.memory.explorationTarget) {
+                    if (npc.mapPos.x === npc.memory.explorationTarget.x && npc.mapPos.y === npc.memory.explorationTarget.y && npc.mapPos.z === npc.memory.explorationTarget.z) {
+                        logToConsole(`${npcName} reached previous exploration target. Clearing.`);
+                        npc.memory.explorationTarget = null;
+                    } else {
+                        pathfindingTarget = npc.memory.explorationTarget;
+                        logToConsole(`${npcName} continuing to exploration target: (${pathfindingTarget.x},${pathfindingTarget.y},${pathfindingTarget.z})`);
+                    }
+                }
+
+                if (!pathfindingTarget) {
+                    let attempts = 0;
+                    const mapData = window.mapRenderer.getCurrentMapData();
+                    if (mapData && mapData.dimensions) {
+                        while (attempts < MAX_EXPLORATION_TARGET_ATTEMPTS && !pathfindingTarget) {
+                            const angle = Math.random() * 2 * Math.PI;
+                            const radius = 1 + Math.random() * (NPC_EXPLORATION_RADIUS - 1); // Ensure radius > 0
+                            const targetX = Math.floor(npc.mapPos.x + Math.cos(angle) * radius);
+                            const targetY = Math.floor(npc.mapPos.y + Math.sin(angle) * radius);
+                            const targetZ = npc.mapPos.z;
+
+                            if (targetX >= 0 && targetX < mapData.dimensions.width && targetY >= 0 && targetY < mapData.dimensions.height) {
+                                const visitedKey = `${targetX},${targetY},${targetZ}`;
+                                if (window.mapRenderer.isWalkable(targetX, targetY, targetZ) &&
+                                    !this.isTileOccupied(targetX, targetY, targetZ, npc.id) &&
+                                    !npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
+                                    pathfindingTarget = { x: targetX, y: targetY, z: targetZ };
+                                    npc.memory.explorationTarget = pathfindingTarget;
+                                    logToConsole(`${npcName} selected new random exploration target: (${targetX},${targetY},${targetZ})`);
+                                    break;
+                                }
+                            }
+                            attempts++;
+                        }
+                    }
+                    if (!pathfindingTarget && attempts >= MAX_EXPLORATION_TARGET_ATTEMPTS) {
+                        logToConsole(`${npcName} failed to find exploration target after ${attempts} attempts. Will use lastKnownSafePos or wait.`);
+                        pathfindingTarget = npc.memory.lastKnownSafePos &&
+                            (npc.memory.lastKnownSafePos.x !== npc.mapPos.x ||
+                                npc.memory.lastKnownSafePos.y !== npc.mapPos.y ||
+                                npc.memory.lastKnownSafePos.z !== npc.mapPos.z)
+                            ? npc.memory.lastKnownSafePos : null;
+                        if (pathfindingTarget) logToConsole(`${npcName} will move towards last known safe position.`);
+                    }
+                }
+
+                if (pathfindingTarget) {
+                    if (await this.moveNpcTowardsTarget(npc, pathfindingTarget)) {
+                        npc.memory.lastKnownSafePos = { ...npc.mapPos };
+                        const visitedKey = `${npc.mapPos.x},${npc.mapPos.y},${npc.mapPos.z}`;
+                        if (!npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
+                            npc.memory.recentlyVisitedTiles.push(visitedKey);
+                            if (npc.memory.recentlyVisitedTiles.length > RECENTLY_VISITED_MAX_SIZE) {
+                                npc.memory.recentlyVisitedTiles.shift();
+                            }
+                        }
+                        if (npc.memory.explorationTarget && npc.mapPos.x === npc.memory.explorationTarget.x &&
+                            npc.mapPos.y === npc.memory.explorationTarget.y && npc.mapPos.z === npc.memory.explorationTarget.z) {
+                            logToConsole(`${npcName} reached exploration target. Clearing.`);
+                            npc.memory.explorationTarget = null;
+                        }
+                    } else {
+                        logToConsole(`${npcName} could not move towards exploration/memory target. Clearing exploration target.`);
+                        npc.memory.explorationTarget = null;
+                    }
+                } else {
+                    logToConsole(`${npcName} has no exploration target and no memory to pursue. Waiting.`);
+                }
+            } else if (npc.memory) {
+                logToConsole(`${npcName} no MP for exploration. Waiting.`);
+            }
+            turnEnded = true; // Exploration logic for one iteration is enough.
+        }
+
+        // If turn hasn't naturally ended by running out of AP/MP or other conditions
+        if (!turnEnded && !actionTakenThisTurn && npc.currentActionPoints === 0 && npc.currentMovementPoints === 0) {
+            turnEnded = true; // Ensure turn ends if no actions and no points
+        }
+
         logToConsole(`NPC TURN END: ${npcName}. AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}.`, 'gold');
         await this.nextTurn(npc);
+    }
+
+    /**
+     * Main logic for an NPC's turn in combat.
+     * Handles target selection, attacking, moving towards a target, tactical drops,
+     * and exploration/memory-based movement if no combat target is found.
+     * @param {object} npc - The NPC object taking its turn.
+     */
+    async executeNpcCombatTurn(npc) {
+        const npcName = npc.name || npc.id || "NPC";
+        if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) { logToConsole(`INFO: ${npcName} incapacitated. Skipping turn.`, 'orange'); await this.nextTurn(npc); return; }
+        if (!npc.aggroList) npc.aggroList = [];
+        if (!npc.memory) { // Ensure memory object exists, crucial for new logic
+            npc.memory = { lastSeenTargetPos: null, lastSeenTargetTimestamp: 0, recentlyVisitedTiles: [], explorationTarget: null, lastKnownSafePos: { ...(npc.mapPos || { x: 0, y: 0, z: 0 }) } };
+        }
+        logToConsole(`NPC TURN: ${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints})`, 'gold');
+
+        let turnEnded = false;
+        let actionTakenThisTurn = false; // Tracks if any significant action (attack/move) was taken in the entire turn
+
+        // --- Combat Phase: NPC attempts to find and engage a target ---
+        if (this._npcSelectTarget(npc)) {
+            actionTakenThisTurn = true;
+            // Loop for combat actions (attack, move to attack, drop) as long as NPC has AP/MP
+            for (let iter = 0; !turnEnded && (npc.currentActionPoints > 0 || npc.currentMovementPoints > 0) && iter < 10; iter++) {
+                let currentTarget = this.gameState.combatCurrentDefender, currentTargetPos = this.gameState.defenderMapPos;
+                // Re-evaluate target if current one is invalid or defeated
+                if (!currentTarget || currentTarget.health?.torso?.current <= 0 || currentTarget.health?.head?.current <= 0) {
+                    if (!this._npcSelectTarget(npc)) { turnEnded = true; break; }
+                    currentTarget = this.gameState.combatCurrentDefender; currentTargetPos = this.gameState.defenderMapPos;
+                    if (!currentTarget) { turnEnded = true; break; }
+                }
+
+                let actionTakenInIter = false;
+                let weaponToUse = npc.equippedWeaponId ? this.assetManager.getItem(npc.equippedWeaponId) : null;
+                let attackType = weaponToUse ? (weaponToUse.type.includes("melee") ? "melee" : (weaponToUse.type.includes("firearm") || weaponToUse.type.includes("bow") || weaponToUse.type.includes("crossbow") || weaponToUse.type.includes("weapon_ranged_other") || weaponToUse.type.includes("thrown") ? "ranged" : "melee")) : "melee";
+                const fireMode = weaponToUse?.fireModes?.includes("burst") ? "burst" : (weaponToUse?.fireModes?.[0] || "single");
+                const distanceToTarget3D = npc.mapPos && currentTargetPos ? getDistance3D(npc.mapPos, currentTargetPos) : Infinity;
+                const canAttack = (attackType === 'melee' && distanceToTarget3D <= 1.8) || (attackType === 'ranged');
+
+                if (canAttack && npc.currentActionPoints > 0) { // Try to attack if possible
+                    logToConsole(`NPC ACTION: ${npcName} attacks ${currentTarget.name || "Player"} with ${weaponToUse ? weaponToUse.name : "Unarmed"}.`, 'gold');
+                    this.gameState.pendingCombatAction = { target: currentTarget, weapon: weaponToUse, attackType, bodyPart: "Torso", fireMode, actionType: "attack", entity: npc, actionDescription: `${attackType} by ${npcName}` };
+                    npc.currentActionPoints--;
+                    actionTakenInIter = true;
+                    this.gameState.combatPhase = 'defenderDeclare';
+                    this.handleDefenderActionPrompt();
+                    if (this.gameState.combatPhase === 'playerDefenseDeclare') return; // Wait for player defense input
+                } else if (npc.currentMovementPoints > 0) { // If cannot attack, try to move
+                    // Attempt tactical drop first
+                    let dropExecuted = await this._evaluateAndExecuteNpcDrop(npc);
+                    if (dropExecuted) {
+                        actionTakenInIter = true;
+                    } else { // If no drop, try standard pathfinding
+                        if (await this.moveNpcTowardsTarget(npc, currentTargetPos)) {
+                            actionTakenInIter = true;
+                        }
+                    }
+                }
+
+                if (!actionTakenInIter) turnEnded = true; // If no action in this iteration, end combat actions for this turn
+                if (npc.currentActionPoints === 0 && npc.currentMovementPoints === 0) turnEnded = true; // No more points
+            }
+        } else {
+            // --- Exploration/Memory Phase: No combat target found ---
+            logToConsole(`NPC ACTION: ${npcName} no direct combat target. Considering exploration/memory.`);
+            actionTakenThisTurn = true; // Attempting exploration is considered an action for the turn's flow
+            if (npc.currentMovementPoints > 0 && npc.memory) {
+                let pathfindingTarget = null;
+                const currentTime = this.gameState.currentTime?.totalTurns || 0;
+
+                // 1. Check memory for a recent target
+                if (npc.memory.lastSeenTargetPos && (currentTime - npc.memory.lastSeenTargetTimestamp < MEMORY_DURATION_THRESHOLD)) {
+                    pathfindingTarget = npc.memory.lastSeenTargetPos;
+                    logToConsole(`${npcName} moving towards last known target pos: (${pathfindingTarget.x},${pathfindingTarget.y},${pathfindingTarget.z})`);
+                } else {
+                    if (npc.memory.lastSeenTargetPos) logToConsole(`${npcName} memory of last target faded.`);
+                    npc.memory.lastSeenTargetPos = null; // Clear faded memory
+                }
+
+                // 2. Continue towards current exploration target if no combat memory
+                if (!pathfindingTarget && npc.memory.explorationTarget) {
+                    if (npc.mapPos.x === npc.memory.explorationTarget.x && npc.mapPos.y === npc.memory.explorationTarget.y && npc.mapPos.z === npc.memory.explorationTarget.z) {
+                        logToConsole(`${npcName} reached previous exploration target. Clearing.`);
+                        npc.memory.explorationTarget = null; // Reached, clear to find a new one
+                    } else {
+                        pathfindingTarget = npc.memory.explorationTarget;
+                        logToConsole(`${npcName} continuing to exploration target: (${pathfindingTarget.x},${pathfindingTarget.y},${pathfindingTarget.z})`);
+                    }
+                }
+
+                // 3. Find new exploration target if needed
+                if (!pathfindingTarget) {
+                    let attempts = 0;
+                    const mapData = window.mapRenderer.getCurrentMapData();
+                    if (mapData && mapData.dimensions) { // Check if mapData and dimensions are available
+                        while (attempts < MAX_EXPLORATION_TARGET_ATTEMPTS && !pathfindingTarget) {
+                            const angle = Math.random() * 2 * Math.PI;
+                            const radius = 1 + Math.random() * (NPC_EXPLORATION_RADIUS - 1); // Ensure radius > 0 for actual movement
+                            const targetX = Math.floor(npc.mapPos.x + Math.cos(angle) * radius);
+                            const targetY = Math.floor(npc.mapPos.y + Math.sin(angle) * radius);
+                            const targetZ = npc.mapPos.z; // Explore on the same Z-level for now
+
+                            if (targetX >= 0 && targetX < mapData.dimensions.width && targetY >= 0 && targetY < mapData.dimensions.height) {
+                                const visitedKey = `${targetX},${targetY},${targetZ}`;
+                                if (window.mapRenderer.isWalkable(targetX, targetY, targetZ) &&
+                                    !this.isTileOccupied(targetX, targetY, targetZ, npc.id) &&
+                                    !npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
+                                    pathfindingTarget = { x: targetX, y: targetY, z: targetZ };
+                                    npc.memory.explorationTarget = pathfindingTarget;
+                                    logToConsole(`${npcName} selected new random exploration target: (${targetX},${targetY},${targetZ})`);
+                                    break;
+                                }
+                            }
+                            attempts++;
+                        }
+                    }
+                    if (!pathfindingTarget && attempts >= MAX_EXPLORATION_TARGET_ATTEMPTS) {
+                        logToConsole(`${npcName} failed to find exploration target after ${attempts} attempts. Will use lastKnownSafePos or wait.`);
+                        // Try to move to last known safe position if it's different from current
+                        pathfindingTarget = npc.memory.lastKnownSafePos &&
+                            (npc.memory.lastKnownSafePos.x !== npc.mapPos.x ||
+                                npc.memory.lastKnownSafePos.y !== npc.mapPos.y ||
+                                npc.memory.lastKnownSafePos.z !== npc.mapPos.z)
+                            ? npc.memory.lastKnownSafePos : null;
+                        if (pathfindingTarget) logToConsole(`${npcName} will move towards last known safe position.`);
+                    }
+                }
+
+                // 4. Move towards the determined pathfinding target (from memory or exploration)
+                if (pathfindingTarget) {
+                    if (await this.moveNpcTowardsTarget(npc, pathfindingTarget)) {
+                        // Update memory after a successful move
+                        npc.memory.lastKnownSafePos = { ...npc.mapPos };
+                        const visitedKey = `${npc.mapPos.x},${npc.mapPos.y},${npc.mapPos.z}`;
+                        if (!npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
+                            npc.memory.recentlyVisitedTiles.push(visitedKey);
+                            if (npc.memory.recentlyVisitedTiles.length > RECENTLY_VISITED_MAX_SIZE) {
+                                npc.memory.recentlyVisitedTiles.shift(); // Keep buffer size limited
+                            }
+                        }
+                        // If exploration target was reached, clear it
+                        if (npc.memory.explorationTarget && npc.mapPos.x === npc.memory.explorationTarget.x &&
+                            npc.mapPos.y === npc.memory.explorationTarget.y && npc.mapPos.z === npc.memory.explorationTarget.z) {
+                            logToConsole(`${npcName} reached exploration target. Clearing.`);
+                            npc.memory.explorationTarget = null;
+                        }
+                    } else {
+                        logToConsole(`${npcName} could not move towards exploration/memory target. Clearing exploration target.`);
+                        npc.memory.explorationTarget = null; // Clear if stuck, to re-pick next time
+                    }
+                } else {
+                    logToConsole(`${npcName} has no exploration target and no memory to pursue. Waiting.`);
+                }
+            } else if (npc.memory) { // No movement points, but has memory object
+                logToConsole(`${npcName} no MP for exploration. Waiting.`);
+            }
+            turnEnded = true; // Exploration/memory processing takes one "action block" for the turn.
+        }
+
+        // Final check to ensure turn ends if NPC is out of points and no specific action was taken to end it sooner.
+        if (!turnEnded && !actionTakenThisTurn && npc.currentActionPoints === 0 && npc.currentMovementPoints === 0) {
+            turnEnded = true;
+        }
+
+        logToConsole(`NPC TURN END: ${npcName}. AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}.`, 'gold');
+        await this.nextTurn(npc); // Proceed to next turn in initiative
+    }
+
+    /**
+     * Evaluates and potentially executes a tactical drop for an NPC.
+     * Checks adjacent tiles for drop opportunities, considers fall height and NPC's willingness (willpower check).
+     * @param {object} npc - The NPC considering the drop.
+     * @returns {Promise<boolean>} True if a drop action was successfully initiated, false otherwise.
+     */
+    async _evaluateAndExecuteNpcDrop(npc) {
+        if (!npc.mapPos || !this.gameState.combatCurrentDefender || !this.gameState.defenderMapPos || typeof window.mapRenderer?.isTileEmpty !== 'function' || typeof window.mapRenderer?.isWalkable !== 'function' || typeof window.npcShouldTakeFall !== 'function') {
+            return false; // Missing necessary data or functions
+        }
+
+        const currentTargetPos = this.gameState.defenderMapPos;
+        const possibleDrops = [];
+        const adjacentOffsets = [
+            { dx: 0, dy: -1, dir: 'up' }, { dx: 0, dy: 1, dir: 'down' },
+            { dx: -1, dy: 0, dir: 'left' }, { dx: 1, dy: 0, dir: 'right' }
+        ];
+        const mapData = window.mapRenderer.getCurrentMapData();
+        if (!mapData || !mapData.dimensions) return false;
+
+        // Iterate over adjacent tiles to find potential drop spots
+        for (const offset of adjacentOffsets) {
+            const adjX = npc.mapPos.x + offset.dx;
+            const adjY = npc.mapPos.y + offset.dy;
+            const adjZ = npc.mapPos.z; // The Z-level of the "air" tile the NPC steps into
+
+            // Boundary check
+            if (adjX < 0 || adjX >= mapData.dimensions.width || adjY < 0 || adjY >= mapData.dimensions.height) continue;
+
+            // Check if the adjacent tile at current Z is empty (e.g., air)
+            if (window.mapRenderer.isTileEmpty(adjX, adjY, adjZ)) {
+                let landingZ = -Infinity;
+                let currentScanZ = adjZ - 1; // Start scanning one level below the "air" tile
+                let foundLandingSpot = false;
+                const minZLevel = Object.keys(mapData.levels).reduce((min, k) => Math.min(min, parseInt(k)), Infinity);
+
+                // Project downwards to find a walkable landing spot
+                for (let i = 0; i < 100 && currentScanZ >= minZLevel; i++) { // Max 100 levels scan or map min Z
+                    if (window.mapRenderer.isWalkable(adjX, adjY, currentScanZ)) {
+                        landingZ = currentScanZ;
+                        foundLandingSpot = true;
+                        break;
+                    }
+                    currentScanZ--;
+                }
+
+                if (foundLandingSpot) {
+                    const fallHeight = adjZ - landingZ; // adjZ is npc.mapPos.z
+                    if (fallHeight > 0) { // Must be an actual drop
+                        if (window.npcShouldTakeFall(npc, fallHeight)) { // NPC willpower check
+                            possibleDrops.push({
+                                targetDropTile: { x: adjX, y: adjY, z: adjZ }, // The "air" tile to move into
+                                landingPos: { x: adjX, y: adjY, z: landingZ },    // Expected landing position
+                                fallHeight: fallHeight,
+                                direction: offset.dir // Direction to move to initiate the drop
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        if (possibleDrops.length > 0) {
+            let bestDrop = null;
+            let bestDropScore = -Infinity; // Using a score to evaluate drops
+
+            // Evaluate drops based on a simple heuristic
+            for (const drop of possibleDrops) {
+                let score = 0;
+                const distToTargetAfterDrop = getDistance3D(drop.landingPos, currentTargetPos);
+                score -= distToTargetAfterDrop; // Closer to target is better
+
+                // Significant bonus for landing on the same Z-level as the target
+                if (drop.landingPos.z === currentTargetPos.z) {
+                    score += 50;
+                    // Bonus if current target is below and this drop reaches their Z
+                    if (currentTargetPos.z < npc.mapPos.z) score += 25;
+                }
+                // Penalty for high fall damage potential (proportional to fallHeight)
+                score -= drop.fallHeight * 2;
+
+                if (score > bestDropScore) {
+                    bestDropScore = score;
+                    bestDrop = drop;
+                }
+            }
+
+            // Condition to take the drop: If a "best" drop is found and meets certain criteria
+            // Example criteria: target is below current Z and drop lands on target's Z.
+            // This can be tuned for more sophisticated decision-making.
+            if (bestDrop && (currentTargetPos.z < npc.mapPos.z && bestDrop.landingPos.z === currentTargetPos.z)) {
+                logToConsole(`NPC ${npc.name || npc.id}: Decided tactical drop to (${bestDrop.targetDropTile.x},${bestDrop.targetDropTile.y}) -> Z:${bestDrop.landingPos.z}. Score: ${bestDropScore.toFixed(1)}`, "yellow");
+
+                if (npc.currentMovementPoints > 0) {
+                    const mpBeforeMove = npc.currentMovementPoints;
+                    // Attempt to move into the "air" tile; this will trigger a fall via attemptCharacterMove -> initiateFallCheck
+                    const moveSuccessful = await window.attemptCharacterMove(npc, bestDrop.direction, this.assetManager);
+
+                    if (moveSuccessful) {
+                        if (npc.currentMovementPoints < mpBeforeMove) { // Check if MP was actually spent
+                            npc.movedThisTurn = true;
+                        }
+                        this.gameState.attackerMapPos = { ...npc.mapPos }; // Update combat state's record of attacker's new pos
+                        window.mapRenderer.scheduleRender();
+                        if (window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
+                        return true; // Drop action successfully initiated
+                    } else {
+                        logToConsole(`NPC ${npc.name || npc.id}: Tactical drop move initiation failed for direction ${bestDrop.direction}.`, "orange");
+                    }
+                } else {
+                    logToConsole(`NPC ${npc.name || npc.id}: Wanted to drop but no MP.`, "orange");
+                }
+            }
+        }
+        return false; // No drop action taken
     }
 
     updateCombatUI() {

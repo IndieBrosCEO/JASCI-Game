@@ -608,40 +608,91 @@ function hasLineOfSight3D(startPos, endPos) {
         return false;
     }
 
-    // Ensure getLine3D and isTileBlockingVision are available
     if (typeof getLine3D !== 'function') {
         logToConsole("hasLineOfSight3D: getLine3D function is not available.", "error");
-        return false; // Cannot determine LOS
+        return false;
     }
-    if (typeof isTileBlockingVision !== 'function') {
-        logToConsole("hasLineOfSight3D: isTileBlockingVision function is not available.", "error");
-        return false; // Cannot determine LOS
+    // window.mapRenderer.isTileBlockingVision will be called, ensure it's checked for existence before use if necessary,
+    // but direct calls are fine if mapRenderer is always loaded.
+    if (typeof window.mapRenderer?.isTileBlockingVision !== 'function') {
+        logToConsole("hasLineOfSight3D: mapRenderer.isTileBlockingVision function is not available.", "error");
+        return false;
     }
 
     const line = getLine3D(startPos.x, startPos.y, startPos.z, endPos.x, endPos.y, endPos.z);
 
-    if (!line || line.length < 2) { // Line must have at least start and end points
-        // If start and end are the same, LOS is true. If different but line is too short, something's wrong.
-        // For simplicity, if line is too short and points differ, assume no clear LOS.
-        // However, getLine3D should always return at least start and end if they are different.
-        // If they are the same, it returns just one point.
-        if (line && line.length === 1 && startPos.x === endPos.x && startPos.y === endPos.y && startPos.z === endPos.z) {
-            return true; // LOS to self is true
-        }
-        logToConsole(`hasLineOfSight3D: Line generation failed or too short for distinct points. Start: (${startPos.x},${startPos.y},${startPos.z}), End: (${endPos.x},${endPos.y},${endPos.z})`, "orange");
+    if (!line || line.length === 0) {
+        //logToConsole("hasLineOfSight3D: Line generation failed or line is empty.", "orange");
+        return false;
+    }
+    if (line.length === 1) {
+        // LOS to self or identical adjacent point (if getLine3D returns 1 point for that)
+        return true;
+    }
+
+    const tilesets = window.assetManagerInstance ? window.assetManagerInstance.tilesets : null;
+    const mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+
+    if (!tilesets || !mapData || !mapData.levels) {
+        logToConsole("hasLineOfSight3D: Missing tilesets or mapData/levels. Assuming no LOS for safety.", "error");
         return false;
     }
 
-    // Iterate through intermediate points in the line.
-    // Skip the first point (startPos) and the last point (endPos).
-    for (let i = 1; i < line.length - 1; i++) {
-        const point = line[i];
-        if (isTileBlockingVision(point.x, point.y, point.z)) {
-            // logToConsole(`hasLineOfSight3D: Vision blocked at (${point.x},${point.y},${point.z})`, "grey");
-            return false; // Obstruction found
+    // Iterate through each segment of the line (from point i to point i+1)
+    for (let i = 0; i < line.length - 1; i++) {
+        const p1 = line[i];
+        const p2 = line[i + 1];
+
+        // Check for same-Z obstruction at p1, unless p1 is the very start of the LOS line.
+        // The point p1 is an intermediate point along the path.
+        if (i > 0) { // Do not check the startPos (line[0]) itself for blocking vision with isTileBlockingVision
+            if (window.mapRenderer.isTileBlockingVision(p1.x, p1.y, p1.z)) {
+                // logToConsole(`LOS blocked by same-Z obstruction at P1:(${p1.x},${p1.y},${p1.z})`);
+                return false;
+            }
+        }
+
+        // Check for inter-Z blocking (floors/ceilings) between p1 and p2
+        if (p1.z !== p2.z) { // Z-level changes between p1 and p2
+            let higherTile, lowerTile;
+            if (p1.z > p2.z) { // p1 is above p2
+                higherTile = p1;
+                lowerTile = p2;
+            } else { // p2 is above p1
+                higherTile = p2;
+                lowerTile = p1;
+            }
+
+            // Check the 'bottom' layer of the 'higherTile' to see if it's a solid floor
+            const higherLevelData = mapData.levels[higherTile.z.toString()];
+            if (higherLevelData) {
+                const tileOnBottomRawHigher = higherLevelData.bottom?.[higherTile.y]?.[higherTile.x];
+                const effTileBottomHigher = (typeof tileOnBottomRawHigher === 'object' && tileOnBottomRawHigher?.tileId !== undefined) ? tileOnBottomRawHigher.tileId : tileOnBottomRawHigher;
+                if (effTileBottomHigher && tilesets[effTileBottomHigher]) {
+                    const defBottomHigher = tilesets[effTileBottomHigher];
+                    if (defBottomHigher.tags && defBottomHigher.tags.includes('floor') && !defBottomHigher.tags.includes('transparent_floor')) {
+                        // logToConsole(`LOS blocked by solid floor at (${higherTile.x},${higherTile.y},${higherTile.z})`);
+                        return false; // Solid floor at higherTile blocks vision to/from lowerTile.z
+                    }
+                }
+
+                // Check the 'middle' layer of the 'higherTile' for 'solid_terrain_top'
+                // This means the higherTile itself is a solid block defined on its middle layer.
+                const tileOnMiddleRawHigher = higherLevelData.middle?.[higherTile.y]?.[higherTile.x];
+                const effTileMiddleHigher = (typeof tileOnMiddleRawHigher === 'object' && tileOnMiddleRawHigher?.tileId !== undefined) ? tileOnMiddleRawHigher.tileId : tileOnMiddleRawHigher;
+                if (effTileMiddleHigher && tilesets[effTileMiddleHigher]) {
+                    const defMiddleHigher = tilesets[effTileMiddleHigher];
+                    if (defMiddleHigher.tags && defMiddleHigher.tags.includes('solid_terrain_top')) {
+                        // logToConsole(`LOS blocked by solid_terrain_top on middle layer at (${higherTile.x},${higherTile.y},${higherTile.z})`);
+                        return false; // solid_terrain_top on middle layer blocks vertical LOS.
+                    }
+                }
+            }
         }
     }
 
-    return true; // No obstructions found
+    // If loop completes, no obstructions found along the path segments.
+    // The endPos (last point in 'line') is not checked as an obstruction itself.
+    return true;
 }
 window.hasLineOfSight3D = hasLineOfSight3D;
