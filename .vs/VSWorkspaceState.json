@@ -3,8 +3,11 @@
     "",
     "\\assets",
     "\\assets\\definitions",
-    "\\js"
+    "\\assets\\maps",
+    "\\js",
+    "\\mapMaker",
+    "\\Maps"
   ],
-  "SelectedNode": "\\js\\assetManager.js",
+  "SelectedNode": "\\assets\\maps\\mapIndex.json",
   "PreviewInSolutionExplorer": false
 }

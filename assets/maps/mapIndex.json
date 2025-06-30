@@ -2,13 +2,20 @@
   {
     "id": "tallBuilding",
     "name": "Tall Building"
-  },{
+  },
+  {
+    "id": "mine",
+    "name": "Mine"
+  },
+  {
     "id": "slopeTest",
     "name": "Slope Test"
-  },{
+  },
+  {
     "id": "Valley",
     "name": "Valley"
-  },{
+  },
+  {
     "id": "Slope",
     "name": "Slope"
   },

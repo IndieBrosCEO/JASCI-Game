@@ -32,7 +32,7 @@
   "MU": {
     "sprite": ",",
     "name": "Mud",
-    "color": "#A52A2A",
+    "color": "#731D1D",
     "tags": [
       "landscape",
       "middle",
@@ -196,7 +196,7 @@
   "WF": {
     "sprite": "-",
     "name": "Wood Flooring",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "bottom",
       "wood",
@@ -217,7 +217,7 @@
   "WWH": {
     "sprite": "═",
     "name": "Wood Wall Hz",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "wall",
       "middle",
@@ -230,7 +230,7 @@
   "WWV": {
     "sprite": "║",
     "name": "Wood Wall Vt",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "wall",
       "middle",
@@ -242,7 +242,7 @@
   "WWCTL": {
     "sprite": "╔",
     "name": "Wood Wall Corner TL",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "wall",
       "middle",
@@ -254,7 +254,7 @@
   "WWCTR": {
     "sprite": "╗",
     "name": "Wood Wall Corner TR",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "wall",
       "middle",
@@ -266,7 +266,7 @@
   "WWCBL": {
     "sprite": "╚",
     "name": "Wood Wall Corner BL",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "wall",
       "middle",
@@ -278,7 +278,7 @@
   "WWCBR": {
     "sprite": "╝",
     "name": "Wood Wall Corner BR",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "wall",
       "middle",
@@ -290,7 +290,7 @@
   "WWTE": {
     "sprite": "╠",
     "name": "Wood Wall T–East",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "wall",
       "middle",
@@ -302,7 +302,7 @@
   "WWTW": {
     "sprite": "╣",
     "name": "Wood Wall T–West",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "wall",
       "middle",
@@ -314,7 +314,7 @@
   "WWTS": {
     "sprite": "╦",
     "name": "Wood Wall T–South",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "wall",
       "middle",
@@ -326,7 +326,7 @@
   "WWTN": {
     "sprite": "╩",
     "name": "Wood Wall T–North",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "wall",
       "middle",
@@ -338,7 +338,7 @@
   "WWC": {
     "sprite": "╬",
     "name": "Wood Wall Cross",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "wall",
       "middle",
@@ -483,7 +483,7 @@
   "WDH": {
     "sprite": "─",
     "name": "Wood Door Hz",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "door",
       "middle",
@@ -498,7 +498,7 @@
   "WDV": {
     "sprite": "│",
     "name": "Wood Door Vt",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "door",
       "middle",
@@ -513,7 +513,7 @@
   "WOH": {
     "sprite": "┄",
     "name": "Wood Door Hz Open",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "door",
       "middle",
@@ -528,7 +528,7 @@
   "WOV": {
     "sprite": "┆",
     "name": "Wood Door Vt Open",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "door",
       "middle",
@@ -543,7 +543,7 @@
   "WDB": {
     "sprite": ">",
     "name": "Wood Door Broken",
-    "color": "#A52A2A",
+    "color": "#A1662F",
     "tags": [
       "door",
       "middle",

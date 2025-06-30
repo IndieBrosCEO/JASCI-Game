@@ -1,6 +1,34 @@
 ﻿// js/mapRenderer.js
 // Helper functions for FOW and LOS
 
+function darkenColor(hexColor, factor) {
+    if (typeof hexColor !== 'string' || !hexColor.startsWith('#') || typeof factor !== 'number') {
+        return hexColor || '#000000'; // Return original or black if invalid input
+    }
+    try {
+        let r = parseInt(hexColor.substring(1, 3), 16);
+        let g = parseInt(hexColor.substring(3, 5), 16);
+        let b = parseInt(hexColor.substring(5, 7), 16);
+
+        if (isNaN(r) || isNaN(g) || isNaN(b)) return hexColor || '#000000';
+
+        factor = Math.max(0, Math.min(1, factor)); // Clamp factor to 0-1
+
+        r = Math.round(r * (1 - factor));
+        g = Math.round(g * (1 - factor));
+        b = Math.round(b * (1 - factor));
+
+        r = Math.max(0, Math.min(255, r));
+        g = Math.max(0, Math.min(255, g));
+        b = Math.max(0, Math.min(255, b));
+
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    } catch (e) {
+        // console.warn("Error darkening color:", e, hexColor, factor);
+        return hexColor || '#000000'; // Fallback on error
+    }
+}
+
 // Add this new helper function at the top of js/mapRenderer.js
 function blendColors(baseColorHex, tintColorHex, tintFactor) {
     try {
@@ -457,6 +485,7 @@ window.mapRenderer = {
     },
 
     // Assign helper functions to be part of the mapRenderer object
+    darkenColor: darkenColor, // Added darkenColor
     blendColors: blendColors,
     brightenColor: brightenColor,
     getAmbientLightColor: getAmbientLightColor,
@@ -1032,6 +1061,16 @@ window.mapRenderer = {
 
                 // END OF NEW LOGIC
 
+                // --- NEW: Tile-defined background highlighting ---
+                const TILE_BACKGROUND_DARK_FACTOR = 0.8; // Darken by 80%
+                // Use originalColor determined from the structural tile (bottom/middle/solid_terrain_top)
+                // If originalColor is black (e.g. for empty space default) or undefined, don't highlight.
+                let tileDefinedBackgroundColor = "";
+                if (originalColor && originalColor !== '#000000') {
+                    tileDefinedBackgroundColor = darkenColor(originalColor, TILE_BACKGROUND_DARK_FACTOR);
+                }
+                // --- END NEW: Tile-defined background highlighting ---
+
                 let fowStatus = 'hidden';
                 if (currentFowData && currentFowData[y] && typeof currentFowData[y][x] !== 'undefined') {
                     fowStatus = currentFowData[y][x];
@@ -1167,12 +1206,14 @@ window.mapRenderer = {
                     span.textContent = finalSpriteForTile;
                     span.style.color = finalColorForTile;
 
+                    // Apply tile-defined background highlight first
+                    span.style.backgroundColor = tileDefinedBackgroundColor;
+
                     // Item highlight logic (needs to check floorItems on currentZ)
-                    let tileHighlightColor = "";
+                    // This will overwrite tileDefinedBackgroundColor if an item is present and visible
                     if (fowStatus === 'visible' && window.gameState && window.gameState.floorItems) {
                         const itemsOnThisTileAndZ = window.gameState.floorItems.filter(fi => fi.x === x && fi.y === y && fi.z === currentZ);
                         if (itemsOnThisTileAndZ.length > 0) {
-                            // Simplified: just check if any item is present. Impassable check would go here too.
                             const currentTileDefForHighlight = assetManagerInstance.tilesets[finalTileId];
                             let impassableTileBlockingItemHighlight = false;
                             if (currentTileDefForHighlight && currentTileDefForHighlight.tags && currentTileDefForHighlight.tags.includes("impassable")) {
@@ -1182,10 +1223,13 @@ window.mapRenderer = {
                                     impassableTileBlockingItemHighlight = true;
                                 }
                             }
-                            if (!impassableTileBlockingItemHighlight) tileHighlightColor = "rgba(255, 255, 0, 0.3)";
+                            if (!impassableTileBlockingItemHighlight) {
+                                span.style.backgroundColor = "rgba(255, 255, 0, 0.3)"; // Item highlight
+                            }
                         }
                     }
-                    span.style.backgroundColor = tileHighlightColor;
+                    // Note: Combat highlights are applied much later, after NPC and Animation rendering,
+                    // and will also overwrite this backgroundColor. This is the correct order.
 
                     if (!tileCacheData[y]) tileCacheData[y] = Array(W).fill(null);
                     tileCacheData[y][x] = {
@@ -1207,7 +1251,10 @@ window.mapRenderer = {
                         }
                         cachedCell.displayedId = finalDisplayIdForTile;
 
-                        let tileHighlightColor = "";
+                        // Apply tile-defined background highlight first
+                        let newBackgroundColor = tileDefinedBackgroundColor;
+
+                        // Item highlight logic (will overwrite tileDefinedBackgroundColor if an item is present)
                         if (fowStatus === 'visible' && window.gameState && window.gameState.floorItems) {
                             const itemsOnThisTileAndZ = window.gameState.floorItems.filter(fi => fi.x === x && fi.y === y && fi.z === currentZ);
                             if (itemsOnThisTileAndZ.length > 0) {
@@ -1220,12 +1267,17 @@ window.mapRenderer = {
                                         impassableTileBlockingItemHighlight = true;
                                     }
                                 }
-                                if (!impassableTileBlockingItemHighlight) tileHighlightColor = "rgba(255, 255, 0, 0.3)";
+                                if (!impassableTileBlockingItemHighlight) {
+                                    newBackgroundColor = "rgba(255, 255, 0, 0.3)"; // Item highlight
+                                }
                             }
                         }
-                        if (span.style.backgroundColor !== tileHighlightColor) {
-                            span.style.backgroundColor = tileHighlightColor;
+
+                        // Only update if the color actually changed
+                        if (span.style.backgroundColor !== newBackgroundColor) {
+                            span.style.backgroundColor = newBackgroundColor;
                         }
+                        // Note: Combat highlights are applied much later and will overwrite this.
 
                         if (span.classList.contains('flashing-targeting-cursor') &&
                             !(gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y /* && targeting Z matches? */)) {
