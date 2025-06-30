@@ -194,7 +194,7 @@ function isTileEmpty(x, y, z) {
     // console.log(`isTileEmpty: Tile ${x},${y},${z} is considered empty (no tiles on middle or bottom).`);
     return true;
 }
-// window.mapRenderer.isTileEmpty = isTileEmpty; // Expose it -- Will be assigned below
+// window.mapRenderer.isTileEmpty = isTileEmpty; // Expose it -- Will be assigned below // MOVED
 
 
 // Updated isTileIlluminated to be 3D
@@ -222,28 +222,6 @@ function isTileIlluminated(targetX, targetY, targetZ, lightSource) { // targetZ 
         }
     }
     return true;
-}
-
-function getLine(x0, y0, x1, y1) {
-    const points = [];
-    const dx = Math.abs(x1 - x0);
-    const dy = Math.abs(y1 - y0);
-    const sx = (x0 < x1) ? 1 : -1;
-    const sy = (y0 < y1) ? 1 : -1;
-    let err = dx - dy;
-    let currentX = x0;
-    let currentY = y0;
-    while (true) {
-        points.push({ x: currentX, y: currentY });
-        if ((currentX === x1) && (currentY === y1)) break;
-        const e2 = 2 * err;
-        if (e2 > -dy) { err -= dy; currentX += sx; }
-        if (e2 < dx) { err += dx; currentY += sy; }
-        if (points.length > 200) { // Safety break
-            break;
-        }
-    }
-    return points;
 }
 
 // Renamed original getLine to getLine2D
@@ -518,7 +496,7 @@ window.mapRenderer = {
                     }
                 }
             }
-            if (typeof logToConsole === 'function' && gameState.lightSources.length > 0) {
+            if (gameState.lightSources.length > 0) {
                 logToConsole(`Initialized ${gameState.lightSources.length} static light sources from map tiles across all Z-levels.`);
             }
 
@@ -562,14 +540,10 @@ window.mapRenderer = {
                                                     capacity = 5;
                                                 }
                                             } else if (linkedItemId) {
-                                                if (typeof logToConsole === 'function') {
-                                                    logToConsole(`Warning: Container tile '${tileId}' at (${c},${r}, Z:${z}) has itemLink '${linkedItemId}' but linked item not found. Defaulting to 5.`, "orange");
-                                                }
+                                                logToConsole(`Warning: Container tile '${baseTileId}' at (${c},${r}, Z:${z}) has itemLink '${linkedItemId}' but linked item not found. Defaulting to 5.`, "orange");
                                                 capacity = 5;
                                             } else {
-                                                if (typeof logToConsole === 'function') {
-                                                    logToConsole(`Warning: Container tile '${tileId}' at (${c},${r}, Z:${z}) has no itemLink. Defaulting capacity to 5.`, "orange");
-                                                }
+                                                logToConsole(`Warning: Container tile '${baseTileId}' at (${c},${r}, Z:${z}) has no itemLink. Defaulting capacity to 5.`, "orange");
                                                 capacity = 5;
                                             }
 
@@ -578,7 +552,7 @@ window.mapRenderer = {
                                                 y: r,
                                                 z: z, // Add Z coordinate to container
                                                 id: gameState.nextContainerId++, // Ensure gameState.nextContainerId is initialized
-                                                tileId: tileId,
+                                                tileId: baseTileId,
                                                 name: itemName,
                                                 capacity: capacity,
                                                 items: []
@@ -588,9 +562,7 @@ window.mapRenderer = {
                                             if (typeof window.populateContainer === 'function') {
                                                 window.populateContainer(containerInstance);
                                             } else {
-                                                if (typeof logToConsole === 'function') {
-                                                    logToConsole(`Error: populateContainer function not found. Cannot populate ${containerInstance.name}.`, "red");
-                                                }
+                                                logToConsole(`Error: populateContainer function not found. Cannot populate ${containerInstance.name}.`, "red");
                                             }
                                         }
                                     }
@@ -599,7 +571,7 @@ window.mapRenderer = {
                         }
                     }
                 }
-                if (typeof logToConsole === 'function' && gameState.containers.length > 0) { // This log should be after the loop for all Z levels
+                if (gameState.containers.length > 0) { // This log should be after the loop for all Z levels
                     logToConsole(`Initialized ${gameState.containers.length} container instances from map tiles across all Z-levels.`);
                 }
             } // This closes the "if (mapData && mapData.dimensions...)" block
@@ -617,14 +589,10 @@ window.mapRenderer = {
     updateLightSources: function (newLightSources) {
         if (Array.isArray(newLightSources)) {
             gameState.lightSources = newLightSources;
-            if (typeof logToConsole === 'function') {
-                logToConsole(`Light sources updated (dynamic). Count: ${gameState.lightSources.length}`);
-            }
+            logToConsole(`Light sources updated (dynamic). Count: ${gameState.lightSources.length}`);
             this.scheduleRender();
         } else {
-            if (typeof logToConsole === 'function') {
-                logToConsole("updateLightSources: Invalid input. Expected an array.", "orange");
-            }
+            logToConsole("updateLightSources: Invalid input. Expected an array.", "orange");
         }
     },
 
@@ -639,18 +607,10 @@ window.mapRenderer = {
         if (loadedMap) {
             this.initializeCurrentMap(loadedMap);
 
-            if (typeof logToConsole === 'function') {
-                logToConsole(`Map ${loadedMap.name} loaded by mapRenderer.js's handleMapSelectionChange. Returning map data to caller.`);
-            } else {
-                console.log(`Map ${loadedMap.name} loaded by mapRenderer.js's handleMapSelectionChange. Returning map data to caller.`);
-            }
+            logToConsole(`Map ${loadedMap.name} loaded by mapRenderer.js's handleMapSelectionChange. Returning map data to caller.`);
             return loadedMap; // Return the loaded map data
         } else {
-            if (typeof logToConsole === 'function') {
-                logToConsole(`Failed to load map: ${mapId}`);
-            } else {
-                console.log(`Failed to load map: ${mapId}`);
-            }
+            logToConsole(`Failed to load map: ${mapId}`);
             const errorDisplay = document.getElementById('errorMessageDisplay');
             if (errorDisplay) {
                 errorDisplay.textContent = `Failed to load map: ${mapId}. Check console for details.`;
@@ -825,1198 +785,1102 @@ window.mapRenderer = {
                 }
             }
 
-            // playerX_fow, playerY_fow, playerZ_fow are already declared above (around line 819-821)
-            // const playerX_fow = gameState.playerPos.x; // REMOVE DUPLICATE
-            // const playerY_fow = gameState.playerPos.y; // REMOVE DUPLICATE
-            // const playerZ_fow = gameState.playerPos.z; // Player's actual Z // REMOVE DUPLICATE
-
-            // Z-levels to update FOW for. Start with player's current Z.
-            // Use the existing playerZ_fow from the outer scope.
-            const zLevelsToUpdateFow = new Set([playerZ_fow]);
-            // Add the current view Z if it's different and valid.
-            if (gameState.currentViewZ !== playerZ_fow && fullMapData.levels[gameState.currentViewZ.toString()]) {
-                zLevelsToUpdateFow.add(gameState.currentViewZ);
-            }
-            // Optional: Add playerZ_fow +/- 1 if desired for broader ambient FOW update
-            // if (fullMapData.levels[(playerZ_fow - 1).toString()]) zLevelsToUpdateFow.add(playerZ_fow - 1);
-            // if (fullMapData.levels[(playerZ_fow + 1).toString()]) zLevelsToUpdateFow.add(playerZ_fow + 1);
-
-
-            zLevelsToUpdateFow.forEach(zLevelForFow => {
-                const zLevelStr = zLevelForFow.toString();
-                let fowDataForThisZ = gameState.fowData[zLevelStr];
-
-                // Initialize FOW for this Z-level if it doesn't exist or is malformed
-                if (!fowDataForThisZ || fowDataForThisZ.length !== H || (H > 0 && (!fowDataForThisZ[0] || fowDataForThisZ[0].length !== W))) {
-                    fowDataForThisZ = Array(H).fill(null).map(() => Array(W).fill('hidden'));
-                    gameState.fowData[zLevelStr] = fowDataForThisZ;
-                    logToConsole(`FOW data for Z-level ${zLevelStr} was missing/invalid and (re)-initialized in renderMapLayers FOW update.`);
-                }
-
-                // Mark previously visible tiles on THIS Z-LEVEL as visited
-                for (let r = 0; r < H; r++) {
-                    for (let c = 0; c < W; c++) {
-                        if (fowDataForThisZ[r] && fowDataForThisZ[r][c] === 'visible') {
-                            fowDataForThisZ[r][c] = 'visited';
-                        }
-                    }
-                }
-
-                // Determine new visible tiles on THIS Z-LEVEL using 3D LOS from player's actual position
-                for (let r = 0; r < H; r++) {
-                    for (let c = 0; c < W; c++) {
-                        const targetTilePos = { x: c, y: r, z: zLevelForFow };
-                        const player_pos_fow = { x: playerX_fow, y: playerY_fow, z: playerZ_fow };
-
-                        let isVis = false; // Single declaration of isVis
-                        const distance = getDistance3D(player_pos_fow, targetTilePos); // Single declaration of distance
-
-                        // REMOVED THE DUPLICATE DECLARATIONS THAT WERE HERE
-
-                        if (distance <= PLAYER_VISION_RADIUS) {
-                            // Use assetManagerInstance (which is mapRenderer's local ref to the global assetManager)
-                            // and fullMapData (which is currentMapData in this scope)
-                            if (typeof window.hasLineOfSight3D === 'function' && assetManagerInstance && assetManagerInstance.tilesets && fullMapData) {
-                                isVis = window.hasLineOfSight3D(player_pos_fow, targetTilePos, assetManagerInstance.tilesets, fullMapData);
-                            } else {
-                                if (!window.hasLineOfSight3D) console.error("FOW: hasLineOfSight3D function not found!");
-                                if (!assetManagerInstance || !assetManagerInstance.tilesets) console.error("FOW: assetManagerInstance.tilesets not available for hasLineOfSight3D!");
-                                if (!fullMapData) console.error("FOW: fullMapData not available for hasLineOfSight3D!");
-                                // Fallback to isTileVisible if strict check cannot be performed
-                                isVis = window.mapRenderer.isTileVisible(playerX_fow, playerY_fow, playerZ_fow, c, r, zLevelForFow, PLAYER_VISION_RADIUS);
-                                if (isVis) logToConsole(`FOW for (${c},${r},${zLevelForFow}) using FALLBACK isTileVisible due to missing data for hasLineOfSight3D.`, "orange");
-                            }
-                        }
-
-                        // Selective Logging for FOW Check (Reduced verbosity)
-                        const isPlayerTile = (c === playerX_fow && r === playerY_fow && zLevelForFow === playerZ_fow);
-                        const isViewedTileNearPlayer = (zLevelForFow === gameState.currentViewZ && Math.abs(c - playerX_fow) <= 2 && Math.abs(r - playerY_fow) <= 2);
-
-                        if (isPlayerTile || isViewedTileNearPlayer) {
-                            logToConsole(
-                                `FOW Check (Z=${zLevelForFow}): P(${playerX_fow},${playerY_fow},${playerZ_fow}) to T(${c},${r},${zLevelForFow}). ` +
-                                `Dist: ${distance.toFixed(1)}. LOS: ${isVis}. ` +
-                                `OldFOW: ${fowDataForThisZ[r]?.[c] === undefined ? 'undef' : fowDataForThisZ[r][c]}. ` +
-                                `NewFOW: ${isVis ? 'visible' : (fowDataForThisZ[r]?.[c] || 'hidden')}`
-                            );
-                        }
-
-                        if (isVis) {
-                            if (fowDataForThisZ[r] && fowDataForThisZ[r][c] !== undefined) {
-                                fowDataForThisZ[r][c] = 'visible';
-                            }
+            // Determine new visible tiles on player's current Z-level using 3D LOS
+            for (let r = 0; r < H; r++) {
+                for (let c = 0; c < W; c++) {
+                    // Target for visibility check is on the same Z-level as the player for FOW updates
+                    if (isTileVisible(playerX_fow, playerY_fow, playerZ_fow, c, r, playerZ_fow, PLAYER_VISION_RADIUS)) {
+                        if (fowDataForPlayerZ[r] && fowDataForPlayerZ[r][c] !== undefined) {
+                            fowDataForPlayerZ[r][c] = 'visible';
                         }
                     }
                 }
             }
-                }
 
-        // Ensure player's current tile ON THEIR ACTUAL Z-LEVEL is visible
-        // This only applies if the zLevelForFow IS the player's actual Z-level
-        if (zLevelForFow === playerZ_fow) {
+            // Ensure player's current tile on their Z-level is visible
             if (playerY_fow >= 0 && playerY_fow < H && playerX_fow >= 0 && playerX_fow < W) {
-                if (fowDataForThisZ[playerY_fow] && typeof fowDataForThisZ[playerY_fow][playerX_fow] !== 'undefined') {
-                    fowDataForThisZ[playerY_fow][playerX_fow] = 'visible';
+                if (fowDataForPlayerZ[playerY_fow] && typeof fowDataForPlayerZ[playerY_fow][playerX_fow] !== 'undefined') {
+                    fowDataForPlayerZ[playerY_fow][playerX_fow] = 'visible';
                 }
             }
-        }
-    });
-
-} else {
-    logToConsole("Player position is undefined, skipping FOW update.", "warn");
-}
-
-// currentFowData (for gameState.currentViewZ) is used for actual rendering below.
-// It was already fetched/initialized prior to this block.
-// This specific variable 'currentFowData' is what's used for rendering the current view.
-// The FOW update loop above updates gameState.fowData for relevant Z-levels.
-// So, we need to ensure 'currentFowData' correctly points to the FOW data of 'gameState.currentViewZ'.
-currentFowData = gameState.fowData[currentZStr]; // Re-fetch it after updates
-if (!currentFowData || currentFowData.length !== H || (H > 0 && (!currentFowData[0] || currentFowData[0].length !== W))) {
-    // This should ideally not happen if the loop above initializes correctly.
-    currentFowData = Array(H).fill(null).map(() => Array(W).fill('hidden'));
-    gameState.fowData[currentZStr] = currentFowData; // Ensure it's in gameState
-    logToConsole(`FOW data for currentViewZ (${currentZStr}) was re-fetched and found missing/invalid AFTER update loop. Re-initialized.`, "orange");
-}
-
-let isInitialRender = false;
-// Tile cache is now per-Z. We might only cache the currentViewZ.
-// For this iteration, let's assume gameState.tileCache is for currentViewZ.
-// A full Z-level change (gameState.currentViewZ changes) would trigger an initial render for that Z.
-if (!gameState.tileCache ||
-    gameState.tileCache.z !== currentZ || // Check if cache is for the current Z
-    (H > 0 && gameState.tileCache.data.length !== H) ||
-    (H > 0 && W > 0 && (!gameState.tileCache.data[0] || gameState.tileCache.data[0].length !== W))) {
-    isInitialRender = true;
-}
-
-if (isInitialRender) {
-    if (container) container.innerHTML = ""; // Clear container for new Z-level or initial load
-    gameState.tileCache = {
-        z: currentZ,
-        data: Array(H).fill(null).map(() => Array(W).fill(null))
-    };
-}
-
-const tileCacheData = gameState.tileCache.data; // Use the data part of the cache
-
-const fragment = isInitialRender ? document.createDocumentFragment() : null;
-
-const LIGHT_SOURCE_BRIGHTNESS_BOOST = 0.1;
-const currentAmbientColor = getAmbientLightColor(gameState.currentTime && typeof gameState.currentTime.hours === 'number' ? gameState.currentTime.hours : 12);
-const AMBIENT_STRENGTH_VISIBLE = 0.3;
-const AMBIENT_STRENGTH_VISITED = 0.2;
-
-// Clear targeting cursors from previous frame if not initial render
-if (!isInitialRender && tileCacheData) {
-    for (let yCache = 0; yCache < tileCacheData.length; yCache++) {
-        for (let xCache = 0; xCache < tileCacheData[yCache].length; xCache++) {
-            const cellToClear = tileCacheData[yCache][xCache];
-            if (cellToClear && cellToClear.span && cellToClear.span.classList.contains('flashing-targeting-cursor')) {
-                cellToClear.span.classList.remove('flashing-targeting-cursor');
-                // Restore original appearance (this part needs map data for the specific tile)
-                // This simplified restoration might be incorrect if tile underneath changed.
-                // A more robust way is to simply re-evaluate the tile fully.
-                // For now, this is a minimal attempt to clear the 'X'.
-                // The main loop below will correctly set the tile.
-                let originalSprite = '?'; // Fallback
-                let originalColor = 'magenta'; // Fallback
-                // Attempt to get original from currentLevelData (if available)
-                const landscapeTile = currentLevelData.landscape?.[yCache]?.[xCache];
-                const buildingTile = currentLevelData.building?.[yCache]?.[xCache];
-                const itemTile = currentLevelData.item?.[yCache]?.[xCache];
-                const roofTile = (gameState.showRoof && currentLevelData.roof?.[yCache]?.[xCache]);
-                let tileIdForRestore = roofTile || itemTile || buildingTile || landscapeTile || "";
-
-                if (tileIdForRestore && assetManagerInstance.tilesets[tileIdForRestore]) {
-                    originalSprite = assetManagerInstance.tilesets[tileIdForRestore].sprite;
-                    originalColor = assetManagerInstance.tilesets[tileIdForRestore].color;
-                }
-                cellToClear.span.textContent = originalSprite;
-                cellToClear.span.style.color = originalColor;
-                // Update cache to reflect this restoration if needed, or let the main loop do it.
-                cellToClear.sprite = originalSprite;
-                cellToClear.color = originalColor;
-                cellToClear.displayedId = tileIdForRestore;
-            }
-        }
-    }
-}
-
-// --- Render current Z-level (gameState.currentViewZ) ---
-// The layer order here determines what's "on top" visually if sprites overlap.
-// Standard: landscape, building, items, (roof if shown and part of this Z)
-// Then Player/NPCs/Animations are overlaid on this base.
-const layersOrder = ['landscape', 'building', 'item'];
-if (gameState.showRoof) { // Assuming 'roof' layer is for the current Z, not above.
-    // If 'roof' is for Z+1, it's handled differently.
-    layersOrder.push('roof');
-}
-
-for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-        let baseTileId = currentLevelData.landscape?.[y]?.[x] || ""; // Start with landscape
-        let finalTileId = baseTileId; // This will be the ID of the topmost visible tile for this XY
-
-        // Overlay building, then item, then roof (if shown)
-        // This simplified overlay logic assumes empty strings for no tile.
-        // A more robust system might use tile priorities or transparency flags.
-        if (currentLevelData.building?.[y]?.[x]) finalTileId = currentLevelData.building[y][x];
-        if (currentLevelData.item?.[y]?.[x]) finalTileId = currentLevelData.item[y][x];
-        if (gameState.showRoof && currentLevelData.roof?.[y]?.[x]) {
-            finalTileId = currentLevelData.roof[y][x];
+        } else {
+            logToConsole("Player position is undefined, skipping FOW update.", "warn");
         }
 
-        // If finalTileId is empty after checking all layers, use the base (landscape) or default to space.
-        if (finalTileId === "") finalTileId = baseTileId;
+        // currentFowData (for gameState.currentViewZ) is used for actual rendering below.
+        // It was already fetched/initialized prior to this block.
 
-
-        // NEW LOGIC for bottom/middle and solid_terrain_top rendering
-        let displaySprite = ' '; // Default for empty space
-        let displayColor = '#000000'; // Default for empty space
-        let tileNameForTitle = 'Empty';
-        let originalDisplayIdForTitle = ''; // Not used directly in rendering, but good for debug/title
-        let isSolidTerrainTopDirectlyOnCurrentZ = false;
-        let finalTileDefForLightingAndFow = null; // Definition of the tile that dictates rendering for current Z view
-
-        // 1. Determine tile from current Z-level (middle layer takes precedence over bottom)
-        let tileOnBottomRawCurrentZ = currentLevelData.bottom?.[y]?.[x] || "";
-        let tileOnMiddleRawCurrentZ = currentLevelData.middle?.[y]?.[x] || "";
-
-        let effectiveTileOnBottomCurrentZ = (typeof tileOnBottomRawCurrentZ === 'object' && tileOnBottomRawCurrentZ !== null && tileOnBottomRawCurrentZ.tileId !== undefined) ? tileOnBottomRawCurrentZ.tileId : tileOnBottomRawCurrentZ;
-        let effectiveTileOnMiddleCurrentZ = (typeof tileOnMiddleRawCurrentZ === 'object' && tileOnMiddleRawCurrentZ !== null && tileOnMiddleRawCurrentZ.tileId !== undefined) ? tileOnMiddleRawCurrentZ.tileId : tileOnMiddleRawCurrentZ;
-
-        let tileDefOnBottomCurrentZ = assetManagerInstance.tilesets[effectiveTileOnBottomCurrentZ];
-        let tileDefOnMiddleCurrentZ = assetManagerInstance.tilesets[effectiveTileOnMiddleCurrentZ];
-
-        let primaryTileDefOnCurrentZ = null; // The structural tile on the current Z level
-        if (effectiveTileOnMiddleCurrentZ && tileDefOnMiddleCurrentZ) {
-            primaryTileDefOnCurrentZ = tileDefOnMiddleCurrentZ;
-            originalDisplayIdForTitle = effectiveTileOnMiddleCurrentZ;
-        } else if (effectiveTileOnBottomCurrentZ && tileDefOnBottomCurrentZ) {
-            primaryTileDefOnCurrentZ = tileDefOnBottomCurrentZ;
-            originalDisplayIdForTitle = effectiveTileOnBottomCurrentZ;
+        let isInitialRender = false;
+        // Tile cache is now per-Z. We might only cache the currentViewZ.
+        // For this iteration, let's assume gameState.tileCache is for currentViewZ.
+        // A full Z-level change (gameState.currentViewZ changes) would trigger an initial render for that Z.
+        if (!gameState.tileCache ||
+            gameState.tileCache.z !== currentZ || // Check if cache is for the current Z
+            (H > 0 && gameState.tileCache.data.length !== H) ||
+            (H > 0 && W > 0 && (!gameState.tileCache.data[0] || gameState.tileCache.data[0].length !== W))) {
+            isInitialRender = true;
         }
 
-        // 2. Apply solid_terrain_top Rule 4 (display '▓' on own Z-level)
-        if (primaryTileDefOnCurrentZ && primaryTileDefOnCurrentZ.tags && primaryTileDefOnCurrentZ.tags.includes('solid_terrain_top')) {
-            displaySprite = '▓'; // Rule 4a
-            displayColor = primaryTileDefOnCurrentZ.color;
-            tileNameForTitle = primaryTileDefOnCurrentZ.name;
-            isSolidTerrainTopDirectlyOnCurrentZ = true;
-            finalTileDefForLightingAndFow = primaryTileDefOnCurrentZ;
-        } else if (primaryTileDefOnCurrentZ) {
-            displaySprite = primaryTileDefOnCurrentZ.sprite;
-            displayColor = primaryTileDefOnCurrentZ.color;
-            tileNameForTitle = primaryTileDefOnCurrentZ.name;
-            finalTileDefForLightingAndFow = primaryTileDefOnCurrentZ;
-        }
-        // else, displaySprite and displayColor remain ' ' and 'black' for empty, tileNameForTitle 'Empty'
-
-        // 3. Apply solid_terrain_top Rule 3 (viewing top of Z-1, render with custom sprite & no tint)
-        // This happens if the current Z-level cell is see-through.
-        let isCurrentCellSeeThrough = (!primaryTileDefOnCurrentZ); // Empty is see-through
-        if (primaryTileDefOnCurrentZ && primaryTileDefOnCurrentZ.tags &&
-            (primaryTileDefOnCurrentZ.tags.includes('transparent_floor') || primaryTileDefOnCurrentZ.tags.includes('allows_vision') || primaryTileDefOnCurrentZ.tags.includes('transparent_bottom'))) {
-            // If there's a transparent floor/item on current Z, and it's NOT a solid_terrain_top itself, then it's see-through.
-            if (!isSolidTerrainTopDirectlyOnCurrentZ) {
-                isCurrentCellSeeThrough = true;
-            }
-        }
-
-        if (isCurrentCellSeeThrough) { // Note: isSolidTerrainTopDirectlyOnCurrentZ check is implicitly handled by isCurrentCellSeeThrough logic
-            const zBelowStr = (currentZ - 1).toString();
-            const levelBelow = fullMapData.levels[zBelowStr];
-            if (levelBelow) {
-                let tileBottomBelowRaw = levelBelow.bottom?.[y]?.[x] || "";
-                let tileMiddleBelowRaw = levelBelow.middle?.[y]?.[x] || "";
-                let effTileBottomBelow = (typeof tileBottomBelowRaw === 'object' && tileBottomBelowRaw !== null && tileBottomBelowRaw.tileId !== undefined) ? tileBottomBelowRaw.tileId : tileBottomBelowRaw;
-                let effTileMiddleBelow = (typeof tileMiddleBelowRaw === 'object' && tileMiddleBelowRaw !== null && tileMiddleBelowRaw.tileId !== undefined) ? tileMiddleBelowRaw.tileId : tileMiddleBelowRaw;
-
-                let tileDefFromBelowToDisplay = null;
-                let idFromBelowToDisplay = null;
-
-                // Prefer middle layer of Z-1 if it's solid_terrain_top
-                if (effTileMiddleBelow && assetManagerInstance.tilesets[effTileMiddleBelow]?.tags.includes('solid_terrain_top')) {
-                    tileDefFromBelowToDisplay = assetManagerInstance.tilesets[effTileMiddleBelow];
-                    idFromBelowToDisplay = effTileMiddleBelow;
-                }
-                // Else, check bottom layer of Z-1 if it's solid_terrain_top
-                else if (effTileBottomBelow && assetManagerInstance.tilesets[effTileBottomBelow]?.tags.includes('solid_terrain_top')) {
-                    tileDefFromBelowToDisplay = assetManagerInstance.tilesets[effTileBottomBelow];
-                    idFromBelowToDisplay = effTileBottomBelow;
-                }
-
-                if (tileDefFromBelowToDisplay) {
-                    displaySprite = tileDefFromBelowToDisplay.sprite; // Rule 4b (custom sprite from Z-1)
-                    displayColor = tileDefFromBelowToDisplay.color;   // Rule 3 (no tint)
-                    tileNameForTitle = tileDefFromBelowToDisplay.name;
-                    originalDisplayIdForTitle = idFromBelowToDisplay; // Update to reflect what's shown
-                    // finalTileDefForLightingAndFow should represent what's visually there.
-                    // If we are seeing the top of Z-1, that's the effective surface for lighting/FOW.
-                    finalTileDefForLightingAndFow = tileDefFromBelowToDisplay;
-                }
-            }
-        }
-
-        // `originalSprite` and `originalColor` are used by subsequent lighting/FOW logic
-        // They should reflect the state *before* FOW, but *after* structural rendering (bottom/middle + solid_terrain_top rules)
-        let originalSprite = displaySprite;
-        let originalColor = displayColor;
-        // The finalTileId used for some item checks later needs to be the ID that corresponds to originalSprite/Color
-        finalTileId = originalDisplayIdForTitle; // Assign to existing finalTileId
-
-        // END OF NEW LOGIC
-
-        let fowStatus = 'hidden';
-        if (currentFowData && currentFowData[y] && typeof currentFowData[y][x] !== 'undefined') {
-            fowStatus = currentFowData[y][x];
-        }
-
-        // displaySprite is already declared earlier in the function
-        displaySprite = originalSprite;
-        // displayColor is already declared earlier in the function
-        displayColor = originalColor;
-        let displayId = finalTileId || "";
-
-        // --- TEMPORARY DEBUGGING FOR CONTAINERS ---
-        // This needs to check based on finalTileId and its definition
-        if (finalTileId && assetManagerInstance && assetManagerInstance.tilesets) {
-            const tempTileDef = assetManagerInstance.tilesets[finalTileId];
-            if (tempTileDef && tempTileDef.tags && tempTileDef.tags.includes('container')) {
-                // displayColor = 'fuchsia'; // Keep or remove debug color
-            }
-        }
-        // --- END TEMPORARY DEBUGGING ---
-
-        if (fowStatus === 'hidden') {
-            displaySprite = ' ';
-            displayColor = '#1a1a1a'; // Dark color for hidden FOW
-            displayId = 'FOW_HIDDEN';
-        } else if (fowStatus === 'visited') {
-            const visitedColorStyle = (c) => {
-                if (typeof c !== 'string' || !c.startsWith('#')) return '#505050';
-                try {
-                    let r = parseInt(c.substring(1, 3), 16) || 0;
-                    let g = parseInt(c.substring(3, 5), 16) || 0;
-                    let b = parseInt(c.substring(5, 7), 16) || 0;
-                    r = Math.max(0, Math.floor(r * 0.6));
-                    g = Math.max(0, Math.floor(g * 0.6));
-                    b = Math.max(0, Math.floor(b * 0.6));
-                    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-                } catch (e) { return '#505050'; }
-            };
-            displayColor = visitedColorStyle(originalColor);
-        }
-
-        // Lighting: Filter light sources by current Z for now
-        // TODO: isTileIlluminated will need to be 3D
-        const lightsOnCurrentZ = gameState.lightSources.filter(ls => ls.z === currentZ);
-
-        if (fowStatus === 'visible' || fowStatus === 'visited') {
-            let isLit = false;
-            if (lightsOnCurrentZ.length > 0) {
-                for (const source of lightsOnCurrentZ) {
-                    if (isTileIlluminated(x, y, currentZ, source)) {
-                        isLit = true;
-                        break;
-                    }
-                }
-            }
-
-            if (fowStatus === 'visible') {
-                if (isLit) {
-                    let activeLight = null;
-                    for (const source of lightsOnCurrentZ) {
-                        if (isTileIlluminated(x, y, currentZ, source)) { activeLight = source; break; }
-                    }
-                    if (activeLight && activeLight.color && typeof activeLight.intensity === 'number') {
-                        const brightenedBase = brightenColor(originalColor, LIGHT_SOURCE_BRIGHTNESS_BOOST);
-                        displayColor = blendColors(brightenedBase, activeLight.color, activeLight.intensity / 2);
-                    } else {
-                        displayColor = brightenColor(originalColor, LIGHT_SOURCE_BRIGHTNESS_BOOST / 2);
-                    }
-                } else {
-                    displayColor = blendColors(originalColor, currentAmbientColor, AMBIENT_STRENGTH_VISIBLE);
-                }
-            } else if (fowStatus === 'visited') {
-                if (isLit) {
-                    let activeLight = null;
-                    for (const source of lightsOnCurrentZ) {
-                        if (isTileIlluminated(x, y, currentZ, source)) { activeLight = source; break; }
-                    }
-                    if (activeLight && activeLight.color && typeof activeLight.intensity === 'number') {
-                        const slightlyBrightenedVisited = brightenColor(displayColor, LIGHT_SOURCE_BRIGHTNESS_BOOST / 2);
-                        displayColor = blendColors(slightlyBrightenedVisited, activeLight.color, activeLight.intensity * 0.25);
-                    } else {
-                        displayColor = blendColors(displayColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
-                    }
-                } else {
-                    displayColor = blendColors(displayColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
-                }
-            }
-        }
-
-        let finalSpriteForTile = displaySprite;
-        let finalColorForTile = displayColor;
-        let finalDisplayIdForTile = displayId;
-
-        // Player rendering: only if player's Z matches currentViewZ
-        const isPlayerCurrentlyOnThisTileAndZ = (gameState.playerPos &&
-            x === gameState.playerPos.x &&
-            y === gameState.playerPos.y &&
-            gameState.playerPos.z === currentZ);
-
-        if (isPlayerCurrentlyOnThisTileAndZ) {
-            const playerFowStatus = currentFowData?.[y]?.[x]; // Use current Z's FOW
-            // Roof obscuring player would depend on roof data for *this* Z-level, or potentially Z+1.
-            // For now, use showRoof and roof data from currentLevelData.
-            const roofIsObscuringPlayer = gameState.showRoof && currentLevelData.roof?.[y]?.[x];
-
-            if (playerFowStatus === 'visible' && !roofIsObscuringPlayer) {
-                let drawStaticPlayer = true;
-                // Combat animation check (needs to be Z-aware if animations can cross Z)
-                if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
-                    const playerCombatAnim = gameState.activeAnimations.find(anim =>
-                        anim.visible &&
-                        (anim.type === 'meleeSwing' || anim.type === 'rangedBullet' || anim.type === 'throwing') &&
-                        anim.data.attacker === gameState &&
-                        Math.floor(anim.x) === x && Math.floor(anim.y) === y &&
-                        (anim.z === undefined || anim.z === currentZ) // Check Z if animation has it
-                    );
-                    if (playerCombatAnim) drawStaticPlayer = false;
-                }
-                if (drawStaticPlayer) {
-                    finalSpriteForTile = "☻";
-                    finalColorForTile = "green";
-                    finalDisplayIdForTile = "PLAYER_STATIC";
-                }
-            }
-        }
-
-        // Update or create cache entry
         if (isInitialRender) {
-            const span = document.createElement("span");
-            span.className = "tile";
-            span.dataset.x = x;
-            span.dataset.y = y;
-            span.textContent = finalSpriteForTile;
-            span.style.color = finalColorForTile;
+            if (container) container.innerHTML = ""; // Clear container for new Z-level or initial load
+            gameState.tileCache = {
+                z: currentZ,
+                data: Array(H).fill(null).map(() => Array(W).fill(null))
+            };
+        }
 
-            // Item highlight logic (needs to check floorItems on currentZ)
-            let tileHighlightColor = "";
-            if (fowStatus === 'visible' && window.gameState && window.gameState.floorItems) {
-                const itemsOnThisTileAndZ = window.gameState.floorItems.filter(fi => fi.x === x && fi.y === y && fi.z === currentZ);
-                if (itemsOnThisTileAndZ.length > 0) {
-                    // Simplified: just check if any item is present. Impassable check would go here too.
-                    const currentTileDefForHighlight = assetManagerInstance.tilesets[finalTileId];
-                    let impassableTileBlockingItemHighlight = false;
-                    if (currentTileDefForHighlight && currentTileDefForHighlight.tags && currentTileDefForHighlight.tags.includes("impassable")) {
-                        if (!currentTileDefForHighlight.tags.includes("door") &&
-                            !currentTileDefForHighlight.tags.includes("window") &&
-                            !currentTileDefForHighlight.tags.includes("container")) {
-                            impassableTileBlockingItemHighlight = true;
+        const tileCacheData = gameState.tileCache.data; // Use the data part of the cache
+
+        const fragment = isInitialRender ? document.createDocumentFragment() : null;
+
+        const LIGHT_SOURCE_BRIGHTNESS_BOOST = 0.1;
+        const currentAmbientColor = getAmbientLightColor(gameState.currentTime && typeof gameState.currentTime.hours === 'number' ? gameState.currentTime.hours : 12);
+        const AMBIENT_STRENGTH_VISIBLE = 0.3;
+        const AMBIENT_STRENGTH_VISITED = 0.2;
+
+        // Clear targeting cursors from previous frame if not initial render
+        if (!isInitialRender && tileCacheData) {
+            for (let yCache = 0; yCache < tileCacheData.length; yCache++) {
+                for (let xCache = 0; xCache < tileCacheData[yCache].length; xCache++) {
+                    const cellToClear = tileCacheData[yCache][xCache];
+                    if (cellToClear && cellToClear.span && cellToClear.span.classList.contains('flashing-targeting-cursor')) {
+                        cellToClear.span.classList.remove('flashing-targeting-cursor');
+                        // Restore original appearance (this part needs map data for the specific tile)
+                        // This simplified restoration might be incorrect if tile underneath changed.
+                        // A more robust way is to simply re-evaluate the tile fully.
+                        // For now, this is a minimal attempt to clear the 'X'.
+                        // The main loop below will correctly set the tile.
+                        let originalSprite = '?'; // Fallback
+                        let originalColor = 'magenta'; // Fallback
+                        // Attempt to get original from currentLevelData (if available)
+                        const landscapeTile = currentLevelData.landscape?.[yCache]?.[xCache];
+                        const buildingTile = currentLevelData.building?.[yCache]?.[xCache];
+                        const itemTile = currentLevelData.item?.[yCache]?.[xCache];
+                        const roofTile = (gameState.showRoof && currentLevelData.roof?.[yCache]?.[xCache]);
+                        let tileIdForRestore = roofTile || itemTile || buildingTile || landscapeTile || "";
+
+                        if (tileIdForRestore && assetManagerInstance.tilesets[tileIdForRestore]) {
+                            originalSprite = assetManagerInstance.tilesets[tileIdForRestore].sprite;
+                            originalColor = assetManagerInstance.tilesets[tileIdForRestore].color;
+                        }
+                        cellToClear.span.textContent = originalSprite;
+                        cellToClear.span.style.color = originalColor;
+                        // Update cache to reflect this restoration if needed, or let the main loop do it.
+                        cellToClear.sprite = originalSprite;
+                        cellToClear.color = originalColor;
+                        cellToClear.displayedId = tileIdForRestore;
+                    }
+                }
+            }
+        }
+
+        // --- Render current Z-level (gameState.currentViewZ) ---
+        // The layer order here determines what's "on top" visually if sprites overlap.
+        // Standard: landscape, building, items, (roof if shown and part of this Z)
+        // Then Player/NPCs/Animations are overlaid on this base.
+        const layersOrder = ['landscape', 'building', 'item'];
+        if (gameState.showRoof) { // Assuming 'roof' layer is for the current Z, not above.
+            // If 'roof' is for Z+1, it's handled differently.
+            layersOrder.push('roof');
+        }
+
+        for (let y = 0; y < H; y++) {
+            for (let x = 0; x < W; x++) {
+                let baseTileId = currentLevelData.landscape?.[y]?.[x] || ""; // Start with landscape
+                let finalTileId = baseTileId; // This will be the ID of the topmost visible tile for this XY
+
+                // Overlay building, then item, then roof (if shown)
+                // This simplified overlay logic assumes empty strings for no tile.
+                // A more robust system might use tile priorities or transparency flags.
+                if (currentLevelData.building?.[y]?.[x]) finalTileId = currentLevelData.building[y][x];
+                if (currentLevelData.item?.[y]?.[x]) finalTileId = currentLevelData.item[y][x];
+                if (gameState.showRoof && currentLevelData.roof?.[y]?.[x]) {
+                    finalTileId = currentLevelData.roof[y][x];
+                }
+
+                // If finalTileId is empty after checking all layers, use the base (landscape) or default to space.
+                if (finalTileId === "") finalTileId = baseTileId;
+
+
+                // NEW LOGIC for bottom/middle and solid_terrain_top rendering
+                let displaySprite = ' '; // Default for empty space
+                let displayColor = '#000000'; // Default for empty space
+                let tileNameForTitle = 'Empty';
+                let originalDisplayIdForTitle = ''; // Not used directly in rendering, but good for debug/title
+                let isSolidTerrainTopDirectlyOnCurrentZ = false;
+                let finalTileDefForLightingAndFow = null; // Definition of the tile that dictates rendering for current Z view
+
+                // 1. Determine tile from current Z-level (middle layer takes precedence over bottom)
+                let tileOnBottomRawCurrentZ = currentLevelData.bottom?.[y]?.[x] || "";
+                let tileOnMiddleRawCurrentZ = currentLevelData.middle?.[y]?.[x] || "";
+
+                let effectiveTileOnBottomCurrentZ = (typeof tileOnBottomRawCurrentZ === 'object' && tileOnBottomRawCurrentZ !== null && tileOnBottomRawCurrentZ.tileId !== undefined) ? tileOnBottomRawCurrentZ.tileId : tileOnBottomRawCurrentZ;
+                let effectiveTileOnMiddleCurrentZ = (typeof tileOnMiddleRawCurrentZ === 'object' && tileOnMiddleRawCurrentZ !== null && tileOnMiddleRawCurrentZ.tileId !== undefined) ? tileOnMiddleRawCurrentZ.tileId : tileOnMiddleRawCurrentZ;
+
+                let tileDefOnBottomCurrentZ = assetManagerInstance.tilesets[effectiveTileOnBottomCurrentZ];
+                let tileDefOnMiddleCurrentZ = assetManagerInstance.tilesets[effectiveTileOnMiddleCurrentZ];
+
+                let primaryTileDefOnCurrentZ = null; // The structural tile on the current Z level
+                if (effectiveTileOnMiddleCurrentZ && tileDefOnMiddleCurrentZ) {
+                    primaryTileDefOnCurrentZ = tileDefOnMiddleCurrentZ;
+                    originalDisplayIdForTitle = effectiveTileOnMiddleCurrentZ;
+                } else if (effectiveTileOnBottomCurrentZ && tileDefOnBottomCurrentZ) {
+                    primaryTileDefOnCurrentZ = tileDefOnBottomCurrentZ;
+                    originalDisplayIdForTitle = effectiveTileOnBottomCurrentZ;
+                }
+
+                // 2. Apply solid_terrain_top Rule 4 (display '▓' on own Z-level)
+                if (primaryTileDefOnCurrentZ && primaryTileDefOnCurrentZ.tags && primaryTileDefOnCurrentZ.tags.includes('solid_terrain_top')) {
+                    displaySprite = '▓'; // Rule 4a
+                    displayColor = primaryTileDefOnCurrentZ.color;
+                    tileNameForTitle = primaryTileDefOnCurrentZ.name;
+                    isSolidTerrainTopDirectlyOnCurrentZ = true;
+                    finalTileDefForLightingAndFow = primaryTileDefOnCurrentZ;
+                } else if (primaryTileDefOnCurrentZ) {
+                    displaySprite = primaryTileDefOnCurrentZ.sprite;
+                    displayColor = primaryTileDefOnCurrentZ.color;
+                    tileNameForTitle = primaryTileDefOnCurrentZ.name;
+                    finalTileDefForLightingAndFow = primaryTileDefOnCurrentZ;
+                }
+                // else, displaySprite and displayColor remain ' ' and 'black' for empty, tileNameForTitle 'Empty'
+
+                // 3. Apply solid_terrain_top Rule 3 (viewing top of Z-1, render with custom sprite & no tint)
+                // This happens if the current Z-level cell is see-through.
+                let isCurrentCellSeeThrough = (!primaryTileDefOnCurrentZ); // Empty is see-through
+                if (primaryTileDefOnCurrentZ && primaryTileDefOnCurrentZ.tags &&
+                    (primaryTileDefOnCurrentZ.tags.includes('transparent_floor') || primaryTileDefOnCurrentZ.tags.includes('allows_vision') || primaryTileDefOnCurrentZ.tags.includes('transparent_bottom'))) {
+                    // If there's a transparent floor/item on current Z, and it's NOT a solid_terrain_top itself, then it's see-through.
+                    if (!isSolidTerrainTopDirectlyOnCurrentZ) {
+                        isCurrentCellSeeThrough = true;
+                    }
+                }
+
+                if (isCurrentCellSeeThrough) { // Note: isSolidTerrainTopDirectlyOnCurrentZ check is implicitly handled by isCurrentCellSeeThrough logic
+                    const zBelowStr = (currentZ - 1).toString();
+                    const levelBelow = fullMapData.levels[zBelowStr];
+                    if (levelBelow) {
+                        let tileBottomBelowRaw = levelBelow.bottom?.[y]?.[x] || "";
+                        let tileMiddleBelowRaw = levelBelow.middle?.[y]?.[x] || "";
+                        let effTileBottomBelow = (typeof tileBottomBelowRaw === 'object' && tileBottomBelowRaw !== null && tileBottomBelowRaw.tileId !== undefined) ? tileBottomBelowRaw.tileId : tileBottomBelowRaw;
+                        let effTileMiddleBelow = (typeof tileMiddleBelowRaw === 'object' && tileMiddleBelowRaw !== null && tileMiddleBelowRaw.tileId !== undefined) ? tileMiddleBelowRaw.tileId : tileMiddleBelowRaw;
+
+                        let tileDefFromBelowToDisplay = null;
+                        let idFromBelowToDisplay = null;
+
+                        // Prefer middle layer of Z-1 if it's solid_terrain_top
+                        if (effTileMiddleBelow && assetManagerInstance.tilesets[effTileMiddleBelow]?.tags.includes('solid_terrain_top')) {
+                            tileDefFromBelowToDisplay = assetManagerInstance.tilesets[effTileMiddleBelow];
+                            idFromBelowToDisplay = effTileMiddleBelow;
+                        }
+                        // Else, check bottom layer of Z-1 if it's solid_terrain_top
+                        else if (effTileBottomBelow && assetManagerInstance.tilesets[effTileBottomBelow]?.tags.includes('solid_terrain_top')) {
+                            tileDefFromBelowToDisplay = assetManagerInstance.tilesets[effTileBottomBelow];
+                            idFromBelowToDisplay = effTileBottomBelow;
+                        }
+
+                        if (tileDefFromBelowToDisplay) {
+                            displaySprite = tileDefFromBelowToDisplay.sprite; // Rule 4b (custom sprite from Z-1)
+                            displayColor = tileDefFromBelowToDisplay.color;   // Rule 3 (no tint)
+                            tileNameForTitle = tileDefFromBelowToDisplay.name;
+                            originalDisplayIdForTitle = idFromBelowToDisplay; // Update to reflect what's shown
+                            // finalTileDefForLightingAndFow should represent what's visually there.
+                            // If we are seeing the top of Z-1, that's the effective surface for lighting/FOW.
+                            finalTileDefForLightingAndFow = tileDefFromBelowToDisplay;
                         }
                     }
-                    if (!impassableTileBlockingItemHighlight) tileHighlightColor = "rgba(255, 255, 0, 0.3)";
                 }
-            }
-            span.style.backgroundColor = tileHighlightColor;
 
-            if (!tileCacheData[y]) tileCacheData[y] = Array(W).fill(null);
-            tileCacheData[y][x] = {
-                span: span,
-                displayedId: finalDisplayIdForTile,
-                sprite: finalSpriteForTile,
-                color: finalColorForTile
-            };
-            if (fragment) fragment.appendChild(span);
-        } else {
-            const cachedCell = tileCacheData[y]?.[x];
-            if (cachedCell && cachedCell.span) {
-                const span = cachedCell.span;
-                if (cachedCell.sprite !== finalSpriteForTile || cachedCell.color !== finalColorForTile) {
+                // `originalSprite` and `originalColor` are used by subsequent lighting/FOW logic
+                // They should reflect the state *before* FOW, but *after* structural rendering (bottom/middle + solid_terrain_top rules)
+                let originalSprite = displaySprite;
+                let originalColor = displayColor;
+                // The finalTileId used for some item checks later needs to be the ID that corresponds to originalSprite/Color
+                finalTileId = originalDisplayIdForTitle; // Assign to existing finalTileId
+
+                // END OF NEW LOGIC
+
+                let fowStatus = 'hidden';
+                if (currentFowData && currentFowData[y] && typeof currentFowData[y][x] !== 'undefined') {
+                    fowStatus = currentFowData[y][x];
+                }
+
+                // displaySprite is already declared earlier in the function
+                displaySprite = originalSprite;
+                // displayColor is already declared earlier in the function
+                displayColor = originalColor;
+                let displayId = finalTileId || "";
+
+                // --- TEMPORARY DEBUGGING FOR CONTAINERS ---
+                // This needs to check based on finalTileId and its definition
+                if (finalTileId && assetManagerInstance && assetManagerInstance.tilesets) {
+                    const tempTileDef = assetManagerInstance.tilesets[finalTileId];
+                    if (tempTileDef && tempTileDef.tags && tempTileDef.tags.includes('container')) {
+                        // displayColor = 'fuchsia'; // Keep or remove debug color
+                    }
+                }
+                // --- END TEMPORARY DEBUGGING ---
+
+                if (fowStatus === 'hidden') {
+                    displaySprite = ' ';
+                    displayColor = '#1a1a1a'; // Dark color for hidden FOW
+                    displayId = 'FOW_HIDDEN';
+                } else if (fowStatus === 'visited') {
+                    const visitedColorStyle = (c) => {
+                        if (typeof c !== 'string' || !c.startsWith('#')) return '#505050';
+                        try {
+                            let r = parseInt(c.substring(1, 3), 16) || 0;
+                            let g = parseInt(c.substring(3, 5), 16) || 0;
+                            let b = parseInt(c.substring(5, 7), 16) || 0;
+                            r = Math.max(0, Math.floor(r * 0.6));
+                            g = Math.max(0, Math.floor(g * 0.6));
+                            b = Math.max(0, Math.floor(b * 0.6));
+                            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+                        } catch (e) { return '#505050'; }
+                    };
+                    displayColor = visitedColorStyle(originalColor);
+                }
+
+                // Lighting: Filter light sources by current Z for now
+                // TODO: isTileIlluminated will need to be 3D
+                const lightsOnCurrentZ = gameState.lightSources.filter(ls => ls.z === currentZ);
+
+                if (fowStatus === 'visible' || fowStatus === 'visited') {
+                    let isLit = false;
+                    if (lightsOnCurrentZ.length > 0) {
+                        for (const source of lightsOnCurrentZ) {
+                            if (isTileIlluminated(x, y, currentZ, source)) {
+                                isLit = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (fowStatus === 'visible') {
+                        if (isLit) {
+                            let activeLight = null;
+                            for (const source of lightsOnCurrentZ) {
+                                if (isTileIlluminated(x, y, currentZ, source)) { activeLight = source; break; }
+                            }
+                            if (activeLight && activeLight.color && typeof activeLight.intensity === 'number') {
+                                const brightenedBase = brightenColor(originalColor, LIGHT_SOURCE_BRIGHTNESS_BOOST);
+                                displayColor = blendColors(brightenedBase, activeLight.color, activeLight.intensity / 2);
+                            } else {
+                                displayColor = brightenColor(originalColor, LIGHT_SOURCE_BRIGHTNESS_BOOST / 2);
+                            }
+                        } else {
+                            displayColor = blendColors(originalColor, currentAmbientColor, AMBIENT_STRENGTH_VISIBLE);
+                        }
+                    } else if (fowStatus === 'visited') {
+                        if (isLit) {
+                            let activeLight = null;
+                            for (const source of lightsOnCurrentZ) {
+                                if (isTileIlluminated(x, y, currentZ, source)) { activeLight = source; break; }
+                            }
+                            if (activeLight && activeLight.color && typeof activeLight.intensity === 'number') {
+                                const slightlyBrightenedVisited = brightenColor(displayColor, LIGHT_SOURCE_BRIGHTNESS_BOOST / 2);
+                                displayColor = blendColors(slightlyBrightenedVisited, activeLight.color, activeLight.intensity * 0.25);
+                            } else {
+                                displayColor = blendColors(displayColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
+                            }
+                        } else {
+                            displayColor = blendColors(displayColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
+                        }
+                    }
+                }
+
+                let finalSpriteForTile = displaySprite;
+                let finalColorForTile = displayColor;
+                let finalDisplayIdForTile = displayId;
+
+                // Player rendering: only if player's Z matches currentViewZ
+                const isPlayerCurrentlyOnThisTileAndZ = (gameState.playerPos &&
+                    x === gameState.playerPos.x &&
+                    y === gameState.playerPos.y &&
+                    gameState.playerPos.z === currentZ);
+
+                if (isPlayerCurrentlyOnThisTileAndZ) {
+                    const playerFowStatus = currentFowData?.[y]?.[x]; // Use current Z's FOW
+                    // Roof obscuring player would depend on roof data for *this* Z-level, or potentially Z+1.
+                    // For now, use showRoof and roof data from currentLevelData.
+                    const roofIsObscuringPlayer = gameState.showRoof && currentLevelData.roof?.[y]?.[x];
+
+                    if (playerFowStatus === 'visible' && !roofIsObscuringPlayer) {
+                        let drawStaticPlayer = true;
+                        // Combat animation check (needs to be Z-aware if animations can cross Z)
+                        if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
+                            const playerCombatAnim = gameState.activeAnimations.find(anim =>
+                                anim.visible &&
+                                (anim.type === 'meleeSwing' || anim.type === 'rangedBullet' || anim.type === 'throwing') &&
+                                anim.data.attacker === gameState &&
+                                Math.floor(anim.x) === x && Math.floor(anim.y) === y &&
+                                (anim.z === undefined || anim.z === currentZ) // Check Z if animation has it
+                            );
+                            if (playerCombatAnim) drawStaticPlayer = false;
+                        }
+                        if (drawStaticPlayer) {
+                            finalSpriteForTile = "☻";
+                            finalColorForTile = "green";
+                            finalDisplayIdForTile = "PLAYER_STATIC";
+                        }
+                    }
+                }
+
+                // Update or create cache entry
+                if (isInitialRender) {
+                    const span = document.createElement("span");
+                    span.className = "tile";
+                    span.dataset.x = x;
+                    span.dataset.y = y;
                     span.textContent = finalSpriteForTile;
                     span.style.color = finalColorForTile;
-                    cachedCell.sprite = finalSpriteForTile;
-                    cachedCell.color = finalColorForTile;
-                }
-                cachedCell.displayedId = finalDisplayIdForTile;
 
-                let tileHighlightColor = "";
-                if (fowStatus === 'visible' && window.gameState && window.gameState.floorItems) {
-                    const itemsOnThisTileAndZ = window.gameState.floorItems.filter(fi => fi.x === x && fi.y === y && fi.z === currentZ);
-                    if (itemsOnThisTileAndZ.length > 0) {
-                        const currentTileDefForHighlight = assetManagerInstance.tilesets[finalTileId];
-                        let impassableTileBlockingItemHighlight = false;
-                        if (currentTileDefForHighlight && currentTileDefForHighlight.tags && currentTileDefForHighlight.tags.includes("impassable")) {
-                            if (!currentTileDefForHighlight.tags.includes("door") &&
-                                !currentTileDefForHighlight.tags.includes("window") &&
-                                !currentTileDefForHighlight.tags.includes("container")) {
-                                impassableTileBlockingItemHighlight = true;
+                    // Item highlight logic (needs to check floorItems on currentZ)
+                    let tileHighlightColor = "";
+                    if (fowStatus === 'visible' && window.gameState && window.gameState.floorItems) {
+                        const itemsOnThisTileAndZ = window.gameState.floorItems.filter(fi => fi.x === x && fi.y === y && fi.z === currentZ);
+                        if (itemsOnThisTileAndZ.length > 0) {
+                            // Simplified: just check if any item is present. Impassable check would go here too.
+                            const currentTileDefForHighlight = assetManagerInstance.tilesets[finalTileId];
+                            let impassableTileBlockingItemHighlight = false;
+                            if (currentTileDefForHighlight && currentTileDefForHighlight.tags && currentTileDefForHighlight.tags.includes("impassable")) {
+                                if (!currentTileDefForHighlight.tags.includes("door") &&
+                                    !currentTileDefForHighlight.tags.includes("window") &&
+                                    !currentTileDefForHighlight.tags.includes("container")) {
+                                    impassableTileBlockingItemHighlight = true;
+                                }
                             }
+                            if (!impassableTileBlockingItemHighlight) tileHighlightColor = "rgba(255, 255, 0, 0.3)";
                         }
-                        if (!impassableTileBlockingItemHighlight) tileHighlightColor = "rgba(255, 255, 0, 0.3)";
                     }
-                }
-                if (span.style.backgroundColor !== tileHighlightColor) {
                     span.style.backgroundColor = tileHighlightColor;
-                }
 
-                if (span.classList.contains('flashing-targeting-cursor') &&
-                    !(gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y /* && targeting Z matches? */)) {
-                    span.classList.remove('flashing-targeting-cursor');
-                }
-            }
-        }
-    }
-    if (isInitialRender && fragment) {
-        const br = document.createElement("br");
-        fragment.appendChild(br);
-    }
-}
-
-// --- START: Render Environmental Effects (Smoke, Tear Gas) on current Z-level ---
-// This logic needs to be Z-aware.
-const environmentalEffectsToRender = [];
-if (gameState.environmentalEffects) {
-    if (gameState.environmentalEffects.smokeTiles) {
-        environmentalEffectsToRender.push(...gameState.environmentalEffects.smokeTiles
-            .filter(eff => eff.z === currentZ && eff.duration > 0)
-            .map(eff => ({ ...eff, type: 'smoke' })));
-    }
-    if (gameState.environmentalEffects.tearGasTiles) {
-        environmentalEffectsToRender.push(...gameState.environmentalEffects.tearGasTiles
-            .filter(eff => eff.z === currentZ && eff.duration > 0)
-            .map(eff => ({ ...eff, type: 'tearGas' })));
-    }
-}
-
-if (environmentalEffectsToRender.length > 0 && tileCacheData) {
-    environmentalEffectsToRender.forEach(effect => {
-        const x = effect.x;
-        const y = effect.y;
-        if (y >= 0 && y < H && x >= 0 && x < W) {
-            const fowStatus = currentFowData?.[y]?.[x];
-            if (fowStatus === 'visible' || fowStatus === 'visited') {
-                const cachedCell = tileCacheData[y]?.[x];
-                if (cachedCell && cachedCell.span) {
-                    let effectSprite = '?';
-                    let effectColor = '#FFFFFF';
-                    if (effect.type === 'smoke') {
-                        const smokeSprites = ['░', '▒', '▓'];
-                        effectSprite = smokeSprites[Math.floor(Math.random() * smokeSprites.length)];
-                        effectColor = '#888888';
-                    } else if (effect.type === 'tearGas') {
-                        const gasSprites = ['~', ';', ','];
-                        effectSprite = gasSprites[Math.floor(Math.random() * gasSprites.length)];
-                        effectColor = '#B8B868';
-                    }
-                    cachedCell.span.textContent = effectSprite;
-                    cachedCell.span.style.color = effectColor;
-                    // Update cache if these effects are meant to replace the tile visually
-                    cachedCell.sprite = effectSprite;
-                    cachedCell.color = effectColor;
-                }
-            }
-        }
-    });
-}
-// --- END: Render Environmental Effects ---
-
-// Append the main fragment for the current Z-level
-if (isInitialRender && container && fragment) {
-    container.appendChild(fragment);
-}
-
-// --- Overlay rendering for Z-1 (Below) and Z+1 (Above) Layers ---
-// This simplified approach modifies the visual appearance of current Z-level tiles
-// if they are transparent, to give a glimpse of adjacent Z-levels.
-// It does not create new DOM elements for adjacent layers.
-
-// --- Onion Skinning Logic ---
-const BASE_ONION_SKIN_DARKEN_FACTOR = 0.5;
-const EXTRA_DARKEN_PER_LEVEL = 0.1; // Additional darkening for each level away
-const MAX_ONION_DARKEN_FACTOR = 0.85;
-
-const ONION_SKIN_ABOVE_TINT_COLOR = '#003300'; // Dark green
-const BASE_ONION_SKIN_ABOVE_TINT_FACTOR = 0.6;
-const EXTRA_ABOVE_TINT_PER_LEVEL = 0.1;
-const MAX_ABOVE_TINT_FACTOR = 0.9;
-
-const ONION_SKIN_BELOW_TINT_COLOR = '#330000'; // Dark red
-const BASE_ONION_SKIN_BELOW_TINT_FACTOR = 0.6;
-const EXTRA_BELOW_TINT_PER_LEVEL = 0.1;
-const MAX_BELOW_TINT_FACTOR = 0.9;
-
-const maxLevelsAbove = gameState.onionSkinLevelsAbove || 0;
-const maxLevelsBelow = gameState.onionSkinLevelsBelow || 0;
-
-// Render Z-levels below (onion skin)
-for (let zOffset = 1; zOffset <= maxLevelsBelow; zOffset++) {
-    const onionZ = currentZ - zOffset;
-    const levelDataBelow = fullMapData.levels[onionZ.toString()];
-    if (!levelDataBelow || !tileCacheData) continue;
-
-    const distanceFactor = zOffset;
-    const currentDarkenFactor = Math.min(MAX_ONION_DARKEN_FACTOR, BASE_ONION_SKIN_DARKEN_FACTOR + (distanceFactor - 1) * EXTRA_DARKEN_PER_LEVEL);
-    const currentBelowTintFactor = Math.min(MAX_BELOW_TINT_FACTOR, BASE_ONION_SKIN_BELOW_TINT_FACTOR + (distanceFactor - 1) * EXTRA_BELOW_TINT_PER_LEVEL);
-
-    for (let y = 0; y < H; y++) {
-        for (let x = 0; x < W; x++) {
-            if (!tileCacheData[y] || !tileCacheData[y][x]) continue;
-
-            const currentCachedCell = tileCacheData[y][x];
-            const currentSpan = currentCachedCell.span;
-
-            // Check if the current Z tile (and all layers above it up to currentZ - 1) are see-through for this onion layer
-            let isPathSeeThrough = true;
-            for (let interZ = onionZ + 1; interZ <= currentZ; interZ++) {
-                const interLevelData = fullMapData.levels[interZ.toString()];
-                const interTileIdOnViewZ = (interZ === currentZ) ? currentCachedCell.displayedId : null; // Use cached for currentZ, else query
-                const interTileDefOnViewZ = assetManagerInstance.tilesets[interTileIdOnViewZ];
-
-                let isCurrentInterTileSeeThrough = false;
-                if (interZ === currentZ) { // Use already determined displayedId for current view Z
-                    if (interTileIdOnViewZ === "PLAYER_STATIC" || interTileIdOnViewZ?.startsWith("NPC_") || interTileIdOnViewZ === "FOW_HIDDEN") {
-                        isCurrentInterTileSeeThrough = false;
-                    } else if (!interTileIdOnViewZ) { // Truly empty cell on current Z
-                        isCurrentInterTileSeeThrough = true;
-                    } else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('allows_vision') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) {
-                        isCurrentInterTileSeeThrough = true;
-                    } else {
-                        isCurrentInterTileSeeThrough = false;
-                    }
-                } else { // For intermediate layers between onionZ and currentZ
-                    const interMiddleRaw = interLevelData?.middle?.[y]?.[x];
-                    const interBottomRaw = interLevelData?.bottom?.[y]?.[x];
-                    const effInterMid = (typeof interMiddleRaw === 'object' && interMiddleRaw?.tileId !== undefined) ? interMiddleRaw.tileId : interMiddleRaw;
-                    const effInterBot = (typeof interBottomRaw === 'object' && interBottomRaw?.tileId !== undefined) ? interBottomRaw.tileId : interBottomRaw;
-                    const defInterMid = assetManagerInstance.tilesets[effInterMid];
-                    const defInterBot = assetManagerInstance.tilesets[effInterBot];
-
-                    if (effInterMid && defInterMid && !(defInterMid.tags && (defInterMid.tags.includes('transparent') || defInterMid.tags.includes('allows_vision')))) { // Middle layer blocks
-                        isCurrentInterTileSeeThrough = false;
-                    } else if (effInterBot && defInterBot && !(defInterBot.tags && (defInterBot.tags.includes('transparent_floor') || defInterBot.tags.includes('transparent_bottom') || defInterBot.tags.includes('allows_vision')))) { // Bottom layer blocks
-                        isCurrentInterTileSeeThrough = false;
-                    } else if (!effInterMid && !effInterBot && interLevelData) { // Both empty on existing level
-                        isCurrentInterTileSeeThrough = true;
-                    } else if (!interLevelData) { // Level doesn't exist (void)
-                        isCurrentInterTileSeeThrough = true;
-                    } else { // Default to not see-through if some tile exists but not explicitly transparent
-                        isCurrentInterTileSeeThrough = false;
-                    }
-                }
-
-                if (!isCurrentInterTileSeeThrough) {
-                    isPathSeeThrough = false;
-                    break;
-                }
-            }
-
-            if (isPathSeeThrough) {
-                let tileBelowId = null;
-                const middleBelow = levelDataBelow.middle?.[y]?.[x];
-                const bottomBelow = levelDataBelow.bottom?.[y]?.[x];
-                const effMidBelow = (typeof middleBelow === 'object' && middleBelow?.tileId !== undefined) ? middleBelow.tileId : middleBelow;
-                const effBotBelow = (typeof bottomBelow === 'object' && bottomBelow?.tileId !== undefined) ? bottomBelow.tileId : bottomBelow;
-
-                tileBelowId = effMidBelow || effBotBelow;
-
-                if (tileBelowId) {
-                    const tileDefBelow = assetManagerInstance.tilesets[tileBelowId];
-                    if (tileDefBelow) {
-                        let displayColorBelow = tileDefBelow.color;
-                        let displaySpriteBelow = tileDefBelow.sprite;
-
-                        if (tileDefBelow.tags && tileDefBelow.tags.includes('solid_terrain_top') && zOffset === 1) {
-                            // Render solid_terrain_top from one level below with original color and its actual sprite
-                        } else {
-                            displayColorBelow = blendColors(tileDefBelow.color, '#000000', currentDarkenFactor);
-                            displayColorBelow = blendColors(displayColorBelow, ONION_SKIN_BELOW_TINT_COLOR, currentBelowTintFactor);
-                        }
-                        currentSpan.textContent = displaySpriteBelow;
-                        currentSpan.style.color = displayColorBelow;
-                    }
-                }
-            }
-        }
-    }
-}
-
-// Render Z-levels above (onion skin)
-for (let zOffset = 1; zOffset <= maxLevelsAbove; zOffset++) {
-    const onionZ = currentZ + zOffset;
-    const levelDataAbove = fullMapData.levels[onionZ.toString()];
-    if (!levelDataAbove || !tileCacheData) continue;
-
-    const distanceFactor = zOffset;
-    const currentDarkenFactor = Math.min(MAX_ONION_DARKEN_FACTOR, BASE_ONION_SKIN_DARKEN_FACTOR + (distanceFactor - 1) * EXTRA_DARKEN_PER_LEVEL);
-    const currentAboveTintFactor = Math.min(MAX_ABOVE_TINT_FACTOR, BASE_ONION_SKIN_ABOVE_TINT_FACTOR + (distanceFactor - 1) * EXTRA_ABOVE_TINT_PER_LEVEL);
-
-    for (let y = 0; y < H; y++) {
-        for (let x = 0; x < W; x++) {
-            if (!tileCacheData[y] || !tileCacheData[y][x]) continue;
-
-            const currentCachedCell = tileCacheData[y][x];
-            const currentSpan = currentCachedCell.span;
-
-            let isPathSeeThrough = true;
-            // Check if current Z tile (and all layers below it down to currentZ + 1) are see-through for this onion layer
-            for (let interZ = onionZ - 1; interZ >= currentZ; interZ--) {
-                const interLevelData = fullMapData.levels[interZ.toString()];
-                const interTileIdOnViewZ = (interZ === currentZ) ? currentCachedCell.displayedId : null;
-                const interTileDefOnViewZ = assetManagerInstance.tilesets[interTileIdOnViewZ];
-
-                let isCurrentInterTileSeeThrough = false;
-                if (interZ === currentZ) {
-                    if (interTileIdOnViewZ === "PLAYER_STATIC" || interTileIdOnViewZ?.startsWith("NPC_") || interTileIdOnViewZ === "FOW_HIDDEN") {
-                        isCurrentInterTileSeeThrough = false;
-                    } else if (!interTileIdOnViewZ) {
-                        isCurrentInterTileSeeThrough = true;
-                    } else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('allows_vision') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) {
-                        isCurrentInterTileSeeThrough = true;
-                    } else {
-                        isCurrentInterTileSeeThrough = false;
-                    }
-                } else { // For intermediate layers between currentZ and onionZ (above)
-                    const interMiddleRaw = interLevelData?.middle?.[y]?.[x];
-                    const interBottomRaw = interLevelData?.bottom?.[y]?.[x];
-                    const effInterMid = (typeof interMiddleRaw === 'object' && interMiddleRaw?.tileId !== undefined) ? interMiddleRaw.tileId : interMiddleRaw;
-                    const effInterBot = (typeof interBottomRaw === 'object' && interBottomRaw?.tileId !== undefined) ? interBottomRaw.tileId : interBottomRaw;
-                    const defInterMid = assetManagerInstance.tilesets[effInterMid];
-                    const defInterBot = assetManagerInstance.tilesets[effInterBot];
-                    // For seeing "up", the intermediate layer needs to be like a transparent ceiling or empty.
-                    // This is complex. A simple start: if middle is NOT transparent, or bottom is NOT transparent_floor, it blocks.
-                    if (effInterMid && defInterMid && !(defInterMid.tags && (defInterMid.tags.includes('transparent_ceiling') || defInterMid.tags.includes('transparent') || defInterMid.tags.includes('allows_vision')))) {
-                        isCurrentInterTileSeeThrough = false;
-                    } else if (effInterBot && defInterBot && !(defInterBot.tags && (defInterBot.tags.includes('transparent_ceiling') || defInterBot.tags.includes('transparent_floor') || defInterBot.tags.includes('transparent_bottom') || defInterBot.tags.includes('allows_vision')))) {
-                        isCurrentInterTileSeeThrough = false;
-                    } else if (!effInterMid && !effInterBot && interLevelData) { // Both empty
-                        isCurrentInterTileSeeThrough = true;
-                    } else if (!interLevelData) { // Void
-                        isCurrentInterTileSeeThrough = true;
-                    } else {
-                        isCurrentInterTileSeeThrough = false;
-                    }
-                }
-                if (!isCurrentInterTileSeeThrough) {
-                    isPathSeeThrough = false;
-                    break;
-                }
-            }
-
-            if (isPathSeeThrough) {
-                let tileAboveId = null;
-                const middleAbove = levelDataAbove.middle?.[y]?.[x];
-                const bottomAbove = levelDataAbove.bottom?.[y]?.[x];
-                const effMidAbove = (typeof middleAbove === 'object' && middleAbove?.tileId !== undefined) ? middleAbove.tileId : middleAbove;
-                const effBotAbove = (typeof bottomAbove === 'object' && bottomAbove?.tileId !== undefined) ? bottomAbove.tileId : bottomAbove;
-                tileAboveId = effMidAbove || effBotAbove;
-
-                if (tileAboveId) {
-                    const tileDefAbove = assetManagerInstance.tilesets[tileAboveId];
-                    if (tileDefAbove) {
-                        let canShowTileFromAbove = true;
-                        const isRoofTileAbove = tileDefAbove.tags && tileDefAbove.tags.includes('roof');
-                        if (isRoofTileAbove && !gameState.showRoof && zOffset === 1) { // Only apply showRoof to immediate Z+1
-                            canShowTileFromAbove = false;
-                        }
-
-                        if (canShowTileFromAbove) {
-                            let displayColorAbove = blendColors(tileDefAbove.color, '#000000', currentDarkenFactor);
-                            displayColorAbove = blendColors(displayColorAbove, ONION_SKIN_ABOVE_TINT_COLOR, currentAboveTintFactor);
-                            currentSpan.textContent = tileDefAbove.sprite;
-                            currentSpan.style.color = displayColorAbove;
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-// --- End Onion Skinning Logic ---
-
-
-// NPC Rendering: Only NPCs on the current Z-level
-if (gameState.npcs && gameState.npcs.length > 0 && tileCacheData) {
-    gameState.npcs.forEach(npc => {
-        if (!npc.mapPos || npc.mapPos.z !== currentZ) return; // Skip if not on current Z
-
-        let isBeingAnimated = false;
-        if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
-            const npcMoveAnim = gameState.activeAnimations.find(anim =>
-                anim.type === 'movement' && anim.data.entity === npc && anim.visible &&
-                (anim.z === undefined || anim.z === currentZ) // Check Z if animation has it
-            );
-            if (npcMoveAnim) isBeingAnimated = true;
-        }
-
-        if (!isBeingAnimated) {
-            const npcX = npc.mapPos.x;
-            const npcY = npc.mapPos.y;
-            if (npcX >= 0 && npcX < W && npcY >= 0 && npcY < H) {
-                // Roof obscuring NPC needs to consider roof on current Z or Z+1. Simplified for now.
-                const roofObscures = gameState.showRoof && currentLevelData.roof?.[npcY]?.[npcX];
-                const playerIsHere = (npcX === gameState.playerPos.x && npcY === gameState.playerPos.y && gameState.playerPos.z === currentZ);
-                const isTargetingCursorHere = gameState.isTargetingMode && npcX === gameState.targetingCoords.x && npcY === gameState.targetingCoords.y && gameState.targetingCoords.z === currentZ; // Added Z check for targeting cursor
-
-                // Check if the player was already rendered at this tile in the current frame
-                const cachedCell = tileCacheData[npcY]?.[npcX];
-                const playerAlreadyRenderedOnTile = cachedCell?.displayedId === "PLAYER_STATIC";
-
-                if (!roofObscures && !playerIsHere && !isTargetingCursorHere && !playerAlreadyRenderedOnTile) {
+                    if (!tileCacheData[y]) tileCacheData[y] = Array(W).fill(null);
+                    tileCacheData[y][x] = {
+                        span: span,
+                        displayedId: finalDisplayIdForTile,
+                        sprite: finalSpriteForTile,
+                        color: finalColorForTile
+                    };
+                    if (fragment) fragment.appendChild(span);
+                } else {
+                    const cachedCell = tileCacheData[y]?.[x];
                     if (cachedCell && cachedCell.span) {
-                        cachedCell.span.textContent = npc.sprite;
-                        cachedCell.span.style.color = npc.color;
-                        cachedCell.sprite = npc.sprite;
-                        cachedCell.color = npc.color;
+                        const span = cachedCell.span;
+                        if (cachedCell.sprite !== finalSpriteForTile || cachedCell.color !== finalColorForTile) {
+                            span.textContent = finalSpriteForTile;
+                            span.style.color = finalColorForTile;
+                            cachedCell.sprite = finalSpriteForTile;
+                            cachedCell.color = finalColorForTile;
+                        }
+                        cachedCell.displayedId = finalDisplayIdForTile;
+
+                        let tileHighlightColor = "";
+                        if (fowStatus === 'visible' && window.gameState && window.gameState.floorItems) {
+                            const itemsOnThisTileAndZ = window.gameState.floorItems.filter(fi => fi.x === x && fi.y === y && fi.z === currentZ);
+                            if (itemsOnThisTileAndZ.length > 0) {
+                                const currentTileDefForHighlight = assetManagerInstance.tilesets[finalTileId];
+                                let impassableTileBlockingItemHighlight = false;
+                                if (currentTileDefForHighlight && currentTileDefForHighlight.tags && currentTileDefForHighlight.tags.includes("impassable")) {
+                                    if (!currentTileDefForHighlight.tags.includes("door") &&
+                                        !currentTileDefForHighlight.tags.includes("window") &&
+                                        !currentTileDefForHighlight.tags.includes("container")) {
+                                        impassableTileBlockingItemHighlight = true;
+                                    }
+                                }
+                                if (!impassableTileBlockingItemHighlight) tileHighlightColor = "rgba(255, 255, 0, 0.3)";
+                            }
+                        }
+                        if (span.style.backgroundColor !== tileHighlightColor) {
+                            span.style.backgroundColor = tileHighlightColor;
+                        }
+
+                        if (span.classList.contains('flashing-targeting-cursor') &&
+                            !(gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y /* && targeting Z matches? */)) {
+                            span.classList.remove('flashing-targeting-cursor');
+                        }
                     }
                 }
             }
+            if (isInitialRender && fragment) {
+                const br = document.createElement("br");
+                fragment.appendChild(br);
+            }
         }
-    });
-}
 
-// Render Active Animations on current Z-level
-if (gameState.activeAnimations && gameState.activeAnimations.length > 0 && tileCacheData) {
-    gameState.activeAnimations.forEach(anim => {
-        if (!anim.visible || (anim.z !== undefined && anim.z !== currentZ)) return; // Skip if not on current Z
+        // --- START: Render Environmental Effects (Smoke, Tear Gas) on current Z-level ---
+        // This logic needs to be Z-aware.
+        const environmentalEffectsToRender = [];
+        if (gameState.environmentalEffects) {
+            if (gameState.environmentalEffects.smokeTiles) {
+                environmentalEffectsToRender.push(...gameState.environmentalEffects.smokeTiles
+                    .filter(eff => eff.z === currentZ && eff.duration > 0)
+                    .map(eff => ({ ...eff, type: 'smoke' })));
+            }
+            if (gameState.environmentalEffects.tearGasTiles) {
+                environmentalEffectsToRender.push(...gameState.environmentalEffects.tearGasTiles
+                    .filter(eff => eff.z === currentZ && eff.duration > 0)
+                    .map(eff => ({ ...eff, type: 'tearGas' })));
+            }
+        }
 
-        if (anim.type === 'explosion') {
-            // Explosion logic needs to be 3D, for now, only render if center Z matches currentZ
-            if (anim.centerPos && anim.centerPos.z === currentZ && anim.explosionSprites) {
-                // ... (rest of explosion rendering, ensuring it uses tileCacheData)
-                const spriteToRender = anim.explosionSprites[anim.currentFrameIndex];
-                if (!spriteToRender) return;
-                const colorToRender = anim.color;
-                const centerX = Math.floor(anim.centerPos.x);
-                const centerY = Math.floor(anim.centerPos.y);
-                const radius = Math.floor(anim.currentExpansionRadius);
+        if (environmentalEffectsToRender.length > 0 && tileCacheData) {
+            environmentalEffectsToRender.forEach(effect => {
+                const x = effect.x;
+                const y = effect.y;
+                if (y >= 0 && y < H && x >= 0 && x < W) {
+                    const fowStatus = currentFowData?.[y]?.[x];
+                    if (fowStatus === 'visible' || fowStatus === 'visited') {
+                        const cachedCell = tileCacheData[y]?.[x];
+                        if (cachedCell && cachedCell.span) {
+                            let effectSprite = '?';
+                            let effectColor = '#FFFFFF';
+                            if (effect.type === 'smoke') {
+                                const smokeSprites = ['░', '▒', '▓'];
+                                effectSprite = smokeSprites[Math.floor(Math.random() * smokeSprites.length)];
+                                effectColor = '#888888';
+                            } else if (effect.type === 'tearGas') {
+                                const gasSprites = ['~', ';', ','];
+                                effectSprite = gasSprites[Math.floor(Math.random() * gasSprites.length)];
+                                effectColor = '#B8B868';
+                            }
+                            cachedCell.span.textContent = effectSprite;
+                            cachedCell.span.style.color = effectColor;
+                            // Update cache if these effects are meant to replace the tile visually
+                            cachedCell.sprite = effectSprite;
+                            cachedCell.color = effectColor;
+                        }
+                    }
+                }
+            });
+        }
+        // --- END: Render Environmental Effects ---
 
-                for (let y_anim = Math.max(0, centerY - radius); y_anim <= Math.min(H - 1, centerY + radius); y_anim++) {
-                    for (let x_anim = Math.max(0, centerX - radius); x_anim <= Math.min(W - 1, centerX + radius); x_anim++) {
-                        const dx = x_anim - centerX;
-                        const dy = y_anim - centerY;
-                        if (dx * dx + dy * dy <= radius * radius) {
-                            const cachedCell = tileCacheData[y_anim]?.[x_anim];
-                            if (cachedCell && cachedCell.span) {
-                                cachedCell.span.textContent = spriteToRender;
-                                cachedCell.span.style.color = colorToRender;
-                                cachedCell.sprite = spriteToRender;
-                                cachedCell.color = colorToRender;
+        // Append the main fragment for the current Z-level
+        if (isInitialRender && container && fragment) {
+            container.appendChild(fragment);
+        }
+
+        // --- Overlay rendering for Z-1 (Below) and Z+1 (Above) Layers ---
+        // This simplified approach modifies the visual appearance of current Z-level tiles
+        // if they are transparent, to give a glimpse of adjacent Z-levels.
+        // It does not create new DOM elements for adjacent layers.
+
+        // --- Onion Skinning Logic ---
+        const BASE_ONION_SKIN_DARKEN_FACTOR = 0.5;
+        const EXTRA_DARKEN_PER_LEVEL = 0.1; // Additional darkening for each level away
+        const MAX_ONION_DARKEN_FACTOR = 0.85;
+
+        const ONION_SKIN_ABOVE_TINT_COLOR = '#003300'; // Dark green
+        const BASE_ONION_SKIN_ABOVE_TINT_FACTOR = 0.6;
+        const EXTRA_ABOVE_TINT_PER_LEVEL = 0.1;
+        const MAX_ABOVE_TINT_FACTOR = 0.9;
+
+        const ONION_SKIN_BELOW_TINT_COLOR = '#330000'; // Dark red
+        const BASE_ONION_SKIN_BELOW_TINT_FACTOR = 0.6;
+        const EXTRA_BELOW_TINT_PER_LEVEL = 0.1;
+        const MAX_BELOW_TINT_FACTOR = 0.9;
+
+        const maxLevelsAbove = gameState.onionSkinLevelsAbove || 0;
+        const maxLevelsBelow = gameState.onionSkinLevelsBelow || 0;
+
+        // Render Z-levels below (onion skin)
+        for (let zOffset = 1; zOffset <= maxLevelsBelow; zOffset++) {
+            const onionZ = currentZ - zOffset;
+            const levelDataBelow = fullMapData.levels[onionZ.toString()];
+            if (!levelDataBelow || !tileCacheData) continue;
+
+            const distanceFactor = zOffset;
+            const currentDarkenFactor = Math.min(MAX_ONION_DARKEN_FACTOR, BASE_ONION_SKIN_DARKEN_FACTOR + (distanceFactor - 1) * EXTRA_DARKEN_PER_LEVEL);
+            const currentBelowTintFactor = Math.min(MAX_BELOW_TINT_FACTOR, BASE_ONION_SKIN_BELOW_TINT_FACTOR + (distanceFactor - 1) * EXTRA_BELOW_TINT_PER_LEVEL);
+
+            for (let y = 0; y < H; y++) {
+                for (let x = 0; x < W; x++) {
+                    if (!tileCacheData[y] || !tileCacheData[y][x]) continue;
+
+                    const currentCachedCell = tileCacheData[y][x];
+                    const currentSpan = currentCachedCell.span;
+
+                    // Check if the current Z tile (and all layers above it up to currentZ - 1) are see-through for this onion layer
+                    let isPathSeeThrough = true;
+                    for (let interZ = onionZ + 1; interZ <= currentZ; interZ++) {
+                        const interLevelData = fullMapData.levels[interZ.toString()];
+                        const interTileIdOnViewZ = (interZ === currentZ) ? currentCachedCell.displayedId : null; // Use cached for currentZ, else query
+                        const interTileDefOnViewZ = assetManagerInstance.tilesets[interTileIdOnViewZ];
+
+                        let isCurrentInterTileSeeThrough = false;
+                        if (interZ === currentZ) { // Use already determined displayedId for current view Z
+                            if (interTileIdOnViewZ === "PLAYER_STATIC" || interTileIdOnViewZ?.startsWith("NPC_") || interTileIdOnViewZ === "FOW_HIDDEN") {
+                                isCurrentInterTileSeeThrough = false;
+                            } else if (!interTileIdOnViewZ) { // Truly empty cell on current Z
+                                isCurrentInterTileSeeThrough = true;
+                            } else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('allows_vision') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) {
+                                isCurrentInterTileSeeThrough = true;
+                            } else {
+                                isCurrentInterTileSeeThrough = false;
+                            }
+                        } else { // For intermediate layers between onionZ and currentZ
+                            const interMiddleRaw = interLevelData?.middle?.[y]?.[x];
+                            const interBottomRaw = interLevelData?.bottom?.[y]?.[x];
+                            const effInterMid = (typeof interMiddleRaw === 'object' && interMiddleRaw?.tileId !== undefined) ? interMiddleRaw.tileId : interMiddleRaw;
+                            const effInterBot = (typeof interBottomRaw === 'object' && interBottomRaw?.tileId !== undefined) ? interBottomRaw.tileId : interBottomRaw;
+                            const defInterMid = assetManagerInstance.tilesets[effInterMid];
+                            const defInterBot = assetManagerInstance.tilesets[effInterBot];
+
+                            if (effInterMid && defInterMid && !(defInterMid.tags && (defInterMid.tags.includes('transparent') || defInterMid.tags.includes('allows_vision')))) { // Middle layer blocks
+                                isCurrentInterTileSeeThrough = false;
+                            } else if (effInterBot && defInterBot && !(defInterBot.tags && (defInterBot.tags.includes('transparent_floor') || defInterBot.tags.includes('transparent_bottom') || defInterBot.tags.includes('allows_vision')))) { // Bottom layer blocks
+                                isCurrentInterTileSeeThrough = false;
+                            } else if (!effInterMid && !effInterBot && interLevelData) { // Both empty on existing level
+                                isCurrentInterTileSeeThrough = true;
+                            } else if (!interLevelData) { // Level doesn't exist (void)
+                                isCurrentInterTileSeeThrough = true;
+                            } else { // Default to not see-through if some tile exists but not explicitly transparent
+                                isCurrentInterTileSeeThrough = false;
+                            }
+                        }
+
+                        if (!isCurrentInterTileSeeThrough) {
+                            isPathSeeThrough = false;
+                            break;
+                        }
+                    }
+
+                    if (isPathSeeThrough) {
+                        let tileBelowId = null;
+                        const middleBelow = levelDataBelow.middle?.[y]?.[x];
+                        const bottomBelow = levelDataBelow.bottom?.[y]?.[x];
+                        const effMidBelow = (typeof middleBelow === 'object' && middleBelow?.tileId !== undefined) ? middleBelow.tileId : middleBelow;
+                        const effBotBelow = (typeof bottomBelow === 'object' && bottomBelow?.tileId !== undefined) ? bottomBelow.tileId : bottomBelow;
+
+                        tileBelowId = effMidBelow || effBotBelow;
+
+                        if (tileBelowId) {
+                            const tileDefBelow = assetManagerInstance.tilesets[tileBelowId];
+                            if (tileDefBelow) {
+                                let displayColorBelow = tileDefBelow.color;
+                                let displaySpriteBelow = tileDefBelow.sprite;
+
+                                if (tileDefBelow.tags && tileDefBelow.tags.includes('solid_terrain_top') && zOffset === 1) {
+                                    // Render solid_terrain_top from one level below with original color and its actual sprite
+                                } else {
+                                    displayColorBelow = blendColors(tileDefBelow.color, '#000000', currentDarkenFactor);
+                                    displayColorBelow = blendColors(displayColorBelow, ONION_SKIN_BELOW_TINT_COLOR, currentBelowTintFactor);
+                                }
+                                currentSpan.textContent = displaySpriteBelow;
+                                currentSpan.style.color = displayColorBelow;
                             }
                         }
                     }
                 }
             }
-        } else if (anim.type === 'flamethrower') {
-            if (anim.flameParticles && anim.flameParticles.length > 0) {
-                anim.flameParticles.forEach(particle => {
-                    if (particle.z !== undefined && particle.z !== currentZ) return; // Check Z
-                    const particleX = Math.floor(particle.x);
-                    const particleY = Math.floor(particle.y);
-                    if (particleX >= 0 && particleX < W && particleY >= 0 && particleY < H) {
-                        const cachedCell = tileCacheData[particleY]?.[particleX];
-                        if (cachedCell && cachedCell.span) {
-                            cachedCell.span.textContent = particle.sprite;
-                            cachedCell.span.style.color = particle.color;
+        }
+
+        // Render Z-levels above (onion skin)
+        for (let zOffset = 1; zOffset <= maxLevelsAbove; zOffset++) {
+            const onionZ = currentZ + zOffset;
+            const levelDataAbove = fullMapData.levels[onionZ.toString()];
+            if (!levelDataAbove || !tileCacheData) continue;
+
+            const distanceFactor = zOffset;
+            const currentDarkenFactor = Math.min(MAX_ONION_DARKEN_FACTOR, BASE_ONION_SKIN_DARKEN_FACTOR + (distanceFactor - 1) * EXTRA_DARKEN_PER_LEVEL);
+            const currentAboveTintFactor = Math.min(MAX_ABOVE_TINT_FACTOR, BASE_ONION_SKIN_ABOVE_TINT_FACTOR + (distanceFactor - 1) * EXTRA_ABOVE_TINT_PER_LEVEL);
+
+            for (let y = 0; y < H; y++) {
+                for (let x = 0; x < W; x++) {
+                    if (!tileCacheData[y] || !tileCacheData[y][x]) continue;
+
+                    const currentCachedCell = tileCacheData[y][x];
+                    const currentSpan = currentCachedCell.span;
+
+                    let isPathSeeThrough = true;
+                    // Check if current Z tile (and all layers below it down to currentZ + 1) are see-through for this onion layer
+                    for (let interZ = onionZ - 1; interZ >= currentZ; interZ--) {
+                        const interLevelData = fullMapData.levels[interZ.toString()];
+                        const interTileIdOnViewZ = (interZ === currentZ) ? currentCachedCell.displayedId : null;
+                        const interTileDefOnViewZ = assetManagerInstance.tilesets[interTileIdOnViewZ];
+
+                        let isCurrentInterTileSeeThrough = false;
+                        if (interZ === currentZ) {
+                            if (interTileIdOnViewZ === "PLAYER_STATIC" || interTileIdOnViewZ?.startsWith("NPC_") || interTileIdOnViewZ === "FOW_HIDDEN") {
+                                isCurrentInterTileSeeThrough = false;
+                            } else if (!interTileIdOnViewZ) {
+                                isCurrentInterTileSeeThrough = true;
+                            } else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('allows_vision') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) {
+                                isCurrentInterTileSeeThrough = true;
+                            } else {
+                                isCurrentInterTileSeeThrough = false;
+                            }
+                        } else { // For intermediate layers between currentZ and onionZ (above)
+                            const interMiddleRaw = interLevelData?.middle?.[y]?.[x];
+                            const interBottomRaw = interLevelData?.bottom?.[y]?.[x];
+                            const effInterMid = (typeof interMiddleRaw === 'object' && interMiddleRaw?.tileId !== undefined) ? interMiddleRaw.tileId : interMiddleRaw;
+                            const effInterBot = (typeof interBottomRaw === 'object' && interBottomRaw?.tileId !== undefined) ? interBottomRaw.tileId : interBottomRaw;
+                            const defInterMid = assetManagerInstance.tilesets[effInterMid];
+                            const defInterBot = assetManagerInstance.tilesets[effInterBot];
+                            // For seeing "up", the intermediate layer needs to be like a transparent ceiling or empty.
+                            // This is complex. A simple start: if middle is NOT transparent, or bottom is NOT transparent_floor, it blocks.
+                            if (effInterMid && defInterMid && !(defInterMid.tags && (defInterMid.tags.includes('transparent_ceiling') || defInterMid.tags.includes('transparent') || defInterMid.tags.includes('allows_vision')))) {
+                                isCurrentInterTileSeeThrough = false;
+                            } else if (effInterBot && defInterBot && !(defInterBot.tags && (defInterBot.tags.includes('transparent_ceiling') || defInterBot.tags.includes('transparent_floor') || defInterBot.tags.includes('transparent_bottom') || defInterBot.tags.includes('allows_vision')))) {
+                                isCurrentInterTileSeeThrough = false;
+                            } else if (!effInterMid && !effInterBot && interLevelData) { // Both empty
+                                isCurrentInterTileSeeThrough = true;
+                            } else if (!interLevelData) { // Void
+                                isCurrentInterTileSeeThrough = true;
+                            } else {
+                                isCurrentInterTileSeeThrough = false;
+                            }
+                        }
+                        if (!isCurrentInterTileSeeThrough) {
+                            isPathSeeThrough = false;
+                            break;
                         }
                     }
-                });
-            }
-        } else if (anim.type === 'gasCloud') {
-            if (anim.particles && anim.particles.length > 0) {
-                anim.particles.forEach(particle => {
-                    if (particle.opacity <= 0 || (particle.z !== undefined && particle.z !== currentZ)) return;
-                    const particleX = Math.floor(particle.x);
-                    const particleY = Math.floor(particle.y);
-                    if (particleX >= 0 && particleX < W && particleY >= 0 && particleY < H) {
-                        const cachedCell = tileCacheData[particleY]?.[particleX];
-                        if (cachedCell && cachedCell.span) {
-                            cachedCell.span.textContent = particle.sprite;
-                            let r = parseInt(particle.color.substring(1, 3), 16);
-                            let g = parseInt(particle.color.substring(3, 5), 16);
-                            let b = parseInt(particle.color.substring(5, 7), 16);
-                            const bgR = 50, bgG = 50, bgB = 50;
-                            r = Math.floor(r * particle.opacity + bgR * (1 - particle.opacity));
-                            g = Math.floor(g * particle.opacity + bgG * (1 - particle.opacity));
-                            b = Math.floor(b * particle.opacity + bgB * (1 - particle.opacity));
-                            cachedCell.span.style.color = `rgb(${r},${g},${b})`;
+
+                    if (isPathSeeThrough) {
+                        let tileAboveId = null;
+                        const middleAbove = levelDataAbove.middle?.[y]?.[x];
+                        const bottomAbove = levelDataAbove.bottom?.[y]?.[x];
+                        const effMidAbove = (typeof middleAbove === 'object' && middleAbove?.tileId !== undefined) ? middleAbove.tileId : middleAbove;
+                        const effBotAbove = (typeof bottomAbove === 'object' && bottomAbove?.tileId !== undefined) ? bottomAbove.tileId : bottomAbove;
+                        tileAboveId = effMidAbove || effBotAbove;
+
+                        if (tileAboveId) {
+                            const tileDefAbove = assetManagerInstance.tilesets[tileAboveId];
+                            if (tileDefAbove) {
+                                let canShowTileFromAbove = true;
+                                const isRoofTileAbove = tileDefAbove.tags && tileDefAbove.tags.includes('roof');
+                                if (isRoofTileAbove && !gameState.showRoof && zOffset === 1) { // Only apply showRoof to immediate Z+1
+                                    canShowTileFromAbove = false;
+                                }
+
+                                if (canShowTileFromAbove) {
+                                    let displayColorAbove = blendColors(tileDefAbove.color, '#000000', currentDarkenFactor);
+                                    displayColorAbove = blendColors(displayColorAbove, ONION_SKIN_ABOVE_TINT_COLOR, currentAboveTintFactor);
+                                    currentSpan.textContent = tileDefAbove.sprite;
+                                    currentSpan.style.color = displayColorAbove;
+                                }
+                            }
                         }
                     }
-                });
-            }
-        } else if (anim.sprite) { // Other single-sprite animations
-            const animX = Math.floor(anim.x);
-            const animY = Math.floor(anim.y);
-            // Ensure anim.z check if applicable for this animation type
-            if (animX >= 0 && animX < W && animY >= 0 && animY < H) {
-                const cachedCell = tileCacheData[animY]?.[animX];
-                if (cachedCell && cachedCell.span) {
-                    cachedCell.span.textContent = anim.sprite;
-                    cachedCell.span.style.color = anim.color;
-                    cachedCell.sprite = anim.sprite;
-                    cachedCell.color = anim.color;
                 }
             }
         }
-    });
-}
+        // --- End Onion Skinning Logic ---
 
-// Targeting Cursor
-if (gameState.isTargetingMode && tileCacheData) {
-    const targetX = gameState.targetingCoords.x;
-    const targetY = gameState.targetingCoords.y;
-    const targetZ = gameState.targetingCoords.z; // Get target Z
 
-    // Only display the 'X' cursor if the target's Z matches the current view Z
-    if (targetZ === currentZ) {
-        if (targetX >= 0 && targetX < W && targetY >= 0 && targetY < H) {
-            const cachedCell = tileCacheData[targetY]?.[targetX];
-            if (cachedCell && cachedCell.span) {
-                // Check if player or NPC is already on this tile, if so, don't overwrite their sprite with 'X'
-                // Instead, apply the flashing class to highlight them or the tile.
-                // The actual textContent ('X') should only be set if the tile is not occupied by player/NPC.
-                // For now, the flashing class will highlight whatever is there.
-                // A more advanced solution might overlay the 'X' or change background.
+        // NPC Rendering: Only NPCs on the current Z-level
+        if (gameState.npcs && gameState.npcs.length > 0 && tileCacheData) {
+            gameState.npcs.forEach(npc => {
+                if (!npc.mapPos || npc.mapPos.z !== currentZ) return; // Skip if not on current Z
 
-                // If player is on the target tile, 'X' might obscure player.
-                // If NPC is on the target tile, 'X' might obscure NPC.
-                // The current logic below will set textContent to 'X'.
-                // This could be refined to make the 'X' a background or border effect
-                // if something important is already on the tile.
-                // For now, keeping it simple: 'X' shows on the target tile of the current view Z.
+                let isBeingAnimated = false;
+                if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
+                    const npcMoveAnim = gameState.activeAnimations.find(anim =>
+                        anim.type === 'movement' && anim.data.entity === npc && anim.visible &&
+                        (anim.z === undefined || anim.z === currentZ) // Check Z if animation has it
+                    );
+                    if (npcMoveAnim) isBeingAnimated = true;
+                }
 
-                cachedCell.span.textContent = 'X'; // This will overwrite existing content like player/NPC
-                cachedCell.span.style.color = 'red';
-                if (!cachedCell.span.classList.contains('flashing-targeting-cursor')) {
-                    cachedCell.span.classList.add('flashing-targeting-cursor');
+                if (!isBeingAnimated) {
+                    const npcX = npc.mapPos.x;
+                    const npcY = npc.mapPos.y;
+                    if (npcX >= 0 && npcX < W && npcY >= 0 && npcY < H) {
+                        // Roof obscuring NPC needs to consider roof on current Z or Z+1. Simplified for now.
+                        const roofObscures = gameState.showRoof && currentLevelData.roof?.[npcY]?.[npcX];
+                        const playerIsHere = (npcX === gameState.playerPos.x && npcY === gameState.playerPos.y && gameState.playerPos.z === currentZ);
+                        const isTargetingCursorHere = gameState.isTargetingMode && npcX === gameState.targetingCoords.x && npcY === gameState.targetingCoords.y && gameState.targetingCoords.z === currentZ; // Added Z check for targeting cursor
+
+                        // Check if the player was already rendered at this tile in the current frame
+                        const cachedCell = tileCacheData[npcY]?.[npcX];
+                        const playerAlreadyRenderedOnTile = cachedCell?.displayedId === "PLAYER_STATIC";
+
+                        if (!roofObscures && !playerIsHere && !isTargetingCursorHere && !playerAlreadyRenderedOnTile) {
+                            if (cachedCell && cachedCell.span) {
+                                cachedCell.span.textContent = npc.sprite;
+                                cachedCell.span.style.color = npc.color;
+                                cachedCell.sprite = npc.sprite;
+                                cachedCell.color = npc.color;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Active Animations on current Z-level
+        if (gameState.activeAnimations && gameState.activeAnimations.length > 0 && tileCacheData) {
+            gameState.activeAnimations.forEach(anim => {
+                if (!anim.visible || (anim.z !== undefined && anim.z !== currentZ)) return; // Skip if not on current Z
+
+                if (anim.type === 'explosion') {
+                    // Explosion logic needs to be 3D, for now, only render if center Z matches currentZ
+                    if (anim.centerPos && anim.centerPos.z === currentZ && anim.explosionSprites) {
+                        // ... (rest of explosion rendering, ensuring it uses tileCacheData)
+                        const spriteToRender = anim.explosionSprites[anim.currentFrameIndex];
+                        if (!spriteToRender) return;
+                        const colorToRender = anim.color;
+                        const centerX = Math.floor(anim.centerPos.x);
+                        const centerY = Math.floor(anim.centerPos.y);
+                        const radius = Math.floor(anim.currentExpansionRadius);
+
+                        for (let y_anim = Math.max(0, centerY - radius); y_anim <= Math.min(H - 1, centerY + radius); y_anim++) {
+                            for (let x_anim = Math.max(0, centerX - radius); x_anim <= Math.min(W - 1, centerX + radius); x_anim++) {
+                                const dx = x_anim - centerX;
+                                const dy = y_anim - centerY;
+                                if (dx * dx + dy * dy <= radius * radius) {
+                                    const cachedCell = tileCacheData[y_anim]?.[x_anim];
+                                    if (cachedCell && cachedCell.span) {
+                                        cachedCell.span.textContent = spriteToRender;
+                                        cachedCell.span.style.color = colorToRender;
+                                        cachedCell.sprite = spriteToRender;
+                                        cachedCell.color = colorToRender;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (anim.type === 'flamethrower') {
+                    if (anim.flameParticles && anim.flameParticles.length > 0) {
+                        anim.flameParticles.forEach(particle => {
+                            if (particle.z !== undefined && particle.z !== currentZ) return; // Check Z
+                            const particleX = Math.floor(particle.x);
+                            const particleY = Math.floor(particle.y);
+                            if (particleX >= 0 && particleX < W && particleY >= 0 && particleY < H) {
+                                const cachedCell = tileCacheData[particleY]?.[particleX];
+                                if (cachedCell && cachedCell.span) {
+                                    cachedCell.span.textContent = particle.sprite;
+                                    cachedCell.span.style.color = particle.color;
+                                }
+                            }
+                        });
+                    }
+                } else if (anim.type === 'gasCloud') {
+                    if (anim.particles && anim.particles.length > 0) {
+                        anim.particles.forEach(particle => {
+                            if (particle.opacity <= 0 || (particle.z !== undefined && particle.z !== currentZ)) return;
+                            const particleX = Math.floor(particle.x);
+                            const particleY = Math.floor(particle.y);
+                            if (particleX >= 0 && particleX < W && particleY >= 0 && particleY < H) {
+                                const cachedCell = tileCacheData[particleY]?.[particleX];
+                                if (cachedCell && cachedCell.span) {
+                                    cachedCell.span.textContent = particle.sprite;
+                                    let r = parseInt(particle.color.substring(1, 3), 16);
+                                    let g = parseInt(particle.color.substring(3, 5), 16);
+                                    let b = parseInt(particle.color.substring(5, 7), 16);
+                                    const bgR = 50, bgG = 50, bgB = 50;
+                                    r = Math.floor(r * particle.opacity + bgR * (1 - particle.opacity));
+                                    g = Math.floor(g * particle.opacity + bgG * (1 - particle.opacity));
+                                    b = Math.floor(b * particle.opacity + bgB * (1 - particle.opacity));
+                                    cachedCell.span.style.color = `rgb(${r},${g},${b})`;
+                                }
+                            }
+                        });
+                    }
+                } else if (anim.sprite) { // Other single-sprite animations
+                    const animX = Math.floor(anim.x);
+                    const animY = Math.floor(anim.y);
+                    // Ensure anim.z check if applicable for this animation type
+                    if (animX >= 0 && animX < W && animY >= 0 && animY < H) {
+                        const cachedCell = tileCacheData[animY]?.[animX];
+                        if (cachedCell && cachedCell.span) {
+                            cachedCell.span.textContent = anim.sprite;
+                            cachedCell.span.style.color = anim.color;
+                            cachedCell.sprite = anim.sprite;
+                            cachedCell.color = anim.color;
+                        }
+                    }
+                }
+            });
+        }
+
+        // Targeting Cursor
+        if (gameState.isTargetingMode && tileCacheData) {
+            const targetX = gameState.targetingCoords.x;
+            const targetY = gameState.targetingCoords.y;
+            const targetZ = gameState.targetingCoords.z; // Get target Z
+
+            // Only display the 'X' cursor if the target's Z matches the current view Z
+            if (targetZ === currentZ) {
+                if (targetX >= 0 && targetX < W && targetY >= 0 && targetY < H) {
+                    const cachedCell = tileCacheData[targetY]?.[targetX];
+                    if (cachedCell && cachedCell.span) {
+                        // Check if player or NPC is already on this tile, if so, don't overwrite their sprite with 'X'
+                        // Instead, apply the flashing class to highlight them or the tile.
+                        // The actual textContent ('X') should only be set if the tile is not occupied by player/NPC.
+                        // For now, the flashing class will highlight whatever is there.
+                        // A more advanced solution might overlay the 'X' or change background.
+
+                        // If player is on the target tile, 'X' might obscure player.
+                        // If NPC is on the target tile, 'X' might obscure NPC.
+                        // The current logic below will set textContent to 'X'.
+                        // This could be refined to make the 'X' a background or border effect
+                        // if something important is already on the tile.
+                        // For now, keeping it simple: 'X' shows on the target tile of the current view Z.
+
+                        cachedCell.span.textContent = 'X'; // This will overwrite existing content like player/NPC
+                        cachedCell.span.style.color = 'red';
+                        if (!cachedCell.span.classList.contains('flashing-targeting-cursor')) {
+                            cachedCell.span.classList.add('flashing-targeting-cursor');
+                        }
+                    }
+                }
+            }
+            // TODO: Optionally, add an indicator for off-Z targets if they are visible 
+            // (e.g., through a grate). For instance, change the color of the grate tile.
+            // This would require knowing which tile on currentViewZ corresponds to the view of targetX, targetY on targetZ.
+        }
+
+        // Combat highlights (attacker/defender) - needs Z awareness for positions
+        if (gameState.isInCombat && tileCacheData) {
+            // Clear previous highlights first to handle movement
+            // This is a simplified clear; a more robust way would track previously highlighted cells.
+            // For now, this relies on the main render loop re-evaluating background colors.
+            // The `isAttackerHighlighted` and `isDefenderHighlighted` datasets are not standard and might not be used by CSS.
+            // Better to clear background color directly if it was set.
+            // This clearing loop might be inefficient. Consider clearing only if necessary.
+            /*
+            if (!isInitialRender) { // Only if not initial render, as initial render clears all.
+                for (let yCache = 0; yCache < tileCacheData.length; yCache++) {
+                    for (let xCache = 0; xCache < tileCacheData[yCache].length; xCache++) {
+                        const cellToClear = tileCacheData[yCache][xCache];
+                        if (cellToClear && cellToClear.span && cellToClear.span.style.backgroundColor !== "") {
+                            // Check if it was a combat highlight color, then clear.
+                            // This needs a more specific check if other things set background colors.
+                            // For now, assuming only combat highlights set it this way.
+                            // cellToClear.span.style.backgroundColor = ""; // Clear background
+                        }
+                    }
+                }
+            }
+            */
+            // The above clearing logic is commented out as it might be too aggressive or incorrect.
+            // The main rendering loop should correctly set backgrounds each frame.
+            // The flashing-targeting-cursor is handled separately above.
+
+            if (gameState.attackerMapPos && gameState.attackerMapPos.z === currentZ) {
+                const attackerCell = tileCacheData[gameState.attackerMapPos.y]?.[gameState.attackerMapPos.x];
+                if (attackerCell && attackerCell.span) {
+                    attackerCell.span.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+                    // attackerCell.span.dataset.isAttackerHighlighted = 'true'; // dataset not used by CSS currently
+                }
+            }
+            if (gameState.defenderMapPos && gameState.defenderMapPos.z === currentZ) {
+                const defenderCell = tileCacheData[gameState.defenderMapPos.y]?.[gameState.defenderMapPos.x];
+                if (defenderCell && defenderCell.span) {
+                    defenderCell.span.style.backgroundColor = 'rgba(0, 0, 255, 0.3)';
+                    // defenderCell.span.dataset.isDefenderHighlighted = 'true'; // dataset not used by CSS currently
                 }
             }
         }
-    }
-    // TODO: Optionally, add an indicator for off-Z targets if they are visible 
-    // (e.g., through a grate). For instance, change the color of the grate tile.
-    // This would require knowing which tile on currentViewZ corresponds to the view of targetX, targetY on targetZ.
-}
+        this.updateMapHighlight(); // This function also needs to be Z-aware if interactableItems can be on other Zs.
 
-// Combat highlights (attacker/defender) - needs Z awareness for positions
-if (gameState.isInCombat && tileCacheData) {
-    // Clear previous highlights first to handle movement
-    // This is a simplified clear; a more robust way would track previously highlighted cells.
-    // For now, this relies on the main render loop re-evaluating background colors.
-    // The `isAttackerHighlighted` and `isDefenderHighlighted` datasets are not standard and might not be used by CSS.
-    // Better to clear background color directly if it was set.
-    // This clearing loop might be inefficient. Consider clearing only if necessary.
-    /*
-    if (!isInitialRender) { // Only if not initial render, as initial render clears all.
-        for (let yCache = 0; yCache < tileCacheData.length; yCache++) {
-            for (let xCache = 0; xCache < tileCacheData[yCache].length; xCache++) {
-                const cellToClear = tileCacheData[yCache][xCache];
-                if (cellToClear && cellToClear.span && cellToClear.span.style.backgroundColor !== "") {
-                    // Check if it was a combat highlight color, then clear.
-                    // This needs a more specific check if other things set background colors.
-                    // For now, assuming only combat highlights set it this way.
-                    // cellToClear.span.style.backgroundColor = ""; // Clear background
-                }
-            }
+        if (window.gameState && window.gameState.activeAnimations && window.gameState.activeAnimations.filter(a => a.z === undefined || a.z === currentZ).length > 0) {
+            window.mapRenderer.scheduleRender();
         }
-    }
-    */
-    // The above clearing logic is commented out as it might be too aggressive or incorrect.
-    // The main rendering loop should correctly set backgrounds each frame.
-    // The flashing-targeting-cursor is handled separately above.
-
-    if (gameState.attackerMapPos && gameState.attackerMapPos.z === currentZ) {
-        const attackerCell = tileCacheData[gameState.attackerMapPos.y]?.[gameState.attackerMapPos.x];
-        if (attackerCell && attackerCell.span) {
-            attackerCell.span.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
-            // attackerCell.span.dataset.isAttackerHighlighted = 'true'; // dataset not used by CSS currently
-        }
-    }
-    if (gameState.defenderMapPos && gameState.defenderMapPos.z === currentZ) {
-        const defenderCell = tileCacheData[gameState.defenderMapPos.y]?.[gameState.defenderMapPos.x];
-        if (defenderCell && defenderCell.span) {
-            defenderCell.span.style.backgroundColor = 'rgba(0, 0, 255, 0.3)';
-            // defenderCell.span.dataset.isDefenderHighlighted = 'true'; // dataset not used by CSS currently
-        }
-    }
-}
-this.updateMapHighlight(); // This function also needs to be Z-aware if interactableItems can be on other Zs.
-
-if (window.gameState && window.gameState.activeAnimations && window.gameState.activeAnimations.filter(a => a.z === undefined || a.z === currentZ).length > 0) {
-    window.mapRenderer.scheduleRender();
-}
     },
 
-updateMapHighlight: function () {
-    document.querySelectorAll('.tile.flashing')
-        .forEach(el => el.classList.remove('flashing'));
+    updateMapHighlight: function () {
+        document.querySelectorAll('.tile.flashing')
+            .forEach(el => el.classList.remove('flashing'));
 
-    const idx = gameState.selectedItemIndex;
-    if (!gameState.interactableItems || idx < 0 || idx >= gameState.interactableItems.length) return;
+        const idx = gameState.selectedItemIndex;
+        if (!gameState.interactableItems || idx < 0 || idx >= gameState.interactableItems.length) return;
 
-    const it = gameState.interactableItems[idx];
-    // Only highlight if the item is on the current viewing Z-level
-    if (!it || (it.z !== undefined && it.z !== gameState.currentViewZ)) return;
+        const it = gameState.interactableItems[idx];
+        // Only highlight if the item is on the current viewing Z-level
+        if (!it || (it.z !== undefined && it.z !== gameState.currentViewZ)) return;
 
-    const x = it.x;
-    const y = it.y;
+        const x = it.x;
+        const y = it.y;
 
-    if (typeof x !== 'number' || typeof y !== 'number') return;
+        if (typeof x !== 'number' || typeof y !== 'number') return;
 
-    // Access tileCache for the current Z
-    const tileCacheData = gameState.tileCache && gameState.tileCache.z === gameState.currentViewZ ? gameState.tileCache.data : null;
-    if (!tileCacheData) return;
+        // Access tileCache for the current Z
+        const tileCacheData = gameState.tileCache && gameState.tileCache.z === gameState.currentViewZ ? gameState.tileCache.data : null;
+        if (!tileCacheData) return;
 
-    const cachedCell = tileCacheData[y]?.[x];
-    if (cachedCell && cachedCell.span) {
-        cachedCell.span.classList.add('flashing');
-    } else {
-        // Fallback query if not in cache (should ideally be in cache)
-        const span = document.querySelector(`.tile[data-x="${x}"][data-y="${y}"]`);
-        if (span) span.classList.add('flashing');
-    }
-},
-
-toggleRoof: function () {
-    gameState.showRoof = !gameState.showRoof;
-    this.scheduleRender();
-    if (typeof logToConsole === 'function') logToConsole("Roof layer toggled " + (gameState.showRoof ? "on" : "off"));
-    else console.log("Roof layer toggled " + (gameState.showRoof ? "on" : "off"));
-},
-
-isPassable: function (tileId) { // This will need to take Z into account for actual game logic
-    if (!tileId) return true;
-    const tileData = assetManagerInstance?.tilesets?.[tileId];
-    if (!tileData) return true;
-    const tags = tileData.tags || [];
-    return !tags.includes("impassable");
-},
-
-getCollisionTileAt: function (x, y, z) {
-    const mapData = this.getCurrentMapData(); // This is fullMapData, includes .levels
-    if (!mapData || !mapData.levels || !mapData.dimensions ||
-        x < 0 || y < 0 || z === undefined ||
-        y >= mapData.dimensions.height || x >= mapData.dimensions.width) {
-        return ""; // Out of bounds or invalid data
-    }
-
-    const zStr = z.toString();
-    const levelData = mapData.levels[zStr];
-    if (!levelData) return ""; // No data for this Z-level
-
-    const tilesets = assetManagerInstance?.tilesets;
-    if (!tilesets) return ""; // Tileset definitions not available
-
-    // Primarily check the 'middle' layer for impassable tiles.
-    // 'bottom' layer tiles (floors) are generally not collision objects themselves,
-    // but something on the 'middle' layer above a floor would be.
-    const tileOnMiddleRaw = levelData.middle?.[y]?.[x];
-    const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined)
-        ? tileOnMiddleRaw.tileId
-        : tileOnMiddleRaw;
-
-    if (effectiveTileOnMiddle && effectiveTileOnMiddle !== "") {
-        const tileDefMiddle = tilesets[effectiveTileOnMiddle];
-        if (tileDefMiddle && tileDefMiddle.tags && tileDefMiddle.tags.includes('impassable')) {
-            return effectiveTileOnMiddle; // Found an impassable tile on the middle layer
+        const cachedCell = tileCacheData[y]?.[x];
+        if (cachedCell && cachedCell.span) {
+            cachedCell.span.classList.add('flashing');
+        } else {
+            // Fallback query if not in cache (should ideally be in cache)
+            const span = document.querySelector(`.tile[data-x="${x}"][data-y="${y}"]`);
+            if (span) span.classList.add('flashing');
         }
-    }
+    },
 
-    // Optionally, check 'bottom' layer if some bottom tiles can be inherently impassable (e.g. spikes on floor)
-    // For now, assuming 'bottom' layer is generally passable and 'middle' contains primary obstacles.
-    // If a bottom tile like 'spikes' should be impassable, it might be better on 'middle' conceptually,
-    // or this function would need to check bottom as well.
-    // Example:
-    // const tileOnBottomRaw = levelData.bottom?.[y]?.[x];
-    // const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && ... ) ? ... : tileOnBottomRaw;
-    // if (effectiveTileOnBottom && ...) {
-    //     const tileDefBottom = tilesets[effectiveTileOnBottom];
-    //     if (tileDefBottom && tileDefBottom.tags && tileDefBottom.tags.includes('impassable_bottom_tile')) {
-    //         return effectiveTileOnBottom;
-    //     }
-    // }
+    toggleRoof: function () {
+        gameState.showRoof = !gameState.showRoof;
+        this.scheduleRender();
+        logToConsole("Roof layer toggled " + (gameState.showRoof ? "on" : "off"));
+    },
 
-    return ""; // No impassable tile found at this x,y,z on the primary collision layer (middle)
-},
+    isPassable: function (tileId) { // This will need to take Z into account for actual game logic
+        if (!tileId) return true;
+        const tileData = assetManagerInstance?.tilesets?.[tileId];
+        if (!tileData) return true;
+        const tags = tileData.tags || [];
+        return !tags.includes("impassable");
+    },
 
-isWalkable: function (x, y, z) {
-    const debugPrefix = `isWalkable(${x},${y},${z}):`;
-    // console.log(`${debugPrefix} Checking...`); // Keep console logs minimal
+    getCollisionTileAt: function (x, y, z) {
+        const mapData = this.getCurrentMapData(); // This is fullMapData, includes .levels
+        if (!mapData || !mapData.levels || !mapData.dimensions ||
+            x < 0 || y < 0 || z === undefined ||
+            y >= mapData.dimensions.height || x >= mapData.dimensions.width) {
+            return ""; // Out of bounds or invalid data
+        }
 
-    const mapData = this.getCurrentMapData();
-    const tilesets = assetManagerInstance ? assetManagerInstance.tilesets : null;
+        const zStr = z.toString();
+        const levelData = mapData.levels[zStr];
+        if (!levelData) return ""; // No data for this Z-level
 
-    if (!mapData || !mapData.levels || !mapData.dimensions || !tilesets) {
-        // console.log(`${debugPrefix} Initial data missing. Result: false`);
-        return false;
-    }
-    if (x < 0 || y < 0 || y >= mapData.dimensions.height || x >= mapData.dimensions.width) {
-        // console.log(`${debugPrefix} Out of bounds. Result: false`);
-        return false;
-    }
+        const tilesets = assetManagerInstance?.tilesets;
+        if (!tilesets) return ""; // Tileset definitions not available
 
-    const zStr = z.toString();
-    const currentLevelData = mapData.levels[zStr];
+        // Primarily check the 'middle' layer for impassable tiles.
+        // 'bottom' layer tiles (floors) are generally not collision objects themselves,
+        // but something on the 'middle' layer above a floor would be.
+        const tileOnMiddleRaw = levelData.middle?.[y]?.[x];
+        const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined)
+            ? tileOnMiddleRaw.tileId
+            : tileOnMiddleRaw;
 
-    // --- 1. Check for support from below (Z-1) ---
-    let supportedFromBelow = false;
-    const zBelowStr = (z - 1).toString();
-    const levelDataBelow = mapData.levels[zBelowStr];
-    if (levelDataBelow) {
-        const tileOnMiddleBelowRaw = levelDataBelow.middle?.[y]?.[x];
-        const effMidBelow = (typeof tileOnMiddleBelowRaw === 'object' && tileOnMiddleBelowRaw?.tileId !== undefined) ? tileOnMiddleBelowRaw.tileId : tileOnMiddleBelowRaw;
-        if (effMidBelow && tilesets[effMidBelow]?.tags) {
-            if (tilesets[effMidBelow].tags.includes('solid_terrain_top')) {
-                supportedFromBelow = true;
+        if (effectiveTileOnMiddle && effectiveTileOnMiddle !== "") {
+            const tileDefMiddle = tilesets[effectiveTileOnMiddle];
+            if (tileDefMiddle && tileDefMiddle.tags && tileDefMiddle.tags.includes('impassable')) {
+                return effectiveTileOnMiddle; // Found an impassable tile on the middle layer
             }
         }
-        if (!supportedFromBelow) {
-            const tileOnBottomBelowRaw = levelDataBelow.bottom?.[y]?.[x];
-            const effBotBelow = (typeof tileOnBottomBelowRaw === 'object' && tileOnBottomBelowRaw?.tileId !== undefined) ? tileOnBottomBelowRaw.tileId : tileOnBottomBelowRaw;
-            if (effBotBelow && tilesets[effBotBelow]?.tags?.includes('solid_terrain_top')) {
-                supportedFromBelow = true;
+
+        // Optionally, check 'bottom' layer if some bottom tiles can be inherently impassable (e.g. spikes on floor)
+        // For now, assuming 'bottom' layer is generally passable and 'middle' contains primary obstacles.
+        // If a bottom tile like 'spikes' should be impassable, it might be better on 'middle' conceptually,
+        // or this function would need to check bottom as well.
+        // Example:
+        // const tileOnBottomRaw = levelData.bottom?.[y]?.[x];
+        // const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && ... ) ? ... : tileOnBottomRaw;
+        // if (effectiveTileOnBottom && ...) {
+        //     const tileDefBottom = tilesets[effectiveTileOnBottom];
+        //     if (tileDefBottom && tileDefBottom.tags && tileDefBottom.tags.includes('impassable_bottom_tile')) {
+        //         return effectiveTileOnBottom;
+        //     }
+        // }
+
+        return ""; // No impassable tile found at this x,y,z on the primary collision layer (middle)
+    },
+
+    isWalkable: function (x, y, z) {
+        const debugPrefix = `isWalkable(${x},${y},${z}):`;
+        // console.log(`${debugPrefix} Checking...`); // Keep console logs minimal
+
+        const mapData = this.getCurrentMapData();
+        const tilesets = assetManagerInstance ? assetManagerInstance.tilesets : null;
+
+        if (!mapData || !mapData.levels || !mapData.dimensions || !tilesets) {
+            // console.log(`${debugPrefix} Initial data missing. Result: false`);
+            return false;
+        }
+        if (x < 0 || y < 0 || y >= mapData.dimensions.height || x >= mapData.dimensions.width) {
+            // console.log(`${debugPrefix} Out of bounds. Result: false`);
+            return false;
+        }
+
+        const zStr = z.toString();
+        const currentLevelData = mapData.levels[zStr];
+
+        // --- 1. Check for support from below (Z-1) ---
+        let supportedFromBelow = false;
+        const zBelowStr = (z - 1).toString();
+        const levelDataBelow = mapData.levels[zBelowStr];
+        if (levelDataBelow) {
+            const tileOnMiddleBelowRaw = levelDataBelow.middle?.[y]?.[x];
+            const effMidBelow = (typeof tileOnMiddleBelowRaw === 'object' && tileOnMiddleBelowRaw?.tileId !== undefined) ? tileOnMiddleBelowRaw.tileId : tileOnMiddleBelowRaw;
+            if (effMidBelow && tilesets[effMidBelow]?.tags) {
+                if (tilesets[effMidBelow].tags.includes('solid_terrain_top')) {
+                    supportedFromBelow = true;
+                }
+            }
+            if (!supportedFromBelow) {
+                const tileOnBottomBelowRaw = levelDataBelow.bottom?.[y]?.[x];
+                const effBotBelow = (typeof tileOnBottomBelowRaw === 'object' && tileOnBottomBelowRaw?.tileId !== undefined) ? tileOnBottomBelowRaw.tileId : tileOnBottomBelowRaw;
+                if (effBotBelow && tilesets[effBotBelow]?.tags?.includes('solid_terrain_top')) {
+                    supportedFromBelow = true;
+                }
             }
         }
-    }
-    // if (supportedFromBelow) console.log(`${debugPrefix} Supported from Z-1.`);
+        // if (supportedFromBelow) console.log(`${debugPrefix} Supported from Z-1.`);
 
-    // --- 2. Handle cases where current Z-level data is missing or malformed ---
-    if (!currentLevelData || !currentLevelData.bottom || !currentLevelData.middle) {
-        // If no data for current Z, it's only walkable if supported from below (e.g., air over solid ground).
-        // console.log(`${debugPrefix} No/malformed level data for current Z (${zStr}). Relying on supportFromBelow (${supportedFromBelow}). Result: ${supportedFromBelow}`);
+        // --- 2. Handle cases where current Z-level data is missing or malformed ---
+        if (!currentLevelData || !currentLevelData.bottom || !currentLevelData.middle) {
+            // If no data for current Z, it's only walkable if supported from below (e.g., air over solid ground).
+            // console.log(`${debugPrefix} No/malformed level data for current Z (${zStr}). Relying on supportFromBelow (${supportedFromBelow}). Result: ${supportedFromBelow}`);
+            return supportedFromBelow;
+        }
+
+        // --- 3. Check Middle Layer of Current Z ---
+        const tileOnMiddleRaw = currentLevelData.middle[y]?.[x];
+        const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw?.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
+
+        if (effectiveTileOnMiddle && tilesets[effectiveTileOnMiddle]) {
+            const tileDefMiddle = tilesets[effectiveTileOnMiddle];
+            // console.log(`${debugPrefix} Middle layer @Z${z} has tile: ${effectiveTileOnMiddle}`, tileDefMiddle.tags);
+
+            if (tileDefMiddle.tags) {
+                // Explicitly walkable items on middle layer
+                if (tileDefMiddle.tags.includes("walkable_on_z") || tileDefMiddle.tags.includes("z_transition")) {
+                    // console.log(`${debugPrefix} Middle @Z${z} is walkable_on_z or z_transition. Result: true`);
+                    return true;
+                }
+                // solid_terrain_top on middle layer is NOT walkable at its own Z unless it's also one of the above.
+                if (tileDefMiddle.tags.includes("solid_terrain_top")) {
+                    // console.log(`${debugPrefix} Middle @Z${z} is solid_terrain_top (and not walkable_on_z/z_trans). Not walkable. Result: false`);
+                    return false;
+                }
+                // General impassable check for middle layer
+                if (tileDefMiddle.tags.includes("impassable")) {
+                    // console.log(`${debugPrefix} Middle @Z${z} ('${effectiveTileOnMiddle}') is impassable. Result: false`);
+                    return false;
+                }
+            }
+        } else if (effectiveTileOnMiddle && !tilesets[effectiveTileOnMiddle]) {
+            // console.log(`${debugPrefix} Middle tile ${effectiveTileOnMiddle} at Z=${z} has no definition. Result: false (assuming non-walkable).`);
+            return false; // Unknown tile on middle is not walkable.
+        }
+        // If middle layer is empty or has a non-blocking defined tile, proceed.
+
+        // --- 4. Check Bottom Layer of Current Z ---
+        const tileOnBottomRaw = currentLevelData.bottom[y]?.[x];
+        const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw?.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
+
+        if (effectiveTileOnBottom && tilesets[effectiveTileOnBottom]) {
+            const tileDefBottom = tilesets[effectiveTileOnBottom];
+            // console.log(`${debugPrefix} Bottom layer @Z${z} has tile: ${effectiveTileOnBottom}`, tileDefBottom.tags);
+
+            if (tileDefBottom.tags) {
+                // If bottom layer is impassable (and not a z_transition like a hole allowing passage down)
+                if (tileDefBottom.tags.includes("impassable")) {
+                    // console.log(`${debugPrefix} Bottom layer @Z${z} ('${effectiveTileOnBottom}') is IMPASSABLE. Result: false`);
+                    return false;
+                }
+                // If bottom layer is a walkable surface type
+                if (tileDefBottom.tags.includes("floor") ||
+                    tileDefBottom.tags.includes("transparent_floor") ||
+                    tileDefBottom.tags.includes("z_transition")) {
+                    // console.log(`${debugPrefix} Bottom layer @Z${z} ('${effectiveTileOnBottom}') is a walkable surface type. Result: true`);
+                    return true;
+                }
+            }
+        } else if (effectiveTileOnBottom && !tilesets[effectiveTileOnBottom]) {
+            // console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} has no definition. Result: false (assuming non-walkable).`);
+            return false; // Unknown tile on bottom is not walkable.
+        }
+
+        // --- 5. Rely on Support from Below if Current Z Layers Don't Define Walkability ---
+        // console.log(`${debugPrefix} Current Z layers are clear or non-determinative. Relying on supportFromBelow (${supportedFromBelow}). Result: ${supportedFromBelow}`);
         return supportedFromBelow;
-    }
-
-    // --- 3. Check Middle Layer of Current Z ---
-    const tileOnMiddleRaw = currentLevelData.middle[y]?.[x];
-    const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw?.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
-
-    if (effectiveTileOnMiddle && tilesets[effectiveTileOnMiddle]) {
-        const tileDefMiddle = tilesets[effectiveTileOnMiddle];
-        // console.log(`${debugPrefix} Middle layer @Z${z} has tile: ${effectiveTileOnMiddle}`, tileDefMiddle.tags);
-
-        if (tileDefMiddle.tags) {
-            // Explicitly walkable items on middle layer
-            if (tileDefMiddle.tags.includes("walkable_on_z") || tileDefMiddle.tags.includes("z_transition")) {
-                // console.log(`${debugPrefix} Middle @Z${z} is walkable_on_z or z_transition. Result: true`);
-                return true;
-            }
-            // solid_terrain_top on middle layer is NOT walkable at its own Z unless it's also one of the above.
-            if (tileDefMiddle.tags.includes("solid_terrain_top")) {
-                // console.log(`${debugPrefix} Middle @Z${z} is solid_terrain_top (and not walkable_on_z/z_trans). Not walkable. Result: false`);
-                return false;
-            }
-            // General impassable check for middle layer
-            if (tileDefMiddle.tags.includes("impassable")) {
-                // console.log(`${debugPrefix} Middle @Z${z} ('${effectiveTileOnMiddle}') is impassable. Result: false`);
-                return false;
-            }
-        }
-    } else if (effectiveTileOnMiddle && !tilesets[effectiveTileOnMiddle]) {
-        // console.log(`${debugPrefix} Middle tile ${effectiveTileOnMiddle} at Z=${z} has no definition. Result: false (assuming non-walkable).`);
-        return false; // Unknown tile on middle is not walkable.
-    }
-    // If middle layer is empty or has a non-blocking defined tile, proceed.
-
-    // --- 4. Check Bottom Layer of Current Z ---
-    const tileOnBottomRaw = currentLevelData.bottom[y]?.[x];
-    const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw?.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
-
-    if (effectiveTileOnBottom && tilesets[effectiveTileOnBottom]) {
-        const tileDefBottom = tilesets[effectiveTileOnBottom];
-        // console.log(`${debugPrefix} Bottom layer @Z${z} has tile: ${effectiveTileOnBottom}`, tileDefBottom.tags);
-
-        if (tileDefBottom.tags) {
-            // If bottom layer is impassable (and not a z_transition like a hole allowing passage down)
-            if (tileDefBottom.tags.includes("impassable")) {
-                // console.log(`${debugPrefix} Bottom layer @Z${z} ('${effectiveTileOnBottom}') is IMPASSABLE. Result: false`);
-                return false;
-            }
-            // If bottom layer is a walkable surface type
-            if (tileDefBottom.tags.includes("floor") ||
-                tileDefBottom.tags.includes("transparent_floor") ||
-                tileDefBottom.tags.includes("z_transition")) {
-                // console.log(`${debugPrefix} Bottom layer @Z${z} ('${effectiveTileOnBottom}') is a walkable surface type. Result: true`);
-                return true;
-            }
-        }
-    } else if (effectiveTileOnBottom && !tilesets[effectiveTileOnBottom]) {
-        // console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} has no definition. Result: false (assuming non-walkable).`);
-        return false; // Unknown tile on bottom is not walkable.
-    }
-
-    // --- 5. Rely on Support from Below if Current Z Layers Don't Define Walkability ---
-    // console.log(`${debugPrefix} Current Z layers are clear or non-determinative. Relying on supportFromBelow (${supportedFromBelow}). Result: ${supportedFromBelow}`);
-    return supportedFromBelow;
-},
-isTileEmpty: isTileEmpty, // Added isTileEmpty here
-    // Add LOS specific functions here
-    isTileBlockingVision: isTileBlockingVision,
-        isTileVisible: isTileVisible,
-            getLine3D: getLine3D, // Expose getLine3D if utils.js or other modules might need it via mapRenderer
-                isTileBlockingLight: isTileBlockingLight, // Keep related light function if it's also meant to be namespaced
-                    isTileIlluminated: isTileIlluminated   // Keep related light function
+    },
+    isTileEmpty: isTileEmpty, // Added isTileEmpty here
 };

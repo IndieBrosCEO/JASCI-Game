@@ -128,7 +128,7 @@
               "RelativeDocumentMoniker": "index.html",
               "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\index.html",
               "RelativeToolTip": "index.html",
-              "ViewState": "AgIAAH8AAAAAAAAAAAAcwJQAAAAmAAAAAAAAAA==",
+              "ViewState": "AgIAAH8AAAAAAAAAAAAcwJgAAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-06-24T05:06:48.847Z",
               "IsPinned": true,
@@ -157,8 +157,7 @@
               "RelativeToolTip": "js\\utils.js",
               "ViewState": "AgIAALkCAAAAAAAAAAAAANwCAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-06-24T04:49:27.335Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-24T04:49:27.335Z"
             },
             {
               "$type": "Document",
@@ -206,8 +205,7 @@
               "RelativeToolTip": "assets\\definitions\\tileset.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAALcCAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-06-26T06:52:37.871Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-26T06:52:37.871Z"
             },
             {
               "$type": "Document",
@@ -217,7 +215,7 @@
               "RelativeDocumentMoniker": "js\\mapRenderer.js",
               "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\js\\mapRenderer.js",
               "RelativeToolTip": "js\\mapRenderer.js",
-              "ViewState": "AgIAAMMHAAAAAAAAAADwv9sHAAB1AAAAAAAAAA==",
+              "ViewState": "AgIAAMgFAAAAAAAAAAAAAOEFAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2025-06-24T04:49:25.622Z",
               "EditorCaption": ""
@@ -232,8 +230,7 @@
               "RelativeToolTip": "script.js",
               "ViewState": "AgIAAEEKAAAAAAAAAAAAAGQKAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-06-24T04:49:31.403Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-24T04:49:31.403Z"
             },
             {
               "$type": "Document",
@@ -245,8 +242,7 @@
               "RelativeToolTip": "js\\assetManager.js",
               "ViewState": "AgIAADUAAAAAAAAAAAAhwEMAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-06-24T04:49:19.032Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-24T04:49:19.032Z"
             },
             {
               "$type": "Document",
