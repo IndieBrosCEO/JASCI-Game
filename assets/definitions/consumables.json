@@ -1,0 +1,414 @@
+﻿[
+  {
+    "id": "c4_semtex_explosive",
+    "name": "C4/Semtex",
+    "description": "A block of plastic explosive. Requires a detonator for controlled explosion.",
+    "type": "consumable_explosive",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 1,
+    "tags": [
+      "explosive",
+      "demolition",
+      "modern",
+      "consumable"
+    ],
+    "damage": "4d6",
+    "damageType": "Concussion",
+    "burstRadiusFt": 10
+  },
+  {
+    "id": "det_cord_explosive",
+    "name": "Det cord",
+    "description": "Detonating cord, a thin, flexible tube with a core of high explosive. Used for linear charges or to link explosives.",
+    "type": "consumable_explosive",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 3,
+    "weightLbs": 2,
+    "tags": [
+      "explosive",
+      "demolition",
+      "modern",
+      "consumable"
+    ],
+    "damage": "2d6",
+    "damageType": "Fire",
+    "burstRadiusFt": 1
+  },
+  {
+    "id": "dynamite_explosive",
+    "name": "Dynamite",
+    "description": "A stick of dynamite, a common industrial explosive.",
+    "type": "consumable_explosive",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 1,
+    "tags": [
+      "explosive",
+      "demolition",
+      "modern",
+      "consumable"
+    ],
+    "damage": "2d6",
+    "damageType": "Concussion",
+    "burstRadiusFt": 5
+  },
+  {
+    "id": "bandage",
+    "name": "Bandage",
+    "description": "A sterile bandage to dress wounds and stop minor bleeding.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.1,
+    "tags": [
+      "consumable",
+      "medical",
+      "modern"
+    ],
+    "effects": {
+      "health": 10,
+      "stopBleeding": true
+    }
+  },
+  {
+    "id": "first_aid_kit",
+    "name": "First-Aid Kit",
+    "description": "Contains various medical supplies for treating injuries.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 1,
+    "tags": [
+      "consumable",
+      "medical",
+      "modern"
+    ],
+    "effects": {
+      "health": 50,
+      "stopBleeding": true
+    }
+  },
+  {
+    "id": "canned_beans",
+    "name": "Canned Beans",
+    "description": "A can of beans. Provides basic sustenance. Needs a can opener or knife.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [
+      "consumable",
+      "food",
+      "modern"
+    ],
+    "effects": {
+      "hunger": -12
+    }
+  },
+  {
+    "id": "energy_bar",
+    "name": "Energy Bar",
+    "description": "A compact, high-energy food bar for quick nourishment.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.2,
+    "tags": [
+      "consumable",
+      "food",
+      "modern"
+    ],
+    "effects": {
+      "hunger": -8,
+      "stamina": 20
+    }
+  },
+  {
+    "id": "mre",
+    "name": "MRE",
+    "description": "Meal, Ready-to-Eat. A self-contained field ration providing substantial nourishment.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 1.5,
+    "tags": [
+      "consumable",
+      "food",
+      "modern",
+      "military"
+    ],
+    "effects": {
+      "hunger": -24,
+      "thirst": -10
+    }
+  },
+  {
+    "id": "bottled_water",
+    "name": "Bottled Water",
+    "description": "A sealed bottle of clean drinking water.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [
+      "consumable",
+      "drink",
+      "modern"
+    ],
+    "effects": {
+      "thirst": -15
+    }
+  },
+  {
+    "id": "canteen_water",
+    "name": "Canteen (Full)",
+    "description": "A canteen filled with water. Can be refilled.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 1,
+    "tags": [
+      "consumable",
+      "drink",
+      "modern",
+      "reusable_container"
+    ],
+    "effects": {
+      "thirst": -24
+    }
+  },
+  {
+    "id": "water_purification_tablets",
+    "name": "Water Purification Tablets",
+    "description": "Tablets to make unsafe water drinkable. Typically treats 1 liter per tablet.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.1,
+    "tags": [
+      "consumable",
+      "utility",
+      "modern"
+    ],
+    "effects": {
+      "purifyWater": 1
+    }
+  },
+  {
+    "id": "canned_beans_food",
+    "name": "Canned Beans",
+    "description": "A can of beans. Provides some sustenance.",
+    "size": 1,
+    "type": "food",
+    "isConsumable": true,
+    "effects": {
+      "hunger": 8
+    },
+    "sprite": "i",
+    "color": "brown",
+    "canEquip": false,
+    "isClothing": false,
+    "weightLbs": 0.5,
+    "tags": [ "consumable", "food", "modern" ]
+  },
+  {
+    "id": "bottled_water_drink",
+    "name": "Bottled Water",
+    "description": "A bottle of clean drinking water. Very refreshing.",
+    "size": 1,
+    "type": "drink",
+    "isConsumable": true,
+    "effects": {
+      "thirst": 10
+    },
+    "sprite": "i",
+    "color": "blue",
+    "canEquip": false,
+    "isClothing": false,
+    "weightLbs": 0.5,
+    "tags": [ "consumable", "drink", "modern" ]
+  },
+  {
+    "id": "antibiotics_course",
+    "name": "Course of Antibiotics",
+    "description": "A course of broad-spectrum antibiotics to treat bacterial infections.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.2,
+    "tags": [ "consumable", "medical", "pharmaceutical", "doctor", "nurse", "pharmacist" ],
+    "effects": {
+      "cureInfection_bacterial": true,
+      "durationDays": 7
+    },
+    "doses": 14
+  },
+  {
+    "id": "painkillers_strong",
+    "name": "Strong Painkillers",
+    "description": "Potent analgesic for severe pain relief. May cause drowsiness.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.1,
+    "tags": [ "consumable", "medical", "pharmaceutical", "doctor", "paramedic", "surgeon" ],
+    "effects": {
+      "painRelief": 80,
+      "durationHours": 4,
+      "drowsiness": 25
+    },
+    "doses": 10
+  },
+  {
+    "id": "stimulant_combat",
+    "name": "Combat Stimulant Injector",
+    "description": "A military-grade stimulant for increased alertness, reduced fatigue, and enhanced reflexes for a short period.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 0,
+    "weightLbs": 0.1,
+    "tags": [ "consumable", "medical", "military", "stimulant", "soldier", "mercenary" ],
+    "effects": {
+      "stamina": 50,
+      "alertness": 30,
+      "reflexBonus": 10,
+      "durationMinutes": 30,
+      "sideEffect_jittery": 15
+    },
+    "doses": 1,
+    "administration": "injector"
+  },
+  {
+    "id": "antidote_universal_basic",
+    "name": "Basic Universal Antidote",
+    "description": "A broad-spectrum antidote for common toxins. May not be effective against all poisons.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.2,
+    "tags": [ "consumable", "medical", "antidote", "doctor", "paramedic", "chemist", "alchemist" ],
+    "effects": {
+      "curePoison_common": true
+    },
+    "doses": 1
+  },
+  {
+    "id": "herbal_salve_healing",
+    "name": "Healing Herbal Salve",
+    "description": "A salve made from medicinal herbs to promote wound healing and soothe burns.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.3,
+    "tags": [ "consumable", "medical", "herbal", "apothecary", "herbalist", "shaman", "healer" ],
+    "effects": {
+      "health_regen_slow": 5,
+      "durationHours": 2,
+      "sootheBurn": true
+    },
+    "doses": 5
+  },
+  {
+    "id": "chemical_reagent_generic",
+    "name": "Generic Chemical Reagent (Labeled Bottle)",
+    "description": "A bottle containing a common chemical reagent for laboratory work.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [ "consumable", "science", "laboratory", "chemical", "chemist", "alchemist", "biochemist" ],
+    "effects": {
+      "lab_component": true
+    },
+    "substanceName": "e.g., Sulfuric Acid (dilute)"
+  },
+  {
+    "id": "nutrient_paste_tube",
+    "name": "Nutrient Paste Tube",
+    "description": "A tube of concentrated, easily digestible nutrient paste for sustenance in emergencies or for invalids.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.3,
+    "tags": [ "consumable", "food", "medical", "emergency", "doctor", "paramedic", "survivor" ],
+    "effects": {
+      "hunger": -24,
+      "thirst": -20
+    }
+  },
+  {
+    "id": "ink_pot_black",
+    "name": "Black Ink Pot",
+    "description": "A pot of black ink for writing or printing.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 0,
+    "weightLbs": 0.3,
+    "tags": [ "consumable", "crafting", "ink", "scribe", "archivist", "cartographer", "writer" ],
+    "effects": { "resource_ink": 100 },
+    "color": "black"
+  },
+  {
+    "id": "parchment_roll_blank",
+    "name": "Blank Parchment Roll",
+    "description": "A roll of clean parchment, suitable for writing, scrolls, or maps.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [ "consumable", "crafting", "paper", "scribe", "archivist", "cartographer", "historian" ],
+    "effects": { "resource_writing_surface": 50 }
+  },
+  {
+    "id": "incense_sticks_sandalwood",
+    "name": "Sandalwood Incense Sticks",
+    "description": "Sticks of sandalwood incense, used for fragrance or in rituals.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.2,
+    "tags": [ "consumable", "ritual", "fragrance", "priest", "shaman", "medium", "cultist" ],
+    "effects": {
+      "ritual_component_air": true,
+      "durationMinutes": 60
+    },
+    "quantity": 20
+  },
+  {
+    "id": "sacred_herbs_bundle",
+    "name": "Bundle of Sacred Herbs",
+    "description": "A bundle of specific herbs considered sacred or potent for rituals and spiritual practices.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.3,
+    "tags": [ "consumable", "ritual", "herbal", "shaman", "priest", "cultist", "healer" ],
+    "effects": {
+      "ritual_component_earth": true,
+      "spiritual_focus": 10
+    }
+  }
+]

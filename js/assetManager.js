@@ -65,7 +65,19 @@
         this.npcDefinitions = {}; // Ensure this is initialized
         let tempItemsById = {};
 
-        const definitionFiles = ['tileset.json', 'items.json', 'npcs.json', 'clothing.json']; // Added clothing.json
+        // Updated to load from new categorized item files
+        const definitionFiles = [
+            'tileset.json',
+            'npcs.json',
+            'weapons.json',
+            'ammunition.json',
+            'consumables.json',
+            'clothing.json', // This is the new consolidated clothing file
+            'tools.json',
+            'crafting_materials.json',
+            'containers.json'
+            // 'items.json' is removed as it's now empty and its contents are categorized
+        ];
 
         for (const filename of definitionFiles) {
             const url = `/assets/definitions/${filename}?t=${Date.now()}`;
@@ -78,25 +90,30 @@
 
                 if (filename === 'tileset.json') {
                     this.tilesets = parsedJson;
-                    console.log("AssetManager: Base tilesets loaded:", this.tilesets); // Added for debugging
-                } else if (filename === 'items.json') {
-                    parsedJson.forEach(item => { tempItemsById[item.id] = item; });
+                    console.log("AssetManager: Base tilesets loaded:", this.tilesets);
                 } else if (filename === 'npcs.json') {
-                    this.npcDefinitions = Object.fromEntries(parsedJson.map(npc => [npc.id, npc])); // Use npcDefinitions
-                } else if (filename === 'clothing.json') {
+                    this.npcDefinitions = Object.fromEntries(parsedJson.map(npc => [npc.id, npc]));
+                } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json'].includes(filename)) {
+                    // All new item files are arrays of items
                     if (Array.isArray(parsedJson)) {
-                        parsedJson.forEach(item => { tempItemsById[item.id] = item; });
+                        parsedJson.forEach(item => {
+                            if (tempItemsById[item.id]) {
+                                console.warn(`AssetManager: Duplicate item ID '${item.id}' found while loading ${filename}. Overwriting previous entry.`);
+                            }
+                            tempItemsById[item.id] = item;
+                        });
                     } else {
-                        console.warn(`AssetManager: clothing.json for ${filename} was not an array. Skipping merge.`);
+                        console.warn(`AssetManager: Expected array from ${filename}, but got ${typeof parsedJson}. Skipping file.`);
                     }
                 }
-                // Extend for other definition files as they are added
+                // Note: 'items.json' is no longer explicitly handled here as it's removed from definitionFiles
             } catch (error) {
                 console.error(`Failed to load base definition file ${filename}:`, error);
             }
         }
         console.log("Base asset definitions loaded.");
-        this.itemsById = tempItemsById;
+        this.itemsById = tempItemsById; // All items are now consolidated into itemsById
+        console.log("AssetManager: All items loaded:", this.itemsById);
     }
 
     getTileset(tilesetId) { // tilesetId is optional, will return all tilesets if not provided

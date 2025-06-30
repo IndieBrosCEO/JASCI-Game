@@ -199,12 +199,19 @@ function isTileEmpty(x, y, z) {
 
 // Updated isTileIlluminated to be 3D
 function isTileIlluminated(targetX, targetY, targetZ, lightSource) { // targetZ added, lightSource now includes .z
+    // Gracefully handle undefined or invalid lightSource
+    if (!lightSource || typeof lightSource.x === 'undefined' || typeof lightSource.y === 'undefined' || typeof lightSource.z === 'undefined' || typeof lightSource.radius === 'undefined') {
+        // console.warn("isTileIlluminated called with invalid lightSource:", lightSource); // Optional: for debugging
+        return false; // Cannot be illuminated by an invalid source
+    }
+
     const sourceX = lightSource.x;
     const sourceY = lightSource.y;
-    const sourceZ = lightSource.z; // Light source has a Z position
+    const sourceZ = lightSource.z;
     const sourceRadius = lightSource.radius;
 
-    const distance = getDistance3D({ x: targetX, y: targetY, z: targetZ }, lightSource); // Use 3D distance
+    const lightSourcePosition = { x: sourceX, y: sourceY, z: sourceZ }; // For getDistance3D
+    const distance = getDistance3D({ x: targetX, y: targetY, z: targetZ }, lightSourcePosition);
 
     if (distance > sourceRadius) {
         return false;
@@ -430,10 +437,36 @@ let currentMapData = null;
 let assetManagerInstance = null;
 
 // Exporting functions for use in other modules
+// Moved helper function definitions above this object:
+// - blendColors
+// - brightenColor
+// - getAmbientLightColor
+// - isTileBlockingLight
+// - isTileEmpty
+// - isTileIlluminated
+// - getLine2D
+// - getLine3D
+// - isTileBlockingVision
+// - isTileVisible
+
 window.mapRenderer = {
     initMapRenderer: function (assetMgr) {
         assetManagerInstance = assetMgr;
+        // Now that assetManagerInstance is set, make helper functions available
+        // if they depend on it (though most here are pure or use window.mapRenderer.getCurrentMapData)
     },
+
+    // Assign helper functions to be part of the mapRenderer object
+    blendColors: blendColors,
+    brightenColor: brightenColor,
+    getAmbientLightColor: getAmbientLightColor,
+    isTileBlockingLight: isTileBlockingLight,
+    // isTileEmpty is already assigned at the end of the object
+    isTileIlluminated: isTileIlluminated,
+    getLine2D: getLine2D,
+    getLine3D: getLine3D,
+    isTileBlockingVision: isTileBlockingVision,
+    isTileVisible: isTileVisible,
 
     initializeCurrentMap: function (mapData) {
         currentMapData = mapData; // mapData from assetManager now contains .levels and .startPos.z

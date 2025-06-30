@@ -1,0 +1,396 @@
+﻿[
+  {
+    "id": "scrap_metal",
+    "name": "Scrap Metal",
+    "description": "Pieces of rusted or bent metal, useful for crafting.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.8,
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "modern"
+    ]
+  },
+  {
+    "id": "wood_planks",
+    "name": "Wood Planks",
+    "description": "Usable planks of wood, suitable for construction or crafting.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 1.5,
+    "tags": [
+      "material",
+      "crafting",
+      "wood",
+      "modern"
+    ]
+  },
+  {
+    "id": "cloth_scraps",
+    "name": "Cloth Scraps",
+    "description": "Torn pieces of fabric, can be used for bandages or other crafts.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.2,
+    "tags": [
+      "material",
+      "crafting",
+      "cloth",
+      "modern"
+    ]
+  },
+  {
+    "id": "duct_tape",
+    "name": "Duct Tape",
+    "description": "A roll of strong adhesive tape, incredibly versatile.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.3,
+    "tags": [
+      "material",
+      "crafting",
+      "adhesive",
+      "modern"
+    ]
+  },
+  {
+    "id": "nails",
+    "name": "Nails",
+    "description": "A handful of metal nails, for construction and crafting.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.2,
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "modern"
+    ]
+  },
+  {
+    "id": "sharp_glass",
+    "name": "Sharp Glass",
+    "description": "Jagged pieces of broken glass. Handle with care.",
+    "type": "debris",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.3,
+    "tags": [
+      "debris",
+      "sharp",
+      "glass",
+      "modern"
+    ]
+  },
+  {
+    "id": "splintered_wood",
+    "name": "Splintered Wood",
+    "description": "Sharp fragments of broken wood. Can be hazardous.",
+    "type": "debris",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.4,
+    "tags": [
+      "debris",
+      "sharp",
+      "wood",
+      "modern"
+    ]
+  },
+  {
+    "id": "tomato_seeds",
+    "name": "Tomato Seeds",
+    "description": "A packet of tomato seeds, for planting.",
+    "type": "seed",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.1,
+    "tags": [
+      "seed",
+      "gardening",
+      "consumable",
+      "food_source"
+    ],
+    "plantable": true,
+    "effects": {
+      "growsInto": "tomato_plant"
+    }
+  },
+  {
+    "id": "corn_seeds",
+    "name": "Corn Seeds",
+    "description": "A packet of corn seeds, for planting.",
+    "type": "seed",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.1,
+    "tags": [
+      "seed",
+      "gardening",
+      "consumable",
+      "food_source"
+    ],
+    "plantable": true,
+    "effects": {
+      "growsInto": "corn_stalk"
+    }
+  },
+  {
+    "id": "carrot_seeds",
+    "name": "Carrot Seeds",
+    "description": "A packet of carrot seeds, for planting.",
+    "type": "seed",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.1,
+    "tags": [
+      "seed",
+      "gardening",
+      "consumable",
+      "food_source"
+    ],
+    "plantable": true,
+    "effects": {
+      "growsInto": "carrot_plant"
+    }
+  },
+  {
+    "id": "iron_ingot",
+    "name": "Iron Ingot",
+    "description": "A bar of refined iron, ready for forging or further processing.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 10,
+    "tags": [ "material", "crafting", "metal", "refined", "blacksmith", "armorer", "weaponsmith" ]
+  },
+  {
+    "id": "steel_ingot",
+    "name": "Steel Ingot",
+    "description": "A bar of steel, stronger and more versatile than iron.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 10,
+    "tags": [ "material", "crafting", "metal", "refined", "blacksmith", "armorer", "weaponsmith", "machinist" ]
+  },
+  {
+    "id": "rawhide_leather",
+    "name": "Rawhide Leather",
+    "description": "Untanned animal hide, stiff and durable. Can be used as is or tanned further.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 3,
+    "weightLbs": 5,
+    "tags": [ "material", "crafting", "leather", "raw", "tanner", "cobbler" ]
+  },
+  {
+    "id": "tanned_leather_roll",
+    "name": "Roll of Tanned Leather",
+    "description": "Processed and preserved animal hide, flexible and ready for crafting.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 3,
+    "weightLbs": 4,
+    "tags": [ "material", "crafting", "leather", "refined", "tanner", "cobbler", "armorer", "seamstress" ]
+  },
+  {
+    "id": "bolt_of_cloth_cotton",
+    "name": "Bolt of Cotton Cloth",
+    "description": "A standard roll of woven cotton fabric.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 3,
+    "tags": [ "material", "crafting", "cloth", "fabric", "weaver", "seamstress", "tailor" ]
+  },
+  {
+    "id": "bolt_of_cloth_wool",
+    "name": "Bolt of Wool Cloth",
+    "description": "A standard roll of woven wool fabric, warm and durable.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 4,
+    "tags": [ "material", "crafting", "cloth", "fabric", "wool", "weaver", "seamstress", "tailor" ]
+  },
+  {
+    "id": "beeswax_chunk",
+    "name": "Chunk of Beeswax",
+    "description": "A lump of natural beeswax, useful for candle making, waterproofing, and polishing.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 1,
+    "tags": [ "material", "crafting", "wax", "candle_maker", "artisan" ]
+  },
+  {
+    "id": "lye_powder",
+    "name": "Lye Powder",
+    "description": "A caustic alkaline substance, a key ingredient in soap making. Handle with care.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [ "material", "crafting", "chemical", "soap_maker", "tanner" ],
+    "warning": "Caustic"
+  },
+  {
+    "id": "animal_fat_rendered",
+    "name": "Rendered Animal Fat (Tallow/Lard)",
+    "description": "Purified animal fat, used in cooking, soap making, and candle making.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 1,
+    "tags": [ "material", "crafting", "fat", "soap_maker", "candle_maker", "cook", "butcher" ]
+  },
+  {
+    "id": "gemstone_uncut_small",
+    "name": "Small Uncut Gemstone",
+    "description": "A rough, unpolished gemstone of modest size.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 0,
+    "weightLbs": 0.1,
+    "tags": [ "material", "crafting", "gemstone", "raw", "jeweler", "artisan" ]
+  },
+  {
+    "id": "gold_dust_pouch",
+    "name": "Pouch of Gold Dust",
+    "description": "Fine particles of gold, can be melted down or used for gilding.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 0,
+    "weightLbs": 0.2,
+    "tags": [ "material", "crafting", "metal", "precious_metal", "gold", "jeweler", "artisan" ]
+  },
+  {
+    "id": "silver_nugget",
+    "name": "Silver Nugget",
+    "description": "A small, naturally occurring piece of silver.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 0,
+    "weightLbs": 0.3,
+    "tags": [ "material", "crafting", "metal", "precious_metal", "silver", "jeweler", "artisan" ]
+  },
+  {
+    "id": "copper_wire_spool",
+    "name": "Spool of Copper Wire",
+    "description": "A spool of insulated copper wire, essential for electrical work and electronics.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 1,
+    "tags": [ "material", "crafting", "metal", "electrical", "electronics", "electrician", "engineer", "technician" ]
+  },
+  {
+    "id": "rubber_hose_section",
+    "name": "Section of Rubber Hose",
+    "description": "A flexible rubber hose, useful for plumbing, fluid transfer, or insulation.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 0.5,
+    "tags": [ "material", "crafting", "rubber", "plumbing", "mechanical", "plumber", "mechanic", "engineer" ]
+  },
+  {
+    "id": "gears_assorted",
+    "name": "Assorted Gears",
+    "description": "A collection of small to medium-sized metal gears for mechanical devices.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 1.5,
+    "tags": [ "material", "crafting", "metal", "mechanical", "machinist", "engineer", "mechanic", "robot_programmer" ]
+  },
+  {
+    "id": "circuit_board_blank",
+    "name": "Blank Circuit Board (PCB)",
+    "description": "A blank printed circuit board for mounting electronic components.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.2,
+    "tags": [ "material", "crafting", "electronics", "technician", "engineer", "electrician", "robot_programmer" ]
+  },
+  {
+    "id": "concrete_mix_bag",
+    "name": "Bag of Concrete Mix",
+    "description": "A bag of dry concrete mix, requires water to activate. For construction and repairs.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 3,
+    "weightLbs": 50,
+    "tags": [ "material", "crafting", "construction", "civil_engineer", "architect", "laborer", "barricade_builder" ]
+  },
+  {
+    "id": "rivets_box",
+    "name": "Box of Rivets",
+    "description": "A box of metal rivets for joining plates of metal or other materials.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 2,
+    "tags": [ "material", "crafting", "metal", "fastener", "shipwright", "armorer", "machinist", "engineer" ]
+  },
+  {
+    "id": "fiberglass_resin_can",
+    "name": "Can of Fiberglass Resin",
+    "description": "Liquid resin used with fiberglass cloth to create strong, lightweight composite materials.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 3,
+    "tags": [ "material", "crafting", "chemical", "composite", "shipwright", "engineer", "artisan" ],
+    "requires": [ "fiberglass_cloth" ]
+  },
+  {
+    "id": "fiberglass_cloth_roll",
+    "name": "Roll of Fiberglass Cloth",
+    "description": "Woven fiberglass fabric used with resin to create composite materials.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 2,
+    "tags": [ "material", "crafting", "fabric", "composite", "shipwright", "engineer", "artisan" ]
+  }
+]

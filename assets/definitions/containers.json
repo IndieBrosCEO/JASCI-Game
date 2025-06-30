@@ -1,0 +1,134 @@
+﻿[
+  {
+    "id": "cb_container_item",
+    "name": "Cabinet",
+    "description": "A storage cabinet.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 15,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
+  },
+  {
+    "id": "dr_container_item",
+    "name": "Drawer",
+    "description": "A sliding drawer for storage.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 5,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
+  },
+  {
+    "id": "gc_container_item",
+    "name": "Gun Case",
+    "description": "A case for storing firearms.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 10,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
+  },
+  {
+    "id": "tc_container_item",
+    "name": "Trash Can",
+    "description": "A receptacle for waste.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 8,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage" ]
+  },
+  {
+    "id": "sf_container_item",
+    "name": "Safe",
+    "description": "A secure container for valuables.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 20,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture", "metal" ]
+  },
+  {
+    "id": "rf_container_item",
+    "name": "Refrigerator",
+    "description": "A household refrigerator for storing perishables.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 25,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture", "electronics" ]
+  },
+  {
+    "id": "st_container_item",
+    "name": "Stove/Oven",
+    "description": "A kitchen appliance for cooking, may have small storage.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 5,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture", "electronics" ]
+  },
+  {
+    "id": "mw_container_item",
+    "name": "Microwave",
+    "description": "A microwave oven, sometimes used to store small items.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 3,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture", "electronics" ]
+  },
+  {
+    "id": "stl_container_item",
+    "name": "Bookshelf",
+    "description": "A shelf for storing books and other items.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 20,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
+  },
+  {
+    "id": "nk_container_item",
+    "name": "Nightstand",
+    "description": "A small table or cabinet designed to stand beside a bed.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 8,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
+  },
+  {
+    "id": "drs_container_item",
+    "name": "Dresser",
+    "description": "A piece of furniture with drawers for storing clothes.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 15,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
+  },
+  {
+    "id": "dsk_container_item",
+    "name": "Desk",
+    "description": "A piece of furniture with a flat table-style work surface and drawers.",
+    "type": "container_item",
+    "size": 0,
+    "capacity": 10,
+    "canEquip": false,
+    "isClothing": false,
+    "tags": [ "container", "storage", "furniture" ]
+  }
+]

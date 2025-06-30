@@ -1143,63 +1143,6 @@
     "damageType": "Slashing"
   },
   {
-    "id": "c4_semtex_explosive",
-    "name": "C4/Semtex",
-    "description": "A block of plastic explosive. Requires a detonator for controlled explosion.",
-    "type": "consumable_explosive",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 2,
-    "weightLbs": 1,
-    "tags": [
-      "explosive",
-      "demolition",
-      "modern",
-      "consumable"
-    ],
-    "damage": "4d6",
-    "damageType": "Concussion",
-    "burstRadiusFt": 10
-  },
-  {
-    "id": "det_cord_explosive",
-    "name": "Det cord",
-    "description": "Detonating cord, a thin, flexible tube with a core of high explosive. Used for linear charges or to link explosives.",
-    "type": "consumable_explosive",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 3,
-    "weightLbs": 2,
-    "tags": [
-      "explosive",
-      "demolition",
-      "modern",
-      "consumable"
-    ],
-    "damage": "2d6",
-    "damageType": "Fire",
-    "burstRadiusFt": 1
-  },
-  {
-    "id": "dynamite_explosive",
-    "name": "Dynamite",
-    "description": "A stick of dynamite, a common industrial explosive.",
-    "type": "consumable_explosive",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 1,
-    "tags": [
-      "explosive",
-      "demolition",
-      "modern",
-      "consumable"
-    ],
-    "damage": "2d6",
-    "damageType": "Concussion",
-    "burstRadiusFt": 5
-  },
-  {
     "id": "frag_grenade_thrown",
     "name": "Fragmentation grenade",
     "description": "A hand grenade that scatters shrapnel upon detonation.",
@@ -1743,338 +1686,6 @@
     "damageType": "Slashing"
   },
   {
-    "id": "ammo_556mm",
-    "name": "5.56mm Rounds",
-    "description": "A box of 5.56mm rifle ammunition.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.6,
-    "tags": [
-      "ammo",
-      "modern",
-      "rifle"
-    ],
-    "ammoType": "5.56mm",
-    "quantity": 30
-  },
-  {
-    "id": "ammo_762mm",
-    "name": "7.62mm Rounds",
-    "description": "A box of 7.62mm rifle ammunition (e.g. for NATO spec rifles).",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.7,
-    "tags": [
-      "ammo",
-      "modern",
-      "rifle"
-    ],
-    "ammoType": "7.62mm",
-    "quantity": 20
-  },
-  {
-    "id": "ammo_762mmr",
-    "name": "7.62mmR Rounds",
-    "description": "A box of 7.62x39mmR rifle ammunition (e.g. for AK-pattern rifles).",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.7,
-    "tags": [
-      "ammo",
-      "modern",
-      "rifle"
-    ],
-    "ammoType": "7.62mmR",
-    "quantity": 30
-  },
-  {
-    "id": "ammo_444_caliber",
-    "name": ".444 Caliber Rounds",
-    "description": "A box of .444 caliber rifle ammunition.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.8,
-    "tags": [
-      "ammo",
-      "modern",
-      "rifle",
-      "hunting"
-    ],
-    "ammoType": ".444",
-    "quantity": 20
-  },
-  {
-    "id": "ammo_50bmg",
-    "name": ".50 BMG Rounds",
-    "description": "A box of .50 BMG heavy machine gun / sniper rifle ammunition.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 2,
-    "weightLbs": 2.5,
-    "tags": [
-      "ammo",
-      "modern",
-      "heavy_weapon",
-      "sniper"
-    ],
-    "ammoType": ".50bmg",
-    "quantity": 10
-  },
-  {
-    "id": "ammo_9mm",
-    "name": "9mm Rounds",
-    "description": "A box of 9mm pistol ammunition.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "ammo",
-      "modern",
-      "pistol",
-      "smg"
-    ],
-    "ammoType": "9mm",
-    "quantity": 50
-  },
-  {
-    "id": "ammo_10mm",
-    "name": "10mm Rounds",
-    "description": "A box of 10mm pistol ammunition.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.6,
-    "tags": [
-      "ammo",
-      "modern",
-      "pistol"
-    ],
-    "ammoType": "10mm",
-    "quantity": 50
-  },
-  {
-    "id": "ammo_22lr",
-    "name": ".22LR Rounds",
-    "description": "A box of .22 Long Rifle ammunition.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.3,
-    "tags": [
-      "ammo",
-      "modern",
-      "pistol",
-      "rifle"
-    ],
-    "ammoType": ".22lr",
-    "quantity": 50
-  },
-  {
-    "id": "ammo_32acp",
-    "name": ".32 ACP Rounds",
-    "description": "A box of .32 ACP pistol ammunition.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.4,
-    "tags": [
-      "ammo",
-      "modern",
-      "pistol"
-    ],
-    "ammoType": ".32acp",
-    "quantity": 50
-  },
-  {
-    "id": "ammo_38spl",
-    "name": ".38 Special Rounds",
-    "description": "A box of .38 Special revolver ammunition.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "ammo",
-      "modern",
-      "revolver"
-    ],
-    "ammoType": ".38spl",
-    "quantity": 50
-  },
-  {
-    "id": "ammo_357mag",
-    "name": ".357 Magnum Rounds",
-    "description": "A box of .357 Magnum revolver ammunition.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.6,
-    "tags": [
-      "ammo",
-      "modern",
-      "revolver"
-    ],
-    "ammoType": ".357mag",
-    "quantity": 50
-  },
-  {
-    "id": "ammo_44mag",
-    "name": ".44 Magnum Rounds",
-    "description": "A box of .44 Magnum revolver ammunition.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.7,
-    "tags": [
-      "ammo",
-      "modern",
-      "revolver"
-    ],
-    "ammoType": ".44mag",
-    "quantity": 20
-  },
-  {
-    "id": "ammo_45acp",
-    "name": ".45 ACP Rounds",
-    "description": "A box of .45 ACP pistol ammunition.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.6,
-    "tags": [
-      "ammo",
-      "modern",
-      "pistol"
-    ],
-    "ammoType": ".45acp",
-    "quantity": 50
-  },
-  {
-    "id": "ammo_50ae",
-    "name": ".50AE Rounds",
-    "description": "A box of .50 Action Express pistol ammunition.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.8,
-    "tags": [
-      "ammo",
-      "modern",
-      "pistol"
-    ],
-    "ammoType": ".50AE",
-    "quantity": 20
-  },
-  {
-    "id": "ammo_10gauge_buckshot",
-    "name": "10-Gauge Buckshot Shells",
-    "description": "A box of 10-gauge shotgun shells (buckshot).",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 1.0,
-    "tags": [
-      "ammo",
-      "modern",
-      "shotgun"
-    ],
-    "ammoType": "10gauge_buckshot",
-    "quantity": 10
-  },
-  {
-    "id": "ammo_12gauge_buckshot",
-    "name": "12-Gauge Buckshot Shells",
-    "description": "A box of 12-gauge shotgun shells (buckshot).",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.9,
-    "tags": [
-      "ammo",
-      "modern",
-      "shotgun"
-    ],
-    "ammoType": "12gauge_buckshot",
-    "quantity": 10
-  },
-  {
-    "id": "ammo_arrow",
-    "name": "Arrows",
-    "description": "A bundle of arrows for use with a bow.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 1.0,
-    "tags": [
-      "ammo",
-      "arrow",
-      "ranged"
-    ],
-    "ammoType": "arrow",
-    "quantity": 12
-  },
-  {
-    "id": "ammo_crossbow_bolt",
-    "name": "Crossbow Bolts",
-    "description": "A bundle of bolts for use with a crossbow.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 1.0,
-    "tags": [
-      "ammo",
-      "bolt",
-      "ranged"
-    ],
-    "ammoType": "crossbow_bolt",
-    "quantity": 12
-  },
-  {
-    "id": "ammo_40mm_grenade_frag",
-    "name": "40mm Fragmentation Grenade",
-    "description": "A 40mm grenade for use in a grenade launcher. Explodes into shrapnel.",
-    "type": "ammunition",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 1,
-    "tags": [
-      "ammo",
-      "explosive",
-      "grenade",
-      "40mm",
-      "modern"
-    ],
-    "ammoType": "40mm_grenade",
-    "quantity": 1,
-    "damage": "3d6",
-    "damageType": "Slashing",
-    "burstRadiusFt": 10
-  },
-  {
     "id": "improvised_ashtray",
     "name": "Improvised Weapon (Ashtray)",
     "description": "A small, heavy object like an ashtray or paperweight. Not designed for combat.",
@@ -2219,470 +1830,6 @@
     "damageType": "Bludgeoning"
   },
   {
-    "id": "bandage",
-    "name": "Bandage",
-    "description": "A sterile bandage to dress wounds and stop minor bleeding.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.1,
-    "tags": [
-      "consumable",
-      "medical",
-      "modern"
-    ],
-    "effects": {
-      "health": 10,
-      "stopBleeding": true
-    }
-  },
-  {
-    "id": "first_aid_kit",
-    "name": "First-Aid Kit",
-    "description": "Contains various medical supplies for treating injuries.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 2,
-    "weightLbs": 1,
-    "tags": [
-      "consumable",
-      "medical",
-      "modern"
-    ],
-    "effects": {
-      "health": 50,
-      "stopBleeding": true
-    }
-  },
-  {
-    "id": "canned_beans",
-    "name": "Canned Beans",
-    "description": "A can of beans. Provides basic sustenance. Needs a can opener or knife.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "consumable",
-      "food",
-      "modern"
-    ],
-    "effects": {
-      "hunger": -40
-    }
-  },
-  {
-    "id": "energy_bar",
-    "name": "Energy Bar",
-    "description": "A compact, high-energy food bar for quick nourishment.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "consumable",
-      "food",
-      "modern"
-    ],
-    "effects": {
-      "hunger": -25,
-      "stamina": 20
-    }
-  },
-  {
-    "id": "mre",
-    "name": "MRE",
-    "description": "Meal, Ready-to-Eat. A self-contained field ration providing substantial nourishment.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 2,
-    "weightLbs": 1.5,
-    "tags": [
-      "consumable",
-      "food",
-      "modern",
-      "military"
-    ],
-    "effects": {
-      "hunger": -70,
-      "thirst": -10
-    }
-  },
-  {
-    "id": "bottled_water",
-    "name": "Bottled Water",
-    "description": "A sealed bottle of clean drinking water.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "consumable",
-      "drink",
-      "modern"
-    ],
-    "effects": {
-      "thirst": -50
-    }
-  },
-  {
-    "id": "canteen_water",
-    "name": "Canteen (Full)",
-    "description": "A canteen filled with water. Can be refilled.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 2,
-    "weightLbs": 1,
-    "tags": [
-      "consumable",
-      "drink",
-      "modern",
-      "reusable_container"
-    ],
-    "effects": {
-      "thirst": -80
-    }
-  },
-  {
-    "id": "water_purification_tablets",
-    "name": "Water Purification Tablets",
-    "description": "Tablets to make unsafe water drinkable. Typically treats 1 liter per tablet.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.1,
-    "tags": [
-      "consumable",
-      "utility",
-      "modern"
-    ],
-    "effects": {
-      "purifyWater": 1
-    }
-  },
-  {
-    "id": "scrap_metal",
-    "name": "Scrap Metal",
-    "description": "Pieces of rusted or bent metal, useful for crafting.",
-    "type": "crafting_material",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.8,
-    "tags": [
-      "material",
-      "crafting",
-      "metal",
-      "modern"
-    ]
-  },
-  {
-    "id": "wood_planks",
-    "name": "Wood Planks",
-    "description": "Usable planks of wood, suitable for construction or crafting.",
-    "type": "crafting_material",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 2,
-    "weightLbs": 1.5,
-    "tags": [
-      "material",
-      "crafting",
-      "wood",
-      "modern"
-    ]
-  },
-  {
-    "id": "cloth_scraps",
-    "name": "Cloth Scraps",
-    "description": "Torn pieces of fabric, can be used for bandages or other crafts.",
-    "type": "crafting_material",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "material",
-      "crafting",
-      "cloth",
-      "modern"
-    ]
-  },
-  {
-    "id": "duct_tape",
-    "name": "Duct Tape",
-    "description": "A roll of strong adhesive tape, incredibly versatile.",
-    "type": "crafting_material",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.3,
-    "tags": [
-      "material",
-      "crafting",
-      "adhesive",
-      "modern"
-    ]
-  },
-  {
-    "id": "nails",
-    "name": "Nails",
-    "description": "A handful of metal nails, for construction and crafting.",
-    "type": "crafting_material",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "material",
-      "crafting",
-      "metal",
-      "modern"
-    ]
-  },
-  {
-    "id": "sharp_glass",
-    "name": "Sharp Glass",
-    "description": "Jagged pieces of broken glass. Handle with care.",
-    "type": "debris",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.3,
-    "tags": [
-      "debris",
-      "sharp",
-      "glass",
-      "modern"
-    ]
-  },
-  {
-    "id": "splintered_wood",
-    "name": "Splintered Wood",
-    "description": "Sharp fragments of broken wood. Can be hazardous.",
-    "type": "debris",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.4,
-    "tags": [
-      "debris",
-      "sharp",
-      "wood",
-      "modern"
-    ]
-  },
-  {
-    "id": "tomato_seeds",
-    "name": "Tomato Seeds",
-    "description": "A packet of tomato seeds, for planting.",
-    "type": "seed",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.1,
-    "tags": [
-      "seed",
-      "gardening",
-      "consumable",
-      "food_source"
-    ],
-    "plantable": true,
-    "effects": {
-      "growsInto": "tomato_plant"
-    }
-  },
-  {
-    "id": "corn_seeds",
-    "name": "Corn Seeds",
-    "description": "A packet of corn seeds, for planting.",
-    "type": "seed",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.1,
-    "tags": [
-      "seed",
-      "gardening",
-      "consumable",
-      "food_source"
-    ],
-    "plantable": true,
-    "effects": {
-      "growsInto": "corn_stalk"
-    }
-  },
-  {
-    "id": "carrot_seeds",
-    "name": "Carrot Seeds",
-    "description": "A packet of carrot seeds, for planting.",
-    "type": "seed",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.1,
-    "tags": [
-      "seed",
-      "gardening",
-      "consumable",
-      "food_source"
-    ],
-    "plantable": true,
-    "effects": {
-      "growsInto": "carrot_plant"
-    }
-  },
-  {
-    "id": "simple_shirt",
-    "name": "Simple Shirt",
-    "description": "A basic, everyday shirt.",
-    "type": "clothing",
-    "canEquip": false,
-    "isClothing": true,
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "clothing",
-      "torso_top"
-    ],
-    "layer": "torso_top",
-    "coverage": [
-      "torso",
-      "leftArm",
-      "rightArm"
-    ],
-    "insulation": 5,
-    "armorValue": 0
-  },
-  {
-    "id": "baseball_cap",
-    "name": "Baseball Cap",
-    "description": "A common cap with a rounded crown and a stiff peak projecting in front.",
-    "type": "clothing",
-    "canEquip": false,
-    "isClothing": true,
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "clothing",
-      "head_top"
-    ],
-    "layer": "head_top",
-    "coverage": [
-      "head"
-    ],
-    "insulation": 2,
-    "armorValue": 0
-  },
-  {
-    "id": "basic_vest",
-    "name": "Basic Vest",
-    "description": "A simple vest, offering minimal protection.",
-    "type": "clothing",
-    "canEquip": false,
-    "isClothing": true,
-    "size": 1,
-    "weightLbs": 1,
-    "tags": [
-      "clothing",
-      "torso_top"
-    ],
-    "layer": "torso_top",
-    "coverage": [
-      "torso"
-    ],
-    "insulation": 3,
-    "armorValue": 1
-  },
-  {
-    "id": "durable_pants",
-    "name": "Durable Pants",
-    "description": "Sturdy pants made from a tough material.",
-    "type": "clothing",
-    "canEquip": false,
-    "isClothing": true,
-    "size": 2,
-    "weightLbs": 1.5,
-    "tags": [
-      "clothing",
-      "legs_bottom"
-    ],
-    "layer": "legs_bottom",
-    "coverage": [
-      "leftLeg",
-      "rightLeg"
-    ],
-    "insulation": 8,
-    "armorValue": 1
-  },
-  {
-    "id": "wide_brim_hat",
-    "name": "Wide-Brim Hat",
-    "description": "A hat with a wide brim, offering good sun protection.",
-    "type": "clothing",
-    "canEquip": false,
-    "isClothing": true,
-    "size": 1,
-    "weightLbs": 0.3,
-    "tags": [
-      "clothing",
-      "head_top"
-    ],
-    "layer": "head_top",
-    "coverage": [
-      "head"
-    ],
-    "insulation": 3,
-    "armorValue": 0
-  },
-  {
-    "id": "small_backpack_wearable",
-    "name": "Small Backpack (Wearable)",
-    "description": "A small backpack for carrying items. This is the wearable item itself, not the container upgrade.",
-    "type": "clothing",
-    "canEquip": false,
-    "isClothing": true,
-    "size": 0,
-    "weightLbs": 1,
-    "tags": [
-      "clothing",
-      "backpack",
-      "container"
-    ],
-    "layer": "backpack",
-    "coverage": [],
-    "insulation": 0,
-    "armorValue": 0
-  },
-  {
-    "id": "large_backpack_item",
-    "name": "Large Backpack",
-    "description": "A large backpack that significantly increases carrying capacity.",
-    "type": "clothing",
-    "canEquip": false,
-    "isClothing": true,
-    "size": 3,
-    "weightLbs": 2.5,
-    "tags": [
-      "clothing",
-      "container",
-      "backpack"
-    ],
-    "layer": "backpack",
-    "coverage": [],
-    "insulation": 1,
-    "armorValue": 0,
-    "capacity": 24
-  },
-  {
     "id": "club",
     "name": "Club",
     "type": "weapon_melee",
@@ -2699,277 +1846,111 @@
     ]
   },
   {
-    "id": "small_backpack_container",
-    "name": "Small Backpack",
-    "description": "A simple backpack that adds some carrying capacity.",
-    "type": "clothing",
-    "canEquip": false,
-    "isClothing": true,
+    "id": "stiletto_knife",
+    "name": "Stiletto Knife",
+    "description": "A slender knife with a tapering blade, primarily used as a stabbing weapon.",
+    "type": "weapon_melee",
+    "canEquip": true,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [ "weapon", "melee", "piercing", "knife", "assassin", "concealable" ],
+    "damage": "1d4",
+    "damageType": "Piercing"
+  },
+  {
+    "id": "combat_knife",
+    "name": "Combat Knife",
+    "description": "A robust knife designed for military use, suitable for fighting and utility.",
+    "type": "weapon_melee",
+    "canEquip": true,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 1,
+    "tags": [ "weapon", "melee", "piercing", "slashing", "knife", "military", "guard" ],
+    "damage": "1d4",
+    "damageType": "Piercing"
+  },
+  {
+    "id": "trench_club",
+    "name": "Trench Club",
+    "description": "A brutal melee weapon, often improvised, featuring a heavy head sometimes embedded with studs or spikes.",
+    "type": "weapon_melee",
+    "canEquip": true,
+    "isClothing": false,
+    "size": 3,
+    "weightLbs": 5,
+    "tags": [ "weapon", "melee", "bludgeoning", "military", "bandit", "marauder" ],
+    "damage": "1d8",
+    "damageType": "Bludgeoning"
+  },
+  {
+    "id": "police_baton",
+    "name": "Police Baton",
+    "description": "A standard issue baton, typically made of wood or polycarbonate, used for subduing.",
+    "type": "weapon_melee",
+    "canEquip": true,
+    "isClothing": false,
     "size": 2,
     "weightLbs": 1.5,
-    "tags": [
-      "clothing",
-      "container",
-      "backpack"
-    ],
-    "layer": "backpack",
-    "coverage": [],
-    "insulation": 1,
-    "armorValue": 0,
-    "capacity": 15
+    "tags": [ "weapon", "melee", "bludgeoning", "less_lethal", "guard", "police", "bouncer" ],
+    "damage": "1d3",
+    "damageType": "Bludgeoning"
   },
   {
-    "id": "cargo_pants_pockets",
-    "name": "Cargo Pants",
-    "description": "Sturdy cargo pants with extra pockets for more carrying capacity.",
-    "type": "clothing",
-    "canEquip": false,
-    "isClothing": true,
-    "size": 2,
-    "weightLbs": 1.2,
-    "tags": [
-      "clothing",
-      "container",
-      "legs_bottom"
-    ],
-    "layer": "legs_bottom",
-    "coverage": [
-      "leftLeg",
-      "rightLeg"
-    ],
-    "insulation": 5,
-    "armorValue": 1,
-    "capacity": 5
-  },
-  {
-    "id": "canned_beans_food",
-    "name": "Canned Beans",
-    "description": "A can of beans. Provides some sustenance.",
+    "id": "throwing_knives_set",
+    "name": "Throwing Knives (Set of 3)",
+    "description": "A set of balanced knives designed for throwing.",
+    "type": "weapon_thrown",
+    "canEquip": true,
+    "isClothing": false,
     "size": 1,
-    "type": "food",
-    "isConsumable": true,
-    "effects": {
-      "hunger": 8
-    },
-    "sprite": "i",
-    "color": "brown",
-    "canEquip": false,
-    "isClothing": false,
-    "weightLbs": 0.5,
-    "tags": [ "consumable", "food", "modern" ]
+    "weightLbs": 1,
+    "tags": [ "weapon", "thrown", "piercing", "silent", "assassin", "spy" ],
+    "damage": "1d3",
+    "damageType": "Piercing",
+    "rangeIncrementFt": 15,
+    "quantity": 3
   },
   {
-    "id": "bottled_water_drink",
-    "name": "Bottled Water",
-    "description": "A bottle of clean drinking water. Very refreshing.",
+    "id": "garrote_wire",
+    "name": "Garrote Wire",
+    "description": "A thin wire or cord used for strangulation, favored by assassins for silent takedowns.",
+    "type": "weapon_melee",
+    "canEquip": true,
+    "isClothing": false,
+    "size": 0,
+    "weightLbs": 0.1,
+    "tags": [ "weapon", "melee", "silent", "assassin", "hitman", "spy" ],
+    "damage": "1d6",
+    "damageType": "Suffocation",
+    "specialEffect": "Requires stealth/surprise, grapple. Deals damage over time."
+  },
+  {
+    "id": "riot_shield",
+    "name": "Riot Shield",
+    "description": "A lightweight shield used for personal protection in riot control or breaching operations.",
+    "type": "weapon_melee",
+    "canEquip": true,
+    "isClothing": false,
+    "size": 4,
+    "weightLbs": 8,
+    "tags": [ "weapon", "melee", "defensive", "guard", "police", "soldier", "enforcer" ],
+    "damage": "1",
+    "damageType": "Bludgeoning",
+    "armorBonus": 2
+  },
+  {
+    "id": "sap_gloves",
+    "name": "Sap Gloves",
+    "description": "Gloves with powdered lead or steel shot sewn into the knuckle area, enhancing punches.",
+    "type": "weapon_melee",
+    "canEquip": true,
+    "isClothing": false,
     "size": 1,
-    "type": "drink",
-    "isConsumable": true,
-    "effects": {
-      "thirst": 10
-    },
-    "sprite": "i",
-    "color": "blue",
-    "canEquip": false,
-    "isClothing": false,
-    "weightLbs": 0.5,
-    "tags": [ "consumable", "drink", "modern" ]
-  },
-  {
-    "id": "flashlight",
-    "name": "Flashlight",
-    "type": "tool",
-    "description": "A battery-powered directional light source.",
-    "weight": 0.5,
-    "volume": 0.5,
-    "tags": [ "light_source_item", "hand_held", "requires_power_cell" ],
-    "equipSlots": [ "hand" ],
-    "light_properties": {
-      "color": "#FFFFFF",
-      "radius": 8,
-      "intensity": 0.9,
-      "cone_angle": 60
-    }
-  },
-  {
-    "id": "table_lantern_portable",
-    "name": "Portable Table Lantern",
-    "type": "tool",
-    "description": "A fuel-burning lantern that can be carried or placed.",
-    "weight": 1.0,
-    "volume": 1.0,
-    "tags": [ "light_source_item", "hand_held" ],
-    "equipSlots": [ "hand" ],
-    "light_properties": {
-      "color": "#FFFFE0",
-      "radius": 4,
-      "intensity": 0.7
-    }
-  },
-  {
-    "id": "candle_portable",
-    "name": "Portable Candle",
-    "type": "tool",
-    "description": "A simple wax candle. Provides a small amount of light.",
-    "weight": 0.1,
-    "volume": 0.1,
-    "tags": [ "light_source_item", "hand_held", "consumable_light" ],
-    "equipSlots": [ "hand" ],
-    "light_properties": {
-      "color": "#FFFFE0",
-      "radius": 3,
-      "intensity": 0.5
-    }
-  },
-  {
-    "id": "headlamp",
-    "name": "Headlamp",
-    "type": "armor",
-    "description": "A light source worn on the head, leaving hands free.",
-    "weight": 0.3,
-    "volume": 0.4,
-    "equipSlots": [ "head" ],
-    "armorValue": 0,
-    "material": "plastic",
-    "coverage": [ "head" ],
-    "tags": [ "light_source_item", "requires_power_cell" ],
-    "light_properties": {
-      "color": "#FFFFFF",
-      "radius": 7,
-      "intensity": 0.8,
-      "cone_angle": 70
-    }
-  },
-  {
-    "id": "cb_container_item",
-    "name": "Cabinet",
-    "description": "A storage cabinet.",
-    "type": "container_item",
-    "size": 0,
-    "capacity": 15,
-    "canEquip": false,
-    "isClothing": false,
-    "tags": [ "container", "storage", "furniture" ]
-  },
-  {
-    "id": "dr_container_item",
-    "name": "Drawer",
-    "description": "A sliding drawer for storage.",
-    "type": "container_item",
-    "size": 0,
-    "capacity": 5,
-    "canEquip": false,
-    "isClothing": false,
-    "tags": [ "container", "storage", "furniture" ]
-  },
-  {
-    "id": "gc_container_item",
-    "name": "Gun Case",
-    "description": "A case for storing firearms.",
-    "type": "container_item",
-    "size": 0,
-    "capacity": 10,
-    "canEquip": false,
-    "isClothing": false,
-    "tags": [ "container", "storage", "furniture" ]
-  },
-  {
-    "id": "tc_container_item",
-    "name": "Trash Can",
-    "description": "A receptacle for waste.",
-    "type": "container_item",
-    "size": 0,
-    "capacity": 8,
-    "canEquip": false,
-    "isClothing": false,
-    "tags": [ "container", "storage" ]
-  },
-  {
-    "id": "sf_container_item",
-    "name": "Safe",
-    "description": "A secure container for valuables.",
-    "type": "container_item",
-    "size": 0,
-    "capacity": 20,
-    "canEquip": false,
-    "isClothing": false,
-    "tags": [ "container", "storage", "furniture", "metal" ]
-  },
-  {
-    "id": "rf_container_item",
-    "name": "Refrigerator",
-    "description": "A household refrigerator for storing perishables.",
-    "type": "container_item",
-    "size": 0,
-    "capacity": 25,
-    "canEquip": false,
-    "isClothing": false,
-    "tags": [ "container", "storage", "furniture", "electronics" ]
-  },
-  {
-    "id": "st_container_item",
-    "name": "Stove/Oven",
-    "description": "A kitchen appliance for cooking, may have small storage.",
-    "type": "container_item",
-    "size": 0,
-    "capacity": 5,
-    "canEquip": false,
-    "isClothing": false,
-    "tags": [ "container", "storage", "furniture", "electronics" ]
-  },
-  {
-    "id": "mw_container_item",
-    "name": "Microwave",
-    "description": "A microwave oven, sometimes used to store small items.",
-    "type": "container_item",
-    "size": 0,
-    "capacity": 3,
-    "canEquip": false,
-    "isClothing": false,
-    "tags": [ "container", "storage", "furniture", "electronics" ]
-  },
-  {
-    "id": "stl_container_item",
-    "name": "Bookshelf",
-    "description": "A shelf for storing books and other items.",
-    "type": "container_item",
-    "size": 0,
-    "capacity": 20,
-    "canEquip": false,
-    "isClothing": false,
-    "tags": [ "container", "storage", "furniture" ]
-  },
-  {
-    "id": "nk_container_item",
-    "name": "Nightstand",
-    "description": "A small table or cabinet designed to stand beside a bed.",
-    "type": "container_item",
-    "size": 0,
-    "capacity": 8,
-    "canEquip": false,
-    "isClothing": false,
-    "tags": [ "container", "storage", "furniture" ]
-  },
-  {
-    "id": "drs_container_item",
-    "name": "Dresser",
-    "description": "A piece of furniture with drawers for storing clothes.",
-    "type": "container_item",
-    "size": 0,
-    "capacity": 15,
-    "canEquip": false,
-    "isClothing": false,
-    "tags": [ "container", "storage", "furniture" ]
-  },
-  {
-    "id": "dsk_container_item",
-    "name": "Desk",
-    "description": "A piece of furniture with a flat table-style work surface and drawers.",
-    "type": "container_item",
-    "size": 0,
-    "capacity": 10,
-    "canEquip": false,
-    "isClothing": false,
-    "tags": [ "container", "storage", "furniture" ]
+    "weightLbs": 1,
+    "tags": [ "weapon", "melee", "bludgeoning", "less_lethal", "bouncer", "enforcer", "bodyguard" ],
+    "damage": "1d3",
+    "damageType": "Bludgeoning"
   }
 ]
