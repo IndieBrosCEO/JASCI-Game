@@ -22,7 +22,8 @@
 /**************************************************************
  * Global State & Constants
  **************************************************************/
-const assetManager = new AssetManager();
+window.assetManager = new AssetManager(); // Explicitly assign to window
+console.log("SCRIPT.JS: window.assetManager created", window.assetManager); // Guard Log 1a
 window.animationManager = new AnimationManager(gameState); // Changed to window.animationManager
 // let currentMapData = null; // This is now managed in js/mapRenderer.js // This comment is accurate.
 
@@ -815,14 +816,20 @@ function handleKeyDown(event) {
                 const finalTargetPos = gameState.selectedTargetEntity ? gameState.selectedTargetEntity.mapPos : gameState.targetingCoords;
 
                 // Perform Line of Sight Check
-                if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos)) {
+                const currentTilesets = window.assetManager ? window.assetManager.tilesets : null;
+                const currentMapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+
+                logToConsole(`[DEBUG_LOS_CONTEXT] About to call hasLineOfSight3D.
+                  window.assetManager: ${window.assetManager ? 'Exists' : 'MISSING'}
+                  Passed tilesets: ${currentTilesets ? 'Exists, Keys: ' + Object.keys(currentTilesets).length : 'MISSING or empty'}
+                  Passed mapData: ${currentMapData ? 'Exists' : 'MISSING'}
+                  Player Pos: ${JSON.stringify(gameState.playerPos)}
+                  Target Pos: ${JSON.stringify(finalTargetPos)}`);
+
+                if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos, currentTilesets, currentMapData)) {
                     logToConsole(`No line of sight to target at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). Select another target.`, "orange");
-                    // Do not exit targeting mode, allow player to re-target
-                    // gameState.isTargetingMode = true; // Keep it true
-                    // gameState.targetConfirmed = false; // Target not actually confirmed due to LOS
-                    // window.mapRenderer.scheduleRender(); // Re-render to keep 'X'
                     event.preventDefault();
-                    return; // Stop further processing for this 'f' press
+                    return;
                 }
 
                 // LOS is clear, proceed with target confirmation
