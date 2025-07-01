@@ -1599,28 +1599,41 @@ window.mapRenderer = {
             gameState.activeAnimations.forEach(anim => {
                 if (!anim.visible || (anim.z !== undefined && anim.z !== currentZ)) return; // Skip if not on current Z
 
-                if (anim.type === 'explosion') {
-                    // Explosion logic needs to be 3D, for now, only render if center Z matches currentZ
-                    if (anim.centerPos && anim.centerPos.z === currentZ && anim.explosionSprites) {
-                        // ... (rest of explosion rendering, ensuring it uses tileCacheData)
-                        const spriteToRender = anim.explosionSprites[anim.currentFrameIndex];
-                        if (!spriteToRender) return;
-                        const colorToRender = anim.color;
-                        const centerX = Math.floor(anim.centerPos.x);
-                        const centerY = Math.floor(anim.centerPos.y);
-                        const radius = Math.floor(anim.currentExpansionRadius);
+                if (anim.type === 'explosion' && anim.visible && anim.explosionSprites && anim.centerPos) {
+                    const explosionMaxRadius = anim.currentExpansionRadius;
+                    const explosionCenterZ = anim.centerPos.z;
 
-                        for (let y_anim = Math.max(0, centerY - radius); y_anim <= Math.min(H - 1, centerY + radius); y_anim++) {
-                            for (let x_anim = Math.max(0, centerX - radius); x_anim <= Math.min(W - 1, centerX + radius); x_anim++) {
-                                const dx = x_anim - centerX;
-                                const dy = y_anim - centerY;
-                                if (dx * dx + dy * dy <= radius * radius) {
-                                    const cachedCell = tileCacheData[y_anim]?.[x_anim];
-                                    if (cachedCell && cachedCell.span) {
-                                        cachedCell.span.textContent = spriteToRender;
-                                        cachedCell.span.style.color = colorToRender;
-                                        cachedCell.sprite = spriteToRender;
-                                        cachedCell.color = colorToRender;
+                    // Check if the explosion's sphere intersects the currentViewZ plane
+                    const distZ = Math.abs(explosionCenterZ - currentZ);
+
+                    if (distZ <= explosionMaxRadius) {
+                        // Calculate the radius of the 2D circular slice on currentViewZ
+                        const sliceRadiusSquared = explosionMaxRadius * explosionMaxRadius - distZ * distZ;
+                        if (sliceRadiusSquared > 0) { // Ensure there's an actual circle to draw
+                            const sliceRadius = Math.floor(Math.sqrt(sliceRadiusSquared));
+                            const spriteToRender = anim.explosionSprites[anim.currentFrameIndex];
+                            if (!spriteToRender) return; // Should be continue if in a loop of animations
+
+                            const colorToRender = anim.color;
+                            const centerX = Math.floor(anim.centerPos.x);
+                            const centerY = Math.floor(anim.centerPos.y);
+
+                            for (let y_anim = Math.max(0, centerY - sliceRadius); y_anim <= Math.min(H - 1, centerY + sliceRadius); y_anim++) {
+                                for (let x_anim = Math.max(0, centerX - sliceRadius); x_anim <= Math.min(W - 1, centerX + sliceRadius); x_anim++) {
+                                    const dx = x_anim - centerX;
+                                    const dy = y_anim - centerY;
+                                    if (dx * dx + dy * dy <= sliceRadius * sliceRadius) {
+                                        const fowStatus = currentFowData?.[y_anim]?.[x_anim];
+                                        // Only render if the tile is visible or visited (respect FOW)
+                                        if (fowStatus === 'visible' || fowStatus === 'visited') {
+                                            const cachedCell = tileCacheData[y_anim]?.[x_anim];
+                                            if (cachedCell && cachedCell.span) {
+                                                cachedCell.span.textContent = spriteToRender;
+                                                cachedCell.span.style.color = colorToRender;
+                                                cachedCell.sprite = spriteToRender;
+                                                cachedCell.color = colorToRender;
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -1629,51 +1642,110 @@ window.mapRenderer = {
                 } else if (anim.type === 'flamethrower') {
                     if (anim.flameParticles && anim.flameParticles.length > 0) {
                         anim.flameParticles.forEach(particle => {
-                            if (particle.z !== undefined && particle.z !== currentZ) return; // Check Z
-                            const particleX = Math.floor(particle.x);
-                            const particleY = Math.floor(particle.y);
-                            if (particleX >= 0 && particleX < W && particleY >= 0 && particleY < H) {
-                                const cachedCell = tileCacheData[particleY]?.[particleX];
-                                if (cachedCell && cachedCell.span) {
-                                    cachedCell.span.textContent = particle.sprite;
-                                    cachedCell.span.style.color = particle.color;
+                            // Ensure flamethrower particles also have a .z and are checked if they should be Z-specific
+                            if (particle.z === undefined || particle.z === currentZ) { // Render if particle.z matches or is undefined (legacy)
+                                const particleX = Math.floor(particle.x);
+                                const particleY = Math.floor(particle.y);
+                                if (particleX >= 0 && particleX < W && particleY >= 0 && particleY < H) {
+                                    const fowStatusParticle = currentFowData?.[particleY]?.[particleX];
+                                    if (fowStatusParticle === 'visible' || fowStatusParticle === 'visited') {
+                                        const cachedCell = tileCacheData[particleY]?.[particleX];
+                                        if (cachedCell && cachedCell.span) {
+                                            cachedCell.span.textContent = particle.sprite;
+                                            cachedCell.span.style.color = particle.color;
+                                            // Do not update cache sprite/color for transient particles like flames generally
+                                        }
+                                    }
                                 }
                             }
                         });
                     }
-                } else if (anim.type === 'gasCloud') {
-                    if (anim.particles && anim.particles.length > 0) {
-                        anim.particles.forEach(particle => {
-                            if (particle.opacity <= 0 || (particle.z !== undefined && particle.z !== currentZ)) return;
-                            const particleX = Math.floor(particle.x);
-                            const particleY = Math.floor(particle.y);
-                            if (particleX >= 0 && particleX < W && particleY >= 0 && particleY < H) {
-                                const cachedCell = tileCacheData[particleY]?.[particleX];
+                } else if (anim.type === 'gasCloud' && anim.visible && anim.particles && anim.centerPos) {
+                    const gasCloudCenterZ = anim.z; // anim.z is centerPos.z for gas clouds, set by base Animation class
+                    const verticalRadius = anim.verticalRadius !== undefined ? anim.verticalRadius : 1; // Default from animation constructor
+
+                    // Check if the currentViewZ is within the vertical extent of the gas cloud
+                    // A verticalRadius of 0 means it's flat on its anim.z plane.
+                    // A verticalRadius of 1 means it affects anim.z, anim.z-1, anim.z+1.
+                    if (currentZ >= gasCloudCenterZ - verticalRadius && currentZ <= gasCloudCenterZ + verticalRadius) {
+                        if (anim.particles.length > 0) {
+                            const distZFromCloudCenter = Math.abs(gasCloudCenterZ - currentZ);
+                            // Attenuation: 1.0 at cloud's center Z, fades to 0 at edges of verticalRadius.
+                            // If verticalRadius is 0, attenuation is 1 if currentZ is gasCloudCenterZ, else 0.
+                            let zAttenuation;
+                            if (verticalRadius === 0) {
+                                zAttenuation = (distZFromCloudCenter === 0) ? 1.0 : 0;
+                            } else {
+                                zAttenuation = Math.max(0, 1 - (distZFromCloudCenter / verticalRadius));
+                            }
+
+                            if (zAttenuation > 0.05) { // Only render if slice has some substance
+                                anim.particles.forEach(particle => {
+                                    const effectiveOpacity = particle.opacity * zAttenuation;
+                                    if (effectiveOpacity <= 0.05) return;
+
+                                    const particleX = Math.floor(particle.x);
+                                    const particleY = Math.floor(particle.y);
+
+                                    // Horizontal check: ensure particle is within the cloud's current horizontal radius
+                                    const dx = particleX - anim.centerPos.x;
+                                    const dy = particleY - anim.centerPos.y;
+                                    if ((dx * dx + dy * dy) > (anim.currentRadius * anim.currentRadius)) {
+                                        // return; // Particle is outside the horizontal spread for this cloud instance
+                                    }
+                                    // Note: Gas cloud particles are spawned within currentRadius, so this check might be redundant
+                                    // if particles don't move independently outside of it. Kept for safety.
+
+
+                                    if (particleX >= 0 && particleX < W && particleY >= 0 && particleY < H) {
+                                        const fowStatus = currentFowData?.[particleY]?.[particleX];
+                                        if (fowStatus === 'visible' || fowStatus === 'visited') {
+                                            const cachedCell = tileCacheData[particleY]?.[particleX];
+                                            if (cachedCell && cachedCell.span) {
+                                                cachedCell.span.textContent = particle.sprite;
+                                                try {
+                                                    let r = parseInt(particle.color.substring(1, 3), 16);
+                                                    let g = parseInt(particle.color.substring(3, 5), 16);
+                                                    let b = parseInt(particle.color.substring(5, 7), 16);
+
+                                                    const bgR = 30, bgG = 30, bgB = 30; // Darkish background color for blending
+                                                    r = Math.max(0, Math.min(255, Math.floor(r * effectiveOpacity + bgR * (1 - effectiveOpacity))));
+                                                    g = Math.max(0, Math.min(255, Math.floor(g * effectiveOpacity + bgG * (1 - effectiveOpacity))));
+                                                    b = Math.max(0, Math.min(255, Math.floor(b * effectiveOpacity + bgB * (1 - effectiveOpacity))));
+                                                    cachedCell.span.style.color = `rgb(${r},${g},${b})`;
+                                                } catch (e) {
+                                                    cachedCell.span.style.color = particle.color; // Fallback
+                                                }
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+                } else if (anim.sprite && anim.visible) { // Other single-sprite animations
+                    // Check if the animation's Z level matches the current view Z
+                    if (anim.z === currentZ) {
+                        const animX = Math.floor(anim.x);
+                        const animY = Math.floor(anim.y);
+                        if (animX >= 0 && animX < W && animY >= 0 && animY < H) {
+                            const fowStatus = currentFowData?.[animY]?.[animX];
+                            // Only render if the tile is visible or visited (respect FOW for animations)
+                            if (fowStatus === 'visible' || fowStatus === 'visited') {
+                                const cachedCell = tileCacheData[animY]?.[animX];
                                 if (cachedCell && cachedCell.span) {
-                                    cachedCell.span.textContent = particle.sprite;
-                                    let r = parseInt(particle.color.substring(1, 3), 16);
-                                    let g = parseInt(particle.color.substring(3, 5), 16);
-                                    let b = parseInt(particle.color.substring(5, 7), 16);
-                                    const bgR = 50, bgG = 50, bgB = 50;
-                                    r = Math.floor(r * particle.opacity + bgR * (1 - particle.opacity));
-                                    g = Math.floor(g * particle.opacity + bgG * (1 - particle.opacity));
-                                    b = Math.floor(b * particle.opacity + bgB * (1 - particle.opacity));
-                                    cachedCell.span.style.color = `rgb(${r},${g},${b})`;
+                                    // Check if player or NPC is on this tile, if so, animation might be less prominent or not drawn
+                                    // For now, let animation draw over map features, but player/NPCs draw over animations if on same tile later
+                                    // This order is: Map -> Effects (Smoke/Gas) -> Animations -> Player/NPCs -> Targeting Cursors
+                                    cachedCell.span.textContent = anim.sprite;
+                                    cachedCell.span.style.color = anim.color;
+                                    // Update cache to reflect animation sprite being shown
+                                    // This might be complex if multiple animations hit the same tile.
+                                    // Current logic means last animation in list wins for that tile.
+                                    cachedCell.sprite = anim.sprite; // Reflect that animation is now the 'top' sprite
+                                    cachedCell.color = anim.color;   // And its color
                                 }
                             }
-                        });
-                    }
-                } else if (anim.sprite) { // Other single-sprite animations
-                    const animX = Math.floor(anim.x);
-                    const animY = Math.floor(anim.y);
-                    // Ensure anim.z check if applicable for this animation type
-                    if (animX >= 0 && animX < W && animY >= 0 && animY < H) {
-                        const cachedCell = tileCacheData[animY]?.[animX];
-                        if (cachedCell && cachedCell.span) {
-                            cachedCell.span.textContent = anim.sprite;
-                            cachedCell.span.style.color = anim.color;
-                            cachedCell.sprite = anim.sprite;
-                            cachedCell.color = anim.color;
                         }
                     }
                 }

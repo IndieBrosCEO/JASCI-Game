@@ -4,8 +4,10 @@
     "\\assets",
     "\\assets\\definitions",
     "\\assets\\maps",
+    "\\assets\\sounds",
     "\\js",
     "\\Maps"
   ],
+  "SelectedNode": "\\assets\\definitions\\weapons.json",
   "PreviewInSolutionExplorer": false
 }

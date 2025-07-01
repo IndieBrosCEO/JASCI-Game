@@ -129,7 +129,7 @@ class AnimationManager {
     }
 
     updateAnimations() {
-        
+
         if (!this.gameState.activeAnimations || this.gameState.activeAnimations.length === 0) {
             if (this.gameState.isAnimationPlaying) {
                 this.gameState.isAnimationPlaying = false;
@@ -174,6 +174,21 @@ class Animation {
 
         this.x = data.x !== undefined ? data.x : (data.startPos ? data.startPos.x : 0);
         this.y = data.y !== undefined ? data.y : (data.startPos ? data.startPos.y : 0);
+        // Determine Z coordinate
+        if (data.z !== undefined) {
+            this.z = data.z;
+        } else if (data.startPos && data.startPos.z !== undefined) {
+            this.z = data.startPos.z;
+        } else if (data.entity && data.entity.mapPos && data.entity.mapPos.z !== undefined) {
+            this.z = data.entity.mapPos.z;
+        } else if (data.attacker && data.attacker.mapPos && data.attacker.mapPos.z !== undefined) {
+            this.z = data.attacker.mapPos.z;
+        } else if (this.gameState && this.gameState.playerPos && this.gameState.playerPos.z !== undefined && (data.entity === this.gameState || data.attacker === this.gameState)) {
+            // If entity/attacker is player, use player's Z
+            this.z = this.gameState.playerPos.z;
+        } else {
+            this.z = 0; // Default Z if not specified
+        }
         this.sprite = data.sprite || '';
         this.color = data.color || 'white';
         this.visible = data.visible !== undefined ? data.visible : true;
@@ -184,7 +199,7 @@ class Animation {
 
         // ADD THIS LOG:
         const entityNameForLog = data.entity ? (data.entity === this.gameState ? "Player" : (data.entity.name || data.entity.id)) : (data.attacker ? (data.attacker === this.gameState ? "Player" : (data.attacker.name || data.attacker.id)) : "N/A");
-        console.log(`[Animation CONSTRUCTOR] New Animation: Type=${this.type}, Visible=${this.visible}, X=${this.x}, Y=${this.y}, Duration=${this.duration}, Entity/Attacker=${entityNameForLog}`);
+        console.log(`[Animation CONSTRUCTOR] New Animation: Type=${this.type}, Visible=${this.visible}, X=${this.x}, Y=${this.y}, Z=${this.z}, Duration=${this.duration}, Entity/Attacker=${entityNameForLog}`);
 
         // Safely log data, similar to AnimationManager.playAnimation
         let dataForLog = {};
@@ -438,7 +453,7 @@ window.ThrowingAnimation = ThrowingAnimation; // Export ThrowingAnimation
 class ExplosionAnimation extends Animation {
     constructor(type, data, gameStateRef) {
         // data: centerPos, radius (max), explosionSprites, color, duration
-        super(type, { ...data, x: data.centerPos.x, y: data.centerPos.y }, gameStateRef); // Base class x,y is center
+        super(type, { ...data, x: data.centerPos.x, y: data.centerPos.y, z: data.centerPos.z }, gameStateRef); // Base class x,y is center, pass z
         this.centerPos = data.centerPos;
         this.maxRadius = data.radius;
         this.explosionSprites = data.explosionSprites || ['·', 'o', 'O', '*', 'X'];
@@ -611,6 +626,8 @@ class FlamethrowerAnimation extends Animation {
                 this.flameParticles.push({
                     startX: this.attackerPos.x,
                     startY: this.attackerPos.y,
+                    // Particles are spawned at the attacker's Z level.
+                    z: this.attackerPos.z, // Assign Z to particles
                     x: this.attackerPos.x,
                     y: this.attackerPos.y,
                     sprite: this.flameSpriteOptions[Math.floor(Math.random() * this.flameSpriteOptions.length)],
@@ -701,6 +718,7 @@ class TaserAnimation extends Animation {
             // Effect on defender
             this.x = this.defender.mapPos.x;
             this.y = this.defender.mapPos.y;
+            this.z = this.defender.mapPos.z; // Set Z to defender's Z for melee
             if (now - this.lastFrameTime >= this.frameDuration) {
                 this.currentSpriteIndex = (this.currentSpriteIndex + 1) % this.boltSprites.length;
                 this.sprite = this.boltSprites[this.currentSpriteIndex];
@@ -711,10 +729,12 @@ class TaserAnimation extends Animation {
             if (progress < impactTimeRatio) { // Projectile travel
                 this.x = this.startPos.x + (this.endPos.x - this.startPos.x) * (progress / impactTimeRatio);
                 this.y = this.startPos.y + (this.endPos.y - this.startPos.y) * (progress / impactTimeRatio);
+                // this.z remains attacker's Z (from constructor) during travel
                 this.sprite = '~'; // Traveling bolt sprite
             } else { // Effect on target
                 this.x = this.endPos.x;
                 this.y = this.endPos.y;
+                this.z = this.endPos.z; // Switch Z to defender's Z for impact sparks
                 if (now - this.lastFrameTime >= this.frameDuration) {
                     this.currentSpriteIndex = (this.currentSpriteIndex + 1) % this.boltSprites.length;
                     this.sprite = this.boltSprites[this.currentSpriteIndex];
@@ -772,7 +792,7 @@ class GasCloudAnimation extends Animation {
     constructor(type, data, gameStateRef) {
         // data: centerPos, maxRadius, duration (cloud persistence), 
         //       particleSprite, particleColor, expansionSpeed, particleLifetime, spawnRate, coneAngle (optional for sprays)
-        super(type, { ...data, x: data.centerPos.x, y: data.centerPos.y }, gameStateRef);
+        super(type, { ...data, x: data.centerPos.x, y: data.centerPos.y, z: data.centerPos.z }, gameStateRef); // Pass z
         this.centerPos = data.centerPos;
         this.maxRadius = data.maxRadius || 3; // Max radius of the cloud in tiles
         this.cloudDuration = data.duration || 3000; // How long the cloud effect itself lasts (particles might fade sooner)
@@ -787,6 +807,7 @@ class GasCloudAnimation extends Animation {
         this.coneAngle = data.coneAngle; // Optional: if specified, particles spawn in a cone
         this.coneDirection = data.coneDirection; // Optional: {x, y} vector for cone direction if not just expanding radially
 
+        this.verticalRadius = data.verticalRadius !== undefined ? data.verticalRadius : 1; // How many Z-levels it extends up/down from its center. 0 = flat. 1 = centerZ, centerZ+1, centerZ-1.
         this.particles = [];
         this.currentRadius = 0;
         this.visible = true; // Starts visible
@@ -1084,7 +1105,7 @@ class ChainsawAttackAnimation extends Animation {
     constructor(type, data, gameStateRef) {
         // data: attacker, defender (target), duration
         // Animation occurs at the defender's position.
-        super(type, { ...data, x: data.defender.mapPos.x, y: data.defender.mapPos.y }, gameStateRef);
+        super(type, { ...data, x: data.defender.mapPos.x, y: data.defender.mapPos.y, z: data.defender.mapPos.z }, gameStateRef); // Pass defender's z
         this.defenderPos = data.defender.mapPos;
 
         this.sawSprites = ['<', '>', '#']; // Jagged, chaotic sprites
