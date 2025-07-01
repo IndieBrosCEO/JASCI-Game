@@ -493,7 +493,9 @@
       "interactive",
       "breakable",
       "building"
-    ]
+    ],
+    "opensToTileId": "WOH",
+    "isLocked": false
   },
   "WDV": {
     "sprite": "│",
@@ -508,7 +510,9 @@
       "interactive",
       "breakable",
       "building"
-    ]
+    ],
+    "opensToTileId": "WOV",
+    "isLocked": false
   },
   "WOH": {
     "sprite": "┄",
@@ -567,7 +571,9 @@
       "interactive",
       "breakable",
       "building"
-    ]
+    ],
+    "opensToTileId": "MOH",
+    "isLocked": false
   },
   "MDV": {
     "sprite": "│",
@@ -582,7 +588,9 @@
       "interactive",
       "breakable",
       "building"
-    ]
+    ],
+    "opensToTileId": "MOV",
+    "isLocked": false
   },
   "MOH": {
     "sprite": "┄",
@@ -1342,7 +1350,7 @@
     "sprite": "▲",
     "name": "Stairs Up",
     "color": "#C0C0C0",
-    "tags": [ "building", "z_transition", "stairs", "middle"],
+    "tags": [ "building", "z_transition", "stairs", "middle" ],
     "target_dz": 1,
     "z_cost": 2
   },
@@ -1350,7 +1358,7 @@
     "sprite": "▼",
     "name": "Stairs Down",
     "color": "#A0A0A0",
-    "tags": [ "building", "z_transition", "stairs", "middle"],
+    "tags": [ "building", "z_transition", "stairs", "middle" ],
     "target_dz": -1,
     "z_cost": 1
   },
@@ -1358,7 +1366,7 @@
     "sprite": "O",
     "name": "Hole",
     "color": "#303030",
-    "tags": [ "landscape", "z_transition", "hole", "transparent_bottom", "allows_vision", "bottom"],
+    "tags": [ "landscape", "z_transition", "hole", "transparent_bottom", "allows_vision", "bottom" ],
     "target_dz": -1,
     "z_cost": 1
   },
@@ -1366,7 +1374,7 @@
     "sprite": "▲",
     "name": "Dirt Slope Up",
     "color": "#A52A2A",
-    "tags": [ "landscape", "z_transition", "slope", "dirt_slope", "middle"],
+    "tags": [ "landscape", "z_transition", "slope", "dirt_slope", "middle" ],
     "target_dz": 1,
     "z_cost": 2
   },
@@ -1374,7 +1382,7 @@
     "sprite": "▼",
     "name": "Dirt Slope Down",
     "color": "#A52A2A",
-    "tags": [ "landscape", "z_transition", "slope", "dirt_slope", "middle"],
+    "tags": [ "landscape", "z_transition", "slope", "dirt_slope", "middle" ],
     "target_dz": -1,
     "z_cost": 1
   },

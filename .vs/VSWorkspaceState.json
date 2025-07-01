@@ -5,9 +5,8 @@
     "\\assets\\definitions",
     "\\assets\\maps",
     "\\js",
-    "\\mapMaker",
     "\\Maps"
   ],
-  "SelectedNode": "\\js\\combatManager.js",
+  "SelectedNode": "\\assets\\definitions\\npcs.json",
   "PreviewInSolutionExplorer": false
 }

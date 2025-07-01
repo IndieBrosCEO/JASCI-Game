@@ -69,6 +69,27 @@ async function endTurn_internal() { // Make async
     } else {
         console.error("window.updateHealthCrisis is not available. Health crisis cannot be updated.");
     }
+
+    // --- NPC Out-of-Combat Actions ---
+    if (!gameState.isInCombat && gameState.npcs && gameState.npcs.length > 0) {
+        logToConsole("Processing NPC out-of-combat turns...", "darkgrey");
+        for (const npc of gameState.npcs) {
+            if (npc && npc.health?.torso?.current > 0 && npc.health?.head?.current > 0) {
+                // Ensure combatManager and localAssetManager (assetManager) are available
+                if (window.combatManager && localAssetManager && typeof window.executeNpcTurn === 'function') {
+                    // NPC OOC turns are also async if they involve movement animations
+                    await window.executeNpcTurn(npc, gameState, window.combatManager, localAssetManager);
+                } else {
+                    if (!window.combatManager) logToConsole(`ERROR: global combatManager not found for NPC ${npc.id} OOC turn.`, "red");
+                    if (!localAssetManager) logToConsole(`ERROR: localAssetManager not found for NPC ${npc.id} OOC turn.`, "red");
+                    if (typeof window.executeNpcTurn !== 'function') logToConsole(`ERROR: window.executeNpcTurn not found for NPC ${npc.id} OOC turn.`, "red");
+                }
+            }
+        }
+        logToConsole("Finished processing NPC out-of-combat turns.", "darkgrey");
+    }
+    // --- End NPC Out-of-Combat Actions ---
+
     gameState.currentTurn++;
     startTurn_internal(); // Call internal startTurn
     window.mapRenderer.scheduleRender();

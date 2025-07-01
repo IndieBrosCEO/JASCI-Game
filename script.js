@@ -959,7 +959,7 @@ function handleKeyDown(event) {
     }
 }
 
-const combatManager = new CombatManager(gameState, assetManager);
+window.combatManager = new CombatManager(gameState, assetManager);
 
 function checkAndHandlePortal(newX, newY) {
     if (gameState.awaitingPortalConfirmation || gameState.portalPromptActive) {
