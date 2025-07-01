@@ -127,8 +127,7 @@
               "ViewState": "AgIAAGQAAAAAAAAAAAAswHMAAAAXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-06-24T05:06:48.847Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -178,8 +177,7 @@
               "RelativeToolTip": "js\\gameState.js",
               "ViewState": "AgIAAF8AAAAAAAAAAAAAAGMAAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-06-24T04:49:22.88Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-24T04:49:22.88Z"
             },
             {
               "$type": "Document",
@@ -215,8 +213,7 @@
               "RelativeToolTip": "js\\animationManager.js",
               "ViewState": "AgIAAGAEAAAAAAAAAAAkwIAEAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-06-27T22:26:15.53Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-27T22:26:15.53Z"
             },
             {
               "$type": "Document",
@@ -228,8 +225,7 @@
               "RelativeToolTip": "js\\mapRenderer.js",
               "ViewState": "AgIAANsHAAAAAAAAAAAkwPsHAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-06-24T04:49:25.622Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-24T04:49:25.622Z"
             },
             {
               "$type": "Document",
