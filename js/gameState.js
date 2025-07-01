@@ -93,7 +93,7 @@ const gameState = {
     showRoof: false,
 
     // Onion skin settings
-    onionSkinLevelsAbove: 1,
+    onionSkinLevelsAbove: 3,
     onionSkinLevelsBelow: 1,
 
     // Stat/skill limits
