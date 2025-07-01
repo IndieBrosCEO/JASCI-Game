@@ -115,6 +115,7 @@ class CombatManager {
 
     promptPlayerAttackDeclaration() {
         this.gameState.isWaitingForPlayerCombatInput = true;
+        logToConsole(`[promptPlayerAttackDeclaration] Set isWaitingForPlayerCombatInput to TRUE. Phase: ${this.gameState.combatPhase}`, 'magenta');
         const defenderDisplay = document.getElementById('currentDefender');
         const attackDeclUI = document.getElementById('attackDeclarationUI');
 
@@ -174,6 +175,7 @@ class CombatManager {
 
     promptPlayerDefenseDeclaration(attackData) {
         this.gameState.isWaitingForPlayerCombatInput = true;
+        logToConsole(`[promptPlayerDefenseDeclaration] Set isWaitingForPlayerCombatInput to TRUE. Phase: ${this.gameState.combatPhase}`, 'magenta');
         const defenseTypeSelect = document.getElementById('combatDefenseTypeSelect');
         const blockingLimbSelect = document.getElementById('combatBlockingLimbSelect');
         const defenseUI = document.getElementById('defenseDeclarationUI');
@@ -224,22 +226,31 @@ class CombatManager {
     }
 
     async nextTurn(previousAttackerEntity = null) {
+        const callSource = previousAttackerEntity ? (previousAttackerEntity === this.gameState ? 'PlayerEndTurn/OutOfAP' : previousAttackerEntity.name) : 'System';
+        logToConsole(`[nextTurn CALL] Source: ${callSource}. Current isWaitingForPlayerCombatInput: ${this.gameState.isWaitingForPlayerCombatInput}`, 'magenta');
+
         if (window.animationManager) while (window.animationManager.isAnimationPlaying()) await new Promise(r => setTimeout(r, 50));
-        if (this.gameState.isWaitingForPlayerCombatInput) { logToConsole("INFO: nextTurn() deferred.", 'grey'); return; }
+
+        if (this.gameState.isWaitingForPlayerCombatInput) {
+            logToConsole(`[nextTurn DEFERRED] Waiting for player input. Source: ${callSource}.`, 'magenta');
+            return;
+        }
         if (!this.gameState.isInCombat || this.initiativeTracker.length === 0) { this.endCombat(); return; }
+
         this.currentTurnIndex = (this.currentTurnIndex + 1) % this.initiativeTracker.length;
         if (this.currentTurnIndex === 0 && previousAttackerEntity) logToConsole("New combat round started.", 'lightblue');
 
         const currentEntry = this.initiativeTracker[this.currentTurnIndex];
         if (!currentEntry?.entity) { logToConsole("Error: Invalid turn entry. Ending combat.", 'red'); this.endCombat(); return; }
+
         this.gameState.combatCurrentAttacker = currentEntry.entity;
         const attacker = currentEntry.entity;
         const attackerName = currentEntry.isPlayer ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id || "Unknown");
         this.gameState.attackerMapPos = currentEntry.isPlayer ? { ...this.gameState.playerPos } : (attacker.mapPos ? { ...attacker.mapPos } : null);
-        logToConsole(`--- ${attackerName}'s Turn ---`, 'lightblue');
+        logToConsole(`--- ${attackerName}'s Turn --- (${this.gameState.isWaitingForPlayerCombatInput ? "WAITING FLAG TRUE" : "WAITING FLAG FALSE"})`, 'lightblue'); // Added flag status here
 
         if (attacker?.statusEffects) {
-            logToConsole(`--- Processing status effects for ${attackerName} ---`, 'teal');
+            logToConsole(`--- Processing status effects for ${attackerName} --- (${this.gameState.isWaitingForPlayerCombatInput})`, 'teal');
             let effectsToRemove = [];
             for (const effectId in attacker.statusEffects) {
                 const effect = attacker.statusEffects[effectId];
@@ -351,9 +362,20 @@ class CombatManager {
 
 
         if (currentEntry.isPlayer) {
-            if (this.gameState.playerForcedEndTurnWithZeroAP) { this.gameState.playerForcedEndTurnWithZeroAP = false; this.nextTurn(currentEntry.entity); return; }
-            this.gameState.playerMovedThisTurn = false; this.gameState.actionPointsRemaining = 1; this.gameState.movementPointsRemaining = 6;
-            window.turnManager.updateTurnUI();
+            logToConsole(`[nextTurn] Setting up PLAYER turn. Initial isWaiting: ${this.gameState.isWaitingForPlayerCombatInput}`, 'green');
+            // REMOVED: playerForcedEndTurnWithZeroAP block that caused premature turn skip.
+            // Player turn should always proceed if it's their turn in initiative.
+            // AP/MP reset below ensures they have resources.
+            this.gameState.playerMovedThisTurn = false;
+
+            // Reset Player AP/MP at the start of their turn in combat
+            this.gameState.actionPointsRemaining = 1; // Default, adjust if player has different base AP
+            this.gameState.movementPointsRemaining = 6; // Default, adjust if player has different base MP
+            this.gameState.hasDashed = false;
+            logToConsole(`[nextTurn] Player AP/MP RESET. AP: ${this.gameState.actionPointsRemaining}, MP: ${this.gameState.movementPointsRemaining}`, 'yellow');
+
+            window.turnManager.updateTurnUI(); // Update UI with refreshed AP/MP
+
             if (!this.gameState.retargetingJustHappened) {
                 this.gameState.combatCurrentDefender = null; this.gameState.defenderMapPos = null;
                 const aggroTarget = this.gameState.player?.aggroList?.find(a => a.entityRef && a.entityRef !== this.gameState && a.entityRef.health?.torso?.current > 0 && a.entityRef.health?.head?.current > 0 && a.entityRef.teamId !== this.gameState.player.teamId && this.initiativeTracker.find(e => e.entity === a.entityRef));
@@ -372,14 +394,20 @@ class CombatManager {
                 }
             }
             this.gameState.isRetargeting = false;
-        } else {
-            attacker.movedThisTurn = false; attacker.currentActionPoints = attacker.defaultActionPoints || 1; attacker.currentMovementPoints = attacker.defaultMovementPoints || 0;
-            this.gameState.combatCurrentDefender = this.gameState;
+            this.promptPlayerAttackDeclaration(); // Sets isWaitingForPlayerCombatInput = true
+            logToConsole(`[nextTurn] PLAYER turn setup complete. isWaiting (after prompt): ${this.gameState.isWaitingForPlayerCombatInput}`, 'green');
+        } else { // NPC's turn
+            attacker.movedThisTurn = false;
+            attacker.currentActionPoints = attacker.defaultActionPoints || 1;
+            attacker.currentMovementPoints = attacker.defaultMovementPoints || 6; // Standard MP for NPCs
+            logToConsole(`[nextTurn] NPC (${attackerName}) AP/MP RESET. AP: ${attacker.currentActionPoints}, MP: ${attacker.currentMovementPoints}`, 'yellow');
+
+            this.gameState.combatCurrentDefender = this.gameState; // Default target for NPC
             this.gameState.defenderMapPos = this.gameState.playerPos ? { ...this.gameState.playerPos } : null;
+
+            this.gameState.combatPhase = 'attackerDeclare';
+            await this.executeNpcCombatTurn(attacker);
         }
-        this.updateCombatUI(); window.mapRenderer.scheduleRender();
-        if (currentEntry.isPlayer) this.promptPlayerAttackDeclaration();
-        else { this.gameState.combatPhase = 'attackerDeclare'; await this.executeNpcCombatTurn(attacker); }
     }
 
     endCombat() {
@@ -402,6 +430,7 @@ class CombatManager {
     }
 
     handleConfirmedAttackDeclaration() {
+        logToConsole(`[handleConfirmedAttackDeclaration] Setting isWaitingForPlayerCombatInput to FALSE. Current phase: ${this.gameState.combatPhase}`, 'magenta');
         this.gameState.isWaitingForPlayerCombatInput = false; this.gameState.retargetingJustHappened = false;
         const weaponSelect = document.getElementById('combatWeaponSelect'); const bodyPartSelect = document.getElementById('combatBodyPartSelect');
         const selectedVal = weaponSelect.value; let weaponObj = null, attackType = "unarmed";
@@ -452,6 +481,7 @@ class CombatManager {
     }
 
     handleConfirmedDefenseDeclaration() {
+        logToConsole(`[handleConfirmedDefenseDeclaration] Setting isWaitingForPlayerCombatInput to FALSE. Current phase: ${this.gameState.combatPhase}`, 'magenta');
         this.gameState.isWaitingForPlayerCombatInput = false;
         const defenseType = document.getElementById('combatDefenseTypeSelect').value;
         const blockingLimb = defenseType === 'BlockUnarmed' ? document.getElementById('combatBlockingLimbSelect').value : null;
@@ -1056,10 +1086,11 @@ class CombatManager {
     }
 
     endPlayerTurn() {
+        logToConsole(`[endPlayerTurn] Setting isWaitingForPlayerCombatInput to FALSE. Current phase: ${this.gameState.combatPhase}`, 'magenta');
         this.gameState.isWaitingForPlayerCombatInput = false;
         if (this.gameState.isInCombat && this.gameState.combatCurrentAttacker === this.gameState) {
             logToConsole("Player manually ends turn.", 'lightblue');
-            this.gameState.playerForcedEndTurnWithZeroAP = this.gameState.actionPointsRemaining === 0;
+            // this.gameState.playerForcedEndTurnWithZeroAP = this.gameState.actionPointsRemaining === 0; // Flag is obsolete
             this.gameState.actionPointsRemaining = 0; this.gameState.movementPointsRemaining = 0;
             window.turnManager.updateTurnUI();
             this.nextTurn(this.gameState);
@@ -1479,10 +1510,11 @@ class CombatManager {
             logToConsole(`NPC TARGETING: ${npcName} selected nearest enemy with LOS: ${closestTargetWithLOS.entity === this.gameState ? "Player" : (closestTargetWithLOS.entity.name || closestTargetWithLOS.entity.id)} (Dist: ${closestTargetWithLOS.distance.toFixed(1)}).`, 'gold');
 
             // Update NPC memory upon successful targeting
-            if (npc.memory) {
-                npc.memory.lastSeenTargetPos = { ...this.gameState.defenderMapPos };
+            if (npc.memory) { // Ensure npc.memory exists
+                npc.memory.lastSeenTargetPos = { ...this.gameState.defenderMapPos }; // Store a copy
                 npc.memory.lastSeenTargetTimestamp = this.gameState.currentTime?.totalTurns || 0;
-                npc.memory.explorationTarget = null; // Clear exploration target
+                npc.memory.explorationTarget = null; // Clear any previous exploration target
+                logToConsole(`NPC ${npcName} memory updated: last seen target at (${npc.memory.lastSeenTargetPos.x},${npc.memory.lastSeenTargetPos.y}, Z:${npc.memory.lastSeenTargetPos.z}) at turn ${npc.memory.lastSeenTargetTimestamp}. Exploration target cleared.`, 'debug');
             }
             return true;
         }
@@ -1493,25 +1525,31 @@ class CombatManager {
 
     async executeNpcCombatTurn(npc) {
         const npcName = npc.name || npc.id || "NPC";
-        if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) { logToConsole(`INFO: ${npcName} incapacitated. Skipping turn.`, 'orange'); await this.nextTurn(npc); return; }
+        if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) {
+            logToConsole(`INFO: ${npcName} incapacitated. Skipping turn.`, 'orange');
+            await this.nextTurn(npc);
+            return;
+        }
         if (!npc.aggroList) npc.aggroList = [];
-        if (!npc.memory) { // Ensure memory object exists, crucial for new logic
+        if (!npc.memory) {
             npc.memory = { lastSeenTargetPos: null, lastSeenTargetTimestamp: 0, recentlyVisitedTiles: [], explorationTarget: null, lastKnownSafePos: { ...(npc.mapPos || { x: 0, y: 0, z: 0 }) } };
         }
         logToConsole(`NPC TURN: ${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints})`, 'gold');
 
         let turnEnded = false;
-        let actionTakenThisTurn = false; // Tracks if any significant action (attack/move) was taken in the entire turn
+        let anAttackSequenceHandledNextTurn = false;
 
-        if (this._npcSelectTarget(npc)) { // Found a combat target
-            actionTakenThisTurn = true; // Targeting is an action, loop below will handle attack/move
+        // --- Combat Phase: NPC attempts to find and engage a target ---
+        if (this._npcSelectTarget(npc)) { // Also updates memory if target found
+            // Loop for combat actions (attack, move to attack, drop)
             for (let iter = 0; !turnEnded && (npc.currentActionPoints > 0 || npc.currentMovementPoints > 0) && iter < 10; iter++) {
                 let currentTarget = this.gameState.combatCurrentDefender, currentTargetPos = this.gameState.defenderMapPos;
                 if (!currentTarget || currentTarget.health?.torso?.current <= 0 || currentTarget.health?.head?.current <= 0) {
-                    if (!this._npcSelectTarget(npc)) { turnEnded = true; break; } // Try to re-target
+                    if (!this._npcSelectTarget(npc)) { turnEnded = true; break; }
                     currentTarget = this.gameState.combatCurrentDefender; currentTargetPos = this.gameState.defenderMapPos;
                     if (!currentTarget) { turnEnded = true; break; }
                 }
+
                 let actionTakenInIter = false;
                 let weaponToUse = npc.equippedWeaponId ? this.assetManager.getItem(npc.equippedWeaponId) : null;
                 let attackType = weaponToUse ? (weaponToUse.type.includes("melee") ? "melee" : (weaponToUse.type.includes("firearm") || weaponToUse.type.includes("bow") || weaponToUse.type.includes("crossbow") || weaponToUse.type.includes("weapon_ranged_other") || weaponToUse.type.includes("thrown") ? "ranged" : "melee")) : "melee";
@@ -1522,9 +1560,17 @@ class CombatManager {
                 if (canAttack && npc.currentActionPoints > 0) {
                     logToConsole(`NPC ACTION: ${npcName} attacks ${currentTarget.name || "Player"} with ${weaponToUse ? weaponToUse.name : "Unarmed"}.`, 'gold');
                     this.gameState.pendingCombatAction = { target: currentTarget, weapon: weaponToUse, attackType, bodyPart: "Torso", fireMode, actionType: "attack", entity: npc, actionDescription: `${attackType} by ${npcName}` };
-                    npc.currentActionPoints--; actionTakenInIter = true; this.gameState.combatPhase = 'defenderDeclare';
+                    npc.currentActionPoints--;
+                    actionTakenInIter = true;
+                    this.gameState.combatPhase = 'defenderDeclare';
                     this.handleDefenderActionPrompt();
-                    if (this.gameState.combatPhase === 'playerDefenseDeclare') return; // Wait for player defense
+                    anAttackSequenceHandledNextTurn = true;
+                    if (this.gameState.combatPhase === 'playerDefenseDeclare') {
+                        logToConsole(`NPC ${npcName} is attacking Player. Waiting for Player's defense input. executeNpcCombatTurn returns.`, 'gold');
+                        return;
+                    }
+                    turnEnded = true;
+                    break;
                 } else if (npc.currentMovementPoints > 0) {
                     let dropExecuted = await this._evaluateAndExecuteNpcDrop(npc);
                     if (dropExecuted) {
@@ -1535,71 +1581,92 @@ class CombatManager {
                         }
                     }
                 }
-
-                if (!actionTakenInIter) turnEnded = true; // If no action in iteration (e.g. cant attack and cant move)
+                if (!actionTakenInIter) turnEnded = true;
                 if (npc.currentActionPoints === 0 && npc.currentMovementPoints === 0) turnEnded = true;
             }
-        } else { // No combat target, try exploration/memory
-            logToConsole(`NPC ACTION: ${npcName} no direct combat target. Considering exploration/memory.`);
-            actionTakenThisTurn = true; // Considering exploration is an action for the turn
+        } else {
+            // --- Exploration/Memory Phase: No direct combat target found ---
+            logToConsole(`NPC ACTION: ${npcName} no direct combat target. Considering exploration/memory or strategic waiting.`, 'gold');
             if (npc.currentMovementPoints > 0 && npc.memory) {
                 let pathfindingTarget = null;
                 const currentTime = this.gameState.currentTime?.totalTurns || 0;
 
-                if (npc.memory.lastSeenTargetPos && (currentTime - npc.memory.lastSeenTargetTimestamp < MEMORY_DURATION_THRESHOLD)) {
-                    pathfindingTarget = npc.memory.lastSeenTargetPos;
-                    logToConsole(`${npcName} moving towards last known target pos: (${pathfindingTarget.x},${pathfindingTarget.y},${pathfindingTarget.z})`);
-                } else {
-                    if (npc.memory.lastSeenTargetPos) logToConsole(`${npcName} memory of last target faded.`);
-                    npc.memory.lastSeenTargetPos = null;
-                }
-
-                if (!pathfindingTarget && npc.memory.explorationTarget) {
-                    if (npc.mapPos.x === npc.memory.explorationTarget.x && npc.mapPos.y === npc.memory.explorationTarget.y && npc.mapPos.z === npc.memory.explorationTarget.z) {
-                        logToConsole(`${npcName} reached previous exploration target. Clearing.`);
-                        npc.memory.explorationTarget = null;
+                // 1. Check memory for a recent target
+                if (npc.memory.lastSeenTargetPos && (currentTime - (npc.memory.lastSeenTargetTimestamp || 0) < MEMORY_DURATION_THRESHOLD)) {
+                    if (npc.mapPos.x === npc.memory.lastSeenTargetPos.x &&
+                        npc.mapPos.y === npc.memory.lastSeenTargetPos.y &&
+                        npc.mapPos.z === npc.memory.lastSeenTargetPos.z) {
+                        logToConsole(`${npcName} is at last known target pos. Clearing memory to explore.`, 'grey');
+                        npc.memory.lastSeenTargetPos = null;
                     } else {
-                        pathfindingTarget = npc.memory.explorationTarget;
-                        logToConsole(`${npcName} continuing to exploration target: (${pathfindingTarget.x},${pathfindingTarget.y},${pathfindingTarget.z})`);
+                        pathfindingTarget = npc.memory.lastSeenTargetPos;
+                        logToConsole(`${npcName} moving towards last known target pos: (${pathfindingTarget.x},${pathfindingTarget.y}, Z:${pathfindingTarget.z}) (Turn ${npc.memory.lastSeenTargetTimestamp}).`, 'gold');
+                    }
+                } else {
+                    if (npc.memory.lastSeenTargetPos) {
+                        logToConsole(`${npcName} memory of last target is stale (seen at ${npc.memory.lastSeenTargetTimestamp}, current ${currentTime}). Clearing.`, 'grey');
+                        npc.memory.lastSeenTargetPos = null;
                     }
                 }
 
+                // 2. Continue towards current exploration target if no combat memory
+                if (!pathfindingTarget && npc.memory.explorationTarget) {
+                    if (npc.mapPos.x === npc.memory.explorationTarget.x && npc.mapPos.y === npc.memory.explorationTarget.y && npc.mapPos.z === npc.memory.explorationTarget.z) {
+                        logToConsole(`${npcName} reached previous exploration target. Clearing to find a new one.`, 'grey');
+                        npc.memory.explorationTarget = null;
+                        const arrivedKey = `${npc.mapPos.x},${npc.mapPos.y},${npc.mapPos.z}`;
+                        if (!npc.memory.recentlyVisitedTiles.includes(arrivedKey)) {
+                            npc.memory.recentlyVisitedTiles.push(arrivedKey);
+                            if (npc.memory.recentlyVisitedTiles.length > RECENTLY_VISITED_MAX_SIZE) {
+                                npc.memory.recentlyVisitedTiles.shift();
+                            }
+                        }
+                    } else {
+                        pathfindingTarget = npc.memory.explorationTarget;
+                        logToConsole(`${npcName} continuing to exploration target: (${pathfindingTarget.x},${pathfindingTarget.y}, Z:${pathfindingTarget.z})`, 'gold');
+                    }
+                }
+
+                // 3. Find new exploration target if needed
                 if (!pathfindingTarget) {
+                    logToConsole(`${npcName} needs a new exploration target.`, 'grey');
                     let attempts = 0;
                     const mapData = window.mapRenderer.getCurrentMapData();
-                    if (mapData && mapData.dimensions) {
+                    if (mapData && mapData.dimensions && npc.mapPos) {
                         while (attempts < MAX_EXPLORATION_TARGET_ATTEMPTS && !pathfindingTarget) {
                             const angle = Math.random() * 2 * Math.PI;
-                            const radius = 1 + Math.random() * (NPC_EXPLORATION_RADIUS - 1); // Ensure radius > 0
-                            const targetX = Math.floor(npc.mapPos.x + Math.cos(angle) * radius);
-                            const targetY = Math.floor(npc.mapPos.y + Math.sin(angle) * radius);
+                            const radius = 1 + Math.floor(Math.random() * (NPC_EXPLORATION_RADIUS - 1));
+                            const targetX = Math.max(0, Math.min(mapData.dimensions.width - 1, Math.floor(npc.mapPos.x + Math.cos(angle) * radius)));
+                            const targetY = Math.max(0, Math.min(mapData.dimensions.height - 1, Math.floor(npc.mapPos.y + Math.sin(angle) * radius)));
                             const targetZ = npc.mapPos.z;
 
-                            if (targetX >= 0 && targetX < mapData.dimensions.width && targetY >= 0 && targetY < mapData.dimensions.height) {
-                                const visitedKey = `${targetX},${targetY},${targetZ}`;
-                                if (window.mapRenderer.isWalkable(targetX, targetY, targetZ) &&
-                                    !this.isTileOccupied(targetX, targetY, targetZ, npc.id) &&
-                                    !npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
-                                    pathfindingTarget = { x: targetX, y: targetY, z: targetZ };
-                                    npc.memory.explorationTarget = pathfindingTarget;
-                                    logToConsole(`${npcName} selected new random exploration target: (${targetX},${targetY},${targetZ})`);
-                                    break;
-                                }
+                            const visitedKey = `${targetX},${targetY},${targetZ}`;
+                            if (window.mapRenderer.isWalkable(targetX, targetY, targetZ) &&
+                                !this.isTileOccupied(targetX, targetY, targetZ, npc.id) &&
+                                !npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
+                                pathfindingTarget = { x: targetX, y: targetY, z: targetZ };
+                                npc.memory.explorationTarget = pathfindingTarget;
+                                logToConsole(`${npcName} selected new random exploration target: (${targetX},${targetY}, Z:${targetZ})`, 'gold');
+                                break;
                             }
                             attempts++;
                         }
                     }
                     if (!pathfindingTarget && attempts >= MAX_EXPLORATION_TARGET_ATTEMPTS) {
-                        logToConsole(`${npcName} failed to find exploration target after ${attempts} attempts. Will use lastKnownSafePos or wait.`);
-                        pathfindingTarget = npc.memory.lastKnownSafePos &&
+                        logToConsole(`${npcName} failed to find a new random exploration target after ${attempts} attempts. Trying last known safe position.`, 'orange');
+                        if (npc.memory.lastKnownSafePos &&
                             (npc.memory.lastKnownSafePos.x !== npc.mapPos.x ||
                                 npc.memory.lastKnownSafePos.y !== npc.mapPos.y ||
-                                npc.memory.lastKnownSafePos.z !== npc.mapPos.z)
-                            ? npc.memory.lastKnownSafePos : null;
-                        if (pathfindingTarget) logToConsole(`${npcName} will move towards last known safe position.`);
+                                npc.memory.lastKnownSafePos.z !== npc.mapPos.z)) {
+                            pathfindingTarget = npc.memory.lastKnownSafePos;
+                            logToConsole(`${npcName} will move towards last known safe position: (${pathfindingTarget.x},${pathfindingTarget.y}, Z:${pathfindingTarget.z})`, 'gold');
+                        } else {
+                            logToConsole(`${npcName} is already at its last known safe position or has no safe position. Waiting.`, 'grey');
+                        }
                     }
                 }
 
+                // 4. Move towards the determined pathfinding target
                 if (pathfindingTarget) {
                     if (await this.moveNpcTowardsTarget(npc, pathfindingTarget)) {
                         npc.memory.lastKnownSafePos = { ...npc.mapPos };
@@ -1612,29 +1679,39 @@ class CombatManager {
                         }
                         if (npc.memory.explorationTarget && npc.mapPos.x === npc.memory.explorationTarget.x &&
                             npc.mapPos.y === npc.memory.explorationTarget.y && npc.mapPos.z === npc.memory.explorationTarget.z) {
-                            logToConsole(`${npcName} reached exploration target. Clearing.`);
+                            logToConsole(`${npcName} reached current exploration target. Clearing it.`, 'grey');
                             npc.memory.explorationTarget = null;
                         }
                     } else {
-                        logToConsole(`${npcName} could not move towards exploration/memory target. Clearing exploration target.`);
-                        npc.memory.explorationTarget = null;
+                        logToConsole(`${npcName} could not move towards target (${pathfindingTarget.x},${pathfindingTarget.y}, Z:${pathfindingTarget.z}). Clearing exploration target if it was this one.`, 'orange');
+                        if (npc.memory.explorationTarget && npc.memory.explorationTarget.x === pathfindingTarget.x &&
+                            npc.memory.explorationTarget.y === pathfindingTarget.y && npc.memory.explorationTarget.z === pathfindingTarget.z) {
+                            npc.memory.explorationTarget = null;
+                        }
+                        if (npc.memory.lastSeenTargetPos && npc.memory.lastSeenTargetPos.x === pathfindingTarget.x &&
+                            npc.memory.lastSeenTargetPos.y === pathfindingTarget.y && npc.memory.lastSeenTargetPos.z === pathfindingTarget.z) {
+                            logToConsole(`${npcName} failed to move to lastSeenTargetPos, clearing it to prevent repeated attempts.`, 'orange');
+                            npc.memory.lastSeenTargetPos = null;
+                        }
                     }
                 } else {
-                    logToConsole(`${npcName} has no exploration target and no memory to pursue. Waiting.`);
+                    logToConsole(`${npcName} has no pathfinding target (memory/exploration). Waiting this turn segment.`, 'grey');
                 }
             } else if (npc.memory) {
-                logToConsole(`${npcName} no MP for exploration. Waiting.`);
+                logToConsole(`${npcName} no MP for exploration/memory movement. Waiting.`, 'grey');
+            } else {
+                logToConsole(`${npcName} has no memory object or no MP. Waiting.`, 'grey');
             }
-            turnEnded = true; // Exploration logic for one iteration is enough.
+            // After attempting memory/exploration movement, the NPC's turn for major actions is done in this branch.
+            // The anAttackSequenceHandledNextTurn flag will be false, so nextTurn will be called below.
         }
 
-        // If turn hasn't naturally ended by running out of AP/MP or other conditions
-        if (!turnEnded && !actionTakenThisTurn && npc.currentActionPoints === 0 && npc.currentMovementPoints === 0) {
-            turnEnded = true; // Ensure turn ends if no actions and no points
+        if (!anAttackSequenceHandledNextTurn) {
+            logToConsole(`NPC TURN END: ${npcName} (No attack sequence initiated that would handle nextTurn, or only moved/idled). AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}. Calling nextTurn.`, 'gold');
+            await this.nextTurn(npc);
+        } else {
+            logToConsole(`NPC TURN END: ${npcName} (Attack sequence handled nextTurn OR waiting for player defense). AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}.`, 'gold');
         }
-
-        logToConsole(`NPC TURN END: ${npcName}. AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}.`, 'gold');
-        await this.nextTurn(npc);
     }
 
     /**
@@ -1800,8 +1877,19 @@ class CombatManager {
             turnEnded = true;
         }
 
-        logToConsole(`NPC TURN END: ${npcName}. AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}.`, 'gold');
-        await this.nextTurn(npc); // Proceed to next turn in initiative
+        // If this function hasn't returned early (i.e., player wasn't defending),
+        // and an attack wasn't made and processed (which would have called nextTurn via processAttack),
+        // then this NPC's turn is ending due to other reasons (e.g., movement, ran out of points without attacking, no valid target).
+        // In this case, explicitly call nextTurn.
+        if (!actionTakenThisTurn || (actionTakenThisTurn && !anAttackWasMadeAndProcessedThisTurn)) {
+            logToConsole(`NPC TURN END (no attack processed that calls nextTurn, or no action taken): ${npcName}. AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}. Calling nextTurn.`, 'gold');
+            await this.nextTurn(npc);
+        } else {
+            // An attack was processed, and its corresponding processAttack call handled invoking nextTurn,
+            // OR this function returned early because the player is defending (in which case processAttack will handle nextTurn later).
+            // No additional nextTurn call is needed from here.
+            logToConsole(`NPC TURN END (attack processed and nextTurn handled, or waiting for player defense): ${npcName}. AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}.`, 'gold');
+        }
     }
 
     /**
@@ -1949,6 +2037,126 @@ class CombatManager {
             this.gameState.attackerMapPos = null; this.gameState.defenderMapPos = null;
             window.mapRenderer.scheduleRender();
         }
+    }
+
+    async processNpcOutOfCombatBehavior(npc, maxMovesPerCycle = 3) {
+        const npcName = npc.name || npc.id || "NPC_OOC";
+        if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) {
+            // logToConsole(`INFO: ${npcName} incapacitated. Skipping out-of-combat behavior.`, 'grey');
+            return;
+        }
+
+        if (!npc.mapPos) {
+            // logToConsole(`INFO: ${npcName} has no mapPos. Skipping out-of-combat behavior.`, 'orange');
+            return;
+        }
+
+        if (!npc.memory) {
+            npc.memory = {
+                lastSeenTargetPos: null,
+                lastSeenTargetTimestamp: 0,
+                recentlyVisitedTiles: [],
+                explorationTarget: null,
+                lastKnownSafePos: { ...npc.mapPos }
+            };
+        }
+
+        let movesMadeThisCycle = 0;
+
+        // Determine Pathfinding Target
+        let pathfindingTarget = npc.memory.explorationTarget;
+
+        if (pathfindingTarget && npc.mapPos.x === pathfindingTarget.x && npc.mapPos.y === pathfindingTarget.y && npc.mapPos.z === pathfindingTarget.z) {
+            logToConsole(`NPC_OOC ${npcName}: Reached previous exploration target (${pathfindingTarget.x},${pathfindingTarget.y}, Z:${pathfindingTarget.z}). Clearing.`, 'cyan');
+            const visitedKey = `${npc.mapPos.x},${npc.mapPos.y},${npc.mapPos.z}`;
+            if (!npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
+                npc.memory.recentlyVisitedTiles.push(visitedKey);
+                if (npc.memory.recentlyVisitedTiles.length > RECENTLY_VISITED_MAX_SIZE) {
+                    npc.memory.recentlyVisitedTiles.shift();
+                }
+            }
+            pathfindingTarget = null;
+            npc.memory.explorationTarget = null;
+        }
+
+        if (!pathfindingTarget) {
+            let attempts = 0;
+            const mapData = window.mapRenderer.getCurrentMapData();
+            const OOC_EXPLORATION_RADIUS = NPC_EXPLORATION_RADIUS * 1.5; // Can explore a bit further when OOC
+
+            if (mapData && mapData.dimensions) {
+                while (attempts < MAX_EXPLORATION_TARGET_ATTEMPTS && !pathfindingTarget) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const radius = 2 + Math.floor(Math.random() * (OOC_EXPLORATION_RADIUS - 2)); // Min radius 2 to encourage actual movement
+                    const targetX = Math.max(0, Math.min(mapData.dimensions.width - 1, Math.floor(npc.mapPos.x + Math.cos(angle) * radius)));
+                    const targetY = Math.max(0, Math.min(mapData.dimensions.height - 1, Math.floor(npc.mapPos.y + Math.sin(angle) * radius)));
+                    const targetZ = npc.mapPos.z; // Primarily explore current Z-level
+
+                    const visitedKey = `${targetX},${targetY},${targetZ}`;
+                    if (window.mapRenderer.isWalkable(targetX, targetY, targetZ) &&
+                        !this.isTileOccupied(targetX, targetY, targetZ, npc.id) &&
+                        !npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
+                        pathfindingTarget = { x: targetX, y: targetY, z: targetZ };
+                        npc.memory.explorationTarget = pathfindingTarget;
+                        logToConsole(`NPC_OOC ${npcName}: Selected new OOC exploration target: (${targetX},${targetY}, Z:${targetZ})`, 'cyan');
+                        break;
+                    }
+                    attempts++;
+                }
+            }
+            if (!pathfindingTarget && attempts >= MAX_EXPLORATION_TARGET_ATTEMPTS) {
+                logToConsole(`NPC_OOC ${npcName}: Failed to find OOC exploration target after ${attempts} attempts. May move to safe pos or idle.`, 'grey');
+                if (npc.memory.lastKnownSafePos &&
+                    (npc.memory.lastKnownSafePos.x !== npc.mapPos.x ||
+                        npc.memory.lastKnownSafePos.y !== npc.mapPos.y ||
+                        npc.memory.lastKnownSafePos.z !== npc.mapPos.z)) {
+                    pathfindingTarget = npc.memory.lastKnownSafePos;
+                } else {
+                    // logToConsole(`NPC_OOC ${npcName}: No suitable exploration target and already at safe pos. Idling.`, 'grey');
+                }
+            }
+        }
+
+        // Execute Movement if a target is set and NPC has moves for this cycle
+        if (pathfindingTarget && movesMadeThisCycle < maxMovesPerCycle) {
+            // We need a way to limit moves within moveNpcTowardsTarget or do it step-by-step here
+            // For now, let's assume moveNpcTowardsTarget can be adapted or we simplify.
+            // Simplified: Try to move one step.
+
+            // Re-use combat movement logic for now, it needs npc.currentMovementPoints
+            // This is a temporary bridge; ideally, OOC movement wouldn't use combat MP.
+            const originalCombatMP = npc.currentMovementPoints;
+            npc.currentMovementPoints = maxMovesPerCycle - movesMadeThisCycle; // Give it budget for this cycle
+
+            if (npc.currentMovementPoints > 0) {
+                if (await this.moveNpcTowardsTarget(npc, pathfindingTarget)) {
+                    movesMadeThisCycle = (maxMovesPerCycle - movesMadeThisCycle) - npc.currentMovementPoints; // Consumed MP
+                    npc.memory.lastKnownSafePos = { ...npc.mapPos };
+                    const visitedKey = `${npc.mapPos.x},${npc.mapPos.y},${npc.mapPos.z}`;
+                    if (!npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
+                        npc.memory.recentlyVisitedTiles.push(visitedKey);
+                        if (npc.memory.recentlyVisitedTiles.length > RECENTLY_VISITED_MAX_SIZE) {
+                            npc.memory.recentlyVisitedTiles.shift();
+                        }
+                    }
+                    if (npc.memory.explorationTarget && npc.mapPos.x === npc.memory.explorationTarget.x &&
+                        npc.mapPos.y === npc.memory.explorationTarget.y && npc.mapPos.z === npc.memory.explorationTarget.z) {
+                        logToConsole(`NPC_OOC ${npcName}: Reached OOC exploration target. Clearing.`, 'cyan');
+                        npc.memory.explorationTarget = null;
+                    }
+                } else {
+                    // Failed to move (e.g. path blocked, or no path)
+                    // If it was an exploration target, clear it to avoid getting stuck
+                    if (npc.memory.explorationTarget && npc.memory.explorationTarget.x === pathfindingTarget.x &&
+                        npc.memory.explorationTarget.y === pathfindingTarget.y && npc.memory.explorationTarget.z === pathfindingTarget.z) {
+                        logToConsole(`NPC_OOC ${npcName}: Could not move towards OOC exploration target. Clearing it.`, 'orange');
+                        npc.memory.explorationTarget = null;
+                    }
+                }
+            }
+            npc.currentMovementPoints = originalCombatMP; // Restore original combat MP
+        }
+        // No explicit nextTurn call here, as this is outside the combat turn sequence.
     }
 }
 window.CombatManager = CombatManager;
