@@ -21,7 +21,9 @@ class AudioManager {
             'melee_unarmed_swing_01.wav',
             'melee_unarmed_hit_01.wav',
             'melee_unarmed_hit_02.wav',
-            'melee_armed_swing_01.wav'
+            'melee_armed_swing_01.wav',
+            'ui_start_game_01.wav',
+            'ui_start_game_02.wav'
         ];
 
         // Pre-load existing sounds

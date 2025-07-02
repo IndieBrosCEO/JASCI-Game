@@ -392,12 +392,12 @@ function handleKeyDown(event) {
                 if (commandText) {
                     if (typeof window.processConsoleCommand === 'function') {
                         window.processConsoleCommand(commandText);
-                        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+                        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
                     } else {
                         console.error("processConsoleCommand is not defined from script.js.");
                         if (typeof window.logToConsoleUI === 'function') {
                             window.logToConsoleUI("Error: processConsoleCommand not defined!", "error");
-                            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+                            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Error sound
                         }
                     }
                     consoleInputElement.value = '';
@@ -499,11 +499,11 @@ function handleKeyDown(event) {
 
         if (isNaN(hoursToWait) || hoursToWait < 1 || hoursToWait > 24) {
             logToConsole("Invalid number of hours. Please enter a number between 1 and 24.", "error");
-            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Error sound
             return;
         }
 
-        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
         // TODO: Also play move_wait_01.wav here when available, if distinct from general confirm.
         logToConsole(`Waiting for ${hoursToWait} hour(s)...`, "info");
         const ticksToWait = hoursToWait * 30; // 1 hour = 60 minutes / 2 minutes/tick = 30 ticks
@@ -536,7 +536,7 @@ function handleKeyDown(event) {
         if (attackDeclUI && !attackDeclUI.classList.contains('hidden')) {
             attackDeclUI.classList.add('hidden');
             logToConsole("Attack declaration cancelled.");
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_menu_close_01.wav
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Neutral cancel
             event.preventDefault();
             return;
         }
@@ -547,7 +547,7 @@ function handleKeyDown(event) {
         gameState.isTargetingMode = false;
         gameState.targetingType = null;
         logToConsole("Exited targeting mode.");
-        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_menu_close_01.wav (target mode cancelled)
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // ui_click for neutral cancel
         window.mapRenderer.scheduleRender(); // Re-render to remove targeting UI if any
         event.preventDefault();
         return;
@@ -558,8 +558,7 @@ function handleKeyDown(event) {
         if (event.key === 'Escape') { // Note: This Escape is for combat, different from targeting mode Escape
             logToConsole("Attempting to end combat with Escape key.");
             combatManager.endCombat(); // Use CombatManager's method to end combat
-            // TODO: Consider a specific "combat end" sound if different from general menu close
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Neutral click for now
             event.preventDefault();
             return;
         }
@@ -882,7 +881,7 @@ function handleKeyDown(event) {
 
                 if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos, currentTilesets, currentMapData)) {
                     logToConsole(`No line of sight to target at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). Select another target.`, "orange");
-                    if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+                    if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Error sound for LOS fail
                     event.preventDefault();
                     return;
                 }
@@ -891,7 +890,7 @@ function handleKeyDown(event) {
                 gameState.targetConfirmed = true; // This confirms the target for combat logic
                 logToConsole(`Target confirmed with LOS at: X=${finalTargetPos.x}, Y=${finalTargetPos.y}, Z=${finalTargetPos.z}`);
                 logToConsole(`Targeting type: ${gameState.targetingType}`);
-                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Using ui_confirm as ui_target_confirm is not available
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound for LOS success
 
 
                 if (gameState.selectedTargetEntity) {
@@ -1059,13 +1058,11 @@ function checkAndHandlePortal(newX, newY) {
         setTimeout(() => {
             const travel = window.confirm(`You've stepped on a portal to '${portal.targetMapId || 'an unnamed map'}'. Do you want to travel to (X:${portal.targetX}, Y:${portal.targetY})?`);
             if (travel) {
-                // TODO: Play ui_portal_confirm_01.wav
-                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.8 }); // Placeholder
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 }); // Confirm sound
                 initiateMapTransition(portal.targetMapId, portal.targetX, portal.targetY);
             } else {
                 logToConsole("Portal travel declined.");
-                // TODO: Play ui_menu_close_01.wav or a general cancel sound
-                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Neutral cancel
                 gameState.awaitingPortalConfirmation = false;
             }
             // Reset prompt active flag regardless of choice, after a short delay to prevent re-triggering
@@ -1450,8 +1447,8 @@ async function initialize() { // Made async
     const confirmButton = document.getElementById('confirmAttackButton');
     if (confirmButton) {
         confirmButton.addEventListener('click', () => {
+            // Sound is played before checks, as it's a button click action
             if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
-            // Check if combat is active, it's player's turn, and player is in attack declaration phase
             if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
                 combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
                 combatManager.gameState.combatPhase === 'playerAttackDeclare') {
@@ -1475,7 +1472,7 @@ async function initialize() { // Made async
     const grappleButton = document.getElementById('attemptGrappleButton');
     if (grappleButton) {
         grappleButton.addEventListener('click', () => {
-            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
             if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
                 combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
                 combatManager.gameState.combatPhase === 'playerAttackDeclare') {
@@ -1499,7 +1496,7 @@ async function initialize() { // Made async
     const confirmDefenseBtn = document.getElementById('confirmDefenseButton');
     if (confirmDefenseBtn) {
         confirmDefenseBtn.addEventListener('click', () => {
-            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
             if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
                 combatManager.gameState.combatCurrentDefender === combatManager.gameState && // Player is defending
                 combatManager.gameState.combatPhase === 'playerDefenseDeclare') {
@@ -1523,8 +1520,7 @@ async function initialize() { // Made async
     const retargetBtn = document.getElementById('retargetButton');
     if (retargetBtn) {
         retargetBtn.addEventListener('click', () => {
-            // TODO: Play ui_click_01.wav or a specific retarget sound
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Neutral click for retarget
             if (gameState.isInCombat && gameState.combatPhase === 'playerAttackDeclare' && combatManager) {
                 combatManager.handleRetarget();
             }
@@ -1538,8 +1534,12 @@ async function initialize() { // Made async
  * Start Game
  **************************************************************/
 function startGame() {
-    // TODO: Play ui_start_game_01.wav
-    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.8 }); // A bit louder for game start
+    // Play start game sound
+    if (window.audioManager) {
+        const startGameSounds = ['ui_start_game_01.wav', 'ui_start_game_02.wav'];
+        const randomStartSound = startGameSounds[Math.floor(Math.random() * startGameSounds.length)];
+        window.audioManager.playUiSound(randomStartSound, { volume: 0.8 });
+    }
 
     const characterCreator = document.getElementById('character-creator');
     const characterInfoPanel = document.getElementById('character-info-panel');

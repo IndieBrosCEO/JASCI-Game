@@ -366,57 +366,90 @@ function isTileBlockingVision(tileX, tileY, tileZ) {
     const mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
 
     if (!tilesets || !mapData || !mapData.levels) {
-        // console.warn("isTileBlockingVision: Missing critical data, assuming non-blocking for same-Z check.");
+        // console.warn("isTileBlockingVision: Missing critical data, assuming non-blocking.");
         return false;
     }
 
     const zStr = tileZ.toString();
     const levelData = mapData.levels[zStr];
 
-    // For same-Z vision, we only care about obstructions on the 'middle' layer of the tile being checked.
-    // Floors ('bottom' layer) do not block horizontal vision on their own Z-level.
-    if (!levelData || !levelData.middle) {
-        // console.warn(`isTileBlockingVision: Missing levelData or middle layer for Z:${tileZ}. Assuming non-blocking for same-Z.`);
-        return false; // No middle layer means no same-Z obstruction from it.
+    if (!levelData) { // No level data at this Z means it's open air, doesn't block.
+        return false;
     }
 
-    const tileOnMiddleRaw = levelData.middle[tileY]?.[tileX];
-    const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined)
-        ? tileOnMiddleRaw.tileId
-        : tileOnMiddleRaw;
+    // --- Middle Layer Check --- 
+    // If a tile on the middle layer exists and isn't explicitly see-through, it blocks.
+    if (levelData.middle) {
+        const tileOnMiddleRaw = levelData.middle[tileY]?.[tileX];
+        const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined)
+            ? tileOnMiddleRaw.tileId
+            : tileOnMiddleRaw;
 
-    if (effectiveTileOnMiddle && effectiveTileOnMiddle !== "") {
-        const tileDefMiddle = tilesets[effectiveTileOnMiddle];
-        if (tileDefMiddle && tileDefMiddle.tags) {
-            // If it explicitly allows vision or is transparent, it does not block.
-            if (tileDefMiddle.tags.includes('allows_vision') || tileDefMiddle.tags.includes('transparent')) {
+        if (effectiveTileOnMiddle && effectiveTileOnMiddle !== "") { // If there's a tile on the middle layer
+            const tileDefMiddle = tilesets[effectiveTileOnMiddle];
+
+            if (!tileDefMiddle) {
+                // console.warn(`isTileBlockingVision: Unknown middle tile ID '${effectiveTileOnMiddle}' at ${tileX},${tileY},${tileZ}. Assuming blocking.`);
+                return true; // Assume unknown middle tiles block vision
+            }
+
+            // Your rule: blocks if impassable, UNLESS transparent or allows_vision.
+            // Generalizing: any middle tile blocks vision UNLESS explicitly tagged transparent or allows_vision.
+            if (tileDefMiddle.tags && (tileDefMiddle.tags.includes('allows_vision') || tileDefMiddle.tags.includes('transparent'))) {
+                // This middle tile is see-through. It does NOT block vision by itself.
+                // We will proceed to check the bottom layer, as a transparent middle object might be on a solid floor
+                // which could block *vertical* vision passing through this Z-level.
+            } else {
+                // Middle tile is NOT 'allows_vision' and NOT 'transparent'.
+                // Therefore, it blocks vision (whether it's impassable, blocks_vision, untagged, or other tags).
+                return true;
+            }
+        }
+        // If middle layer is empty, it doesn't block. Proceed to check bottom layer.
+    }
+
+    // --- Bottom Layer Check --- 
+    // This check is primarily for when the line of sight is passing *vertically* through this Z-level,
+    // and the middle layer at this point (tileX, tileY, tileZ) was empty or transparent.
+    // For purely horizontal (same-Z) vision, if the middle layer was clear, the bottom layer (floor) doesn't block horizontal vision.
+    // However, if the ray *ends* on this floor tile from another Z-level, or passes *through* this floor tile to another Z-level, then its properties matter.
+    if (levelData.bottom) {
+        const tileOnBottomRaw = levelData.bottom[tileY]?.[tileX];
+        const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined)
+            ? tileOnBottomRaw.tileId
+            : tileOnBottomRaw;
+
+        if (effectiveTileOnBottom && effectiveTileOnBottom !== "") { // If there's a tile on the bottom layer
+            const tileDefBottom = tilesets[effectiveTileOnBottom];
+
+            if (!tileDefBottom) {
+                // console.warn(`isTileBlockingVision: Unknown bottom tile ID '${effectiveTileOnBottom}' at ${tileX},${tileY},${tileZ}. Assuming blocking.`);
+                return true; // Assume unknown bottom tiles block (especially for vertical LOS)
+            }
+
+            // If the bottom tile is explicitly tagged as transparent for floor/vision purposes, it doesn't block.
+            if (tileDefBottom.tags &&
+                (tileDefBottom.tags.includes('transparent_floor') ||
+                    tileDefBottom.tags.includes('transparent_bottom') ||
+                    tileDefBottom.tags.includes('allows_vision') ||
+                    tileDefBottom.tags.includes('transparent'))) {
                 return false;
             }
-            // If it's tagged to block vision or is generally impassable (like a solid wall/object), it blocks.
-            if (tileDefMiddle.tags.includes('blocks_vision') || tileDefMiddle.tags.includes('impassable')) {
-                // Special case: "impassable" doors that are "closed" block vision.
-                // Open doors should have "allows_vision" or "transparent".
-                if (tileDefMiddle.tags.includes('door') && tileDefMiddle.tags.includes('closed')) {
-                    return true;
-                }
-                // If it's not a door, but is impassable or blocks_vision, then it blocks.
-                if (!tileDefMiddle.tags.includes('door')) {
-                    return true;
-                }
-                // An 'impassable' 'door' that is not 'closed' (e.g. broken open) would need 'allows_vision' or 'transparent'
-                // to not block, which is handled by the first check.
+            
+            if (!(tileDefBottom.tags && (tileDefBottom.tags.includes('transparent_floor') || tileDefBottom.tags.includes('transparent_bottom') || tileDefBottom.tags.includes('allows_vision') || tileDefBottom.tags.includes('transparent')))) {
+                // This is a solid bottom layer tile (e.g. 'floor', 'solid_terrain_top', or untagged)
+                // If the middle layer above it was empty or transparent, this solid bottom layer forms the actual barrier.
+                // It blocks vision trying to pass further down or up through this cell.
+                return true;
             }
-            // Default for other items on the middle layer that aren't explicitly transparent: assume they block vision.
-            // This catches things like furniture, walls, etc., that should obstruct same-Z LOS.
-            return true;
-        } else if (tileDefMiddle) { // Has a definition but no tags (e.g. a custom tile).
-            return true; // Untagged middle items default to blocking vision for safety.
         }
-        // If effectiveTileOnMiddle exists but no tileDef (unknown tile ID), assume it blocks.
-        return true;
+        // If bottom layer is empty, it doesn't block.
     }
 
-    // If the middle layer at (tileX, tileY, tileZ) is empty, it does not block vision on this Z-plane.
+    // If we reach here, it means: 
+    // - Middle layer was empty OR explicitly transparent/allows_vision.
+    // - AND Bottom layer was empty OR explicitly transparent_floor/allows_vision.
+    // Therefore, this specific cell (tileX, tileY, tileZ) does not block the line of sight.
     return false;
 }
 

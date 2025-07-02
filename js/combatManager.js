@@ -413,7 +413,14 @@
 
     endCombat() {
         logToConsole("Combat Ending...", 'lightblue');
-        this.gameState.isInCombat = false; this.gameState.combatPhase = null; this.gameState.attackerMapPos = null; this.gameState.defenderMapPos = null; this.gameState.combatCurrentDefender = null;
+        this.gameState.isInCombat = false;
+        this.gameState.combatPhase = null;
+        this.gameState.attackerMapPos = null;
+        this.gameState.defenderMapPos = null;
+        this.gameState.combatCurrentDefender = null;
+        this.gameState.combatCurrentAttacker = null; // Ensure attacker is cleared
+        this.gameState.isWaitingForPlayerCombatInput = false; // Ensure this flag is reset
+
         this.initiativeTracker.forEach(e => { if (e.entity?.statusEffects) { e.entity.statusEffects.isGrappled = false; e.entity.statusEffects.grappledBy = null; } });
         if (this.gameState.statusEffects) { this.gameState.statusEffects.isGrappled = false; this.gameState.statusEffects.grappledBy = null; }
         if (this.gameState.environmentalEffects) {
