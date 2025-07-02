@@ -452,6 +452,13 @@ function handleKeyDown(event) {
             // This might be too noisy if played for every char, consider on first char of a word or debounced.
             // if (window.audioManager && event.key.length === 1) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.2 }); // Placeholder for ui_type_01.wav
 
+            // NEW SOUND IMPLEMENTATION:
+            if (window.audioManager && event.key.length === 1 && event.target === consoleInputElement) { // Play for single character inputs in console
+                gameState.uiTypeSoundIndex = (gameState.uiTypeSoundIndex % 5) + 1; // Cycle from 1 to 5
+                const soundToPlay = `ui_type_0${gameState.uiTypeSoundIndex}.wav`;
+                window.audioManager.playUiSound(soundToPlay, { volume: 0.7 });
+            }
+
         } else {
             // If console is open but focus is not on input (e.g. user clicked outside)
             event.preventDefault();
@@ -922,7 +929,9 @@ function handleKeyDown(event) {
                                 const distance3D = getDistance3D(playerPos, npc.mapPos);
                                 if (distance3D <= COMBAT_ALERT_RADIUS) {
                                     // Also check LOS to these nearby NPCs before pulling them in
-                                    if (window.hasLineOfSight3D(playerPos, npc.mapPos) || (gameState.selectedTargetEntity && window.hasLineOfSight3D(gameState.selectedTargetEntity.mapPos, npc.mapPos))) {
+                                    // currentTilesets and currentMapData are defined in the outer scope of this 'f' key handler
+                                    if (window.hasLineOfSight3D(playerPos, npc.mapPos, currentTilesets, currentMapData) ||
+                                        (gameState.selectedTargetEntity && window.hasLineOfSight3D(gameState.selectedTargetEntity.mapPos, npc.mapPos, currentTilesets, currentMapData))) {
                                         if (!allParticipants.includes(npc)) {
                                             allParticipants.push(npc);
                                             logToConsole(`${npc.name || npc.id} (Team: ${npc.teamId}) is nearby (Dist3D: ${distance3D.toFixed(1)}) with LOS and added to combat.`);
@@ -1330,7 +1339,11 @@ async function initialize() { // Made async
 
                     const finalTargetPos = gameState.selectedTargetEntity ? gameState.selectedTargetEntity.mapPos : gameState.targetingCoords;
 
-                    if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos)) {
+                    // Fetch current data for LOS check
+                    const currentTilesetsForClickLOS = window.assetManager ? window.assetManager.tilesets : null;
+                    const currentMapDataForClickLOS = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+
+                    if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos, currentTilesetsForClickLOS, currentMapDataForClickLOS)) {
                         logToConsole(`No line of sight to target at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). Click another target.`, "orange");
                         // Keep isRetargeting true, allow another click
                         window.mapRenderer.scheduleRender(); // Update targeting cursor if it moves

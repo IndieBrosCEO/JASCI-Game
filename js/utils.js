@@ -581,10 +581,28 @@ window.findPath3D = findPath3D;
  * @returns {boolean} True if there is a clear line of sight, false otherwise.
  */
 function hasLineOfSight3D(startPos, endPos, tilesetsData, mapDataFromCaller) { // Parameters added
+    logToConsole(`[hasLineOfSight3D Entry] Received tilesetsData is valid: ${!!tilesetsData} (Keys: ${tilesetsData ? Object.keys(tilesetsData).length : 'N/A'}), mapDataFromCaller is valid: ${!!mapDataFromCaller} (Levels: ${mapDataFromCaller ? !!mapDataFromCaller.levels : 'N/A'})`, 'magenta');
+
+    let tilesets = tilesetsData;
+    let mapData = mapDataFromCaller;
+    let usingFallbackData = false;
+
+    if (!tilesets || !mapData || (typeof mapData === 'object' && mapData !== null && !mapData.levels)) { // Check mapData.levels more carefully
+        logToConsole(`[hasLineOfSight3D] Passed parameters appear invalid or incomplete. Attempting fallback to global fetch. Passed tilesets: ${!!tilesetsData}, mapData: ${!!mapDataFromCaller}, mapData.levels: ${mapDataFromCaller && typeof mapDataFromCaller === 'object' ? !!mapDataFromCaller.levels : 'N/A'}`, 'orange');
+        tilesets = window.assetManager ? window.assetManager.tilesets : null;
+        mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+        usingFallbackData = true;
+        if (tilesets && Object.keys(tilesets).length > 0 && mapData && mapData.levels) {
+            logToConsole(`[hasLineOfSight3D] Fallback successful. Tilesets keys: ${Object.keys(tilesets).length}, MapData levels present: ${!!mapData.levels}`, 'green');
+        } else {
+            logToConsole(`[hasLineOfSight3D] Fallback FAILED. Global tilesets: ${!!tilesets} (Keys: ${tilesets ? Object.keys(tilesets).length : 'N/A'}), Global mapData: ${!!mapData}, Global mapData.levels: ${mapData && typeof mapData === 'object' ? !!mapData.levels : 'N/A'}`, 'red');
+        }
+    }
+
     if (!startPos || !endPos ||
         startPos.x === undefined || startPos.y === undefined || startPos.z === undefined ||
         endPos.x === undefined || endPos.y === undefined || endPos.z === undefined) {
-        logToConsole("hasLineOfSight3D: Invalid input positions.", "error");
+        logToConsole("hasLineOfSight3D: Invalid input positions (start/end).", "error");
         return false;
     }
 
@@ -592,10 +610,14 @@ function hasLineOfSight3D(startPos, endPos, tilesetsData, mapDataFromCaller) { /
         logToConsole("hasLineOfSight3D: getLine3D function is not available.", "error");
         return false;
     }
-    // window.mapRenderer.isTileBlockingVision will be called, ensure it's checked for existence before use if necessary,
-    // but direct calls are fine if mapRenderer is always loaded.
     if (typeof window.mapRenderer?.isTileBlockingVision !== 'function') {
         logToConsole("hasLineOfSight3D: mapRenderer.isTileBlockingVision function is not available.", "error");
+        return false;
+    }
+
+    // Crucial check after potential fallback
+    if (!tilesets || Object.keys(tilesets).length === 0 || !mapData || (typeof mapData === 'object' && mapData !== null && !mapData.levels)) {
+        logToConsole(`hasLineOfSight3D: Critical data STILL missing ${usingFallbackData ? '(after fallback attempt)' : '(with passed params)'}. Tilesets: ${!!tilesets} (Keys: ${tilesets ? Object.keys(tilesets).length : 'N/A'}), MapData: ${!!mapData}, MapData.levels: ${mapData && typeof mapData === 'object' ? !!mapData.levels : 'N/A'}. Assuming no LOS.`, "red");
         return false;
     }
 
@@ -606,21 +628,7 @@ function hasLineOfSight3D(startPos, endPos, tilesetsData, mapDataFromCaller) { /
         return false;
     }
     if (line.length === 1) {
-        // LOS to self or identical adjacent point (if getLine3D returns 1 point for that)
         return true;
-    }
-
-    const tilesets = window.assetManager ? window.assetManager.tilesets : null; // Corrected to use window.assetManager
-    const mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
-
-    if (!tilesets || !mapData || !mapData.levels) {
-        // Log details if still failing, but this should ideally not be hit if assetManager and mapRenderer are initialized.
-        logToConsole(`hasLineOfSight3D: Critical data missing. 
-        Tilesets available: ${!!tilesets}. 
-        MapData available: ${!!mapData}. 
-        MapData.levels available: ${mapData ? !!mapData.levels : 'N/A'}. 
-        Assuming no LOS for safety.`, "error");
-        return false;
     }
 
     // Iterate through each segment of the line (from point i to point i+1)

@@ -858,7 +858,21 @@ window.mapRenderer = {
                             // isTileVisible checks LOS from (playerX_fow, playerY_fow, playerZ_fow) to (c, r, z_scan)
                             if (isTileVisible(playerX_fow, playerY_fow, playerZ_fow, c, r, z_scan, PLAYER_VISION_RADIUS)) {
                                 if (fowDataForScannedZ[r] && fowDataForScannedZ[r][c] !== undefined) {
-                                    fowDataForScannedZ[r][c] = 'visible';
+                                    // MODIFICATION START
+                                    if (z_scan === playerZ_fow) { // Player's current Z-level
+                                        fowDataForScannedZ[r][c] = 'visible';
+                                    } else { // Other Z-levels
+                                        if (fowDataForScannedZ[r][c] === 'hidden') {
+                                            fowDataForScannedZ[r][c] = 'visited'; // Reveal as visited if it was hidden
+                                        }
+                                        // If it was already 'visited' or 'visible' (e.g. from a previous frame), let it remain 'visited'.
+                                        // We don't want to revert 'visible' on other z-levels to 'visited' if they were somehow marked visible by another system,
+                                        // but the primary FOW pass should only set 'visible' for player's current Z.
+                                        // If a tile on another z-level was 'visible' and now LOS is true, it should become 'visited'.
+                                        // The existing logic that sets visible tiles to visited at the start of the FOW update handles this.
+                                        // This ensures that if you look down a hole, you see 'visited' tiles, not fully 'visible' ones.
+                                    }
+                                    // MODIFICATION END
                                 }
                             }
                         }

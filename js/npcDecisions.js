@@ -420,6 +420,13 @@ window.handleNpcOutOfCombatTurn = handleNpcOutOfCombatTurn;
 // NPC Target Selection Logic for Combat (moved from combatManager.js)
 function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) {
     const npcName = npc.name || npc.id || "NPC";
+    // Define currentTilesets and currentMapData once at the beginning of the function
+    // Ensure they are available for ALL LOS checks within this function.
+    const currentTilesets = window.assetManager ? window.assetManager.tilesets : null;
+    const currentMapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+
+    logToConsole(`[selectNpcCombatTarget Entry for ${npcName}] assetManager valid: ${!!window.assetManager}, mapRenderer valid: ${!!window.mapRenderer}. currentTilesets keys: ${currentTilesets ? Object.keys(currentTilesets).length : 'N/A'}, currentMapData levels: ${currentMapData ? !!currentMapData.levels : 'N/A'}`, 'purple');
+
     gameState.combatCurrentDefender = null; // Reset before selection
     gameState.defenderMapPos = null;    // Reset before selection
 
@@ -429,7 +436,9 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
             const targetPos = target === gameState ? gameState.playerPos : target.mapPos;
             if (target && target !== npc && target.health?.torso?.current > 0 && target.health?.head?.current > 0 &&
                 target.teamId !== npc.teamId && targetPos && initiativeTracker.find(e => e.entity === target)) {
-                if (window.hasLineOfSight3D(npc.mapPos, targetPos)) {
+
+                logToConsole(`[selectNpcCombatTarget AggroLOS for ${target.name || target.id}] About to call LOS. Tilesets: ${!!currentTilesets} (Keys: ${currentTilesets ? Object.keys(currentTilesets).length : 'N/A'}), MapData: ${!!currentMapData} (Levels: ${currentMapData ? !!currentMapData.levels : 'N/A'})`, 'cyan');
+                if (window.hasLineOfSight3D(npc.mapPos, targetPos, currentTilesets, currentMapData)) {
                     gameState.combatCurrentDefender = target;
                     gameState.defenderMapPos = { ...targetPos };
                     logToConsole(`NPC TARGETING: ${npcName} selected ${target === gameState ? "Player" : (target.name || target.id)} from aggro (Threat: ${aggroEntry.threat}) with LOS.`, 'gold');
@@ -447,7 +456,9 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
         const candPos = candidate === gameState ? gameState.playerPos : candidate.mapPos;
         if (candidate !== npc && candidate.health?.torso?.current > 0 && candidate.health?.head?.current > 0 &&
             candidate.teamId !== npc.teamId && npc.mapPos && candPos) {
-            if (window.hasLineOfSight3D(npc.mapPos, candPos)) {
+            // currentTilesets and currentMapData are defined at the start of selectNpcCombatTarget and should be in scope here.
+            logToConsole(`[selectNpcCombatTarget InitiativeLOS for ${candidate.name || candidate.id}] About to call LOS. Tilesets: ${!!currentTilesets} (Keys: ${currentTilesets ? Object.keys(currentTilesets).length : 'N/A'}), MapData: ${!!currentMapData} (Levels: ${currentMapData ? !!currentMapData.levels : 'N/A'})`, 'cyan');
+            if (window.hasLineOfSight3D(npc.mapPos, candPos, currentTilesets, currentMapData)) { // This is line 453 or around it
                 const dist = getDistance3D(npc.mapPos, candPos);
                 validTargets.push({ entity: candidate, pos: candPos, distance: dist });
             }

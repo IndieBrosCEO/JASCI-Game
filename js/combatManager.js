@@ -933,11 +933,11 @@
         let attackResult, defenseResult;
 
         // --- Line of Sight Checks ---
-        const currentTilesetsForLOS = window.assetManagerInstance ? window.assetManagerInstance.tilesets : null;
+        const currentTilesetsForLOS = window.assetManager ? window.assetManager.tilesets : null; // Corrected: window.assetManager
         const currentMapDataForLOS = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
 
-        if (!currentTilesetsForLOS || !currentMapDataForLOS) {
-            logToConsole("LOS CHECK ERROR: Crucial data (tilesets or mapData) not available for any LOS check.", "red");
+        if (!currentTilesetsForLOS || !currentMapDataForLOS || !currentMapDataForLOS.levels) { // Added check for .levels
+            logToConsole(`LOS CHECK ERROR (CombatManager): Crucial data missing. Tilesets: ${!!currentTilesetsForLOS}, MapData: ${!!currentMapDataForLOS}, MapData.levels: ${currentMapDataForLOS ? !!currentMapDataForLOS.levels : 'N/A'}.`, "red");
             if (attacker === this.gameState) { // Player's turn
                 // Refund AP potentially, or just allow re-declaration
                 this.gameState.actionPointsRemaining++; // Simplistic AP refund, needs robust handling if AP cost varies
@@ -961,6 +961,7 @@
             }
 
             if (attackerActualPos && targetActualPos) {
+                logToConsole(`[CombatManager перед LOS Ranged] Tilesets: ${!!currentTilesetsForLOS} (Keys: ${currentTilesetsForLOS ? Object.keys(currentTilesetsForLOS).length : 'N/A'}), MapData: ${!!currentMapDataForLOS}, Levels: ${currentMapDataForLOS ? !!currentMapDataForLOS.levels : 'N/A'}`, 'purple');
                 if (!window.hasLineOfSight3D(attackerActualPos, targetActualPos, currentTilesetsForLOS, currentMapDataForLOS)) {
                     const who = attacker === this.gameState ? "PLAYER" : "NPC";
                     logToConsole(`${who} RANGED ATTACK CANCELED: ${attackerName} has no Line of Sight to target at (${targetActualPos.x},${targetActualPos.y}, Z:${targetActualPos.z}).`, 'orange');

@@ -147,6 +147,7 @@ const gameState = {
     isWaitingForPlayerCombatInput: false,
     floorItems: [],
     worldContainers: [],
+    uiTypeSoundIndex: 0, // For cycling through ui_type sounds
 };
 
 // Initialize player object and wornClothing if they don't exist
