@@ -359,14 +359,14 @@ function getLine3D(x0, y0, z0, x1, y1, z1) {
 }
 
 
-// This function now primarily checks for same-Z level obstructions (e.g., walls, tall furniture on the middle layer).
-// Inter-Z blocking (floors/ceilings) is handled by the modified hasLineOfSight3D in js/utils.js.
-function isTileBlockingVision(tileX, tileY, tileZ) {
+// This function checks if a tile blocks vision based on new rules.
+// playerZ is the Z-level of the entity whose vision is being calculated.
+function isTileBlockingVision(tileX, tileY, tileZ, playerZ) {
     const tilesets = window.assetManagerInstance ? window.assetManagerInstance.tilesets : null;
     const mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
 
     if (!tilesets || !mapData || !mapData.levels) {
-        // console.warn("isTileBlockingVision: Missing critical data, assuming non-blocking.");
+        // console.warn(`isTileBlockingVision: Missing critical data for ${tileX},${tileY},${tileZ}. Assuming non-blocking.`);
         return false;
     }
 
@@ -374,11 +374,11 @@ function isTileBlockingVision(tileX, tileY, tileZ) {
     const levelData = mapData.levels[zStr];
 
     if (!levelData) { // No level data at this Z means it's open air, doesn't block.
+        // console.log(`isTileBlockingVision: No level data for Z=${tileZ}. Non-blocking.`);
         return false;
     }
 
-    // --- Middle Layer Check --- 
-    // If a tile on the middle layer exists and isn't explicitly see-through, it blocks.
+    // --- Middle Layer Check ---
     if (levelData.middle) {
         const tileOnMiddleRaw = levelData.middle[tileY]?.[tileX];
         const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw !== null && tileOnMiddleRaw.tileId !== undefined)
@@ -393,26 +393,92 @@ function isTileBlockingVision(tileX, tileY, tileZ) {
                 return true; // Assume unknown middle tiles block vision
             }
 
-            // Your rule: blocks if impassable, UNLESS transparent or allows_vision.
-            // Generalizing: any middle tile blocks vision UNLESS explicitly tagged transparent or allows_vision.
-            if (tileDefMiddle.tags && (tileDefMiddle.tags.includes('allows_vision') || tileDefMiddle.tags.includes('transparent'))) {
-                // This middle tile is see-through. It does NOT block vision by itself.
-                // We will proceed to check the bottom layer, as a transparent middle object might be on a solid floor
-                // which could block *vertical* vision passing through this Z-level.
-            } else {
-                // Middle tile is NOT 'allows_vision' and NOT 'transparent'.
-                // Therefore, it blocks vision (whether it's impassable, blocks_vision, untagged, or other tags).
-                return true;
+            const tags = tileDefMiddle.tags || [];
+            const isTransparent = tags.includes('transparent') || tags.includes('allows_vision');
+
+            if (tileZ === playerZ) {
+                // Rule: "middle tiles on the player's Z level should block vision if it is impassable unless it has transparent or allows_vision."
+                const isImpassable = tags.includes('impassable');
+                if (isImpassable && !isTransparent) {
+                    // console.log(`isTileBlockingVision (PlayerZ Middle): ${tileX},${tileY},${tileZ} (playerZ ${playerZ}) - BLOCKS (impassable and not transparent)`);
+                    return true;
+                }
+                // If it's not (impassable AND not transparent), then it does NOT block based on this specific rule.
+                // It might still block if it's not transparent by other means (e.g. 'blocks_vision' tag, or default blocking for non-transparent items).
+                // However, the rule is "block IF impassable UNLESS transparent". So if transparent, it doesn't block. If not impassable, it doesn't block BY THIS RULE.
+                // Let's refine: if transparent, it never blocks. If not transparent, it blocks if impassable.
+                // What if it's not impassable, but also not transparent? e.g. a decorative item.
+                // The original logic was: if not (allows_vision or transparent), then it blocks.
+                // Let's combine:
+                // 1. If transparent or allows_vision, it does NOT block.
+                // 2. Else (not transparent/allows_vision): if on player's Z, blocks if impassable.
+                // 3. Else (not transparent/allows_vision): if not on player's Z, it blocks (original behavior for generic middle items).
+                if (isTransparent) {
+                    // console.log(`isTileBlockingVision (PlayerZ Middle): ${tileX},${tileY},${tileZ} (playerZ ${playerZ}) - NON-BLOCKING (transparent/allows_vision)`);
+                    // Proceeds to bottom layer check if necessary (though for same Z, bottom won't block)
+                } else { // Not transparent
+                    if (isImpassable) {
+                        // console.log(`isTileBlockingVision (PlayerZ Middle): ${tileX},${tileY},${tileZ} (playerZ ${playerZ}) - BLOCKS (impassable and not transparent)`);
+                        return true; // Blocks if impassable and not transparent on player's Z.
+                    } else {
+                        // Not impassable and not transparent. What should it do?
+                        // Original: blocks if not transparent. This seems reasonable for other items.
+                        // Let's assume if it's not transparent, it blocks, unless it's specifically non-impassable and on player's Z.
+                        // The rule is "block IF impassable UNLESS transparent". This implies if NOT impassable, it does NOT block by this rule.
+                        // So, for player's Z, if middle tile is present:
+                        //  - if transparent/allows_vision -> pass to bottom check
+                        //  - else (not transparent): if impassable -> block.
+                        //  - else (not transparent, not impassable) -> assume it blocks (like a generic wall or large furniture not explicitly impassable but still vision blocking)
+                        // This maintains the previous behavior for non-impassable, non-transparent items.
+                        // Let's re-evaluate: "middle tiles on the player's Z level should block vision if it is impassible unless it has transparent or allows_vision."
+                        // This means:
+                        // IF tileZ == playerZ:
+                        //   IF middle_tile.isImpassable AND NOT middle_tile.isTransparent AND NOT middle_tile.allows_vision: RETURN TRUE (blocks)
+                        //   ELSE (it's either not impassable, or it IS transparent/allows_vision):
+                        //     IF middle_tile.isTransparent OR middle_tile.allows_vision: proceed to bottom check (doesn't block here)
+                        //     ELSE (not impassable, and also not transparent/allows_vision): This case needs clarity.
+                        //          Let's assume such items (e.g. a small, passable decoration) do NOT block vision.
+                        //          So, if it's not (impassable AND NOT transparent), it doesn't block vision by this specific rule.
+                        //          This means, if it's passable, or transparent, it doesn't block.
+                        // This simplifies to: on player's Z, middle tile blocks IFF (impassable AND NOT transparent).
+                        // This seems to be what's implemented with `if (isImpassable && !isTransparent) return true;`
+                        // If it doesn't meet this, it means it's either passable or transparent.
+                        // If it's transparent, we fall through. If it's passable but not transparent, we also fall through.
+                        // This seems correct for "middle tiles on player's Z".
+                        // What if it's a generic "blocks_vision" tagged item that isn't impassable?
+                        // The rule "blocks if impassable unless transparent" should take precedence for player's Z.
+                        // So, if it's `blocks_vision` but `passable` and `not transparent`, it would NOT block on player's Z. This might be too permissive.
+
+                        // Revised logic for middle tile on player's Z:
+                        // 1. If 'transparent' or 'allows_vision', it does NOT block. (Proceed to bottom layer check)
+                        // 2. Else (it's NOT transparent/allows_vision):
+                        //    If 'impassable', it BLOCKS.
+                        //    Else (it's NOT impassable, AND also NOT transparent/allows_vision, e.g. a generic solid but passable item):
+                        //        It should block by default (original behavior for non-transparent items).
+                        if (!isTransparent) { // We already checked: if isImpassable && !isTransparent, it blocks.
+                            // So here, it's !isTransparent. If it's also !isImpassable, does it block?
+                            // Original logic: if not transparent, it blocks.
+                            // Let's stick to that for non-impassable items.
+                            // console.log(`isTileBlockingVision (PlayerZ Middle): ${tileX},${tileY},${tileZ} (playerZ ${playerZ}) - BLOCKS (not transparent, and not covered by impassable rule / is passable but still opaque)`);
+                            return true; // Default blocking for opaque items.
+                        }
+                    }
+                }
+            } else { // tileZ !== playerZ (Middle layer on a different Z-level)
+                // Original logic: if not transparent or allows_vision, it blocks.
+                if (!isTransparent) {
+                    // console.log(`isTileBlockingVision (OtherZ Middle): ${tileX},${tileY},${tileZ} (playerZ ${playerZ}) - BLOCKS (not transparent)`);
+                    return true;
+                }
+                // If transparent, proceed to bottom layer check for this Z-level.
+                // console.log(`isTileBlockingVision (OtherZ Middle): ${tileX},${tileY},${tileZ} (playerZ ${playerZ}) - NON-BLOCKING (transparent)`);
             }
         }
-        // If middle layer is empty, it doesn't block. Proceed to check bottom layer.
+        // If middle layer is empty OR was transparent, proceed to check bottom layer.
     }
 
-    // --- Bottom Layer Check --- 
-    // This check is primarily for when the line of sight is passing *vertically* through this Z-level,
-    // and the middle layer at this point (tileX, tileY, tileZ) was empty or transparent.
-    // For purely horizontal (same-Z) vision, if the middle layer was clear, the bottom layer (floor) doesn't block horizontal vision.
-    // However, if the ray *ends* on this floor tile from another Z-level, or passes *through* this floor tile to another Z-level, then its properties matter.
+    // --- Bottom Layer Check ---
+    // This check is relevant if the middle layer at (tileX, tileY, tileZ) was empty or transparent.
     if (levelData.bottom) {
         const tileOnBottomRaw = levelData.bottom[tileY]?.[tileX];
         const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw !== null && tileOnBottomRaw.tileId !== undefined)
@@ -424,32 +490,53 @@ function isTileBlockingVision(tileX, tileY, tileZ) {
 
             if (!tileDefBottom) {
                 // console.warn(`isTileBlockingVision: Unknown bottom tile ID '${effectiveTileOnBottom}' at ${tileX},${tileY},${tileZ}. Assuming blocking.`);
-                return true; // Assume unknown bottom tiles block (especially for vertical LOS)
+                return true; // Assume unknown bottom tiles block
             }
 
-            // If the bottom tile is explicitly tagged as transparent for floor/vision purposes, it doesn't block.
-            if (tileDefBottom.tags &&
-                (tileDefBottom.tags.includes('transparent_floor') ||
-                    tileDefBottom.tags.includes('transparent_bottom') ||
-                    tileDefBottom.tags.includes('allows_vision') ||
-                    tileDefBottom.tags.includes('transparent'))) {
-                return false;
-            }
-            
-            if (!(tileDefBottom.tags && (tileDefBottom.tags.includes('transparent_floor') || tileDefBottom.tags.includes('transparent_bottom') || tileDefBottom.tags.includes('allows_vision') || tileDefBottom.tags.includes('transparent')))) {
-                // This is a solid bottom layer tile (e.g. 'floor', 'solid_terrain_top', or untagged)
-                // If the middle layer above it was empty or transparent, this solid bottom layer forms the actual barrier.
-                // It blocks vision trying to pass further down or up through this cell.
-                return true;
+            const tags = tileDefBottom.tags || [];
+
+            if (tileZ === playerZ) {
+                // Rule: "bottom tiles on the same z level will never block vision."
+                // console.log(`isTileBlockingVision (PlayerZ Bottom): ${tileX},${tileY},${tileZ} (playerZ ${playerZ}) - NON-BLOCKING (same Z bottom layer)`);
+                return false; // Never blocks vision.
+            } else { // tileZ !== playerZ (Bottom layer on a different Z-level)
+                // Rule: "Bottom tiles on layers above or below the current z level will block if they are labeled roof or floor."
+                const isRoof = tags.includes('roof');
+                const isFloor = tags.includes('floor');
+
+                if (isRoof || isFloor) {
+                    // console.log(`isTileBlockingVision (OtherZ Bottom): ${tileX},${tileY},${tileZ} (playerZ ${playerZ}) - BLOCKS (is roof or floor)`);
+                    return true; // Blocks if it's a roof or floor on another Z-level.
+                }
+
+                // What if it's something else on the bottom layer of another Z-level? E.g. rubble, or a special effect tile.
+                // Original behavior for bottom tiles (if not transparent_floor/allows_vision) was to block.
+                // This new rule is more specific (blocks IF roof/floor).
+                // If it's NOT roof/floor, should it block?
+                // Consider a 'transparent_floor' tag. If it's not roof/floor, but IS transparent_floor, it should not block.
+                // If it's not roof/floor, and NOT transparent_floor (e.g. just some generic dirt patch on bottom layer of Z+1), should it block?
+                // Let's assume that if it's not explicitly roof/floor, its transparency determines blocking.
+                const isTransparentBottom = tags.includes('transparent_floor') || tags.includes('transparent_bottom') || tags.includes('allows_vision') || tags.includes('transparent');
+                if (isTransparentBottom) {
+                    // console.log(`isTileBlockingVision (OtherZ Bottom): ${tileX},${tileY},${tileZ} (playerZ ${playerZ}) - NON-BLOCKING (transparent bottom attributes and not roof/floor)`);
+                    return false;
+                } else {
+                    // Not roof, not floor, and not transparent. Assume it blocks vision (e.g. solid ground, rubble).
+                    // This covers cases like 'solid_terrain_top' if it's not also 'floor'.
+                    // console.log(`isTileBlockingVision (OtherZ Bottom): ${tileX},${tileY},${tileZ} (playerZ ${playerZ}) - BLOCKS (not roof/floor, and not transparent)`);
+                    return true;
+                }
             }
         }
         // If bottom layer is empty, it doesn't block.
+        // console.log(`isTileBlockingVision: Bottom layer at ${tileX},${tileY},${tileZ} is empty. Non-blocking.`);
     }
 
-    // If we reach here, it means: 
-    // - Middle layer was empty OR explicitly transparent/allows_vision.
-    // - AND Bottom layer was empty OR explicitly transparent_floor/allows_vision.
+    // If we reach here, it means:
+    // - Middle layer was empty OR transparent enough not to block based on its rules.
+    // - AND Bottom layer was empty OR transparent enough not to block based on its rules (or was on player's Z and thus non-blocking).
     // Therefore, this specific cell (tileX, tileY, tileZ) does not block the line of sight.
+    // console.log(`isTileBlockingVision: ${tileX},${tileY},${tileZ} (playerZ ${playerZ}) - NON-BLOCKING (default fallthrough)`);
     return false;
 }
 
@@ -471,7 +558,7 @@ function isTileVisible(playerX, playerY, playerZ, targetX, targetY, targetZ, vis
     if (distance <= 1.8) { // Allow slightly more for 3D adjacency
         if (line.length > 1) {
             const firstStep = line[1];
-            if (isTileBlockingVision(firstStep.x, firstStep.y, firstStep.z) &&
+            if (isTileBlockingVision(firstStep.x, firstStep.y, firstStep.z, playerZ) &&
                 !(firstStep.x === targetX && firstStep.y === targetY && firstStep.z === targetZ)) {
                 return false;
             }
@@ -487,7 +574,7 @@ function isTileVisible(playerX, playerY, playerZ, targetX, targetY, targetZ, vis
     // We need to check tiles from line[1] up to line[line.length-2].
     for (let i = 1; i < line.length - 1; i++) {
         const point = line[i];
-        if (isTileBlockingVision(point.x, point.y, point.z)) {
+        if (isTileBlockingVision(point.x, point.y, point.z, playerZ)) {
             return false;
         }
     }
@@ -844,97 +931,7 @@ window.mapRenderer = {
             return;
         }
 
-        // FOW data for the current Z-level
-        let currentFowData = gameState.fowData[currentZStr];
-        if (!currentFowData || currentFowData.length !== H || (H > 0 && (!currentFowData[0] || currentFowData[0].length !== W))) {
-            // Initialize FOW for this Z-level if it's missing or malformed
-            currentFowData = Array(H).fill(null).map(() => Array(W).fill('hidden'));
-            gameState.fowData[currentZStr] = currentFowData;
-            logToConsole(`FOW data for Z-level ${currentZStr} was missing/invalid and re-initialized in renderMapLayers.`, "orange");
-        }
-
-        // Player position and FOW update logic.
-        // FOW is updated based on player's 3D line of sight across all relevant Z-levels.
-        if (gameState.playerPos && gameState.playerPos.x !== undefined && gameState.playerPos.y !== undefined && gameState.playerPos.z !== undefined) {
-            const playerX_fow = gameState.playerPos.x;
-            const playerY_fow = gameState.playerPos.y;
-            const playerZ_fow = gameState.playerPos.z; // Player's actual Z coordinate
-
-            // Iterate over all Z-levels that could potentially be visible or need FOW updates.
-            // This could be all existing Z-levels in fullMapData.levels, or a range around playerZ_fow.
-            // For simplicity, let's iterate through all known Z-levels in the map.
-            for (const z_scan_str in fullMapData.levels) {
-                if (fullMapData.levels.hasOwnProperty(z_scan_str)) {
-                    const z_scan = parseInt(z_scan_str, 10);
-                    let fowDataForScannedZ = gameState.fowData[z_scan_str];
-
-                    // Initialize FOW for this Z-level if it's missing or malformed
-                    if (!fowDataForScannedZ || fowDataForScannedZ.length !== H || (H > 0 && (!fowDataForScannedZ[0] || fowDataForScannedZ[0].length !== W))) {
-                        fowDataForScannedZ = Array(H).fill(null).map(() => Array(W).fill('hidden'));
-                        gameState.fowData[z_scan_str] = fowDataForScannedZ;
-                        // Minimal log for this, as it can happen often when exploring new Z-levels
-                        // logToConsole(`FOW data for Z-level ${z_scan_str} was missing/invalid and initialized.`, "grey");
-                    }
-
-                    // Mark previously visible tiles on this scanned Z-level as visited
-                    for (let r = 0; r < H; r++) {
-                        for (let c = 0; c < W; c++) {
-                            if (fowDataForScannedZ[r] && fowDataForScannedZ[r][c] === 'visible') {
-                                fowDataForScannedZ[r][c] = 'visited';
-                            }
-                        }
-                    }
-
-                    // Determine new visible tiles on this scanned Z-level using 3D LOS from player's actual position
-                    for (let r = 0; r < H; r++) {
-                        for (let c = 0; c < W; c++) {
-                            // isTileVisible checks LOS from (playerX_fow, playerY_fow, playerZ_fow) to (c, r, z_scan)
-                            if (isTileVisible(playerX_fow, playerY_fow, playerZ_fow, c, r, z_scan, PLAYER_VISION_RADIUS)) {
-                                if (fowDataForScannedZ[r] && fowDataForScannedZ[r][c] !== undefined) {
-                                    // MODIFICATION START
-                                    if (z_scan === playerZ_fow) { // Player's current Z-level
-                                        fowDataForScannedZ[r][c] = 'visible';
-                                    } else { // Other Z-levels
-                                        if (fowDataForScannedZ[r][c] === 'hidden') {
-                                            fowDataForScannedZ[r][c] = 'visited'; // Reveal as visited if it was hidden
-                                        }
-                                        // If it was already 'visited' or 'visible' (e.g. from a previous frame), let it remain 'visited'.
-                                        // We don't want to revert 'visible' on other z-levels to 'visited' if they were somehow marked visible by another system,
-                                        // but the primary FOW pass should only set 'visible' for player's current Z.
-                                        // If a tile on another z-level was 'visible' and now LOS is true, it should become 'visited'.
-                                        // The existing logic that sets visible tiles to visited at the start of the FOW update handles this.
-                                        // This ensures that if you look down a hole, you see 'visited' tiles, not fully 'visible' ones.
-                                    }
-                                    // MODIFICATION END
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Ensure player's current tile ON THEIR ACTUAL Z-LEVEL is always visible
-            const playerActualZStr = playerZ_fow.toString();
-            if (gameState.fowData[playerActualZStr] && // Ensure FOW for player's Z exists
-                playerY_fow >= 0 && playerY_fow < H && playerX_fow >= 0 && playerX_fow < W &&
-                gameState.fowData[playerActualZStr][playerY_fow] &&
-                typeof gameState.fowData[playerActualZStr][playerY_fow][playerX_fow] !== 'undefined') {
-                gameState.fowData[playerActualZStr][playerY_fow][playerX_fow] = 'visible';
-            }
-
-        } else {
-            logToConsole("Player position is undefined, skipping FOW update.", "warn");
-        }
-
-        // currentFowData (for gameState.currentViewZ) is used for actual rendering below.
-        // It was already fetched/initialized prior to this block, or initialized by the loop above if currentViewZ was part of it.
-        // We still need to ensure currentFowData points to the correct FOW array for the currentViewZ for rendering.
-        currentFowData = gameState.fowData[currentZStr]; // Re-assign to ensure it's up-to-date after the loop
-        if (!currentFowData || currentFowData.length !== H || (H > 0 && (!currentFowData[0] || currentFowData[0].length !== W))) {
-            currentFowData = Array(H).fill(null).map(() => Array(W).fill('hidden'));
-            gameState.fowData[currentZStr] = currentFowData; // Ensure it's stored if it was completely missing
-            logToConsole(`FOW data for currentViewZ ${currentZStr} was re-initialized just before rendering (should be rare).`, "orange");
-        }
+       
 
         let isInitialRender = false;
         // Tile cache is now per-Z. We might only cache the currentViewZ.
