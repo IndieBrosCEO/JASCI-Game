@@ -666,20 +666,30 @@ function handleKeyDown(event) {
             return; // Cannot move target if no map
         }
         let movedTarget = false;
-        // Z-level targeting with Shift + Up/Down or Shift + W/S
-        if (event.shiftKey) {
-            switch (event.key) {
-                case 'ArrowUp': case 'w': case 'W':
-                    gameState.targetingCoords.z++;
-                    movedTarget = true;
-                    break;
-                case 'ArrowDown': case 's': case 'S':
-                    gameState.targetingCoords.z--;
-                    movedTarget = true;
-                    break;
-            }
+
+        // Z-level targeting with '<' and '>'
+        if (event.key === '<' || event.key === ',') {
+            gameState.targetingCoords.z--;
+            gameState.currentViewZ = gameState.targetingCoords.z; // Sync view with targeting Z
+            gameState.viewFollowsPlayerZ = false; // Manual Z control during targeting
+            updateTargetingInfoUI();
+            window.mapRenderer.scheduleRender();
+            logToConsole(`Targeting Z changed to: ${gameState.targetingCoords.z}. View Z also changed.`);
+            movedTarget = true;
+            event.preventDefault();
+            return;
+        } else if (event.key === '>' || event.key === '.') {
+            gameState.targetingCoords.z++;
+            gameState.currentViewZ = gameState.targetingCoords.z; // Sync view with targeting Z
+            gameState.viewFollowsPlayerZ = false; // Manual Z control during targeting
+            updateTargetingInfoUI();
+            window.mapRenderer.scheduleRender();
+            logToConsole(`Targeting Z changed to: ${gameState.targetingCoords.z}. View Z also changed.`);
+            movedTarget = true;
+            event.preventDefault();
+            return;
         } else {
-            // Normal X/Y targeting
+            // Normal X/Y targeting (Shift + Up/Down or Shift + W/S is NOT for Z in targeting mode anymore)
             switch (event.key) {
                 case 'ArrowUp': case 'w': case 'W':
                     if (gameState.targetingCoords.y > 0) {
@@ -707,15 +717,16 @@ function handleKeyDown(event) {
                     break;
             }
         }
-        if (movedTarget) {
+        if (movedTarget) { // This will now only be true if X/Y movement happened
             logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}, Z=${gameState.targetingCoords.z}`);
+            updateTargetingInfoUI(); // Update display if X/Y changed
             window.mapRenderer.scheduleRender();
             event.preventDefault();
             return; // Prevent player movement or other actions
         }
     }
 
-    // Z-Level view controls (should take precedence over movement if not in targeting mode or other UI modes)
+    // Z-Level view controls (NOT in targeting mode)
     if (!isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isTargetingMode) {
         if (!window.mapRenderer || typeof window.mapRenderer.getCurrentMapData !== 'function' || typeof window.mapRenderer.scheduleRender !== 'function') {
             logToConsole("Map renderer not ready for Z-level view controls.", "warn");
@@ -948,56 +959,67 @@ function handleKeyDown(event) {
             if (gameState.isTargetingMode && gameState.targetingType === 'ranged') {
                 gameState.isTargetingMode = false;
                 gameState.targetingType = null;
+                updateTargetingInfoUI(); // Hide UI
                 logToConsole("Exited ranged targeting mode.");
                 if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav (toggled off)
                 window.mapRenderer.scheduleRender(); // Re-render
             } else {
                 gameState.isTargetingMode = true;
                 gameState.targetingType = 'ranged';
-                gameState.targetingCoords = { ...gameState.playerPos }; // Initialize to player's position
+                gameState.targetingCoords = { ...gameState.playerPos }; // Initialize to player's position (includes Z)
+                updateTargetingInfoUI(); // Show UI
                 logToConsole("Entering ranged targeting mode.");
                 if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav (toggled on)
-                logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}`);
+                logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}, Z=${gameState.targetingCoords.z}`);
                 window.mapRenderer.scheduleRender(); // Re-render
             }
             event.preventDefault(); break;
-        case 'c': case 'C': // Changed to include C
-            if (gameState.inventory.open || gameState.isInCombat) return; // Prevent if inventory open or in combat
+        case 'c': case 'C':
+            if (gameState.inventory.open || gameState.isInCombat) return;
 
             if (gameState.isTargetingMode && gameState.targetingType === 'melee') {
                 gameState.isTargetingMode = false;
                 gameState.targetingType = null;
+                updateTargetingInfoUI(); // Hide UI
                 logToConsole("Exited melee targeting mode.");
-                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav (toggled off)
-                window.mapRenderer.scheduleRender(); // Re-render
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+                window.mapRenderer.scheduleRender();
             } else {
                 gameState.isTargetingMode = true;
                 gameState.targetingType = 'melee';
-                gameState.targetingCoords = { ...gameState.playerPos }; // Initialize to player's position
+                gameState.targetingCoords = { ...gameState.playerPos };
+                updateTargetingInfoUI(); // Show UI
                 logToConsole("Entering melee targeting mode.");
-                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav (toggled on)
-                logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}`);
-                window.mapRenderer.scheduleRender(); // Re-render
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+                logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}, Z=${gameState.targetingCoords.z}`);
+                window.mapRenderer.scheduleRender();
             }
             event.preventDefault(); break;
-        case 'Escape': // This Escape is for cancelling action menu, different from targeting/combat Escapes
-            if (gameState.isActionMenuActive) {
-                window.interaction.cancelActionSelection(); // cancelActionSelection should play its own sound
+        case 'Escape':
+            if (gameState.isTargetingMode) { // Specific check for targeting mode escape
+                gameState.isTargetingMode = false;
+                gameState.targetingType = null;
+                updateTargetingInfoUI(); // Hide targeting UI
+                logToConsole("Exited targeting mode with Escape.");
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+                window.mapRenderer.scheduleRender();
                 event.preventDefault();
+                return; // Consume event
             }
-            // Note: If not isActionMenuActive, this Escape might have been handled by targeting or combat logic already.
-            // If it reaches here and isTargetingMode is true, it means the earlier targeting Escape didn't catch it (should not happen).
-            // If it reaches here and isInCombat is true, it means the earlier combat Escape didn't catch it (should not happen).
+            if (gameState.isActionMenuActive) {
+                window.interaction.cancelActionSelection();
+                event.preventDefault();
+                // No return here, let it fall through if combat escape is also needed
+            }
+            // If in combat and not targeting/action menu, Escape might end combat (handled earlier)
             break;
         case '1': case '2': case '3': case '4':
         case '5': case '6': case '7': case '8': case '9':
             if (gameState.isActionMenuActive) {
-                window.interaction.selectAction(parseInt(event.key, 10) - 1); // selectAction should play its own sound
+                window.interaction.selectAction(parseInt(event.key, 10) - 1);
                 event.preventDefault();
             }
-            // If not in action menu, these keys might be caught by the earlier block for item selection if not in targeting mode.
             break;
-        // Default: allow event to propagate if not handled by any case.
     }
 }
 
@@ -1391,8 +1413,26 @@ async function initialize() { // Made async
         if (viewZElement) {
             viewZElement.textContent = `View Z: ${gameState.currentViewZ}`;
         }
+        // Also update targeting Z info if it's active
+        if (typeof updateTargetingInfoUI === 'function') {
+            updateTargetingInfoUI();
+        }
     }
     window.updatePlayerStatusDisplay = updatePlayerStatusDisplay; // Make it globally accessible if needed elsewhere
+
+    // Function to update the targeting Z level display
+    function updateTargetingInfoUI() {
+        const targetingZElement = document.getElementById('targetingZDisplay');
+        if (targetingZElement) {
+            if (gameState.isTargetingMode) {
+                targetingZElement.textContent = `Targeting Z: ${gameState.targetingCoords.z}`;
+                targetingZElement.style.display = 'block'; // Show it
+            } else {
+                targetingZElement.style.display = 'none'; // Hide it
+            }
+        }
+    }
+    window.updateTargetingInfoUI = updateTargetingInfoUI; // Make global if needed by other modules directly
 
     const confirmButton = document.getElementById('confirmAttackButton');
     if (confirmButton) {

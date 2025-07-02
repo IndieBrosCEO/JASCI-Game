@@ -932,25 +932,88 @@
         const defenderName = defender ? ((defender === this.gameState) ? "Player" : defender.name) : "Tile";
         let attackResult, defenseResult;
 
-        if (attacker !== this.gameState && defender) {
-            const npcPos = attacker.mapPos;
-            const defenderPos = (defender === this.gameState) ? this.gameState.playerPos : defender.mapPos;
-            if (npcPos && defenderPos) {
-                if (!window.hasLineOfSight3D(npcPos, defenderPos)) {
-                    logToConsole(`NPC ATTACK CANCELED: ${attackerName} lost Line of Sight to ${defenderName}.`, 'orange');
-                    if (this.gameState.isInCombat) { this.nextTurn(attacker); }
-                    return;
-                } else { logToConsole(`NPC ATTACK: ${attackerName} confirmed Line of Sight to ${defenderName}.`, 'grey'); }
+        // --- Line of Sight Checks ---
+        const currentTilesetsForLOS = window.assetManagerInstance ? window.assetManagerInstance.tilesets : null;
+        const currentMapDataForLOS = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+
+        if (!currentTilesetsForLOS || !currentMapDataForLOS) {
+            logToConsole("LOS CHECK ERROR: Crucial data (tilesets or mapData) not available for any LOS check.", "red");
+            if (attacker === this.gameState) { // Player's turn
+                // Refund AP potentially, or just allow re-declaration
+                this.gameState.actionPointsRemaining++; // Simplistic AP refund, needs robust handling if AP cost varies
+                window.turnManager.updateTurnUI();
+                this.promptPlayerAttackDeclaration();
+            } else { // NPC's turn
+                this.nextTurn(attacker);
+            }
+            return; // Stop processing this attack
+        }
+
+        if (attackType === 'ranged') { // Centralized LOS check for all ranged attacks
+            const attackerActualPos = attacker.mapPos || this.gameState.playerPos;
+            let targetActualPos = null;
+            if (defender && defender.mapPos) {
+                targetActualPos = defender.mapPos;
+            } else if (this.gameState.pendingCombatAction?.targetTile) {
+                targetActualPos = this.gameState.pendingCombatAction.targetTile;
+            } else if (this.gameState.defenderMapPos) {
+                targetActualPos = this.gameState.defenderMapPos;
+            }
+
+            if (attackerActualPos && targetActualPos) {
+                if (!window.hasLineOfSight3D(attackerActualPos, targetActualPos, currentTilesetsForLOS, currentMapDataForLOS)) {
+                    const who = attacker === this.gameState ? "PLAYER" : "NPC";
+                    logToConsole(`${who} RANGED ATTACK CANCELED: ${attackerName} has no Line of Sight to target at (${targetActualPos.x},${targetActualPos.y}, Z:${targetActualPos.z}).`, 'orange');
+                    if (attacker === this.gameState) {
+                        // AP was spent in handleConfirmedAttackDeclaration.
+                        // To prevent losing AP on a bad LOS, this check should ideally be there.
+                        // For now, AP is lost. Player gets to try another action if AP allows, or turn ends.
+                        if (this.gameState.actionPointsRemaining > 0) {
+                            this.promptPlayerAttackDeclaration();
+                        } else {
+                            this.nextTurn(attacker);
+                        }
+                    } else { // NPC
+                        this.nextTurn(attacker);
+                    }
+                    return; // Stop processing this attack
+                } else {
+                    // logToConsole(`${attacker === this.gameState ? "PLAYER" : "NPC"} RANGED ATTACK: ${attackerName} confirmed Line of Sight to target.`, 'grey');
+                }
+            } else {
+                logToConsole("RANGED LOS CHECK SKIPPED: Attacker or target position undefined.", "yellow");
+                // Allow to proceed if it's an area effect not requiring a specific entity LOS, though targetTile should be set.
+                // If it's a direct attack and targetActualPos is null, it will likely fail later.
             }
         }
+        // End of centralized LOS check for ranged
 
         if (attackType === 'melee' && defender) {
             const attackerMapPos = attacker.mapPos || this.gameState.playerPos;
             const defenderMapPos = defender.mapPos;
             if (attackerMapPos && defenderMapPos) {
-                const manhattanDistance3D = Math.abs(attackerMapPos.x - defenderMapPos.x) + Math.abs(attackerMapPos.y - defenderMapPos.y) + Math.abs(attackerMapPos.z - defenderMapPos.z);
-                if (manhattanDistance3D > 1) {
-                    logToConsole(`MELEE FAIL: ${attackerName}'s attack on ${defenderName} fails (Out of Range - Manhattan3D: ${manhattanDistance3D}).`, 'orange');
+                const dx = Math.abs(attackerMapPos.x - defenderMapPos.x);
+                const dy = Math.abs(attackerMapPos.y - defenderMapPos.y);
+                const dz = Math.abs(attackerMapPos.z - defenderMapPos.z);
+
+                let inMeleeRange = false;
+                if (dz === 0) { // Same Z-level
+                    const manhattanXY = dx + dy;
+                    // Allows Manhattan distance 1 (cardinal) and 2 (diagonal)
+                    // Must not be the same tile (manhattanXY > 0)
+                    if (manhattanXY > 0 && manhattanXY <= 2) {
+                        inMeleeRange = true;
+                    }
+                } else if (dz === 1) { // One Z-level difference
+                    // Must be directly above or below (dx=0, dy=0)
+                    if (dx === 0 && dy === 0) {
+                        inMeleeRange = true;
+                    }
+                }
+                // If dz > 1, or conditions above not met, inMeleeRange remains false.
+
+                if (!inMeleeRange) {
+                    logToConsole(`MELEE FAIL: ${attackerName}'s attack on ${defenderName} fails (Out of Range - dx:${dx}, dy:${dy}, dz:${dz}).`, 'orange');
                     if (attacker === this.gameState) {
                         if (this.gameState.actionPointsRemaining > 0) this.promptPlayerAttackDeclaration();
                         else if (this.gameState.movementPointsRemaining > 0) this.gameState.combatPhase = 'playerPostAction';

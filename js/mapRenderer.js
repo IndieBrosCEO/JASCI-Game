@@ -821,56 +821,73 @@ window.mapRenderer = {
         }
 
         // Player position and FOW update logic.
-        // FOW is updated for the Z-level the player is currently ON (gameState.playerPos.z).
-        // The isTileVisible function now uses 3D calculations.
+        // FOW is updated based on player's 3D line of sight across all relevant Z-levels.
         if (gameState.playerPos && gameState.playerPos.x !== undefined && gameState.playerPos.y !== undefined && gameState.playerPos.z !== undefined) {
-            const playerActualZStr = gameState.playerPos.z.toString();
-            let fowDataForPlayerZ = gameState.fowData[playerActualZStr];
-
-            // Initialize FOW for player's actual Z-level if it doesn't exist or is malformed
-            if (!fowDataForPlayerZ || fowDataForPlayerZ.length !== H || (H > 0 && (!fowDataForPlayerZ[0] || fowDataForPlayerZ[0].length !== W))) {
-                fowDataForPlayerZ = Array(H).fill(null).map(() => Array(W).fill('hidden'));
-                gameState.fowData[playerActualZStr] = fowDataForPlayerZ;
-                logToConsole(`FOW data for player's actual Z-level ${playerActualZStr} was missing/invalid and (re)-initialized in renderMapLayers.`, "orange");
-            }
-
             const playerX_fow = gameState.playerPos.x;
             const playerY_fow = gameState.playerPos.y;
-            const playerZ_fow = gameState.playerPos.z;
+            const playerZ_fow = gameState.playerPos.z; // Player's actual Z coordinate
 
-            // Mark previously visible tiles on player's current Z-level as visited
-            for (let r = 0; r < H; r++) {
-                for (let c = 0; c < W; c++) {
-                    if (fowDataForPlayerZ[r] && fowDataForPlayerZ[r][c] === 'visible') {
-                        fowDataForPlayerZ[r][c] = 'visited';
+            // Iterate over all Z-levels that could potentially be visible or need FOW updates.
+            // This could be all existing Z-levels in fullMapData.levels, or a range around playerZ_fow.
+            // For simplicity, let's iterate through all known Z-levels in the map.
+            for (const z_scan_str in fullMapData.levels) {
+                if (fullMapData.levels.hasOwnProperty(z_scan_str)) {
+                    const z_scan = parseInt(z_scan_str, 10);
+                    let fowDataForScannedZ = gameState.fowData[z_scan_str];
+
+                    // Initialize FOW for this Z-level if it's missing or malformed
+                    if (!fowDataForScannedZ || fowDataForScannedZ.length !== H || (H > 0 && (!fowDataForScannedZ[0] || fowDataForScannedZ[0].length !== W))) {
+                        fowDataForScannedZ = Array(H).fill(null).map(() => Array(W).fill('hidden'));
+                        gameState.fowData[z_scan_str] = fowDataForScannedZ;
+                        // Minimal log for this, as it can happen often when exploring new Z-levels
+                        // logToConsole(`FOW data for Z-level ${z_scan_str} was missing/invalid and initialized.`, "grey");
                     }
-                }
-            }
 
-            // Determine new visible tiles on player's current Z-level using 3D LOS
-            for (let r = 0; r < H; r++) {
-                for (let c = 0; c < W; c++) {
-                    // Target for visibility check is on the same Z-level as the player for FOW updates
-                    if (isTileVisible(playerX_fow, playerY_fow, playerZ_fow, c, r, playerZ_fow, PLAYER_VISION_RADIUS)) {
-                        if (fowDataForPlayerZ[r] && fowDataForPlayerZ[r][c] !== undefined) {
-                            fowDataForPlayerZ[r][c] = 'visible';
+                    // Mark previously visible tiles on this scanned Z-level as visited
+                    for (let r = 0; r < H; r++) {
+                        for (let c = 0; c < W; c++) {
+                            if (fowDataForScannedZ[r] && fowDataForScannedZ[r][c] === 'visible') {
+                                fowDataForScannedZ[r][c] = 'visited';
+                            }
+                        }
+                    }
+
+                    // Determine new visible tiles on this scanned Z-level using 3D LOS from player's actual position
+                    for (let r = 0; r < H; r++) {
+                        for (let c = 0; c < W; c++) {
+                            // isTileVisible checks LOS from (playerX_fow, playerY_fow, playerZ_fow) to (c, r, z_scan)
+                            if (isTileVisible(playerX_fow, playerY_fow, playerZ_fow, c, r, z_scan, PLAYER_VISION_RADIUS)) {
+                                if (fowDataForScannedZ[r] && fowDataForScannedZ[r][c] !== undefined) {
+                                    fowDataForScannedZ[r][c] = 'visible';
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            // Ensure player's current tile on their Z-level is visible
-            if (playerY_fow >= 0 && playerY_fow < H && playerX_fow >= 0 && playerX_fow < W) {
-                if (fowDataForPlayerZ[playerY_fow] && typeof fowDataForPlayerZ[playerY_fow][playerX_fow] !== 'undefined') {
-                    fowDataForPlayerZ[playerY_fow][playerX_fow] = 'visible';
-                }
+            // Ensure player's current tile ON THEIR ACTUAL Z-LEVEL is always visible
+            const playerActualZStr = playerZ_fow.toString();
+            if (gameState.fowData[playerActualZStr] && // Ensure FOW for player's Z exists
+                playerY_fow >= 0 && playerY_fow < H && playerX_fow >= 0 && playerX_fow < W &&
+                gameState.fowData[playerActualZStr][playerY_fow] &&
+                typeof gameState.fowData[playerActualZStr][playerY_fow][playerX_fow] !== 'undefined') {
+                gameState.fowData[playerActualZStr][playerY_fow][playerX_fow] = 'visible';
             }
+
         } else {
             logToConsole("Player position is undefined, skipping FOW update.", "warn");
         }
 
         // currentFowData (for gameState.currentViewZ) is used for actual rendering below.
-        // It was already fetched/initialized prior to this block.
+        // It was already fetched/initialized prior to this block, or initialized by the loop above if currentViewZ was part of it.
+        // We still need to ensure currentFowData points to the correct FOW array for the currentViewZ for rendering.
+        currentFowData = gameState.fowData[currentZStr]; // Re-assign to ensure it's up-to-date after the loop
+        if (!currentFowData || currentFowData.length !== H || (H > 0 && (!currentFowData[0] || currentFowData[0].length !== W))) {
+            currentFowData = Array(H).fill(null).map(() => Array(W).fill('hidden'));
+            gameState.fowData[currentZStr] = currentFowData; // Ensure it's stored if it was completely missing
+            logToConsole(`FOW data for currentViewZ ${currentZStr} was re-initialized just before rendering (should be rare).`, "orange");
+        }
 
         let isInitialRender = false;
         // Tile cache is now per-Z. We might only cache the currentViewZ.

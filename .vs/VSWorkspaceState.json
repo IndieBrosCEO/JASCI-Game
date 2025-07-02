@@ -4,10 +4,9 @@
     "\\assets",
     "\\assets\\definitions",
     "\\assets\\maps",
-    "\\assets\\sounds",
     "\\js",
     "\\Maps"
   ],
-  "SelectedNode": "\\script.js",
+  "SelectedNode": "\\js\\mapRenderer.js",
   "PreviewInSolutionExplorer": false
 }
