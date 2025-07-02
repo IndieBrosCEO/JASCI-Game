@@ -613,11 +613,15 @@
         let affectedEntities = [];
         let areaEffectProcessedThisCall = false;
 
+        const attackerPos = attacker?.mapPos || this.gameState.playerPos; // For sounds from attacker
+        const effectImpactPos = impactTile || targetEntity?.mapPos || attackerPos; // For sounds at impact
+
         if (burstRadiusTiles > 0 && impactTile) {
             affectedEntities = this.getCharactersInBlastRadius(impactTile, burstRadiusTiles);
             logToConsole(`Effect "${effectString}" targets ${affectedEntities.length} entities in burst radius around (${impactTile.x},${impactTile.y}).`, 'cyan');
 
             if (item.id === "smoke_grenade_thrown" && !areaEffectProcessedThisCall) {
+                if (window.audioManager && effectImpactPos) window.audioManager.playSoundAtLocation('ui_click_01.wav', effectImpactPos, {}, { volume: 0.6 }); // Placeholder for gas_hiss_01.wav
                 if (!this.gameState.environmentalEffects) this.gameState.environmentalEffects = {};
                 if (!this.gameState.environmentalEffects.smokeTiles) this.gameState.environmentalEffects.smokeTiles = [];
                 const smokeDuration = 5;
@@ -635,6 +639,7 @@
                 if (window.mapRenderer) window.mapRenderer.scheduleRender();
                 areaEffectProcessedThisCall = true;
             } else if (item.id === "tear_gas_grenade_thrown" && !areaEffectProcessedThisCall) {
+                if (window.audioManager && effectImpactPos) window.audioManager.playSoundAtLocation('ui_click_01.wav', effectImpactPos, {}, { volume: 0.6 }); // Placeholder for gas_hiss_01.wav
                 if (!this.gameState.environmentalEffects) this.gameState.environmentalEffects = {};
                 if (!this.gameState.environmentalEffects.tearGasTiles) this.gameState.environmentalEffects.tearGasTiles = [];
                 const gasDuration = 4;
@@ -661,38 +666,50 @@
             let existingEffect, duration, damagePerTurn, penalty;
 
             if (effectString === "Creates smoke screen" && item.id === "smoke_grenade_thrown") {
+                // Sound already played at cloud creation
                 existingEffect = entity.statusEffects["in_smoke"]; duration = 2;
                 if (!existingEffect) entity.statusEffects["in_smoke"] = { id: "in_smoke", displayName: "In Smoke", duration, sourceItemId: item.id, description: "Vision obscured. Attack -2." };
                 else existingEffect.duration = Math.max(existingEffect.duration, duration);
                 logToConsole(`${entityName} is in smoke.`, 'grey');
             } else if (effectString === "Causes irritation, coughing, crying" && item.id === "tear_gas_grenade_thrown") {
+                // Sound already played at cloud creation
                 existingEffect = entity.statusEffects["irritated_tear_gas"]; duration = 3; penalty = -2;
                 if (!existingEffect) entity.statusEffects["irritated_tear_gas"] = { id: "irritated_tear_gas", displayName: "Irritated (Tear Gas)", duration, sourceItemId: item.id, accuracyPenalty: penalty, description: `Eyes watering, coughing. Accuracy ${penalty}.` };
                 else existingEffect.duration = Math.max(existingEffect.duration, duration);
                 logToConsole(`${entityName} ${existingEffect ? 'tear gas refreshed' : 'irritated by tear gas!'}. Accuracy ${penalty}.`, 'orange');
             } else if (effectString === "Temporary Blindness and Irritation" && item.id === "pepper_spray") {
+                // Sound for pepper spray activation should have happened in processAttack
+                // This is for the effect *on the target*
+                if (window.audioManager && entity && (entity.mapPos || entity === this.gameState)) {
+                    const targetPosition = entity === this.gameState ? this.gameState.playerPos : entity.mapPos;
+                    // No specific "pepper spray hit target" sound, maybe a generic affliction sound later
+                }
                 existingEffect = entity.statusEffects["blinded_pepper_spray"]; duration = 2; penalty = -10;
                 if (!existingEffect) entity.statusEffects["blinded_pepper_spray"] = { id: "blinded_pepper_spray", displayName: "Blinded (Pepper Spray)", duration, sourceItemId: item.id, visionPenalty: penalty, description: `Eyes burning. Attack Roll ${penalty}.` };
                 else existingEffect.duration = Math.max(existingEffect.duration, duration);
                 logToConsole(`${entityName} ${existingEffect ? 'pepper spray blindness refreshed' : 'blinded by pepper spray!'}. Vision Penalty ${penalty}.`, 'red');
             } else if (item.id === "acid_mild_thrown" && targetEntity === entity && (effectString === "Lingering Acid Burn" || !effectString || effectString === "")) {
+                if (window.audioManager && effectImpactPos) window.audioManager.playSoundAtLocation('ui_click_01.wav', effectImpactPos, {}, { volume: 0.5 }); // Placeholder for acid_sizzle_01.wav (on impact/target)
                 existingEffect = entity.statusEffects["acid_burn"]; duration = 3; damagePerTurn = rollDie(2);
                 if (!existingEffect) entity.statusEffects["acid_burn"] = { id: "acid_burn", displayName: "Acid Burn", duration, sourceItemId: item.id, damagePerTurn, damageType: "Acid", description: `Corrosive acid burns, ${damagePerTurn} Acid dmg/turn.` };
                 else { existingEffect.duration = Math.max(existingEffect.duration, duration); existingEffect.damagePerTurn = Math.max(existingEffect.damagePerTurn, damagePerTurn); }
                 logToConsole(`${entityName} ${existingEffect ? 'acid burn refreshed/intensified' : 'suffering acid burn!'}. Dmg/turn: ${entity.statusEffects["acid_burn"].damagePerTurn}.`, 'darkgreen');
+            } else if (item.id === 'taser' || item.id === 'stun_gun_melee') { // Assuming specialEffect string is "Stun" or similar
+                if (window.audioManager && targetEntity && (targetEntity.mapPos || targetEntity === this.gameState)) {
+                    const targetPosition = targetEntity === this.gameState ? this.gameState.playerPos : targetEntity.mapPos;
+                    window.audioManager.playSoundAtLocation('ui_click_01.wav', targetPosition, {}, { volume: 0.7 }); // Placeholder for taser_hit_01.wav
+                }
+                // Apply stun effect logic here
             }
             if (entity === this.gameState && window.renderCharacterInfo) window.renderCharacterInfo();
             if (entity === this.gameState && window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
         });
 
-        // Handle Lingering Acid Burn specifically if not covered by the loop (e.g. direct hit of acid_mild_thrown)
-        // This ensures the DoT is applied to the primary target even if it wasn't in a generic "affectedEntities" list for some reason
-        // or if the specialEffect string wasn't processed for it in the loop.
         if (item.id === "acid_mild_thrown" && effectString === "Lingering Acid Burn" && targetEntity) {
             if (!targetEntity.statusEffects) targetEntity.statusEffects = {};
             let existingAcidEffect = targetEntity.statusEffects["acid_burn"];
-            const acidDuration = 3; // Duration in turns
-            const acidDmgPerTurn = Math.max(1, rollDie(2)); // 1d2, min 1 damage per turn
+            const acidDuration = 3;
+            const acidDmgPerTurn = Math.max(1, rollDie(2));
 
             if (!existingAcidEffect) {
                 targetEntity.statusEffects["acid_burn"] = {
@@ -706,7 +723,7 @@
                 };
             } else {
                 existingAcidEffect.duration = Math.max(existingAcidEffect.duration, acidDuration);
-                existingAcidEffect.damagePerTurn = Math.max(existingAcidEffect.damagePerTurn, acidDmgPerTurn); // Or sum, or refresh; max seems reasonable
+                existingAcidEffect.damagePerTurn = Math.max(existingAcidEffect.damagePerTurn, acidDmgPerTurn);
             }
             const entityNameForLog = targetEntity === this.gameState ? "Player" : (targetEntity.name || targetEntity.id);
             logToConsole(`${entityNameForLog} ${existingAcidEffect ? 'acid burn refreshed/intensified' : 'suffering acid burn!'}. Dmg/turn: ${targetEntity.statusEffects["acid_burn"].damagePerTurn}.`, 'darkgreen');
@@ -719,15 +736,32 @@
     calculateAndApplyMeleeDamage(attacker, target, weapon, hitSuccess, attackNaturalRoll, defenseNaturalRoll, targetBodyPartForDamage) {
         if (!hitSuccess || !target) { if (document.getElementById('damageResult')) document.getElementById('damageResult').textContent = 'Damage: 0 (Miss/No Target)'; return; }
         let damageAmount = 0, damageType = "", damageLogSuffix = "";
-        if (weapon === null) {
+        const targetPosition = target === this.gameState ? this.gameState.playerPos : target.mapPos;
+
+        if (weapon === null) { // Unarmed
             damageType = "Bludgeoning";
             const unarmedMod = getSkillModifier("Unarmed", attacker);
             damageAmount = unarmedMod <= 0 ? Math.max(0, rollDie(2) - 1) : rollDie(unarmedMod);
             damageLogSuffix = unarmedMod <= 0 ? `(1d2-1, Mod: ${unarmedMod})` : `(1d${unarmedMod}, Mod: ${unarmedMod})`;
-        } else {
+            if (window.audioManager && targetPosition) {
+                window.audioManager.playUnarmedHitSound({ sourcePosition: targetPosition }); // Uses existing random unarmed hit
+            }
+        } else { // Armed Melee
             damageType = weapon.damageType || "Physical";
             damageAmount = rollDiceNotation(parseDiceNotation(weapon.damage));
             damageLogSuffix = `(${weapon.damage})`;
+            if (window.audioManager && targetPosition) {
+                let hitSoundName = 'melee_unarmed_hit_01.wav'; // Default placeholder
+                if (weapon.type.includes("blade")) {
+                    // TODO: Differentiate between flesh and armor hit when armor system is more detailed
+                    hitSoundName = 'ui_click_01.wav'; // Placeholder for melee_blade_hit_flesh_01.wav or melee_blade_hit_armor_01.wav
+                } else if (weapon.type.includes("blunt")) {
+                    hitSoundName = 'ui_click_01.wav'; // Placeholder for melee_blunt_hit_flesh_01.wav or melee_blunt_hit_armor_01.wav
+                } else if (weapon.id === 'chain_saw_melee') {
+                    hitSoundName = 'ui_error_01.wav'; // Placeholder for chainsaw hit (distinct from attack sound)
+                }
+                window.audioManager.playSoundAtLocation(hitSoundName, targetPosition, {}, { volume: 0.8 });
+            }
         }
         if (document.getElementById('damageResult')) document.getElementById('damageResult').textContent = `Raw Damage: ${damageAmount} ${damageType} ${damageLogSuffix}`;
         this.applyDamage(attacker, target, targetBodyPartForDamage, damageAmount, damageType, weapon);
@@ -738,9 +772,20 @@
         const damageType = weapon.damageType || "Ballistic";
         let totalDamageThisVolley = 0;
         logToConsole(`HITS: ${attacker === this.gameState ? "Player" : attacker.name}'s ${weapon.name} strikes ${numHits} time(s)! (Base Damage: ${weapon.damage})`, attacker === this.gameState ? 'lightgreen' : (numHits > 1 ? 'orangered' : 'orange'));
+
+        const targetPosition = target === this.gameState ? this.gameState.playerPos : target.mapPos;
+
         for (let i = 0; i < numHits; i++) {
             const damageAmountThisBullet = rollDiceNotation(parseDiceNotation(weapon.damage));
             totalDamageThisVolley += damageAmountThisBullet;
+            if (window.audioManager && targetPosition) {
+                let hitSound = 'ui_click_01.wav'; // Placeholder for bullet_hit_flesh_01.wav
+                if (weapon.type.includes("bow") || weapon.type.includes("crossbow")) {
+                    hitSound = 'ui_click_01.wav'; // Placeholder for arrow_hit_01.wav
+                }
+                // TODO: Add bullet_hit_concrete/metal/wood/dirt based on target tile properties if not flesh
+                window.audioManager.playSoundAtLocation(hitSound, targetPosition, {}, { volume: 0.7 });
+            }
             this.applyDamage(attacker, target, targetBodyPartForDamage, damageAmountThisBullet, damageType, weapon, i + 1, numHits);
         }
         if (document.getElementById('damageResult')) document.getElementById('damageResult').textContent = `Total Raw Damage: ${totalDamageThisVolley} ${damageType} (${numHits} hits)`;
@@ -758,6 +803,15 @@
         }
         if (actionType === "Reload") {
             logToConsole(`${attacker === this.gameState ? "Player" : attacker.name} reloads ${this.gameState.pendingCombatAction.weapon?.name || 'weapon'}.`, attacker === this.gameState ? 'lightgreen' : 'gold');
+            if (window.audioManager && (attacker.mapPos || attacker === this.gameState)) {
+                const reloadSoundPos = attacker === this.gameState ? this.gameState.playerPos : attacker.mapPos;
+                let reloadSound = 'ui_click_01.wav'; // Generic placeholder
+                if (weapon?.type?.includes("pistol")) reloadSound = 'ui_click_01.wav'; // Placeholder for reload_pistol_01.wav
+                else if (weapon?.type?.includes("rifle")) reloadSound = 'ui_click_01.wav'; // Placeholder for reload_rifle_01.wav
+                else if (weapon?.type?.includes("shotgun")) reloadSound = 'ui_click_01.wav'; // Placeholder for reload_shotgun_01.wav
+                // TODO: Consider reload_mag_insert_01.wav as part of these, or if it's separate.
+                window.audioManager.playSoundAtLocation(reloadSound, reloadSoundPos, {}, { volume: 0.6 });
+            }
             if (attacker === this.gameState) {
                 if (this.gameState.actionPointsRemaining <= 0) { this.promptPlayerAttackDeclaration(); return; }
                 this.gameState.actionPointsRemaining--; window.turnManager.updateTurnUI();
@@ -771,97 +825,132 @@
 
         let actionContext = { isGrappling: false, rangeModifier: 0, attackModifier: 0, isBurst: false, isAutomatic: false, isSecondAttack: false, skillToUse: this.gameState.pendingCombatAction.skillToUse };
 
-        if (attackType === 'melee' && window.animationManager && defender) {
-            if (weapon?.id === 'chain_saw_melee') window.animationManager.playAnimation('chainsawAttack', { attacker, defender, duration: 800, frameDuration: 40 });
-            else if (weapon?.id === 'whip') window.animationManager.playAnimation('whipCrack', { attacker, defender, duration: 700 });
-            else window.animationManager.playAnimation('meleeSwing', { attacker, x: attacker.mapPos?.x ?? this.gameState.playerPos.x, y: attacker.mapPos?.y ?? this.gameState.playerPos.y, originalSprite: (attacker === this.gameState ? '☻' : (attacker.sprite || '?')), originalColor: (attacker === this.gameState ? 'green' : (attacker.color || 'white')), duration: 600 });
-        } else if (weapon?.type?.includes("thrown") && weapon.type !== "weapon_utility_spray" && window.animationManager) { // Exclude spray types from generic throwing
-            const attackerPos = attacker.mapPos || this.gameState.playerPos;
-            let targetPos = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || this.gameState.defenderMapPos;
-            if (attackerPos && targetPos) window.animationManager.playAnimation('throwing', { startPos: attackerPos, endPos: targetPos, sprite: (weapon.sprite || 'o'), color: (weapon.color || 'cyan'), duration: 600, attacker, defender });
-        } else if (attackType === 'ranged' && weapon && !weapon.type?.includes("thrown") && weapon.type !== "weapon_utility_spray" && !weapon.tags?.includes("launcher_treated_as_rifle") && window.animationManager) {
-            const attackerPos = attacker.mapPos || this.gameState.playerPos;
-            const defenderPos = defender?.mapPos || this.gameState.defenderMapPos;
-            if (attackerPos && defenderPos) window.animationManager.playAnimation('rangedBullet', { startPos: attackerPos, endPos: defenderPos, sprite: weapon.projectileSprite || '*', color: weapon.projectileColor || 'yellow', duration: 400, attacker, defender });
-        } else if (weapon?.id === 'flamethrower' && window.animationManager) {
-            const attackerPos = attacker.mapPos || this.gameState.playerPos;
-            const targetPos = this.gameState.defenderMapPos || defender?.mapPos || this.gameState.pendingCombatAction?.targetTile;
-            if (attackerPos && targetPos) window.animationManager.playAnimation('flamethrower', { attacker, targetPos, duration: 1500, particleSpawnRate: 10, particleLifetime: 500, coneAngle: Math.PI / 6, maxRange: 6 });
-        } else if (weapon && (weapon.id === 'taser' || weapon.id === 'stun_gun_melee') && window.animationManager && defender) {
-            window.animationManager.playAnimation('taser', { attacker, defender, duration: 500, isMelee: weapon.id === 'stun_gun_melee' });
-        } else if (weapon && (weapon.id === 'smoke_grenade_thrown' || weapon.id === 'tear_gas_grenade_thrown' || weapon.id === 'pepper_spray') && window.animationManager) {
-            let cloudParams = { attacker, duration: 5000, activeSpawningDuration: 1000, particleSpriteOptions: ['░', '▒', '▓'], particleLifetime: 4000, expansionSpeed: 0.03, spawnRate: 15 };
-            cloudParams.centerPos = this.gameState.defenderMapPos || defender?.mapPos || this.gameState.pendingCombatAction?.targetTile || attacker.mapPos || this.gameState.playerPos;
-            cloudParams.maxRadius = (weapon.burstRadiusFt || 20) / 5;
-            if (weapon.id === 'smoke_grenade_thrown') cloudParams.particleColor = 'grey';
-            else if (weapon.id === 'tear_gas_grenade_thrown') { cloudParams.particleColor = 'yellow'; cloudParams.particleSpriteOptions = ['%', '§']; }
-            else if (weapon.id === 'pepper_spray') {
-                cloudParams.centerPos = attacker.mapPos || this.gameState.playerPos;
-                if (defender && defender.mapPos) cloudParams.coneDirection = { ...defender.mapPos };
-                else if (this.gameState.defenderMapPos) cloudParams.coneDirection = { ...this.gameState.defenderMapPos };
-                else cloudParams.coneDirection = { x: (attacker.mapPos || this.gameState.playerPos).x + 1, y: (attacker.mapPos || this.gameState.playerPos).y }; // Fallback
+        const attackerPos = attacker.mapPos || this.gameState.playerPos; // Common attacker position
 
-                cloudParams.maxRadius = 1.5;
-                cloudParams.duration = 1500;
-                cloudParams.activeSpawningDuration = 500;
-                cloudParams.particleLifetime = 1000;
-                cloudParams.particleColor = 'orange';
-                cloudParams.particleSpriteOptions = ['*', '⁂', '※']; // More visible sprites
-                cloudParams.coneAngle = Math.PI / 6;
-                cloudParams.spawnRate = 20;
-                logToConsole(`Pepper spray by ${attacker.name || 'Player'} from (${cloudParams.centerPos.x},${cloudParams.centerPos.y}) towards (${cloudParams.coneDirection.x},${cloudParams.coneDirection.y}) with sprites: ${cloudParams.particleSpriteOptions.join('')}`, 'debug');
+        if (attackType === 'melee' && defender) {
+            if (window.audioManager && attackerPos) {
+                if (!weapon) {
+                    window.audioManager.playSoundAtLocation('melee_unarmed_swing_01.wav', attackerPos);
+                } else {
+                    let swingSound = 'melee_armed_swing_01.wav'; // Default armed swing
+                    if (weapon.id === 'chain_saw_melee') swingSound = 'ui_error_01.wav'; // Placeholder for chainsaw_attack_01.wav
+                    else if (weapon.id === 'whip') swingSound = 'ui_click_01.wav'; // Placeholder for whip_crack_01.wav
+                    window.audioManager.playSoundAtLocation(swingSound, attackerPos);
+                }
             }
-            window.animationManager.playAnimation('gasCloud', cloudParams);
+            if (window.animationManager) {
+                if (weapon?.id === 'chain_saw_melee') window.animationManager.playAnimation('chainsawAttack', { attacker, defender, duration: 800, frameDuration: 40 });
+                else if (weapon?.id === 'whip') window.animationManager.playAnimation('whipCrack', { attacker, defender, duration: 700 });
+                else window.animationManager.playAnimation('meleeSwing', { attacker, x: attackerPos.x, y: attackerPos.y, originalSprite: (attacker === this.gameState ? '☻' : (attacker.sprite || '?')), originalColor: (attacker === this.gameState ? 'green' : (attacker.color || 'white')), duration: 600 });
+            }
+        } else if (weapon?.type?.includes("thrown") && weapon.type !== "weapon_utility_spray") {
+            if (window.audioManager && attackerPos) {
+                window.audioManager.playSoundAtLocation('ui_click_01.wav', attackerPos, {}, { volume: 0.6 }); // Placeholder for throw_item_01.wav
+                if (weapon.type === "weapon_thrown_explosive" && weapon.tags?.includes("grenade")) {
+                    window.audioManager.playSoundAtLocation('ui_click_01.wav', attackerPos, {}, { volume: 0.4 }); // Placeholder for grenade_pin_01.wav (played by attacker)
+                }
+            }
+            if (window.animationManager) {
+                let targetPos = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || this.gameState.defenderMapPos;
+                if (attackerPos && targetPos) window.animationManager.playAnimation('throwing', { startPos: attackerPos, endPos: targetPos, sprite: (weapon.sprite || 'o'), color: (weapon.color || 'cyan'), duration: 600, attacker, defender });
+            }
+        } else if (attackType === 'ranged' && weapon && !weapon.type?.includes("thrown") && weapon.type !== "weapon_utility_spray" && !weapon.tags?.includes("launcher_treated_as_rifle")) {
+            if (window.audioManager && attackerPos) {
+                let fireSoundName = 'ui_click_01.wav'; // Default placeholder for weapon_empty_click_01.wav if ammo is out (needs ammo check)
+                // Assuming ammo check happens before this, otherwise need to handle empty click
+                if (weapon.type.includes("pistol")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_pistol_01.wav
+                else if (weapon.type.includes("submachine_gun")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_smg_01.wav
+                else if (weapon.type.includes("rifle") && !weapon.tags?.includes("assault_rifle") && !weapon.tags?.includes("machine_gun")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_rifle_01.wav
+                else if (weapon.tags?.includes("assault_rifle")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_ar_loop.wav (needs loop management)
+                else if (weapon.type.includes("shotgun")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_shotgun_01.wav
+                else if (weapon.tags?.includes("machine_gun")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_mg_loop.wav (needs loop management)
+                else if (weapon.type.includes("bow")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_bow_01.wav
+                else if (weapon.type.includes("crossbow")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_crossbow_01.wav
+                window.audioManager.playSoundAtLocation(fireSoundName, attackerPos, {}, { volume: 0.9 });
+            }
+            if (window.animationManager) {
+                const defenderPos = defender?.mapPos || this.gameState.defenderMapPos;
+                if (attackerPos && defenderPos) {
+                    window.animationManager.playAnimation('rangedBullet', { startPos: attackerPos, endPos: defenderPos, sprite: weapon.projectileSprite || '*', color: weapon.projectileColor || 'yellow', duration: 400, attacker, defender });
+                    // Placeholder for bullet_whiz_01.wav - could play from a point along the bullet path or near defender if it's a near miss
+                    if (window.audioManager) window.audioManager.playSoundAtLocation('ui_click_01.wav', defenderPos, {}, { volume: 0.3, maxDistance: 15 }); // Placeholder for whiz near target
+                }
+            }
+        } else if (weapon?.tags?.includes("launcher_treated_as_rifle") && weapon.explodesOnImpact) { // Launchers (rocket, grenade launcher)
+            if (window.audioManager && attackerPos) {
+                let launchSound = 'ui_error_01.wav'; // Generic loud placeholder
+                if (weapon.ammoType?.includes("rocket")) launchSound = 'ui_error_01.wav'; // Placeholder for fire_rocket_01.wav
+                else launchSound = 'ui_error_01.wav'; // Placeholder for fire_launcher_01.wav (for grenades)
+                window.audioManager.playSoundAtLocation(launchSound, attackerPos, {}, { volume: 1.0 });
+            }
+            // Animation for projectile is handled later in processAttack before explosion
+        } else if (weapon?.id === 'flamethrower') {
+            if (window.audioManager && attackerPos) {
+                window.audioManager.playSoundAtLocation('ui_error_01.wav', attackerPos, {}, { volume: 0.7, loop: false }); // Placeholder for flame_start_01.wav
+                // TODO: Manage flame_loop.wav (start/stop based on duration or continuous fire).
+                // TODO: Play flame_end_01.wav when stopping.
+            }
+            if (window.animationManager) {
+                const targetPos = this.gameState.defenderMapPos || defender?.mapPos || this.gameState.pendingCombatAction?.targetTile;
+                if (attackerPos && targetPos) window.animationManager.playAnimation('flamethrower', { attacker, targetPos, duration: 1500, particleSpawnRate: 10, particleLifetime: 500, coneAngle: Math.PI / 6, maxRange: 6 });
+            }
+        } else if (weapon && (weapon.id === 'taser' || weapon.id === 'stun_gun_melee') && defender) {
+            if (window.audioManager && attackerPos) window.audioManager.playSoundAtLocation('ui_click_01.wav', attackerPos, {}, { volume: 0.7 }); // Placeholder for taser_fire_01.wav
+            // Hit sound (taser_hit_01.wav) is in applySpecialEffect.
+            if (window.animationManager) window.animationManager.playAnimation('taser', { attacker, defender, duration: 500, isMelee: weapon.id === 'stun_gun_melee' });
+        } else if (weapon && weapon.id === 'pepper_spray' && (this.gameState.defenderMapPos || defender?.mapPos)) {
+            const sprayOrigin = attackerPos;
+            const sprayTargetPos = this.gameState.defenderMapPos || defender?.mapPos;
+            if (window.audioManager && sprayOrigin) window.audioManager.playSoundAtLocation('ui_click_01.wav', sprayOrigin, {}, { volume: 0.5 }); // Placeholder for pepper_spray_01.wav
+            if (window.animationManager) {
+                let cloudParams = { attacker, duration: 5000, activeSpawningDuration: 1000, particleSpriteOptions: ['░', '▒', '▓'], particleLifetime: 4000, expansionSpeed: 0.03, spawnRate: 15 };
+                cloudParams.centerPos = sprayOrigin;
+                cloudParams.coneDirection = sprayTargetPos ? { ...sprayTargetPos } : { x: sprayOrigin.x + 1, y: sprayOrigin.y, z: sprayOrigin.z };
+                cloudParams.maxRadius = 1.5; cloudParams.duration = 1500; cloudParams.activeSpawningDuration = 500;
+                cloudParams.particleLifetime = 1000; cloudParams.particleColor = 'orange';
+                cloudParams.particleSpriteOptions = ['*', '⁂', '※']; cloudParams.coneAngle = Math.PI / 6; cloudParams.spawnRate = 20;
+                window.animationManager.playAnimation('gasCloud', cloudParams); // Using gasCloud, needs specific pepper spray anim if different
+            }
         } else if (weapon?.id === 'acid_mild_thrown' && window.animationManager) {
+            // Throw sound was played earlier. This is for visual splash. Sizzle sound in applySpecialEffect.
             const impactPos = defender?.mapPos || this.gameState.pendingCombatAction?.targetTile;
             if (impactPos) window.animationManager.playAnimation('liquidSplash', { impactPos, duration: 800, splashSprites: ['∴', '※', '*', '.'], sizzleSprites: ['.', '◦', '.'], color: 'limegreen' });
         }
 
+
         if (actionType === "attack" && attacker === this.gameState) {
             if (this.gameState.actionPointsRemaining <= 0) { this.promptPlayerAttackDeclaration(); return; }
             this.gameState.actionPointsRemaining--; window.turnManager.updateTurnUI();
-        } else if (actionType === "grapple") { this.nextTurn(attacker); return; }
+        } else if (actionType === "grapple") {
+            // Grapple attempt sound (melee_grapple_attempt_01.wav)
+            if (window.audioManager && attackerPos) window.audioManager.playSoundAtLocation('ui_click_01.wav', attackerPos, {}, { volume: 0.6 }); // Placeholder
+            this.nextTurn(attacker); return;
+        }
+
 
         const attackerName = (attacker === this.gameState) ? "Player" : attacker.name;
         const defenderName = defender ? ((defender === this.gameState) ? "Player" : defender.name) : "Tile";
         let attackResult, defenseResult;
 
-        // --- LOS Check for NPC Attacker ---
-        if (attacker !== this.gameState && defender) { // Check LOS if attacker is NPC and there's a defender
+        if (attacker !== this.gameState && defender) {
             const npcPos = attacker.mapPos;
             const defenderPos = (defender === this.gameState) ? this.gameState.playerPos : defender.mapPos;
-
             if (npcPos && defenderPos) {
                 if (!window.hasLineOfSight3D(npcPos, defenderPos)) {
                     logToConsole(`NPC ATTACK CANCELED: ${attackerName} lost Line of Sight to ${defenderName}.`, 'orange');
-                    // NPC should ideally pick a new action here (e.g., move, find new target)
-                    // For now, just end this attack attempt and proceed to next turn segment or next turn.
-                    // This might mean the NPC does nothing if it only had 1 AP.
-                    if (this.gameState.isInCombat) {
-                        // If attacker was NPC, just proceed to next turn, as their action (attack) failed.
-                        this.nextTurn(attacker);
-                    }
-                    return; // Stop further processing of this attack
-                } else {
-                    logToConsole(`NPC ATTACK: ${attackerName} confirmed Line of Sight to ${defenderName}.`, 'grey');
-                }
+                    if (this.gameState.isInCombat) { this.nextTurn(attacker); }
+                    return;
+                } else { logToConsole(`NPC ATTACK: ${attackerName} confirmed Line of Sight to ${defenderName}.`, 'grey'); }
             }
         }
-        // --- End LOS Check ---
 
         if (attackType === 'melee' && defender) {
-            const attackerMapPos = attacker.mapPos || this.gameState.playerPos; // Includes .z
-            const defenderMapPos = defender.mapPos; // Includes .z
+            const attackerMapPos = attacker.mapPos || this.gameState.playerPos;
+            const defenderMapPos = defender.mapPos;
             if (attackerMapPos && defenderMapPos) {
-                const distance3D = getDistance3D(attackerMapPos, defenderMapPos);
-                // Melee range could be slightly more than 1 for diagonal in 3D, e.g., sqrt(1^2+1^2+1^2) approx 1.73
-                // For simplicity, let's say direct adjacency in 3D (Manhattan distance of 1 for x,y,z combined, or stricter like current)
-                // Current check is Manhattan distance > 1 on XY plane. Let's make it 3D Manhattan.
-                const manhattanDistance3D = Math.abs(attackerMapPos.x - defenderMapPos.x) +
-                    Math.abs(attackerMapPos.y - defenderMapPos.y) +
-                    Math.abs(attackerMapPos.z - defenderMapPos.z);
-                if (manhattanDistance3D > 1) { // Only allow melee if directly adjacent in 3D
-                    logToConsole(`MELEE FAIL: ${attackerName}'s attack on ${defenderName} fails (Out of Range - Dist: ${distance3D.toFixed(1)}, Manhattan: ${manhattanDistance3D}).`, 'orange');
+                const manhattanDistance3D = Math.abs(attackerMapPos.x - defenderMapPos.x) + Math.abs(attackerMapPos.y - defenderMapPos.y) + Math.abs(attackerMapPos.z - defenderMapPos.z);
+                if (manhattanDistance3D > 1) {
+                    logToConsole(`MELEE FAIL: ${attackerName}'s attack on ${defenderName} fails (Out of Range - Manhattan3D: ${manhattanDistance3D}).`, 'orange');
                     if (attacker === this.gameState) {
                         if (this.gameState.actionPointsRemaining > 0) this.promptPlayerAttackDeclaration();
                         else if (this.gameState.movementPointsRemaining > 0) this.gameState.combatPhase = 'playerPostAction';
@@ -870,31 +959,26 @@
                 }
             }
         }
-        // Pass attacker to getDefenderCoverBonus for 3D cover calculation
+
         let coverBonus = (defender && defender.mapPos && attacker && attacker.mapPos) ? this.getDefenderCoverBonus(attacker, defender) : 0;
         if (attackType === 'ranged' && weapon) {
-            const attackerMapPos = attacker.mapPos || this.gameState.playerPos; // Includes .z
-            const targetMapPos = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos; // Includes .z
+            const attackerMapPos = attacker.mapPos || this.gameState.playerPos;
+            const targetMapPos = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos;
 
             if (attackerMapPos && targetMapPos) {
-                const distance = getDistance3D(attackerMapPos, targetMapPos); // Use 3D distance
+                const distance = getDistance3D(attackerMapPos, targetMapPos);
                 actionContext.isGrappling = attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === (defender === this.gameState ? 'player' : defender?.id);
-
-                // Range modifiers based on 3D distance (these are examples, can be tuned)
-                // Effective range of weapons might be defined in weapon stats later.
-                if (distance <= 1.8) actionContext.rangeModifier = (weapon.tags?.includes("requires_grapple_for_point_blank") && defender && actionContext.isGrappling) ? 15 : (weapon.tags?.includes("requires_grapple_for_point_blank") ? 0 : 15); // Point blank
-                else if (distance <= weapon.optimalRange || 10) actionContext.rangeModifier = 5; // Optimal/Short
-                else if (distance <= weapon.effectiveRange || 30) actionContext.rangeModifier = 0; // Medium / Effective
-                else if (distance <= weapon.maxRange || 60) actionContext.rangeModifier = -5; // Long
-                else actionContext.rangeModifier = -10; // Extreme
-
-                // Weapon-specific range adjustments (example)
-                if (distance > (weapon.effectiveRange || 30)) { // If beyond effective range
+                if (distance <= 1.8) actionContext.rangeModifier = (weapon.tags?.includes("requires_grapple_for_point_blank") && defender && actionContext.isGrappling) ? 15 : (weapon.tags?.includes("requires_grapple_for_point_blank") ? 0 : 15);
+                else if (distance <= weapon.optimalRange || 10) actionContext.rangeModifier = 5;
+                else if (distance <= weapon.effectiveRange || 30) actionContext.rangeModifier = 0;
+                else if (distance <= weapon.maxRange || 60) actionContext.rangeModifier = -5;
+                else actionContext.rangeModifier = -10;
+                if (distance > (weapon.effectiveRange || 30)) {
                     let mod = 0;
                     if (weapon.type.includes("bow")) mod = -3;
-                    else if (weapon.type.includes("shotgun")) mod = -5; // Shotguns drop off faster
-                    else if (weapon.type.includes("rifle") && !weapon.tags?.includes("sniper")) mod = 0; // Rifles maintain better
-                    else if (weapon.tags?.includes("sniper")) mod = 2; // Snipers excel at range
+                    else if (weapon.type.includes("shotgun")) mod = -5;
+                    else if (weapon.type.includes("rifle") && !weapon.tags?.includes("sniper")) mod = 0;
+                    else if (weapon.tags?.includes("sniper")) mod = 2;
                     actionContext.rangeModifier += mod;
                 }
                 logToConsole(`Ranged attack: Dist3D=${distance.toFixed(1)}, RangeMod=${actionContext.rangeModifier}`, 'grey');
@@ -914,13 +998,19 @@
         if (actionContext.lightingPenaltyApplied !== 0) {
             logToConsole(`Lighting: ${attackerName}'s target is in darkness. Applying ${actionContext.lightingPenaltyApplied} penalty.`, 'orange');
         }
-        // Specific status penalty logs are now within calculateAttackRoll
 
         if (defender) {
             let defType = (defender === this.gameState ? this.gameState.playerDefenseChoice?.type : this.gameState.npcDefenseChoice) || "Dodge";
             if (defType !== "None") {
                 logToConsole(`DEFENSE: ${defenderName} (${defType} - ${defenseResult.defenseSkillName}). ` +
                     `Roll: ${defenseResult.roll} (Nat: ${defenseResult.naturalRoll}, Skill: ${defenseResult.defenseSkillValue}, Cover: +${defenseResult.coverBonusApplied}, Move: +${defenseResult.movementBonusApplied || 0}, Status: ${defenseResult.statusEffectDefensePenalty || 0})`, window.getSkillColor(defenseResult.defenseSkillName?.split(" + ")[0]));
+                // Play block sound if applicable
+                if (defType.toLowerCase().includes("block") && window.audioManager && (defender.mapPos || defender === this.gameState)) {
+                    const defenderSoundPos = defender === this.gameState ? this.gameState.playerPos : defender.mapPos;
+                    let blockSound = 'ui_click_01.wav'; // Generic placeholder
+                    // TODO: Differentiate melee_block_metal_01.wav vs melee_block_wood_01.wav based on weapon/shield
+                    window.audioManager.playSoundAtLocation(blockSound, defenderSoundPos, {}, { volume: 0.7 });
+                }
             } else logToConsole(`DEFENSE: ${defenderName} (None - Ranged). Effective defense from cover: ${defenseResult.roll}`, defender === this.gameState ? 'lightblue' : 'gold');
         }
         let hit = false;
@@ -931,9 +1021,16 @@
             else if (defenseResult.isCriticalFailure && defChoiceType !== "None") hit = true;
             else if (defenseResult.isCriticalSuccess && defChoiceType !== "None" && !attackResult.isCriticalHit) hit = false;
             else hit = attackResult.roll > defenseResult.roll;
+
+            // Critical Hit/Miss Sounds
+            if (window.audioManager && (attackerPos || defender?.mapPos)) {
+                const soundPos = attackerPos || (defender === this.gameState ? this.gameState.playerPos : defender.mapPos);
+                if (attackResult.isCriticalHit) window.audioManager.playSoundAtLocation('ui_confirm_01.wav', soundPos, {}, { volume: 0.9 }); // Placeholder for combat_crit_hit_01.wav
+                else if (attackResult.isCriticalMiss) window.audioManager.playSoundAtLocation('ui_error_01.wav', soundPos, {}, { volume: 0.7 }); // Placeholder for combat_crit_miss_01.wav
+            }
             logToConsole(hit ? `RESULT: Hit! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.` : `RESULT: Miss! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.`, hit ? (attacker === this.gameState ? 'lightgreen' : 'orange') : (attacker === this.gameState ? 'orange' : 'lightgreen'));
         } else if (weapon?.type === "weapon_thrown_explosive" || (weapon?.type === "weapon_thrown_utility")) {
-            hit = true;
+            hit = true; // For area effects, 'hit' means it lands as intended.
             logToConsole(`RESULT: ${weapon.name} lands at targeted tile.`, attacker === this.gameState ? 'lightgreen' : 'gold');
         }
 
@@ -942,31 +1039,49 @@
         }
 
         const isThrownExplosive = weapon?.type === "weapon_thrown_explosive";
-        const isImpactLauncher = weapon?.explodesOnImpact && !isThrownExplosive;
+        const isImpactLauncher = weapon?.explodesOnImpact && !isThrownExplosive; // e.g. Rocket Launcher, Grenade Launcher
         const explosiveProps = (isThrownExplosive || isImpactLauncher) ? (this.assetManager.getItem(weapon.ammoType) || weapon) : null;
         let explosionProcessed = false;
 
+        // Animation for launcher projectiles (rockets, launched grenades)
         if (isImpactLauncher && !isThrownExplosive && weapon && window.animationManager && explosiveProps?.burstRadiusFt > 0) {
-            const attackerPos = attacker.mapPos || this.gameState.playerPos;
-            const defenderPos = defender?.mapPos || this.gameState.defenderMapPos;
-            if (attackerPos && defenderPos) await window.animationManager.playAnimation('launcherProjectile', { startPos: attackerPos, endPos: defenderPos, sprite: weapon.projectileSprite || '►', color: weapon.projectileColor || 'orange', duration: 600, attacker, defender });
+            const attackerMapPos = attacker.mapPos || this.gameState.playerPos;
+            const defenderMapPos = defender?.mapPos || this.gameState.defenderMapPos; // Target of the projectile
+            if (attackerMapPos && defenderMapPos) await window.animationManager.playAnimation('launcherProjectile', { startPos: attackerMapPos, endPos: defenderMapPos, sprite: weapon.projectileSprite || '►', color: weapon.projectileColor || 'orange', duration: 600, attacker, defender });
         }
+
+        // Handle grenade bounce sound for thrown explosives before explosion
+        if (isThrownExplosive && weapon.tags?.includes("grenade") && window.audioManager) {
+            const impactTileForBounce = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || (attacker.mapPos || this.gameState.playerPos);
+            if (impactTileForBounce) window.audioManager.playSoundAtLocation('ui_click_01.wav', impactTileForBounce, {}, { volume: 0.5 }); // Placeholder for grenade_bounce_01.wav
+        }
+
 
         if (explosiveProps?.burstRadiusFt > 0) {
             let determinedImpactTile = null;
             if (isThrownExplosive) determinedImpactTile = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || (attacker.mapPos || this.gameState.playerPos);
-            else if (isImpactLauncher && hit && defender?.mapPos) determinedImpactTile = defender.mapPos;
+            else if (isImpactLauncher && hit && defender?.mapPos) determinedImpactTile = defender.mapPos; // Launcher projectile hits defender
+            else if (isImpactLauncher && !hit && this.gameState.defenderMapPos) determinedImpactTile = this.gameState.defenderMapPos; // Launcher projectile misses defender but hits tile
 
             if (determinedImpactTile) {
                 explosionProcessed = true;
                 const burstRadiusTiles = Math.ceil(explosiveProps.burstRadiusFt / 5);
                 logToConsole(`EXPLOSION: ${explosiveProps.name} detonates. Radius: ${burstRadiusTiles}t`, 'orangered');
+                if (window.audioManager) {
+                    let explosionSound = 'ui_error_01.wav'; // Default loud placeholder
+                    // TODO: Differentiate small vs large explosion based on explosiveProps or weapon tags
+                    if (burstRadiusTiles <= 2) explosionSound = 'ui_error_01.wav'; // Placeholder for explosion_small_01.wav
+                    else explosionSound = 'ui_error_01.wav'; // Placeholder for explosion_large_01.wav
+                    window.audioManager.playSoundAtLocation(explosionSound, determinedImpactTile, {}, { volume: 1.0 });
+                    // Placeholder for explosion_debris_01.wav
+                    window.audioManager.playSoundAtLocation('ui_click_01.wav', determinedImpactTile, {}, { volume: 0.6, delay: 100 }); // Delayed debris sound
+                }
                 if (window.animationManager) window.animationManager.playAnimation('explosion', { centerPos: determinedImpactTile, radius: burstRadiusTiles, duration: 1000, sourceWeapon: weapon });
                 this.getCharactersInBlastRadius(determinedImpactTile, burstRadiusTiles).forEach(char => {
                     let affectedByBlast = true;
                     const charNameForLog = char === this.gameState ? "Player" : (char.name || char.id);
                     if (isThrownExplosive && (char !== defender || (char === defender && !hit))) {
-                        if ((rollDie(20) + getStatModifier("Dexterity", char)) >= attackResult.roll) {
+                        if ((rollDie(20) + getStatModifier("Dexterity", char)) >= attackResult.roll) { // Dodge roll vs original attack roll for scatter
                             affectedByBlast = false; logToConsole(`${charNameForLog} dodged blast!`, 'lightgreen');
                         } else logToConsole(`${charNameForLog} failed to dodge blast.`, 'orange');
                     }
@@ -991,10 +1106,24 @@
             else if (attackType === 'ranged' && !isImpactLauncher) this.calculateAndApplyRangedDamage(attacker, defender, weapon, actualTargetBodyPart, hit, attackResult, numHitsCalc);
         }
 
-        if (hit && defender && weapon?.id === 'molotov_cocktail_thrown' && window.animationManager) {
+        if (hit && defender && weapon?.id === 'molotov_cocktail_thrown') {
             const impactTileMolotov = defender.mapPos || this.gameState.defenderMapPos || this.gameState.pendingCombatAction?.targetTile;
-            if (impactTileMolotov) window.animationManager.playAnimation('explosion', { centerPos: impactTileMolotov, radius: 1, explosionSprites: ['~', '≈', '*', '#'], color: 'orange', duration: 1500, sourceWeapon: weapon, attacker });
+            if (impactTileMolotov) {
+                if (window.audioManager) {
+                    window.audioManager.playSoundAtLocation('ui_error_01.wav', impactTileMolotov, {}, { volume: 0.8 }); // Placeholder for molotov_ignite_01.wav
+                    // TODO: Consider playing fire_loop_med.wav if it creates a lasting fire effect. Requires loop management.
+                }
+                if (window.animationManager) window.animationManager.playAnimation('explosion', { centerPos: impactTileMolotov, radius: 1, explosionSprites: ['~', '≈', '*', '#'], color: 'orange', duration: 1500, sourceWeapon: weapon, attacker });
+            }
+        } else if (weapon?.id === 'thermite_grenade_thrown' && hit) { // Thermite
+            const impactTileThermite = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || (attacker.mapPos || this.gameState.playerPos);
+            if (window.audioManager && impactTileThermite) {
+                // Placeholder for thermite_loop.wav (needs loop management for duration)
+                window.audioManager.playSoundAtLocation('ui_error_01.wav', impactTileThermite, {}, { volume: 0.7, loop: true, duration: 5000 }); // Long loop placeholder
+            }
+            // TODO: Add visual effect for thermite burning
         }
+
 
         if (weapon && weapon.id === "acid_mild_thrown" && weapon.splashDamage && !explosionProcessed) {
             const splashDamageAmount = parseInt(weapon.splashDamage, 10);
@@ -1008,8 +1137,10 @@
                     const splashRadiusTiles = 1;
                     const charactersInSplash = this.getCharactersInBlastRadius(impactCenterTile, splashRadiusTiles);
                     charactersInSplash.forEach(splashTarget => {
-                        if (!(hit && defender === splashTarget)) {
+                        if (!(hit && defender === splashTarget)) { // Don't double-dip damage on primary target if already hit
                             logToConsole(`${splashTarget.name || "Player"} hit by acid splash!`, 'darkgreen');
+                            // Acid sizzle for splash targets
+                            if (window.audioManager && splashTarget.mapPos) window.audioManager.playSoundAtLocation('ui_click_01.wav', splashTarget.mapPos, {}, { volume: 0.4 }); // Placeholder for acid_sizzle_01.wav
                             this.applyDamage(attacker, splashTarget, "Torso", splashDamageAmount, "Acid", { name: "Acid Splash" });
                         }
                     });
@@ -1051,6 +1182,14 @@
                 const offHandWeapon = this.gameState.inventory.handSlots[1];
                 if (offHandWeapon?.type.includes("firearm")) {
                     logToConsole(`Dual Wield: Off-hand attack with ${offHandWeapon.name}.`, 'lightgreen');
+                    // Play off-hand fire sound
+                    if (window.audioManager && attackerPos) {
+                        let offHandFireSound = 'ui_click_01.wav'; // Placeholder
+                        if (offHandWeapon.type.includes("pistol")) offHandFireSound = 'ui_click_01.wav'; // Placeholder for fire_pistol_01.wav
+                        // ... other off-hand weapon types
+                        window.audioManager.playSoundAtLocation(offHandFireSound, attackerPos, {}, { volume: 0.85 }); // Slightly different volume/pitch?
+                    }
+
                     let offHandActionCtx = { isSecondAttack: true, rangeModifier: 0, attackerMovementPenalty: actionContext.attackerMovementPenalty };
                     const attackerMPos = attacker.mapPos || this.gameState.playerPos;
                     const defenderMPosOff = defender?.mapPos;
@@ -1063,7 +1202,7 @@
                     const offHandAtkRes = this.calculateAttackRoll(attacker, offHandWeapon, intendedBodyPart, offHandActionCtx);
                     logToConsole(`DUAL WIELD ATTACK (Off-hand): Roll ${offHandAtkRes.roll} (Nat ${offHandAtkRes.naturalRoll})`, 'lightblue');
                     if (defender) {
-                        const offHandDefRes = this.calculateDefenseRoll(defender, "None", offHandWeapon, this.getDefenderCoverBonus(defender), {});
+                        const offHandDefRes = this.calculateDefenseRoll(defender, "None", offHandWeapon, this.getDefenderCoverBonus(attacker, defender), {}); // Pass attacker for 3D cover
                         logToConsole(`DUAL WIELD DEFENSE (Off-hand): Passive ${offHandDefRes.roll}`, 'gold');
                         if (offHandAtkRes.roll > offHandDefRes.roll && !offHandAtkRes.isCriticalMiss) {
                             logToConsole("DUAL WIELD HIT (Off-hand)!", 'lightgreen');
@@ -1091,7 +1230,6 @@
         this.gameState.isWaitingForPlayerCombatInput = false;
         if (this.gameState.isInCombat && this.gameState.combatCurrentAttacker === this.gameState) {
             logToConsole("Player manually ends turn.", 'lightblue');
-            // this.gameState.playerForcedEndTurnWithZeroAP = this.gameState.actionPointsRemaining === 0; // Flag is obsolete
             this.gameState.actionPointsRemaining = 0; this.gameState.movementPointsRemaining = 0;
             window.turnManager.updateTurnUI();
             this.nextTurn(this.gameState);
@@ -1112,7 +1250,7 @@
         logToConsole(`Player reloads ${weaponObject.name}.`, 'lightgreen');
         document.getElementById('attackDeclarationUI').classList.add('hidden');
         this.gameState.combatPhase = 'resolveRolls';
-        this.processAttack();
+        this.processAttack(); // This will handle the reload sound via actionType "Reload"
     }
 
     handleGrappleAttemptDeclaration() {
@@ -1127,6 +1265,10 @@
         logToConsole(`Player attempts to grapple ${this.gameState.combatCurrentDefender.name}.`, 'lightgreen');
         document.getElementById('attackDeclarationUI').classList.add('hidden');
         this.gameState.combatPhase = 'resolveGrapple';
+        // Grapple attempt sound is played at the start of processAttack if actionType is "grapple"
+        // For player, this means it's played when processGrapple calls processAttack or similar logic flow.
+        // For NPC, it would be when their AI decides to grapple.
+        // For now, let's ensure it's in processGrapple itself.
         this.processGrapple();
     }
 
@@ -1134,6 +1276,12 @@
         const attacker = this.gameState.combatCurrentAttacker;
         const defender = this.gameState.combatCurrentDefender;
         if (!attacker || !defender) { logToConsole("Error: Attacker or Defender missing for grapple.", 'red'); this.nextTurn(attacker); return; }
+
+        const attackerPos = attacker.mapPos || this.gameState.playerPos;
+        if (window.audioManager && attackerPos) {
+            window.audioManager.playSoundAtLocation('ui_click_01.wav', attackerPos, {}, { volume: 0.6 }); // Placeholder for melee_grapple_attempt_01.wav
+        }
+
         if (attacker === this.gameState) {
             if (this.gameState.actionPointsRemaining <= 0) { this.promptPlayerAttackDeclaration(); return; }
             this.gameState.actionPointsRemaining--; window.turnManager.updateTurnUI();
@@ -1142,13 +1290,19 @@
         const attackerRoll = rollDie(20) + getSkillValue("Unarmed", attacker);
         const defenderRoll = rollDie(20) + getSkillValue("Unarmed", defender);
         logToConsole(`GRAPPLE: ${(attacker === this.gameState ? "Player" : attacker.name)} rolls ${attackerRoll} vs ${defender.name}'s ${defenderRoll}.`, 'grey');
+
         if (attackerRoll > defenderRoll) {
             if (!defender.statusEffects) defender.statusEffects = {};
             defender.statusEffects.isGrappled = true;
             defender.statusEffects.grappledBy = (attacker === this.gameState) ? "player" : (attacker.id || "npc");
             logToConsole(`RESULT: Grapple Succeeded! ${defender.name} is grappled.`, 'lightgreen');
+            if (window.audioManager && attackerPos) window.audioManager.playSoundAtLocation('ui_confirm_01.wav', attackerPos, {}, { volume: 0.7 }); // Placeholder for melee_grapple_success_01.wav
             if (window.animationManager) window.animationManager.playAnimation('grapple', { attacker, defender, duration: 800 });
-        } else logToConsole("RESULT: Grapple Failed!", 'orange');
+        } else {
+            logToConsole("RESULT: Grapple Failed!", 'orange');
+            if (window.audioManager && attackerPos) window.audioManager.playSoundAtLocation('ui_error_01.wav', attackerPos, {}, { volume: 0.6 }); // Placeholder for melee_grapple_fail_01.wav
+        }
+
 
         if (attacker === this.gameState) {
             if (this.gameState.actionPointsRemaining > 0) this.promptPlayerAttackDeclaration();
@@ -1157,60 +1311,20 @@
         } else this.nextTurn(attacker);
     }
 
-    getDefenderCoverBonus(defender) {
-        let coverBonus = 0;
-        if (defender?.mapPos && defender.mapPos.z !== undefined && this.gameState.mapLevels && this.assetManager?.getTileset()) {
-            const { x, y, z } = defender.mapPos;
-            const zStr = z.toString();
-            const levelData = this.gameState.mapLevels[zStr];
-
-            if (levelData) {
-                // Define which layers on the defender's Z-level provide cover.
-                // This might need to be more sophisticated later, considering attacker's angle.
-                const layersToCheckForCover = ['building', 'item', 'landscape']; // 'object' was mentioned, ensure 'item' covers it.
-                for (const layerName of layersToCheckForCover) {
-                    const tileId = levelData[layerName]?.[y]?.[x];
-                    if (tileId) {
-                        const baseTileId = (typeof tileId === 'object' && tileId.tileId) ? tileId.tileId : tileId;
-                        const tileDef = this.assetManager.getTileset()[baseTileId];
-                        if (tileDef?.coverBonus) {
-                            coverBonus = Math.max(coverBonus, parseInt(tileDef.coverBonus, 10) || 0);
-                        }
-                    }
-                }
-            }
-        }
-        if (coverBonus > 0) logToConsole(`${defender.name || "Defender"} gets +${coverBonus} cover bonus from tile at their position. (Note: 3D cover relative to attacker not yet fully implemented)`, 'grey');
-        return coverBonus;
-    }
-
-    // Updated getDefenderCoverBonus to consider attacker's position for 3D cover
     getDefenderCoverBonus(attacker, defender) {
         if (!attacker || !attacker.mapPos || !defender || !defender.mapPos) return 0;
 
         const losLine = getLine3D(attacker.mapPos.x, attacker.mapPos.y, attacker.mapPos.z,
             defender.mapPos.x, defender.mapPos.y, defender.mapPos.z);
-        if (!losLine || losLine.length < 2) return 0; // No line or only start/end point
+        if (!losLine || losLine.length < 2) return 0;
 
         let maxCoverBonus = 0;
-
-        // Iterate LOS path, excluding start (attacker) and end (defender) points
         for (let i = 1; i < losLine.length - 1; i++) {
             const point = losLine[i];
             const tileDef = this._getTileProperties(window.mapRenderer.getCollisionTileAt(point.x, point.y, point.z));
-            // Check all layers at this point for cover
-            // This simplified check uses getCollisionTileAt which returns the first impassable tile.
-            // A more thorough check might iterate layers at point.x, point.y, point.z.
-
             if (tileDef && tileDef.coverBonus) {
-                // Potentially, if a tile provides cover, it might fully obscure, or offer partial.
-                // For now, take the highest cover bonus found along the path.
-                // More complex: accumulate cover or check if LOS is fully blocked.
                 maxCoverBonus = Math.max(maxCoverBonus, parseInt(tileDef.coverBonus, 10) || 0);
-                // If a very high cover is found, we might consider the target obscured.
-                // For now, just accumulate the highest bonus.
             }
-            // Also check the landscape layer specifically if not returned by getCollisionTileAt (e.g. a berm)
             const zStr = point.z.toString();
             const mapLevels = window.mapRenderer.getCurrentMapData()?.levels;
             if (mapLevels && mapLevels[zStr] && mapLevels[zStr].landscape) {
@@ -1223,7 +1337,6 @@
                 }
             }
         }
-
         if (maxCoverBonus > 0) {
             logToConsole(`${defender.name || "Defender"} gets +${maxCoverBonus} 3D cover bonus against ${attacker.name || "Attacker"}.`, 'grey');
         }
@@ -1231,26 +1344,19 @@
     }
 
 
-    getCharactersInBlastRadius(impactTile, burstRadiusTiles) { // impactTile should have x, y, z
+    getCharactersInBlastRadius(impactTile, burstRadiusTiles) {
         const affected = [];
-        const { x: impX, y: impY, z: impZ } = impactTile; // Expect impactTile to have x, y, z
+        const { x: impX, y: impY, z: impZ } = impactTile;
 
-        const checkEntity = (entity, entityPos) => { // entityPos should have x, y, z
+        const checkEntity = (entity, entityPos) => {
             if (!entity || !entityPos || entityPos.x === undefined || entityPos.y === undefined || entityPos.z === undefined) return;
-
-            // For a spherical blast, use 3D distance
             const distance = getDistance3D(impactTile, entityPos);
-
             if (distance <= burstRadiusTiles && entity.health?.torso?.current > 0 && entity.health?.head?.current > 0) {
                 affected.push(entity);
             }
         };
-
-        // Check player
         checkEntity(this.gameState, this.gameState.playerPos);
-        // Check NPCs
         this.gameState.npcs.forEach(npc => checkEntity(npc, npc.mapPos));
-
         logToConsole(`Blast radius check at (${impX},${impY},${impZ}) with ${burstRadiusTiles}t radius found ${affected.length} characters.`, 'grey');
         return affected;
     }
@@ -1264,6 +1370,26 @@
 
         const effectiveArmor = isPlayerVictim ? window.getArmorForBodyPart(accessKey, entity) : (entity.armor?.[accessKey] || 0);
         const reducedDamage = Math.max(0, damageAmount - effectiveArmor);
+        const soundPosition = isPlayerVictim ? this.gameState.playerPos : entity.mapPos;
+
+
+        if (reducedDamage > 0 && window.audioManager && soundPosition) {
+            if (isPlayerVictim) {
+                if (reducedDamage >= 4 || reducedDamage >= part.max * 0.4) {
+                    window.audioManager.playSoundAtLocation('ui_error_01.wav', soundPosition, {}, { volume: 0.8 }); // Placeholder for player_hurt_heavy_01.wav
+                } else {
+                    window.audioManager.playSoundAtLocation('ui_error_01.wav', soundPosition, {}, { volume: 0.5 }); // Placeholder for player_hurt_light_01.wav
+                }
+            } else { // NPC victim
+                if (reducedDamage >= 4 || reducedDamage >= part.max * 0.4) {
+                    window.audioManager.playSoundAtLocation('ui_error_01.wav', soundPosition, {}, { volume: 0.7 }); // Placeholder for npc_hurt_heavy_01.wav
+                } else {
+                    window.audioManager.playSoundAtLocation('ui_error_01.wav', soundPosition, {}, { volume: 0.4 }); // Placeholder for npc_hurt_light_01.wav
+                }
+            }
+        }
+
+
         logToConsole(`DAMAGE${bulletNum > 0 ? ` (Bullet ${bulletNum}/${totalBullets})` : ''}: ${(attacker === this.gameState ? "Player" : attacker.name)}'s ${weapon ? weapon.name : "Unarmed"} deals ${reducedDamage} ${damageType} to ${entityName}'s ${bodyPartName} (Raw: ${damageAmount}, Armor: ${effectiveArmor}).`, (attacker === this.gameState && !isPlayerVictim) ? 'orange' : 'indianred');
         part.current = Math.max(0, part.current - reducedDamage);
         logToConsole(`INFO: ${entityName} ${accessKey} HP: ${part.current}/${part.max}.`, isPlayerVictim ? 'lightblue' : 'gold');
@@ -1273,7 +1399,12 @@
             const fmtPartName = window.formatBodyPartName ? window.formatBodyPartName(accessKey) : accessKey.toUpperCase();
             if (part.inCrisis) {
                 logToConsole(`FATAL HIT: ${entityName}'s already crippled ${fmtPartName} was struck again! Character has died.`, 'darkred');
-                window.gameOver(entity);
+                if (window.audioManager && soundPosition) {
+                    const deathSound = isPlayerVictim ? 'ui_error_01.wav' : 'ui_error_01.wav'; // Placeholder for player_death_01.wav or npc_death_01.wav
+                    const deathVolume = isPlayerVictim ? 1.0 : 0.8;
+                    window.audioManager.playSoundAtLocation(deathSound, soundPosition, {}, { volume: deathVolume });
+                }
+                window.gameOver(entity); // gameOver handles player vs NPC death differentiation internally for display
             } else {
                 part.inCrisis = true; part.crisisTimer = 3; part.crisisDamageType = damageType;
                 logToConsole(`CRISIS START: ${entityName}'s ${fmtPartName} critically injured! (Timer: 3 turns).`, isPlayerVictim ? 'red' : 'orangered');
@@ -1291,17 +1422,13 @@
         this.gameState.retargetingJustHappened = false;
         this.gameState.combatCurrentDefender = null; this.gameState.defenderMapPos = null; this.gameState.selectedTargetEntity = null;
         logToConsole("Retargeting: Click new target on map.", 'lightblue');
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav
         this.promptPlayerAttackDeclaration();
         this.updateCombatUI();
     }
 
     _getTileProperties(tileId) { return tileId && this.assetManager.tilesets ? this.assetManager.tilesets[tileId] : null; }
 
-    // _isTilePassable is now effectively replaced by mapRenderer.isWalkable for consistency.
-    // isTileOccupied remains relevant.
-
-    // _npcSelectTarget was moved to npcDecisions.js as selectNpcCombatTarget
-
     async executeNpcCombatTurn(npc) {
         const npcName = npc.name || npc.id || "NPC";
         if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) {
@@ -1309,231 +1436,21 @@
             await this.nextTurn(npc);
             return;
         }
-        if (!npc.aggroList) npc.aggroList = [];
-        if (!npc.memory) {
-            npc.memory = { lastSeenTargetPos: null, lastSeenTargetTimestamp: 0, recentlyVisitedTiles: [], explorationTarget: null, lastKnownSafePos: { ...(npc.mapPos || { x: 0, y: 0, z: 0 }) } };
-        }
-        logToConsole(`NPC TURN: ${npcName} (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints})`, 'gold');
-
-        let turnEnded = false;
-        let anAttackSequenceHandledNextTurn = false;
-
-        // --- Combat Phase: NPC attempts to find and engage a target ---
-        if (this._npcSelectTarget(npc)) { // Also updates memory if target found
-            // Loop for combat actions (attack, move to attack, drop)
-            for (let iter = 0; !turnEnded && (npc.currentActionPoints > 0 || npc.currentMovementPoints > 0) && iter < 10; iter++) {
-                let currentTarget = this.gameState.combatCurrentDefender, currentTargetPos = this.gameState.defenderMapPos;
-                if (!currentTarget || currentTarget.health?.torso?.current <= 0 || currentTarget.health?.head?.current <= 0) {
-                    if (!this._npcSelectTarget(npc)) { turnEnded = true; break; }
-                    currentTarget = this.gameState.combatCurrentDefender; currentTargetPos = this.gameState.defenderMapPos;
-                    if (!currentTarget) { turnEnded = true; break; }
-                }
-
-                let actionTakenInIter = false;
-                let weaponToUse = npc.equippedWeaponId ? this.assetManager.getItem(npc.equippedWeaponId) : null;
-                let attackType = weaponToUse ? (weaponToUse.type.includes("melee") ? "melee" : (weaponToUse.type.includes("firearm") || weaponToUse.type.includes("bow") || weaponToUse.type.includes("crossbow") || weaponToUse.type.includes("weapon_ranged_other") || weaponToUse.type.includes("thrown") ? "ranged" : "melee")) : "melee";
-                const fireMode = weaponToUse?.fireModes?.includes("burst") ? "burst" : (weaponToUse?.fireModes?.[0] || "single");
-                const distanceToTarget3D = npc.mapPos && currentTargetPos ? getDistance3D(npc.mapPos, currentTargetPos) : Infinity;
-                const canAttack = (attackType === 'melee' && distanceToTarget3D <= 1.8) || (attackType === 'ranged');
-
-                if (canAttack && npc.currentActionPoints > 0) {
-                    logToConsole(`NPC ACTION: ${npcName} attacks ${currentTarget.name || "Player"} with ${weaponToUse ? weaponToUse.name : "Unarmed"}.`, 'gold');
-                    this.gameState.pendingCombatAction = { target: currentTarget, weapon: weaponToUse, attackType, bodyPart: "Torso", fireMode, actionType: "attack", entity: npc, actionDescription: `${attackType} by ${npcName}` };
-                    npc.currentActionPoints--;
-                    actionTakenInIter = true;
-                    this.gameState.combatPhase = 'defenderDeclare';
-                    this.handleDefenderActionPrompt();
-                    anAttackSequenceHandledNextTurn = true;
-                    if (this.gameState.combatPhase === 'playerDefenseDeclare') {
-                        logToConsole(`NPC ${npcName} is attacking Player. Waiting for Player's defense input. executeNpcCombatTurn returns.`, 'gold');
-                        return;
-                    }
-                    turnEnded = true;
-                    break;
-                } else if (npc.currentMovementPoints > 0) {
-                    let dropExecuted = await this._evaluateAndExecuteNpcDrop(npc);
-                    if (dropExecuted) {
-                        actionTakenInIter = true;
-                    } else {
-                        if (await this.moveNpcTowardsTarget(npc, currentTargetPos)) {
-                            actionTakenInIter = true;
-                        }
-                    }
-                }
-                if (!actionTakenInIter) turnEnded = true;
-                if (npc.currentActionPoints === 0 && npc.currentMovementPoints === 0) turnEnded = true;
-            }
-        } else {
-            // --- Exploration/Memory Phase: No direct combat target found ---
-            logToConsole(`NPC ACTION: ${npcName} no direct combat target. Considering exploration/memory or strategic waiting.`, 'gold');
-            if (npc.currentMovementPoints > 0 && npc.memory) {
-                let pathfindingTarget = null;
-                const currentTime = this.gameState.currentTime?.totalTurns || 0;
-
-                // 1. Check memory for a recent target
-                if (npc.memory.lastSeenTargetPos && (currentTime - (npc.memory.lastSeenTargetTimestamp || 0) < MEMORY_DURATION_THRESHOLD)) {
-                    if (npc.mapPos.x === npc.memory.lastSeenTargetPos.x &&
-                        npc.mapPos.y === npc.memory.lastSeenTargetPos.y &&
-                        npc.mapPos.z === npc.memory.lastSeenTargetPos.z) {
-                        logToConsole(`${npcName} is at last known target pos. Clearing memory to explore.`, 'grey');
-                        npc.memory.lastSeenTargetPos = null;
-                    } else {
-                        pathfindingTarget = npc.memory.lastSeenTargetPos;
-                        logToConsole(`${npcName} moving towards last known target pos: (${pathfindingTarget.x},${pathfindingTarget.y}, Z:${pathfindingTarget.z}) (Turn ${npc.memory.lastSeenTargetTimestamp}).`, 'gold');
-                    }
-                } else {
-                    if (npc.memory.lastSeenTargetPos) {
-                        logToConsole(`${npcName} memory of last target is stale (seen at ${npc.memory.lastSeenTargetTimestamp}, current ${currentTime}). Clearing.`, 'grey');
-                        npc.memory.lastSeenTargetPos = null;
-                    }
-                }
-
-                // 2. Continue towards current exploration target if no combat memory
-                if (!pathfindingTarget && npc.memory.explorationTarget) {
-                    if (npc.mapPos.x === npc.memory.explorationTarget.x && npc.mapPos.y === npc.memory.explorationTarget.y && npc.mapPos.z === npc.memory.explorationTarget.z) {
-                        logToConsole(`${npcName} reached previous exploration target. Clearing to find a new one.`, 'grey');
-                        npc.memory.explorationTarget = null;
-                        const arrivedKey = `${npc.mapPos.x},${npc.mapPos.y},${npc.mapPos.z}`;
-                        if (!npc.memory.recentlyVisitedTiles.includes(arrivedKey)) {
-                            npc.memory.recentlyVisitedTiles.push(arrivedKey);
-                            if (npc.memory.recentlyVisitedTiles.length > RECENTLY_VISITED_MAX_SIZE) {
-                                npc.memory.recentlyVisitedTiles.shift();
-                            }
-                        }
-                    } else {
-                        pathfindingTarget = npc.memory.explorationTarget;
-                        logToConsole(`${npcName} continuing to exploration target: (${pathfindingTarget.x},${pathfindingTarget.y}, Z:${pathfindingTarget.z})`, 'gold');
-                    }
-                }
-
-                // 3. Find new exploration target if needed
-                if (!pathfindingTarget) {
-                    logToConsole(`${npcName} needs a new exploration target.`, 'grey');
-                    let attempts = 0;
-                    const mapData = window.mapRenderer.getCurrentMapData();
-                    if (mapData && mapData.dimensions && npc.mapPos) {
-                        while (attempts < MAX_EXPLORATION_TARGET_ATTEMPTS && !pathfindingTarget) {
-                            const angle = Math.random() * 2 * Math.PI;
-                            const radius = 1 + Math.floor(Math.random() * (NPC_EXPLORATION_RADIUS - 1));
-                            const targetX = Math.max(0, Math.min(mapData.dimensions.width - 1, Math.floor(npc.mapPos.x + Math.cos(angle) * radius)));
-                            const targetY = Math.max(0, Math.min(mapData.dimensions.height - 1, Math.floor(npc.mapPos.y + Math.sin(angle) * radius)));
-                            const targetZ = npc.mapPos.z;
-
-                            const visitedKey = `${targetX},${targetY},${targetZ}`;
-                            if (window.mapRenderer.isWalkable(targetX, targetY, targetZ) &&
-                                !this.isTileOccupied(targetX, targetY, targetZ, npc.id) &&
-                                !npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
-                                pathfindingTarget = { x: targetX, y: targetY, z: targetZ };
-                                npc.memory.explorationTarget = pathfindingTarget;
-                                logToConsole(`${npcName} selected new random exploration target: (${targetX},${targetY}, Z:${targetZ})`, 'gold');
-                                break;
-                            }
-                            attempts++;
-                        }
-                    }
-                    if (!pathfindingTarget && attempts >= MAX_EXPLORATION_TARGET_ATTEMPTS) {
-                        logToConsole(`${npcName} failed to find a new random exploration target after ${attempts} attempts. Trying last known safe position.`, 'orange');
-                        if (npc.memory.lastKnownSafePos &&
-                            (npc.memory.lastKnownSafePos.x !== npc.mapPos.x ||
-                                npc.memory.lastKnownSafePos.y !== npc.mapPos.y ||
-                                npc.memory.lastKnownSafePos.z !== npc.mapPos.z)) {
-                            pathfindingTarget = npc.memory.lastKnownSafePos;
-                            logToConsole(`${npcName} will move towards last known safe position: (${pathfindingTarget.x},${pathfindingTarget.y}, Z:${pathfindingTarget.z})`, 'gold');
-                        } else {
-                            logToConsole(`${npcName} is already at its last known safe position or has no safe position. Waiting.`, 'grey');
-                        }
-                    }
-                }
-
-                // 4. Move towards the determined pathfinding target
-                if (pathfindingTarget) {
-                    if (await this.moveNpcTowardsTarget(npc, pathfindingTarget)) {
-                        npc.memory.lastKnownSafePos = { ...npc.mapPos };
-                        const visitedKey = `${npc.mapPos.x},${npc.mapPos.y},${npc.mapPos.z}`;
-                        if (!npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
-                            npc.memory.recentlyVisitedTiles.push(visitedKey);
-                            if (npc.memory.recentlyVisitedTiles.length > RECENTLY_VISITED_MAX_SIZE) {
-                                npc.memory.recentlyVisitedTiles.shift();
-                            }
-                        }
-                        if (npc.memory.explorationTarget && npc.mapPos.x === npc.memory.explorationTarget.x &&
-                            npc.mapPos.y === npc.memory.explorationTarget.y && npc.mapPos.z === npc.memory.explorationTarget.z) {
-                            logToConsole(`${npcName} reached current exploration target. Clearing it.`, 'grey');
-                            npc.memory.explorationTarget = null;
-                        }
-                    } else {
-                        logToConsole(`${npcName} could not move towards target (${pathfindingTarget.x},${pathfindingTarget.y}, Z:${pathfindingTarget.z}). Clearing exploration target if it was this one.`, 'orange');
-                        if (npc.memory.explorationTarget && npc.memory.explorationTarget.x === pathfindingTarget.x &&
-                            npc.memory.explorationTarget.y === pathfindingTarget.y && npc.memory.explorationTarget.z === pathfindingTarget.z) {
-                            npc.memory.explorationTarget = null;
-                        }
-                        if (npc.memory.lastSeenTargetPos && npc.memory.lastSeenTargetPos.x === pathfindingTarget.x &&
-                            npc.memory.lastSeenTargetPos.y === pathfindingTarget.y && npc.memory.lastSeenTargetPos.z === pathfindingTarget.z) {
-                            logToConsole(`${npcName} failed to move to lastSeenTargetPos, clearing it to prevent repeated attempts.`, 'orange');
-                            npc.memory.lastSeenTargetPos = null;
-                        }
-                    }
-                } else {
-                    logToConsole(`${npcName} has no pathfinding target (memory/exploration). Waiting this turn segment.`, 'grey');
-                }
-            } else if (npc.memory) {
-                logToConsole(`${npcName} no MP for exploration/memory movement. Waiting.`, 'grey');
-            } else {
-                logToConsole(`${npcName} has no memory object or no MP. Waiting.`, 'grey');
-            }
-            // After attempting memory/exploration movement, the NPC's turn for major actions is done in this branch.
-            // The anAttackSequenceHandledNextTurn flag will be false, so nextTurn will be called below.
-        }
-
-        if (!anAttackSequenceHandledNextTurn) {
-            logToConsole(`NPC TURN END: ${npcName} (No attack sequence initiated that would handle nextTurn, or only moved/idled). AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}. Calling nextTurn.`, 'gold');
-            await this.nextTurn(npc);
-        } else {
-            logToConsole(`NPC TURN END: ${npcName} (Attack sequence handled nextTurn OR waiting for player defense). AP Left: ${npc.currentActionPoints}, MP Left: ${npc.currentMovementPoints}.`, 'gold');
-        }
-    }
-
-    /**
-     * Main logic for an NPC's turn in combat.
-     * Handles target selection, attacking, moving towards a target, tactical drops,
-     * and exploration/memory-based movement if no combat target is found.
-     * @param {object} npc - The NPC object taking its turn.
-     */
-    async executeNpcCombatTurn(npc) {
-        const npcName = npc.name || npc.id || "NPC";
-        if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) {
-            logToConsole(`INFO: ${npcName} incapacitated. Skipping turn.`, 'orange');
-            await this.nextTurn(npc);
-            return;
-        }
-        // Ensure memory and aggroList are initialized (though primary management is in npcDecisions)
         if (!npc.memory) {
             npc.memory = { lastSeenTargetPos: null, lastSeenTargetTimestamp: 0, recentlyVisitedTiles: [], explorationTarget: null, lastKnownSafePos: { ...(npc.mapPos || { x: 0, y: 0, z: 0 }) } };
         }
         if (!npc.aggroList) npc.aggroList = [];
 
-        // Call the refactored decision-making logic in npcDecisions.js
-        // Pass `this` (the combatManager instance) to handleNpcCombatTurn
         const attackInitiated = await window.handleNpcCombatTurn(npc, this.gameState, this, this.assetManager);
 
         if (attackInitiated) {
-            // If handleNpcCombatTurn decided an attack (indicated by returning true / setting pendingCombatAction),
-            // then combatManager proceeds to defender declaration and attack resolution.
-            this.gameState.combatPhase = 'defenderDeclare'; // Ensure phase is correct
+            this.gameState.combatPhase = 'defenderDeclare';
             this.handleDefenderActionPrompt();
-            // If player is defending, handleDefenderActionPrompt will set isWaitingForPlayerCombatInput
-            // and the function will return, so nextTurn won't be called here.
-            // If NPC is defending, or it's a tile attack, processAttack will be called by handleDefenderActionPrompt,
-            // and processAttack will eventually call nextTurn.
         } else {
-            // If no attack was initiated by handleNpcCombatTurn (e.g., NPC only moved, or couldn't act),
-            // then combatManager should advance the turn.
             logToConsole(`CombatManager: NPC ${npcName} did not initiate an attack via handleNpcCombatTurn. Ending turn.`, 'grey');
             await this.nextTurn(npc);
         }
     }
-
-    // _evaluateAndExecuteNpcDrop was moved to npcDecisions.js
 
     updateCombatUI() {
         const updateElement = (id, prefix, entity) => {
@@ -1564,126 +1481,5 @@
             window.mapRenderer.scheduleRender();
         }
     }
-
-    async processNpcOutOfCombatBehavior(npc, maxMovesPerCycle = 3) {
-        const npcName = npc.name || npc.id || "NPC_OOC";
-        if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) {
-            // logToConsole(`INFO: ${npcName} incapacitated. Skipping out-of-combat behavior.`, 'grey');
-            return;
-        }
-
-        if (!npc.mapPos) {
-            // logToConsole(`INFO: ${npcName} has no mapPos. Skipping out-of-combat behavior.`, 'orange');
-            return;
-        }
-
-        if (!npc.memory) {
-            npc.memory = {
-                lastSeenTargetPos: null,
-                lastSeenTargetTimestamp: 0,
-                recentlyVisitedTiles: [],
-                explorationTarget: null,
-                lastKnownSafePos: { ...npc.mapPos }
-            };
-        }
-
-        let movesMadeThisCycle = 0;
-
-        // Determine Pathfinding Target
-        let pathfindingTarget = npc.memory.explorationTarget;
-
-        if (pathfindingTarget && npc.mapPos.x === pathfindingTarget.x && npc.mapPos.y === pathfindingTarget.y && npc.mapPos.z === pathfindingTarget.z) {
-            logToConsole(`NPC_OOC ${npcName}: Reached previous exploration target (${pathfindingTarget.x},${pathfindingTarget.y}, Z:${pathfindingTarget.z}). Clearing.`, 'cyan');
-            const visitedKey = `${npc.mapPos.x},${npc.mapPos.y},${npc.mapPos.z}`;
-            if (!npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
-                npc.memory.recentlyVisitedTiles.push(visitedKey);
-                if (npc.memory.recentlyVisitedTiles.length > RECENTLY_VISITED_MAX_SIZE) {
-                    npc.memory.recentlyVisitedTiles.shift();
-                }
-            }
-            pathfindingTarget = null;
-            npc.memory.explorationTarget = null;
-        }
-
-        if (!pathfindingTarget) {
-            let attempts = 0;
-            const mapData = window.mapRenderer.getCurrentMapData();
-            const OOC_EXPLORATION_RADIUS = NPC_EXPLORATION_RADIUS * 1.5; // Can explore a bit further when OOC
-
-            if (mapData && mapData.dimensions) {
-                while (attempts < MAX_EXPLORATION_TARGET_ATTEMPTS && !pathfindingTarget) {
-                    const angle = Math.random() * 2 * Math.PI;
-                    const radius = 2 + Math.floor(Math.random() * (OOC_EXPLORATION_RADIUS - 2)); // Min radius 2 to encourage actual movement
-                    const targetX = Math.max(0, Math.min(mapData.dimensions.width - 1, Math.floor(npc.mapPos.x + Math.cos(angle) * radius)));
-                    const targetY = Math.max(0, Math.min(mapData.dimensions.height - 1, Math.floor(npc.mapPos.y + Math.sin(angle) * radius)));
-                    const targetZ = npc.mapPos.z; // Primarily explore current Z-level
-
-                    const visitedKey = `${targetX},${targetY},${targetZ}`;
-                    if (window.mapRenderer.isWalkable(targetX, targetY, targetZ) &&
-                        !this.isTileOccupied(targetX, targetY, targetZ, npc.id) &&
-                        !npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
-                        pathfindingTarget = { x: targetX, y: targetY, z: targetZ };
-                        npc.memory.explorationTarget = pathfindingTarget;
-                        logToConsole(`NPC_OOC ${npcName}: Selected new OOC exploration target: (${targetX},${targetY}, Z:${targetZ})`, 'cyan');
-                        break;
-                    }
-                    attempts++;
-                }
-            }
-            if (!pathfindingTarget && attempts >= MAX_EXPLORATION_TARGET_ATTEMPTS) {
-                logToConsole(`NPC_OOC ${npcName}: Failed to find OOC exploration target after ${attempts} attempts. May move to safe pos or idle.`, 'grey');
-                if (npc.memory.lastKnownSafePos &&
-                    (npc.memory.lastKnownSafePos.x !== npc.mapPos.x ||
-                        npc.memory.lastKnownSafePos.y !== npc.mapPos.y ||
-                        npc.memory.lastKnownSafePos.z !== npc.mapPos.z)) {
-                    pathfindingTarget = npc.memory.lastKnownSafePos;
-                } else {
-                    // logToConsole(`NPC_OOC ${npcName}: No suitable exploration target and already at safe pos. Idling.`, 'grey');
-                }
-            }
-        }
-
-        // Execute Movement if a target is set and NPC has moves for this cycle
-        if (pathfindingTarget && movesMadeThisCycle < maxMovesPerCycle) {
-            // We need a way to limit moves within moveNpcTowardsTarget or do it step-by-step here
-            // For now, let's assume moveNpcTowardsTarget can be adapted or we simplify.
-            // Simplified: Try to move one step.
-
-            // Re-use combat movement logic for now, it needs npc.currentMovementPoints
-            // This is a temporary bridge; ideally, OOC movement wouldn't use combat MP.
-            const originalCombatMP = npc.currentMovementPoints;
-            npc.currentMovementPoints = maxMovesPerCycle - movesMadeThisCycle; // Give it budget for this cycle
-
-            if (npc.currentMovementPoints > 0) {
-                if (await this.moveNpcTowardsTarget(npc, pathfindingTarget)) {
-                    movesMadeThisCycle = (maxMovesPerCycle - movesMadeThisCycle) - npc.currentMovementPoints; // Consumed MP
-                    npc.memory.lastKnownSafePos = { ...npc.mapPos };
-                    const visitedKey = `${npc.mapPos.x},${npc.mapPos.y},${npc.mapPos.z}`;
-                    if (!npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
-                        npc.memory.recentlyVisitedTiles.push(visitedKey);
-                        if (npc.memory.recentlyVisitedTiles.length > RECENTLY_VISITED_MAX_SIZE) {
-                            npc.memory.recentlyVisitedTiles.shift();
-                        }
-                    }
-                    if (npc.memory.explorationTarget && npc.mapPos.x === npc.memory.explorationTarget.x &&
-                        npc.mapPos.y === npc.memory.explorationTarget.y && npc.mapPos.z === npc.memory.explorationTarget.z) {
-                        logToConsole(`NPC_OOC ${npcName}: Reached OOC exploration target. Clearing.`, 'cyan');
-                        npc.memory.explorationTarget = null;
-                    }
-                } else {
-                    // Failed to move (e.g. path blocked, or no path)
-                    // If it was an exploration target, clear it to avoid getting stuck
-                    if (npc.memory.explorationTarget && npc.memory.explorationTarget.x === pathfindingTarget.x &&
-                        npc.memory.explorationTarget.y === pathfindingTarget.y && npc.memory.explorationTarget.z === pathfindingTarget.z) {
-                        logToConsole(`NPC_OOC ${npcName}: Could not move towards OOC exploration target. Clearing it.`, 'orange');
-                        npc.memory.explorationTarget = null;
-                    }
-                }
-            }
-            npc.currentMovementPoints = originalCombatMP; // Restore original combat MP
-        }
-        // No explicit nextTurn call here, as this is outside the combat turn sequence.
-    }
-    // processNpcOutOfCombatBehavior was removed and moved to npcDecisions.js as handleNpcOutOfCombatTurn
 }
 window.CombatManager = CombatManager;

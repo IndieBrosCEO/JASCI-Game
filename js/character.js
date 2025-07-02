@@ -7,19 +7,37 @@
 function updateSkill(name, value, character) {
     const index = character.skills.findIndex(skill => skill.name === name);
     if (index === -1) return;
+
+    const oldPoints = character.skills[index].points; // Get old points BEFORE parsing new value
     const newValue = parseInt(value) || 0;
+
     if (newValue < 0 || newValue > 100) {
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         alert('Skill points must be between 0 and 100!');
+        // Potentially revert input field to oldPoints here if desired
         return;
     }
+
     const skills = character.skills;
-    const currentTotal = skills.reduce((sum, skill) => sum + skill.points, 0);
-    const updatedTotal = currentTotal - skills[index].points + newValue;
+    // Recalculate currentTotal without the skill being changed, then add newValue
+    const currentTotalWithoutThisSkill = skills.reduce((sum, skill, i) => {
+        if (i === index) return sum;
+        return sum + skill.points;
+    }, 0);
+    const updatedTotal = currentTotalWithoutThisSkill + newValue;
+
     if (updatedTotal > character.MAX_SKILL_POINTS) {
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         alert('Not enough skill points remaining!');
+        // Potentially revert input field to oldPoints here
         return;
     }
+
     skills[index].points = newValue;
+    if (window.audioManager && newValue !== oldPoints) { // Play confirm only if value changed
+        window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.6 }); // Placeholder for specific stat add/sub
+    }
+
     const skillPointsElement = document.getElementById('skillPoints');
     if (skillPointsElement) {
         skillPointsElement.textContent = character.MAX_SKILL_POINTS - updatedTotal;
@@ -31,12 +49,21 @@ function updateSkill(name, value, character) {
 function updateStat(name, value, character) {
     const index = character.stats.findIndex(stat => stat.name === name);
     if (index === -1) return;
+
+    const oldPoints = character.stats[index].points; // Get old points BEFORE parsing new value
     const newValue = parseInt(value) || character.MIN_STAT_VALUE;
+
     if (newValue < character.MIN_STAT_VALUE || newValue > character.MAX_STAT_VALUE) {
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         alert(`Stat points must be between ${character.MIN_STAT_VALUE} and ${character.MAX_STAT_VALUE}!`);
+        // Potentially revert input field to oldPoints here
         return;
     }
+
     character.stats[index].points = newValue;
+    if (window.audioManager && newValue !== oldPoints) { // Play confirm only if value changed
+        window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.6 }); // Placeholder for specific stat add/sub
+    }
     // Original renderCharacterInfo() was called here.
     // This might need to call a more specific update function later,
     // or the main game loop handles re-rendering.
@@ -299,6 +326,8 @@ function gameOver(character) {
     logToConsole(`GAME OVER for ${characterName}.`, 'darkred', true); // Ensure critical message is visible
 
     if (character === gameState) { // Check if the character that died is the player
+        // TODO: Play player_death_01.wav
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav', { volume: 1.0 }); // Placeholder, loud error for death
         logToConsole("Player has died. Cleaning up combat state and ending game.", 'darkred');
         gameState.gameStarted = false;
         gameState.isWaitingForPlayerCombatInput = false; // Crucial for unblocking
@@ -586,6 +615,13 @@ function calculateAndApplyFallDamage(characterOrGameState, levelsFallen) {
     }
 
     if (totalDamage <= 0) return;
+
+    // Play hard landing sound if damage is taken
+    if (window.audioManager && typeof window.audioManager.playHardLandingSound === 'function') {
+        window.audioManager.playHardLandingSound();
+        // TODO: Consider adding a specific "fall damage taken" sound: move_fall_damage_01.wav
+        // This could be played in addition to or instead of just a hard landing, if damage is significant.
+    }
 
     const health = characterOrGameState.health;
     if (!health || !health.leftLeg || !health.rightLeg) {

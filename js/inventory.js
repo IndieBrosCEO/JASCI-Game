@@ -67,10 +67,12 @@ function addItem(item) {
     }
     if (!canAddItem(item)) {
         logToConsole(`Not enough space for ${item.name}.`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Was placeholder for ui_inv_full_01.wav
         return false;
     }
     window.gameState.inventory.container.items.push(item);
     logToConsole(`Added ${item.name}.`);
+    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.5 }); // Placeholder for inventory_pickup_01.wav
     updateInventoryUI();
     return true;
 }
@@ -89,6 +91,7 @@ function removeItem(itemName) {
     }
     const [removed] = inv.splice(idx, 1);
     logToConsole(`Removed ${removed.name}.`);
+    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 }); // Placeholder for inventory_move_01.wav
     updateInventoryUI();
     return removed;
 }
@@ -98,11 +101,12 @@ function dropItem(itemName) {
         logToConsole("Inventory container not initialized or gameState not found.");
         return false;
     }
-    const removedItem = removeItem(itemName);
+    const removedItem = removeItem(itemName); // removeItem will play its "move" sound
     if (removedItem) {
         if (!window.gameState.playerPos || typeof window.gameState.playerPos.x === 'undefined' || typeof window.gameState.playerPos.y === 'undefined') {
             logToConsole("Cannot drop item: Player position is unknown.", "error");
-            addItem(removedItem);
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            addItem(removedItem); // Add item back
             return false;
         }
         if (!window.gameState.floorItems) {
@@ -114,6 +118,7 @@ function dropItem(itemName) {
             item: removedItem
         });
         logToConsole(`Dropped ${removedItem.name} on the floor at (${window.gameState.playerPos.x}, ${window.gameState.playerPos.y}).`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.6 }); // Placeholder for inventory_drop_01.wav
         if (typeof window.mapRenderer !== 'undefined' && typeof window.mapRenderer.scheduleRender === 'function') {
             window.mapRenderer.scheduleRender();
         }
@@ -122,6 +127,7 @@ function dropItem(itemName) {
         }
         return true;
     }
+    // If removedItem was null, removeItem already logged "not found" and played no sound.
     return false;
 }
 
@@ -136,29 +142,34 @@ function equipItem(itemName, handIndex) {
 
     if (itemIndex === -1) {
         logToConsole(`Item "${itemName}" not found in inventory.`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
     }
     const item = inv[itemIndex];
 
     if (item.isClothing) {
         logToConsole(`${item.name} is clothing. Use the 'Wear' action instead.`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
     }
 
     if (!item.canEquip) {
         logToConsole(`Cannot equip "${itemName}" to a hand slot.`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
     }
 
     if (window.gameState.inventory.handSlots[handIndex]) {
         logToConsole(`Hand slot ${handIndex + 1} is already occupied by ${window.gameState.inventory.handSlots[handIndex].name}.`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
     }
 
-    const equippedItem = inv.splice(itemIndex, 1)[0];
+    const equippedItem = inv.splice(itemIndex, 1)[0]; // removeItem sound will play here
     equippedItem.equipped = true; // Ensure flag is set
     window.gameState.inventory.handSlots[handIndex] = equippedItem;
     logToConsole(`Equipped ${equippedItem.name} to hand slot ${handIndex + 1}.`);
+    if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 }); // Placeholder for inventory_equip_01.wav
     updateInventoryUI();
     logToConsole(`[equipItem Debug] isInCombat: ${window.gameState.isInCombat}, combatPhase: ${window.gameState.combatPhase}`);
     if (window.gameState.isInCombat &&
@@ -179,16 +190,19 @@ function unequipItem(handIndex) {
     const slot = window.gameState.inventory.handSlots[handIndex];
     if (!slot) {
         logToConsole(`No item in hand ${handIndex + 1}.`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
     }
     if (!canAddItem(slot)) {
         logToConsole(`Not enough space to unequip ${slot.name}.`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Placeholder for ui_inv_full_01.wav
         return;
     }
     slot.equipped = false; // Ensure flag is set before returning to inventory
-    window.gameState.inventory.container.items.push(slot);
+    window.gameState.inventory.container.items.push(slot); // addItem sound plays its own sound
     window.gameState.inventory.handSlots[handIndex] = null;
     logToConsole(`Unequipped ${slot.name}.`);
+    if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 }); // Placeholder for inventory_unequip_01.wav
     updateInventoryUI();
     logToConsole(`[unequipItem Debug] isInCombat: ${window.gameState.isInCombat}, combatPhase: ${window.gameState.combatPhase}`);
     if (window.gameState.isInCombat &&
@@ -214,6 +228,7 @@ function equipClothing(itemName) {
 
     if (itemIndex === -1) {
         logToConsole(`Error: Item "${itemName}" not found in inventory.`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
     }
 
@@ -221,26 +236,30 @@ function equipClothing(itemName) {
 
     if (!item.isClothing) {
         logToConsole(`Error: "${itemName}" is not clothing and cannot be worn.`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
     }
 
     if (!item.layer || !Object.values(ClothingLayers).includes(item.layer)) {
         logToConsole(`Error: "${itemName}" has an invalid or missing clothing layer: ${item.layer}`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
     }
 
     const targetLayer = item.layer;
     if (window.gameState.player.wornClothing[targetLayer]) {
         logToConsole(`Layer ${targetLayer} is already occupied by ${window.gameState.player.wornClothing[targetLayer].name}.`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
     }
 
-    inv.splice(itemIndex, 1);
+    inv.splice(itemIndex, 1); // removeItem sound will play here
     window.gameState.player.wornClothing[targetLayer] = item;
     item.equipped = true;
     window.gameState.inventory.container.maxSlots = calculateCumulativeCapacity(window.gameState);
 
     logToConsole(`Equipped ${itemName} to ${targetLayer}.`);
+    if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 }); // Placeholder for inventory_equip_01.wav
     updateInventoryUI();
     renderCharacterInfo();
 }
@@ -248,10 +267,12 @@ function equipClothing(itemName) {
 function unequipClothing(clothingLayer) {
     if (!window.gameState.inventory.container) {
         logToConsole("Inventory container not initialized.");
+        // No sound, internal state issue
         return;
     }
     if (!clothingLayer || !window.gameState.player.wornClothing.hasOwnProperty(clothingLayer)) {
         logToConsole(`Error: Invalid clothing layer "${clothingLayer}".`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
     }
 
@@ -259,6 +280,7 @@ function unequipClothing(clothingLayer) {
 
     if (!item) {
         logToConsole(`No item to unequip from ${clothingLayer}.`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
     }
 
@@ -269,11 +291,13 @@ function unequipClothing(clothingLayer) {
 
     if (!canAddItem(item)) {
         logToConsole("Critical Warning: Not enough inventory space to unequip " + item.name + " to Body Pockets. Item is lost.");
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Placeholder for ui_inv_full_01.wav and item loss
     } else {
-        window.gameState.inventory.container.items.push(item);
+        window.gameState.inventory.container.items.push(item); // addItem sound will play here
     }
 
     logToConsole(`Unequipped ${item.name} from ${clothingLayer}.`);
+    if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 }); // Placeholder for inventory_unequip_01.wav
     updateInventoryUI();
     renderCharacterInfo();
 }
@@ -499,6 +523,15 @@ function renderInventoryMenu() {
 // 11) Toggle panel
 function toggleInventoryMenu() {
     window.gameState.inventory.open = !window.gameState.inventory.open;
+    if (window.audioManager) {
+        if (window.gameState.inventory.open) {
+            // TODO: Play ui_menu_open_01.wav
+            window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.6 });
+        } else {
+            // TODO: Play ui_menu_close_01.wav
+            window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.5 });
+        }
+    }
     const inventoryListDiv = document.getElementById("inventoryList");
     if (!inventoryListDiv) return;
 
@@ -552,13 +585,17 @@ function interactInventoryItem() {
             if (floorItemIndex > -1) {
                 window.gameState.floorItems.splice(floorItemIndex, 1);
             }
-            addItem(itemToTake);
+            addItem(itemToTake); // addItem will play its own pickup/add sound or inv_full sound
             logToConsole(`Picked up ${itemToTake.name} from the floor.`);
+            // No separate sound here as addItem handles it.
             if (typeof window.mapRenderer !== 'undefined' && typeof window.mapRenderer.scheduleRender === 'function') {
                 window.mapRenderer.scheduleRender();
             }
         } else {
             logToConsole(`Not enough space to pick up ${itemToTake.name}.`);
+            // addItem's canAddItem check would have already played ui_inv_full sound if called through a path that uses it.
+            // However, canAddItem here is checked before calling addItem. So, play inv_full sound here.
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Placeholder for ui_inv_full_01.wav
         }
 
         if (window.gameState.inventory.open) {
@@ -581,10 +618,12 @@ function interactInventoryItem() {
 
         if (canAddItem(actualItemFromContainer)) {
             container.items.splice(itemIndexInContainer, 1); // Remove from world container
-            addItem(actualItemFromContainer); // Add to player's inventory (already calls updateInventoryUI)
+            addItem(actualItemFromContainer); // addItem will play its own pickup/add sound or inv_full sound
             logToConsole(`Took ${actualItemFromContainer.name} from ${container.name}.`);
+            // No separate sound here as addItem handles it.
         } else {
             logToConsole(`Not enough space to pick up ${actualItemFromContainer.name} from ${container.name}.`);
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Placeholder for ui_inv_full_01.wav
         }
 
         if (window.gameState.inventory.open) {
@@ -620,6 +659,8 @@ function interactInventoryItem() {
 
         if (consumed) {
             logToConsole(`You consumed ${selectedDisplayItem.displayName}.`);
+            // TODO: Play consume_eat_01.wav or consume_drink_01.wav
+            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.6 }); // Using confirm as placeholder
             removeItem(selectedDisplayItem.name); // This now uses window.gameState internally
 
             if (typeof window.updatePlayerStatusDisplay === 'function') {
@@ -661,10 +702,12 @@ function interactInventoryItem() {
                 equipItem(selectedDisplayItem.name, handSlotToEquip); // This now uses window.gameState internally
             } else {
                 logToConsole(`Both hands are full. Cannot equip ${selectedDisplayItem.displayName}.`);
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             }
         } else {
             // If not consumable (already handled by new logic), not equippable, and not clothing, then describe.
             logToConsole(`You look at your ${selectedDisplayItem.displayName}: ${selectedDisplayItem.description || '(No description)'}`);
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.3 }); // Placeholder for ui_select_01.wav
         }
     }
 

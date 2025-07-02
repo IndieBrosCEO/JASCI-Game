@@ -187,6 +187,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance) 
                             character.currentMovementPoints -= cost;
                         }
                         logToConsole(`${logPrefix} Used slope '${zTransitionDef.name}' to move onto '${adjTileDefSlope.name}'. New Z: ${finalDestZSlope}. Cost: ${cost} MP.`, "green");
+                        if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for slope
                         moveSuccessful = true;
                     } else {
                         logToConsole(`${logPrefix} Cannot use slope: Destination (${targetX},${targetY},${finalDestZSlope}) occupied.`);
@@ -227,6 +228,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance) 
                             character.currentMovementPoints -= cost;
                         }
                         logToConsole(`${logPrefix} Used z_transition '${zTransitionDef.name}' to step UP onto '${targetTileAtCurrentZImpassableInfo.name}' at Z+1. Cost: ${cost} MP.`, "green");
+                        if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for Z-up
                         moveSuccessful = true;
                     } else {
                         logToConsole(`${logPrefix} Cannot step UP via z_transition: Destination (${targetX},${targetY},${targetZUp}) occupied.`);
@@ -258,6 +260,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance) 
                             character.currentMovementPoints -= cost;
                         }
                         logToConsole(`${logPrefix} Used z_transition '${zTransitionDef.name}' to step DOWN to Z-1. Cost: ${cost} MP.`, "purple");
+                        if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for Z-down
                         moveSuccessful = true;
                     } else {
                         logToConsole(`${logPrefix} Cannot step DOWN via z_transition: Destination (${targetX},${targetY},${targetZDown}) occupied.`);
@@ -268,6 +271,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance) 
             if (moveSuccessful) {
                 if (isPlayer) {
                     if (window.gameState.viewFollowsPlayerZ) window.gameState.currentViewZ = window.gameState.playerPos.z;
+                    if (window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
                     // Player specific UI updates will be handled by the caller (turnManager.js)
                 }
                 // Caller (turnManager or combatManager) will handle UI/render updates.
@@ -332,9 +336,11 @@ async function attemptCharacterMove(character, direction, assetManagerInstance) 
                         character.currentMovementPoints -= cost;
                     }
                     logToConsole(`${logPrefix} Used explicit Z-transition '${explicitZTransDefAtTarget.name}'. New Z: ${finalDestZ}. Cost: ${cost} MP.`, "cyan");
+                    if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for explicit Z-trans
                     moveSuccessful = true;
                     if (isPlayer) {
                         if (window.gameState.viewFollowsPlayerZ) window.gameState.currentViewZ = finalDestZ;
+                        if (window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
                     }
                     return true; // Move successful
                 } else {
@@ -387,6 +393,8 @@ async function attemptCharacterMove(character, direction, assetManagerInstance) 
                     character.currentMovementPoints -= cost;
                 }
                 logToConsole(`${logPrefix} Moved horizontally to (${targetX},${targetY},Z:${originalPos.z}). Cost: ${cost} MP.`);
+                if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for horizontal move
+                if (isPlayer && window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
                 moveSuccessful = true;
                 return true; // Move successful
             } else {
@@ -474,6 +482,9 @@ async function attemptCharacterMove(character, direction, assetManagerInstance) 
                         if (isPlayer) window.gameState.movementPointsRemaining = 0;
                         else character.currentMovementPoints = 0;
                     }
+                    // Listener position updated by handleFalling -> calculateAndApplyFallDamage -> which calls player UI updates that should include listener pos update.
+                    // Or more directly, handleFalling updates playerPos, then we can call updateListenerPosition.
+                    if (isPlayer && window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
                     moveSuccessful = true;
                     return true;
                 } else {

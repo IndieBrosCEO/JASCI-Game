@@ -25,6 +25,7 @@
 window.assetManager = new AssetManager(); // Explicitly assign to window
 console.log("SCRIPT.JS: window.assetManager created", window.assetManager); // Guard Log 1a
 window.animationManager = new AnimationManager(gameState); // Changed to window.animationManager
+window.audioManager = new AudioManager(); // ADDED THIS LINE
 // let currentMapData = null; // This is now managed in js/mapRenderer.js // This comment is accurate.
 
 // Game Console Elements
@@ -147,6 +148,9 @@ function calculateDefenseRoll(defender, defenseType, attackerWeapon, actionConte
 }
 
 async function handleMapSelectionChangeWrapper(mapId) { // Made async to handle map loading properly
+    // TODO: Play ui_map_select_01.wav or a general ui_select_01.wav
+    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+
     if (window.mapRenderer && typeof window.mapRenderer.handleMapSelectionChange === 'function') {
         const loadedMapData = await window.mapRenderer.handleMapSelectionChange(mapId); // assetManager.loadMap now returns .levels and .startPos.z
         if (loadedMapData) {
@@ -352,6 +356,7 @@ function handleKeyDown(event) {
     if (event.code === 'Backquote') {
         event.preventDefault();
         isConsoleOpen = !isConsoleOpen;
+        if (window.audioManager) window.audioManager.playUiSound('ui_console_toggle_01.wav');
         if (isConsoleOpen) {
             gameConsoleElement.classList.remove('hidden');
             if (typeof window.logToConsoleUI === 'function') {
@@ -373,6 +378,7 @@ function handleKeyDown(event) {
             isConsoleOpen = false;
             gameConsoleElement.classList.add('hidden');
             consoleInputElement.blur(); // Remove focus from input
+            if (window.audioManager) window.audioManager.playUiSound('ui_console_toggle_01.wav'); // Or ui_menu_close_01.wav if preferred for Esc
             return;
         }
 
@@ -386,10 +392,12 @@ function handleKeyDown(event) {
                 if (commandText) {
                     if (typeof window.processConsoleCommand === 'function') {
                         window.processConsoleCommand(commandText);
+                        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
                     } else {
                         console.error("processConsoleCommand is not defined from script.js.");
                         if (typeof window.logToConsoleUI === 'function') {
                             window.logToConsoleUI("Error: processConsoleCommand not defined!", "error");
+                            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
                         }
                     }
                     consoleInputElement.value = '';
@@ -397,6 +405,9 @@ function handleKeyDown(event) {
                     if (window.commandHistory && typeof window.historyIndex === 'number') {
                         window.historyIndex = window.commandHistory.length; // Reset history index
                     }
+                } else {
+                    // Play a softer click or nothing if no command entered
+                    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.5 });
                 }
                 return; // Processed 'Enter', stop further handling
             } else if (event.key === 'ArrowUp') {
@@ -407,6 +418,8 @@ function handleKeyDown(event) {
                     }
                     consoleInputElement.value = window.commandHistory[window.historyIndex] || '';
                     consoleInputElement.setSelectionRange(consoleInputElement.value.length, consoleInputElement.value.length);
+                    // TODO: Play ui_scroll_01.wav
+                    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
                 }
                 return; // Processed 'ArrowUp', stop further handling
             } else if (event.key === 'ArrowDown') {
@@ -420,6 +433,8 @@ function handleKeyDown(event) {
                         consoleInputElement.value = '';
                     }
                     consoleInputElement.setSelectionRange(consoleInputElement.value.length, consoleInputElement.value.length);
+                    // TODO: Play ui_scroll_01.wav
+                    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
                 }
                 return; // Processed 'ArrowDown', stop further handling
             } else if (event.key === 'Tab') {
@@ -427,11 +442,15 @@ function handleKeyDown(event) {
                 // Future: Implement tab completion if desired
                 // For now, just logs or does nothing.
                 // window.logToConsoleUI("Tab completion not yet implemented.", "info");
+                // TODO: Play a soft click or specific tab sound if implemented
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.3 });
             }
             // For other keys (alphanumeric, space, backspace, etc.),
             // allow default behavior so user can type in the input field.
             // No event.preventDefault() for these.
-            // The final 'return' for the 'isConsoleOpen' block handles stopping game actions.
+            // TODO: Play ui_type_01.wav on keydown/keypress for typing in console
+            // This might be too noisy if played for every char, consider on first char of a word or debounced.
+            // if (window.audioManager && event.key.length === 1) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.2 }); // Placeholder for ui_type_01.wav
 
         } else {
             // If console is open but focus is not on input (e.g. user clicked outside)
@@ -442,7 +461,7 @@ function handleKeyDown(event) {
 
     // Toggle Keybinds Display
     if (event.key === 'h' || event.key === 'H') {
-        toggleKeybindsDisplay();
+        toggleKeybindsDisplay(); // toggleKeybindsDisplay will handle its own sound
         event.preventDefault();
         return;
     }
@@ -452,12 +471,20 @@ function handleKeyDown(event) {
         event.preventDefault();
         if (gameState.isInCombat) {
             logToConsole("Cannot wait during combat.", "orange");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             return;
         }
 
+        // Click for initiating the action
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+        // TODO: Ideally, a ui_menu_open_01.wav when the prompt appears, but native prompt is hard to hook.
+
         const hoursToWaitStr = prompt("How many hours to wait? (1-24)", "1");
+
         if (hoursToWaitStr === null) { // User pressed cancel
             logToConsole("Wait cancelled.", "info");
+            // TODO: Play ui_menu_close_01.wav or a general cancel sound
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
             return;
         }
 
@@ -465,9 +492,12 @@ function handleKeyDown(event) {
 
         if (isNaN(hoursToWait) || hoursToWait < 1 || hoursToWait > 24) {
             logToConsole("Invalid number of hours. Please enter a number between 1 and 24.", "error");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             return;
         }
 
+        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+        // TODO: Also play move_wait_01.wav here when available, if distinct from general confirm.
         logToConsole(`Waiting for ${hoursToWait} hour(s)...`, "info");
         const ticksToWait = hoursToWait * 30; // 1 hour = 60 minutes / 2 minutes/tick = 30 ticks
 
@@ -499,6 +529,7 @@ function handleKeyDown(event) {
         if (attackDeclUI && !attackDeclUI.classList.contains('hidden')) {
             attackDeclUI.classList.add('hidden');
             logToConsole("Attack declaration cancelled.");
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_menu_close_01.wav
             event.preventDefault();
             return;
         }
@@ -509,6 +540,7 @@ function handleKeyDown(event) {
         gameState.isTargetingMode = false;
         gameState.targetingType = null;
         logToConsole("Exited targeting mode.");
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_menu_close_01.wav (target mode cancelled)
         window.mapRenderer.scheduleRender(); // Re-render to remove targeting UI if any
         event.preventDefault();
         return;
@@ -519,6 +551,8 @@ function handleKeyDown(event) {
         if (event.key === 'Escape') { // Note: This Escape is for combat, different from targeting mode Escape
             logToConsole("Attempting to end combat with Escape key.");
             combatManager.endCombat(); // Use CombatManager's method to end combat
+            // TODO: Consider a specific "combat end" sound if different from general menu close
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
             event.preventDefault();
             return;
         }
@@ -797,7 +831,9 @@ function handleKeyDown(event) {
     switch (event.key) {
         case 'f': case 'F':
             if (gameState.isTargetingMode) {
-                gameState.targetConfirmed = true;
+                // Sound for confirming target is complex because of LOS check below.
+                // It should play *after* LOS success.
+                gameState.targetConfirmed = true; // This flag might be premature before LOS
                 logToConsole(`Target confirmed at: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}`);
                 logToConsole(`Targeting type: ${gameState.targetingType}`);
 
@@ -828,14 +864,16 @@ function handleKeyDown(event) {
 
                 if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos, currentTilesets, currentMapData)) {
                     logToConsole(`No line of sight to target at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). Select another target.`, "orange");
+                    if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
                     event.preventDefault();
                     return;
                 }
 
                 // LOS is clear, proceed with target confirmation
-                gameState.targetConfirmed = true;
+                gameState.targetConfirmed = true; // This confirms the target for combat logic
                 logToConsole(`Target confirmed with LOS at: X=${finalTargetPos.x}, Y=${finalTargetPos.y}, Z=${finalTargetPos.z}`);
                 logToConsole(`Targeting type: ${gameState.targetingType}`);
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Using ui_confirm as ui_target_confirm is not available
 
 
                 if (gameState.selectedTargetEntity) {
@@ -896,10 +934,10 @@ function handleKeyDown(event) {
                 event.preventDefault();
 
             } else if (gameState.isActionMenuActive) {
-                performSelectedAction();
+                performSelectedAction(); // Sound for confirm is in performSelectedAction or called by it
                 event.preventDefault();
             } else if (gameState.selectedItemIndex !== -1) {
-                window.interaction.interact();
+                window.interaction.interact(); // Sound for opening action list is in interact() or called by it
                 event.preventDefault();
             }
             // If none of the above, let the event propagate or do nothing.
@@ -911,12 +949,14 @@ function handleKeyDown(event) {
                 gameState.isTargetingMode = false;
                 gameState.targetingType = null;
                 logToConsole("Exited ranged targeting mode.");
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav (toggled off)
                 window.mapRenderer.scheduleRender(); // Re-render
             } else {
                 gameState.isTargetingMode = true;
                 gameState.targetingType = 'ranged';
                 gameState.targetingCoords = { ...gameState.playerPos }; // Initialize to player's position
                 logToConsole("Entering ranged targeting mode.");
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav (toggled on)
                 logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}`);
                 window.mapRenderer.scheduleRender(); // Re-render
             }
@@ -928,19 +968,21 @@ function handleKeyDown(event) {
                 gameState.isTargetingMode = false;
                 gameState.targetingType = null;
                 logToConsole("Exited melee targeting mode.");
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav (toggled off)
                 window.mapRenderer.scheduleRender(); // Re-render
             } else {
                 gameState.isTargetingMode = true;
                 gameState.targetingType = 'melee';
                 gameState.targetingCoords = { ...gameState.playerPos }; // Initialize to player's position
                 logToConsole("Entering melee targeting mode.");
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav (toggled on)
                 logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}`);
                 window.mapRenderer.scheduleRender(); // Re-render
             }
             event.preventDefault(); break;
         case 'Escape': // This Escape is for cancelling action menu, different from targeting/combat Escapes
             if (gameState.isActionMenuActive) {
-                window.interaction.cancelActionSelection();
+                window.interaction.cancelActionSelection(); // cancelActionSelection should play its own sound
                 event.preventDefault();
             }
             // Note: If not isActionMenuActive, this Escape might have been handled by targeting or combat logic already.
@@ -950,7 +992,7 @@ function handleKeyDown(event) {
         case '1': case '2': case '3': case '4':
         case '5': case '6': case '7': case '8': case '9':
             if (gameState.isActionMenuActive) {
-                window.interaction.selectAction(parseInt(event.key, 10) - 1);
+                window.interaction.selectAction(parseInt(event.key, 10) - 1); // selectAction should play its own sound
                 event.preventDefault();
             }
             // If not in action menu, these keys might be caught by the earlier block for item selection if not in targeting mode.
@@ -975,6 +1017,9 @@ function checkAndHandlePortal(newX, newY) {
 
     if (portal) {
         logToConsole(`Player stepped on portal to ${portal.targetMapId} at (${portal.targetX}, ${portal.targetY})`);
+        // TODO: Play a sound indicating portal activation or prompt appearance (e.g., ui_menu_open_01.wav or a mystical sound)
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.6 }); // Placeholder
+
         gameState.awaitingPortalConfirmation = true;
         gameState.portalPromptActive = true; // Set flag before showing prompt
 
@@ -983,9 +1028,13 @@ function checkAndHandlePortal(newX, newY) {
         setTimeout(() => {
             const travel = window.confirm(`You've stepped on a portal to '${portal.targetMapId || 'an unnamed map'}'. Do you want to travel to (X:${portal.targetX}, Y:${portal.targetY})?`);
             if (travel) {
+                // TODO: Play ui_portal_confirm_01.wav
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.8 }); // Placeholder
                 initiateMapTransition(portal.targetMapId, portal.targetX, portal.targetY);
             } else {
                 logToConsole("Portal travel declined.");
+                // TODO: Play ui_menu_close_01.wav or a general cancel sound
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
                 gameState.awaitingPortalConfirmation = false;
             }
             // Reset prompt active flag regardless of choice, after a short delay to prevent re-triggering
@@ -1128,6 +1177,12 @@ function toggleKeybindsDisplay() {
     gameState.showKeybinds = !gameState.showKeybinds;
     const displayDiv = document.getElementById('keybindsDisplay');
     if (!displayDiv) return;
+
+    // Sound is played in handleKeyDown for 'h' key.
+    // If called directly, we can add it here too, or assume keydown is the primary trigger.
+    // For now, let's add it for direct calls to be safe.
+    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+
 
     if (gameState.showKeybinds) {
         displayDiv.style.display = 'block';
@@ -1342,6 +1397,7 @@ async function initialize() { // Made async
     const confirmButton = document.getElementById('confirmAttackButton');
     if (confirmButton) {
         confirmButton.addEventListener('click', () => {
+            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
             // Check if combat is active, it's player's turn, and player is in attack declaration phase
             if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
                 combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
@@ -1366,6 +1422,7 @@ async function initialize() { // Made async
     const grappleButton = document.getElementById('attemptGrappleButton');
     if (grappleButton) {
         grappleButton.addEventListener('click', () => {
+            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
             if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
                 combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
                 combatManager.gameState.combatPhase === 'playerAttackDeclare') {
@@ -1389,6 +1446,7 @@ async function initialize() { // Made async
     const confirmDefenseBtn = document.getElementById('confirmDefenseButton');
     if (confirmDefenseBtn) {
         confirmDefenseBtn.addEventListener('click', () => {
+            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
             if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
                 combatManager.gameState.combatCurrentDefender === combatManager.gameState && // Player is defending
                 combatManager.gameState.combatPhase === 'playerDefenseDeclare') {
@@ -1412,6 +1470,8 @@ async function initialize() { // Made async
     const retargetBtn = document.getElementById('retargetButton');
     if (retargetBtn) {
         retargetBtn.addEventListener('click', () => {
+            // TODO: Play ui_click_01.wav or a specific retarget sound
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
             if (gameState.isInCombat && gameState.combatPhase === 'playerAttackDeclare' && combatManager) {
                 combatManager.handleRetarget();
             }
@@ -1425,6 +1485,9 @@ async function initialize() { // Made async
  * Start Game
  **************************************************************/
 function startGame() {
+    // TODO: Play ui_start_game_01.wav
+    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.8 }); // A bit louder for game start
+
     const characterCreator = document.getElementById('character-creator');
     const characterInfoPanel = document.getElementById('character-info-panel');
     // const gameControls = document.getElementById('game-controls'); // This ID does not exist in index.html right-panel is used.

@@ -17,8 +17,11 @@ function logToConsoleUI(message, type = 'info') {
 
     if (type === 'error') {
         entry.style.color = 'red';
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
     } else if (type === 'success') {
         entry.style.color = 'lightgreen';
+        // Potentially a soft success ping: ui_confirm_01.wav with low volume or a specific "notification" sound
+        // if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', {volume: 0.4});
     } else if (type === 'echo') {
         entry.style.color = 'lightblue'; // For command echoes
     } else if (type === 'info') {
@@ -380,6 +383,7 @@ function processConsoleCommand(commandText) {
             gameState.currentViewZ = targetZ;
             gameState.viewFollowsPlayerZ = true;
 
+            if (window.audioManager) window.audioManager.updateListenerPosition(gameState.playerPos.x, gameState.playerPos.y, gameState.playerPos.z);
 
             logToConsoleUI(`Player teleported to (${targetX}, ${targetY}, Z:${targetZ}). View synced.`, 'success'); // Direct call
 

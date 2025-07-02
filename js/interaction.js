@@ -164,9 +164,12 @@ function _performAction(action, it) {
             if (window.mapRenderer.isWalkable(x, y, targetZ)) {
                 gameState.playerPos = { x: x, y: y, z: targetZ }; // Player moves to the ladder's X,Y at the new Z
                 if (gameState.viewFollowsPlayerZ) gameState.currentViewZ = targetZ;
+                if (window.audioManager) window.audioManager.playClimbSound();
                 logToConsole(`Climbed up the ${tileName} to Z:${targetZ}.`);
             } else {
                 logToConsole(`Cannot climb up: The destination space at the top of the ${tileName} (X:${x}, Y:${y}, Z:${targetZ}) is blocked or not walkable.`);
+                // TODO: Play ui_error_01.wav for failed climb attempt?
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             }
         }
     } else if (action === "Climb Down") {
@@ -176,9 +179,12 @@ function _performAction(action, it) {
             if (window.mapRenderer.isWalkable(x, y, targetZ)) {
                 gameState.playerPos = { x: x, y: y, z: targetZ };
                 if (gameState.viewFollowsPlayerZ) gameState.currentViewZ = targetZ;
+                if (window.audioManager) window.audioManager.playClimbSound();
                 logToConsole(`Climbed down the ${tileName} to Z:${targetZ}.`);
             } else {
                 logToConsole(`Cannot climb down: The space below (Z:${targetZ}) is blocked or not walkable.`);
+                // TODO: Play ui_error_01.wav for failed climb attempt?
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             }
         }
     }
@@ -323,6 +329,7 @@ window.interaction = {
     selectItem: function (idx) {
         if (idx >= 0 && gameState.interactableItems && idx < gameState.interactableItems.length) {
             gameState.selectedItemIndex = idx;
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.5 }); // Placeholder for ui_select_01.wav
             this.showInteractableItems();
             window.mapRenderer.updateMapHighlight(); // Assumes mapRenderer is global
         }
@@ -334,6 +341,7 @@ window.interaction = {
         const actions = actionList.children;
         if (number >= 0 && number < actions.length) {
             gameState.selectedActionIndex = number;
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.5 }); // Placeholder for ui_select_01.wav
             Array.from(actions).forEach((action, index) => {
                 action.classList.toggle('selected', index === gameState.selectedActionIndex);
             });
@@ -344,6 +352,8 @@ window.interaction = {
         if (gameState.selectedItemIndex === -1 ||
             !gameState.interactableItems ||
             gameState.selectedItemIndex >= gameState.interactableItems.length) return;
+
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.6 }); // Placeholder for ui_actionlist_open_01.wav
 
         const item = gameState.interactableItems[gameState.selectedItemIndex];
         const actions = _getActionsForItem(item); // Use internal helper
@@ -376,19 +386,25 @@ window.interaction = {
         logToConsole(`Performing action: ${actionText} on ${item.id} at (${item.x}, ${item.y})`); // Assumes logToConsole global
 
         if (actionText === "Cancel") {
+            // Cancel sound will be played by cancelActionSelection, called below
             _performAction(actionText, item); // Use internal helper
         } else if (gameState.actionPointsRemaining > 0) {
             gameState.actionPointsRemaining--;
+            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
             // updateTurnUI is still in script.js and global for now
             if (window.turnManager && typeof window.turnManager.updateTurnUI === 'function') { window.turnManager.updateTurnUI(); } else { console.error("window.turnManager.updateTurnUI is not available."); }
             _performAction(actionText, item); // Use internal helper
         } else {
             logToConsole("No actions left for this turn.");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         }
-        this.cancelActionSelection();
+        this.cancelActionSelection(); // This will play the close/cancel sound
     },
 
     cancelActionSelection: function () {
+        if (window.audioManager && gameState.isActionMenuActive) { // Only play if menu was actually active
+            window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.5 }); // Placeholder for ui_menu_close_01.wav
+        }
         gameState.isActionMenuActive = false;
         const actionList = document.getElementById('actionList');
         if (actionList) actionList.innerHTML = '';

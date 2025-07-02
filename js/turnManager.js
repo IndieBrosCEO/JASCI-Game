@@ -37,10 +37,14 @@ function dash_internal() {
         gameState.movementPointsRemaining += 6;
         gameState.hasDashed = true;
         gameState.actionPointsRemaining--;
+        // TODO: Play move_dash_01.wav
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.7 }); // Placeholder for dash
         logToConsole(`Dashing activated. Moves now: ${gameState.movementPointsRemaining}, Actions left: ${gameState.actionPointsRemaining}`);
         updateTurnUI_internal();
     } else {
         logToConsole("Already dashed this turn or no actions left.");
+        // TODO: Play ui_error_01.wav if attempting to dash without AP or already dashed
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
     }
 }
 
