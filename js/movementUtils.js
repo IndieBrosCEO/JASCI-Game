@@ -189,6 +189,16 @@ async function attemptCharacterMove(character, direction, assetManagerInstance) 
                         logToConsole(`${logPrefix} Used slope '${zTransitionDef.name}' to move onto '${adjTileDefSlope.name}'. New Z: ${finalDestZSlope}. Cost: ${cost} MP.`, "green");
                         if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for slope
                         moveSuccessful = true;
+                        if (isPlayer) {
+                            if (window.gameState.viewFollowsPlayerZ) {
+                                window.gameState.currentViewZ = window.gameState.playerPos.z;
+                            }
+                            if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
+                                const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
+                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                            }
+                            // updatePlayerStatusDisplay() is called in turnManager.move after attemptCharacterMove returns
+                        }
                     } else {
                         logToConsole(`${logPrefix} Cannot use slope: Destination (${targetX},${targetY},${finalDestZSlope}) occupied.`);
                     }
@@ -230,6 +240,15 @@ async function attemptCharacterMove(character, direction, assetManagerInstance) 
                         logToConsole(`${logPrefix} Used z_transition '${zTransitionDef.name}' to step UP onto '${targetTileAtCurrentZImpassableInfo.name}' at Z+1. Cost: ${cost} MP.`, "green");
                         if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for Z-up
                         moveSuccessful = true;
+                        if (isPlayer) {
+                            if (window.gameState.viewFollowsPlayerZ) {
+                                window.gameState.currentViewZ = window.gameState.playerPos.z;
+                            }
+                            if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
+                                const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
+                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                            }
+                        }
                     } else {
                         logToConsole(`${logPrefix} Cannot step UP via z_transition: Destination (${targetX},${targetY},${targetZUp}) occupied.`);
                     }
@@ -262,6 +281,15 @@ async function attemptCharacterMove(character, direction, assetManagerInstance) 
                         logToConsole(`${logPrefix} Used z_transition '${zTransitionDef.name}' to step DOWN to Z-1. Cost: ${cost} MP.`, "purple");
                         if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for Z-down
                         moveSuccessful = true;
+                        if (isPlayer) {
+                            if (window.gameState.viewFollowsPlayerZ) {
+                                window.gameState.currentViewZ = window.gameState.playerPos.z;
+                            }
+                            if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
+                                const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
+                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                            }
+                        }
                     } else {
                         logToConsole(`${logPrefix} Cannot step DOWN via z_transition: Destination (${targetX},${targetY},${targetZDown}) occupied.`);
                     }
@@ -339,8 +367,14 @@ async function attemptCharacterMove(character, direction, assetManagerInstance) 
                     if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for explicit Z-trans
                     moveSuccessful = true;
                     if (isPlayer) {
-                        if (window.gameState.viewFollowsPlayerZ) window.gameState.currentViewZ = finalDestZ;
+                        if (window.gameState.viewFollowsPlayerZ) {
+                            window.gameState.currentViewZ = window.gameState.playerPos.z; // playerPos.z IS finalDestZ here
+                        }
                         if (window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
+                        if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
+                            const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
+                            window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                        }
                     }
                     return true; // Move successful
                 } else {
@@ -396,6 +430,13 @@ async function attemptCharacterMove(character, direction, assetManagerInstance) 
                 if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for horizontal move
                 if (isPlayer && window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
                 moveSuccessful = true;
+                if (isPlayer) {
+                    // For horizontal moves, playerPos.z doesn't change, so currentViewZ doesn't need update based on viewFollowsPlayerZ here.
+                    if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
+                        const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
+                        window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                    }
+                }
                 return true; // Move successful
             } else {
                 logToConsole(`${logPrefix} Not enough MP for horizontal move. Need ${cost}, have ${currentMP}.`);
@@ -486,6 +527,15 @@ async function attemptCharacterMove(character, direction, assetManagerInstance) 
                     // Or more directly, handleFalling updates playerPos, then we can call updateListenerPosition.
                     if (isPlayer && window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
                     moveSuccessful = true;
+                    if (isPlayer) {
+                        if (window.gameState.viewFollowsPlayerZ) {
+                            window.gameState.currentViewZ = window.gameState.playerPos.z; // Player Z has changed due to fall
+                        }
+                        if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
+                            const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
+                            window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                        }
+                    }
                     return true;
                 } else {
                     logToConsole(`${logPrefix} Fall check initiated, but initiateFallCheck reported no fall occurred. This is unexpected.`, "orange");

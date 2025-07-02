@@ -631,91 +631,17 @@ function hasLineOfSight3D(startPos, endPos, tilesetsData, mapDataFromCaller) { /
         return true;
     }
 
-    // Iterate through each segment of the line (from point i to point i+1)
-    for (let i = 0; i < line.length - 1; i++) {
-        const p1 = line[i];
-        const p2 = line[i + 1];
-
-        // Check for same-Z obstruction at p1, unless p1 is the very start of the LOS line.
-        // The point p1 is an intermediate point along the path.
-        if (i > 0) { // Do not check the startPos (line[0]) itself for blocking vision with isTileBlockingVision
-            if (window.mapRenderer.isTileBlockingVision(p1.x, p1.y, p1.z)) {
-                // logToConsole(`LOS blocked by same-Z obstruction at P1:(${p1.x},${p1.y},${p1.z})`);
-                return false;
-            }
-        }
-
-        // Check for inter-Z blocking (floors/ceilings) between p1 and p2
-        if (p1.z !== p2.z) { // Z-level changes between p1 and p2
-            let higherTile;
-            if (p1.z > p2.z) { // p1 is above p2
-                higherTile = p1;
-                // lowerTile = p2; // Not directly used in new logic
-            } else { // p2 is above p1
-                higherTile = p2;
-                // lowerTile = p1; // Not directly used
-            }
-
-            const higherLevelData = mapData.levels[higherTile.z.toString()];
-            if (!higherLevelData) { // If the higher Z-level doesn't exist (e.g. looking up into void from below map)
-                // This is open air, does not block LOS.
-                continue; // Check next segment
-            }
-
-            let tileBlocksInterZVision = true; // Assume blocking unless proven otherwise
-
-            // Scenario 1: Check middle layer of higherTile
-            const tileOnMiddleRawHigher = higherLevelData.middle?.[higherTile.y]?.[higherTile.x];
-            const effTileMiddleHigher = (typeof tileOnMiddleRawHigher === 'object' && tileOnMiddleRawHigher?.tileId !== undefined) ? tileOnMiddleRawHigher.tileId : tileOnMiddleRawHigher;
-
-            if (effTileMiddleHigher && tilesets[effTileMiddleHigher]) {
-                const defMiddleHigher = tilesets[effTileMiddleHigher];
-                if (defMiddleHigher.tags &&
-                    (defMiddleHigher.tags.includes('transparent') ||
-                        defMiddleHigher.tags.includes('allows_vision') ||
-                        defMiddleHigher.tags.includes('transparent_ceiling'))) { // Added 'transparent_ceiling'
-                    tileBlocksInterZVision = false;
-                }
-                // If it has a definition and is not explicitly transparent for inter-Z, it blocks.
-                // This is implicitly handled by tileBlocksInterZVision starting as true.
-            } else if (!effTileMiddleHigher || effTileMiddleHigher === "") {
-                // Middle layer is empty. Vision passes through it to check bottom layer.
-                tileBlocksInterZVision = false; // Tentatively non-blocking, bottom layer will confirm
-            }
-            // If tileOnMiddleRawHigher exists but no definition, it's an unknown tile, assume it blocks (tileBlocksInterZVision remains true).
-
-
-            // Scenario 2: If middle layer didn't block (or was empty), check bottom layer of higherTile
-            if (!tileBlocksInterZVision) { // Only check bottom if middle was transparent or empty
-                tileBlocksInterZVision = true; // Reset for bottom layer check, assume blocking
-                const tileOnBottomRawHigher = higherLevelData.bottom?.[higherTile.y]?.[higherTile.x];
-                const effTileBottomHigher = (typeof tileOnBottomRawHigher === 'object' && tileOnBottomRawHigher?.tileId !== undefined) ? tileOnBottomRawHigher.tileId : tileOnBottomRawHigher;
-
-                if (effTileBottomHigher && tilesets[effTileBottomHigher]) {
-                    const defBottomHigher = tilesets[effTileBottomHigher];
-                    if (defBottomHigher.tags &&
-                        (defBottomHigher.tags.includes('transparent') ||
-                            defBottomHigher.tags.includes('allows_vision') ||
-                            defBottomHigher.tags.includes('transparent_floor') ||
-                            defBottomHigher.tags.includes('transparent_bottom'))) {
-                        tileBlocksInterZVision = false;
-                    }
-                    // If it has a definition and is not explicitly transparent for inter-Z, it blocks.
-                } else if (!effTileBottomHigher || effTileBottomHigher === "") {
-                    // Bottom layer is also empty. This means the entire higherTile cell is empty.
-                    tileBlocksInterZVision = false;
-                }
-                // If tileOnBottomRawHigher exists but no definition, it's an unknown tile, assume it blocks.
-            }
-
-            if (tileBlocksInterZVision) {
-                // logToConsole(`LOS blocked by inter-Z tile at (${higherTile.x},${higherTile.y},${higherTile.z})`);
-                return false; // Blocked by a non-transparent part of the higher tile.
-            }
+    // Iterate through each point in the line, starting from the second point (index 1).
+    // The first point (index 0) is the startPos itself.
+    // The loop will include the endPos.
+    for (const point of line.slice(1)) {
+        if (window.mapRenderer.isTileBlockingVision(point.x, point.y, point.z, startPos.z)) {
+            // logToConsole(`LOS blocked at:(${point.x},${point.y},${point.z}) by tile, viewer at Z=${startPos.z}`);
+            return false;
         }
     }
 
-    // If loop completes, no obstructions found along the path segments.
+    // If the loop completes, no obstructions were found.
     return true;
 }
 window.hasLineOfSight3D = hasLineOfSight3D;

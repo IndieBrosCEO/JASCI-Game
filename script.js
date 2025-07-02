@@ -175,6 +175,7 @@ async function handleMapSelectionChangeWrapper(mapId) { // Made async to handle 
             window.mapRenderer.scheduleRender();
             window.interaction.detectInteractableItems();
             window.interaction.showInteractableItems();
+            // FOW calculation moved to startGame or player move
             logToConsole(`Map ${loadedMapData.name} processed in wrapper.`);
         } else {
             logToConsole(`Map loading failed for ${mapId} in wrapper, no NPC spawning.`);
@@ -1272,6 +1273,7 @@ async function initialize() { // Made async
                 }
                 console.log("Initial map loaded:", loadedMapData.name, "ID:", gameState.currentMapId, "Player Z:", gameState.playerPos.z);
                 spawnNpcsFromMapData(loadedMapData);
+                // FOW calculation moved to startGame
             } else {
                 console.error(`Failed to load initial map: ${initialMapId}`);
                 gameState.npcs = [];
@@ -1691,6 +1693,10 @@ function startGame() {
     if (window.mapRenderer.getCurrentMapData()) { // Only run these if a map is loaded
         window.interaction.detectInteractableItems();
         window.interaction.showInteractableItems();
+        if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function' && gameState.playerPos) {
+            const PLAYER_VISION_RADIUS_CONST = 10; // TODO: Centralize this constant
+            window.mapRenderer.updateFOW_BFS(gameState.playerPos.x, gameState.playerPos.y, gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+        }
     }
     window.turnManager.startTurn();
     runConsumableAndNeedsTest(); // Added call to the test function
