@@ -64,7 +64,7 @@ button {
 
 /* Left column: Character Creator/Info */
 #left-panel {
-    width: 300px;
+    width: 400px; /* Increased from 300px */
     background-color: #222;
     color: #fff;
     padding: 10px;
@@ -151,3 +151,130 @@ th, td {
     vertical-align: top;
     pointer-events: auto; /* if you want to click on tiles */
 }
+
+/* Face Creator Panel Styles */
+#face-creator-panel {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #444;
+}
+
+    #face-creator-panel h3 {
+        margin-bottom: 10px;
+    }
+
+    #face-creator-panel div {
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    #face-creator-panel label {
+        min-width: 150px; /* Adjust as needed for alignment */
+        display: inline-block;
+    }
+
+    #face-creator-panel input[type="range"] {
+        flex-grow: 1;
+        margin-left: 10px;
+        margin-right: 5px;
+    }
+
+    #face-creator-panel select {
+        margin-left: 10px;
+        flex-grow: 1;
+    }
+
+    #face-creator-panel input[type="color"] {
+        margin-left: 10px;
+        padding: 0; /* Remove padding for color input */
+        border: 1px solid #555; /* Add a little border */
+        min-width: 50px; /* Ensure it's clickable */
+    }
+
+
+    #face-creator-panel span {
+        min-width: 25px; /* Space for slider values */
+        text-align: right;
+        display: inline-block;
+        margin-left: 5px;
+    }
+
+#asciiFacePreview {
+    font-family: 'Courier New', Courier, monospace;
+    white-space: pre;
+    border: 1px solid #555;
+    background-color: #1a1a1a;
+    padding: 10px;
+    margin-top: 10px;
+    min-height: 120px; /* Adjusted min-height */
+    line-height: 1.1em;
+    overflow-x: auto; /* Allow horizontal scroll if face is too wide */
+}
+
+/* Character Info Panel Face Preview */
+#characterInfoFacePreview h3 {
+    margin-bottom: 5px;
+}
+
+#charInfoAsciiFace {
+    font-family: 'Courier New', Courier, monospace;
+    white-space: pre;
+    border: 1px solid #555;
+    background-color: #1a1a1a;
+    padding: 10px;
+    margin-top: 5px;
+    min-height: 120px;
+    line-height: 1.1em;
+    overflow-x: auto;
+}
+
+    #asciiFacePreview span,
+    #charInfoAsciiFace span {
+        display: inline; /* Ensures characters flow together naturally like text */
+        /* vertical-align: top; removed as it's less relevant for display:inline and might cause issues */
+    }
+
+/* Randomize Face Button */
+#randomizeFaceButton {
+    display: block; /* Make it take its own line */
+    margin: 15px auto 10px auto; /* Center it and give some space */
+    padding: 8px 15px;
+    background-color: #555;
+    border: 1px solid #777;
+    color: #fff;
+    cursor: pointer;
+}
+
+    #randomizeFaceButton:hover {
+        background-color: #666;
+    }
+
+/* Preset Color Swatches Styling */
+.preset-colors-container {
+    display: flex;
+    flex-wrap: wrap; /* Allow swatches to wrap to next line if many */
+    gap: 4px; /* Space between swatches */
+    margin-left: 10px; /* Align with other inputs if label pushes them */
+    margin-top: 2px; /* Small space below the main color picker */
+    flex-grow: 1; /* Allow it to take available space in the flex row */
+    align-items: center;
+}
+
+button.preset-swatch { /* More specific selector */
+    width: 20px;
+    height: 20px;
+    border: 1px solid #888; /* Slightly lighter border to see them */
+    padding: 0; /* Remove default button padding */
+    margin: 0; /* Remove default button margin */
+    cursor: pointer;
+    outline: none; /* Remove focus outline if desired, or style it */
+    display: inline-block; /* Ensure they behave well in flex container */
+    font-size: 0; /* Hide any potential text from button element itself */
+    line-height: 0; /* Hide any potential text from button element itself */
+}
+
+    button.preset-swatch:hover {
+        border-color: #ccc; /* Highlight border on hover */
+        transform: scale(1.1); /* Slight zoom effect */
+    }

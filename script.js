@@ -328,6 +328,27 @@ function renderCharacterInfo() {
     window.renderCharacterStatsSkillsAndWornClothing(gameState, characterInfoElement);
     window.renderHealthTable(gameState); // Ensure health table (armor) updates
     updatePlayerStatusDisplay(); // Update clock and needs display
+
+    // Display the ASCII face
+    let facePreviewContainer = characterInfoElement.querySelector('#characterInfoFacePreview');
+    if (!facePreviewContainer) {
+        facePreviewContainer = document.createElement('div');
+        facePreviewContainer.id = 'characterInfoFacePreview';
+        facePreviewContainer.innerHTML = '<h3>Appearance</h3><pre id="charInfoAsciiFace" style="border: 1px solid #ccc; padding: 5px; min-height: 100px; background-color: #111;"></pre>';
+        // Insert after name/level/xp but before stats/skills container for better layout
+        const statsSkillsContainer = characterInfoElement.querySelector('#statsSkillsWornContainer');
+        if (statsSkillsContainer) {
+            characterInfoElement.insertBefore(facePreviewContainer, statsSkillsContainer);
+        } else {
+            characterInfoElement.appendChild(facePreviewContainer); // Fallback
+        }
+    }
+    const charInfoAsciiFaceElement = document.getElementById('charInfoAsciiFace');
+    if (charInfoAsciiFaceElement && gameState.player && gameState.player.face && gameState.player.face.asciiFace) {
+        charInfoAsciiFaceElement.innerHTML = gameState.player.face.asciiFace; // Changed from textContent to innerHTML
+    } else if (charInfoAsciiFaceElement) {
+        charInfoAsciiFaceElement.innerHTML = "No face data available."; // Changed from textContent to innerHTML
+    }
 }
 
 // Wrapper functions for HTML onchange events
@@ -1291,6 +1312,11 @@ async function initialize() { // Made async
         }
 
         window.renderTables(gameState);
+        if (typeof window.initFaceCreator === 'function') {
+            window.initFaceCreator(); // Initialize face creator event listeners and preview
+        } else {
+            console.error("initFaceCreator function not found. Face creator UI may not work.");
+        }
         // window.mapRenderer.scheduleRender(); // Initial render of the map (or empty state) - gameLoop will handle this
         window.updateInventoryUI(); // Initialize inventory display (now from js/inventory.js)
         updatePlayerStatusDisplay(); // Initial display of clock and needs

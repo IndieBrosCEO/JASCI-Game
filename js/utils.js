@@ -645,3 +645,94 @@ function hasLineOfSight3D(startPos, endPos, tilesetsData, mapDataFromCaller) { /
     return true;
 }
 window.hasLineOfSight3D = hasLineOfSight3D;
+
+/**
+ * Darkens a HEX color by a given percentage.
+ * @param {string} hexColor - The hex color string (e.g., "#RRGGBB" or "#RGB").
+ * @param {number} amount - The percentage to darken (0.0 to 1.0). E.g., 0.2 for 20%.
+ * @returns {string} The new darkened hex color string. Returns input if invalid.
+ */
+function darkenColor(hexColor, amount) {
+    if (typeof hexColor !== 'string' || !hexColor.startsWith('#') || typeof amount !== 'number' || amount < 0 || amount > 1) {
+        // console.warn(`darkenColor: Invalid input hexColor: ${hexColor}, amount: ${amount}. Returning original or black.`);
+        return hexColor || '#000000';
+    }
+
+    let hex = hexColor.slice(1); // Remove #
+
+    // Handle shorthand hex (e.g., "#03F" -> "#0033FF")
+    if (hex.length === 3) {
+        hex = hex.split('').map(char => char + char).join('');
+    }
+
+    if (hex.length !== 6) {
+        // console.warn(`darkenColor: Invalid hex length after processing: ${hex}. Returning original or black.`);
+        return hexColor || '#000000';
+    }
+
+    try {
+        let r = parseInt(hex.substring(0, 2), 16);
+        let g = parseInt(hex.substring(2, 4), 16);
+        let b = parseInt(hex.substring(4, 6), 16);
+
+        r = Math.max(0, Math.floor(r * (1 - amount)));
+        g = Math.max(0, Math.floor(g * (1 - amount)));
+        b = Math.max(0, Math.floor(b * (1 - amount)));
+
+        const toHex = (c) => {
+            const hexVal = c.toString(16);
+            return hexVal.length === 1 ? '0' + hexVal : hexVal;
+        };
+
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    } catch (e) {
+        // console.error(`darkenColor: Error parsing hex string: ${hexColor}`, e);
+        return hexColor || '#000000'; // Return original on error
+    }
+}
+window.darkenColor = darkenColor;
+
+/**
+ * Lightens a HEX color by a given percentage.
+ * @param {string} hexColor - The hex color string (e.g., "#RRGGBB" or "#RGB").
+ * @param {number} amount - The percentage to lighten (0.0 to 1.0). E.g., 0.2 for 20%.
+ * @returns {string} The new lightened hex color string. Returns input if invalid.
+ */
+function lightenColor(hexColor, amount) {
+    if (typeof hexColor !== 'string' || !hexColor.startsWith('#') || typeof amount !== 'number' || amount < 0 || amount > 1) {
+        // console.warn(`lightenColor: Invalid input hexColor: ${hexColor}, amount: ${amount}. Returning original or white.`);
+        return hexColor || '#FFFFFF';
+    }
+
+    let hex = hexColor.slice(1); // Remove #
+
+    if (hex.length === 3) {
+        hex = hex.split('').map(char => char + char).join('');
+    }
+
+    if (hex.length !== 6) {
+        // console.warn(`lightenColor: Invalid hex length after processing: ${hex}. Returning original or white.`);
+        return hexColor || '#FFFFFF';
+    }
+
+    try {
+        let r = parseInt(hex.substring(0, 2), 16);
+        let g = parseInt(hex.substring(2, 4), 16);
+        let b = parseInt(hex.substring(4, 6), 16);
+
+        r = Math.min(255, Math.floor(r * (1 + amount)));
+        g = Math.min(255, Math.floor(g * (1 + amount)));
+        b = Math.min(255, Math.floor(b * (1 + amount)));
+
+        const toHex = (c) => {
+            const hexVal = c.toString(16);
+            return hexVal.length === 1 ? '0' + hexVal : hexVal;
+        };
+
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    } catch (e) {
+        // console.error(`lightenColor: Error parsing hex string: ${hexColor}`, e);
+        return hexColor || '#FFFFFF'; // Return original on error
+    }
+}
+window.lightenColor = lightenColor;

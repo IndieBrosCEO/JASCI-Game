@@ -23,6 +23,125 @@
                 <div id="statsBody"></div>
                 <h3>Skills (Skill Points: <span id="skillPoints">30</span>)</h3>
                 <div id="skillsBody"></div>
+
+                <div id="face-creator-panel">
+                    <h3>Face Creator</h3>
+                    <div>
+                        <label for="headWidthRange">Head Width (5-12):</label>
+                        <input type="range" id="headWidthRange" min="5" max="12" value="5">
+                        <span id="headWidthValue">5</span>
+                    </div>
+                    <div>
+                        <label for="headHeightRange">Head Height (6-12):</label>
+                        <input type="range" id="headHeightRange" min="6" max="12" value="7">
+                        <span id="headHeightValue">7</span>
+                    </div>
+                    <div>
+                        <label for="eyeSizeRange">Eye Size (1-3):</label>
+                        <input type="range" id="eyeSizeRange" min="1" max="3" value="2">
+                        <span id="eyeSizeValue">2</span>
+                    </div>
+                    <div>
+                        <label for="browHeightRange">Brow Height (0-1):</label>
+                        <input type="range" id="browHeightRange" min="0" max="1" value="0">
+                        <span id="browHeightValue">0</span>
+                    </div>
+                    <div>
+                        <label for="browAngleRange">Brow Angle (-1 to 1):</label>
+                        <input type="range" id="browAngleRange" min="-1" max="1" value="0" step="1">
+                        <span id="browAngleValue">0</span>
+                    </div>
+                    <div>
+                        <label for="browWidthRange">Brow Width (1-3):</label>
+                        <input type="range" id="browWidthRange" min="1" max="3" value="2">
+                        <span id="browWidthValue">2</span>
+                    </div>
+                    <div>
+                        <label for="noseWidthRange">Nose Width (1-5):</label>
+                        <input type="range" id="noseWidthRange" min="1" max="5" value="2">
+                        <span id="noseWidthValue">2</span>
+                    </div>
+                    <div>
+                        <label for="noseHeightRange">Nose Height (1-2):</label>
+                        <input type="range" id="noseHeightRange" min="1" max="2" value="2">
+                        <span id="noseHeightValue">2</span>
+                    </div>
+                    <div>
+                        <label for="mouthWidthRange">Mouth Width (1-6):</label>
+                        <input type="range" id="mouthWidthRange" min="1" max="6" value="3">
+                        <span id="mouthWidthValue">3</span>
+                    </div>
+                    <div>
+                        <label for="mouthFullnessRange">Mouth Fullness (1-2):</label>
+                        <input type="range" id="mouthFullnessRange" min="1" max="2" value="1">
+                        <span id="mouthFullnessValue">1</span>
+                    </div>
+                    <div>
+                        <label for="hairstyleSelect">Hairstyle:</label>
+                        <select id="hairstyleSelect">
+                            <option value="bald">Bald</option>
+                            <option value="short" selected>Short</option>
+                            <option value="medium">Medium</option>
+                            <option value="long">Long</option>
+                            <option value="mohawk">Mohawk</option>
+                            <option value="tonsure">Tonsure</option>
+                            <option value="pixie-cut">Pixie Cut</option>
+                            <option value="buzz-cut">Buzz Cut</option>
+                            <option value="bowl-cut">Bowl Cut</option>
+                            <option value="jawline-bob">Jawline Bob</option>
+                            <option value="combover">Combover</option> {/* Renamed from fairy-cut */}
+                            <option value="french-crop-curls">French Crop (Curls)</option>
+                            {/*
+                            <option value="mullet">Mullet</option>
+                            <option value="shag">Shag</option>
+                            <option value="asymmetrical-bob">Asymmetrical Bob</option>
+                            {/*
+                        </select>
+                    </div>
+                    <div>
+                        <label for="facialHairSelect">Facial Hair:</label>
+                        <select id="facialHairSelect">
+                            <option value="none" selected>None</option>
+                            <option value="stubble">Stubble</option>
+                            <option value="mustache">Mustache</option>
+                            <option value="goatee">Goatee</option>
+                            <option value="beard">Beard</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="glassesSelect">Glasses:</label>
+                        <select id="glassesSelect">
+                            <option value="none" selected>None</option>
+                            <option value="round">Round</option>
+                            <option value="square">Square</option>
+                            <option value="monocle">Monocle</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="eyeColorPicker">Eye Color:</label>
+                        <input type="color" id="eyeColorPicker" value="#000000">
+                        <div id="eyePresetContainer" class="preset-colors-container"></div>
+                    </div>
+                    <div>
+                        <label for="hairColorPicker">Hair Color:</label>
+                        <input type="color" id="hairColorPicker" value="#000000">
+                        <div id="hairPresetContainer" class="preset-colors-container"></div>
+                    </div>
+                    <div>
+                        <label for="lipColorPicker">Lip Color:</label>
+                        <input type="color" id="lipColorPicker" value="#FFC0CB">
+                        <div id="lipPresetContainer" class="preset-colors-container"></div>
+                    </div>
+                    <div>
+                        <label for="skinColorPicker">Skin Color:</label>
+                        <input type="color" id="skinColorPicker" value="#F5DEB3">
+                        <div id="skinPresetContainer" class="preset-colors-container"></div>
+                    </div>
+                    <button type="button" id="randomizeFaceButton" style="margin-top: 10px; margin-bottom: 5px;">Randomize Face</button>
+                    <h4>Preview:</h4>
+                    <pre id="asciiFacePreview" style="border: 1px solid #ccc; padding: 5px; min-height: 100px; background-color: #111;"></pre>
+                </div>
+
                 <button onclick="startGame()">Start Game</button>
             </div>
             <div id="character-info-panel" class="hidden">
@@ -160,6 +279,7 @@
     <script src="js/combatManager.js"></script>
     <script src="js/console.js"></script>
     <script src="js/AudioManager.js"></script>
+    <script src="js/faceGenerator.js"></script> {/* Added face generator script */}
     <script src="script.js"></script>
 
     <div id="keybindsDisplay" style="display: none; position: fixed; top: 10px; right: 10px; border: 1px solid white; background-color: black; padding: 10px; z-index: 100; max-height: 90vh; overflow-y: auto;">

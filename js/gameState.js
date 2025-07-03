@@ -176,4 +176,26 @@ gameState.player.wornClothing = {
     [ClothingLayers.WAIST]: null
 };
 
+// Add face parameters to the player object
+gameState.player.face = {
+    headWidth: 5,
+    headHeight: 7,
+    eyeSize: 2,
+    browHeight: 0, // Adjusted default to be within new 0-1 range
+    browAngle: 0,
+    browWidth: 2, // NEW: Default brow width (range 1-3)
+    noseWidth: 2,
+    noseHeight: 2, // Default is fine for new 1-2 range
+    mouthWidth: 3,
+    mouthFullness: 1, // Default is fine for new 1-2 range
+    hairstyle: "short",
+    facialHair: "none",
+    glasses: "none", // e.g., "none", "round", "square"
+    eyeColor: "#000000", // Default black
+    hairColor: "#000000", // Default black
+    lipColor: "#FFC0CB", // Default pink
+    skinColor: "#F5DEB3", // Default wheat
+    asciiFace: "" // To store the generated ASCII face string
+};
+
 window.gameState = gameState;
