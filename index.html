@@ -10,7 +10,7 @@
 <body>
     <div id="game-container">
         <!-- Left Column -->
-        <div id="left-panel">
+        <div id="left-panel" class="menu-character-creator">
             <div id="character-creator">
                 <h2>Character Creator</h2>
                 <label>Character Name:</label>
@@ -153,67 +153,78 @@
 
         <!-- Middle Column -->
         <div id="middle-panel">
-            <div id="mapContainer"></div>
-            <div id="combatUIDiv">
-                <div id="initiativeDisplay"><h4>Initiative Order:</h4></div>
-                <p id="currentAttacker">Attacker: -</p>
-                <p id="currentDefender">Defender: -</p>
-                <div id="attackerPrompt"></div>
-                <div id="attackDeclarationUI" class="hidden">
-                    <h4>Declare Attack</h4>
-                    <label for="combatWeaponSelect">Weapon:</label>
-                    <select id="combatWeaponSelect"></select><br>
-                    <label for="combatBodyPartSelect">Target Body Part:</label>
-                    <select id="combatBodyPartSelect">
-                        <option value="head">Head</option>
-                        <option value="torso">Torso</option>
-                        <option value="leftArm">Left Arm</option>
-                        <option value="rightArm">Right Arm</option>
-                        <option value="leftLeg">Left Leg</option>
-                        <option value="rightLeg">Right Leg</option>
-                    </select><br>
-                    <label for="combatFireModeSelect">Fire Mode:</label>
-                    <select id="combatFireModeSelect" class="hidden">
-                        <option value="single" selected>Single</option>
-                        <option value="burst">Burst</option>
-                        <option value="auto">Auto</option>
-                    </select><br>
-                    <button id="confirmAttackButton">Confirm Attack</button>
-                    <button id="attemptGrappleButton" class="hidden">Attempt Grapple</button>
-                    <button id="reloadWeaponButton" class="hidden">Reload Weapon</button>
-                    <button id="retargetButton">Retarget</button>
+            <div id="mapContainer">
+                <!-- Map content goes here -->
+            </div>
+
+            <div id="combat-console-stack">
+                <!-- New container for Combat UI and Console -->
+                <div id="combatUIDiv" class="hidden">
+                    <!-- Combat UI, starts hidden -->
+                    <div id="initiativeDisplay"><h4>Initiative Order:</h4></div>
+                    <p id="currentAttacker">Attacker: -</p>
+                    <p id="currentDefender">Defender: -</p>
+                    <div id="attackerPrompt"></div>
+                    <div id="attackDeclarationUI" class="hidden">
+                        <h4>Declare Attack</h4>
+                        <label for="combatWeaponSelect">Weapon:</label>
+                        <select id="combatWeaponSelect"></select><br>
+                        <label for="combatBodyPartSelect">Target Body Part:</label>
+                        <select id="combatBodyPartSelect">
+                            <option value="head">Head</option>
+                            <option value="torso">Torso</option>
+                            <option value="leftArm">Left Arm</option>
+                            <option value="rightArm">Right Arm</option>
+                            <option value="leftLeg">Left Leg</option>
+                            <option value="rightLeg">Right Leg</option>
+                        </select><br>
+                        <label for="combatFireModeSelect">Fire Mode:</label>
+                        <select id="combatFireModeSelect" class="hidden">
+                            <option value="single" selected>Single</option>
+                            <option value="burst">Burst</option>
+                            <option value="auto">Auto</option>
+                        </select><br>
+                        <button id="confirmAttackButton">Confirm Attack</button>
+                        <button id="attemptGrappleButton" class="hidden">Attempt Grapple</button>
+                        <button id="reloadWeaponButton" class="hidden">Reload Weapon</button>
+                        <button id="retargetButton">Retarget</button>
+                    </div>
+                    <div id="defenseDeclarationUI" class="hidden">
+                        <h4>Choose Your Defense:</h4>
+                        <select id="combatDefenseTypeSelect">
+                            <option value="Dodge">Dodge</option>
+                            <option value="BlockUnarmed">Block (Unarmed)</option>
+                            <option value="BlockArmed">Block (Armed)</option>
+                        </select>
+                        <!-- This can be shown/hidden based on "Block (Unarmed)" selection -->
+                        <select id="combatBlockingLimbSelect" class="hidden">
+                            <option value="leftArm" selected>Left Arm</option>
+                            <option value="rightArm">Right Arm</option>
+                        </select>
+                        <button id="confirmDefenseButton">Confirm Defense</button>
+                    </div>
+                    <div id="defenderPrompt"></div>
+                    <p id="attackRollResult">Attack Roll: -</p>
+                    <p id="defenseRollResult">Defense Roll: -</p>
+                    <p id="damageResult">Damage: -</p>
+                    <p id="combatLog">Combat Log:</p>
                 </div>
-                <div id="defenseDeclarationUI" class="hidden">
-                    <h4>Choose Your Defense:</h4>
-                    <select id="combatDefenseTypeSelect">
-                        <option value="Dodge">Dodge</option>
-                        <option value="BlockUnarmed">Block (Unarmed)</option>
-                        <option value="BlockArmed">Block (Armed)</option>
-                    </select>
-                    <!-- This can be shown/hidden based on "Block (Unarmed)" selection -->
-                    <select id="combatBlockingLimbSelect" class="hidden">
-                        <option value="leftArm" selected>Left Arm</option>
-                        <option value="rightArm">Right Arm</option>
-                    </select>
-                    <button id="confirmDefenseButton">Confirm Defense</button>
+
+                <!-- Console moved into the stack -->
+                <div id="console-panel-container" class="menu-console">
+                    <div id="console"></div>
                 </div>
-                <div id="defenderPrompt"></div>
-                <p id="attackRollResult">Attack Roll: -</p>
-                <p id="defenseRollResult">Defense Roll: -</p>
-                <p id="damageResult">Damage: -</p>
-                <p id="combatLog">Combat Log:</p>
             </div>
         </div>
 
-        <!-- Console Column -->
-        <div id="console-panel">
-            <div id="console"></div>
-        </div>
-
         <!-- Right Column -->
-        <div id="right-panel">
+        <div id="right-panel" class="menu-game-controls">
             <h2>Game Controls</h2>
             <button onclick="window.mapRenderer.toggleRoof()">Toggle Roof</button>
+            <div style="margin-top: 5px; margin-bottom: 5px;">
+                <button id="zoomInButton">Zoom In (+)</button>
+                <button id="zoomOutButton">Zoom Out (-)</button>
+            </div>
             <div>
                 <label for="mapSelector">Select Map:</label>
                 <select id="mapSelector" onchange="handleMapSelectionChangeWrapper(this.value)"></select>
@@ -231,31 +242,33 @@
                 <div id="viewZDisplay">View Z: 0</div>
                 <div id="targetingZDisplay" style="display: none;">Targeting Z: 0</div> <!-- Added Targeting Z Display -->
             </div>
-            <h3>Health Status</h3>
-            <table id="healthTable">
-                <thead>
-                    <tr>
-                        <th>Body Part</th>
-                        <th>HP</th>
-                        <th>Armor</th>
-                        <th>Crisis Timer</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <h3>Interactable Items</h3>
-            <div id="itemList"></div>
-            <h3>Actions</h3>
-            <div id="actionList"></div>
-            <h3>Equipped Hand Items</h3>
-            <div id="equippedHandItems"></div>
-            <h3>Hand Slots</h3>
-            <div id="handSlots"></div> <!-- This might be redundant now, or used for a different purpose -->
-            <h3>Equipped Containers</h3>
-            <div id="equippedContainers"></div>
+            <div class="menu-inventory-skills" style="padding: 5px; margin-top: 10px; border: 1px solid #444;">
+                <h3>Health Status</h3>
+                <table id="healthTable">
+                    <thead>
+                        <tr>
+                            <th>Body Part</th>
+                            <th>HP</th>
+                            <th>Armor</th>
+                            <th>Crisis Timer</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <h3>Interactable Items</h3>
+                <div id="itemList"></div>
+                <h3>Actions</h3>
+                <div id="actionList"></div>
+                <h3>Equipped Hand Items</h3>
+                <div id="equippedHandItems"></div>
+                <h3>Hand Slots</h3>
+                <div id="handSlots"></div> <!-- This might be redundant now, or used for a different purpose -->
+                <h3>Equipped Containers</h3>
+                <div id="equippedContainers"></div>
 
-            <h3>Inventory (Slots: <span id="invCapacity"></span>)</h3>
-            <div id="inventoryList"></div>
+                <h3>Inventory (Slots: <span id="invCapacity"></span>)</h3>
+                <div id="inventoryList"></div>
+            </div>
         </div>
     </div>
 
@@ -279,7 +292,7 @@
     <script src="js/combatManager.js"></script>
     <script src="js/console.js"></script>
     <script src="js/AudioManager.js"></script>
-    <script src="js/faceGenerator.js"></script> {/* Added face generator script */}
+    <script src="js/faceGenerator.js"></script>
     <script src="script.js"></script>
 
     <div id="keybindsDisplay" style="display: none; position: fixed; top: 10px; right: 10px; border: 1px solid white; background-color: black; padding: 10px; z-index: 100; max-height: 90vh; overflow-y: auto;">

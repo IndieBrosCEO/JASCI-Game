@@ -58,41 +58,80 @@ button {
     display: flex;
     flex-direction: row;
     gap: 20px;
-    height: 100vh;
+    height: calc(100vh - 40px); /* Adjusted for 20px top/bottom body padding */
     box-sizing: border-box;
 }
 
 /* Left column: Character Creator/Info */
 #left-panel {
-    width: 400px; /* Increased from 300px */
+    /* width: 400px; REMOVED to allow content to define width */
+    flex-shrink: 1; /* Allow shrinking if needed, default is 1. Set to 0 if it should never shrink from content size. */
+    flex-basis: auto; /* Content will determine size. 'max-content' or 'min-content' could also be options. */
+    min-width: 240px; /* Added to prevent excessive squishing */
     background-color: #222;
     color: #fff;
     padding: 10px;
     overflow-y: auto;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#character-creator {
+    text-align: center; /* Center text and inline-block children */
+    /* Consider adding max-width or width: fit-content if needed */
 }
 
 /* Middle column: Map and Console */
 #middle-panel {
     flex-grow: 1;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px;
     box-sizing: border-box;
+    position: relative;
+}
+
+#mapContainer {
+    width: 60%; /* Map takes 60% of middle-panel */
+    /* overflow-y: auto; from previous rule is fine */
+    box-sizing: border-box;
+    /* Existing mapContainer styles like background, font, etc., remain */
+}
+
+#combat-console-stack {
+    width: 40%; /* Combat UI and Console stack takes remaining 40% */
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between combat UI and console */
+    box-sizing: border-box;
+    overflow-y: auto; /* If the stack itself becomes too tall */
+}
+
+#console-panel-container {
+    /* width: 50%; Is no longer needed as it's part of a column stack */
+    height: 50%; /* Takes 50% of the #combat-console-stack height */
+    /* overflow-y: auto; from previous rule is fine, or can be on #console itself */
+    box-sizing: border-box;
+    display: flex; /* To make #console child fill height */
+    flex-direction: column; /* To make #console child fill height */
 }
 
 #console {
-    height: 80%;
+    height: 100%; /* Make console take full height of its container */
     overflow-y: auto;
     background: #111;
     color: #0f0;
     padding: 5px;
     font-family: monospace;
+    box-sizing: border-box; /* Added for consistency */
 }
 
 /* Right column: Game Controls */
 #right-panel {
     width: 350px;
+    flex-shrink: 0;
     background-color: #222;
     padding: 10px;
     overflow-y: auto;
@@ -277,4 +316,63 @@ button.preset-swatch { /* More specific selector */
     button.preset-swatch:hover {
         border-color: #ccc; /* Highlight border on hover */
         transform: scale(1.1); /* Slight zoom effect */
+    }
+
+/* Menu Color Coding */
+.menu-character-creator {
+    background-color: #332222; /* Dark reddish-brown */
+}
+
+.menu-game-controls {
+    background-color: #223322; /* Dark greenish-blue */
+}
+
+.menu-inventory-skills { /* A general class for right-panel sections if needed, or be more specific */
+    background-color: #222233; /* Dark bluish-purple */
+}
+
+#left-panel.menu-character-creator,
+#right-panel.menu-game-controls,
+#console-panel-container.menu-console { /* Added console specific styling */
+    padding: 10px; /* Ensure padding is consistent */
+    border: 1px solid #444; /* Add a subtle border to distinguish menus */
+}
+
+/* Specific styling for console panel if it needs a different color */
+.menu-console {
+    background-color: #1a1a2a; /* Darker blue for console area */
+}
+
+/* Styling for combatUIDiv, now part of #combat-console-stack */
+#combatUIDiv {
+    /* position: absolute; REMOVED */
+    /* top, left, z-index REMOVED */
+    /* width will be 100% of #combat-console-stack by default as a block in flex column */
+    height: 50%; /* Takes 50% of the #combat-console-stack height */
+    /* min-height: 200px; REMOVED for stricter 50/50 split */
+    background-color: rgba(30, 30, 30, 0.95);
+    padding: 15px;
+    color: #fff;
+    border: 1px solid #777;
+    border-radius: 5px;
+    overflow-y: auto; /* Scroll if content is taller than its 50% height */
+    overflow-x: auto; /* Scroll if content is wider than its allocated space */
+    box-sizing: border-box;
+    white-space: normal;
+    line-height: normal;
+    font-family: monospace;
+    /* margin-bottom: 10px; Added by #combat-console-stack gap */
+}
+
+    #combatUIDiv h4,
+    #combatUIDiv p,
+    #combatUIDiv label,
+    #combatUIDiv select,
+    #combatUIDiv button {
+        font-family: monospace; /* Explicitly set for children, or a UI font */
+        margin-bottom: 5px; /* Add some spacing for readability */
+    }
+
+    #combatUIDiv select, #combatUIDiv button {
+        margin-top: 5px;
     }

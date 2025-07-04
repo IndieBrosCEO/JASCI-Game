@@ -196,6 +196,32 @@
     }
 
     startCombat(participants) {
+        const combatUIDiv = document.getElementById('combatUIDiv');
+        if (combatUIDiv) {
+            logToConsole(`[CombatManager.startCombat] Found #combatUIDiv. Current classes: ${combatUIDiv.className}`, 'debug');
+            logToConsole(`[CombatManager.startCombat] Computed display before change: ${window.getComputedStyle(combatUIDiv).display}`, 'debug');
+            combatUIDiv.classList.remove('hidden');
+            logToConsole(`[CombatManager.startCombat] #combatUIDiv classes after remove 'hidden': ${combatUIDiv.className}`, 'debug');
+            // Force a reflow before checking computed style again, though it might not be necessary for simple class changes.
+            // void combatUIDiv.offsetWidth; 
+            setTimeout(() => { // Use setTimeout to allow browser to repaint/reflow
+                if (document.getElementById('combatUIDiv')) { // Re-check existence in case of async issues
+                    logToConsole(`[CombatManager.startCombat] Computed display AFTER remove 'hidden' (async check): ${window.getComputedStyle(document.getElementById('combatUIDiv')).display}`, 'debug');
+                    const mapContainer = document.getElementById('mapContainer');
+                    if (mapContainer) {
+                        logToConsole(`[CombatManager.startCombat] Parent #mapContainer display: ${window.getComputedStyle(mapContainer).display}`, 'debug');
+                        const middlePanel = document.getElementById('middle-panel');
+                        if (middlePanel) {
+                            logToConsole(`[CombatManager.startCombat] Grandparent #middle-panel display: ${window.getComputedStyle(middlePanel).display}`, 'debug');
+                        }
+                    }
+                }
+            }, 0);
+        } else {
+            console.error("CombatManager: combatUIDiv not found in DOM, cannot make it visible.");
+            logToConsole("[CombatManager.startCombat] ERROR: #combatUIDiv not found in DOM.", "error");
+        }
+
         this.initiativeTracker = []; this.gameState.playerMovedThisTurn = false;
         participants.forEach(p => {
             if (!p) return;
@@ -434,6 +460,21 @@
         this.updateCombatUI(); logToConsole("Combat Ended.", 'lightblue');
         const defenseSelect = document.getElementById('combatDefenseTypeSelect');
         if (defenseSelect && this.defenseTypeChangeListener) { defenseSelect.removeEventListener('change', this.defenseTypeChangeListener); this.defenseTypeChangeListener = null; }
+
+        const combatUIDiv = document.getElementById('combatUIDiv');
+        if (combatUIDiv) {
+            logToConsole(`[CombatManager.endCombat] Found #combatUIDiv. Current classes: ${combatUIDiv.className}`, 'debug');
+            combatUIDiv.classList.add('hidden');
+            logToConsole(`[CombatManager.endCombat] #combatUIDiv classes after add 'hidden': ${combatUIDiv.className}`, 'debug');
+            setTimeout(() => { // Use setTimeout to allow browser to repaint/reflow
+                if (document.getElementById('combatUIDiv')) {
+                    logToConsole(`[CombatManager.endCombat] Computed display AFTER add 'hidden' (async check): ${window.getComputedStyle(document.getElementById('combatUIDiv')).display}`, 'debug');
+                }
+            }, 0);
+        } else {
+            console.error("CombatManager: combatUIDiv not found in DOM, cannot hide it post-combat.");
+            logToConsole("[CombatManager.endCombat] ERROR: #combatUIDiv not found in DOM.", "error");
+        }
         window.mapRenderer.scheduleRender();
     }
 

@@ -1472,6 +1472,47 @@ async function initialize() { // Made async
     }
     window.updateTargetingInfoUI = updateTargetingInfoUI; // Make global if needed by other modules directly
 
+    // Map Zoom Functionality
+    const mapContainerElementForZoom = document.getElementById('mapContainer'); // Renamed to avoid conflict if 'mapContainer' is used elsewhere in this scope
+    const zoomInButton = document.getElementById('zoomInButton');
+    const zoomOutButton = document.getElementById('zoomOutButton');
+
+    if (mapContainerElementForZoom && zoomInButton && zoomOutButton) {
+        let currentMapFontSize = 16; // Default font size in pixels
+        const zoomStep = 2; // Pixels to change on each zoom step
+        const minMapFontSize = 1;
+        const maxMapFontSize = 300;
+
+        try {
+            const computedStyle = window.getComputedStyle(mapContainerElementForZoom);
+            const initialSize = parseFloat(computedStyle.fontSize);
+            if (!isNaN(initialSize) && initialSize > 0) {
+                currentMapFontSize = initialSize;
+            }
+        } catch (e) {
+            console.warn("Could not read initial font size for map container, using default.", e);
+        }
+        mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
+
+        zoomInButton.addEventListener('click', () => {
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            currentMapFontSize = Math.min(maxMapFontSize, currentMapFontSize + zoomStep);
+            mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
+        });
+
+        zoomOutButton.addEventListener('click', () => {
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            currentMapFontSize = Math.max(minMapFontSize, currentMapFontSize - zoomStep);
+            mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
+        });
+        logToConsole(`Map zoom controls initialized. Current map font size: ${currentMapFontSize}px`);
+    } else {
+        console.warn("Map zoom UI elements not found. Zoom functionality will not be available.");
+        if (!mapContainerElementForZoom) console.warn("Zoom: mapContainer not found.");
+        if (!zoomInButton) console.warn("Zoom: zoomInButton not found.");
+        if (!zoomOutButton) console.warn("Zoom: zoomOutButton not found.");
+    }
+
     const confirmButton = document.getElementById('confirmAttackButton');
     if (confirmButton) {
         confirmButton.addEventListener('click', () => {
