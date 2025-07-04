@@ -1,0 +1,69 @@
+/* Entity Tooltip Styles */
+#entityTooltip {
+    position: fixed; /* Use fixed to position relative to viewport */
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #f0f0f0;
+    border: 1px solid #555;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: 'Courier New', Courier, monospace; /* Monospaced for better alignment */
+    font-size: 13px;
+    line-height: 1.5;
+    pointer-events: none; /* So it doesn't interfere with other mouse events */
+    z-index: 1000; /* Ensure it's on top */
+    max-width: 320px; /* Prevent it from being too wide */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    transition: opacity 0.1s ease-in-out; /* Smooth show/hide */
+}
+
+    #entityTooltip.hidden {
+        display: none;
+        opacity: 0;
+    }
+
+    #entityTooltip h5 { /* Name */
+        margin-top: 0;
+        margin-bottom: 8px;
+        color: #66ccff; /* Light blue for name */
+        font-size: 15px;
+        border-bottom: 1px solid #444;
+        padding-bottom: 5px;
+    }
+
+    #entityTooltip .section-title {
+        font-weight: bold;
+        color: #cccccc;
+        margin-top: 8px;
+        margin-bottom: 4px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    #entityTooltip pre { /* For the ASCII face */
+        margin: 5px 0;
+        padding: 4px;
+        background-color: #1a1a1a;
+        border: 1px solid #333;
+        font-size: 10px;
+        line-height: 1.0;
+        white-space: pre;
+        overflow-x: auto;
+        border-radius: 3px;
+        max-height: 150px; /* Limit height of face preview */
+    }
+
+    #entityTooltip ul {
+        list-style-type: none;
+        padding-left: 0;
+        margin: 0;
+    }
+
+        #entityTooltip ul li {
+            margin-bottom: 3px;
+            font-size: 12px;
+        }
+
+            #entityTooltip ul li strong { /* For body part names */
+                color: #aabbcc;
+            }

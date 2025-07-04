@@ -8,7 +8,7 @@ import { getMapData, snapshot, undo as undoData, redo as redoData, setPlayerStar
 import { placeTile, ensureTileIsObject, getTopmostTileAt } from './tileManager.js'; // Assuming getTopmostTileAt is in tileManager
 
 // UI Update Function Imports
-import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerStartDisplay, updateToolButtonUI, updateSelectedPortalInfoUI, updateContainerInventoryUI, updateLockPropertiesUI, updateTilePropertyEditorUI, getRect3DDepth, updateUIFromLoadedMap, populateItemSelectDropdown, updateSelectedNpcInfoUI, populateNpcBaseTypeDropdown } from './uiManager.js'; // Added NPC UI functions
+import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerStartDisplay, updateToolButtonUI, updateSelectedPortalInfoUI, updateContainerInventoryUI, updateLockPropertiesUI, updateTilePropertyEditorUI, getRect3DDepth, updateUIFromLoadedMap, populateItemSelectDropdown, updateSelectedNpcInfoUI, populateNpcBaseTypeDropdown, updateNpcFacePreview, populateNpcFaceUI } from './uiManager.js'; // Added NPC UI functions and specific face functions
 
 // Tool Logic Imports
 import { handlePlayerStartTool, handlePortalToolClick, handleSelectInspectTool, floodFill2D, floodFill3D, drawLine, drawRect, defineStamp, applyStamp, handleNpcToolClick } from './toolManager.js'; // Added handleNpcToolClick
@@ -485,6 +485,55 @@ function setupButtonEventListeners() {
     el('toggleNpcConfigBtn', 'click', () => toggleSectionVisibility('npcConfigContent', 'toggleNpcConfigBtn', 'NPC'));
     // Optional: Listener for npcBaseTypeSelect if needed for immediate UI changes upon selection
     // el('npcBaseTypeSelect', 'change', handleNpcBaseTypeChange); 
+
+    // --- NPC Face Generator Event Listeners ---
+    const npcFaceControls = [
+        'npcFace_headWidthRange', 'npcFace_headHeightRange', 'npcFace_eyeSizeRange',
+        'npcFace_browHeightRange', 'npcFace_browAngleRange', 'npcFace_browWidthRange',
+        'npcFace_noseWidthRange', 'npcFace_noseHeightRange', 'npcFace_mouthWidthRange',
+        'npcFace_mouthFullnessRange', 'npcFace_hairstyleSelect', 'npcFace_facialHairSelect',
+        'npcFace_glassesSelect', 'npcFace_eyeColorPicker', 'npcFace_hairColorPicker',
+        'npcFace_lipColorPicker', 'npcFace_skinColorPicker'
+    ];
+
+    npcFaceControls.forEach(controlId => {
+        const element = document.getElementById(controlId);
+        if (element) {
+            const eventType = (element.type === 'select-one' || element.type === 'color') ? 'change' : 'input';
+            element.addEventListener(eventType, () => {
+                if (appState.selectedNpc && typeof updateNpcFacePreview === 'function') { // Use imported function
+                    snapshot(); // Create undo state before face modification through UI
+                    updateNpcFacePreview(appState.selectedNpc); // Use imported function
+                }
+            });
+        } else {
+            // This warning can be noisy if mapMaker.html hasn't been updated yet by a previous step
+            // console.warn(`NPC Face control not found for event listener: ${controlId}`);
+        }
+    });
+
+    const randomizeNpcFaceButton = document.getElementById('npcFace_randomizeFaceButton');
+    if (randomizeNpcFaceButton) {
+        randomizeNpcFaceButton.addEventListener('click', () => {
+            if (appState.selectedNpc &&
+                typeof window.generateRandomFaceParams === 'function' &&
+                typeof populateNpcFaceUI === 'function' &&  // Use imported function
+                typeof updateNpcFacePreview === 'function') { // Use imported function
+                snapshot(); // Create undo state before randomization
+                window.generateRandomFaceParams(appState.selectedNpc.faceData); // Directly modify the selected NPC's faceData
+                populateNpcFaceUI(appState.selectedNpc.faceData); // Update the UI controls from the new data - Use imported function
+                updateNpcFacePreview(appState.selectedNpc); // Update the preview - Use imported function
+                logToConsole(`Randomized face for NPC: ${appState.selectedNpc.name || appState.selectedNpc.id}`);
+            } else {
+                let errorReason = "No NPC selected";
+                if (!appState.selectedNpc) errorReason = "No NPC selected";
+                else if (typeof window.generateRandomFaceParams !== 'function') errorReason = "generateRandomFaceParams missing";
+                else if (typeof populateNpcFaceUI !== 'function') errorReason = "populateNpcFaceUI missing"; // Check imported function
+                else if (typeof updateNpcFacePreview !== 'function') errorReason = "updateNpcFacePreview missing"; // Check imported function
+                logToConsole(`Cannot randomize NPC face: ${errorReason}.`, "warn");
+            }
+        });
+    }
 }
 
 // --- Generic Toggle Function ---

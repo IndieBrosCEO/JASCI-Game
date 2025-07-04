@@ -692,3 +692,98 @@ function initiateFallCheck(characterOrGameState, targetX, targetY, targetZ) {
     return handleFalling(characterOrGameState, targetX, targetY, targetZ); // targetZ is the Z-level of the air tile
 }
 window.initiateFallCheck = initiateFallCheck;
+
+/**
+ * Initializes face data for an NPC.
+ * If npc.faceData is missing or incomplete, it generates random face parameters.
+ * Then, it generates the asciiFace and stores it in npc.faceData.asciiFace.
+ * Also ensures npc.name and npc.wieldedWeapon are initialized.
+ * @param {object} npc - The NPC object.
+ */
+function initializeNpcFace(npc) {
+    if (!npc) return;
+
+    // Ensure basic properties exist
+    if (npc.name === undefined) {
+        npc.name = "Mysterious Figure"; // Default name
+    }
+    // npc.wieldedWeapon is no longer set here; tooltip derives from equippedWeaponId.
+    // If npc.equippedWeaponId is undefined, tooltip defaults to "Unarmed".
+
+    let generateNewFace = false;
+    if (!npc.faceData) {
+        npc.faceData = {};
+        generateNewFace = true;
+    } else {
+        // Optional: Add a check for completeness of existing faceData
+        // For now, if faceData object exists, assume it's either complete or will be handled by map maker.
+        // If it's missing key properties for generation, it might be better to regenerate.
+        // For simplicity, we'll only regenerate if asciiFace is missing and generateRandomFaceParams is available.
+        if (!npc.faceData.asciiFace && typeof window.generateRandomFaceParams === 'function' && typeof window.generateAsciiFace === 'function') {
+            // If asciiFace is missing, but other params might exist,
+            // we could try to generate asciiFace from existing params.
+            // However, if params are also incomplete, it's safer to generate new random ones.
+            // Let's assume if faceData exists but asciiFace is missing, we should try to generate it.
+            // If critical params for generation are missing, then we'd need to randomize.
+            // This part can be refined based on how map maker saves partial face data.
+            // For now, if `faceData` exists but `asciiFace` does not, generate `asciiFace`.
+            // If `faceData` itself does not exist, `generateRandomFaceParams` will be called.
+        }
+    }
+
+    if (generateNewFace && typeof window.generateRandomFaceParams === 'function') {
+        window.generateRandomFaceParams(npc.faceData); // Populates npc.faceData with random parameters
+    }
+
+    // Always try to generate asciiFace if the function is available and faceData exists
+    if (npc.faceData && typeof window.generateAsciiFace === 'function') {
+        // Ensure all necessary sub-properties for generateAsciiFace are present,
+        // otherwise generateAsciiFace might fail. generateRandomFaceParams should ensure this.
+        const requiredParams = ['headWidth', 'headHeight', 'eyeSize', 'browHeight', 'browAngle', 'browWidth', 'noseWidth', 'noseHeight', 'mouthWidth', 'mouthFullness', 'hairstyle', 'facialHair', 'glasses', 'eyeColor', 'hairColor', 'lipColor', 'skinColor'];
+        let allParamsPresent = true;
+        for (const param of requiredParams) {
+            if (npc.faceData[param] === undefined) {
+                allParamsPresent = false;
+                // console.warn(`NPC ${npc.name || npc.id} missing faceData param: ${param}. Regenerating random face.`);
+                if (typeof window.generateRandomFaceParams === 'function') {
+                    window.generateRandomFaceParams(npc.faceData); // Regenerate all if one is missing
+                } else {
+                    // console.error("generateRandomFaceParams function not found, cannot regenerate NPC face.");
+                }
+                break;
+            }
+        }
+
+        if (allParamsPresent || (npc.faceData.headWidth !== undefined)) { // Check if params are now present
+            try {
+                npc.faceData.asciiFace = window.generateAsciiFace(npc.faceData);
+            } catch (e) {
+                // console.error(`Error generating ASCII face for NPC ${npc.name || npc.id}:`, e, npc.faceData);
+                // Fallback: try to generate new random params and then the face
+                if (typeof window.generateRandomFaceParams === 'function') {
+                    // console.log(`Attempting to regenerate random face params for NPC ${npc.name || npc.id}`);
+                    window.generateRandomFaceParams(npc.faceData);
+                    try {
+                        npc.faceData.asciiFace = window.generateAsciiFace(npc.faceData);
+                    } catch (e2) {
+                        // console.error(`Second error generating ASCII face for NPC ${npc.name || npc.id} after randomizing:`, e2);
+                        npc.faceData.asciiFace = ":("; // Simple fallback if all else fails
+                    }
+                } else {
+                    npc.faceData.asciiFace = ":X"; // Fallback if no random generator
+                }
+            }
+        } else if (!npc.faceData.asciiFace) { // If still no asciiFace after checks
+            // console.warn(`Could not generate ASCII face for NPC ${npc.name || npc.id} due to missing params and/or functions.`);
+            npc.faceData.asciiFace = ":P"; // Fallback
+        }
+
+    } else if (!npc.faceData) {
+        // This case should ideally be caught by the first `if (!npc.faceData)`
+        // console.warn(`NPC ${npc.name || npc.id} still has no faceData object after initialization attempt.`);
+        npc.faceData = { asciiFace: ":/" }; // Basic fallback
+    }
+    // If generateAsciiFace is not available, npc.faceData.asciiFace might remain empty or as loaded from map.
+    // The tooltip will need to handle a potentially missing asciiFace gracefully.
+}
+window.initializeNpcFace = initializeNpcFace;

@@ -259,9 +259,9 @@
     "teamId": 3
   },
   {
-    "id": "militia_man_2",
-    "name": "Militia Man (Ally)",
-    "sprite": "m",
+    "id": "civilian_militia",
+    "name": "Civilian Militia",
+    "sprite": "C",
     "color": "blue",
     "health": {
       "head": {
@@ -273,19 +273,19 @@
       "torso": {
         "max": 8,
         "current": 8,
-        "armor": 0,
+        "armor": 3,
         "crisisTimer": 0
       },
       "leftArm": {
         "max": 7,
         "current": 7,
-        "armor": 0,
+        "armor": 1,
         "crisisTimer": 0
       },
       "rightArm": {
         "max": 7,
         "current": 7,
-        "armor": 0,
+        "armor": 1,
         "crisisTimer": 0
       },
       "leftLeg": {
@@ -302,22 +302,22 @@
       }
     },
     "stats": {
-      "Strength": 3,
+      "Strength": 6,
       "Intelligence": 3,
-      "Dexterity": 3,
-      "Constitution": 3,
-      "Perception": 3,
-      "Willpower": 3,
+      "Dexterity": 6,
+      "Constitution": 6,
+      "Perception": 8,
+      "Willpower": 8,
       "Charisma": 3,
-      "Marksmanship": 3
+      "Marksmanship": 6
     },
     "skills": {
-      "Unarmed": 10,
-      "MeleeWeapons": 15,
-      "Guns": 10,
-      "Explosives": 0
+      "Unarmed": 20,
+      "MeleeWeapons": 20,
+      "Guns": 20,
+      "Explosives": 10
     },
-    "equippedWeaponId": "club",
+    "equippedWeaponId": "m4_carbine_556mm",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "militia" ],

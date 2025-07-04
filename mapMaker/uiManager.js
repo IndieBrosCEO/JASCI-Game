@@ -932,6 +932,11 @@ export function updateSelectedNpcInfoUI(selectedNpc, baseNpcDefinitions) {
         }
         if (fields.npcInstanceNameInput) fields.npcInstanceNameInput.value = displayName || '';
 
+        // Face Generator UI Population
+        initializeNpcFaceParamsForMapMakerUI(selectedNpc); // Ensures faceData and asciiFace exist
+        populateNpcFaceUI(selectedNpc.faceData); // Populates the UI controls
+        updateNpcFacePreview(selectedNpc); // Generates and displays the preview
+
 
     } else { // No NPC selected and NPC tool not active (or some other state)
         npcConfigContainer.style.display = 'none'; // Hide the whole panel
@@ -941,6 +946,11 @@ export function updateSelectedNpcInfoUI(selectedNpc, baseNpcDefinitions) {
         if (fields.editingNpcPos) fields.editingNpcPos.textContent = "N/A";
         if (fields.npcInstanceNameInput) fields.npcInstanceNameInput.value = '';
         if (fields.npcBaseTypeSelect) fields.npcBaseTypeSelect.value = '';
+        // Clear or hide face generator UI when no NPC is selected
+        const npcFacePreviewEl = el('npcFace_asciiFacePreview');
+        if (npcFacePreviewEl) npcFacePreviewEl.innerHTML = '';
+        // Could also clear all npcFace_ input values if desired, or just let them be.
+        // For now, just clearing preview. The panel itself might be hidden if tool isn't NPC.
     }
 }
 
@@ -958,6 +968,174 @@ export function updateMapMetadataEditorUI(mapData) {
     const metadataStatus = el("metadataStatus");
     if (metadataStatus) metadataStatus.textContent = ""; // Clear any previous status
 }
+
+
+/**
+ * Populates the NPC face generator UI controls with values from the NPC's faceData.
+ * @param {object} faceData - The faceData object from an NPC.
+ */
+export function populateNpcFaceUI(faceData) { // Added export
+    const el = (id) => document.getElementById(id);
+    if (!faceData) return;
+
+    // Sliders
+    const sliders = {
+        headWidth: 'npcFace_headWidthRange', headHeight: 'npcFace_headHeightRange',
+        eyeSize: 'npcFace_eyeSizeRange', browHeight: 'npcFace_browHeightRange',
+        browAngle: 'npcFace_browAngleRange', browWidth: 'npcFace_browWidthRange',
+        noseWidth: 'npcFace_noseWidthRange', noseHeight: 'npcFace_noseHeightRange',
+        mouthWidth: 'npcFace_mouthWidthRange', mouthFullness: 'npcFace_mouthFullnessRange'
+    };
+    for (const param in sliders) {
+        if (faceData[param] !== undefined) {
+            const sliderElement = el(sliders[param]);
+            const valueDisplayElement = el(sliders[param].replace('Range', 'Value'));
+            if (sliderElement) sliderElement.value = faceData[param];
+            if (valueDisplayElement) valueDisplayElement.textContent = faceData[param];
+        }
+    }
+
+    // Selects
+    const selects = {
+        hairstyle: 'npcFace_hairstyleSelect', facialHair: 'npcFace_facialHairSelect', glasses: 'npcFace_glassesSelect'
+    };
+    for (const param in selects) {
+        if (faceData[param] !== undefined) {
+            const selectElement = el(selects[param]);
+            if (selectElement) selectElement.value = faceData[param];
+        }
+    }
+
+    // Color Pickers
+    const colors = {
+        eyeColor: 'npcFace_eyeColorPicker', hairColor: 'npcFace_hairColorPicker',
+        lipColor: 'npcFace_lipColorPicker', skinColor: 'npcFace_skinColorPicker'
+    };
+    for (const param in colors) {
+        if (faceData[param] !== undefined) {
+            const colorPickerElement = el(colors[param]);
+            if (colorPickerElement) colorPickerElement.value = faceData[param];
+        }
+    }
+}
+
+/**
+ * Reads NPC face parameters from UI, updates the NPC's faceData, and refreshes the ASCII face preview.
+ * @param {object} npc - The NPC object whose face is being updated.
+ */
+export function updateNpcFacePreview(npc) {
+    if (!npc || !assetManagerInstance) { // assetManagerInstance needed for PRESET_COLORS in generateRandomFaceParams
+        console.error("NPC Face Preview: NPC object or assetManagerInstance is missing.");
+        return;
+    }
+    if (!npc.faceData) {
+        npc.faceData = {}; // Ensure faceData object exists
+    }
+
+    const faceParams = npc.faceData;
+    const el = (id) => document.getElementById(id);
+
+    // Read values from UI elements and update faceParams
+    faceParams.headWidth = parseInt(el('npcFace_headWidthRange').value);
+    el('npcFace_headWidthValue').textContent = faceParams.headWidth;
+
+    faceParams.headHeight = parseInt(el('npcFace_headHeightRange').value);
+    el('npcFace_headHeightValue').textContent = faceParams.headHeight;
+
+    faceParams.eyeSize = parseInt(el('npcFace_eyeSizeRange').value);
+    el('npcFace_eyeSizeValue').textContent = faceParams.eyeSize;
+
+    faceParams.browHeight = parseInt(el('npcFace_browHeightRange').value);
+    el('npcFace_browHeightValue').textContent = faceParams.browHeight;
+
+    faceParams.browAngle = parseInt(el('npcFace_browAngleRange').value);
+    el('npcFace_browAngleValue').textContent = faceParams.browAngle;
+
+    faceParams.browWidth = parseInt(el('npcFace_browWidthRange').value);
+    el('npcFace_browWidthValue').textContent = faceParams.browWidth;
+
+    faceParams.noseWidth = parseInt(el('npcFace_noseWidthRange').value);
+    el('npcFace_noseWidthValue').textContent = faceParams.noseWidth;
+
+    faceParams.noseHeight = parseInt(el('npcFace_noseHeightRange').value);
+    el('npcFace_noseHeightValue').textContent = faceParams.noseHeight;
+
+    faceParams.mouthWidth = parseInt(el('npcFace_mouthWidthRange').value);
+    el('npcFace_mouthWidthValue').textContent = faceParams.mouthWidth;
+
+    faceParams.mouthFullness = parseInt(el('npcFace_mouthFullnessRange').value);
+    el('npcFace_mouthFullnessValue').textContent = faceParams.mouthFullness;
+
+    faceParams.hairstyle = el('npcFace_hairstyleSelect').value;
+    faceParams.facialHair = el('npcFace_facialHairSelect').value;
+    faceParams.glasses = el('npcFace_glassesSelect').value;
+
+    faceParams.eyeColor = el('npcFace_eyeColorPicker').value;
+    faceParams.hairColor = el('npcFace_hairColorPicker').value;
+    faceParams.lipColor = el('npcFace_lipColorPicker').value;
+    faceParams.skinColor = el('npcFace_skinColorPicker').value;
+
+    // Generate ASCII face
+    if (typeof window.generateAsciiFace === 'function') {
+        faceParams.asciiFace = window.generateAsciiFace(faceParams);
+    } else {
+        console.error("generateAsciiFace function is not available.");
+        faceParams.asciiFace = "Error: generateAsciiFace not found.";
+    }
+
+    // Update preview
+    const previewElement = el('npcFace_asciiFacePreview');
+    if (previewElement) {
+        previewElement.innerHTML = faceParams.asciiFace;
+    }
+    // No snapshot() here, as this function only updates the preview and the in-memory appState.selectedNpc.
+    // snapshot() should be called by the event handler that triggers the save of these properties if needed.
+}
+
+
+/**
+ * Initializes or ensures face parameters for an NPC in the map maker context.
+ * If faceData or its sub-properties are missing, it generates random ones.
+ * Updates the npc.faceData object directly.
+ * @param {object} npc - The NPC object from mapData.npcs.
+ */
+function initializeNpcFaceParamsForMapMakerUI(npc) {
+    if (!npc) return;
+    let needsFullRandom = false;
+    if (!npc.faceData) {
+        npc.faceData = {};
+        needsFullRandom = true;
+    }
+
+    // Check for essential parameters; if any are missing, regenerate the whole set.
+    const requiredParams = ['headWidth', 'hairstyle', 'skinColor', 'asciiFace']; // Sample required params
+    for (const param of requiredParams) {
+        if (npc.faceData[param] === undefined) {
+            needsFullRandom = true;
+            break;
+        }
+    }
+
+    if (needsFullRandom && typeof window.generateRandomFaceParams === 'function') {
+        window.generateRandomFaceParams(npc.faceData); // Populates npc.faceData
+        logToConsole(`Initialized random face params for NPC ${npc.id || npc.name} in Map Maker.`);
+    }
+
+    // Always ensure asciiFace is generated if generateAsciiFace is available
+    if (npc.faceData && typeof window.generateAsciiFace === 'function') {
+        // Before generating, ensure all sub-params needed by generateAsciiFace are present.
+        // generateRandomFaceParams should have set them if needsFullRandom was true.
+        // If needsFullRandom was false, but asciiFace is missing, we still need to ensure sub-params.
+        // This is a simplified check; ideally, validate all params required by generateAsciiFace.
+        if (npc.faceData.headWidth === undefined && typeof window.generateRandomFaceParams === 'function') {
+            window.generateRandomFaceParams(npc.faceData); // Re-populate if critical generation params are missing
+        }
+        npc.faceData.asciiFace = window.generateAsciiFace(npc.faceData);
+    } else if (npc.faceData && !npc.faceData.asciiFace) {
+        npc.faceData.asciiFace = ":( (preview error)";
+    }
+}
+
 
 
 /**

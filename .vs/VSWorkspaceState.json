@@ -3,9 +3,10 @@
     "",
     "\\assets",
     "\\assets\\definitions",
-    "\\assets\\maps",
-    "\\js"
+    "\\js",
+    "\\mapMaker",
+    "\\Maps"
   ],
-  "SelectedNode": "\\script.js",
+  "SelectedNode": "\\assets\\definitions\\npcs.json",
   "PreviewInSolutionExplorer": false
 }

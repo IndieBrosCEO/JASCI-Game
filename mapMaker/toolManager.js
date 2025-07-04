@@ -171,6 +171,24 @@ export function handleNpcToolClick(x, y, z, mapData, appState, assetManager, int
             // Ensure definitionId is stored on the instance if not already part of baseNpcDef structure
             newNpcInstance.definitionId = selectedBaseNpcId;
 
+            // Initialize faceData for the new NPC
+            newNpcInstance.faceData = {};
+            if (typeof window.generateRandomFaceParams === 'function' && typeof window.generateAsciiFace === 'function') {
+                window.generateRandomFaceParams(newNpcInstance.faceData);
+                newNpcInstance.faceData.asciiFace = window.generateAsciiFace(newNpcInstance.faceData);
+            } else {
+                console.warn("Map Maker: generateRandomFaceParams or generateAsciiFace not found. New NPC will have default face data.");
+                newNpcInstance.faceData = { // Basic fallback
+                    headWidth: 5, headHeight: 7, eyeSize: 2, browHeight: 0, browAngle: 0, browWidth: 2,
+                    noseWidth: 2, noseHeight: 2, mouthWidth: 3, mouthFullness: 1,
+                    hairstyle: "short", facialHair: "none", glasses: "none",
+                    eyeColor: "#000000", hairColor: "#000000", lipColor: "#FFC0CB", skinColor: "#F5DEB3",
+                    asciiFace: ":)"
+                };
+            }
+            // Initialize wieldedWeapon (though not directly part of face generation, good place for new NPC defaults)
+            newNpcInstance.wieldedWeapon = "Unarmed";
+
 
             addNpcToMap(newNpcInstance); // Add to mapData.npcs
             appState.selectedNpc = newNpcInstance; // Select the newly created NPC

@@ -198,4 +198,7 @@ gameState.player.face = {
     asciiFace: "" // To store the generated ASCII face string
 };
 
+// Add wieldedWeapon to player
+gameState.player.wieldedWeapon = "";
+
 window.gameState = gameState;

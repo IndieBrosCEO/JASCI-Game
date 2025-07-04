@@ -224,9 +224,19 @@ function spawnNpcsFromMapData(mapData) {
                 // Override name if provided in instance data, otherwise use definition's name
                 newNpc.name = npcPlacementInfo.name || npcDefinition.name;
 
-                // Copy other potential overrides from npcPlacementInfo (e.g., specific stats, health, inventory)
+                // Copy faceData from the map instance if it exists
+                if (npcPlacementInfo.faceData) {
+                    newNpc.faceData = JSON.parse(JSON.stringify(npcPlacementInfo.faceData)); // Deep copy
+                }
+
+                // Copy other potential overrides from npcPlacementInfo (e.g., specific stats, health, inventory, equippedWeaponId)
+                if (npcPlacementInfo.equippedWeaponId) {
+                    newNpc.equippedWeaponId = npcPlacementInfo.equippedWeaponId;
+                }
+                // TODO: Add similar copying for other overridable properties like stats, specific health values if needed.
                 // This part needs to be selective based on what properties map instances can override.
-                // For now, we've handled id, definitionId, mapPos, and name.
+                // For now, we've handled id, definitionId, mapPos, name, faceData, and equippedWeaponId.
+
 
                 if (typeof window.initializeHealth === 'function') {
                     window.initializeHealth(newNpc); // Initializes health based on (now potentially overridden) stats
@@ -245,6 +255,18 @@ function spawnNpcsFromMapData(mapData) {
                     lastKnownSafePos: { ...newNpc.mapPos } // Last known position that was safe (e.g., after a successful move)
                 };
 
+                // Initialize face data, wielded weapon, and ensure name is set
+                if (typeof window.initializeNpcFace === 'function') {
+                    window.initializeNpcFace(newNpc); // This will also handle default name and weapon
+                } else {
+                    console.error(`initializeNpcFace function not found for NPC: ${newNpc.id}`);
+                    // Basic fallbacks if function is missing
+                    if (newNpc.name === undefined) newNpc.name = "Unknown NPC";
+                    if (newNpc.wieldedWeapon === undefined) newNpc.wieldedWeapon = "Unarmed";
+                    if (!newNpc.faceData) newNpc.faceData = { asciiFace: ":(" };
+                    else if (!newNpc.faceData.asciiFace) newNpc.faceData.asciiFace = ":|";
+                }
+
 
                 // teamId should be copied by JSON.parse(JSON.stringify(npcDefinition))
                 // Log if teamId is unexpectedly missing after cloning and initialization
@@ -253,7 +275,7 @@ function spawnNpcsFromMapData(mapData) {
                 }
 
                 gameState.npcs.push(newNpc);
-                logToConsole(`Spawned NPC: ${newNpc.name || newNpc.id} (ID: ${newNpc.id}, Team: ${newNpc.teamId}) at (X:${newNpc.mapPos.x}, Y:${newNpc.mapPos.y}, Z:${newNpc.mapPos.z})`);
+                logToConsole(`Spawned NPC: ${newNpc.name || newNpc.id} (ID: ${newNpc.id}, Team: ${newNpc.teamId}) at (X:${newNpc.mapPos.x}, Y:${newNpc.mapPos.y}, Z:${newNpc.mapPos.z}) - Face Initialized.`);
             } else {
                 console.warn(`NPC definition not found for ID: ${npcPlacementInfo.definitionId || npcPlacementInfo.baseId || npcPlacementInfo.type} in map data for map ${mapData.name || mapData.id}.`);
             }
@@ -797,6 +819,26 @@ function handleKeyDown(event) {
         }
     }
 
+    // Zoom controls with + and - keys
+    // Note: '+' is often 'Shift' + '='. We'll listen for '=' and '-' primarily.
+    if (!isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isTargetingMode) {
+        if (event.key === '=' || event.key === '+') { // '=' is the unshifted key for '+' on many keyboards
+            const zoomInButton = document.getElementById('zoomInButton');
+            if (zoomInButton) {
+                zoomInButton.click();
+                event.preventDefault();
+                return;
+            }
+        } else if (event.key === '-') {
+            const zoomOutButton = document.getElementById('zoomOutButton');
+            if (zoomOutButton) {
+                zoomOutButton.click();
+                event.preventDefault();
+                return;
+            }
+        }
+    }
+
     // Logic for player Z change following
     // This should be triggered when playerPos.z changes, typically after a move action that involves Z-transition.
     // For now, we'll just ensure that if viewFollowsPlayerZ is true, currentViewZ is synced.
@@ -1320,6 +1362,19 @@ async function initialize() { // Made async
         // window.mapRenderer.scheduleRender(); // Initial render of the map (or empty state) - gameLoop will handle this
         window.updateInventoryUI(); // Initialize inventory display (now from js/inventory.js)
         updatePlayerStatusDisplay(); // Initial display of clock and needs
+
+        // Initialize Entity Tooltip System
+        if (typeof window.initEntityTooltip === 'function') {
+            const mapContainer = document.getElementById('mapContainer');
+            if (mapContainer) {
+                window.initEntityTooltip(mapContainer);
+                logToConsole("Entity tooltip system initialized.");
+            } else {
+                console.error("Map container not found for tooltip initialization.");
+            }
+        } else {
+            console.error("initEntityTooltip function not found.");
+        }
 
         requestAnimationFrame(gameLoop); // Start the main game loop
 

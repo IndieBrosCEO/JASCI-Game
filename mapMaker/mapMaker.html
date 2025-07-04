@@ -205,6 +205,123 @@
                 <input type="color" id="npcColorInput" style="margin-bottom: 5px;" />
                 <br />
                 -->
+
+                <div id="npcFaceGeneratorContainer" style="margin-top: 15px; border-top: 1px solid #555; padding-top: 10px;">
+                    <h5>NPC Face Configuration</h5>
+                    <div>
+                        <label for="npcFace_headWidthRange">Head Width (5-12):</label>
+                        <input type="range" id="npcFace_headWidthRange" min="5" max="12" value="8"> <!-- Default to mid-range -->
+                        <span id="npcFace_headWidthValue">8</span>
+                    </div>
+                    <div>
+                        <label for="npcFace_headHeightRange">Head Height (6-12):</label>
+                        <input type="range" id="npcFace_headHeightRange" min="6" max="12" value="9"> <!-- Default to mid-range -->
+                        <span id="npcFace_headHeightValue">9</span>
+                    </div>
+                    <div>
+                        <label for="npcFace_eyeSizeRange">Eye Size (1-3):</label>
+                        <input type="range" id="npcFace_eyeSizeRange" min="1" max="3" value="2">
+                        <span id="npcFace_eyeSizeValue">2</span>
+                    </div>
+                    <div>
+                        <label for="npcFace_browHeightRange">Brow Height (0-1):</label>
+                        <input type="range" id="npcFace_browHeightRange" min="0" max="1" value="0">
+                        <span id="npcFace_browHeightValue">0</span>
+                    </div>
+                    <div>
+                        <label for="npcFace_browAngleRange">Brow Angle (-1 to 1):</label>
+                        <input type="range" id="npcFace_browAngleRange" min="-1" max="1" value="0" step="1">
+                        <span id="npcFace_browAngleValue">0</span>
+                    </div>
+                    <div>
+                        <label for="npcFace_browWidthRange">Brow Width (1-3):</label>
+                        <input type="range" id="npcFace_browWidthRange" min="1" max="3" value="2">
+                        <span id="npcFace_browWidthValue">2</span>
+                    </div>
+                    <div>
+                        <label for="npcFace_noseWidthRange">Nose Width (1-5):</label>
+                        <input type="range" id="npcFace_noseWidthRange" min="1" max="5" value="3"> <!-- Default to mid-range -->
+                        <span id="npcFace_noseWidthValue">3</span>
+                    </div>
+                    <div>
+                        <label for="npcFace_noseHeightRange">Nose Height (1-2):</label>
+                        <input type="range" id="npcFace_noseHeightRange" min="1" max="2" value="1">
+                        <span id="npcFace_noseHeightValue">1</span>
+                    </div>
+                    <div>
+                        <label for="npcFace_mouthWidthRange">Mouth Width (1-6):</label>
+                        <input type="range" id="npcFace_mouthWidthRange" min="1" max="6" value="3"> <!-- Default to mid-range -->
+                        <span id="npcFace_mouthWidthValue">3</span>
+                    </div>
+                    <div>
+                        <label for="npcFace_mouthFullnessRange">Mouth Fullness (1-2):</label>
+                        <input type="range" id="npcFace_mouthFullnessRange" min="1" max="2" value="1">
+                        <span id="npcFace_mouthFullnessValue">1</span>
+                    </div>
+                    <div>
+                        <label for="npcFace_hairstyleSelect">Hairstyle:</label>
+                        <select id="npcFace_hairstyleSelect">
+                            <option value="bald">Bald</option>
+                            <option value="short" selected>Short</option>
+                            <option value="medium">Medium</option>
+                            <option value="long">Long</option>
+                            <option value="mohawk">Mohawk</option>
+                            <option value="tonsure">Tonsure</option>
+                            <option value="pixie-cut">Pixie Cut</option>
+                            <option value="buzz-cut">Buzz Cut</option>
+                            <option value="bowl-cut">Bowl Cut</option>
+                            <option value="jawline-bob">Jawline Bob</option>
+                            <option value="combover">Combover</option>
+                            <option value="french-crop-curls">French Crop (Curls)</option>
+                            <option value="mullet">Mullet</option>
+                            <option value="shag">Shag</option>
+                            <option value="asymmetrical-bob">Asymmetrical Bob</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="npcFace_facialHairSelect">Facial Hair:</label>
+                        <select id="npcFace_facialHairSelect">
+                            <option value="none" selected>None</option>
+                            <option value="stubble">Stubble</option>
+                            <option value="mustache">Mustache</option>
+                            <option value="goatee">Goatee</option>
+                            <option value="beard">Beard</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="npcFace_glassesSelect">Glasses:</label>
+                        <select id="npcFace_glassesSelect">
+                            <option value="none" selected>None</option>
+                            <option value="round">Round</option>
+                            <option value="square">Square</option>
+                            <option value="monocle">Monocle</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="npcFace_eyeColorPicker">Eye Color:</label>
+                        <input type="color" id="npcFace_eyeColorPicker" value="#000000">
+                        <div id="npcFace_eyePresetContainer" class="preset-colors-container"></div>
+                    </div>
+                    <div>
+                        <label for="npcFace_hairColorPicker">Hair Color:</label>
+                        <input type="color" id="npcFace_hairColorPicker" value="#000000">
+                        <div id="npcFace_hairPresetContainer" class="preset-colors-container"></div>
+                    </div>
+                    <div>
+                        <label for="npcFace_lipColorPicker">Lip Color:</label>
+                        <input type="color" id="npcFace_lipColorPicker" value="#FFC0CB">
+                        <div id="npcFace_lipPresetContainer" class="preset-colors-container"></div>
+                    </div>
+                    <div>
+                        <label for="npcFace_skinColorPicker">Skin Color:</label>
+                        <input type="color" id="npcFace_skinColorPicker" value="#F5DEB3">
+                        <div id="npcFace_skinPresetContainer" class="preset-colors-container"></div>
+                    </div>
+                    <button type="button" id="npcFace_randomizeFaceButton" style="margin-top: 10px; margin-bottom: 5px;">Randomize NPC Face</button>
+                    <h6>Preview:</h6>
+                    <pre id="npcFace_asciiFacePreview" style="border: 1px solid #ccc; padding: 5px; min-height: 100px; background-color: #111; font-size: 10px; line-height: 1.0;"></pre>
+                </div>
+
                 <button id="saveNpcPropertiesBtn" style="margin-top: 5px;">Save NPC</button>
             </div>
             <div id="selectedNpcInfo" style="margin-top: 5px; padding: 5px; border: 1px solid #eee;">
@@ -247,6 +364,8 @@
     <div id="grid"></div>
 
     <script src="../js/assetManager.js"></script>
+    <script src="../js/utils.js"></script> <!-- For color functions needed by faceGenerator -->
+    <script src="../js/faceGenerator.js"></script>
     <script type="module" src="mapMaker.js"></script>
 </body>
 </html>
