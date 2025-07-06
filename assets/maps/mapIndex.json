@@ -1,5 +1,8 @@
 ﻿[
   {
+    "id": "FPD",
+    "name": "Fallbrook Police Department"
+  },{
     "id": "tallBuilding",
     "name": "Tall Building"
   },
