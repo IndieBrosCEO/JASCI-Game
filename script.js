@@ -396,6 +396,21 @@ function handleKeyDown(event) {
         event.preventDefault();
         return;
     }
+
+    // Toggle Look Mode ('L' key)
+    if (event.key === 'l' || event.key === 'L') {
+        if (!isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isTargetingMode) {
+            gameState.isLookModeActive = !gameState.isLookModeActive;
+            logToConsole(`Look Mode ${gameState.isLookModeActive ? 'activated' : 'deactivated'}.`);
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Generic UI click
+            if (!gameState.isLookModeActive && typeof window.hideLookTooltip === 'function') {
+                window.hideLookTooltip(); // Hide tooltip when exiting look mode
+            }
+            event.preventDefault();
+            return;
+        }
+    }
+
     // Console Toggle (Backquote key, often with Shift for tilde '~')
     if (event.code === 'Backquote') {
         event.preventDefault();
@@ -1363,18 +1378,9 @@ async function initialize() { // Made async
         window.updateInventoryUI(); // Initialize inventory display (now from js/inventory.js)
         updatePlayerStatusDisplay(); // Initial display of clock and needs
 
-        // Initialize Entity Tooltip System
-        if (typeof window.initEntityTooltip === 'function') {
-            const mapContainer = document.getElementById('mapContainer');
-            if (mapContainer) {
-                window.initEntityTooltip(mapContainer);
-                logToConsole("Entity tooltip system initialized.");
-            } else {
-                console.error("Map container not found for tooltip initialization.");
-            }
-        } else {
-            console.error("initEntityTooltip function not found.");
-        }
+        // Entity Tooltip System is initialized by direct event listeners on mapContainerElement later in this function.
+        // No explicit initEntityTooltip function is called here anymore.
+        logToConsole("Entity tooltip event listeners will be set up with other mapContainer listeners.");
 
         requestAnimationFrame(gameLoop); // Start the main game loop
 
@@ -1390,57 +1396,75 @@ async function initialize() { // Made async
 
     document.addEventListener('keydown', handleKeyDown);
 
-    const mapContainer = document.getElementById('mapContainer');
-    if (mapContainer) {
-        mapContainer.addEventListener('click', (event) => {
+    const mapContainerElement = document.getElementById('mapContainer'); // Renamed to avoid conflict
+    if (mapContainerElement) {
+        mapContainerElement.addEventListener('click', (event) => {
             if (gameState.isRetargeting && combatManager) {
-                const rect = mapContainer.getBoundingClientRect();
-                // Assuming standard rendering where each character is roughly a fixed size cell.
-                // This needs to be adjusted if you have a more complex rendering (e.g., graphical tiles, scaling).
-                // For a text-based map, if each char is, say, 8px wide and 16px high:
-                const TILE_WIDTH = mapContainer.firstChild && mapContainer.firstChild.offsetWidth ? mapContainer.firstChild.offsetWidth : 8; // Approximate width of a character/tile
-                const TILE_HEIGHT = mapContainer.firstChild && mapContainer.firstChild.offsetHeight ? mapContainer.firstChild.offsetHeight / (window.mapRenderer.getCurrentMapData()?.dimensions.height || 1) : 16; // Approximate height
+                const rect = mapContainerElement.getBoundingClientRect();
+                const scrollLeft = mapContainerElement.scrollLeft;
+                const scrollTop = mapContainerElement.scrollTop;
+                // Determine tile size (character width and height)
+                let tileWidth = 10; let tileHeight = 18;
+                const tempSpan = document.createElement('span');
+                tempSpan.style.fontFamily = getComputedStyle(mapContainerElement).fontFamily;
+                tempSpan.style.fontSize = getComputedStyle(mapContainerElement).fontSize;
+                tempSpan.style.lineHeight = getComputedStyle(mapContainerElement).lineHeight;
+                tempSpan.style.position = 'absolute'; tempSpan.style.visibility = 'hidden';
+                tempSpan.textContent = 'M';
+                document.body.appendChild(tempSpan);
+                tileWidth = tempSpan.offsetWidth;
+                tileHeight = tempSpan.offsetHeight;
+                document.body.removeChild(tempSpan);
+                if (tileWidth === 0 || tileHeight === 0) { tileWidth = 10; tileHeight = 18; }
 
-                const x = Math.floor((event.clientX - rect.left) / TILE_WIDTH);
-                const y = Math.floor((event.clientY - rect.top) / TILE_HEIGHT);
-                const z = gameState.currentViewZ; // Target on the current view Z
 
-                if (x >= 0 && x < window.mapRenderer.getCurrentMapData().dimensions.width &&
-                    y >= 0 && y < window.mapRenderer.getCurrentMapData().dimensions.height) {
+                const x = Math.floor((event.clientX - rect.left + scrollLeft) / tileWidth);
+                const y = Math.floor((event.clientY - rect.top + scrollTop) / tileHeight);
+                const z = gameState.currentViewZ;
 
+                const currentMap = window.mapRenderer.getCurrentMapData();
+                if (currentMap && x >= 0 && x < currentMap.dimensions.width && y >= 0 && y < currentMap.dimensions.height) {
                     gameState.targetingCoords = { x, y, z };
-                    gameState.selectedTargetEntity = null; // Reset
+                    gameState.selectedTargetEntity = null;
                     for (const npc of gameState.npcs) {
                         if (npc.mapPos && npc.mapPos.x === x && npc.mapPos.y === y && npc.mapPos.z === z) {
                             gameState.selectedTargetEntity = npc;
                             break;
                         }
                     }
-
                     const finalTargetPos = gameState.selectedTargetEntity ? gameState.selectedTargetEntity.mapPos : gameState.targetingCoords;
-
-                    // Fetch current data for LOS check
                     const currentTilesetsForClickLOS = window.assetManager ? window.assetManager.tilesets : null;
                     const currentMapDataForClickLOS = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
 
                     if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos, currentTilesetsForClickLOS, currentMapDataForClickLOS)) {
                         logToConsole(`No line of sight to target at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). Click another target.`, "orange");
-                        // Keep isRetargeting true, allow another click
-                        window.mapRenderer.scheduleRender(); // Update targeting cursor if it moves
+                        window.mapRenderer.scheduleRender();
                         return;
                     }
-
                     logToConsole(`Clicked target on map at X:${x}, Y:${y}, Z:${z}`);
                     gameState.targetConfirmed = true;
                     gameState.isRetargeting = false;
                     gameState.retargetingJustHappened = true;
                     combatManager.promptPlayerAttackDeclaration();
-                    window.mapRenderer.scheduleRender(); // To update UI, remove targeting cursor potentially
+                    window.mapRenderer.scheduleRender();
                 }
             }
         });
+
+        // Event listener for Look Mode mouse movement
+        mapContainerElement.addEventListener('mousemove', (event) => {
+            if (gameState.isLookModeActive && typeof window.showLookTooltip === 'function') {
+                window.showLookTooltip(event, gameState, window.mapRenderer, window.assetManager);
+            }
+        });
+        mapContainerElement.addEventListener('mouseleave', () => { // Hide tooltip when mouse leaves map
+            if (typeof window.hideLookTooltip === 'function') { // Always hide if mouse leaves, regardless of look mode status
+                window.hideLookTooltip();
+            }
+        });
+
     } else {
-        console.error("Map container not found for click listener.");
+        console.error("Map container not found for click and mousemove listeners.");
     }
 
     // Listen for campaign loaded event

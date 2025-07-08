@@ -3,10 +3,8 @@
     "",
     "\\assets",
     "\\assets\\definitions",
-    "\\js",
-    "\\mapMaker",
-    "\\Maps"
+    "\\js"
   ],
-  "SelectedNode": "\\assets\\definitions\\consumables.json",
+  "SelectedNode": "\\js\\combatManager.js",
   "PreviewInSolutionExplorer": false
 }

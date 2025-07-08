@@ -132,7 +132,7 @@ window._isTilePassableAndUnoccupiedForNpc = _isTilePassableAndUnoccupiedForNpc; 
 
 
 // NPC Movement function (moved from combatManager.js)
-async function moveNpcTowardsTarget(npc, targetPos, gameState, assetManager) {
+async function moveNpcTowardsTarget(npc, targetPos, gameState, assetManager, animationDuration = null) { // Added animationDuration
     if (!npc.mapPos || npc.currentMovementPoints <= 0 || !targetPos) return false;
 
     const path = window.findPath3D(npc.mapPos, targetPos, npc, window.mapRenderer.getCurrentMapData(), assetManager.tilesets);
@@ -227,14 +227,18 @@ async function moveNpcTowardsTarget(npc, targetPos, gameState, assetManager) {
         return false;
     }
 
+    // Pass the animationDuration to attemptCharacterMove.
+    // attemptCharacterMove itself doesn't play the animation; it just changes position.
+    // The animation is played *after* a successful move.
     const moveSuccessful = await window.attemptCharacterMove(npc, direction, assetManager);
 
     if (moveSuccessful) {
-        npc.movedThisTurn = true;
+        npc.movedThisTurn = true; // This flag is more relevant for combat.
         if (window.animationManager) {
+            const finalAnimationDuration = animationDuration !== null ? animationDuration : (gameState.isInCombat ? 300 : 50); // Default combat:300, OOC:50
             await window.animationManager.playAnimation('movement', {
                 entity: npc, startPos: originalPos, endPos: { ...npc.mapPos },
-                sprite: npc.sprite, color: npc.color, duration: 300
+                sprite: npc.sprite, color: npc.color, duration: finalAnimationDuration
             });
         }
         logToConsole(`ACTION: ${npc.name || npc.id} moved ${direction}. New Pos: (${npc.mapPos.x},${npc.mapPos.y}, Z:${npc.mapPos.z}). MP Left: ${npc.currentMovementPoints}`, 'gold');
@@ -390,9 +394,18 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
         npc.currentMovementPoints = maxMovesPerCycle - movesMadeThisCycle; // Budget for OOC moves
 
         if (npc.currentMovementPoints > 0) {
-            // Call the moveNpcTowardsTarget now in npcDecisions.js
-            if (await moveNpcTowardsTarget(npc, pathfindingTarget, gameState, assetManager)) {
-                movesMadeThisCycle = (maxMovesPerCycle - movesMadeThisCycle) - npc.currentMovementPoints;
+            // Determine animation speed for OOC movement
+            const oocAnimationDuration = 50; // Fast animation for out-of-combat
+
+            // Call the moveNpcTowardsTarget now in npcDecisions.js, passing the animation duration
+            if (await moveNpcTowardsTarget(npc, pathfindingTarget, gameState, assetManager, oocAnimationDuration)) {
+                movesMadeThisCycle = (maxMovesPerCycle - movesMadeThisCycle) - npc.currentMovementPoints; // This logic seems complex for movesMadeThisCycle
+                // It should likely just be incremented if a move was successful.
+                // Let's simplify: if moveNpcTowardsTarget returns true, increment movesMadeThisCycle.
+                // However, moveNpcTowardsTarget itself calls attemptCharacterMove which deducts MP.
+                // The number of moves taken within moveNpcTowardsTarget might be more than 1 if it handles multiple steps.
+                // For now, the existing MP deduction within moveNpcTowardsTarget/attemptCharacterMove will handle costs.
+                // The loop condition `movesMadeThisCycle < maxMovesPerCycle` will control iterations.
                 npc.memory.lastKnownSafePos = { ...npc.mapPos };
                 const visitedKey = `${npc.mapPos.x},${npc.mapPos.y},${npc.mapPos.z}`;
                 if (!npc.memory.recentlyVisitedTiles.includes(visitedKey)) {

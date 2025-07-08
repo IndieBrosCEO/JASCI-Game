@@ -78,7 +78,8 @@ async function endTurn_internal() { // Make async
     if (!gameState.isInCombat && gameState.npcs && gameState.npcs.length > 0) {
         logToConsole("Processing NPC out-of-combat turns...", "darkgrey");
         for (const npc of gameState.npcs) {
-            if (npc && npc.health?.torso?.current > 0 && npc.health?.head?.current > 0) {
+            // Ensure NPC is alive before processing their turn
+            if (npc && npc.health && typeof npc.health.torso?.current === 'number' && typeof npc.health.head?.current === 'number' && npc.health.torso.current > 0 && npc.health.head.current > 0) {
                 // Ensure combatManager and localAssetManager (assetManager) are available
                 if (window.combatManager && localAssetManager && typeof window.executeNpcTurn === 'function') {
                     // NPC OOC turns are also async if they involve movement animations
@@ -88,6 +89,8 @@ async function endTurn_internal() { // Make async
                     if (!localAssetManager) logToConsole(`ERROR: localAssetManager not found for NPC ${npc.id} OOC turn.`, "red");
                     if (typeof window.executeNpcTurn !== 'function') logToConsole(`ERROR: window.executeNpcTurn not found for NPC ${npc.id} OOC turn.`, "red");
                 }
+            } else {
+                logToConsole(`Skipping out-of-combat turn for NPC ${npc?.id || 'UnknownID'} as they are incapacitated or health data is missing.`, "grey");
             }
         }
         logToConsole("Finished processing NPC out-of-combat turns.", "darkgrey");

@@ -1,194 +1,174 @@
-// js/tooltip.js
+﻿// js/tooltip.js
 
-let entityTooltipElement = null;
-let mapContainerElement = null;
-const TILE_SIZE_APPROX = { width: 10, height: 16 }; // Approximate, may need adjustment or dynamic calculation
-
-function initEntityTooltip(_mapContainerElement) {
-    mapContainerElement = _mapContainerElement;
-    entityTooltipElement = document.getElementById('entityTooltip');
-
-    if (!mapContainerElement) {
-        console.error("Tooltip: Map container element not provided for initialization.");
-        return;
-    }
-    if (!entityTooltipElement) {
-        console.error("Tooltip: Tooltip element with ID 'entityTooltip' not found.");
+function showLookTooltip(event, gameState, mapRenderer, assetManager) {
+    const tooltipElement = document.getElementById('entityTooltip');
+    if (!tooltipElement || !gameState.isLookModeActive) {
+        if (tooltipElement) {
+            tooltipElement.classList.add('hidden');
+            tooltipElement.style.opacity = '0'; // Ensure opacity is reset if used for transitions
+        }
         return;
     }
 
-    mapContainerElement.addEventListener('mousemove', handleMapMouseMove);
-    mapContainerElement.addEventListener('mouseleave', hideEntityTooltip); // Hide when mouse leaves map
-    // Also hide if mouse enters a UI panel that might overlap map, e.g. right-panel
-    const rightPanel = document.getElementById('right-panel');
-    if (rightPanel) {
-        rightPanel.addEventListener('mouseenter', hideEntityTooltip);
-    }
-    const leftPanel = document.getElementById('left-panel');
-    if (leftPanel) {
-        leftPanel.addEventListener('mouseenter', hideEntityTooltip);
-    }
-}
+    const mapContainer = document.getElementById('mapContainer');
+    if (!mapContainer) return;
 
-function handleMapMouseMove(event) {
-    if (!gameState || !gameState.gameStarted || !mapContainerElement || !entityTooltipElement || !window.mapRenderer) {
-        hideEntityTooltip();
+    const rect = mapContainer.getBoundingClientRect();
+    const scrollLeft = mapContainer.scrollLeft;
+    const scrollTop = mapContainer.scrollTop;
+
+    const mouseXRelative = event.clientX - rect.left + scrollLeft;
+    const mouseYRelative = event.clientY - rect.top + scrollTop;
+
+    let tileWidth = 10;
+    let tileHeight = 18;
+    const tempSpan = document.createElement('span');
+    tempSpan.style.fontFamily = getComputedStyle(mapContainer).fontFamily;
+    tempSpan.style.fontSize = getComputedStyle(mapContainer).fontSize;
+    tempSpan.style.lineHeight = getComputedStyle(mapContainer).lineHeight;
+    tempSpan.style.position = 'absolute';
+    tempSpan.style.visibility = 'hidden';
+    tempSpan.textContent = 'M';
+    document.body.appendChild(tempSpan);
+    tileWidth = tempSpan.offsetWidth;
+    tileHeight = tempSpan.offsetHeight;
+    document.body.removeChild(tempSpan);
+
+    if (tileWidth === 0 || tileHeight === 0) {
+        console.warn("Tooltip: Failed to measure tile dimensions accurately. Using defaults.");
+        tileWidth = 10;
+        tileHeight = 18;
+    }
+
+    const mapX = Math.floor(mouseXRelative / tileWidth);
+    const mapY = Math.floor(mouseYRelative / tileHeight);
+    const mapZ = gameState.currentViewZ;
+
+    const mapData = mapRenderer.getCurrentMapData();
+    if (!mapData || !mapData.dimensions || mapX < 0 || mapX >= mapData.dimensions.width || mapY < 0 || mapY >= mapData.dimensions.height) {
+        tooltipElement.classList.add('hidden');
+        tooltipElement.style.opacity = '0';
         return;
     }
 
-    const rect = mapContainerElement.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    let htmlContent = '';
 
-    // Approximate tile size based on the map container's first child (a tile span)
-    // This is a bit fragile and assumes the first child is representative.
-    let tileWidth = TILE_SIZE_APPROX.width;
-    let tileHeight = TILE_SIZE_APPROX.height;
-    const firstTileSpan = mapContainerElement.querySelector('.tile');
+    // Basic Info
+    htmlContent += `<div class="section-title">Cell Info</div>`;
+    htmlContent += `<ul>`;
+    htmlContent += `<li><strong>Coords:</strong> (${mapX}, ${mapY}, Z:${mapZ})</li>`;
+    htmlContent += `<li><strong>Distance:</strong> ${getDistance3D(gameState.playerPos, { x: mapX, y: mapY, z: mapZ }).toFixed(1)}</li>`;
+    const lightLevel = getTileLightingLevel(mapX, mapY, mapZ, gameState);
+    htmlContent += `<li><strong>Light:</strong> ${lightLevel.charAt(0).toUpperCase() + lightLevel.slice(1)}</li>`;
+    htmlContent += `</ul>`;
 
-    if (firstTileSpan) {
-        // getComputedStyle is more reliable than offsetWidth/Height for text nodes or complex content
-        const computedStyle = window.getComputedStyle(firstTileSpan);
-        // For text nodes, width might not be directly usable.
-        // A more robust way would be to get the font size and estimate, or have fixed tile dimensions.
-        // For now, if offsetWidth is zero (like for a space char), use default.
-        tileWidth = firstTileSpan.offsetWidth > 0 ? firstTileSpan.offsetWidth : TILE_SIZE_APPROX.width;
-
-        // Height is also tricky with <br>. Let's use line-height from mapContainer or a default.
-        const mcStyle = window.getComputedStyle(mapContainerElement);
-        const lineHeight = parseFloat(mcStyle.lineHeight);
-        tileHeight = !isNaN(lineHeight) && lineHeight > 0 ? lineHeight : TILE_SIZE_APPROX.height;
-
-    }
-
-
-    const hoverX = Math.floor(mouseX / tileWidth);
-    const hoverY = Math.floor(mouseY / tileHeight);
-    const currentZ = gameState.currentViewZ;
-
-    let entityToShow = null;
-
-    // Check if player is at these coordinates
-    if (gameState.playerPos && gameState.playerPos.x === hoverX && gameState.playerPos.y === hoverY && gameState.playerPos.z === currentZ) {
-        entityToShow = gameState; // Use gameState for player as it holds stats, health, etc.
-        // We'll need to adapt how we access player.name, player.faceData
+    // Tile Layers
+    htmlContent += `<div class="section-title">Layers</div><ul>`;
+    const currentLevelData = mapData.levels[mapZ.toString()];
+    if (currentLevelData) {
+        const tileBottomRaw = currentLevelData.bottom?.[mapY]?.[mapX];
+        const tileMiddleRaw = currentLevelData.middle?.[mapY]?.[mapX];
+        const effTileBottomId = (typeof tileBottomRaw === 'object' && tileBottomRaw?.tileId !== undefined) ? tileBottomRaw.tileId : tileBottomRaw;
+        const effTileMiddleId = (typeof tileMiddleRaw === 'object' && tileMiddleRaw?.tileId !== undefined) ? tileMiddleRaw.tileId : tileMiddleRaw;
+        const tileDefBottom = assetManager.tilesets[effTileBottomId];
+        const tileDefMiddle = assetManager.tilesets[effTileMiddleId];
+        htmlContent += `<li><strong>Bottom:</strong> ${tileDefBottom ? tileDefBottom.name : (effTileBottomId || 'Empty')}</li>`;
+        htmlContent += `<li><strong>Middle:</strong> ${tileDefMiddle ? tileDefMiddle.name : (effTileMiddleId || 'Empty')}</li>`;
     } else {
-        // Check NPCs
-        if (gameState.npcs) {
-            entityToShow = gameState.npcs.find(npc =>
-                npc.mapPos && npc.mapPos.x === hoverX && npc.mapPos.y === hoverY && npc.mapPos.z === currentZ
-            );
-        }
+        htmlContent += `<li>Bottom: N/A</li><li>Middle: N/A</li>`;
+    }
+    htmlContent += `</ul>`;
+
+    // Items
+    const itemsOnCell = gameState.floorItems.filter(item => item.x === mapX && item.y === mapY && item.z === mapZ);
+    if (itemsOnCell.length > 0) {
+        htmlContent += `<div class="section-title">Items</div><ul>`;
+        itemsOnCell.forEach(item => {
+            htmlContent += `<li>${(assetManager.getItem(item.itemId) || { name: item.itemId }).name}</li>`;
+        });
+        htmlContent += `</ul>`;
     }
 
-    if (entityToShow) {
-        const fowDataForZ = gameState.fowData ? gameState.fowData[currentZ.toString()] : null;
-        const fowStatus = fowDataForZ?.[hoverY]?.[hoverX];
+    // Entity (Player or NPC)
+    let entityObject = null;
+    if (gameState.playerPos.x === mapX && gameState.playerPos.y === mapY && gameState.playerPos.z === mapZ) {
+        entityObject = gameState; // Special case for player
+    } else {
+        entityObject = gameState.npcs.find(n => n.mapPos?.x === mapX && n.mapPos?.y === mapY && n.mapPos?.z === mapZ && n.health?.torso?.current > 0 && n.health?.head?.current > 0);
+    }
 
-        if (fowStatus === 'visible' || fowStatus === 'visited') {
-            showEntityTooltip(entityToShow, event);
-        } else {
-            hideEntityTooltip();
+    if (entityObject) {
+        const isPlayer = (entityObject === gameState);
+        const entityName = isPlayer ? (document.getElementById('charName')?.value || "Player") : (entityObject.name || entityObject.id);
+
+        htmlContent += `<h5>${entityName}</h5>`; // Name as title
+
+        if (isPlayer && gameState.player.face?.asciiFace) {
+            htmlContent += `<div class="section-title">Appearance</div><pre>${gameState.player.face.asciiFace}</pre>`;
+        } else if (!isPlayer && entityObject.faceData?.asciiFace) {
+            htmlContent += `<div class="section-title">Appearance</div><pre>${entityObject.faceData.asciiFace}</pre>`;
+        }
+
+        let wieldedWeaponName = "Unarmed";
+        if (!isPlayer && entityObject.equippedWeaponId) {
+            const weaponDef = assetManager.getItem(entityObject.equippedWeaponId);
+            if (weaponDef) wieldedWeaponName = weaponDef.name;
+        } else if (isPlayer) {
+            // Player wielding logic (simplified: check hand slots)
+            const primaryHand = gameState.inventory.handSlots[0];
+            const secondaryHand = gameState.inventory.handSlots[1];
+            if (primaryHand) wieldedWeaponName = primaryHand.name;
+            if (secondaryHand && primaryHand) wieldedWeaponName += ` & ${secondaryHand.name}`;
+            else if (secondaryHand) wieldedWeaponName = secondaryHand.name;
+        }
+        htmlContent += `<div class="section-title">Wielding</div><ul><li>${wieldedWeaponName}</li></ul>`;
+
+        const healthObj = isPlayer ? gameState.health : entityObject.health;
+        if (healthObj) {
+            htmlContent += `<div class="section-title">Health</div><ul>`;
+            for (const partName in healthObj) {
+                if (Object.hasOwnProperty.call(healthObj, partName)) {
+                    const part = healthObj[partName];
+                    const formattedPartName = window.formatBodyPartName ? window.formatBodyPartName(partName) : partName;
+                    htmlContent += `<li><strong>${formattedPartName}:</strong> ${part.current}/${part.max}</li>`;
+                }
+            }
+            htmlContent += `</ul>`;
         }
     } else {
-        hideEntityTooltip();
+        htmlContent += `<div class="section-title">Entity</div><ul><li>None</li></ul>`;
+    }
+
+    tooltipElement.innerHTML = htmlContent;
+    tooltipElement.classList.remove('hidden');
+    tooltipElement.style.opacity = '1';
+
+
+    let tooltipX = event.clientX + 20; // Offset slightly more from cursor
+    let tooltipY = event.clientY + 20;
+
+    if (tooltipX + tooltipElement.offsetWidth > window.innerWidth - 10) { // 10px buffer from edge
+        tooltipX = event.clientX - tooltipElement.offsetWidth - 20;
+    }
+    if (tooltipY + tooltipElement.offsetHeight > window.innerHeight - 10) {
+        tooltipY = event.clientY - tooltipElement.offsetHeight - 20;
+    }
+    if (tooltipX < 10) tooltipX = 10; // Prevent going off left edge
+    if (tooltipY < 10) tooltipY = 10; // Prevent going off top edge
+
+    tooltipElement.style.left = `${tooltipX}px`;
+    tooltipElement.style.top = `${tooltipY}px`;
+}
+
+function hideLookTooltip() {
+    const tooltipElement = document.getElementById('entityTooltip');
+    if (tooltipElement) {
+        tooltipElement.classList.add('hidden');
+        tooltipElement.style.opacity = '0';
     }
 }
 
-function showEntityTooltip(entity, mouseEvent) {
-    if (!entityTooltipElement || !entity) {
-        hideEntityTooltip();
-        return;
-    }
-
-    let name, faceData, wieldedWeapon, healthData;
-
-    if (entity === gameState) { // It's the player
-        name = document.getElementById('charName')?.value || "Player";
-        faceData = gameState.player?.face; // Corrected: directly access gameState.player
-        wieldedWeapon = gameState.player?.wieldedWeapon || "Unarmed"; // Default to Unarmed if undefined
-        healthData = gameState.health;
-    } else { // It's an NPC
-        name = entity.name;
-        faceData = entity.faceData;
-        // Get weapon name from equippedWeaponId
-        if (entity.equippedWeaponId && window.assetManager) {
-            const weaponDef = window.assetManager.getItem(entity.equippedWeaponId);
-            wieldedWeapon = weaponDef ? weaponDef.name : "Unknown Weapon";
-        } else {
-            wieldedWeapon = "Unarmed";
-        }
-        healthData = entity.health;
-    }
-
-    if (!healthData) { // If entity somehow has no health data, don't show tooltip
-        hideEntityTooltip();
-        return;
-    }
-
-    // Ensure face is generated if missing (especially for player if not done at char creation end)
-    if (faceData && !faceData.asciiFace && typeof window.generateAsciiFace === 'function') {
-        // This assumes all sub-parameters of faceData are present
-        // For player, this should be handled by faceGenerator.js. For NPC, by initializeNpcFace.
-        // This is a fallback.
-        try {
-            faceData.asciiFace = window.generateAsciiFace(faceData);
-        } catch (e) {
-            faceData.asciiFace = "Error generating face.";
-        }
-    }
-
-
-    let html = `<h5>${name || "Unknown"}</h5>`;
-
-    if (faceData && faceData.asciiFace) {
-        html += `<div class="section-title">Appearance</div><pre>${faceData.asciiFace}</pre>`;
-    }
-
-    html += `<div class="section-title">Weapon</div><p>${wieldedWeapon}</p>`; // Changed label and uses derived wieldedWeapon
-
-    html += `<div class="section-title">Health</div><ul>`;
-    for (const partName in healthData) {
-        if (healthData.hasOwnProperty(partName)) {
-            const part = healthData[partName];
-            const formattedName = window.formatBodyPartName ? window.formatBodyPartName(partName) : partName;
-            html += `<li><strong>${formattedName}:</strong> ${part.current}/${part.max}</li>`;
-        }
-    }
-    html += `</ul>`;
-
-    entityTooltipElement.innerHTML = html;
-    entityTooltipElement.classList.remove('hidden');
-
-    // Positioning logic
-    let x = mouseEvent.clientX + 15; // Offset from cursor
-    let y = mouseEvent.clientY + 15;
-
-    // Adjust if tooltip goes off-screen
-    const tooltipRect = entityTooltipElement.getBoundingClientRect(); // Get actual size after content
-    if (x + tooltipRect.width > window.innerWidth) {
-        x = mouseEvent.clientX - tooltipRect.width - 15;
-    }
-    if (y + tooltipRect.height > window.innerHeight) {
-        y = mouseEvent.clientY - tooltipRect.height - 15;
-    }
-    // Ensure it doesn't go off top/left either
-    if (x < 0) x = 0;
-    if (y < 0) y = 0;
-
-
-    entityTooltipElement.style.left = `${x}px`;
-    entityTooltipElement.style.top = `${y}px`;
-    entityTooltipElement.style.opacity = 1;
-
+if (typeof window !== 'undefined') {
+    window.showLookTooltip = showLookTooltip;
+    window.hideLookTooltip = hideLookTooltip;
 }
-
-function hideEntityTooltip() {
-    if (entityTooltipElement) {
-        entityTooltipElement.classList.add('hidden');
-        entityTooltipElement.style.opacity = 0;
-    }
-}
-
-// Expose init function to be called from script.js
-window.initEntityTooltip = initEntityTooltip;

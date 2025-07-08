@@ -148,6 +148,8 @@ const gameState = {
     floorItems: [],
     worldContainers: [],
     uiTypeSoundIndex: 0, // For cycling through ui_type sounds
+    isLookModeActive: false, // For Look Mode feature
+    rangedAttackData: null, // For displaying ranged attack line and info { start: {x,y,z}, end: {x,y,z}, distance: "str", modifierText: "str" }
 };
 
 // Initialize player object and wornClothing if they don't exist

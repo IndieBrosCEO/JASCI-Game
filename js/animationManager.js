@@ -105,6 +105,18 @@ class AnimationManager {
             case 'chainsawAttack': // Added by Jules
                 animationInstance = new ChainsawAttackAnimation(animationType, data, this.gameState);
                 break;
+            case 'fall': // Added for falling animation
+                animationInstance = new FallAnimation(animationType, data, this.gameState);
+                break;
+            case 'diceRoll': // Added for combat sequence
+                animationInstance = new DiceRollAnimation(animationType, data, this.gameState);
+                break;
+            case 'modifierPopup': // Added for combat sequence
+                animationInstance = new ModifierPopupAnimation(animationType, data, this.gameState);
+                break;
+            case 'hitMissLabel': // Added for combat sequence
+                animationInstance = new HitMissLabelAnimation(animationType, data, this.gameState);
+                break;
             default:
                 console.warn(`AnimationManager: Unknown animation type: ${animationType}. Using generic Animation.`);
                 animationInstance = new Animation(animationType, data, this.gameState);
@@ -1150,3 +1162,248 @@ window.ChainsawAttackAnimation = ChainsawAttackAnimation;
 window.AnimationManager = AnimationManager;
 window.Animation = Animation;
 window.MovementAnimation = MovementAnimation;
+
+
+// --- DiceRollAnimation Class ---
+class DiceRollAnimation extends Animation {
+    constructor(type, data, gameStateRef) {
+        // data: diceNotation (e.g., "1d20"), onComplete(result), position {x, y} (optional screen coords)
+        // For simplicity, this animation won't render on the map grid, but in a UI overlay.
+        super(type, { ...data, duration: data.duration || 1500 }, gameStateRef); // x, y, z not directly used by this one for map rendering
+        this.diceNotation = data.diceNotation;
+        this.onComplete = data.onComplete; // Callback to pass the result
+        this.result = 0;
+        this.currentDisplayValue = 0;
+        this.rollEffectDuration = 800; // Time for numbers to flash
+        this.holdResultDuration = this.duration - this.rollEffectDuration; // Time to show final result
+
+        this.uiElement = document.createElement('div');
+        this.uiElement.style.position = 'fixed';
+        this.uiElement.style.left = data.position?.x || '50%';
+        this.uiElement.style.top = data.position?.y || '30%';
+        this.uiElement.style.transform = 'translate(-50%, -50%)';
+        this.uiElement.style.padding = '20px';
+        this.uiElement.style.background = 'rgba(50, 50, 50, 0.85)';
+        this.uiElement.style.border = '2px solid #ccc';
+        this.uiElement.style.borderRadius = '10px';
+        this.uiElement.style.color = 'white';
+        this.uiElement.style.fontSize = '28px';
+        this.uiElement.style.fontFamily = 'monospace';
+        this.uiElement.style.zIndex = '1001'; // Above map, below other critical UI if any
+        this.uiElement.textContent = `Rolling ${this.diceNotation}...`;
+        document.body.appendChild(this.uiElement);
+        this.visible = true; // This animation is UI based, not map based.
+    }
+
+    update() {
+        if (this.finished) return;
+        const elapsedTime = Date.now() - this.startTime;
+
+        if (elapsedTime < this.rollEffectDuration) {
+            // Simulate rolling numbers
+            this.currentDisplayValue = Math.floor(Math.random() * 20) + 1; // Example for d20
+            this.uiElement.textContent = `${this.currentDisplayValue}`;
+        } else if (!this.result) { // Roll once after effect duration
+            this.result = rollDiceNotation(parseDiceNotation(this.diceNotation)); // from utils.js
+            this.uiElement.textContent = `Rolled: ${this.result}`;
+            if (typeof this.onComplete === 'function') {
+                this.onComplete(this.result);
+            }
+        }
+
+        if (elapsedTime >= this.duration) {
+            this.finished = true;
+            this.visible = false;
+            if (this.uiElement.parentNode) {
+                this.uiElement.parentNode.removeChild(this.uiElement);
+            }
+        }
+        // No call to super.update() as this is a UI animation with its own lifecycle.
+        // The promise resolution is handled by AnimationManager based on this.finished.
+    }
+}
+window.DiceRollAnimation = DiceRollAnimation;
+
+// --- ModifierPopupAnimation Class ---
+class ModifierPopupAnimation extends Animation {
+    constructor(type, data, gameStateRef) {
+        // data: text (e.g., "+2 Str"), duration, position {x,y} (screen coords), color (optional)
+        super(type, { ...data, duration: data.duration || 1200 }, gameStateRef);
+        this.text = data.text;
+
+        this.uiElement = document.createElement('div');
+        this.uiElement.style.position = 'fixed';
+        this.uiElement.style.left = data.position?.x || '50%';
+        this.uiElement.style.top = data.position?.y || '35%'; // Slightly below dice
+        this.uiElement.style.transform = 'translate(-50%, -50%)';
+        this.uiElement.style.padding = '10px 15px';
+        this.uiElement.style.background = 'rgba(70, 70, 70, 0.9)';
+        this.uiElement.style.border = '1px solid #aaa';
+        this.uiElement.style.borderRadius = '5px';
+        this.uiElement.style.color = data.color || '#00FF00'; // Green for positive mods
+        this.uiElement.style.fontSize = '20px';
+        this.uiElement.style.fontFamily = 'monospace';
+        this.uiElement.style.zIndex = '1002';
+        this.uiElement.style.opacity = '0'; // Start invisible for fade-in
+        this.uiElement.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
+        this.uiElement.textContent = this.text;
+        document.body.appendChild(this.uiElement);
+        this.visible = true;
+
+        // Trigger fade-in and slight upward movement
+        setTimeout(() => {
+            this.uiElement.style.opacity = '1';
+            this.uiElement.style.transform = 'translate(-50%, -70%)'; // Move up
+        }, 50);
+    }
+
+    update() {
+        if (this.finished) return;
+        const elapsedTime = Date.now() - this.startTime;
+
+        if (elapsedTime >= this.duration) {
+            this.finished = true;
+            this.visible = false;
+            // Start fade-out
+            this.uiElement.style.opacity = '0';
+            this.uiElement.style.transform = 'translate(-50%, -90%)'; // Move further up and fade
+            setTimeout(() => {
+                if (this.uiElement.parentNode) {
+                    this.uiElement.parentNode.removeChild(this.uiElement);
+                }
+            }, 300); // Remove after fade-out transition
+        }
+    }
+}
+window.ModifierPopupAnimation = ModifierPopupAnimation;
+
+// --- HitMissLabelAnimation Class ---
+class HitMissLabelAnimation extends Animation {
+    constructor(type, data, gameStateRef) {
+        // data: text ("Hit!" or "Miss!"), color, duration, position {x,y}
+        super(type, { ...data, duration: data.duration || 2000 }, gameStateRef);
+        this.text = data.text;
+
+        this.uiElement = document.createElement('div');
+        this.uiElement.style.position = 'fixed';
+        this.uiElement.style.left = data.position?.x || '50%';
+        this.uiElement.style.top = data.position?.y || '40%'; // Below modifiers
+        this.uiElement.style.transform = 'translate(-50%, -50%) scale(0.5)'; // Start small
+        this.uiElement.style.padding = '15px 25px';
+        this.uiElement.style.background = 'rgba(40, 40, 40, 0.9)';
+        this.uiElement.style.border = '2px solid #f0f0f0';
+        this.uiElement.style.borderRadius = '8px';
+        this.uiElement.style.color = data.color || (this.text === "Hit!" ? 'lightgreen' : 'salmon');
+        this.uiElement.style.fontSize = '32px';
+        this.uiElement.style.fontWeight = 'bold';
+        this.uiElement.style.fontFamily = 'monospace';
+        this.uiElement.style.zIndex = '1003';
+        this.uiElement.style.opacity = '0';
+        this.uiElement.style.transition = 'opacity 0.4s ease-out, transform 0.4s ease-out';
+        this.uiElement.textContent = this.text;
+        document.body.appendChild(this.uiElement);
+        this.visible = true;
+
+        // Trigger pop-in effect
+        setTimeout(() => {
+            this.uiElement.style.opacity = '1';
+            this.uiElement.style.transform = 'translate(-50%, -50%) scale(1)';
+        }, 50);
+    }
+
+    update() {
+        if (this.finished) return;
+        const elapsedTime = Date.now() - this.startTime;
+
+        if (elapsedTime >= this.duration) {
+            this.finished = true;
+            this.visible = false;
+            this.uiElement.style.opacity = '0';
+            this.uiElement.style.transform = 'translate(-50%, -50%) scale(0.5)'; // Shrink out
+            setTimeout(() => {
+                if (this.uiElement.parentNode) {
+                    this.uiElement.parentNode.removeChild(this.uiElement);
+                }
+            }, 400);
+        }
+    }
+}
+window.HitMissLabelAnimation = HitMissLabelAnimation;
+
+// --- FallAnimation Class ---
+class FallAnimation extends Animation {
+    constructor(type, data, gameStateRef) {
+        // data: entity, startZ, endZ, fallPathX, fallPathY, levelsFallen, durationPerLevel
+        // The total duration will be levelsFallen * durationPerLevel.
+        const totalDuration = data.levelsFallen * (data.durationPerLevel || 200);
+        super(type, { ...data, duration: totalDuration }, gameStateRef);
+
+        this.entity = data.entity; // Player (gameState) or NPC object
+        this.startZ = data.startZ;
+        this.endZ = data.endZ;
+        this.fallPathX = data.fallPathX;
+        this.fallPathY = data.fallPathY;
+        this.levelsFallen = data.levelsFallen;
+        this.durationPerLevel = data.durationPerLevel || 200;
+
+        // The animation doesn't have its own sprite/color in the traditional sense.
+        // It controls the perceived Z position of an existing entity for rendering.
+        this.sprite = ''; // Not used directly for rendering this animation type
+        this.color = '';  // Not used directly
+
+        // Store original entity Z to restore if needed, though handleFalling will set final Z.
+        this.originalEntityZ = (this.entity === this.gameState) ? this.gameState.playerPos.z : this.entity.mapPos.z;
+
+        // The animation's own x, y, z will be the entity's path, but Z will interpolate.
+        this.x = this.fallPathX;
+        this.y = this.fallPathY;
+        this.z = this.startZ; // Initial Z for the animation itself (interpolated value)
+        this.visible = true; // The effect (entity appearing to fall) is visible.
+
+        logToConsole(`[FallAnimation CONSTRUCTOR] Entity: ${this.entity.id || 'Player'}, StartZ: ${this.startZ}, EndZ: ${this.endZ}, Levels: ${this.levelsFallen}, Duration: ${this.duration}ms`);
+    }
+
+    update() {
+        if (this.finished) {
+            // Restore entity's actual Z if it was temporarily changed for rendering,
+            // though handleFalling will set the final position.
+            // For now, mapRenderer will read from entity.displayZ if this animation sets it.
+            if (this.entity.displayZ !== undefined) delete this.entity.displayZ;
+            this.visible = false;
+            return;
+        }
+
+        const elapsedTime = Date.now() - this.startTime;
+        let progress = elapsedTime / this.duration;
+        if (progress > 1) progress = 1;
+
+        // Interpolate the Z position for display
+        const currentDisplayZ = this.startZ - (this.levelsFallen * progress);
+        this.z = currentDisplayZ; // Update the animation's own z property
+
+        // We need a way for mapRenderer to know to render this entity at this specific Z.
+        // Option 1: Modify entity's actual z (gameState.playerPos.z or npc.mapPos.z)
+        //           This is problematic as game logic might depend on the true Z.
+        // Option 2: Add a temporary displayZ property to the entity.
+        this.entity.displayZ = Math.round(currentDisplayZ); // mapRenderer will check for this.
+        // Rounding because Z levels are discrete.
+
+        // If the entity is the player and view follows player, update currentViewZ
+        if (this.entity === this.gameState && this.gameState.viewFollowsPlayerZ) {
+            this.gameState.currentViewZ = this.entity.displayZ;
+            // FOW update might be too frequent here, consider updating FOW once at the end of fall.
+        }
+
+        // Call super.update() to handle finishing based on duration
+        super.update();
+
+        if (this.finished) {
+            if (this.entity.displayZ !== undefined) delete this.entity.displayZ;
+            this.visible = false;
+            logToConsole(`[FallAnimation FINISHED] Entity: ${this.entity.id || 'Player'} at Z: ${this.endZ}`);
+        } else {
+            logToConsole(`[FallAnimation UPDATE] Entity: ${this.entity.id || 'Player'}, DisplayZ: ${this.entity.displayZ.toFixed(2)}, Progress: ${progress.toFixed(2)}`);
+        }
+    }
+}
+window.FallAnimation = FallAnimation;

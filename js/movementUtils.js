@@ -18,9 +18,10 @@
  * @param {object} character - The character object (gameState for player, or NPC object).
  * @param {string} direction - The direction of movement (e.g., 'up', 'down', 'left', 'right').
  * @param {object} assetManagerInstance - Instance of the asset manager.
+ * @param {number} [animationDurationOverride] - Optional duration for the movement animation.
  * @returns {boolean} True if a move (including starting a fall) was made, false otherwise.
  */
-async function attemptCharacterMove(character, direction, assetManagerInstance) {
+async function attemptCharacterMove(character, direction, assetManagerInstance, animationDurationOverride = null) {
     const isPlayer = (character === window.gameState);
     const logPrefix = isPlayer ? "[PlayerMovement]" : `[NPCMovement ${character.id || 'UnknownNPC'}]`;
 

@@ -376,3 +376,23 @@ button.preset-swatch { /* More specific selector */
     #combatUIDiv select, #combatUIDiv button {
         margin-top: 5px;
     }
+
+/* Tooltip styles */
+.tooltip {
+    position: fixed; /* Changed from absolute to fixed for positioning relative to viewport */
+    background-color: #1a1a1a; /* Dark background */
+    color: #f0f0f0; /* Light grey text */
+    border: 1px solid #555; /* Slightly lighter border */
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 0.9em; /* Slightly smaller font */
+    pointer-events: none; /* So it doesn't interfere with mouse events on the map */
+    z-index: 1000; /* Ensure it's on top */
+    white-space: pre-wrap; /* Allow text to wrap but preserve whitespace like newlines */
+    max-width: 300px; /* Prevent it from becoming too wide */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Subtle shadow for depth */
+}
+
+    .tooltip.hidden {
+        display: none;
+    }

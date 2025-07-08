@@ -1183,6 +1183,17 @@ window.mapRenderer = {
                     }
                 }
 
+                // Check for player fall animation override
+                if (gameState.playerPos && x === gameState.playerPos.x && y === gameState.playerPos.y &&
+                    gameState.playerPos.displayZ !== undefined && gameState.playerPos.displayZ === currentZ) {
+                    // If player has a displayZ for falling and it matches current view Z, render player here.
+                    // This assumes the FallAnimation sets playerPos.displayZ
+                    finalSpriteForTile = "☻";
+                    finalColorForTile = "green"; // Or a specific falling color/sprite
+                    finalDisplayIdForTile = "PLAYER_FALLING";
+                }
+
+
                 // Update or create cache entry
                 if (isInitialRender) {
                     const span = document.createElement("span");
@@ -1598,29 +1609,35 @@ window.mapRenderer = {
 
                         // Check if the player was already rendered at this tile in the current frame
                         const cachedCell = tileCacheData[npcY]?.[npcX];
-                        const playerAlreadyRenderedOnTile = cachedCell?.displayedId === "PLAYER_STATIC";
+                        const playerAlreadyRenderedOnTile = cachedCell?.displayedId === "PLAYER_STATIC" || cachedCell?.displayedId === "PLAYER_FALLING";
 
                         if (!roofObscures && !playerIsHere && !isTargetingCursorHere && !playerAlreadyRenderedOnTile) {
                             const npcTileFowStatus = currentFowData?.[npcY]?.[npcX] || 'hidden';
 
-                            if (npcTileFowStatus === 'visible') {
+                            // Check for NPC fall animation override
+                            if (npc.displayZ !== undefined && npc.displayZ === currentZ) {
+                                if (cachedCell && cachedCell.span && (npcTileFowStatus === 'visible' || npcTileFowStatus === 'visited')) {
+                                    cachedCell.span.textContent = npc.sprite;
+                                    cachedCell.span.style.color = npc.color; // Or a specific falling color
+                                    cachedCell.sprite = npc.sprite;
+                                    cachedCell.color = npc.color;
+                                }
+                            } else if (npcTileFowStatus === 'visible') { // Standard rendering if not falling
                                 if (cachedCell && cachedCell.span) {
                                     cachedCell.span.textContent = npc.sprite;
                                     cachedCell.span.style.color = npc.color;
-                                    cachedCell.sprite = npc.sprite; // Update cache for consistency
+                                    cachedCell.sprite = npc.sprite;
                                     cachedCell.color = npc.color;
                                 }
                             } else if (npcTileFowStatus === 'visited') {
                                 if (cachedCell && cachedCell.span) {
-                                    cachedCell.span.textContent = npc.sprite; // Show sprite
-                                    // Apply visited style to NPC color, similar to how map tiles are handled
-                                    const visitedNpcColor = darkenColor(npc.color, 0.6); // Using darkenColor, adjust factor as needed
+                                    cachedCell.span.textContent = npc.sprite;
+                                    const visitedNpcColor = darkenColor(npc.color, 0.6);
                                     cachedCell.span.style.color = visitedNpcColor;
                                     cachedCell.sprite = npc.sprite;
                                     cachedCell.color = visitedNpcColor;
                                 }
                             }
-                            // If npcTileFowStatus is 'hidden', NPC is not rendered on this tile.
                         }
                     }
                 }
@@ -1870,6 +1887,45 @@ window.mapRenderer = {
                 }
             }
         }
+
+        // Render Ranged Attack Line
+        if (gameState.isInCombat && gameState.rangedAttackData && gameState.rangedAttackData.start && gameState.rangedAttackData.end && tileCacheData) {
+            const { start, end, distance, modifier } = gameState.rangedAttackData;
+            // Only draw if the line involves the current viewing Z-level in some way
+            if (start.z === currentZ || end.z === currentZ || (Math.min(start.z, end.z) < currentZ && Math.max(start.z, end.z) > currentZ)) {
+                const linePoints = this.getLine3D(start.x, start.y, start.z, end.x, end.y, end.z);
+                linePoints.forEach(point => {
+                    if (point.z === currentZ) { // Only highlight cells on the current viewing Z
+                        if (point.x >= 0 && point.x < W && point.y >= 0 && point.y < H) {
+                            const cachedCell = tileCacheData[point.y]?.[point.x];
+                            if (cachedCell && cachedCell.span) {
+                                // Use a distinct color for the line, e.g., light blue or yellow, semi-transparent
+                                // This will overlay any existing background color.
+                                // A more sophisticated approach might blend or choose based on context.
+                                cachedCell.span.style.backgroundColor = "rgba(173, 216, 230, 0.4)"; // Light blue, semi-transparent
+
+                                // Display distance and modifier near the target or start of the line
+                                // This is tricky to place perfectly without a proper UI overlay system.
+                                // For now, let's try to add it to the target's cell if it's on current Z.
+                                if (point.x === end.x && point.y === end.y && point.z === end.z && point.z === currentZ) {
+                                    // The modifier text will be added to gameState.rangedAttackData.modifierText by combatManager
+                                    const modifierText = gameState.rangedAttackData.modifierText || "";
+                                    const currentText = cachedCell.span.textContent;
+                                    // This will overwrite the cell's character. A better way would be a separate overlay.
+                                    // For wireframe, this might be okay if the line itself is the primary indicator.
+                                    // We can append to title or a custom data attribute for tooltip to pick up.
+                                    cachedCell.span.dataset.rangedInfo = `Dist: ${distance} ${modifierText}`;
+                                    // To make it visible, we could change the sprite temporarily, or rely on tooltip.
+                                    // For now, we'll just set the background, assuming a tooltip might show this data.
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+
         this.updateMapHighlight(); // This function also needs to be Z-aware if interactableItems can be on other Zs.
 
         if (window.gameState && window.gameState.activeAnimations && window.gameState.activeAnimations.filter(a => a.z === undefined || a.z === currentZ).length > 0) {

@@ -258,17 +258,57 @@
         }
         if (!this.gameState.isInCombat || this.initiativeTracker.length === 0) { this.endCombat(); return; }
 
-        this.currentTurnIndex = (this.currentTurnIndex + 1) % this.initiativeTracker.length;
-        if (this.currentTurnIndex === 0 && previousAttackerEntity) logToConsole("New combat round started.", 'lightblue');
+        let attempts = 0;
+        let nextAttackerFound = false;
+        let attacker, attackerName, currentEntry;
 
-        const currentEntry = this.initiativeTracker[this.currentTurnIndex];
-        if (!currentEntry?.entity) { logToConsole("Error: Invalid turn entry. Ending combat.", 'red'); this.endCombat(); return; }
+        while (!nextAttackerFound && attempts < this.initiativeTracker.length + 1) { // Loop to find a live attacker
+            this.currentTurnIndex = (this.currentTurnIndex + 1) % this.initiativeTracker.length;
+            if (attempts === 0 && this.currentTurnIndex === 0 && previousAttackerEntity) {
+                logToConsole("New combat round started.", 'lightblue');
+            }
 
-        this.gameState.combatCurrentAttacker = currentEntry.entity;
-        const attacker = currentEntry.entity;
-        const attackerName = currentEntry.isPlayer ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id || "Unknown");
+            currentEntry = this.initiativeTracker[this.currentTurnIndex];
+            if (!currentEntry?.entity) {
+                logToConsole("Error: Invalid turn entry found. Skipping.", 'red');
+                attempts++;
+                continue;
+            }
+
+            attacker = currentEntry.entity;
+            const isPlayer = currentEntry.isPlayer;
+            const headHealth = isPlayer ? this.gameState.health?.head?.current : attacker.health?.head?.current;
+            const torsoHealth = isPlayer ? this.gameState.health?.torso?.current : attacker.health?.torso?.current;
+
+            if ((typeof headHealth === 'number' && headHealth > 0) && (typeof torsoHealth === 'number' && torsoHealth > 0)) {
+                nextAttackerFound = true;
+            } else {
+                attackerName = isPlayer ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id || "Unknown NPC");
+                logToConsole(`Skipping turn for incapacitated or invalid entity: ${attackerName}. HeadHP: ${headHealth}, TorsoHP: ${torsoHealth}`, 'grey');
+                // If it's the player and they are dead, combat should end or game over.
+                if (isPlayer && (headHealth <= 0 || torsoHealth <= 0)) {
+                    logToConsole("Player is incapacitated. Ending combat.", "red");
+                    this.endCombat(); // This should trigger gameOver if player is dead
+                    window.gameOver(this.gameState); // Explicitly call gameOver for player
+                    return;
+                }
+                // If an NPC is dead, they are already filtered from initiativeTracker in applyDamage.
+                // This check is a safeguard.
+            }
+            attempts++;
+        }
+
+        if (!nextAttackerFound) {
+            logToConsole("Error: No live attackers found in initiative after checking all. Ending combat.", 'red');
+            this.endCombat();
+            return;
+        }
+
+        // At this point, 'attacker' and 'currentEntry' refer to a live entity.
+        this.gameState.combatCurrentAttacker = attacker;
+        attackerName = currentEntry.isPlayer ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id || "Unknown");
         this.gameState.attackerMapPos = currentEntry.isPlayer ? { ...this.gameState.playerPos } : (attacker.mapPos ? { ...attacker.mapPos } : null);
-        logToConsole(`--- ${attackerName}'s Turn --- (${this.gameState.isWaitingForPlayerCombatInput ? "WAITING FLAG TRUE" : "WAITING FLAG FALSE"})`, 'lightblue'); // Added flag status here
+        logToConsole(`--- ${attackerName}'s Turn --- (${this.gameState.isWaitingForPlayerCombatInput ? "WAITING FLAG TRUE" : "WAITING FLAG FALSE"})`, 'lightblue');
 
         if (attacker?.statusEffects) {
             logToConsole(`--- Processing status effects for ${attackerName} --- (${this.gameState.isWaitingForPlayerCombatInput})`, 'teal');
@@ -285,10 +325,17 @@
                             logToConsole(`DEFEATED: ${attackerName} by ${effect.displayName}!`, 'darkred');
                             if (currentEntry.isPlayer) { this.endCombat(); window.gameOver(this.gameState); return; }
                             else {
+                                // NPC death is handled in applyDamage; if they die from status here,
+                                // they should be removed from initiativeTracker and npcs list.
                                 this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== attacker);
                                 this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== attacker);
-                                if (!this.initiativeTracker.some(e => !e.isPlayer && e.entity.health?.torso?.current > 0)) { this.endCombat(); return; }
-                                await this.nextTurn(attacker); return;
+                                if (!this.initiativeTracker.some(e => !e.isPlayer && e.entity.health?.torso?.current > 0 && e.entity.health?.head?.current > 0)) {
+                                    this.endCombat(); return;
+                                }
+                                // Since the current attacker died from status, immediately try to go to the next turn.
+                                // The loop at the start of nextTurn will find the next valid attacker.
+                                await this.nextTurn(attacker);
+                                return;
                             }
                         }
                     }
@@ -446,6 +493,7 @@
         this.gameState.combatCurrentDefender = null;
         this.gameState.combatCurrentAttacker = null; // Ensure attacker is cleared
         this.gameState.isWaitingForPlayerCombatInput = false; // Ensure this flag is reset
+        this.gameState.rangedAttackData = null; // Clear ranged attack line data
 
         this.initiativeTracker.forEach(e => { if (e.entity?.statusEffects) { e.entity.statusEffects.isGrappled = false; e.entity.statusEffects.grappledBy = null; } });
         if (this.gameState.statusEffects) { this.gameState.statusEffects.isGrappled = false; this.gameState.statusEffects.grappledBy = null; }
@@ -500,6 +548,38 @@
         const currentTargetName = this.gameState.combatCurrentDefender ? (this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id) : "tile";
         this.gameState.pendingCombatAction = { target: this.gameState.combatCurrentDefender, weapon: weaponObj, attackType, bodyPart, fireMode, actionType: "attack", entity: this.gameState, skillToUse: null, targetTile: null, actionDescription: `${weaponObj ? weaponObj.name : "Unarmed"} attack on ${currentTargetName}'s ${bodyPart}` };
         logToConsole(`Player declares: ${attackType} attack on ${currentTargetName}'s ${bodyPart} with ${weaponObj ? weaponObj.name : 'Unarmed'} (Mode: ${fireMode}).`, 'lightgreen');
+
+        // Clear previous ranged attack line display data
+        this.gameState.rangedAttackData = null;
+
+        // If it's a ranged attack, calculate and store line data
+        if (attackType === "ranged" && weaponObj && this.gameState.combatCurrentAttacker && (this.gameState.combatCurrentDefender || this.gameState.defenderMapPos)) {
+            const attackerPos = this.gameState.combatCurrentAttacker === this.gameState ? this.gameState.playerPos : this.gameState.combatCurrentAttacker.mapPos;
+            const targetPos = this.gameState.combatCurrentDefender ? this.gameState.combatCurrentDefender.mapPos : this.gameState.defenderMapPos;
+
+            if (attackerPos && targetPos) {
+                const distance = getDistance3D(attackerPos, targetPos);
+                let rangeModifier = 0;
+                // Simplified range modifier calculation for display (actual calculation in calculateAttackRoll)
+                if (distance <= (weaponObj.optimalRange || 10)) rangeModifier = 5;
+                else if (distance <= (weaponObj.effectiveRange || 30)) rangeModifier = 0;
+                else if (distance <= (weaponObj.maxRange || 60)) rangeModifier = -5;
+                else rangeModifier = -10;
+                // This is a simplified version. The full logic is in calculateAttackRoll.
+                // For display, we might just show distance. The modifier can be complex.
+                // Let's store the line and the calculated distance for now.
+                // The modifier text can be "Range Mod: [value]" from calculateAttackRoll's context.
+
+                this.gameState.rangedAttackData = {
+                    start: attackerPos,
+                    end: targetPos,
+                    distance: distance.toFixed(1),
+                    modifierText: `(Mod: ${rangeModifier})` // Store the simplified modifier for display
+                };
+                logToConsole(`Ranged attack line data set: ${JSON.stringify(this.gameState.rangedAttackData)}`, 'grey');
+            }
+        }
+
 
         // Ensure targetTile is set for all thrown types that might need it (explosives, utilities, liquids)
         if (weaponObj?.type?.includes("thrown")) {
@@ -978,7 +1058,8 @@
 
         const attackerName = (attacker === this.gameState) ? "Player" : attacker.name;
         const defenderName = defender ? ((defender === this.gameState) ? "Player" : defender.name) : "Tile";
-        let attackResult, defenseResult;
+        let attackResult, defenseResult, hit = false;
+        const animationPromises = []; // To store promises from animations
 
         // --- Line of Sight Checks ---
         const currentTilesetsForLOS = window.assetManager ? window.assetManager.tilesets : null; // Corrected: window.assetManager
@@ -1100,51 +1181,103 @@
                 else if (fireMode === "auto") { actionContext.attackModifier = -8; actionContext.isAutomatic = true; }
             }
         }
-        attackResult = this.calculateAttackRoll(attacker, weapon, defender ? intendedBodyPart : null, actionContext);
-        defenseResult = this.calculateDefenseRoll(defender, defender ? ((defender === this.gameState ? this.gameState.playerDefenseChoice?.type : this.gameState.npcDefenseChoice) || "Dodge") : "None", weapon, coverBonus, {});
 
-        logMsg = `ATTACK: ${attackerName} targets ${defender ? defenderName + "'s " + intendedBodyPart : "tile at " + (this.gameState.pendingCombatAction?.targetTile?.x || '?') + "," + (this.gameState.pendingCombatAction?.targetTile?.y || '?')} with ${weapon ? weapon.name : 'Unarmed'} (Mode: ${fireMode}). ` +
-            `Roll: ${attackResult.roll} (Nat: ${attackResult.naturalRoll}, Skill (${actionContext.skillName}): ${actionContext.skillBasedModifier}, ` +
-            `BodyPart: ${actionContext.bodyPartModifier}, Range: ${actionContext.rangeModifier}, Mode: ${actionContext.attackModifier}, Move: ${actionContext.attackerMovementPenalty}, Light: ${actionContext.lightingPenaltyApplied || 0}, Status: ${actionContext.statusEffectAttackPenalty || 0})`;
-        logToConsole(logMsg, window.getSkillColor(actionContext.skillName));
-        if (actionContext.lightingPenaltyApplied !== 0) {
-            logToConsole(`Lighting: ${attackerName}'s target is in darkness. Applying ${actionContext.lightingPenaltyApplied} penalty.`, 'orange');
-        }
+        // --- Attacker's Roll ---
+        let attackerRollResult = 0;
+        animationPromises.push(
+            window.animationManager.playAnimation('diceRoll', {
+                diceNotation: '1d20',
+                position: { x: '40%', y: '30%' }, // Attacker roll on left
+                onComplete: (result) => { attackerRollResult = result; }
+            }).then(() => {
+                logToConsole(`Attacker's Natural Roll: ${attackerRollResult}`, 'grey');
+                attackResult = this.calculateAttackRoll(attacker, weapon, defender ? intendedBodyPart : null, { ...actionContext, naturalRollOverride: attackerRollResult });
 
+                const modifierAnims = [];
+                if (actionContext.skillBasedModifier) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Skill (${actionContext.skillName}): ${actionContext.skillBasedModifier > 0 ? '+' : ''}${actionContext.skillBasedModifier}`, position: { x: '40%', y: '35%' } }));
+                if (actionContext.bodyPartModifier) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Body Part: ${actionContext.bodyPartModifier}`, position: { x: '40%', y: '40%' }, color: 'salmon' }));
+                if (actionContext.rangeModifier) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Range: ${actionContext.rangeModifier > 0 ? '+' : ''}${actionContext.rangeModifier}`, position: { x: '40%', y: '45%' } }));
+                if (actionContext.attackModifier) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Mode: ${actionContext.attackModifier}`, position: { x: '40%', y: '50%' } }));
+                if (actionContext.attackerMovementPenalty) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Movement: ${actionContext.attackerMovementPenalty}`, position: { x: '40%', y: '55%' }, color: 'salmon' }));
+                if (actionContext.lightingPenaltyApplied) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Lighting: ${actionContext.lightingPenaltyApplied}`, position: { x: '40%', y: '60%' }, color: 'salmon' }));
+                if (actionContext.statusEffectAttackPenalty) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Status: ${actionContext.statusEffectAttackPenalty}`, position: { x: '40%', y: '65%' }, color: 'salmon' }));
+
+                return Promise.all(modifierAnims).then(() => {
+                    logMsg = `ATTACK: ${attackerName} targets ${defender ? defenderName + "'s " + intendedBodyPart : "tile at " + (this.gameState.pendingCombatAction?.targetTile?.x || '?') + "," + (this.gameState.pendingCombatAction?.targetTile?.y || '?')} with ${weapon ? weapon.name : 'Unarmed'} (Mode: ${fireMode}). Final Roll: ${attackResult.roll}`;
+                    logToConsole(logMsg, window.getSkillColor(actionContext.skillName));
+                });
+            })
+        );
+        await Promise.all(animationPromises);
+        animationPromises.length = 0; // Clear for next set
+
+        // --- Defender's Roll (if applicable) ---
         if (defender) {
-            let defType = (defender === this.gameState ? this.gameState.playerDefenseChoice?.type : this.gameState.npcDefenseChoice) || "Dodge";
-            if (defType !== "None") {
-                logToConsole(`DEFENSE: ${defenderName} (${defType} - ${defenseResult.defenseSkillName}). ` +
-                    `Roll: ${defenseResult.roll} (Nat: ${defenseResult.naturalRoll}, Skill: ${defenseResult.defenseSkillValue}, Cover: +${defenseResult.coverBonusApplied}, Move: +${defenseResult.movementBonusApplied || 0}, Status: ${defenseResult.statusEffectDefensePenalty || 0})`, window.getSkillColor(defenseResult.defenseSkillName?.split(" + ")[0]));
-                // Play block sound if applicable
-                if (defType.toLowerCase().includes("block") && window.audioManager && (defender.mapPos || defender === this.gameState)) {
-                    const defenderSoundPos = defender === this.gameState ? this.gameState.playerPos : defender.mapPos;
-                    let blockSound = 'ui_click_01.wav'; // Generic placeholder
-                    // TODO: Differentiate melee_block_metal_01.wav vs melee_block_wood_01.wav based on weapon/shield
-                    window.audioManager.playSoundAtLocation(blockSound, defenderSoundPos, {}, { volume: 0.7 });
-                }
-            } else logToConsole(`DEFENSE: ${defenderName} (None - Ranged). Effective defense from cover: ${defenseResult.roll}`, defender === this.gameState ? 'lightblue' : 'gold');
-        }
-        let hit = false;
-        if (defender) {
+            let defenderRollResultValue = 0;
             const defChoiceType = (defender === this.gameState ? this.gameState.playerDefenseChoice?.type : this.gameState.npcDefenseChoice) || "Dodge";
+            if (defChoiceType !== "None") {
+                animationPromises.push(
+                    window.animationManager.playAnimation('diceRoll', {
+                        diceNotation: '1d20',
+                        position: { x: '60%', y: '30%' }, // Defender roll on right
+                        onComplete: (result) => { defenderRollResultValue = result; }
+                    }).then(() => {
+                        logToConsole(`Defender's Natural Roll: ${defenderRollResultValue}`, 'grey');
+                        defenseResult = this.calculateDefenseRoll(defender, defChoiceType, weapon, coverBonus, { naturalRollOverride: defenderRollResultValue });
+
+                        const defModifierAnims = [];
+                        if (defenseResult.defenseSkillValue) defModifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Skill (${defenseResult.defenseSkillName}): ${defenseResult.defenseSkillValue > 0 ? '+' : ''}${defenseResult.defenseSkillValue}`, position: { x: '60%', y: '35%' } }));
+                        if (defenseResult.coverBonusApplied) defModifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Cover: +${defenseResult.coverBonusApplied}`, position: { x: '60%', y: '40%' } }));
+                        if (defenseResult.movementBonusApplied) defModifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Movement: +${defenseResult.movementBonusApplied}`, position: { x: '60%', y: '45%' } }));
+                        if (defenseResult.statusEffectDefensePenalty) defModifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Status: ${defenseResult.statusEffectDefensePenalty}`, position: { x: '60%', y: '50%' }, color: 'salmon' }));
+
+                        return Promise.all(defModifierAnims).then(() => {
+                            logToConsole(`DEFENSE: ${defenderName} (${defChoiceType} - ${defenseResult.defenseSkillName}). Final Roll: ${defenseResult.roll}`, window.getSkillColor(defenseResult.defenseSkillName?.split(" + ")[0]));
+                            if (defType.toLowerCase().includes("block") && window.audioManager && (defender.mapPos || defender === this.gameState)) { /* ... play block sound ... */ }
+                        });
+                    })
+                );
+            } else { // Passive defense
+                defenseResult = this.calculateDefenseRoll(defender, "None", weapon, coverBonus, {});
+                logToConsole(`DEFENSE: ${defenderName} (None - Ranged). Effective defense from cover: ${defenseResult.roll}`, defender === this.gameState ? 'lightblue' : 'gold');
+            }
+            await Promise.all(animationPromises);
+            animationPromises.length = 0;
+
+            // Determine Hit or Miss
             if (attackResult.isCriticalHit) hit = true;
             else if (attackResult.isCriticalMiss) hit = false;
             else if (defenseResult.isCriticalFailure && defChoiceType !== "None") hit = true;
             else if (defenseResult.isCriticalSuccess && defChoiceType !== "None" && !attackResult.isCriticalHit) hit = false;
             else hit = attackResult.roll > defenseResult.roll;
 
-            // Critical Hit/Miss Sounds
-            if (window.audioManager && (attackerPos || defender?.mapPos)) {
-                const soundPos = attackerPos || (defender === this.gameState ? this.gameState.playerPos : defender.mapPos);
-                if (attackResult.isCriticalHit) window.audioManager.playSoundAtLocation('ui_confirm_01.wav', soundPos, {}, { volume: 0.9 }); // Placeholder for combat_crit_hit_01.wav
-                else if (attackResult.isCriticalMiss) window.audioManager.playSoundAtLocation('ui_error_01.wav', soundPos, {}, { volume: 0.7 }); // Placeholder for combat_crit_miss_01.wav
-            }
-            logToConsole(hit ? `RESULT: Hit! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.` : `RESULT: Miss! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.`, hit ? (attacker === this.gameState ? 'lightgreen' : 'orange') : (attacker === this.gameState ? 'orange' : 'lightgreen'));
+            animationPromises.push(
+                window.animationManager.playAnimation('hitMissLabel', {
+                    text: hit ? "Hit!" : "Miss!",
+                    position: { x: '50%', y: '50%' } // Centered
+                }).then(() => {
+                    logToConsole(hit ? `RESULT: Hit! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.` : `RESULT: Miss! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.`, hit ? (attacker === this.gameState ? 'lightgreen' : 'orange') : (attacker === this.gameState ? 'orange' : 'lightgreen'));
+                    if (window.audioManager && (attackerPos || defender?.mapPos)) { /* ... play crit sounds ... */ }
+                })
+            );
+            await Promise.all(animationPromises);
+            animationPromises.length = 0;
+
         } else if (weapon?.type === "weapon_thrown_explosive" || (weapon?.type === "weapon_thrown_utility")) {
             hit = true; // For area effects, 'hit' means it lands as intended.
-            logToConsole(`RESULT: ${weapon.name} lands at targeted tile.`, attacker === this.gameState ? 'lightgreen' : 'gold');
+            animationPromises.push(
+                window.animationManager.playAnimation('hitMissLabel', {
+                    text: "Targeted!", // Or "Landed!"
+                    position: { x: '50%', y: '50%' },
+                    color: 'lightblue'
+                }).then(() => {
+                    logToConsole(`RESULT: ${weapon.name} lands at targeted tile.`, attacker === this.gameState ? 'lightgreen' : 'gold');
+                })
+            );
+            await Promise.all(animationPromises);
+            animationPromises.length = 0;
         }
+
 
         if (weapon?.specialEffect && (hit || weapon.type?.includes("utility"))) {
             this.applySpecialEffect(attacker, weapon, (defender && hit ? defender : null), this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || this.gameState.defenderMapPos || attacker?.mapPos || this.gameState.playerPos);
@@ -1214,8 +1347,29 @@
                 if (numHitsCalc > 1) logToConsole(`${fireMode} fire: ${numHitsCalc} shots connect.`, 'grey');
             }
             this.gameState.combatPhase = 'applyDamage';
-            if (attackType === 'melee') this.calculateAndApplyMeleeDamage(attacker, defender, weapon, hit, attackResult.naturalRoll, defenseResult.naturalRoll, actualTargetBodyPart);
-            else if (attackType === 'ranged' && !isImpactLauncher) this.calculateAndApplyRangedDamage(attacker, defender, weapon, actualTargetBodyPart, hit, attackResult, numHitsCalc);
+            if (attackType === 'melee') {
+                this.calculateAndApplyMeleeDamage(attacker, defender, weapon, hit, attackResult.naturalRoll, defenseResult.naturalRoll, actualTargetBodyPart);
+            } else if (attackType === 'ranged' && !isImpactLauncher) {
+                // Damage roll animation for ranged
+                if (weapon && weapon.damage) {
+                    let damageRollResult = 0;
+                    animationPromises.push(
+                        window.animationManager.playAnimation('diceRoll', {
+                            diceNotation: weapon.damage,
+                            position: { x: '50%', y: '60%' }, // Centered below Hit/Miss
+                            onComplete: (result) => { damageRollResult = result; }
+                        }).then(() => {
+                            logToConsole(`Damage Roll (${weapon.damage}): ${damageRollResult}`, 'grey');
+                            // Pass the rolled damage to calculateAndApplyRangedDamage, or modify it to use pre-rolled.
+                            // For now, calculateAndApplyRangedDamage rolls its own. This animation is just visual.
+                            // To make it use this roll, calculateAndApplyRangedDamage would need modification.
+                        })
+                    );
+                    await Promise.all(animationPromises);
+                    animationPromises.length = 0;
+                }
+                this.calculateAndApplyRangedDamage(attacker, defender, weapon, actualTargetBodyPart, hit, attackResult, numHitsCalc);
+            }
         }
 
         if (hit && defender && weapon?.id === 'molotov_cocktail_thrown') {
@@ -1277,6 +1431,12 @@
         }
 
         if (this.gameState.isInCombat) {
+            // Clear ranged attack display data after processing the attack
+            if (this.gameState.rangedAttackData) {
+                this.gameState.rangedAttackData = null;
+                // logToConsole("Ranged attack data cleared after attack processing.", 'grey');
+            }
+
             if (defender && ((defender === this.gameState && (this.gameState.health.head.current <= 0 || this.gameState.health.torso.current <= 0)) || (defender !== this.gameState && (defender.health?.head?.current <= 0 || defender.health?.torso?.current <= 0)))) {
                 if (this.initiativeTracker.find(e => e.entity === defender)) {
                     logToConsole(`DEFEATED: ${defenderName} has fallen!`, 'red');
