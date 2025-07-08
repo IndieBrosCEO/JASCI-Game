@@ -736,3 +736,54 @@ function lightenColor(hexColor, amount) {
     }
 }
 window.lightenColor = lightenColor;
+
+/**
+ * Converts map tile coordinates to absolute screen pixel coordinates.
+ * @param {number} mapX - The map tile X coordinate.
+ * @param {number} mapY - The map tile Y coordinate.
+ * @param {number} mapZ - The map tile Z coordinate (used to check if on current view).
+ * @returns {object|null} An object {x, y} with screen coordinates, or null if map container/entity not on view.
+ */
+function mapToScreenCoordinates(mapX, mapY, mapZ) {
+    if (mapZ !== window.gameState.currentViewZ) {
+        // Only provide coordinates for entities on the current view Z
+        return null;
+    }
+
+    const mapContainer = document.getElementById('mapContainer');
+    if (!mapContainer) return null;
+
+    const rect = mapContainer.getBoundingClientRect();
+    const scrollLeft = mapContainer.scrollLeft;
+    const scrollTop = mapContainer.scrollTop;
+
+    // Determine tile size (character width and height)
+    // This should be robust. Using a temporary span is a common way.
+    let tileWidth = 10; // Default fallback
+    let tileHeight = 18; // Default fallback
+
+    const tempSpan = document.createElement('span');
+    tempSpan.style.fontFamily = getComputedStyle(mapContainer).fontFamily;
+    tempSpan.style.fontSize = getComputedStyle(mapContainer).fontSize;
+    tempSpan.style.lineHeight = getComputedStyle(mapContainer).lineHeight;
+    tempSpan.style.position = 'absolute';
+    tempSpan.style.visibility = 'hidden';
+    tempSpan.textContent = 'M'; // A common character to measure
+    document.body.appendChild(tempSpan);
+    tileWidth = tempSpan.offsetWidth;
+    tileHeight = tempSpan.offsetHeight;
+    document.body.removeChild(tempSpan);
+
+    if (tileWidth === 0 || tileHeight === 0) { // Safety check if offsetWidth/Height is 0
+        console.warn("mapToScreenCoordinates: Detected tileWidth or tileHeight as 0. Using defaults.");
+        tileWidth = 10;
+        tileHeight = 18;
+    }
+
+    // Calculate position of the top-left of the tile relative to the viewport
+    const screenX = rect.left - scrollLeft + (mapX * tileWidth) + (tileWidth / 2); // Center of the tile X
+    const screenY = rect.top - scrollTop + (mapY * tileHeight) + (tileHeight / 2); // Center of the tile Y
+
+    return { x: screenX, y: screenY };
+}
+window.mapToScreenCoordinates = mapToScreenCoordinates;

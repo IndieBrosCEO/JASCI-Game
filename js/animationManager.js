@@ -1179,8 +1179,23 @@ class DiceRollAnimation extends Animation {
 
         this.uiElement = document.createElement('div');
         this.uiElement.style.position = 'fixed';
-        this.uiElement.style.left = data.position?.x || '50%';
-        this.uiElement.style.top = data.position?.y || '30%';
+
+        let screenPos = null;
+        if (data.entity) {
+            const entityPos = (data.entity === this.gameState) ? this.gameState.playerPos : data.entity.mapPos;
+            if (entityPos) {
+                screenPos = window.mapToScreenCoordinates(entityPos.x, entityPos.y, entityPos.z);
+            }
+        }
+
+        if (screenPos) {
+            this.uiElement.style.left = `${screenPos.x}px`;
+            this.uiElement.style.top = `${screenPos.y - 30}px`; // Offset slightly above the entity
+        } else {
+            this.uiElement.style.left = data.position?.x || '50%'; // Fallback to original
+            this.uiElement.style.top = data.position?.y || '30%';
+        }
+
         this.uiElement.style.transform = 'translate(-50%, -50%)';
         this.uiElement.style.padding = '20px';
         this.uiElement.style.background = 'rgba(50, 50, 50, 0.85)';
@@ -1233,8 +1248,24 @@ class ModifierPopupAnimation extends Animation {
 
         this.uiElement = document.createElement('div');
         this.uiElement.style.position = 'fixed';
-        this.uiElement.style.left = data.position?.x || '50%';
-        this.uiElement.style.top = data.position?.y || '35%'; // Slightly below dice
+
+        let screenPos = null;
+        if (data.entity) {
+            const entityPos = (data.entity === this.gameState) ? this.gameState.playerPos : data.entity.mapPos;
+            if (entityPos) {
+                screenPos = window.mapToScreenCoordinates(entityPos.x, entityPos.y, entityPos.z);
+            }
+        }
+
+        if (screenPos) {
+            this.uiElement.style.left = `${screenPos.x}px`;
+            // Position modifiers slightly differently, perhaps to the side or further above
+            this.uiElement.style.top = `${screenPos.y - 60}px`;
+        } else {
+            this.uiElement.style.left = data.position?.x || '50%'; // Fallback
+            this.uiElement.style.top = data.position?.y || '35%';
+        }
+
         this.uiElement.style.transform = 'translate(-50%, -50%)';
         this.uiElement.style.padding = '10px 15px';
         this.uiElement.style.background = 'rgba(70, 70, 70, 0.9)';
@@ -1286,8 +1317,23 @@ class HitMissLabelAnimation extends Animation {
 
         this.uiElement = document.createElement('div');
         this.uiElement.style.position = 'fixed';
-        this.uiElement.style.left = data.position?.x || '50%';
-        this.uiElement.style.top = data.position?.y || '40%'; // Below modifiers
+
+        let screenPos = null;
+        if (data.entity) {
+            const entityPos = (data.entity === this.gameState) ? this.gameState.playerPos : data.entity.mapPos;
+            if (entityPos) {
+                screenPos = window.mapToScreenCoordinates(entityPos.x, entityPos.y, entityPos.z);
+            }
+        }
+
+        if (screenPos) {
+            this.uiElement.style.left = `${screenPos.x}px`;
+            this.uiElement.style.top = `${screenPos.y}px`; // Position Hit/Miss directly on entity
+        } else {
+            this.uiElement.style.left = data.position?.x || '50%'; // Fallback
+            this.uiElement.style.top = data.position?.y || '40%';
+        }
+
         this.uiElement.style.transform = 'translate(-50%, -50%) scale(0.5)'; // Start small
         this.uiElement.style.padding = '15px 25px';
         this.uiElement.style.background = 'rgba(40, 40, 40, 0.9)';

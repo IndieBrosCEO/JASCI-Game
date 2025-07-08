@@ -7,6 +7,52 @@
         this.defenseTypeChangeListener = null;
     }
 
+    updateCombatLOSLine(attackerEntity, targetEntityOrPos, weaponObj) {
+        if (!this.gameState.isInCombat) {
+            this.gameState.rangedAttackData = null;
+            if (window.mapRenderer) window.mapRenderer.scheduleRender();
+            return;
+        }
+
+        const attackerPos = (attackerEntity === this.gameState) ? this.gameState.playerPos : attackerEntity?.mapPos;
+        let targetPos = null;
+
+        if (targetEntityOrPos) {
+            // Check if targetEntityOrPos is a position object {x, y, z}
+            if (targetEntityOrPos.x !== undefined && targetEntityOrPos.y !== undefined && targetEntityOrPos.z !== undefined) {
+                targetPos = targetEntityOrPos;
+            } else if (targetEntityOrPos.mapPos) { // Else, assume it's an entity with a mapPos
+                targetPos = targetEntityOrPos.mapPos;
+            }
+        }
+
+        if (attackerPos && targetPos) {
+            const distance = getDistance3D(attackerPos, targetPos);
+            let effectiveRange = weaponObj?.effectiveRange || 10; // Default range
+            let modifierText = "";
+
+            if (weaponObj) {
+                if (distance <= (weaponObj.optimalRange || effectiveRange / 2)) modifierText = "(Optimal)";
+                else if (distance <= effectiveRange) modifierText = "(Effective)";
+                else modifierText = "(Max)";
+            }
+
+            this.gameState.rangedAttackData = {
+                start: { ...attackerPos },
+                end: { ...targetPos },
+                distance: distance.toFixed(1),
+                modifierText: modifierText
+            };
+            // logToConsole(`LOS line updated: Attacker Z:${attackerPos.z}, Target Z:${targetPos.z}. Weapon: ${weaponObj ? weaponObj.name : 'None'}`, 'grey');
+        } else {
+            this.gameState.rangedAttackData = null; // Clear if no valid attacker/target
+        }
+
+        if (window.mapRenderer) {
+            window.mapRenderer.scheduleRender();
+        }
+    }
+
     populateWeaponSelect() {
         const weaponSelect = document.getElementById('combatWeaponSelect');
         if (!weaponSelect) return;
@@ -79,6 +125,10 @@
         confirmAttackButton.classList.remove('hidden');
         bodyPartSelect.classList.remove('hidden');
         reloadWeaponButton.classList.toggle('hidden', !(weaponObject && (weaponObject.type.includes("firearm") || weaponObject.tags?.includes("launcher_treated_as_rifle") || weaponObject.type.includes("bow") || weaponObject.type.includes("crossbow") || weaponObject.type === "weapon_thrown_explosive")));
+
+        if (this.gameState.isInCombat && this.gameState.combatCurrentAttacker) {
+            this.updateCombatLOSLine(this.gameState.combatCurrentAttacker, this.gameState.combatCurrentDefender || this.gameState.defenderMapPos, weaponObject);
+        }
     }
 
     shareAggroWithTeam(damagedEntity, attacker, threatAmount) {
@@ -164,6 +214,21 @@
         this.populateWeaponSelect();
         const bodyPartSelect = document.getElementById('combatBodyPartSelect');
         if (bodyPartSelect) bodyPartSelect.value = "Torso";
+
+        // Update LOS line display
+        if (this.gameState.combatCurrentAttacker && (this.gameState.combatCurrentDefender || this.gameState.defenderMapPos)) {
+            const selectedWeaponOption = document.getElementById('combatWeaponSelect')?.options[document.getElementById('combatWeaponSelect').selectedIndex];
+            let weaponForLOS = null;
+            if (selectedWeaponOption) {
+                if (selectedWeaponOption.value === "unarmed") weaponForLOS = null;
+                else if (selectedWeaponOption.dataset.itemData) weaponForLOS = JSON.parse(selectedWeaponOption.dataset.itemData);
+                else weaponForLOS = this.assetManager.getItem(selectedWeaponOption.value);
+            }
+            this.updateCombatLOSLine(this.gameState.combatCurrentAttacker, this.gameState.combatCurrentDefender || this.gameState.defenderMapPos, weaponForLOS);
+        } else {
+            this.updateCombatLOSLine(null, null, null); // Clear line if no valid attacker/target
+        }
+
         this.gameState.combatPhase = 'playerAttackDeclare';
         if (!this.gameState.isRetargeting) logToConsole("Declare your attack using the UI.", 'lightblue');
     }
@@ -1188,19 +1253,20 @@
             window.animationManager.playAnimation('diceRoll', {
                 diceNotation: '1d20',
                 position: { x: '40%', y: '30%' }, // Attacker roll on left
+                entity: attacker, // Pass attacker
                 onComplete: (result) => { attackerRollResult = result; }
             }).then(() => {
                 logToConsole(`Attacker's Natural Roll: ${attackerRollResult}`, 'grey');
                 attackResult = this.calculateAttackRoll(attacker, weapon, defender ? intendedBodyPart : null, { ...actionContext, naturalRollOverride: attackerRollResult });
 
                 const modifierAnims = [];
-                if (actionContext.skillBasedModifier) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Skill (${actionContext.skillName}): ${actionContext.skillBasedModifier > 0 ? '+' : ''}${actionContext.skillBasedModifier}`, position: { x: '40%', y: '35%' } }));
-                if (actionContext.bodyPartModifier) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Body Part: ${actionContext.bodyPartModifier}`, position: { x: '40%', y: '40%' }, color: 'salmon' }));
-                if (actionContext.rangeModifier) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Range: ${actionContext.rangeModifier > 0 ? '+' : ''}${actionContext.rangeModifier}`, position: { x: '40%', y: '45%' } }));
-                if (actionContext.attackModifier) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Mode: ${actionContext.attackModifier}`, position: { x: '40%', y: '50%' } }));
-                if (actionContext.attackerMovementPenalty) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Movement: ${actionContext.attackerMovementPenalty}`, position: { x: '40%', y: '55%' }, color: 'salmon' }));
-                if (actionContext.lightingPenaltyApplied) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Lighting: ${actionContext.lightingPenaltyApplied}`, position: { x: '40%', y: '60%' }, color: 'salmon' }));
-                if (actionContext.statusEffectAttackPenalty) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Status: ${actionContext.statusEffectAttackPenalty}`, position: { x: '40%', y: '65%' }, color: 'salmon' }));
+                if (actionContext.skillBasedModifier) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Skill (${actionContext.skillName}): ${actionContext.skillBasedModifier > 0 ? '+' : ''}${actionContext.skillBasedModifier}`, position: { x: '40%', y: '35%' }, entity: attacker }));
+                if (actionContext.bodyPartModifier) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Body Part: ${actionContext.bodyPartModifier}`, position: { x: '40%', y: '40%' }, color: 'salmon', entity: attacker }));
+                if (actionContext.rangeModifier) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Range: ${actionContext.rangeModifier > 0 ? '+' : ''}${actionContext.rangeModifier}`, position: { x: '40%', y: '45%' }, entity: attacker }));
+                if (actionContext.attackModifier) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Mode: ${actionContext.attackModifier}`, position: { x: '40%', y: '50%' }, entity: attacker }));
+                if (actionContext.attackerMovementPenalty) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Movement: ${actionContext.attackerMovementPenalty}`, position: { x: '40%', y: '55%' }, color: 'salmon', entity: attacker }));
+                if (actionContext.lightingPenaltyApplied) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Lighting: ${actionContext.lightingPenaltyApplied}`, position: { x: '40%', y: '60%' }, color: 'salmon', entity: attacker }));
+                if (actionContext.statusEffectAttackPenalty) modifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Status: ${actionContext.statusEffectAttackPenalty}`, position: { x: '40%', y: '65%' }, color: 'salmon', entity: attacker }));
 
                 return Promise.all(modifierAnims).then(() => {
                     logMsg = `ATTACK: ${attackerName} targets ${defender ? defenderName + "'s " + intendedBodyPart : "tile at " + (this.gameState.pendingCombatAction?.targetTile?.x || '?') + "," + (this.gameState.pendingCombatAction?.targetTile?.y || '?')} with ${weapon ? weapon.name : 'Unarmed'} (Mode: ${fireMode}). Final Roll: ${attackResult.roll}`;
@@ -1220,20 +1286,21 @@
                     window.animationManager.playAnimation('diceRoll', {
                         diceNotation: '1d20',
                         position: { x: '60%', y: '30%' }, // Defender roll on right
+                        entity: defender, // Pass defender
                         onComplete: (result) => { defenderRollResultValue = result; }
                     }).then(() => {
                         logToConsole(`Defender's Natural Roll: ${defenderRollResultValue}`, 'grey');
                         defenseResult = this.calculateDefenseRoll(defender, defChoiceType, weapon, coverBonus, { naturalRollOverride: defenderRollResultValue });
 
                         const defModifierAnims = [];
-                        if (defenseResult.defenseSkillValue) defModifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Skill (${defenseResult.defenseSkillName}): ${defenseResult.defenseSkillValue > 0 ? '+' : ''}${defenseResult.defenseSkillValue}`, position: { x: '60%', y: '35%' } }));
-                        if (defenseResult.coverBonusApplied) defModifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Cover: +${defenseResult.coverBonusApplied}`, position: { x: '60%', y: '40%' } }));
-                        if (defenseResult.movementBonusApplied) defModifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Movement: +${defenseResult.movementBonusApplied}`, position: { x: '60%', y: '45%' } }));
-                        if (defenseResult.statusEffectDefensePenalty) defModifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Status: ${defenseResult.statusEffectDefensePenalty}`, position: { x: '60%', y: '50%' }, color: 'salmon' }));
+                        if (defenseResult.defenseSkillValue) defModifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Skill (${defenseResult.defenseSkillName}): ${defenseResult.defenseSkillValue > 0 ? '+' : ''}${defenseResult.defenseSkillValue}`, position: { x: '60%', y: '35%' }, entity: defender }));
+                        if (defenseResult.coverBonusApplied) defModifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Cover: +${defenseResult.coverBonusApplied}`, position: { x: '60%', y: '40%' }, entity: defender }));
+                        if (defenseResult.movementBonusApplied) defModifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Movement: +${defenseResult.movementBonusApplied}`, position: { x: '60%', y: '45%' }, entity: defender }));
+                        if (defenseResult.statusEffectDefensePenalty) defModifierAnims.push(window.animationManager.playAnimation('modifierPopup', { text: `Status: ${defenseResult.statusEffectDefensePenalty}`, position: { x: '60%', y: '50%' }, color: 'salmon', entity: defender }));
 
                         return Promise.all(defModifierAnims).then(() => {
                             logToConsole(`DEFENSE: ${defenderName} (${defChoiceType} - ${defenseResult.defenseSkillName}). Final Roll: ${defenseResult.roll}`, window.getSkillColor(defenseResult.defenseSkillName?.split(" + ")[0]));
-                            if (defType.toLowerCase().includes("block") && window.audioManager && (defender.mapPos || defender === this.gameState)) { /* ... play block sound ... */ }
+                            if (defChoiceType.toLowerCase().includes("block") && window.audioManager && (defender.mapPos || defender === this.gameState)) { /* ... play block sound ... */ }
                         });
                     })
                 );
@@ -1254,7 +1321,8 @@
             animationPromises.push(
                 window.animationManager.playAnimation('hitMissLabel', {
                     text: hit ? "Hit!" : "Miss!",
-                    position: { x: '50%', y: '50%' } // Centered
+                    position: { x: '50%', y: '50%' }, // Centered
+                    entity: defender // Show near defender
                 }).then(() => {
                     logToConsole(hit ? `RESULT: Hit! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.` : `RESULT: Miss! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.`, hit ? (attacker === this.gameState ? 'lightgreen' : 'orange') : (attacker === this.gameState ? 'orange' : 'lightgreen'));
                     if (window.audioManager && (attackerPos || defender?.mapPos)) { /* ... play crit sounds ... */ }
@@ -1353,10 +1421,12 @@
                 // Damage roll animation for ranged
                 if (weapon && weapon.damage) {
                     let damageRollResult = 0;
+                    // Damage roll animation should appear near the defender
                     animationPromises.push(
                         window.animationManager.playAnimation('diceRoll', {
                             diceNotation: weapon.damage,
-                            position: { x: '50%', y: '60%' }, // Centered below Hit/Miss
+                            position: { x: '50%', y: '60%' }, // Fallback position
+                            entity: defender, // Show near defender
                             onComplete: (result) => { damageRollResult = result; }
                         }).then(() => {
                             logToConsole(`Damage Roll (${weapon.damage}): ${damageRollResult}`, 'grey');

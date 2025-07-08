@@ -138,6 +138,27 @@ async function move_internal(direction) {
             // Since attemptCharacterMove updates gameState.playerPos directly, this should be fine.
             window.checkAndHandlePortal(finalPlayerPos.x, finalPlayerPos.y);
         }
+
+        // After successful move, if in combat, update LOS line
+        if (gameState.isInCombat && window.combatManager && typeof window.combatManager.updateCombatLOSLine === 'function') {
+            const combatWeaponSelect = document.getElementById('combatWeaponSelect');
+            let weaponForLOS = null;
+            if (combatWeaponSelect) { // Check if UI element exists
+                const selectedOption = combatWeaponSelect.options[combatWeaponSelect.selectedIndex];
+                if (selectedOption) { // Check if an option is selected
+                    if (selectedOption.value === "unarmed") {
+                        weaponForLOS = null;
+                    } else if (selectedOption.dataset.itemData) {
+                        weaponForLOS = JSON.parse(selectedOption.dataset.itemData);
+                    } else if (window.assetManager) { // Ensure assetManager is available
+                        weaponForLOS = window.assetManager.getItem(selectedOption.value);
+                    }
+                }
+            }
+            // Target is from gameState.combatCurrentDefender or gameState.defenderMapPos
+            window.combatManager.updateCombatLOSLine(gameState, gameState.combatCurrentDefender || gameState.defenderMapPos, weaponForLOS);
+        }
+
     } else {
         // logToConsole("Move attempt failed or no actual movement occurred.");
         // No UI updates needed if move didn't happen.
