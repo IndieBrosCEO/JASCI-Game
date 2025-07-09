@@ -1,0 +1,24 @@
+﻿[
+  {
+    "id": "bandage_simple",
+    "name": "Simple Bandage",
+    "description": "A few strips of clean cloth, good for minor wounds.",
+    "type": "consumable_medical",
+    "effects": {
+      "heal_limbs": 5,
+      "stop_bleeding_chance": 0.75,
+      "crisis_stabilize_bonus": 1
+    },
+    "actionPointCost": 1,
+    "animation": "apply_bandage",
+    "soundOnUse": "medical_bandage_apply_01.wav",
+    "weightLbs": 0.1,
+    "size": 1,
+    "value": 5,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "+",
+    "color": "white",
+    "tags": [ "medical", "healing", "consumable", "first_aid" ]
+  }
+]
