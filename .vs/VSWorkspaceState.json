@@ -1,11 +1,12 @@
 {
   "ExpandedNodes": [
     "",
+    "\\assets",
     "\\assets\\definitions",
     "\\assets\\dialogues",
     "\\assets\\maps",
     "\\js"
   ],
-  "SelectedNode": "\\js\\timeManager.js",
+  "SelectedNode": "\\script.js",
   "PreviewInSolutionExplorer": false
 }

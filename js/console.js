@@ -1026,25 +1026,22 @@ function processConsoleCommand(commandText) {
                 break;
             }
 
-            if (typeof Time === 'undefined' || typeof Time.advanceTime !== 'function') {
-                logToConsoleUI("Error: Time object or Time.advanceTime function is not available.", 'error');
+            if (typeof TimeManager === 'undefined' || typeof TimeManager.advanceTime !== 'function') {
+                logToConsoleUI("Error: TimeManager object or TimeManager.advanceTime function is not available.", 'error');
                 break;
             }
 
-            const ticksToAdvance = hoursToForward * 30; // 1 hour = 60 minutes / 2 minutes per tick = 30 ticks
-            logToConsoleUI(`Fast forwarding ${hoursToForward} hours (${ticksToAdvance} ticks)...`, 'info');
+            const calculatedTicksToAdvance = hoursToForward * TimeManager.MINUTES_PER_HOUR * TimeManager.TICKS_PER_MINUTE;
+            logToConsoleUI(`Fast forwarding ${hoursToForward} hours (${calculatedTicksToAdvance} game ticks)...`, 'info');
 
-            for (let i = 0; i < ticksToAdvance; i++) {
-                Time.advanceTime(gameState);
-                // Note: Time.advanceTime itself handles hunger/thirst decrement per hour
-                // and applies damage if hunger/thirst reach 0.
-                // No need to explicitly call updateHourlyNeeds or applyDailyNeeds here,
-                // as those are typically tied to specific in-game events or longer rest periods,
-                // and Time.advanceTime already handles the core survival aspects.
-            }
+            TimeManager.advanceTime(gameState, calculatedTicksToAdvance);
+            // Note: TimeManager.advanceTime handles internal hourly/daily processing.
+            // Damage from needs is handled by the main game loop after time advancement.
 
             logToConsoleUI(`Fast forward complete. Advanced ${hoursToForward} hours.`, 'success');
-            if (typeof window.updatePlayerStatusDisplay === 'function') {
+            // updatePlayerStatusDisplay is called by TimeManager.advanceTime if window.updatePlayerStatusDisplay exists.
+            // No need to call it explicitly here unless TimeManager's call is removed.
+            if (typeof window.updatePlayerStatusDisplay === 'function') { // This is redundant if TimeManager calls it. Kept for safety during refactor.
                 window.updatePlayerStatusDisplay();
             }
             // Health table might need an update if damage was taken due to starvation/dehydration

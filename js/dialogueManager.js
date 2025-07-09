@@ -148,7 +148,7 @@ window.dialogueManager = {
 
         // Process rewards
         if (choice.rewards && window.inventoryManager) {
-            choice.rewards.forEach(rewardString => {
+            for (const rewardString of choice.rewards) { // Changed from forEach to for...of
                 const parts = rewardString.split('_'); // e.g., "gold_100", "xp_50", "item_apple"
                 const type = parts[0];
                 const value = parts.length > 1 ? parts.slice(1).join('_') : null; // Handles item IDs with underscores
@@ -169,15 +169,17 @@ window.dialogueManager = {
                         if (window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
                     }
                 } else if (type === "item" && value) { // value is item ID
-                    const itemData = await window.assetManager.getItem(value);
+                    const itemData = await window.assetManager.getItem(value); // await is now valid here
                     if (itemData) {
-                        window.inventoryManager.addItemToInventory(itemData, 1); // Assuming quantity 1 for dialogue rewards for now
+                        // Assuming addItemToInventory is synchronous or doesn't need await here.
+                        // If addItemToInventory itself becomes async, it would also need await.
+                        window.inventoryManager.addItemToInventory(itemData, 1);
                         logToConsole(`Player awarded item: ${itemData.name}`, 'lime');
                     } else {
                         logToConsole(`WARN: Could not find item definition for reward ID '${value}'`, 'orange');
                     }
                 }
-            });
+            }
         }
 
         // Handle specific actions like recruitment or giving orders

@@ -62,7 +62,11 @@
     async loadDefinitions() {
         this.tilesets = {};
         this.itemsById = {};
-        this.npcDefinitions = {}; // Ensure this is initialized
+        this.npcDefinitions = {};
+        this.vehiclePartDefinitions = {};
+        this.vehicleTemplateDefinitions = {};
+        this.dynamicEventTemplates = {}; // New property for dynamic event templates
+        this.proceduralQuestTemplates = {}; // New property for procedural quest templates
         let tempItemsById = {};
 
         // Updated to load from new categorized item files
@@ -72,11 +76,14 @@
             'weapons.json',
             'ammunition.json',
             'consumables.json',
-            'clothing.json', // This is the new consolidated clothing file
+            'clothing.json',
             'tools.json',
             'crafting_materials.json',
-            'containers.json'
-            // 'items.json' is removed as it's now empty and its contents are categorized
+            'containers.json',
+            'vehicle_parts.json',
+            'vehicle_templates.json',
+            'dynamic_event_templates.json', // Added dynamic event templates
+            'procedural_quest_templates.json' // Added procedural quest templates
         ];
 
         for (const filename of definitionFiles) {
@@ -93,6 +100,34 @@
                     console.log("AssetManager: Base tilesets loaded:", this.tilesets);
                 } else if (filename === 'npcs.json') {
                     this.npcDefinitions = Object.fromEntries(parsedJson.map(npc => [npc.id, npc]));
+                } else if (filename === 'vehicle_parts.json') {
+                    if (Array.isArray(parsedJson)) {
+                        this.vehiclePartDefinitions = Object.fromEntries(parsedJson.map(part => [part.id, part]));
+                        console.log(`AssetManager: Loaded ${Object.keys(this.vehiclePartDefinitions).length} vehicle parts.`);
+                    } else {
+                        console.warn(`AssetManager: Expected array from vehicle_parts.json, but got ${typeof parsedJson}. Skipping file.`);
+                    }
+                } else if (filename === 'vehicle_templates.json') {
+                    if (Array.isArray(parsedJson)) {
+                        this.vehicleTemplateDefinitions = Object.fromEntries(parsedJson.map(template => [template.id, template]));
+                        console.log(`AssetManager: Loaded ${Object.keys(this.vehicleTemplateDefinitions).length} vehicle templates.`);
+                    } else {
+                        console.warn(`AssetManager: Expected array from vehicle_templates.json, but got ${typeof parsedJson}. Skipping file.`);
+                    }
+                } else if (filename === 'dynamic_event_templates.json') {
+                    if (Array.isArray(parsedJson)) {
+                        this.dynamicEventTemplates = Object.fromEntries(parsedJson.map(template => [template.id, template]));
+                        console.log(`AssetManager: Loaded ${Object.keys(this.dynamicEventTemplates).length} dynamic event templates.`);
+                    } else {
+                        console.warn(`AssetManager: Expected array from dynamic_event_templates.json, but got ${typeof parsedJson}. Skipping file.`);
+                    }
+                } else if (filename === 'procedural_quest_templates.json') {
+                    if (Array.isArray(parsedJson)) {
+                        this.proceduralQuestTemplates = Object.fromEntries(parsedJson.map(template => [template.id, template]));
+                        console.log(`AssetManager: Loaded ${Object.keys(this.proceduralQuestTemplates).length} procedural quest templates.`);
+                    } else {
+                        console.warn(`AssetManager: Expected array from procedural_quest_templates.json, but got ${typeof parsedJson}. Skipping file.`);
+                    }
                 } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json'].includes(filename)) {
                     // All new item files are arrays of items
                     if (Array.isArray(parsedJson)) {
@@ -106,7 +141,6 @@
                         console.warn(`AssetManager: Expected array from ${filename}, but got ${typeof parsedJson}. Skipping file.`);
                     }
                 }
-                // Note: 'items.json' is no longer explicitly handled here as it's removed from definitionFiles
             } catch (error) {
                 console.error(`Failed to load base definition file ${filename}:`, error);
             }
@@ -114,6 +148,30 @@
         console.log("Base asset definitions loaded.");
         this.itemsById = tempItemsById; // All items are now consolidated into itemsById
         console.log("AssetManager: All items loaded:", this.itemsById);
+    }
+
+    getVehiclePart(partId) {
+        return this.vehiclePartDefinitions[partId] || null;
+    }
+
+    getVehicleTemplate(templateId) {
+        return this.vehicleTemplateDefinitions[templateId] || null;
+    }
+
+    getDynamicEventTemplate(templateId) {
+        return this.dynamicEventTemplates[templateId] || null;
+    }
+
+    getAllDynamicEventTemplates() { // Added getter for all
+        return this.dynamicEventTemplates; // Returns the object; could also return Object.values(this.dynamicEventTemplates) for an array
+    }
+
+    getProceduralQuestTemplate(templateId) {
+        return this.proceduralQuestTemplates[templateId] || null;
+    }
+
+    getAllProceduralQuestTemplates() { // Added getter for all
+        return this.proceduralQuestTemplates; // Returns the object
     }
 
     getTileset(tilesetId) { // tilesetId is optional, will return all tilesets if not provided

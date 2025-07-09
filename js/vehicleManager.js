@@ -13,34 +13,29 @@
             return false;
         }
 
-        const partsData = this.assetManager.getDefinition('vehicle_parts');
-        if (partsData) {
-            partsData.forEach(part => {
-                this.vehicleParts[part.id] = part;
-            });
-            logToConsole(`VehicleManager: Loaded ${Object.keys(this.vehicleParts).length} vehicle parts.`, "info");
+        // Directly access the loaded definitions from assetManager
+        if (this.assetManager.vehiclePartDefinitions) {
+            this.vehicleParts = this.assetManager.vehiclePartDefinitions;
+            logToConsole(`VehicleManager: Accessed ${Object.keys(this.vehicleParts).length} vehicle parts from AssetManager.`, "info");
         } else {
-            console.error("VehicleManager: Failed to load vehicle_parts.json.");
-            logToConsole("VehicleManager Error: Could not load vehicle_parts.json.", "error");
+            console.error("VehicleManager: vehiclePartDefinitions not found on assetManager instance.");
+            logToConsole("VehicleManager Error: Could not access vehicle parts from AssetManager.", "error");
             return false;
         }
 
-        const templatesData = this.assetManager.getDefinition('vehicle_templates');
-        if (templatesData) {
-            templatesData.forEach(template => {
-                this.vehicleTemplates[template.id] = template;
-            });
-            logToConsole(`VehicleManager: Loaded ${Object.keys(this.vehicleTemplates).length} vehicle templates.`, "info");
+        if (this.assetManager.vehicleTemplateDefinitions) {
+            this.vehicleTemplates = this.assetManager.vehicleTemplateDefinitions;
+            logToConsole(`VehicleManager: Accessed ${Object.keys(this.vehicleTemplates).length} vehicle templates from AssetManager.`, "info");
         } else {
-            console.error("VehicleManager: Failed to load vehicle_templates.json.");
-            logToConsole("VehicleManager Error: Could not load vehicle_templates.json.", "error");
+            console.error("VehicleManager: vehicleTemplateDefinitions not found on assetManager instance.");
+            logToConsole("VehicleManager Error: Could not access vehicle templates from AssetManager.", "error");
             return false;
         }
         return true;
     }
 
     generateUniqueVehicleId() {
-        return 'vehicle_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        return 'vehicle_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
     }
 
     spawnVehicle(templateId, mapId, pos) {
@@ -399,10 +394,4 @@
     }
 }
 
-// Make it globally accessible for now, or integrate with a central manager registry
-if (typeof window !== 'undefined') {
-    window.vehicleManager = new VehicleManager(window.gameState, window.assetManager);
-    // Defer initialization until assetManager has loaded definitions.
-    // This will likely be called from the main script's initialize function.
-    // Example: document.addEventListener('definitionsLoaded', () => window.vehicleManager.initialize());
-}
+// Class definition ends. Instantiation will be handled in script.js after assetManager is created.

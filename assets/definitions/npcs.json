@@ -65,8 +65,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "dummy", "target", "hostile", "ranged" ],
     "teamId": 1,
-    "cr": 0.1,
-    "portraitHeadUrl": "assets/portraits/dummy_head.png"
+    "cr": 0.1
   },
   {
     "id": "hostile_scavenger",
@@ -135,8 +134,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "scavenger", "melee" ],
     "teamId": 2,
-    "cr": 0.5,
-    "portraitHeadUrl": "assets/portraits/human_scavenger_head.png"
+    "cr": 0.5
   },
   {
     "id": "hostile_scavenger_2",
@@ -206,8 +204,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "scavenger", "melee" ],
     "teamId": 2,
-    "cr": 0.5,
-    "portraitHeadUrl": "assets/portraits/human_scavenger_head.png"
+    "cr": 0.5
   },
   {
     "id": "militia_man",
@@ -276,8 +273,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "militia" ],
     "teamId": 3,
-    "cr": 1,
-    "portraitHeadUrl": "assets/portraits/human_militia_head.png"
+    "cr": 1
   },
   {
     "id": "civilian_militia",
@@ -346,8 +342,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "militia" ],
     "teamId": 3,
-    "cr": 1.5,
-    "portraitHeadUrl": "assets/portraits/human_militia_head.png"
+    "cr": 1.5
   },
   {
     "id": "bandit_archer",
@@ -415,8 +410,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "bandit", "ranged" ],
     "teamId": 4,
-    "cr": 0.5,
-    "portraitHeadUrl": "assets/portraits/human_bandit_head.png"
+    "cr": 0.5
   },
   {
     "id": "bandit_thug",
@@ -484,8 +478,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "bandit", "melee" ],
     "teamId": 4,
-    "cr": 1,
-    "portraitHeadUrl": "assets/portraits/human_bandit_head.png"
+    "cr": 1
   },
   {
     "id": "cellar_dweller",
@@ -553,8 +546,7 @@
     "defaultMovementPoints": 5,
     "tags": [ "hostile", "mutant", "melee" ],
     "teamId": 5,
-    "cr": 0.5,
-    "portraitHeadUrl": "assets/portraits/mutant_dweller_head.png"
+    "cr": 0.5
   },
   {
     "id": "police_officer",
@@ -623,8 +615,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "law_enforcement", "ranged" ],
     "teamId": 10,
-    "cr": 2,
-    "portraitHeadUrl": "assets/portraits/human_police_head.png"
+    "cr": 2
   },
   {
     "id": "hired_gun_merc",
@@ -693,8 +684,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "mercenary", "ranged", "hostile" ],
     "teamId": 11,
-    "cr": 1.5,
-    "portraitHeadUrl": "assets/portraits/human_mercenary_head.png"
+    "cr": 1.5
   },
   {
     "id": "infiltrator_spy",
@@ -764,8 +754,7 @@
     "defaultMovementPoints": 7,
     "tags": [ "humanoid", "spy", "stealth", "melee" ],
     "teamId": 12,
-    "cr": 2,
-    "portraitHeadUrl": "assets/portraits/human_spy_head.png"
+    "cr": 2
   },
   {
     "id": "soldier_grunt",
@@ -834,8 +823,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "military", "ranged", "hostile" ],
     "teamId": 13,
-    "cr": 2.5,
-    "portraitHeadUrl": "assets/portraits/human_soldier_head.png"
+    "cr": 2.5
   },
   {
     "id": "outlaw_desperado",
@@ -904,8 +892,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "criminal", "ranged", "hostile" ],
     "teamId": 11,
-    "cr": 1,
-    "portraitHeadUrl": "assets/portraits/human_outlaw_head.png"
+    "cr": 1
   },
   {
     "id": "medic_doctor",
@@ -1057,8 +1044,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "cultist", "melee", "hostile" ],
     "teamId": 14,
-    "cr": 1,
-    "portraitHeadUrl": "assets/portraits/human_cultist_head.png"
+    "cr": 1
   },
   {
     "id": "zombie_basic",
@@ -1122,8 +1108,7 @@
     "defaultMovementPoints": 4,
     "tags": [ "undead", "zombie", "melee", "hostile" ],
     "teamId": 99,
-    "cr": 1,
-    "portraitHeadUrl": "assets/portraits/zombie_head.png"
+    "cr": 1
   },
   {
     "id": "animal_mountain_lion",
@@ -1157,8 +1142,7 @@
     "defaultMovementPoints": 8,
     "tags": [ "animal", "mammal", "predator", "hostile", "stealth" ],
     "teamId": 51,
-    "cr": 3,
-    "portraitHeadUrl": "assets/portraits/mountain_lion_head.png"
+    "cr": 3
   },
   {
     "id": "animal_bobcat",
@@ -1192,8 +1176,7 @@
     "defaultMovementPoints": 7,
     "tags": [ "animal", "mammal", "predator", "hostile_if_threatened", "stealth" ],
     "teamId": 51,
-    "cr": 1,
-    "portraitHeadUrl": "assets/portraits/bobcat_head.png"
+    "cr": 1
   },
   {
     "id": "animal_coyote",
@@ -1227,8 +1210,7 @@
     "defaultMovementPoints": 8,
     "tags": [ "animal", "mammal", "predator", "scavenger", "pack_animal", "hostile_if_threatened" ],
     "teamId": 51,
-    "cr": 0.5,
-    "portraitHeadUrl": "assets/portraits/coyote_head.png"
+    "cr": 0.5
   },
   {
     "id": "animal_raccoon",
@@ -1262,8 +1244,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "animal", "mammal", "omnivore", "scavenger", "clever", "neutral" ],
     "teamId": 50,
-    "cr": 0.25,
-    "portraitHeadUrl": "assets/portraits/raccoon_head.png"
+    "cr": 0.25
   },
   {
     "id": "animal_red_tailed_hawk",
@@ -1297,8 +1278,7 @@
     "defaultMovementPoints": 9,
     "tags": [ "animal", "bird", "predator", "flying", "neutral" ],
     "teamId": 50,
-    "cr": 0.5,
-    "portraitHeadUrl": "assets/portraits/red_tailed_hawk_head.png"
+    "cr": 0.5
   },
   {
     "id": "animal_turkey_vulture",
@@ -1332,8 +1312,7 @@
     "defaultMovementPoints": 8,
     "tags": [ "animal", "bird", "scavenger", "flying", "neutral" ],
     "teamId": 50,
-    "cr": 0.25,
-    "portraitHeadUrl": "assets/portraits/turkey_vulture_head.png"
+    "cr": 0.25
   },
   {
     "id": "animal_california_quail",
@@ -1367,8 +1346,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "animal", "bird", "prey", "ground_dwelling", "neutral_flees" ],
     "teamId": 52,
-    "cr": 0.1,
-    "portraitHeadUrl": "assets/portraits/california_quail_head.png"
+    "cr": 0.1
   },
   {
     "id": "animal_mule_deer",
@@ -1402,8 +1380,7 @@
     "defaultMovementPoints": 8,
     "tags": [ "animal", "mammal", "herbivore", "prey", "neutral_flees" ],
     "teamId": 52,
-    "cr": 0.5,
-    "portraitHeadUrl": "assets/portraits/mule_deer_head.png"
+    "cr": 0.5
   },
   {
     "id": "animal_desert_cottontail",
@@ -1437,8 +1414,7 @@
     "defaultMovementPoints": 7,
     "tags": [ "animal", "mammal", "herbivore", "prey", "fast", "neutral_flees" ],
     "teamId": 52,
-    "cr": 0.1,
-    "portraitHeadUrl": "assets/portraits/desert_cottontail_head.png"
+    "cr": 0.1
   },
   {
     "id": "animal_ca_ground_squirrel",
@@ -1472,8 +1448,7 @@
     "defaultMovementPoints": 6,
     "tags": [ "animal", "mammal", "rodent", "prey", "burrowing", "neutral_flees" ],
     "teamId": 52,
-    "cr": 0.1,
-    "portraitHeadUrl": "assets/portraits/ca_ground_squirrel_head.png"
+    "cr": 0.1
   },
   {
     "id": "animal_western_fence_lizard",
@@ -1507,8 +1482,7 @@
     "defaultMovementPoints": 5,
     "tags": [ "animal", "reptile", "insectivore", "prey", "neutral_flees" ],
     "teamId": 52,
-    "cr": 0.1,
-    "portraitHeadUrl": "assets/portraits/western_fence_lizard_head.png"
+    "cr": 0.1
   },
   {
     "id": "animal_western_rattlesnake",
@@ -1542,8 +1516,7 @@
     "defaultMovementPoints": 5,
     "tags": [ "animal", "reptile", "predator", "venomous", "hostile_if_threatened" ],
     "teamId": 51,
-    "cr": 1,
-    "portraitHeadUrl": "assets/portraits/western_rattlesnake_head.png"
+    "cr": 1
   },
   {
     "id": "animal_pacific_tree_frog",
@@ -1577,8 +1550,7 @@
     "defaultMovementPoints": 4,
     "tags": [ "animal", "amphibian", "insectivore", "prey", "neutral_flees" ],
     "teamId": 52,
-    "cr": 0.1,
-    "portraitHeadUrl": "assets/portraits/pacific_tree_frog_head.png"
+    "cr": 0.1
   },
   {
     "id": "animal_tarantula",
@@ -1612,8 +1584,7 @@
     "defaultMovementPoints": 4,
     "tags": [ "animal", "arachnid", "predator", "venomous_mild", "hostile_if_threatened" ],
     "teamId": 51,
-    "cr": 0.25,
-    "portraitHeadUrl": "assets/portraits/tarantula_head.png"
+    "cr": 0.25
   },
   {
     "id": "animal_monarch_butterfly",
@@ -1647,8 +1618,7 @@
     "defaultMovementPoints": 7,
     "tags": [ "animal", "insect", "flying", "harmless", "neutral_flees" ],
     "teamId": 90,
-    "cr": 0.01,
-    "portraitHeadUrl": "assets/portraits/monarch_butterfly_head.png"
+    "cr": 0.01
   },
   {
     "id": "animal_annas_hummingbird",
@@ -1682,8 +1652,7 @@
     "defaultMovementPoints": 10,
     "tags": [ "animal", "bird", "flying", "fast", "nectarivore", "neutral_flees" ],
     "teamId": 90,
-    "cr": 0.01,
-    "portraitHeadUrl": "assets/portraits/annas_hummingbird_head.png"
+    "cr": 0.01
   },
   {
     "id": "animal_honey_bee",
@@ -1717,8 +1686,7 @@
     "defaultMovementPoints": 7,
     "tags": [ "animal", "insect", "flying", "stinging", "colony", "neutral_defensive" ],
     "teamId": 91,
-    "cr": 0.1,
-    "portraitHeadUrl": "assets/portraits/honey_bee_head.png"
+    "cr": 0.1
   },
   {
     "id": "animal_western_pond_turtle",
@@ -1752,8 +1720,7 @@
     "defaultMovementPoints": 3,
     "tags": [ "animal", "reptile", "aquatic", "shelled", "neutral_flees" ],
     "teamId": 50,
-    "cr": 0.1,
-    "portraitHeadUrl": "assets/portraits/western_pond_turtle_head.png"
+    "cr": 0.1
   },
   {
     "id": "animal_rainbow_trout",
@@ -1787,7 +1754,6 @@
     "defaultMovementPoints": 6,
     "tags": [ "animal", "fish", "aquatic", "prey", "neutral_flees" ],
     "teamId": 52,
-    "cr": 0.1,
-    "portraitHeadUrl": "assets/portraits/rainbow_trout_head.png"
+    "cr": 0.1
   }
 ]

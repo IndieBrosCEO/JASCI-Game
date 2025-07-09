@@ -12,16 +12,42 @@ class CraftingManager {
     }
 
     async initialize() {
-        try {
-            this.recipes = await this.assetManager.loadData('assets/definitions/recipes.json');
-            if (Object.keys(this.recipes).length === 0) {
-                logToConsole(`${this.logPrefix} No crafting recipes found or loaded. Crafting will not be available.`, 'orange');
-            } else {
-                logToConsole(`${this.logPrefix} Initialized with ${Object.keys(this.recipes).length} crafting recipes.`, 'blue');
+        this.recipes = {}; // Initialize as an empty object
+
+        if (!this.assetManager || !this.assetManager.itemsById) {
+            logToConsole(`${this.logPrefix} AssetManager or itemsById not available. Cannot load recipes from items.`, 'red');
+            return;
+        }
+
+        const allItemDefinitions = this.assetManager.itemsById;
+        let recipesFoundCount = 0;
+
+        for (const itemId in allItemDefinitions) {
+            if (allItemDefinitions.hasOwnProperty(itemId)) {
+                const itemDef = allItemDefinitions[itemId];
+                if (itemDef && itemDef.recipe) {
+                    // Validate the recipe structure a bit (optional, but good practice)
+                    if (!itemDef.recipe.components || !Array.isArray(itemDef.recipe.components)) {
+                        logToConsole(`${this.logPrefix} Item '${itemDef.id}' has a recipe defined, but 'components' are missing or not an array. Skipping recipe.`, 'orange');
+                        continue;
+                    }
+
+                    // The recipe key will be the ID of the item that is produced
+                    this.recipes[itemDef.id] = {
+                        ...itemDef.recipe, // Spread all properties from the item's recipe object
+                        resultItemId: itemDef.id, // Implicitly the item itself
+                        resultQuantity: itemDef.recipe.resultQuantity || 1, // Default to 1 if not specified
+                        name: itemDef.name // Use the item's name for the recipe name
+                    };
+                    recipesFoundCount++;
+                }
             }
-        } catch (error) {
-            logToConsole(`${this.logPrefix} Error loading crafting recipes: ${error.message}`, 'red');
-            this.recipes = {}; // Ensure it's an empty object on error
+        }
+
+        if (recipesFoundCount === 0) {
+            logToConsole(`${this.logPrefix} No craftable items with recipes found in item definitions. Crafting will be limited.`, 'orange');
+        } else {
+            logToConsole(`${this.logPrefix} Initialized with ${recipesFoundCount} crafting recipes from item definitions.`, 'blue');
         }
     }
 
@@ -204,11 +230,11 @@ class CraftingManager {
 }
 
 // Make globally accessible or manage through a central game object
-// window.craftingManager = new CraftingManager(window.gameState, window.assetManager, window.inventoryManager, window.xpManager, window.Time);
+// window.craftingManager = new CraftingManager(window.gameState, window.assetManager, window.inventoryManager, window.xpManager, window.TimeManager);
 // Initialization (loading recipes) would often be async and happen during main game setup.
 // Example:
-// if (!window.craftingManager && window.gameState && window.assetManager && window.inventoryManager && window.xpManager && window.Time) {
-//     window.craftingManager = new CraftingManager(window.gameState, window.assetManager, window.inventoryManager, window.xpManager, window.Time);
+// if (!window.craftingManager && window.gameState && window.assetManager && window.inventoryManager && window.xpManager && window.TimeManager) {
+//     window.craftingManager = new CraftingManager(window.gameState, window.assetManager, window.inventoryManager, window.xpManager, window.TimeManager);
 //     window.craftingManager.initialize().then(() => {
 //         logToConsole("CraftingManager initialized and recipes loaded.");
 //     });

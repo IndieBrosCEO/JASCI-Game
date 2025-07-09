@@ -394,12 +394,13 @@
 
     <script src="js/gameState.js"></script>
     <script src="js/utils.js"></script>
-    <script src="js/time.js"></script>
+    <script src="js/timeManager.js"></script> {/* Replaced time.js */}
     <script src="js/assetManager.js"></script>
+    <script src="js/inventoryManager.js"></script> {/* Replaced inventory.js and handles Item, InventoryContainer */}
+    <script src="js/dialogueManager.js"></script> {/* Added missing manager */}
     <script src="js/animationManager.js"></script>
     <script src="js/mapRenderer.js"></script>
     <script src="js/character.js"></script>
-    <script src="js/inventory.js"></script>
     <script src="js/interaction.js"></script>
     <script src="js/movementUtils.js"></script>
     <script src="js/npcDecisions.js"></script>
@@ -409,6 +410,20 @@
     <script src="js/AudioManager.js"></script>
     <script src="js/faceGenerator.js"></script>
     <script src="js/tooltip.js"></script>
+    {/* Managers that might depend on Item/InventoryContainer or TimeManager should be after them */}
+    <script src="js/craftingManager.js"></script> {/* Add if not present, depends on AssetManager, TimeManager, InventoryManager */}
+    <script src="js/factionManager.js"></script> {/* Add if not present */}
+    <script src="js/vehicleManager.js"></script> {/* Add if not present */}
+    <script src="js/companionManager.js"></script> {/* Add if not present */}
+    <script src="js/dynamicEventManager.js"></script> {/* Add if not present */}
+    <script src="js/proceduralQuestManager.js"></script> {/* Add if not present */}
+    <script src="js/trapManager.js"></script> {/* Add if not present */}
+    <script src="js/weatherManager.js"></script> {/* Add if not present */}
+    <script src="js/xpManager.js"></script> {/* Add if not present */}
+    {/* UI scripts that might depend on managers */}
+    <script src="js/ui/craftingUI.js"></script> {/* Add if not present */}
+    <script src="js/ui/constructionUI.js"></script> {/* Add if not present */}
+    <script src="js/ui/vehicleModificationUI.js"></script> {/* Add if not present */}
     <script src="script.js"></script>
 
     <div id="entityTooltip" class="tooltip hidden"></div> <!-- Ensure class "tooltip" for styling -->

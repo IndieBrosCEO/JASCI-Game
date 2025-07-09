@@ -507,7 +507,8 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
             }
             npc.currentMovementPoints = originalCombatMP; // Restore combat MP
         }
-    }
+    } // <<<< ADDED CLOSING BRACE FOR THE FUNCTION async function handleNpcOutOfCombatTurn
+} // <<<< ADDED CLOSING BRACE FOR THE FUNCTION async function handleNpcOutOfCombatTurn 2
     window.handleNpcOutOfCombatTurn = handleNpcOutOfCombatTurn;
 
     // NPC Target Selection Logic for Combat (moved from combatManager.js)

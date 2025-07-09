@@ -130,5 +130,21 @@
     "canEquip": false,
     "isClothing": false,
     "tags": [ "container", "storage", "furniture" ]
+  },
+  {
+    "id": "small_backpack_container",
+    "name": "Small Backpack",
+    "description": "A simple backpack with a few extra pockets. Increases carrying capacity.",
+    "type": "clothing_container",
+    "isClothing": true,
+    "canEquip": true,
+    "layer": "backpack",
+    "capacity": 12,
+    "weightLbs": 1.5,
+    "size": 3,
+    "value": 25,
+    "sprite": "b",
+    "color": "saddlebrown",
+    "tags": [ "container", "wearable", "backpack", "clothing" ]
   }
 ]

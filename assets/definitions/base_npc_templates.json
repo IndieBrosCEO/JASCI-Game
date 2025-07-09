@@ -64,8 +64,7 @@
     "factionId": "guard",
     "behavior": "patrol",
     "patrolPoints": [],
-    "cr": 2,
-    "portraitHeadUrl": "assets/portraits/human_guard_head.png"
+    "cr": 2
   },
   {
     "templateId": "generic_civilian",
@@ -130,7 +129,6 @@
     "factionId": "civilian",
     "behavior": "idle",
     "patrolPoints": [],
-    "cr": 0.25,
-    "portraitHeadUrl": "assets/portraits/human_civilian_head.png"
+    "cr": 0.25
   }
 ]

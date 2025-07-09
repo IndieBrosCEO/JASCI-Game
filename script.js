@@ -26,6 +26,55 @@ window.assetManager = new AssetManager(); // Explicitly assign to window
 console.log("SCRIPT.JS: window.assetManager created", window.assetManager); // Guard Log 1a
 window.animationManager = new AnimationManager(gameState); // Changed to window.animationManager
 window.audioManager = new AudioManager(); // ADDED THIS LINE
+
+// Instantiate other managers that depend on gameState and assetManager
+
+// FactionManager is an object literal assigned globally in its own file.
+// Ensure factionManager.js is loaded before managers that depend on window.factionManager.
+
+if (typeof VehicleManager !== 'undefined') {
+    window.vehicleManager = new VehicleManager(window.gameState, window.assetManager);
+    console.log("SCRIPT.JS: window.vehicleManager created");
+} else {
+    console.error("SCRIPT.JS: VehicleManager class not found. Ensure vehicleManager.js is loaded before script.js and defines the class.");
+}
+
+if (typeof CompanionManager !== 'undefined') {
+    if (window.factionManager) {
+        window.companionManager = new CompanionManager(window.gameState, window.assetManager, window.factionManager);
+        console.log("SCRIPT.JS: window.companionManager created");
+    } else {
+        console.error("SCRIPT.JS: window.factionManager not available for CompanionManager instantiation. Ensure factionManager.js is loaded.");
+    }
+} else {
+    console.error("SCRIPT.JS: CompanionManager class not found. Ensure companionManager.js is loaded and defines the class.");
+}
+
+if (typeof DynamicEventManager !== 'undefined') {
+    // Constructor: (gameState, assetManager, npcManager, weatherManager, questManager)
+    // Assuming npcManager, weatherManager, questManager will be globally available if they are classes/objects.
+    window.dynamicEventManager = new DynamicEventManager(window.gameState, window.assetManager, window.npcManager, window.weatherManager, window.questManager);
+    console.log("SCRIPT.JS: window.dynamicEventManager created");
+} else {
+    console.error("SCRIPT.JS: DynamicEventManager class not found. Ensure dynamicEventManager.js is loaded and defines the class.");
+}
+
+if (typeof ProceduralQuestManager !== 'undefined') {
+    // Constructor: (gameState, assetManager, factionManager, questManager, npcManager, mapUtils)
+    if (window.factionManager) {
+        window.proceduralQuestManager = new ProceduralQuestManager(window.gameState, window.assetManager, window.factionManager, window.questManager, window.npcManager, {} /* mapUtils placeholder */);
+        console.log("SCRIPT.JS: window.proceduralQuestManager created");
+    } else {
+        console.error("SCRIPT.JS: window.factionManager not available for ProceduralQuestManager instantiation.");
+    }
+} else {
+    console.error("SCRIPT.JS: ProceduralQuestManager class not found. Ensure proceduralQuestManager.js is loaded and defines the class.");
+}
+
+// Note: AudioManager, AnimationManager are instantiated above or self-instantiate.
+// Other managers (XP, Trap, Weather) might also need similar checks if they are class-based.
+// For now, addressing the ones that caused "class not found" or dependency errors.
+
 // let currentMapData = null; // This is now managed in js/mapRenderer.js // This comment is accurate.
 
 // Game Console Elements
@@ -1143,24 +1192,25 @@ function handleKeyDown(event) {
             event.preventDefault(); return;
         }
         if (event.key === 't' || event.key === 'T') {
-            const previousHour = gameState.currentTime.hours;
-            Time.advanceTime(gameState); // Advances by 2 minutes
+            // Determine ticks to advance. Old Time.advanceTime() was 2 minutes.
+            // If TimeManager.TICKS_PER_MINUTE = 1, then 2 minutes = 2 ticks.
+            // This action represents "passing some time" or "ending turn".
+            // A standard turn might consume a certain number of ticks.
+            const ticksForTurnOrWait = TimeManager.TICKS_PER_MINUTE * 2; // Default to 2 minutes worth of ticks
 
-            if (previousHour !== gameState.currentTime.hours) {
-                updateHourlyNeeds(gameState); // From js/character.js
-            }
+            TimeManager.advanceTime(gameState, ticksForTurnOrWait);
+            // TimeManager.advanceTime now calls processHourlyNeeds and processDailyNeeds internally.
+            // It also calls updatePlayerStatusDisplay if available.
 
-            if (previousHour === 23 && gameState.currentTime.hours === 0) {
-                applyDailyNeeds(gameState); // From js/character.js
-            }
-            updatePlayerStatusDisplay(); // Update UI for time and needs
+            // The old updateHourlyNeeds and applyDailyNeeds calls are now redundant here if handled by TimeManager.
+            // updatePlayerStatusDisplay is also called by TimeManager.
 
             if (gameState.isInCombat && combatManager.initiativeTracker[combatManager.currentTurnIndex]?.entity === gameState) {
-                combatManager.endPlayerTurn(); // This will also handle UI updates via its own flow
+                combatManager.endPlayerTurn();
             } else if (gameState.isInCombat) {
                 logToConsole("Not your turn to end.");
             } else {
-                window.turnManager.endTurn(); // This will also handle UI updates via its own flow
+                window.turnManager.endTurn();
             }
             event.preventDefault(); return;
         }
@@ -1889,8 +1939,8 @@ async function initialize() { // Made async
     function updatePlayerStatusDisplay() {
         // Update Clock
         const clockElement = document.getElementById('clockDisplay');
-        if (clockElement && typeof Time !== 'undefined' && Time.getClockDisplay) {
-            const clock = Time.getClockDisplay(gameState);
+        if (clockElement && typeof TimeManager !== 'undefined' && TimeManager.getClockDisplay) {
+            const clock = TimeManager.getClockDisplay(gameState);
             clockElement.textContent = clock.clockString;
             clockElement.style.color = clock.color;
         } else if (clockElement) {
@@ -1899,8 +1949,8 @@ async function initialize() { // Made async
 
         // Update Hunger Bar
         const hungerElement = document.getElementById('hungerDisplay');
-        if (hungerElement && typeof Time !== 'undefined' && Time.getNeedsStatusBars) {
-            const needsBars = Time.getNeedsStatusBars(gameState);
+        if (hungerElement && typeof TimeManager !== 'undefined' && TimeManager.getNeedsStatusBars) {
+            const needsBars = TimeManager.getNeedsStatusBars(gameState);
             hungerElement.textContent = "Hunger: " + needsBars.hungerBar; // Added label
             hungerElement.style.color = "sandybrown"; // Added light brown color
         } else if (hungerElement) {
@@ -1910,8 +1960,8 @@ async function initialize() { // Made async
 
         // Update Thirst Bar
         const thirstElement = document.getElementById('thirstDisplay');
-        if (thirstElement && typeof Time !== 'undefined' && Time.getNeedsStatusBars) {
-            const needsBars = Time.getNeedsStatusBars(gameState); // Called again, but simple
+        if (thirstElement && typeof TimeManager !== 'undefined' && TimeManager.getNeedsStatusBars) {
+            const needsBars = TimeManager.getNeedsStatusBars(gameState); // Called again, but simple
             thirstElement.textContent = "Thirst: " + needsBars.thirstBar; // Added label
             thirstElement.style.color = "lightskyblue"; // Added light blue color
         } else if (thirstElement) {

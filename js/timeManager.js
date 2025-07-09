@@ -70,8 +70,9 @@ const TimeManager = {
      * @param {object} gameState - The global game state.
      */
     processDailyNeeds: function (gameState) {
+        gameState.currentDay = (gameState.currentDay || 0) + 1;
         // Example: Heal a small amount if resting, reset daily limits for certain actions, etc.
-        // logToConsole("Processing daily needs/resets.", 'debug');
+        // logToConsole("Processing daily needs/resets. New day:", gameState.currentDay, 'debug');
     },
 
 
@@ -83,7 +84,8 @@ const TimeManager = {
     getClockDisplay: function (gameState) {
         const hours = gameState.currentTime.hours;
         const minutes = Math.floor(gameState.currentTime.minutes); // Ensure minutes are integer for display
-        const clockString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        const clockString = `Day ${gameState.currentDay || 1} - ${timeString}`;
 
         let color = "white"; // Default
         if (hours >= 5 && hours < 7) color = "lightskyblue"; // Dawn
@@ -114,6 +116,11 @@ const TimeManager = {
             hungerBar: createBar(hungerPercentage),
             thirstBar: createBar(thirstPercentage)
         };
+    },
+
+    isDay: function (gameState) {
+        const hours = gameState.currentTime.hours;
+        return hours >= 6 && hours < 18; // Standard day definition
     }
 };
 

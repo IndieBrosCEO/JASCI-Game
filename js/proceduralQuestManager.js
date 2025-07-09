@@ -16,15 +16,16 @@ class ProceduralQuestManager {
             logToConsole("ProceduralQuestManager Error: AssetManager not available.", "error");
             return false;
         }
-        const templatesData = this.assetManager.getDefinition('procedural_quest_templates');
-        if (templatesData) {
-            templatesData.forEach(template => {
-                this.questTemplates[template.id] = template;
-            });
-            logToConsole(`ProceduralQuestManager: Loaded ${Object.keys(this.questTemplates).length} quest templates.`, "info");
+
+        // Use the new method/property from AssetManager
+        const allQuestTemplates = this.assetManager.getAllProceduralQuestTemplates(); // This returns an object keyed by ID
+        if (allQuestTemplates && Object.keys(allQuestTemplates).length > 0) {
+            this.questTemplates = allQuestTemplates;
+            logToConsole(`ProceduralQuestManager: Accessed ${Object.keys(this.questTemplates).length} quest templates from AssetManager.`, "info");
         } else {
-            logToConsole("ProceduralQuestManager Error: Could not load procedural_quest_templates.json.", "error");
-            return false;
+            logToConsole("ProceduralQuestManager Error: Could not access procedural quest templates from AssetManager or none were loaded.", "error");
+            // this.questTemplates will remain {}
+            // Depending on strictness, could return false.
         }
 
         if (!this.gameState.availableProceduralQuests) {
@@ -37,7 +38,7 @@ class ProceduralQuestManager {
     }
 
     generateUniqueQuestInstanceId(templateId) {
-        return `procquest_${templateId}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+        return `procquest_${templateId}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     }
 
     // Called periodically by a faction representative or game event system
