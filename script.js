@@ -1848,6 +1848,106 @@ function startGame() {
     runConsumableAndNeedsTest(); // Added call to the test function
 }
 
+// --- Save/Load Game Functions ---
+function saveGame() {
+    if (!gameState.gameStarted) {
+        alert("Game has not started yet. Cannot save.");
+        logToConsole("Save attempt failed: Game not started.", "warn");
+        return;
+    }
+    try {
+        const gameStateString = JSON.stringify(gameState);
+        localStorage.setItem('jasciGameSave', gameStateString);
+        alert("Game Saved!");
+        logToConsole("Game state saved to localStorage.", "info");
+        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+    } catch (error) {
+        console.error("Error saving game:", error);
+        alert("Failed to save game. See console for details.");
+        logToConsole(`Error saving game: ${error.message}`, "error");
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+    }
+}
+
+function loadGame() {
+    try {
+        const savedGameStateString = localStorage.getItem('jasciGameSave');
+        if (savedGameStateString) {
+            const loadedState = JSON.parse(savedGameStateString);
+
+            // Deep merge or careful assignment is needed here.
+            // For a simple overwrite of the entire gameState:
+            Object.assign(gameState, loadedState);
+
+            // After loading, re-initialize parts of the game that depend on the new state
+            // or that are not part of the JSON (like DOM elements, caches, etc.)
+
+            // Re-initialize asset-dependent parts if map changed or assets are dynamic
+            // For now, assume assets are static and loaded at init.
+
+            // Refresh UI elements
+            if (gameState.gameStarted) {
+                const characterCreator = document.getElementById('character-creator');
+                const characterInfoPanel = document.getElementById('character-info-panel');
+                if (characterCreator) characterCreator.classList.add('hidden');
+                if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
+
+                renderCharacterInfo(); // Update character display
+                window.updateInventoryUI(); // Update inventory display
+                window.renderHealthTable(gameState); // Update health display
+                updatePlayerStatusDisplay(); // Update clock, needs, Z-levels
+                window.turnManager.updateTurnUI(); // Update turn info
+
+                // Map related UI and state
+                if (window.mapRenderer) {
+                    // If map data itself is part of gameState and needs to be re-applied to mapRenderer
+                    // This depends on how mapRenderer stores/gets its map data.
+                    // If mapRenderer.currentMapData is not directly part of gameState,
+                    // it might need to be reloaded or re-initialized.
+                    // For now, let's assume mapLevels in gameState is the source of truth
+                    // and mapRenderer will use it.
+                    // It's crucial that mapRenderer's internal state is consistent with loaded gameState.mapLevels.
+                    // A function like `mapRenderer.setCurrentMapFromGameState(gameState)` might be needed.
+                    // For now, we'll just schedule a render.
+                    window.mapRenderer.scheduleRender();
+                }
+
+                window.interaction.detectInteractableItems();
+                window.interaction.showInteractableItems();
+
+                // Re-establish NPC references or re-initialize them if they have complex states not in JSON
+                // For now, assuming NPCs are fully serialized. If not, they might need:
+                // gameState.npcs.forEach(npc => initializeNpcFace(npc)); // If face generation is needed
+
+                logToConsole("Game state loaded from localStorage.", "info");
+                alert("Game Loaded!");
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+
+            } else {
+                // If the loaded game state indicates game hadn't started (e.g. save from char creator)
+                // Reset to character creator or initial menu.
+                // For now, just log it. A more robust system would handle this.
+                logToConsole("Loaded game state indicates game was not started. UI may be inconsistent.", "warn");
+                // Potentially show character creator again
+                const characterCreator = document.getElementById('character-creator');
+                if (characterCreator) characterCreator.classList.remove('hidden');
+                window.renderTables(gameState); // Re-render char creation tables
+            }
+
+        } else {
+            alert("No saved game found.");
+            logToConsole("Load attempt: No saved game found in localStorage.", "info");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+        }
+    } catch (error) {
+        console.error("Error loading game:", error);
+        alert("Failed to load game. Save data might be corrupted. See console for details.");
+        logToConsole(`Error loading game: ${error.message}`, "error");
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+    }
+}
+
+
 // --- Automated Consumable and Needs Test ---
 function runConsumableAndNeedsTest() {
     logToConsole("--- Starting Automated Consumable and Needs Test ---");

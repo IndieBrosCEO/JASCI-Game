@@ -115,6 +115,20 @@ function renderTables(character) {
 function renderCharacterStatsSkillsAndWornClothing(character, characterInfoElement) {
     if (!characterInfoElement) return;
 
+    // Basic character info: Name, Level, XP
+    // XP to next level can be calculated based on JASCI's table or a formula.
+    // For now, let's assume a simple display.
+    // JASCI XP Table: 0 -> 300 -> 900 -> 2700 -> 6500 -> 14000 ...
+    const xpLevels = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000]; // Up to level 20
+    const xpToNextLevel = (character.level < xpLevels.length) ? xpLevels[character.level] : "Max Level";
+    const characterName = character === window.gameState ? "Player" : (character.name || "NPC"); // Distinguish player from NPC
+
+    let basicInfoHtml = `
+        <h3>${characterName}</h3>
+        <div>Level: ${character.level || 1}</div>
+        <div>XP: ${character.XP || 0} / ${xpToNextLevel}</div>
+    `;
+
     const statsHtml = character.stats.map(stat => `
         <div class="stats" style="background-color: ${stat.bgColor}; color: ${stat.textColor};">
             <span>${stat.name}:</span>
@@ -127,6 +141,7 @@ function renderCharacterStatsSkillsAndWornClothing(character, characterInfoEleme
         </div>`).join('');
 
     let characterHtml = `
+        ${basicInfoHtml}
         <h3>Stats</h3>
         ${statsHtml}
         <h3>Skills</h3>

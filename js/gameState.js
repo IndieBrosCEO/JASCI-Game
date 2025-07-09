@@ -97,9 +97,15 @@ const gameState = {
     onionSkinLevelsBelow: 1,
 
     // Stat/skill limits
-    MAX_SKILL_POINTS: 30,
-    MAX_STAT_VALUE: 10,
-    MIN_STAT_VALUE: 1,
+    MAX_SKILL_POINTS: 30, // Initial skill points at character creation
+    MAX_STAT_VALUE: 10, // Max value for core attributes
+    MIN_STAT_VALUE: 1, // Min value for core attributes
+    XP: 0, // Player's current experience points
+    level: 1, // Player's current level
+    skillPointsPerLevel: 16, // Points gained per level for skills
+    attributePointsPer3Levels: 1, // Attribute points gained every 3 levels
+    statPointsPer5Levels: 2, // Stat points (details TBD) gained every 5 levels
+
 
     //Inventory
     inventory: { // Modified as per subtask instructions
