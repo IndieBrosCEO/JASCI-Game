@@ -1148,7 +1148,36 @@ window.mapRenderer = {
 
                 let finalSpriteForTile = displaySprite;
                 let finalColorForTile = displayColor;
-                let finalDisplayIdForTile = displayId;
+                let finalDisplayIdForTile = displayId; // The ID of the tile that dictates the base appearance (landscape/building)
+
+                // --- Trap Rendering ---
+                // Check if there's a trap at this location and Z-level
+                if (window.trapManager && typeof window.trapManager.getTrapAt === 'function') {
+                    const trapInstance = window.trapManager.getTrapAt(x, y, currentZ);
+                    if (trapInstance && trapInstance.state !== "hidden") { // Only render non-hidden traps
+                        const trapDef = window.trapManager.getTrapDefinition(trapInstance.trapDefId);
+                        if (trapDef) {
+                            let trapSpriteKey = null;
+                            switch (trapInstance.state) {
+                                case "detected": trapSpriteKey = trapDef.spriteDetected; break;
+                                case "disarmed": trapSpriteKey = trapDef.spriteDisarmed; break;
+                                case "triggered": trapSpriteKey = trapDef.spriteTriggered; break;
+                            }
+                            if (trapSpriteKey && assetManagerInstance.tilesets[trapSpriteKey]) {
+                                const trapVisualDef = assetManagerInstance.tilesets[trapSpriteKey];
+                                // Trap sprite overlays or replaces underlying tile sprite if visible
+                                finalSpriteForTile = trapVisualDef.sprite || finalSpriteForTile;
+                                finalColorForTile = trapVisualDef.color || finalColorForTile; // Trap color takes precedence
+                                finalDisplayIdForTile = trapSpriteKey; // Update display ID to reflect trap
+                                tileNameForTitle = trapDef.name; // Update tooltip name
+                            } else if (trapSpriteKey) {
+                                // logToConsole(`Warning: Trap sprite key '${trapSpriteKey}' for trap '${trapDef.name}' not found in tilesets.`, 'orange');
+                            }
+                        }
+                    }
+                }
+                // --- End Trap Rendering ---
+
 
                 // Player rendering: only if player's Z matches currentViewZ
                 const isPlayerCurrentlyOnThisTileAndZ = (gameState.playerPos &&
@@ -1814,7 +1843,7 @@ window.mapRenderer = {
                     }
                 } else if (anim.sprite && anim.visible) { // Other single-sprite animations
                     // Check if the animation's Z level matches the current view Z
-                    if (anim.z === currentZ) {
+                    if (anim.z === undefined || anim.z === currentZ) { // Modified to handle anim.z undefined for legacy
                         const animX = Math.floor(anim.x);
                         const animY = Math.floor(anim.y);
                         if (animX >= 0 && animX < W && animY >= 0 && animY < H) {
@@ -1840,6 +1869,57 @@ window.mapRenderer = {
                 }
             });
         }
+
+        // Vehicle Rendering (NEW)
+        if (this.gameState && this.gameState.vehicles && this.gameState.vehicles.length > 0 && tileCacheData) {
+            this.gameState.vehicles.forEach(vehicle => {
+                if (vehicle.currentMapId === fullMapData.id && vehicle.mapPos && vehicle.mapPos.z === currentZ) {
+                    const vX = vehicle.mapPos.x;
+                    const vY = vehicle.mapPos.y;
+
+                    if (vX >= 0 && vX < W && vY >= 0 && vY < H) {
+                        const fowStatus = currentFowData?.[vY]?.[vX] || 'hidden';
+                        if (fowStatus === 'visible' || fowStatus === 'visited') {
+                            const cachedCell = tileCacheData[vY]?.[vX];
+                            if (cachedCell && cachedCell.span) {
+                                // Determine vehicle sprite and color
+                                // For now, use template sprite or chassis sprite as fallback
+                                let vehicleSprite = '?';
+                                let vehicleColor = 'grey';
+                                const template = window.vehicleManager?.vehicleTemplates[vehicle.templateId];
+                                if (template && template.sprite) {
+                                    vehicleSprite = template.sprite;
+                                } else {
+                                    const chassisDef = window.vehicleManager?.vehicleParts[vehicle.chassis];
+                                    if (chassisDef && chassisDef.sprite) {
+                                        vehicleSprite = chassisDef.sprite;
+                                    }
+                                }
+                                // TODO: Get color from template/chassis as well
+
+                                // If player is in this vehicle, vehicle sprite represents player
+                                const playerInThisVehicle = this.gameState.player && this.gameState.player.isInVehicle === vehicle.id;
+
+                                // Only render vehicle if player is not on this tile OR player is in this vehicle
+                                const playerIsOnThisTile = this.gameState.playerPos &&
+                                    vX === this.gameState.playerPos.x &&
+                                    vY === this.gameState.playerPos.y &&
+                                    this.gameState.playerPos.z === currentZ;
+
+                                if (playerInThisVehicle || !playerIsOnThisTile) {
+                                    cachedCell.span.textContent = vehicleSprite;
+                                    cachedCell.span.style.color = fowStatus === 'visited' ? this.darkenColor(vehicleColor, 0.6) : vehicleColor;
+                                    cachedCell.sprite = vehicleSprite; // Update cache
+                                    cachedCell.color = vehicleColor;
+                                    cachedCell.displayedId = `VEHICLE_${vehicle.id}`; // Special ID for cache
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        // End Vehicle Rendering
 
         // Targeting Cursor
         if (gameState.isTargetingMode && tileCacheData) {

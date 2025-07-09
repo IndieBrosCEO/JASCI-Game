@@ -171,6 +171,7 @@ async function handleMapSelectionChangeWrapper(mapId) { // Made async to handle 
             }
 
             spawnNpcsFromMapData(loadedMapData); // spawnNpcsFromMapData will need to handle npc.pos.z
+            spawnVehiclesFromMapData(loadedMapData); // NEW: Spawn vehicles
 
             window.mapRenderer.scheduleRender();
             window.interaction.detectInteractableItems();
@@ -285,6 +286,152 @@ function spawnNpcsFromMapData(mapData) {
     }
 }
 
+// Placeholder for NPC group spawning - to be called by DynamicEventManager
+// TODO: This is a very simplified version. A real version would:
+// - Resolve areaKey to actual map coordinates or regions.
+// - Handle npcGroupId which might define a mix of NPC types.
+// - Have better placement logic than pure random within a radius.
+// - Potentially use npcManager if one is created for more advanced spawning.
+function spawnNpcGroupInArea(groupIdOrTag, areaKey, count, targetFactionIdForHostility, eventInstanceId = null) {
+    const spawnedNpcIds = [];
+    if (!window.assetManager || !window.gameState || !window.mapRenderer) {
+        logToConsole("spawnNpcGroupInArea Error: Missing core managers (asset, gameState, mapRenderer).", "error");
+        return spawnedNpcIds;
+    }
+
+    const npcDef = window.assetManager.getNpc(groupIdOrTag); // Simplified: groupIdOrTag is treated as a single NPC ID for now
+    if (!npcDef) {
+        logToConsole(`spawnNpcGroupInArea Error: NPC definition not found for ID/Tag: ${groupIdOrTag}.`, "error");
+        return spawnedNpcIds;
+    }
+
+    // Simplified area resolution: Assume areaKey is player's current position for testing
+    let centerX, centerY, centerZ;
+    if (areaKey === "player_vicinity_event") { // Example specific key
+        centerX = gameState.playerPos.x;
+        centerY = gameState.playerPos.y;
+        centerZ = gameState.playerPos.z;
+    } else { // Fallback or other areaKey logic needed (e.g. find a named map location "random_friendly_outpost")
+        // For now, default to a fixed point or player pos if areaKey is not specifically handled
+        logToConsole(`spawnNpcGroupInArea: areaKey "${areaKey}" not specifically handled, defaulting to player vicinity.`, "warn");
+        centerX = gameState.playerPos.x;
+        centerY = gameState.playerPos.y;
+        centerZ = gameState.playerPos.z;
+    }
+
+    const spawnRadius = 10; // Tiles around the center to attempt spawning
+
+    for (let i = 0; i < count; i++) {
+        let spawnAttempts = 0;
+        let spawned = false;
+        while (spawnAttempts < 20 && !spawned) { // Try a few times to find a valid spot
+            const offsetX = Math.floor(Math.random() * (spawnRadius * 2 + 1)) - spawnRadius;
+            const offsetY = Math.floor(Math.random() * (spawnRadius * 2 + 1)) - spawnRadius;
+            const spawnX = centerX + offsetX;
+            const spawnY = centerY + offsetY;
+            const spawnZ = centerZ; // Spawn on same Z for now
+
+            if (window.mapRenderer.isWalkable(spawnX, spawnY, spawnZ) &&
+                !window._isTileOccupied(spawnX, spawnY, spawnZ, gameState)) { // Use global _isTileOccupied
+
+                const newNpcInstance = JSON.parse(JSON.stringify(npcDef));
+                newNpcInstance.id = `event_${eventInstanceId ? eventInstanceId.substr(-4) : 'anon'}_${npcDef.id}_${i}_${Date.now()}`;
+                newNpcInstance.definitionId = npcDef.id;
+                newNpcInstance.mapPos = { x: spawnX, y: spawnY, z: spawnZ };
+
+                // Initialize health, memory etc.
+                if (typeof window.initializeHealth === 'function') window.initializeHealth(newNpcInstance);
+                newNpcInstance.aggroList = [];
+                newNpcInstance.memory = { lastKnownSafePos: { ...newNpcInstance.mapPos } };
+                if (typeof window.initializeNpcFace === 'function') window.initializeNpcFace(newNpcInstance);
+
+
+                // Set hostility if targetFactionIdForHostility is provided
+                // This is simplified. A real system might involve temporary faction alignment or direct aggro.
+                if (targetFactionIdForHostility === "player_faction_or_local" || targetFactionIdForHostility === "player") {
+                    // Make them hostile to player's team (teamId 1)
+                    // This could be done by setting their faction to one hostile to player's, or adding player to aggroList.
+                    // For simplicity, if their default faction isn't already hostile to player, this might need adjustment.
+                    // A common pattern for event spawns is they are hostile to everyone *not* in their event group.
+                    // Or, they are hostile to the player's faction.
+                    // For now, we assume their base factionId and teamId from definition are appropriate,
+                    // or dynamic event system will adjust faction relations.
+                    // A simple direct aggro:
+                    if (newNpcInstance.teamId !== gameState.player.teamId) { // Basic check
+                        newNpcInstance.aggroList.push({ entityRef: gameState.player, threat: 500 }); // High threat to player
+                        logToConsole(`NPC ${newNpcInstance.name} spawned by event, made hostile to player.`, "info");
+                    }
+                }
+
+                gameState.npcs.push(newNpcInstance);
+                spawnedNpcIds.push(newNpcInstance.id);
+                logToConsole(`spawnNpcGroupInArea: Spawned ${newNpcInstance.name} (ID: ${newNpcInstance.id}) at (${spawnX},${spawnY},${spawnZ}) for event.`, "info");
+                spawned = true;
+            }
+            spawnAttempts++;
+        }
+        if (!spawned) {
+            logToConsole(`spawnNpcGroupInArea: Failed to find valid spawn location for an NPC of type ${npcDef.id} after ${spawnAttempts} attempts.`, "warn");
+        }
+    }
+    if (spawnedNpcIds.length > 0) window.mapRenderer.scheduleRender();
+    return spawnedNpcIds;
+}
+// Make it globally accessible if NpcManager doesn't handle it
+window.spawnNpcGroupInArea = spawnNpcGroupInArea;
+
+
+function spawnVehiclesFromMapData(mapData) {
+    // gameState.vehicles should already be initialized as an array by gameState.js
+    if (!window.gameState || !Array.isArray(window.gameState.vehicles)) {
+        logToConsole("Error: gameState.vehicles is not initialized or not an array. Cannot spawn vehicles.", "error");
+        return;
+    }
+    // Clear existing vehicles from this map before spawning new ones?
+    // For now, let's assume vehicles are persistent or managed globally,
+    // and this function just adds new ones from the map data if they aren't already present.
+    // A more robust system would handle vehicle persistence across map loads.
+    // Alternative: Clear vehicles belonging to the currentMapId if vehicles store their map.
+    // window.gameState.vehicles = window.gameState.vehicles.filter(v => v.currentMapId !== mapData.id);
+
+
+    if (mapData && mapData.vehicles && Array.isArray(mapData.vehicles)) {
+        logToConsole(`Spawning vehicles from map data for map: ${mapData.name || mapData.id}`, "info");
+        mapData.vehicles.forEach(vehiclePlacementInfo => {
+            if (!window.vehicleManager || typeof window.vehicleManager.spawnVehicle !== 'function') {
+                logToConsole("Error: VehicleManager or spawnVehicle function not available.", "error");
+                return; // Cannot spawn
+            }
+
+            const templateId = vehiclePlacementInfo.templateId;
+            const pos = vehiclePlacementInfo.mapPos;
+            const nameOverride = vehiclePlacementInfo.name; // Optional name override from map data
+
+            if (!templateId || !pos) {
+                logToConsole(`Vehicle placement info in map '${mapData.name || mapData.id}' is missing templateId or mapPos. Cannot spawn.`, "warn");
+                return; // Skip this vehicle
+            }
+
+            const newVehicleId = window.vehicleManager.spawnVehicle(templateId, mapData.id, pos);
+            if (newVehicleId && nameOverride) {
+                const newVehicleInst = window.vehicleManager.getVehicleById(newVehicleId);
+                if (newVehicleInst) {
+                    newVehicleInst.name = nameOverride;
+                    logToConsole(`Vehicle "${newVehicleInst.name}" (ID: ${newVehicleId}) spawned and name overridden to "${nameOverride}".`, "info");
+                }
+            } else if (newVehicleId) {
+                // logToConsole(`Vehicle spawned with ID: ${newVehicleId} from template ${templateId}.`, "info");
+                // spawnVehicle already logs success
+            } else {
+                logToConsole(`Failed to spawn vehicle from template ${templateId} for map ${mapData.name || mapData.id}.`, "warn");
+            }
+        });
+    } else {
+        logToConsole(`No vehicle data found in map data for map: ${mapData.name || mapData.id}.`, "info");
+    }
+}
+
+
 /**************************************************************
  * New Map System Functions
  **************************************************************/
@@ -370,6 +517,39 @@ function renderCharacterInfo() {
         charInfoAsciiFaceElement.innerHTML = gameState.player.face.asciiFace; // Changed from textContent to innerHTML
     } else if (charInfoAsciiFaceElement) {
         charInfoAsciiFaceElement.innerHTML = "No face data available."; // Changed from textContent to innerHTML
+    }
+
+    // Companion List
+    let companionListContainer = characterInfoElement.querySelector('#companionListContainer');
+    if (!companionListContainer) {
+        companionListContainer = document.createElement('div');
+        companionListContainer.id = 'companionListContainer';
+        companionListContainer.innerHTML = '<h3>Companions</h3><ul id="companionsDisplayList"></ul>';
+        // Insert after face preview, before stats/skills for layout
+        const statsSkillsContainer = characterInfoElement.querySelector('#statsSkillsWornContainer');
+        if (statsSkillsContainer) {
+            characterInfoElement.insertBefore(companionListContainer, statsSkillsContainer);
+        } else {
+            characterInfoElement.appendChild(companionListContainer); // Fallback
+        }
+    }
+
+    const companionsDisplayList = document.getElementById('companionsDisplayList');
+    if (companionsDisplayList) {
+        companionsDisplayList.innerHTML = ''; // Clear old list
+        if (gameState.companions && gameState.companions.length > 0) {
+            gameState.companions.forEach(companionId => {
+                const npc = gameState.npcs.find(n => n.id === companionId);
+                if (npc) {
+                    const li = document.createElement('li');
+                    li.textContent = `${npc.name || companionId} (Orders: ${npc.currentOrders || 'default'})`;
+                    // TODO: Add click handler to open companion interaction/order menu
+                    companionsDisplayList.appendChild(li);
+                }
+            });
+        } else {
+            companionsDisplayList.innerHTML = '<li>None</li>';
+        }
     }
 }
 
@@ -899,6 +1079,69 @@ function handleKeyDown(event) {
             checkAndHandlePortal(gameState.playerPos.x, gameState.playerPos.y);
             event.preventDefault(); return;
         }
+        if (event.key.toLowerCase() === 'p') { // Prone
+            if (gameState.playerPosture === 'prone') {
+                gameState.playerPosture = 'standing';
+                logToConsole("Player stands up.", "info");
+            } else {
+                gameState.playerPosture = 'prone';
+                logToConsole("Player goes prone.", "info");
+            }
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            // TODO: Add specific sound for posture change move_posture_prone_01.wav / move_posture_stand_01.wav
+            // Player posture change might cost some fraction of movement or an action in some systems.
+            // For now, it's free. If it costs MP/AP, deduct here and updateTurnUI().
+            // Ensure map re-render if posture affects display or cover.
+            if (window.mapRenderer) window.mapRenderer.scheduleRender();
+            event.preventDefault(); return;
+        }
+        if (event.key.toLowerCase() === 'v') { // 'V' for Verify/Search for traps
+            if (window.gameState.actionPointsRemaining > 0) {
+                logToConsole("Player actively searches for traps...", "info");
+                if (window.trapManager && typeof window.trapManager.checkForTraps === 'function') {
+                    window.trapManager.checkForTraps(window.gameState, true, 1); // Active search, radius 1
+                } else {
+                    logToConsole("Error: TrapManager or checkForTraps function not available.", "red");
+                }
+                window.gameState.actionPointsRemaining--;
+                window.turnManager.updateTurnUI();
+                if (window.audioManager) window.audioManager.playUiSound('ui_scan_01.wav'); // Placeholder for search sound
+            } else {
+                logToConsole("Not enough AP to search for traps.", "orange");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            }
+            event.preventDefault(); return;
+        }
+        if (event.key.toLowerCase() === 'c' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive && !gameState.isConstructionModeActive) { // 'C' for Crafting
+            toggleCraftingMenu();
+            event.preventDefault(); return;
+        }
+        if (event.key.toLowerCase() === 'b' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'B' for Build/Construction
+            if (window.ConstructionUI) {
+                if (gameState.isConstructionModeActive) { // If already in placement mode, 'B' can also cancel it.
+                    window.ConstructionUI.exitPlacementMode();
+                } else {
+                    window.ConstructionUI.toggle();
+                }
+            }
+            event.preventDefault(); return;
+        }
+        if (event.key.toLowerCase() === 'k') { // Crouch (using 'k' as 'c' is for melee targeting)
+            if (gameState.playerPosture === 'crouching') {
+                gameState.playerPosture = 'standing';
+                logToConsole("Player stands up from crouch.", "info");
+            } else {
+                gameState.playerPosture = 'crouching';
+                logToConsole("Player crouches.", "info");
+            }
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            // TODO: Add specific sound for posture change move_posture_crouch_01.wav / move_posture_stand_01.wav
+            // Player posture change might cost some fraction of movement or an action in some systems.
+            // For now, it's free. If it costs MP/AP, deduct here and updateTurnUI().
+            // Ensure map re-render if posture affects display or cover.
+            if (window.mapRenderer) window.mapRenderer.scheduleRender();
+            event.preventDefault(); return;
+        }
         if (event.key === 't' || event.key === 'T') {
             const previousHour = gameState.currentTime.hours;
             Time.advanceTime(gameState); // Advances by 2 minutes
@@ -924,7 +1167,30 @@ function handleKeyDown(event) {
     }
 
     // Action-related keys (f, r, c, Escape for action menu, 1-9 for action menu)
+    // Grapple-related keys (g for attempt/release)
     switch (event.key) {
+        case 'g': case 'G':
+            if (gameState.isInCombat && gameState.combatPhase === 'playerAttackDeclare') {
+                const playerIsGrappling = gameState.statusEffects?.isGrappling && gameState.statusEffects.grappledBy === 'player';
+                if (playerIsGrappling) {
+                    combatManager.handleReleaseGrapple();
+                } else {
+                    // Check if "Unarmed" is selected or available for grappling
+                    const weaponSelect = document.getElementById('combatWeaponSelect');
+                    if (weaponSelect && weaponSelect.value === "unarmed") {
+                        combatManager.handleGrappleAttemptDeclaration();
+                    } else {
+                        logToConsole("Select 'Unarmed' to attempt grapple.", "orange");
+                        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+                    }
+                }
+            } else if (gameState.statusEffects?.isGrappling && gameState.statusEffects.grappledBy === 'player') {
+                // Allow releasing grapple outside of playerAttackDeclare phase if it's a free action
+                combatManager.handleReleaseGrapple();
+            } else {
+                logToConsole("Can only attempt or release grapple during your attack declaration in combat, or release if already grappling.", "orange");
+            }
+            event.preventDefault(); return;
         case 'f': case 'F':
             if (gameState.isTargetingMode) {
                 // Sound for confirming target is complex because of LOS check below.
@@ -1083,6 +1349,11 @@ function handleKeyDown(event) {
             }
             event.preventDefault(); break;
         case 'Escape':
+            if (gameState.isConstructionModeActive && window.ConstructionUI) {
+                window.ConstructionUI.exitPlacementMode();
+                event.preventDefault();
+                return;
+            }
             if (gameState.isTargetingMode) { // Specific check for targeting mode escape
                 gameState.isTargetingMode = false;
                 gameState.targetingType = null;
@@ -1351,6 +1622,7 @@ async function initialize() { // Made async
                 }
                 console.log("Initial map loaded:", loadedMapData.name, "ID:", gameState.currentMapId, "Player Z:", gameState.playerPos.z);
                 spawnNpcsFromMapData(loadedMapData);
+                spawnVehiclesFromMapData(loadedMapData); // NEW: Spawn vehicles
                 // FOW calculation moved to startGame
             } else {
                 console.error(`Failed to load initial map: ${initialMapId}`);
@@ -1382,6 +1654,90 @@ async function initialize() { // Made async
         // No explicit initEntityTooltip function is called here anymore.
         logToConsole("Entity tooltip event listeners will be set up with other mapContainer listeners.");
 
+        // Initialize Crafting UI
+        if (window.CraftingUI && typeof window.CraftingUI.initialize === 'function') {
+            window.CraftingUI.initialize();
+        } else {
+            console.warn("CraftingUI not available or initialize function missing.");
+        }
+
+        // Initialize Vehicle Manager and UI (NEW)
+        if (window.vehicleManager && typeof window.vehicleManager.initialize === 'function') {
+            if (window.vehicleManager.initialize()) { // Check return value
+                logToConsole("VehicleManager initialized successfully.", "info");
+            } else {
+                logToConsole("VehicleManager initialization failed. Check logs.", "warn");
+            }
+        } else {
+            console.warn("VehicleManager not available or initialize function missing.");
+            logToConsole("VehicleManager not found for initialization.", "warn");
+        }
+        if (window.VehicleModificationUI && typeof window.VehicleModificationUI.initialize === 'function') {
+            window.VehicleModificationUI.initialize();
+            logToConsole("VehicleModificationUI initialized.", "info");
+        } else {
+            console.warn("VehicleModificationUI not available or initialize function missing.");
+        }
+        // End Vehicle Manager and UI Init
+
+        // Initialize Companion Manager (NEW)
+        // Ensure factionManager is available if companionManager depends on it.
+        // For now, assuming factionManager is also global or initialized before this.
+        if (window.FactionManager && !window.factionManager) { // Check if constructor exists but instance doesn't
+            window.factionManager = new window.FactionManager(window.gameState, window.assetManager);
+            if (typeof window.factionManager.initialize === 'function') {
+                window.factionManager.initialize(); // Initialize it if it has such a method
+                logToConsole("FactionManager instance created and initialized for CompanionManager.", "info");
+            } else {
+                logToConsole("FactionManager instance created for CompanionManager (no initialize method found).", "info");
+            }
+        } else if (!window.factionManager) {
+            console.warn("FactionManager not available, CompanionManager might have limited functionality for reputation checks.");
+        }
+
+        if (window.CompanionManager) { // Check if CompanionManager class exists
+            window.companionManager = new CompanionManager(window.gameState, window.assetManager, window.factionManager);
+            if (typeof window.companionManager.initialize === 'function') {
+                window.companionManager.initialize();
+                logToConsole("CompanionManager initialized.", "info");
+            } else {
+                logToConsole("CompanionManager instantiated (no initialize method found).", "info");
+            }
+        } else {
+            console.warn("CompanionManager class not found. Companion system will not be available.");
+            logToConsole("CompanionManager class not found for initialization.", "warn");
+        }
+        // End Companion Manager Init
+
+        // Initialize Dynamic Event Manager (NEW)
+        if (window.DynamicEventManager) {
+            // Assuming npcManager, weatherManager, questManager might not be fully fleshed out or global yet.
+            // Pass undefined or basic stubs if necessary, or ensure they are initialized before this.
+            window.dynamicEventManager = new DynamicEventManager(window.gameState, window.assetManager, window.npcManager, window.weatherManager, window.questManager);
+            if (window.dynamicEventManager.initialize()) {
+                logToConsole("DynamicEventManager initialized.", "info");
+            } else {
+                logToConsole("DynamicEventManager initialization failed.", "warn");
+            }
+        } else {
+            console.warn("DynamicEventManager class not found. Dynamic events will not occur.");
+        }
+
+        // Initialize Procedural Quest Manager (NEW)
+        if (window.ProceduralQuestManager) {
+            // mapUtils is a placeholder for now.
+            window.proceduralQuestManager = new ProceduralQuestManager(window.gameState, window.assetManager, window.factionManager, window.questManager, window.npcManager, { /* mapUtils placeholder */ });
+            if (window.proceduralQuestManager.initialize()) {
+                logToConsole("ProceduralQuestManager initialized.", "info");
+            } else {
+                logToConsole("ProceduralQuestManager initialization failed.", "warn");
+            }
+        } else {
+            console.warn("ProceduralQuestManager class not found. Procedural quests will not be available.");
+        }
+        // End Dynamic/Procedural Managers Init
+
+
         requestAnimationFrame(gameLoop); // Start the main game loop
 
     } catch (error) {
@@ -1399,7 +1755,49 @@ async function initialize() { // Made async
     const mapContainerElement = document.getElementById('mapContainer'); // Renamed to avoid conflict
     if (mapContainerElement) {
         mapContainerElement.addEventListener('click', (event) => {
-            if (gameState.isRetargeting && combatManager) {
+            if (gameState.isConstructionModeActive && window.constructionManager && window.gameState.selectedConstructionId) {
+                const rect = mapContainerElement.getBoundingClientRect();
+                const scrollLeft = mapContainerElement.scrollLeft;
+                const scrollTop = mapContainerElement.scrollTop;
+                let tileWidth = 10; let tileHeight = 18; // Default/fallback
+                const tempSpan = document.createElement('span');
+                tempSpan.style.fontFamily = getComputedStyle(mapContainerElement).fontFamily;
+                tempSpan.style.fontSize = getComputedStyle(mapContainerElement).fontSize;
+                tempSpan.style.lineHeight = getComputedStyle(mapContainerElement).lineHeight;
+                tempSpan.style.position = 'absolute'; tempSpan.style.visibility = 'hidden';
+                tempSpan.textContent = 'M'; // Measure a character
+                document.body.appendChild(tempSpan);
+                tileWidth = tempSpan.offsetWidth;
+                tileHeight = tempSpan.offsetHeight;
+                document.body.removeChild(tempSpan);
+                if (tileWidth === 0 || tileHeight === 0) { tileWidth = 10; tileHeight = 18; }
+
+
+                const x = Math.floor((event.clientX - rect.left + scrollLeft) / tileWidth);
+                const y = Math.floor((event.clientY - rect.top + scrollTop) / tileHeight);
+                const z = gameState.currentViewZ; // Placement happens on the currently viewed Z-level
+
+                const definition = window.constructionManager.constructionDefinitions[window.gameState.selectedConstructionId];
+                if (definition) {
+                    logToConsole(`Attempting to place ${definition.name} at (${x},${y},${z})`, "info");
+                    // isValidPlacement should be called by placeConstruction internally, or here first.
+                    // For robustness, placeConstruction should re-validate.
+                    window.constructionManager.placeConstruction(window.gameState.selectedConstructionId, { x, y, z })
+                        .then(success => {
+                            if (success) {
+                                logToConsole(`${definition.name} placed successfully.`, "event-success");
+                            } else {
+                                logToConsole(`Failed to place ${definition.name}.`, "orange");
+                                // uiManager could show a toast: "Cannot build here." or "Missing materials."
+                            }
+                            if (window.ConstructionUI) window.ConstructionUI.exitPlacementMode(); // Exit mode regardless
+                        });
+                } else {
+                    logToConsole(`Error: Selected construction ID ${window.gameState.selectedConstructionId} not found.`, "error");
+                    if (window.ConstructionUI) window.ConstructionUI.exitPlacementMode();
+                }
+
+            } else if (gameState.isRetargeting && combatManager) {
                 const rect = mapContainerElement.getBoundingClientRect();
                 const scrollLeft = mapContainerElement.scrollLeft;
                 const scrollTop = mapContainerElement.scrollTop;

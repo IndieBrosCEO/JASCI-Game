@@ -40,12 +40,59 @@ function _getActionsForItem(it) {
     if (tags.includes("climbable")) {
         actions.push("Climb Up", "Climb Down");
     }
+    // Added for traps
+    if (it.itemType === "trap" && it.trapState === "detected") {
+        actions.push("Examine Trap", "Attempt to Disarm");
+    }
+    // Added for vehicles
+    if (it.itemType === "vehicle") {
+        const playerInThisVehicle = window.gameState && window.gameState.player && window.gameState.player.isInVehicle === it.id;
+        if (playerInThisVehicle) {
+            actions.push("Exit Vehicle");
+        } else {
+            actions.push("Enter Vehicle");
+        }
+        actions.push("Access Cargo", "Refuel", "Repair Parts", "Modify Parts");
+    }
+    // Added for NPCs (potential companions)
+    if (it.itemType === "npc") {
+        actions.push("Talk"); // Default talk action
+        if (window.companionManager && window.companionManager.isCompanion(it.id)) {
+            actions.push("Orders", "Dismiss");
+            // "Talk (Companion)" could be a specific dialogue branch triggered from default "Talk"
+        }
+        // Recruitment is handled via dialogue initiated by "Talk"
+    }
+    // Added for Placed Constructions
+    if (it.itemType === "construction_instance") { // Changed from "construction" to avoid conflict with build menu item type
+        const structureInstance = window.constructionManager ? window.constructionManager.getStructureByUniqueId(it.id) : null;
+        if (structureInstance && structureInstance.definition) {
+            const def = structureInstance.definition;
+            actions.push("Examine");
+            if (def.stationType) {
+                actions.push(`Use ${def.name}`);
+            }
+            if (def.category === "resource_production") {
+                if (structureInstance.internalStorage && structureInstance.internalStorage.some(s => s.quantity > 0)) {
+                    actions.push("Collect Resources");
+                }
+                if (def.requiresInputItemId) {
+                    actions.push("Add Input"); // Simple for now, UI would list what input
+                }
+            }
+            // TODO: Add actions for defensive structures (Activate, Reload, Repair)
+            actions.push("Dismantle"); // Placeholder
+        }
+    }
     return actions;
 }
 
 function _performAction(action, it) {
-    const { x, y, z, id } = it; // 'it' now contains x, y, z, id, name
-    const tileDef = assetManagerInstance.tilesets[id]; // Get tile definition for properties like target_dz
+    const { x, y, z, id, itemType } = it; // 'it' now contains x, y, z, id, name, itemType
+    // tileDef is primarily for map tiles. For NPCs/Vehicles/Constructions, 'id' is their instance ID.
+    const tileDef = (itemType === "tile" || itemType === "door" || itemType === "container" || itemType === "trap")
+        ? assetManagerInstance.tilesets[id]
+        : null;
 
     const currentMap = window.mapRenderer.getCurrentMapData();
     if (!currentMap || !currentMap.levels) {
@@ -86,8 +133,185 @@ function _performAction(action, it) {
     }
     const tileName = assetManagerInstance.tilesets[id]?.name || id; // Use 'id' from 'it' for the base name
 
-    // Actions that modify the map state
-    if (action === "Open" && DOOR_OPEN_MAP[currentTileIdOnMap]) {
+    // Actions that modify the map state or game state
+    if (itemType === "vehicle") {
+        const vehicle = window.vehicleManager ? window.vehicleManager.getVehicleById(it.id) : null;
+        if (!vehicle) {
+            logToConsole(`Error: Vehicle with ID ${it.id} not found for action: ${action}.`, "error");
+            return;
+        }
+
+        if (action === "Enter Vehicle") {
+            if (window.gameState.player.isInVehicle) {
+                logToConsole("You are already in a vehicle.", "warn");
+                // Potentially decrement AP if an error sound played and action was 'wasted'
+                // For now, action points are decremented before this function in performSelectedAction if not "Cancel"
+                // We might need to refund AP if an action is invalid like this.
+                // For simplicity, let's assume the UI prevents "Enter Vehicle" if already in one,
+                // or this is a no-op that still costs AP.
+            } else {
+                window.gameState.player.isInVehicle = vehicle.id;
+                // Player's individual map presence (sprite) will be handled by render logic
+                logToConsole(`Entered ${vehicle.name}.`, "info");
+                // TODO: Add sound effect for entering vehicle
+            }
+        } else if (action === "Exit Vehicle") {
+            if (window.gameState.player.isInVehicle === vehicle.id) {
+                window.gameState.player.isInVehicle = null;
+                // Player should reappear at vehicle's current position or an adjacent valid tile.
+                // For now, assume player reappears at vehicle.mapPos.
+                // The turnManager.move function handles setting playerPos.
+                // Here, we just update the state; rendering will reflect it.
+                // If vehicle is moving, player exits at its current location.
+                window.gameState.playerPos = { ...vehicle.mapPos };
+                logToConsole(`Exited ${vehicle.name}. You are now at (${vehicle.mapPos.x}, ${vehicle.mapPos.y}, ${vehicle.mapPos.z})`, "info");
+                // TODO: Add sound effect for exiting vehicle
+            } else {
+                logToConsole("You are not in this vehicle to exit.", "warn");
+            }
+        } else if (action === "Access Cargo") {
+            logToConsole(`Accessing cargo of ${vehicle.name}... (UI to be implemented)`, "info");
+            // TODO: Open vehicle cargo UI, similar to inventory container UI.
+            // Needs vehicle.cargoDetails to be populated by vehicleManager.
+            if (window.uiManager && typeof window.uiManager.openVehicleCargoUI === 'function') {
+                // window.uiManager.openVehicleCargoUI(vehicle.id);
+            } else {
+                // logToConsole("Vehicle Cargo UI manager not available.", "warn");
+            }
+        } else if (action === "Refuel") {
+            logToConsole(`Attempting to refuel ${vehicle.name}... (Full logic later)`, "info");
+            // TODO: Prompt for fuel item from player inventory, then call:
+            // window.vehicleManager.refuelVehicle(vehicle.id, amountFromItem, fuelItemId);
+        } else if (action === "Repair Parts") {
+            logToConsole(`Opening repair interface for ${vehicle.name}... (UI to be implemented)`, "info");
+            // TODO: Open vehicle repair UI (calls vehicleManager.repairVehiclePart)
+            if (window.uiManager && typeof window.uiManager.openVehicleModificationUI === 'function') {
+                // window.uiManager.openVehicleModificationUI(vehicle.id, 'repair'); // Specify mode
+            }
+        } else if (action === "Modify Parts") {
+            logToConsole(`Opening modification interface for ${vehicle.name}... (UI to be implemented)`, "info");
+            // TODO: Open vehicle modification UI (add/remove parts)
+            if (window.uiManager && typeof window.uiManager.openVehicleModificationUI === 'function') {
+                // window.uiManager.openVehicleModificationUI(vehicle.id, 'modify'); // Specify mode
+            }
+        }
+        // Note: AP cost for vehicle actions is handled by the caller (performSelectedAction)
+
+    } else if (itemType === "construction_instance") {
+        const structure = window.constructionManager ? window.constructionManager.getStructureByUniqueId(it.id) : null;
+        if (!structure || !structure.definition) {
+            logToConsole(`Error: Placed structure with ID ${it.id} or its definition not found.`, "error");
+            return;
+        }
+        const def = structure.definition;
+
+        if (action === `Use ${def.name}` && def.stationType) {
+            if (window.CraftingUI && typeof window.CraftingUI.open === 'function') {
+                logToConsole(`Using crafting station: ${def.name} (Type: ${def.stationType})`, "info");
+                window.CraftingUI.open(def.stationType); // Pass station type to filter recipes
+            } else {
+                logToConsole(`CraftingUI not available to use station ${def.name}.`, "warn");
+            }
+        } else if (action === "Collect Resources") {
+            if (window.constructionManager) {
+                window.constructionManager.collectFromResourceProducer(it.id);
+            }
+        } else if (action === "Add Input") {
+            // This would ideally open a small UI to select which item from player inventory to add.
+            // For now, let's assume a default valid input item if the structure requires one.
+            if (def.requiresInputItemId) {
+                logToConsole(`Attempting to add input to ${def.name}. Needs: ${def.requiresInputItemId}. (UI for item selection TBD)`, "info");
+                // Simulate player having the item and choosing to add one.
+                // Actual item consumption from player inv needs to happen here.
+                // For now, just call the manager.
+                if (window.inventoryManager && window.inventoryManager.hasItem(def.requiresInputItemId, 1)) {
+                    // if (window.inventoryManager.removeItems(def.requiresInputItemId, 1)) { // Consume from player
+                    if (window.constructionManager) window.constructionManager.addInputToResourceProducer(it.id, def.requiresInputItemId, 1);
+                    // } else { logToConsole("Failed to remove input item from player inventory.", "orange");}
+                } else {
+                    logToConsole(`Player does not have ${def.requiresInputItemId} to add as input.`, "orange");
+                }
+            } else {
+                logToConsole(`${def.name} does not require inputs.`, "info");
+            }
+        } else if (action === "Examine") {
+            logToConsole(`Examining ${def.name}: ${def.description || 'A constructed object.'} (HP: ${structure.currentHealth}/${structure.maxHealth})`, "info");
+            if (structure.internalStorage && structure.definition.category === "resource_production") {
+                if (structure.internalStorage.length > 0) {
+                    structure.internalStorage.forEach(stored => {
+                        const itemDef = window.assetManager.getItem(stored.itemId);
+                        logToConsole(`  Contains: ${stored.quantity}x ${itemDef ? itemDef.name : stored.itemId}`, "info");
+                    });
+                } else {
+                    logToConsole("  Storage is empty.", "info");
+                }
+            }
+        } else if (action === "Dismantle") {
+            logToConsole(`Dismantling ${def.name}... (Not implemented yet - would return some materials)`, "info");
+            // TODO: Implement constructionManager.dismantleStructure(it.id);
+            // This would remove from mapStructures, clear map tile, return some % of components.
+        }
+        // AP cost for construction interactions is handled by performSelectedAction caller
+
+    } else if (itemType === "npc") {
+        const npc = window.gameState.npcs.find(n => n.id === it.id);
+        if (!npc) {
+            logToConsole(`Error: NPC with ID ${it.id} not found for action: ${action}.`, "error");
+            return;
+        }
+
+        if (action === "Talk") {
+            if (window.dialogueManager) {
+                let dialogueNodeToStart = null;
+                const npcDef = window.assetManager.getNpc(npc.definitionId);
+
+                if (window.companionManager && window.companionManager.isCompanion(npc.id) && npcDef && npcDef.dialogue_following_generic) {
+                    dialogueNodeToStart = npcDef.dialogue_following_generic;
+                    // If dialogueManager's startDialogue can take a specific start node ID, use it.
+                    // Otherwise, it might need a way to specify starting node for an existing dialogue file.
+                    // For now, assume startDialogue handles it or we adapt it.
+                    logToConsole(`Talking to companion ${npc.name} (Node: ${dialogueNodeToStart || 'default start'})`, "info");
+                    window.dialogueManager.startDialogue(npc, dialogueNodeToStart); // Pass specific node if applicable
+                } else {
+                    // Standard talk, dialogue manager will pick appropriate start node (e.g. default, quest-related)
+                    logToConsole(`Talking to ${npc.name}.`, "info");
+                    window.dialogueManager.startDialogue(npc);
+                }
+            } else {
+                logToConsole(`DialogueManager not available. Cannot talk to ${npc.name}.`, "warn");
+            }
+        } else if (action === "Orders") {
+            if (window.companionManager && window.companionManager.isCompanion(npc.id)) {
+                // Basic cycle orders for now
+                const orders = ["follow_close", "wait_here", "attack_aggressively"]; // Example cycle
+                let currentOrderIndex = orders.indexOf(npc.currentOrders);
+                if (currentOrderIndex === -1) currentOrderIndex = 0; // Default to first if unknown
+                const nextOrderIndex = (currentOrderIndex + 1) % orders.length;
+                window.companionManager.setCompanionOrder(npc.id, orders[nextOrderIndex]);
+                if (window.renderCharacterInfo) window.renderCharacterInfo(); // Update companion list in UI
+            } else {
+                logToConsole(`Cannot give orders to ${npc.name}, not a companion.`, "warn");
+            }
+        } else if (action === "Dismiss") {
+            if (window.companionManager && window.companionManager.isCompanion(npc.id)) {
+                window.companionManager.dismissCompanion(npc.id);
+                if (window.renderCharacterInfo) window.renderCharacterInfo(); // Update companion list
+                // Optionally, trigger dismiss dialogue
+                const npcDef = window.assetManager.getNpc(npc.definitionId);
+                if (npcDef && npcDef.dialogue_dismiss_node && window.dialogueManager) {
+                    logToConsole(`Starting dismiss dialogue with ${npc.name}.`, "info");
+                    // Assuming startDialogue can take a specific node from the NPC's default dialogue file.
+                    // This might require dialogueManager to load the NPC's dialogue file first, then go to node.
+                    // window.dialogueManager.startDialogue(npc, npcDef.dialogue_dismiss_node);
+                    // For simplicity, let's assume dismiss just happens, dialogue can be added later.
+                }
+            } else {
+                logToConsole(`Cannot dismiss ${npc.name}, not a companion.`, "warn");
+            }
+        }
+        // AP cost for NPC interactions handled by performSelectedAction caller
+
+    } else if (action === "Open" && DOOR_OPEN_MAP[currentTileIdOnMap]) {
         levelData.middle[y][x] = DOOR_OPEN_MAP[currentTileIdOnMap];
         logToConsole(`Opened ${tileName}`);
     } else if (action === "Close" && DOOR_CLOSE_MAP[currentTileIdOnMap]) {
@@ -98,9 +322,11 @@ function _performAction(action, it) {
         logToConsole(`Broke ${tileName}`);
     } else if (action === "Inspect" || action === "Loot") {
         // Get tile definition to check its tags
-        const tileDef = assetManagerInstance.tilesets[it.id]; // 'it' is the interacted item/tile object {x,y,id,name}
+        // Note: tileDef was already fetched if itemType is tile/door/container/trap.
+        // If it's another itemType, tileDef would be null here.
+        const tileDefForInspect = tileDef || assetManagerInstance.tilesets[it.id];
 
-        if (tileDef && tileDef.tags && tileDef.tags.includes("container")) {
+        if (tileDefForInspect && tileDefForInspect.tags && tileDefForInspect.tags.includes("container")) {
             if (action === "Loot") {
                 // Specific, minimal action for "Loot" on a container
                 logToConsole(`Interacted with ${tileName}. Check inventory when nearby to see contents.`);
@@ -108,11 +334,11 @@ function _performAction(action, it) {
                 // Default inspect behavior for a container
                 logToConsole(`Inspecting ${tileName}: It's a container. Contents visible in inventory when nearby.`);
                 // Alternative using description:
-                // logToConsole(`Inspecting ${tileName}: ${tileDef.description || 'A container.'}`);
+                // logToConsole(`Inspecting ${tileName}: ${tileDefForInspect.description || 'A container.'}`);
             }
         } else {
             // Default behavior for non-container items that might be inspectable/lootable
-            // (or if tileDef is missing for some reason)
+            // (or if tileDefForInspect is missing for some reason)
             logToConsole(`${action}ing ${tileName}.`); // Added a period for consistency
         }
     } else if (action === "Climb Up") {
@@ -187,6 +413,31 @@ function _performAction(action, it) {
                 if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             }
         }
+    } else if (action === "Examine Trap" && it.itemType === "trap") {
+        if (window.trapManager) {
+            const trapDef = window.trapManager.getTrapDefinition(it.id); // it.id is trapDefId
+            if (trapDef && trapDef.description) {
+                logToConsole(`Examining ${it.name}: ${trapDef.description}`, 'info');
+                if (window.uiManager) window.uiManager.showToastNotification(trapDef.description, 'info', 4000);
+            } else {
+                logToConsole(`No detailed description for ${it.name}.`, 'info');
+            }
+        }
+        // Examining does not cost AP
+    } else if (action === "Attempt to Disarm" && it.itemType === "trap") {
+        if (gameState.actionPointsRemaining > 0) {
+            if (window.trapManager) {
+                logToConsole(`Player attempts to disarm ${it.name} (ID: ${it.uniqueTrapId}). AP Cost: 1.`, 'event');
+                window.trapManager.attemptDisarmTrap(it.uniqueTrapId, gameState); // Pass player (gameState)
+                gameState.actionPointsRemaining--;
+                if (window.turnManager) window.turnManager.updateTurnUI();
+            } else {
+                logToConsole("Error: TrapManager not available to attempt disarm.", "red");
+            }
+        } else {
+            logToConsole("Not enough Action Points to attempt disarm.", "orange");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+        }
     }
 
 
@@ -215,18 +466,16 @@ window.interaction = {
     },
 
     detectInteractableItems: function () {
-        // console.log("detectInteractableItems called. Current assetManagerInstance:", assetManagerInstance);
         const R = 1; // Interaction radius
-        const playerPos = gameState.playerPos;
+        const playerPos = window.gameState.playerPos; // Ensure using window.gameState
 
         if (!playerPos || typeof playerPos.x !== 'number' || typeof playerPos.y !== 'number' || typeof playerPos.z !== 'number') {
-            // console.warn("detectInteractableItems: Player position is invalid or incomplete.", playerPos);
-            gameState.interactableItems = [];
+            window.gameState.interactableItems = [];
             return;
         }
 
         const { x: px, y: py, z: pz } = playerPos;
-        gameState.interactableItems = [];
+        window.gameState.interactableItems = []; // Ensure using window.gameState
 
         const currentMap = window.mapRenderer.getCurrentMapData();
         if (!currentMap || !currentMap.levels || !currentMap.dimensions) {
@@ -234,7 +483,16 @@ window.interaction = {
             return;
         }
 
-        if (!assetManagerInstance || typeof assetManagerInstance.getTileset !== 'function') {
+        // Ensure assetManagerInstance is the global one from script.js or properly passed
+        if (!window.assetManagerInstance && !assetManagerInstance) { // Check both local and window scope
+            console.error("AssetManagerInstance not available in detectInteractableItems. AssetManager might not be globally exposed or passed correctly.");
+            logToConsole("Interaction Error: AssetManager not available for item detection.", "error");
+            return;
+        }
+        const currentAssetManager = window.assetManagerInstance || assetManagerInstance;
+
+
+        if (!currentAssetManager || typeof currentAssetManager.getTileset !== 'function') {
             console.error("Interaction module's assetManagerInstance is not valid for detectInteractableItems.");
             return;
         }
@@ -268,35 +526,117 @@ window.interaction = {
 
                 if (!tileIdFromMap) continue;
 
-                // Handle cases where tileIdFromMap might be an object {tileId: "actualID", ...}
                 const baseTileId = (typeof tileIdFromMap === 'object' && tileIdFromMap !== null && tileIdFromMap.tileId !== undefined)
                     ? tileIdFromMap.tileId
                     : tileIdFromMap;
 
-                if (!baseTileId) continue; // Skip if after extraction, baseTileId is empty or null
+                if (!baseTileId) continue;
 
-                const tileDef = assetManagerInstance.tilesets[baseTileId];
+                const tileDef = currentAssetManager.tilesets[baseTileId];
 
                 if (tileDef && tileDef.tags &&
                     (tileDef.tags.includes("interactive") || tileDef.tags.includes("door") || tileDef.tags.includes("container"))) {
-
-                    // Ensure the item isn't already added (e.g. if player is standing on it and it's in 0,0 relative)
-                    // This check is basic; more robust might involve unique IDs if items could stack or have instances
-                    const alreadyExists = gameState.interactableItems.some(item => item.x === x_scan && item.y === y_scan && item.z === currentZ && item.id === baseTileId);
+                    const alreadyExists = window.gameState.interactableItems.some(item => item.x === x_scan && item.y === y_scan && item.z === currentZ && item.id === baseTileId && item.itemType !== "vehicle" && item.itemType !== "npc");
                     if (!alreadyExists) {
-                        gameState.interactableItems.push({
-                            x: x_scan,
-                            y: y_scan,
-                            z: currentZ,
-                            id: baseTileId,
-                            name: tileDef.name || baseTileId, // Fallback to ID if name is missing
-                            // originalTileData: tileIdFromMap // Optionally store the raw tile data from map
+                        window.gameState.interactableItems.push({
+                            x: x_scan, y: y_scan, z: currentZ, id: baseTileId,
+                            name: tileDef.name || baseTileId,
+                            itemType: tileDef.tags.includes("container") ? "container" : (tileDef.tags.includes("door") ? "door" : "tile")
                         });
                     }
                 }
             }
         }
-        // console.log("Interactable items detected:", gameState.interactableItems);
+
+        // Detect NPCs
+        if (window.gameState && window.gameState.npcs) {
+            window.gameState.npcs.forEach(npc => {
+                if (npc.mapPos && npc.mapPos.z === currentZ && npc.health && npc.health.torso.current > 0) { // Check if NPC is alive
+                    const dist = Math.max(Math.abs(npc.mapPos.x - px), Math.abs(npc.mapPos.y - py));
+                    if (dist <= R) {
+                        const alreadyExists = window.gameState.interactableItems.some(item => item.id === npc.id && item.itemType === "npc");
+                        if (!alreadyExists) {
+                            window.gameState.interactableItems.push({
+                                x: npc.mapPos.x, y: npc.mapPos.y, z: npc.mapPos.z,
+                                id: npc.id, // NPC's unique instance ID
+                                name: npc.name || "NPC",
+                                itemType: "npc",
+                                definitionId: npc.definitionId // Store definitionId for easier lookup of base properties
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
+        // Detect Vehicles
+        if (window.gameState && window.gameState.vehicles) {
+            window.gameState.vehicles.forEach(vehicle => {
+                if (vehicle.currentMapId === currentMap.id && vehicle.mapPos.z === currentZ) {
+                    const dist = Math.max(Math.abs(vehicle.mapPos.x - px), Math.abs(vehicle.mapPos.y - py));
+                    if (dist <= R) {
+                        const alreadyExists = window.gameState.interactableItems.some(item => item.id === vehicle.id && item.itemType === "vehicle");
+                        if (!alreadyExists) {
+                            window.gameState.interactableItems.push({
+                                x: vehicle.mapPos.x, y: vehicle.mapPos.y, z: vehicle.mapPos.z,
+                                id: vehicle.id, name: vehicle.name || "Vehicle", itemType: "vehicle"
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
+        // Detect Placed Constructions
+        if (window.gameState && window.gameState.mapStructures) {
+            window.gameState.mapStructures.forEach(structure => {
+                // Assuming structure.x, structure.y, structure.z are the origin of the structure
+                // For multi-tile structures, interaction might only be with the origin tile or any part of it.
+                // For simplicity, check interaction with origin.
+                if (structure.z === currentZ) {
+                    const dist = Math.max(Math.abs(structure.x - px), Math.abs(structure.y - py));
+                    if (dist <= R) {
+                        const alreadyExists = window.gameState.interactableItems.some(item => item.id === structure.uniqueId && item.itemType === "construction_instance");
+                        if (!alreadyExists) {
+                            const def = window.constructionManager?.constructionDefinitions[structure.constructionId];
+                            window.gameState.interactableItems.push({
+                                x: structure.x, y: structure.y, z: structure.z,
+                                id: structure.uniqueId, // Use uniqueId for the instance
+                                name: def ? def.name : "Constructed Object",
+                                itemType: "construction_instance" // Specific type for placed constructions
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
+
+        // Add detected traps
+        if (window.trapManager && typeof window.trapManager.getTrapAt === 'function') {
+            for (let y_trap = Math.max(0, py - R); y_trap <= Math.min(mapHeight - 1, py + R); y_trap++) {
+                for (let x_trap = Math.max(0, px - R); x_trap <= Math.min(mapWidth - 1, px + R); x_trap++) {
+                    const dx_trap = x_trap - px; const dy_trap = y_trap - py;
+                    if (Math.sqrt(dx_trap * dx_trap + dy_trap * dy_trap) <= R) {
+                        const trapInstance = window.trapManager.getTrapAt(x_trap, y_trap, currentZ);
+                        if (trapInstance && trapInstance.state === "detected") {
+                            const trapDef = window.trapManager.getTrapDefinition(trapInstance.trapDefId);
+                            if (trapDef) {
+                                const trapAlreadyListed = window.gameState.interactableItems.some(item => item.x === x_trap && item.y === y_trap && item.z === currentZ && item.uniqueTrapId === trapInstance.uniqueId);
+                                if (!trapAlreadyListed) {
+                                    window.gameState.interactableItems.push({
+                                        x: x_trap, y: y_trap, z: currentZ, id: trapInstance.trapDefId,
+                                        name: trapDef.name, itemType: "trap",
+                                        uniqueTrapId: trapInstance.uniqueId, trapState: trapInstance.state
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // console.log("Interactable items detected (incl. traps):", gameState.interactableItems);
     },
 
     showInteractableItems: function () {

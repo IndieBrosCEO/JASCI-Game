@@ -19,8 +19,15 @@
     "damage": "1d7",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "8 box",
-    "ammoType": ".50AE"
+    "magazineSize": 8,
+    "currentAmmo": 8,
+    "ammoType": ".50AE",
+    "modSlots": [ "scope", "magazine", "accessory_rail" ],
+    "modsAttached": {
+      "scope": null,
+      "magazine": null,
+      "accessory_rail": null
+    }
   },
   {
     "id": "sw_m29_44",
@@ -43,7 +50,8 @@
     "damage": "1d6",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "6 cyl.",
+    "magazineSize": 6,
+    "currentAmmo": 6,
     "ammoType": ".44mag"
   },
   {
@@ -67,7 +75,8 @@
     "damage": "1d5",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "6 cyl.",
+    "magazineSize": 6,
+    "currentAmmo": 6,
     "ammoType": ".357mag"
   },
   {
@@ -90,7 +99,8 @@
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "15 box",
+    "magazineSize": 15,
+    "currentAmmo": 15,
     "ammoType": "9mm"
   },
   {
@@ -113,7 +123,8 @@
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "9 box",
+    "magazineSize": 9,
+    "currentAmmo": 9,
     "ammoType": "10mm"
   },
   {
@@ -136,7 +147,8 @@
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "15 box",
+    "magazineSize": 15,
+    "currentAmmo": 15,
     "ammoType": "10mm"
   },
   {
@@ -164,7 +176,8 @@
       "single",
       "burst"
     ],
-    "magazineSize": "20 box",
+    "magazineSize": 20,
+    "currentAmmo": 20,
     "ammoType": "9mm"
   },
   {
@@ -187,7 +200,8 @@
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "7 box",
+    "magazineSize": 7,
+    "currentAmmo": 7,
     "ammoType": ".45acp"
   },
   {
@@ -210,7 +224,8 @@
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "17 box",
+    "magazineSize": 17,
+    "currentAmmo": 17,
     "ammoType": "9mm"
   },
   {
@@ -238,7 +253,8 @@
       "single",
       "auto"
     ],
-    "magazineSize": "30 box",
+    "magazineSize": 30,
+    "currentAmmo": 30,
     "ammoType": ".45acp"
   },
   {
@@ -261,7 +277,8 @@
     "damage": "1d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "8 box",
+    "magazineSize": 8,
+    "currentAmmo": 8,
     "ammoType": "9mm"
   },
   {
@@ -289,7 +306,8 @@
       "single",
       "auto"
     ],
-    "magazineSize": "32 box",
+    "magazineSize": 32,
+    "currentAmmo": 32,
     "ammoType": "9mm"
   },
   {
@@ -312,7 +330,8 @@
     "damage": "1d3",
     "damageType": "Ballistic",
     "rateOfFire": "Single",
-    "magazineSize": "2 int.",
+    "magazineSize": 2,
+    "currentAmmo": 2,
     "ammoType": ".45acp"
   },
   {
@@ -336,7 +355,8 @@
     "damage": "1d3",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "6 cyl.",
+    "magazineSize": 6,
+    "currentAmmo": 6,
     "ammoType": ".38spl"
   },
   {
@@ -360,7 +380,8 @@
     "damage": "1d2",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "6 cyl.",
+    "magazineSize": 6,
+    "currentAmmo": 6,
     "ammoType": ".22lr"
   },
   {
@@ -388,7 +409,8 @@
       "single",
       "auto"
     ],
-    "magazineSize": "20 box",
+    "magazineSize": 20,
+    "currentAmmo": 20,
     "ammoType": ".32acp"
   },
   {
@@ -411,7 +433,8 @@
     "damage": "1d2",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "7 box",
+    "magazineSize": 7,
+    "currentAmmo": 7,
     "ammoType": ".32acp"
   },
   {
@@ -433,7 +456,8 @@
     "damage": "1d10",
     "damageType": "Ballistic",
     "rateOfFire": "Single",
-    "magazineSize": "5 int.",
+    "magazineSize": 5,
+    "currentAmmo": 5,
     "ammoType": "10gauge_buckshot"
   },
   {
@@ -457,7 +481,8 @@
     "damage": "1d10",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "5 box",
+    "magazineSize": 5,
+    "currentAmmo": 5,
     "ammoType": "7.62mm"
   },
   {
@@ -482,7 +507,8 @@
     "fireModes": [
       "auto"
     ],
-    "magazineSize": "Linked",
+    "magazineSize": 100,
+    "currentAmmo": 100,
     "ammoType": "7.62mm"
   },
   {
@@ -510,7 +536,8 @@
       "burst",
       "auto"
     ],
-    "magazineSize": "30 box",
+    "magazineSize": 30,
+    "currentAmmo": 30,
     "ammoType": "9mm"
   },
   {
@@ -538,7 +565,8 @@
       "burst",
       "auto"
     ],
-    "magazineSize": "15 box",
+    "magazineSize": 15,
+    "currentAmmo": 15,
     "ammoType": "9mm"
   },
   {
@@ -565,7 +593,8 @@
       "single",
       "auto"
     ],
-    "magazineSize": "20 box",
+    "magazineSize": 20,
+    "currentAmmo": 20,
     "ammoType": "9mm"
   },
   {
@@ -592,7 +621,8 @@
       "single",
       "auto"
     ],
-    "magazineSize": "30 box",
+    "magazineSize": 30,
+    "currentAmmo": 30,
     "ammoType": "7.62mmR"
   },
   {
@@ -619,7 +649,8 @@
       "single",
       "burst"
     ],
-    "magazineSize": "30 box",
+    "magazineSize": 30,
+    "currentAmmo": 30,
     "ammoType": "5.56mm"
   },
   {
@@ -647,8 +678,18 @@
       "burst",
       "auto"
     ],
-    "magazineSize": "30 box",
-    "ammoType": "5.56mm"
+    "magazineSize": 30,
+    "currentAmmo": 30,
+    "ammoType": "5.56mm",
+    "modSlots": [ "muzzle", "scope", "stock", "magazine", "underbarrel", "accessory_rail" ],
+    "modsAttached": {
+      "muzzle": null,
+      "scope": null,
+      "stock": null,
+      "magazine": null,
+      "underbarrel": null,
+      "accessory_rail": null
+    }
   },
   {
     "id": "steyr_aug_556mm",
@@ -674,7 +715,8 @@
       "single",
       "auto"
     ],
-    "magazineSize": "30 box",
+    "magazineSize": 30,
+    "currentAmmo": 30,
     "ammoType": "5.56mm"
   },
   {
@@ -701,7 +743,8 @@
       "single",
       "auto"
     ],
-    "magazineSize": "20 box",
+    "magazineSize": 20,
+    "currentAmmo": 20,
     "ammoType": "7.62mm"
   },
   {
@@ -724,7 +767,8 @@
     "damage": "1d7",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "6 int.",
+    "magazineSize": 6,
+    "currentAmmo": 6,
     "ammoType": ".444"
   },
   {
@@ -746,7 +790,8 @@
     "damage": "1d8",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "7 int.",
+    "magazineSize": 7,
+    "currentAmmo": 7,
     "ammoType": "12gauge_buckshot"
   },
   {
@@ -768,7 +813,8 @@
     "damage": "1d8",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "5 box",
+    "magazineSize": 5,
+    "currentAmmo": 5,
     "ammoType": "12gauge_buckshot"
   },
   {
@@ -790,7 +836,8 @@
     "damage": "1d8",
     "damageType": "Ballistic",
     "rateOfFire": "Single",
-    "magazineSize": "6 int.",
+    "magazineSize": 6,
+    "currentAmmo": 6,
     "ammoType": "12gauge_buckshot"
   },
   {
@@ -812,7 +859,8 @@
     "damage": "1d8",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "2 int.",
+    "magazineSize": 2,
+    "currentAmmo": 2,
     "ammoType": "12gauge_buckshot"
   },
   {
@@ -835,8 +883,15 @@
     "damage": "1d8",
     "damageType": "Ballistic",
     "rateOfFire": "Single",
-    "magazineSize": "5 int.",
-    "ammoType": "7.62mm"
+    "magazineSize": 5,
+    "currentAmmo": 5,
+    "ammoType": "7.62mm",
+    "modSlots": [ "scope", "stock", "barrel" ],
+    "modsAttached": {
+      "scope": null,
+      "stock": null,
+      "barrel": null
+    }
   },
   {
     "id": "aa_12_12ga",
@@ -862,7 +917,8 @@
       "single",
       "auto"
     ],
-    "magazineSize": "8 drum",
+    "magazineSize": 8,
+    "currentAmmo": 8,
     "ammoType": "12gauge_buckshot"
   },
   {
@@ -887,7 +943,8 @@
     "damage": "3d4",
     "damageType": "Ballistic",
     "rateOfFire": "S",
-    "magazineSize": "11 box",
+    "magazineSize": 11,
+    "currentAmmo": 11,
     "ammoType": ".50bmg"
   },
   {
@@ -912,7 +969,8 @@
     "fireModes": [
       "auto"
     ],
-    "magazineSize": "Linked",
+    "magazineSize": 100,
+    "currentAmmo": 100,
     "ammoType": ".50bmg"
   },
   {
@@ -935,7 +993,8 @@
     "damage": "10d6",
     "damageType": "Explosive",
     "rateOfFire": "Single",
-    "magazineSize": "1 int.",
+    "magazineSize": 1,
+    "currentAmmo": 1,
     "burstRadiusFt": 10,
     "explodesOnImpact": true,
     "projectileSprite": "►",
@@ -963,7 +1022,8 @@
     "damageType": "Slashing",
     "burstRadiusFt": 10,
     "rateOfFire": "Single",
-    "magazineSize": "1 int.",
+    "magazineSize": 1,
+    "currentAmmo": 1,
     "ammoType": "40mm_grenade",
     "explodesOnImpact": true,
     "projectileSprite": "●",
@@ -988,7 +1048,8 @@
     "damage": "1d6",
     "damageType": "Piercing",
     "rateOfFire": "Single",
-    "magazineSize": "N/A",
+    "magazineSize": 1,
+    "currentAmmo": 1,
     "ammoType": "arrow",
     "projectileSprite": "|",
     "projectileColor": "burlywood"
@@ -1012,7 +1073,8 @@
     "damage": "1d8",
     "damageType": "Piercing",
     "rateOfFire": "Single",
-    "magazineSize": "1 int.",
+    "magazineSize": 1,
+    "currentAmmo": 1,
     "ammoType": "crossbow_bolt",
     "projectileSprite": "-",
     "projectileColor": "sienna"
@@ -1038,7 +1100,8 @@
     "fireModes": [
       "auto"
     ],
-    "magazineSize": "10 int."
+    "magazineSize": 10,
+    "currentAmmo": 10
   },
   {
     "id": "javelin",

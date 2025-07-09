@@ -12,6 +12,77 @@
     <div id="game-container">
         <!-- Left Column -->
         <div id="left-panel" class="menu-character-creator">
+            <!-- Crafting UI (Initially Hidden) -->
+            <div id="craftingUI" class="hidden">
+                <h2>Crafting</h2>
+                <div class="crafting-sections-container">
+                    <div id="craftingRecipeListSection">
+                        <h3>Available Recipes</h3>
+                        <ul id="craftingRecipeList">
+                            <!-- Recipes will be populated here -->
+                        </ul>
+                    </div>
+                    <div id="craftingRecipeDetailSection">
+                        <h3>Recipe Details</h3>
+                        <div id="craftingRecipeDetail">
+                            <p><strong>Name:</strong> <span id="detailRecipeName">-</span></p>
+                            <p><strong>Result:</strong> <span id="detailRecipeResult">-</span> (Qty: <span id="detailRecipeResultQty">-</span>)</p>
+                            <p><strong>Time to Craft:</strong> <span id="detailRecipeTime">-</span> turns</p>
+                            <p><strong>Skill:</strong> <span id="detailRecipeSkill">-</span> (Level: <span id="detailRecipeSkillLevel">-</span>)</p>
+                            <p><strong>Workbench:</strong> <span id="detailRecipeWorkbench">-</span></p>
+                            <h4>Components:</h4>
+                            <ul id="detailRecipeComponents">
+                                <!-- Components will be listed here -->
+                            </ul>
+                        </div>
+                        <div class="crafting-actions">
+                            <label for="craftQuantity">Quantity:</label>
+                            <input type="number" id="craftQuantity" value="1" min="1" style="width: 50px;">
+                            <button id="craftButton" disabled>Craft</button>
+                        </div>
+                    </div>
+                </div>
+                <button id="closeCraftingUIButton">Close Crafting</button>
+            </div>
+
+            <!-- Construction UI (Initially Hidden) -->
+            <div id="constructionUI" class="hidden">
+                <h2>Construction</h2>
+                <div class="construction-sections-container">
+                    <div id="constructionCategoryListSection">
+                        <h3>Categories</h3>
+                        <ul id="constructionCategoryList">
+                            <!-- Categories like Crafting, Defensive, Resource will be populated here -->
+                            <!-- Example: <li data-category="crafting_station">Crafting Stations</li> -->
+                        </ul>
+                    </div>
+                    <div id="constructionBuildableListSection">
+                        <h3>Buildable Items</h3>
+                        <ul id="constructionBuildableList">
+                            <!-- Buildable items for the selected category will be populated here -->
+                        </ul>
+                    </div>
+                    <div id="constructionDetailSection">
+                        <h3>Construction Details</h3>
+                        <div id="constructionDetail">
+                            <p><strong>Name:</strong> <span id="detailConstructionName">-</span></p>
+                            <p><strong>Description:</strong> <span id="detailConstructionDescription">-</span></p>
+                            <p><strong>Size:</strong> <span id="detailConstructionSize">-</span></p>
+                            <p><strong>Skill:</strong> <span id="detailConstructionSkill">-</span> (Level: <span id="detailConstructionSkillLevel">-</span>)</p>
+                            <h4>Components:</h4>
+                            <ul id="detailConstructionComponents">
+                                <!-- Components will be listed here -->
+                            </ul>
+                            <p><strong>Time to Build:</strong> <span id="detailConstructionTime">-</span> turns</p>
+                        </div>
+                        <button id="selectConstructionButton" disabled>Select for Placement</button>
+                        <p id="placementInstructions" class="hidden">Placement Mode Active. Click on map to place. Press 'B' or 'Escape' to cancel.</p>
+                    </div>
+                </div>
+                <button id="closeConstructionUIButton">Close Construction</button>
+            </div>
+
+
             <div id="character-creator">
                 <h2>Character Creator</h2>
                 <label>Character Name:</label>
@@ -147,6 +218,46 @@
                 <button onclick="saveGame()">Save Game</button>
                 <button onclick="loadGame()">Load Game</button>
             </div>
+
+            <!-- Vehicle Modification UI (Initially Hidden) -->
+            <div id="vehicleModificationUI" class="hidden">
+                <h2>Vehicle Modification: <span id="vehicleModUIName">-</span></h2>
+                <div class="vehicle-mod-sections-container">
+                    <div id="vehicleSlotsSection">
+                        <h3>Vehicle Slots & Parts</h3>
+                        <div id="vehicleChassisInfo">
+                            Chassis: <span id="vehicleChassisName">-</span> (HP: <span id="vehicleChassisHP">-</span>)
+                        </div>
+                        <ul id="vehiclePartSlotsList">
+                            <!-- Slots like Engine, Wheels, Armor, Utility will be populated here -->
+                            <!-- Example: <li>Engine: [Basic V4 Engine (HP: 45/50)] <button>Remove</button> <button>Repair</button></li> -->
+                            <!-- Example: <li>Wheel Slot 1: [Empty] <button>Install</button></li> -->
+                        </ul>
+                    </div>
+                    <div id="vehiclePlayerInventorySection">
+                        <h3>Player Inventory (Compatible Parts)</h3>
+                        <ul id="playerVehiclePartsInventory">
+                            <!-- Player's vehicle parts that can be installed will be listed here -->
+                            <!-- Example: <li>Steel Armor Plate <button>Install</button></li> -->
+                        </ul>
+                    </div>
+                </div>
+                <div id="vehiclePartDetailSection" class="hidden">
+                    <h3>Part Details: <span id="selectedPartNameDetail">-</span></h3>
+                    <p>Type: <span id="selectedPartTypeDetail">-</span></p>
+                    <p>Durability: <span id="selectedPartDurabilityDetail">-</span></p>
+                    <p>Weight: <span id="selectedPartWeightDetail">-</span></p>
+                    <p>Effects: <span id="selectedPartEffectsDetail">-</span></p>
+                    <!-- Repair options if applicable -->
+                    <div id="repairActionSection" class="hidden">
+                        <h4>Repair <span id="repairPartName">-</span></h4>
+                        <p>Materials Needed: <span id="repairPartMaterials">-</span></p>
+                        <button id="confirmRepairButton">Repair (1 AP)</button>
+                    </div>
+                </div>
+                <button id="closeVehicleModUIButton">Close Modification</button>
+            </div>
+
             <div id="character-info-panel" class="hidden">
                 <h2>Character Info</h2>
                 <div id="characterInfo"></div>
@@ -189,6 +300,7 @@
                         </select><br>
                         <button id="confirmAttackButton">Confirm Attack</button>
                         <button id="attemptGrappleButton" class="hidden">Attempt Grapple</button>
+                        <button id="releaseGrappleButton" class="hidden">Release Grapple</button>
                         <button id="reloadWeaponButton" class="hidden">Reload Weapon</button>
                         <button id="retargetButton">Retarget</button>
                     </div>

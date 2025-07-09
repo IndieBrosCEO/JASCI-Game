@@ -18,10 +18,11 @@
  * @param {object} character - The character object (gameState for player, or NPC object).
  * @param {string} direction - The direction of movement (e.g., 'up', 'down', 'left', 'right').
  * @param {object} assetManagerInstance - Instance of the asset manager.
+ * @param {number} [moveCostOverride=null] - Optional override for movement point cost.
  * @param {number} [animationDurationOverride] - Optional duration for the movement animation.
  * @returns {boolean} True if a move (including starting a fall) was made, false otherwise.
  */
-async function attemptCharacterMove(character, direction, assetManagerInstance, animationDurationOverride = null) {
+async function attemptCharacterMove(character, direction, assetManagerInstance, moveCostOverride = null, animationDurationOverride = null) {
     const isPlayer = (character === window.gameState);
     const logPrefix = isPlayer ? "[PlayerMovement]" : `[NPCMovement ${character.id || 'UnknownNPC'}]`;
 
@@ -36,12 +37,17 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
     }
 
     let movementPointsOwner = isPlayer ? window.gameState : character;
-    if (movementPointsOwner.movementPointsRemaining <= 0 && isPlayer) { // NPCs might have different MP system
-        logToConsole(`${logPrefix} No movement points remaining.`);
-        return false;
+    let currentMovementPoints = isPlayer ? movementPointsOwner.movementPointsRemaining : movementPointsOwner.currentMovementPoints;
+
+    let actualMoveCost = moveCostOverride !== null ? moveCostOverride : 1;
+    // Grappling movement cost adjustment
+    if (isPlayer && window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player') {
+        actualMoveCost *= 2; // Double movement cost if player is grappling someone
     }
-    if (!isPlayer && movementPointsOwner.currentMovementPoints <= 0) {
-        logToConsole(`${logPrefix} No movement points remaining.`);
+
+    if (currentMovementPoints < actualMoveCost) {
+        logToConsole(`${logPrefix} Not enough movement points. Need ${actualMoveCost}, have ${currentMovementPoints}.`);
+        if (isPlayer && window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return false;
     }
 
@@ -182,12 +188,20 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                     if (!npcAtDest) {
                         if (isPlayer) {
                             window.gameState.playerPos = { x: targetX, y: targetY, z: finalDestZSlope };
-                            window.gameState.movementPointsRemaining -= cost;
+                            window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
+                            // Move grappled target if player is grappling
+                            if (window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player') {
+                                const grappledNpc = window.gameState.npcs.find(npc => npc.id === window.gameState.statusEffects.grappledTargetId);
+                                if (grappledNpc) {
+                                    grappledNpc.mapPos = { ...window.gameState.playerPos };
+                                    logToConsole(`Moved grappled target ${grappledNpc.name} with player.`, 'grey');
+                                }
+                            }
                         } else {
                             character.mapPos = { x: targetX, y: targetY, z: finalDestZSlope };
-                            character.currentMovementPoints -= cost;
+                            character.currentMovementPoints -= actualMoveCost; // Use actualMoveCost
                         }
-                        logToConsole(`${logPrefix} Used slope '${zTransitionDef.name}' to move onto '${adjTileDefSlope.name}'. New Z: ${finalDestZSlope}. Cost: ${cost} MP.`, "green");
+                        logToConsole(`${logPrefix} Used slope '${zTransitionDef.name}' to move onto '${adjTileDefSlope.name}'. New Z: ${finalDestZSlope}. Cost: ${actualMoveCost} MP.`, "green");
                         if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for slope
                         moveSuccessful = true;
                         if (isPlayer) {
@@ -233,12 +247,20 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                     if (!entityAtDest) {
                         if (isPlayer) {
                             window.gameState.playerPos = { x: targetX, y: targetY, z: targetZUp };
-                            window.gameState.movementPointsRemaining -= cost;
+                            window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
+                            // Move grappled target
+                            if (window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player' && window.gameState.statusEffects.grappledTargetId) {
+                                const grappledNpc = window.gameState.npcs.find(npc => npc.id === window.gameState.statusEffects.grappledTargetId);
+                                if (grappledNpc) {
+                                    grappledNpc.mapPos = { ...window.gameState.playerPos };
+                                    logToConsole(`Moved grappled target ${grappledNpc.name} with player to ${JSON.stringify(grappledNpc.mapPos)}.`, 'grey');
+                                }
+                            }
                         } else {
                             character.mapPos = { x: targetX, y: targetY, z: targetZUp };
-                            character.currentMovementPoints -= cost;
+                            character.currentMovementPoints -= actualMoveCost;
                         }
-                        logToConsole(`${logPrefix} Used z_transition '${zTransitionDef.name}' to step UP onto '${targetTileAtCurrentZImpassableInfo.name}' at Z+1. Cost: ${cost} MP.`, "green");
+                        logToConsole(`${logPrefix} Used z_transition '${zTransitionDef.name}' to step UP onto '${targetTileAtCurrentZImpassableInfo.name}' at Z+1. Cost: ${actualMoveCost} MP.`, "green");
                         if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for Z-up
                         moveSuccessful = true;
                         if (isPlayer) {
@@ -274,12 +296,20 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                     if (!entityAtDest) {
                         if (isPlayer) {
                             window.gameState.playerPos = { x: targetX, y: targetY, z: targetZDown };
-                            window.gameState.movementPointsRemaining -= cost;
+                            window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
+                            // Move grappled target
+                            if (window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player') {
+                                const grappledNpc = window.gameState.npcs.find(npc => npc.id === window.gameState.statusEffects.grappledTargetId);
+                                if (grappledNpc) {
+                                    grappledNpc.mapPos = { ...window.gameState.playerPos };
+                                    logToConsole(`Moved grappled target ${grappledNpc.name} with player.`, 'grey');
+                                }
+                            }
                         } else {
                             character.mapPos = { x: targetX, y: targetY, z: targetZDown };
-                            character.currentMovementPoints -= cost;
+                            character.currentMovementPoints -= actualMoveCost; // Use actualMoveCost
                         }
-                        logToConsole(`${logPrefix} Used z_transition '${zTransitionDef.name}' to step DOWN to Z-1. Cost: ${cost} MP.`, "purple");
+                        logToConsole(`${logPrefix} Used z_transition '${zTransitionDef.name}' to step DOWN to Z-1. Cost: ${actualMoveCost} MP.`, "purple");
                         if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for Z-down
                         moveSuccessful = true;
                         if (isPlayer) {

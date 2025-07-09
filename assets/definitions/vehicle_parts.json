@@ -1,0 +1,187 @@
+﻿[
+  {
+    "id": "chassis_small_buggy",
+    "name": "Small Buggy Chassis",
+    "type": "chassis",
+    "durability": 100,
+    "weight": 150,
+    "craftingMaterials": [
+      {
+        "itemId": "metal_scraps",
+        "quantity": 50
+      },
+      {
+        "itemId": "mechanical_parts",
+        "quantity": 10
+      }
+    ],
+    "skillRequirements": [
+      {
+        "skillId": "Mechanics",
+        "level": 20
+      }
+    ],
+    "slotPoints": {
+      "engine": 1,
+      "wheel": 4,
+      "armor_light": 2,
+      "utility_small": 2,
+      "storage_small": 1
+    },
+    "sprite": "V sección C"
+  },
+  {
+    "id": "engine_basic_v4",
+    "name": "Basic V4 Engine",
+    "type": "engine",
+    "durability": 50,
+    "weight": 80,
+    "craftingMaterials": [
+      {
+        "itemId": "metal_scraps",
+        "quantity": 20
+      },
+      {
+        "itemId": "engine_components",
+        "quantity": 5
+      }
+    ],
+    "skillRequirements": [
+      {
+        "skillId": "Mechanics",
+        "level": 15
+      }
+    ],
+    "effects": {
+      "power": 100,
+      "fuelEfficiency": 0.1
+    },
+    "maxFuel": 200
+  },
+  {
+    "id": "wheel_standard",
+    "name": "Standard Wheel",
+    "type": "wheel",
+    "durability": 30,
+    "weight": 15,
+    "craftingMaterials": [
+      {
+        "itemId": "rubber_strips",
+        "quantity": 5
+      },
+      {
+        "itemId": "metal_scraps",
+        "quantity": 2
+      }
+    ],
+    "skillRequirements": [
+      {
+        "skillId": "Mechanics",
+        "level": 5
+      }
+    ],
+    "effects": {
+      "traction": 0.8
+    }
+  },
+  {
+    "id": "armor_plate_steel",
+    "name": "Steel Armor Plate",
+    "type": "armor_light",
+    "durability": 80,
+    "weight": 40,
+    "craftingMaterials": [
+      {
+        "itemId": "steel_plates",
+        "quantity": 5
+      }
+    ],
+    "skillRequirements": [
+      {
+        "skillId": "Mechanics",
+        "level": 25
+      }
+    ],
+    "effects": {
+      "armorValue": 10
+    }
+  },
+  {
+    "id": "storage_box_small",
+    "name": "Small Storage Box",
+    "type": "storage_small",
+    "durability": 25,
+    "weight": 10,
+    "craftingMaterials": [
+      {
+        "itemId": "wood_planks",
+        "quantity": 10
+      },
+      {
+        "itemId": "metal_scraps",
+        "quantity": 2
+      }
+    ],
+    "skillRequirements": [
+      {
+        "skillId": "Crafting",
+        "level": 10
+      }
+    ],
+    "effects": {
+      "cargoCapacity": 10
+    }
+  },
+  {
+    "id": "turret_mount_light",
+    "name": "Light Turret Mount",
+    "type": "utility_small",
+    "durability": 40,
+    "weight": 25,
+    "craftingMaterials": [
+      {
+        "itemId": "metal_scraps",
+        "quantity": 15
+      },
+      {
+        "itemId": "mechanical_parts",
+        "quantity": 5
+      }
+    ],
+    "skillRequirements": [
+      {
+        "skillId": "Mechanics",
+        "level": 30
+      }
+    ],
+    "effects": {
+      "allowsWeaponMount": "light_ranged"
+    }
+  },
+  {
+    "id": "headlights_basic",
+    "name": "Basic Headlights",
+    "type": "utility_small",
+    "durability": 15,
+    "weight": 5,
+    "craftingMaterials": [
+      {
+        "itemId": "electronics_scrap",
+        "quantity": 5
+      },
+      {
+        "itemId": "glass_shards",
+        "quantity": 2
+      }
+    ],
+    "skillRequirements": [
+      {
+        "skillId": "Electronics",
+        "level": 10
+      }
+    ],
+    "effects": {
+      "providesLight": true
+    }
+  }
+]

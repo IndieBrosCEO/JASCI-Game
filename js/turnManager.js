@@ -33,6 +33,11 @@ function startTurn_internal() {
 }
 
 function dash_internal() {
+    if (gameState.player && gameState.player.isInVehicle) {
+        logToConsole("Cannot dash while in a vehicle.", "orange");
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+        return;
+    }
     if (!gameState.hasDashed && gameState.actionPointsRemaining > 0) {
         gameState.movementPointsRemaining += 6;
         gameState.hasDashed = true;
@@ -97,6 +102,30 @@ async function endTurn_internal() { // Make async
     }
     // --- End NPC Out-of-Combat Actions ---
 
+    // Update Weather
+    if (window.weatherManager && typeof window.weatherManager.updateWeather === 'function') {
+        window.weatherManager.updateWeather();
+    } else {
+        // This might be noisy if logged every turn, consider a one-time warning during init if manager not found
+        // console.warn("WeatherManager not found or updateWeather function is missing.");
+    }
+
+    // Update Dynamic Events & Procedural Quests (NEW)
+    if (window.dynamicEventManager && typeof window.dynamicEventManager.masterUpdate === 'function') {
+        window.dynamicEventManager.masterUpdate(gameState.currentTurn); // Pass current game tick/turn
+    }
+    if (window.proceduralQuestManager && typeof window.proceduralQuestManager.updateProceduralQuests === 'function') {
+        window.proceduralQuestManager.updateProceduralQuests(gameState.currentTurn);
+    }
+    // TODO: Add periodic call to proceduralQuestManager.generateQuestOffer() for relevant factions,
+    // e.g., every few game hours or when visiting a faction hub. This might live in a higher-level game clock manager.
+
+    // Update Construction Resource Production (NEW)
+    if (window.constructionManager && typeof window.constructionManager.updateResourceProduction === 'function') {
+        window.constructionManager.updateResourceProduction(gameState.currentTurn);
+    }
+
+
     gameState.currentTurn++;
     startTurn_internal(); // Call internal startTurn
     window.mapRenderer.scheduleRender();
@@ -107,39 +136,132 @@ async function endTurn_internal() { // Make async
 async function move_internal(direction) {
     if (gameState.isActionMenuActive) return;
     console.log('[TurnManager] move_internal: Checking isAnimationPlaying. Flag:', (window.animationManager ? window.animationManager.isAnimationPlaying() : 'N/A'));
-    // Check if an animation is playing. If so, prevent movement.
-    // Delegate movement to the new shared function
-    // Ensure localAssetManager is available and passed
-    if (!localAssetManager) {
-        logToConsole("Error: localAssetManager not available in turnManager.move_internal.", "red");
-        return;
+
+    // Player posture cost adjustments
+    let moveCost = 1;
+    let moveSuccessful = false;
+
+    if (gameState.player && gameState.player.isInVehicle) {
+        const vehicleId = gameState.player.isInVehicle;
+        const vehicle = window.vehicleManager ? window.vehicleManager.getVehicleById(vehicleId) : null;
+
+        if (!vehicle) {
+            logToConsole(`Error: Player is in vehicle ID ${vehicleId}, but vehicle not found.`, "error");
+            return;
+        }
+        if (!window.vehicleManager) {
+            logToConsole("Error: VehicleManager not available for vehicle movement.", "error");
+            return;
+        }
+
+        // Vehicle movement cost & fuel
+        const vehicleMoveCost = 1; // TODO: Base this on vehicle.calculatedStats.speed or engine type
+        const fuelPerMove = 1;   // TODO: Base this on vehicle.calculatedStats.fuelEfficiency or engine type
+
+        if (gameState.movementPointsRemaining < vehicleMoveCost) {
+            logToConsole(`Not enough movement points to move ${vehicle.name}. Required: ${vehicleMoveCost}`, "orange");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            return;
+        }
+        if (vehicle.fuel < fuelPerMove) {
+            logToConsole(`${vehicle.name} is out of fuel!`, "orange");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Or a specific "out of fuel" sound
+            return;
+        }
+
+        let dx = 0, dy = 0;
+        switch (direction) {
+            case 'up': case 'w': case 'W': dy = -1; break;
+            case 'down': case 's': case 'S': dy = 1; break;
+            case 'left': case 'a': case 'A': dx = -1; break;
+            case 'right': case 'd': case 'D': dx = 1; break;
+            default: logToConsole("Invalid move direction: " + direction, "warn"); return;
+        }
+
+        const currentVehiclePos = vehicle.mapPos;
+        const nextX = currentVehiclePos.x + dx;
+        const nextY = currentVehiclePos.y + dy;
+        const nextZ = currentVehiclePos.z; // Vehicle Z-level changes are not handled by basic move yet
+
+        // Basic collision check for vehicle (can be expanded)
+        if (window.mapRenderer.isWalkable(nextX, nextY, nextZ)) {
+            // Animate vehicle movement (placeholder, actual animation is complex)
+            if (window.animationManager && typeof window.animationManager.startMovementAnimation === 'function') {
+                // The entity passed to startMovementAnimation would be the vehicle object itself,
+                // or an object that can have its .mapPos updated by the animation.
+                // For now, we'll update directly and then schedule render.
+                // await window.animationManager.startMovementAnimation(vehicle, nextX, nextY, nextZ, 200);
+            }
+
+            vehicle.mapPos = { x: nextX, y: nextY, z: nextZ };
+            gameState.playerPos = { ...vehicle.mapPos }; // Player moves with the vehicle
+
+            vehicle.fuel -= fuelPerMove;
+            gameState.movementPointsRemaining -= vehicleMoveCost;
+
+            logToConsole(`${vehicle.name} moved to (${nextX},${nextY},${nextZ}). Fuel: ${vehicle.fuel}. MP Left: ${gameState.movementPointsRemaining}`, "info");
+            // TODO: Play vehicle move sound based on terrain/vehicle type
+            if (window.audioManager) window.audioManager.playUiSound('ui_vehicle_move_01.wav');
+
+
+            // Call calculateVehicleStats if fuel change might affect it (e.g. weight)
+            // window.vehicleManager.calculateVehicleStats(vehicle.id); // Not strictly needed for just fuel change unless weight is affected
+
+            moveSuccessful = true;
+        } else {
+            logToConsole(`${vehicle.name} cannot move to (${nextX},${nextY},${nextZ}): Path blocked.`, "orange");
+            if (window.audioManager) window.audioManager.playUiSound('ui_blocked_01.wav');
+        }
+
+    } else { // Player is NOT in a vehicle, standard character movement
+        // Defensive check and logging for gameState and playerPosture
+        if (!window.gameState) {
+            logToConsole("CRITICAL_ERROR: window.gameState is undefined in move_internal (player branch). Cannot proceed.", "red");
+            return;
+        }
+        // logToConsole(`[TurnManager Debug] In move_internal (player branch): window.gameState.playerPosture = ${window.gameState.playerPosture}`, "grey");
+        if (typeof window.gameState.playerPosture === 'undefined') {
+            logToConsole("WARNING: window.gameState.playerPosture is undefined (player branch). Defaulting to 'standing' for this move.", "orange");
+        }
+
+        if (window.gameState.playerPosture === 'crouching') {
+            moveCost = 2;
+        } else if (window.gameState.playerPosture === 'prone') {
+            moveCost = 3;
+        }
+
+        if (window.gameState.movementPointsRemaining < moveCost) {
+            logToConsole("Not enough movement points for current posture.", "orange");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            return;
+        }
+
+        if (!localAssetManager) {
+            logToConsole("Error: localAssetManager not available in turnManager.move_internal (player branch).", "red");
+            return;
+        }
+
+        // Pass moveCost to attemptCharacterMove
+        const playerMoveResult = await window.attemptCharacterMove(gameState, direction, localAssetManager, moveCost);
+        if (playerMoveResult) {
+            moveSuccessful = true;
+        }
     }
 
-    const moveResult = await window.attemptCharacterMove(gameState, direction, localAssetManager);
 
-    if (moveResult) {
-        // Original position might have changed due to fall or z-transition,
-        // so playerPos in gameState is the source of truth now.
-        const finalPlayerPos = gameState.playerPos; // This is the new position after attemptCharacterMove
+    if (moveSuccessful) {
+        const finalPos = gameState.playerPos; // This is the new position after move (either player or vehicle)
 
-        // Player-specific UI updates and interactions
-        updateTurnUI_internal(); // Update MP/AP display
+        updateTurnUI_internal();
         window.mapRenderer.scheduleRender();
         window.interaction.detectInteractableItems();
         window.interaction.showInteractableItems();
         if (window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
 
-
-        // Check for portal after successful movement or fall initiation
-        // The checkAndHandlePortal function in script.js uses gameState.playerPos
         if (typeof window.checkAndHandlePortal === 'function') {
-            // We need to pass the new player coordinates to checkAndHandlePortal
-            // However, checkAndHandlePortal currently reads directly from gameState.playerPos.
-            // Since attemptCharacterMove updates gameState.playerPos directly, this should be fine.
-            window.checkAndHandlePortal(finalPlayerPos.x, finalPlayerPos.y);
+            window.checkAndHandlePortal(finalPos.x, finalPos.y); // Portal check uses playerPos
         }
 
-        // After successful move, if in combat, update LOS line
         if (gameState.isInCombat && window.combatManager && typeof window.combatManager.updateCombatLOSLine === 'function') {
             const combatWeaponSelect = document.getElementById('combatWeaponSelect');
             let weaponForLOS = null;
@@ -157,6 +279,13 @@ async function move_internal(direction) {
             }
             // Target is from gameState.combatCurrentDefender or gameState.defenderMapPos
             window.combatManager.updateCombatLOSLine(gameState, gameState.combatCurrentDefender || gameState.defenderMapPos, weaponForLOS);
+        }
+
+        // After successful move, check for traps on the new tile (passive check)
+        if (window.trapManager && typeof window.trapManager.checkForTraps === 'function') {
+            // Pass the player entity (gameState itself for player skills/pos)
+            // false for isActiveSearch, 0 for searchRadius (current tile only for passive check)
+            window.trapManager.checkForTraps(gameState, false, 0);
         }
 
     } else {

@@ -8,12 +8,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.8,
-    "tags": [
-      "material",
-      "crafting",
-      "metal",
-      "modern"
-    ]
+    "value": 1,
+    "stackable": true,
+    "maxStack": 50,
+    "sprite": "%",
+    "color": "silver",
+    "tags": [ "material", "crafting", "metal", "modern" ]
   },
   {
     "id": "wood_planks",
@@ -24,28 +24,28 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 1.5,
-    "tags": [
-      "material",
-      "crafting",
-      "wood",
-      "modern"
-    ]
+    "value": 2,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": "=",
+    "color": "peru",
+    "tags": [ "material", "crafting", "wood", "modern" ]
   },
   {
-    "id": "cloth_scraps",
-    "name": "Cloth Scraps",
+    "id": "cloth_scrap",
+    "name": "Cloth Scrap",
     "description": "Torn pieces of fabric, can be used for bandages or other crafts.",
     "type": "crafting_material",
     "canEquip": false,
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.2,
-    "tags": [
-      "material",
-      "crafting",
-      "cloth",
-      "modern"
-    ]
+    "value": 1,
+    "stackable": true,
+    "maxStack": 100,
+    "sprite": "~",
+    "color": "lightgray",
+    "tags": [ "material", "crafting", "cloth", "modern" ]
   },
   {
     "id": "duct_tape",
@@ -56,12 +56,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.3,
-    "tags": [
-      "material",
-      "crafting",
-      "adhesive",
-      "modern"
-    ]
+    "value": 3,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "&",
+    "color": "darkgray",
+    "tags": [ "material", "crafting", "adhesive", "modern" ]
   },
   {
     "id": "nails",
@@ -72,28 +72,28 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.2,
-    "tags": [
-      "material",
-      "crafting",
-      "metal",
-      "modern"
-    ]
+    "value": 2,
+    "stackable": true,
+    "maxStack": 100,
+    "sprite": "¡",
+    "color": "silver",
+    "tags": [ "material", "crafting", "metal", "modern" ]
   },
   {
     "id": "sharp_glass",
-    "name": "Sharp Glass",
-    "description": "Jagged pieces of broken glass. Handle with care.",
-    "type": "debris",
+    "name": "Sharp Glass Shard",
+    "description": "Jagged pieces of broken glass. Handle with care. Can be used as a crude cutting tool or component.",
+    "type": "crafting_material",
     "canEquip": false,
     "isClothing": false,
     "size": 1,
-    "weightLbs": 0.3,
-    "tags": [
-      "debris",
-      "sharp",
-      "glass",
-      "modern"
-    ]
+    "weightLbs": 0.2,
+    "value": 1,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": "'",
+    "color": "lightblue",
+    "tags": [ "material", "sharp", "glass", "crafting" ]
   },
   {
     "id": "splintered_wood",
@@ -104,12 +104,81 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.4,
-    "tags": [
-      "debris",
-      "sharp",
-      "wood",
-      "modern"
-    ]
+    "value": 0,
+    "stackable": true,
+    "maxStack": 50,
+    "sprite": "/",
+    "color": "sandybrown",
+    "tags": [ "debris", "sharp", "wood", "modern" ]
+  },
+  {
+    "id": "metal_ingot",
+    "name": "Metal Ingot",
+    "description": "A refined bar of generic metal, ready for more complex crafting.",
+    "type": "crafting_material",
+    "weightLbs": 1.0,
+    "size": 1,
+    "value": 5,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": "=",
+    "color": "slategray",
+    "tags": [ "material", "crafting", "metal", "refined" ]
+  },
+  {
+    "id": "leather_strips",
+    "name": "Leather Strips",
+    "description": "Tough strips of cured animal hide.",
+    "type": "crafting_material",
+    "weightLbs": 0.3,
+    "size": 1,
+    "value": 4,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": ";",
+    "color": "saddlebrown",
+    "tags": [ "material", "crafting", "leather" ]
+  },
+  {
+    "id": "glass_bottle_empty",
+    "name": "Empty Glass Bottle",
+    "description": "An empty glass bottle, suitable for holding liquids.",
+    "type": "crafting_material",
+    "weightLbs": 0.3,
+    "size": 1,
+    "value": 1,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "ü",
+    "color": "white",
+    "tags": [ "material", "crafting", "container", "glass" ]
+  },
+  {
+    "id": "gasoline_canister_partial",
+    "name": "Gasoline (Partial Canister)",
+    "description": "A canister containing some flammable gasoline.",
+    "type": "crafting_material",
+    "weightLbs": 1.0,
+    "size": 2,
+    "value": 10,
+    "stackable": false,
+    "sprite": "g",
+    "color": "orange",
+    "tags": [ "material", "crafting", "fuel", "flammable", "explosive_ingredient" ]
+  },
+  {
+    "id": "armor_plate_makeshift",
+    "name": "Makeshift Armor Plate",
+    "description": "A crudely fashioned plate of metal, intended for armor.",
+    "type": "crafting_material",
+    "weightLbs": 2.5,
+    "size": 2,
+    "value": 15,
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "#",
+    "color": "darkgray",
+    "tags": [ "material", "crafting", "armor_component", "metal" ]
   },
   {
     "id": "tomato_seeds",
@@ -120,6 +189,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.1,
+    "value": 5,
+    "stackable": true,
+    "maxStack": 50,
+    "sprite": ".",
+    "color": "lightgreen",
     "tags": [
       "seed",
       "gardening",
@@ -140,6 +214,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.1,
+    "value": 5,
+    "stackable": true,
+    "maxStack": 50,
+    "sprite": ".",
+    "color": "yellow",
     "tags": [
       "seed",
       "gardening",
@@ -160,6 +239,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.1,
+    "value": 5,
+    "stackable": true,
+    "maxStack": 50,
+    "sprite": ",",
+    "color": "orange",
     "tags": [
       "seed",
       "gardening",
@@ -180,6 +264,11 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 10,
+    "value": 15,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "=",
+    "color": "darkgray",
     "tags": [ "material", "crafting", "metal", "refined", "blacksmith", "armorer", "weaponsmith" ]
   },
   {
@@ -191,6 +280,11 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 10,
+    "value": 30,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "=",
+    "color": "lightsteelblue",
     "tags": [ "material", "crafting", "metal", "refined", "blacksmith", "armorer", "weaponsmith", "machinist" ]
   },
   {
@@ -202,6 +296,11 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 5,
+    "value": 8,
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "#",
+    "color": "sienna",
     "tags": [ "material", "crafting", "leather", "raw", "tanner", "cobbler" ]
   },
   {
@@ -213,6 +312,11 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 4,
+    "value": 12,
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "&",
+    "color": "saddlebrown",
     "tags": [ "material", "crafting", "leather", "refined", "tanner", "cobbler", "armorer", "seamstress" ]
   },
   {
@@ -224,6 +328,11 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 3,
+    "value": 10,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "%",
+    "color": "ivory",
     "tags": [ "material", "crafting", "cloth", "fabric", "weaver", "seamstress", "tailor" ]
   },
   {
@@ -235,6 +344,11 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 4,
+    "value": 15,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "%",
+    "color": "lightgrey",
     "tags": [ "material", "crafting", "cloth", "fabric", "wool", "weaver", "seamstress", "tailor" ]
   },
   {
@@ -246,6 +360,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1,
+    "value": 6,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": "*",
+    "color": "khaki",
     "tags": [ "material", "crafting", "wax", "candle_maker", "artisan" ]
   },
   {
@@ -257,6 +376,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.5,
+    "value": 4,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": ":",
+    "color": "whitesmoke",
     "tags": [ "material", "crafting", "chemical", "soap_maker", "tanner" ],
     "warning": "Caustic"
   },
@@ -269,6 +393,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1,
+    "value": 3,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "o",
+    "color": "ivory",
     "tags": [ "material", "crafting", "fat", "soap_maker", "candle_maker", "cook", "butcher" ]
   },
   {
@@ -280,6 +409,11 @@
     "isClothing": false,
     "size": 0,
     "weightLbs": 0.1,
+    "value": 25,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "♦",
+    "color": "cyan",
     "tags": [ "material", "crafting", "gemstone", "raw", "jeweler", "artisan" ]
   },
   {
@@ -291,6 +425,11 @@
     "isClothing": false,
     "size": 0,
     "weightLbs": 0.2,
+    "value": 50,
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "$",
+    "color": "gold",
     "tags": [ "material", "crafting", "metal", "precious_metal", "gold", "jeweler", "artisan" ]
   },
   {
@@ -302,6 +441,11 @@
     "isClothing": false,
     "size": 0,
     "weightLbs": 0.3,
+    "value": 20,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "*",
+    "color": "silver",
     "tags": [ "material", "crafting", "metal", "precious_metal", "silver", "jeweler", "artisan" ]
   },
   {
@@ -313,7 +457,12 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1,
-    "tags": [ "material", "crafting", "metal", "electrical", "electronics", "electrician", "engineer", "technician" ]
+    "value": 8,
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "&",
+    "color": "coral",
+    "tags": [ "material", "crafting", "metal", "electrical", "electronics", "electrician", "engineer", "technician", "robot_programmer" ]
   },
   {
     "id": "rubber_hose_section",
@@ -324,6 +473,11 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 0.5,
+    "value": 3,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "~",
+    "color": "darkslategray",
     "tags": [ "material", "crafting", "rubber", "plumbing", "mechanical", "plumber", "mechanic", "engineer" ]
   },
   {
@@ -335,6 +489,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 1.5,
+    "value": 10,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "*",
+    "color": "dimgray",
     "tags": [ "material", "crafting", "metal", "mechanical", "machinist", "engineer", "mechanic", "robot_programmer" ]
   },
   {
@@ -346,6 +505,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.2,
+    "value": 12,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "#",
+    "color": "green",
     "tags": [ "material", "crafting", "electronics", "technician", "engineer", "electrician", "robot_programmer" ]
   },
   {
@@ -357,6 +521,10 @@
     "isClothing": false,
     "size": 3,
     "weightLbs": 50,
+    "value": 20,
+    "stackable": false,
+    "sprite": "C",
+    "color": "gray",
     "tags": [ "material", "crafting", "construction", "civil_engineer", "architect", "laborer", "barricade_builder" ]
   },
   {
@@ -368,6 +536,11 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 2,
+    "value": 10,
+    "stackable": true,
+    "maxStack": 50,
+    "sprite": "+",
+    "color": "silver",
     "tags": [ "material", "crafting", "metal", "fastener", "shipwright", "armorer", "machinist", "engineer" ]
   },
   {
@@ -379,6 +552,10 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 3,
+    "value": 18,
+    "stackable": false,
+    "sprite": "R",
+    "color": "beige",
     "tags": [ "material", "crafting", "chemical", "composite", "shipwright", "engineer", "artisan" ],
     "requires": [ "fiberglass_cloth" ]
   },
@@ -391,6 +568,11 @@
     "isClothing": false,
     "size": 2,
     "weightLbs": 2,
+    "value": 12,
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "%",
+    "color": "white",
     "tags": [ "material", "crafting", "fabric", "composite", "shipwright", "engineer", "artisan" ]
   }
 ]

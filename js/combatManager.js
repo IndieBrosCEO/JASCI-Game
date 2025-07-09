@@ -87,8 +87,13 @@
             if (item && item.type && (item.type.includes("melee") || item.type.includes("firearm") || item.type.includes("bow") || item.type.includes("crossbow") || item.type.includes("thrown") || item.type.includes("weapon_ranged_other") || item.type.includes("weapon_utility_spray"))) {
                 const weaponOption = document.createElement('option');
                 weaponOption.value = item.id || item.name;
-                weaponOption.textContent = item.name;
-                weaponOption.dataset.itemData = JSON.stringify(item);
+                // Display current ammo for firearms, bows, crossbows
+                let displayText = item.name;
+                if (item.type.includes("firearm") || item.type.includes("bow") || item.type.includes("crossbow")) {
+                    displayText += ` (${item.currentAmmo !== undefined ? item.currentAmmo : 'N/A'}/${item.magazineSize !== undefined ? item.magazineSize : 'N/A'})`;
+                }
+                weaponOption.textContent = displayText;
+                weaponOption.dataset.itemData = JSON.stringify(item); // Ensure currentAmmo is part of itemData if it's dynamic
                 weaponSelect.appendChild(weaponOption);
             }
         });
@@ -104,8 +109,10 @@
         const confirmAttackButton = document.getElementById('confirmAttackButton');
         const bodyPartSelect = document.getElementById('combatBodyPartSelect');
         const reloadWeaponButton = document.getElementById('reloadWeaponButton');
+        const releaseGrappleButton = document.getElementById('releaseGrappleButton');
 
-        if (!fireModeSelect || !grappleButton || !confirmAttackButton || !bodyPartSelect || !reloadWeaponButton) {
+
+        if (!fireModeSelect || !grappleButton || !confirmAttackButton || !bodyPartSelect || !reloadWeaponButton || !releaseGrappleButton) {
             console.error("One or more UI elements for attack declaration not found in handleWeaponSelectionChange");
             return;
         }
@@ -122,7 +129,11 @@
         const offHandItem = this.gameState.inventory.handSlots[1];
         const isDualWieldingFirearms = primaryHandItem?.type.includes("firearm") && offHandItem?.type.includes("firearm");
 
-        grappleButton.classList.toggle('hidden', !(selectedOption.value === "unarmed" && !isDualWieldingFirearms));
+        const playerIsGrapplingSomeone = this.gameState.statusEffects?.isGrappling && this.gameState.statusEffects.grappledBy === 'player';
+
+        grappleButton.classList.toggle('hidden', !(selectedOption.value === "unarmed" && !isDualWieldingFirearms && !playerIsGrapplingSomeone));
+        releaseGrappleButton.classList.toggle('hidden', !playerIsGrapplingSomeone);
+
 
         if (weaponObject && (weaponObject.type.includes("firearm") || weaponObject.tags?.includes("launcher_treated_as_rifle"))) {
             if (weaponObject.fireModes?.length > 0) {
@@ -637,6 +648,17 @@
         const fireMode = document.getElementById('combatFireModeSelect')?.value || "single";
         const bodyPart = bodyPartSelect.value;
         const currentTargetName = this.gameState.combatCurrentDefender ? (this.gameState.combatCurrentDefender.name || this.gameState.combatCurrentDefender.id) : "tile";
+
+        // Ammo Check for Firearms, Bows, Crossbows
+        if (weaponObj && (weaponObj.type.includes("firearm") || weaponObj.type.includes("bow") || weaponObj.type.includes("crossbow"))) {
+            if (weaponObj.currentAmmo !== undefined && weaponObj.currentAmmo <= 0) {
+                logToConsole(`${weaponObj.name} is out of ammo! Reload required.`, 'orange');
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Placeholder for weapon_empty_click_01.wav
+                this.promptPlayerAttackDeclaration(); // Re-prompt, allowing reload or choosing another weapon
+                return;
+            }
+        }
+
         this.gameState.pendingCombatAction = { target: this.gameState.combatCurrentDefender, weapon: weaponObj, attackType, bodyPart, fireMode, actionType: "attack", entity: this.gameState, skillToUse: null, targetTile: null, actionDescription: `${weaponObj ? weaponObj.name : "Unarmed"} attack on ${currentTargetName}'s ${bodyPart}` };
         logToConsole(`Player declares: ${attackType} attack on ${currentTargetName}'s ${bodyPart} with ${weaponObj ? weaponObj.name : 'Unarmed'} (Mode: ${fireMode}).`, 'lightgreen');
 
@@ -1092,13 +1114,48 @@
                 if (weapon?.type?.includes("pistol")) reloadSound = 'ui_click_01.wav'; // Placeholder for reload_pistol_01.wav
                 else if (weapon?.type?.includes("rifle")) reloadSound = 'ui_click_01.wav'; // Placeholder for reload_rifle_01.wav
                 else if (weapon?.type?.includes("shotgun")) reloadSound = 'ui_click_01.wav'; // Placeholder for reload_shotgun_01.wav
-                // TODO: Consider reload_mag_insert_01.wav as part of these, or if it's separate.
                 window.audioManager.playSoundAtLocation(reloadSound, reloadSoundPos, {}, { volume: 0.6 });
             }
+
+            // Actual ammo replenishment logic
+            if (weapon && (weapon.type.includes("firearm") || weapon.type.includes("bow") || weapon.type.includes("crossbow"))) {
+                const ammoTypeNeeded = weapon.ammoType;
+                let ammoFoundInInventory = false;
+                if (this.gameState.inventory && this.gameState.inventory.container && this.gameState.inventory.container.items) {
+                    const inventoryItems = this.gameState.inventory.container.items;
+                    for (let i = 0; i < inventoryItems.length; i++) {
+                        const invItem = inventoryItems[i];
+                        if (invItem.type === "ammunition" && invItem.ammoType === ammoTypeNeeded && invItem.quantity > 0) {
+                            weapon.currentAmmo = weapon.magazineSize;
+                            invItem.quantity--; // Consume one "box" or "unit" of ammo
+                            if (invItem.quantity <= 0) {
+                                inventoryItems.splice(i, 1); // Remove empty ammo item
+                                logToConsole(`Used up ${invItem.name}.`, 'grey');
+                            } else {
+                                logToConsole(`Reloaded from ${invItem.name}. Remaining in stack: ${invItem.quantity}`, 'grey');
+                            }
+                            ammoFoundInInventory = true;
+                            logToConsole(`${weapon.name} reloaded. Ammo: ${weapon.currentAmmo}/${weapon.magazineSize}`, 'lightgreen');
+                            if (window.updateInventoryUI) window.updateInventoryUI(); // Refresh inventory display
+                            break;
+                        }
+                    }
+                }
+                if (!ammoFoundInInventory) {
+                    logToConsole(`No ${ammoTypeNeeded} ammo found in inventory to reload ${weapon.name}.`, 'orange');
+                    if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+                }
+            }
+
+
             if (attacker === this.gameState) {
                 if (this.gameState.actionPointsRemaining <= 0) { this.promptPlayerAttackDeclaration(); return; }
                 this.gameState.actionPointsRemaining--; window.turnManager.updateTurnUI();
             }
+
+            // After reload, refresh weapon select to show updated ammo count
+            this.populateWeaponSelect();
+
             if (attacker === this.gameState) {
                 if (this.gameState.actionPointsRemaining > 0) this.promptPlayerAttackDeclaration();
                 else if (this.gameState.movementPointsRemaining > 0) this.gameState.combatPhase = 'playerPostAction';
@@ -1203,7 +1260,24 @@
 
         if (actionType === "attack" && attacker === this.gameState) {
             if (this.gameState.actionPointsRemaining <= 0) { this.promptPlayerAttackDeclaration(); return; }
-            this.gameState.actionPointsRemaining--; window.turnManager.updateTurnUI();
+            this.gameState.actionPointsRemaining--;
+
+            // Decrement ammo if it's a firearm/bow/crossbow attack
+            if (weapon && (weapon.type.includes("firearm") || weapon.type.includes("bow") || weapon.type.includes("crossbow"))) {
+                if (weapon.currentAmmo !== undefined && weapon.currentAmmo > 0) {
+                    weapon.currentAmmo--;
+                    logToConsole(`${weapon.name} ammo: ${weapon.currentAmmo}/${weapon.magazineSize}`, 'grey');
+                    // Update the weapon instance in handSlots if it's the player
+                    if (attacker === this.gameState) {
+                        const handSlotIndex = this.gameState.inventory.handSlots.findIndex(slotItem => slotItem && slotItem.id === weapon.id);
+                        if (handSlotIndex !== -1) {
+                            this.gameState.inventory.handSlots[handSlotIndex] = { ...weapon }; // Update with new ammo count
+                        }
+                    }
+                }
+            }
+            window.turnManager.updateTurnUI();
+
         } else if (actionType === "grapple") {
             // Grapple attempt sound (melee_grapple_attempt_01.wav)
             if (window.audioManager && attackerPos) window.audioManager.playSoundAtLocation('ui_click_01.wav', attackerPos, {}, { volume: 0.6 }); // Placeholder
@@ -1215,6 +1289,7 @@
         const defenderName = defender ? ((defender === this.gameState) ? "Player" : defender.name) : "Tile";
         let attackResult, defenseResult, hit = false;
         const animationPromises = []; // To store promises from animations
+        let coverBonus = 0;
 
         // --- Line of Sight Checks ---
         const currentTilesetsForLOS = window.assetManager ? window.assetManager.tilesets : null; // Corrected: window.assetManager
@@ -1308,7 +1383,14 @@
             }
         }
 
-        let coverBonus = (defender && defender.mapPos && attacker && attacker.mapPos) ? this.getDefenderCoverBonus(attacker, defender) : 0;
+        // Calculate Cover Bonus
+        if (defender && defender.mapPos && attacker && (attacker.mapPos || attacker === this.gameState)) {
+            const attackerPosition = (attacker === this.gameState) ? this.gameState.playerPos : attacker.mapPos;
+            if (attackerPosition) { // Ensure attackerPosition is valid
+                coverBonus = this.getDefenderCoverBonus(attackerPosition, defender); // Pass attacker's actual position
+            }
+        }
+
         if (attackType === 'ranged' && weapon) {
             const attackerMapPos = attacker.mapPos || this.gameState.playerPos;
             const targetMapPos = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos;
@@ -1439,7 +1521,18 @@
 
         const isThrownExplosive = weapon?.type === "weapon_thrown_explosive";
         const isImpactLauncher = weapon?.explodesOnImpact && !isThrownExplosive; // e.g. Rocket Launcher, Grenade Launcher
-        const explosiveProps = (isThrownExplosive || isImpactLauncher) ? (this.assetManager.getItem(weapon.ammoType) || weapon) : null;
+        // For thrown explosives, the explosiveProps come from the weapon itself (e.g. frag_grenade_thrown)
+        // For launchers, explosiveProps come from the loaded ammo type (e.g. 40mm_grenade_frag for M79)
+        let explosiveProps = null;
+        if (isThrownExplosive) {
+            explosiveProps = weapon;
+        } else if (isImpactLauncher && weapon && weapon.ammoType) {
+            explosiveProps = this.assetManager.getItem(weapon.ammoType);
+            if (!explosiveProps) { // Fallback if specific ammo item not found, use weapon's own stats if any
+                explosiveProps = weapon;
+            }
+        }
+
         let explosionProcessed = false;
 
         // Animation for launcher projectiles (rockets, launched grenades)
@@ -1484,7 +1577,11 @@
                             affectedByBlast = false; logToConsole(`${charNameForLog} dodged blast!`, 'lightgreen');
                         } else logToConsole(`${charNameForLog} failed to dodge blast.`, 'orange');
                     }
-                    if (affectedByBlast) this.applyDamage(attacker, char, "Torso", rollDiceNotation(parseDiceNotation(explosiveProps.damage)), explosiveProps.damageType, explosiveProps);
+                    if (affectedByBlast) {
+                        // Distribute damage randomly to body parts
+                        const damageToDistribute = rollDiceNotation(parseDiceNotation(explosiveProps.damage));
+                        this.distributeExplosionDamage(attacker, char, damageToDistribute, explosiveProps.damageType, explosiveProps);
+                    }
                 });
             }
         }
@@ -1594,7 +1691,9 @@
             }
 
             if (defender && ((defender === this.gameState && (this.gameState.health.head.current <= 0 || this.gameState.health.torso.current <= 0)) || (defender !== this.gameState && (defender.health?.head?.current <= 0 || defender.health?.torso?.current <= 0)))) {
-                if (this.initiativeTracker.find(e => e.entity === defender)) {
+                // Check if the entity is already marked as defeated or removed to avoid double processing
+                const stillInInitiative = this.initiativeTracker.find(e => e.entity === defender);
+                if (stillInInitiative) { // Only process if they haven't been removed by, say, an explosion already
                     logToConsole(`DEFEATED: ${defenderName} has fallen!`, 'red');
                     this.initiativeTracker = this.initiativeTracker.filter(entry => entry.entity !== defender);
                     this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== defender);
@@ -1739,14 +1838,58 @@
         } else this.nextTurn(attacker);
     }
 
-    getDefenderCoverBonus(attacker, defender) {
-        if (!attacker || !attacker.mapPos || !defender || !defender.mapPos) return 0;
+    handleReleaseGrapple() {
+        if (!this.gameState.statusEffects?.isGrappling || this.gameState.statusEffects.grappledBy !== 'player') {
+            logToConsole("You are not grappling anyone to release.", "orange");
+            return;
+        }
+        const targetId = this.gameState.statusEffects.grappledTargetId;
+        const targetNpc = this.gameState.npcs.find(npc => npc.id === targetId);
 
-        const losLine = getLine3D(attacker.mapPos.x, attacker.mapPos.y, attacker.mapPos.z,
+        if (targetNpc && targetNpc.statusEffects) {
+            targetNpc.statusEffects.isGrappled = false;
+            targetNpc.statusEffects.grappledBy = null;
+        }
+        this.gameState.statusEffects.isGrappling = false;
+        this.gameState.statusEffects.grappledBy = null;
+        this.gameState.statusEffects.grappledTargetId = null;
+
+        logToConsole(`You released ${targetNpc ? targetNpc.name : 'the target'}.`, 'lightgreen');
+        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Placeholder for grapple_release_01.wav
+
+        // Refresh UI elements that might depend on grapple state
+        this.populateWeaponSelect();
+        this.updateCombatUI();
+        // If releasing grapple costs an action or ends turn, handle that here
+        // For now, assume it's a free action or part of another action's resolution.
+        // If it costs AP:
+        // this.gameState.actionPointsRemaining--;
+        // window.turnManager.updateTurnUI();
+        // if (this.gameState.actionPointsRemaining <= 0) this.nextTurn(this.gameState);
+        // else this.promptPlayerAttackDeclaration();
+    }
+
+    getDefenderCoverBonus(attackerPosition, defender) { // attackerPosition is the actual {x,y,z} of the attacker
+        if (!attackerPosition || !defender || !defender.mapPos) return 0;
+
+        const losLine = getLine3D(attackerPosition.x, attackerPosition.y, attackerPosition.z,
             defender.mapPos.x, defender.mapPos.y, defender.mapPos.z);
         if (!losLine || losLine.length < 2) return 0;
 
         let maxCoverBonus = 0;
+        // Add cover from defender's posture
+        if (defender === this.gameState && this.gameState.playerPosture === 'crouching') {
+            maxCoverBonus = Math.max(maxCoverBonus, 2); // Example: +2 for crouching
+        } else if (defender === this.gameState && this.gameState.playerPosture === 'prone') {
+            maxCoverBonus = Math.max(maxCoverBonus, 4); // Example: +4 for prone
+        }
+        // For NPCs, you'd need an npc.posture property
+        else if (defender.posture === 'crouching') {
+            maxCoverBonus = Math.max(maxCoverBonus, 2);
+        } else if (defender.posture === 'prone') {
+            maxCoverBonus = Math.max(maxCoverBonus, 4);
+        }
+
         for (let i = 1; i < losLine.length - 1; i++) {
             const point = losLine[i];
             const tileDef = this._getTileProperties(window.mapRenderer.getCollisionTileAt(point.x, point.y, point.z));
@@ -1766,9 +1909,51 @@
             }
         }
         if (maxCoverBonus > 0) {
-            logToConsole(`${defender.name || "Defender"} gets +${maxCoverBonus} 3D cover bonus against ${attacker.name || "Attacker"}.`, 'grey');
+            const attackerNameForLog = attackerPosition === this.gameState.playerPos ? "Player" : (attackerPosition.name || "Attacker"); // Assuming attackerPosition might be an entity or just pos
+            logToConsole(`${defender.name || "Defender"} gets +${maxCoverBonus} 3D cover bonus against ${attackerNameForLog}.`, 'grey');
         }
         return maxCoverBonus;
+    }
+
+    distributeExplosionDamage(attacker, target, totalDamage, damageType, weapon) {
+        if (!target.health) return;
+        const bodyParts = ["head", "torso", "leftArm", "rightArm", "leftLeg", "rightLeg"];
+        let damageRemaining = totalDamage;
+        const damageDistributionLog = [];
+
+        // First pass: Apply 1 point of damage to each part until damage runs out or all parts hit
+        for (const partName of bodyParts) {
+            if (damageRemaining <= 0) break;
+            if (target.health[partName]) {
+                this.applyDamage(attacker, target, partName, 1, damageType, weapon);
+                damageDistributionLog.push(`1 to ${partName}`);
+                damageRemaining--;
+            }
+        }
+
+        // Second pass: Distribute remaining damage randomly
+        while (damageRemaining > 0) {
+            const randomPartName = bodyParts[Math.floor(Math.random() * bodyParts.length)];
+            if (target.health[randomPartName]) {
+                // Check if the part is already destroyed (currentHP is 0 and crisis timer is 0 after a fatal hit)
+                if (target.health[randomPartName].current <= 0 && target.health[randomPartName].crisisTimer === 0 && target.health[randomPartName].isDestroyed) {
+                    // If part is destroyed, try to pick another part or log that damage is "lost" on this part
+                    // For simplicity, we'll just skip applying more damage to an already catastrophically destroyed part.
+                    // A more complex system might check if *any* part can still take damage.
+                    const canTakeMoreDamage = bodyParts.some(p => target.health[p] && (target.health[p].current > 0 || (target.health[p].current === 0 && target.health[p].crisisTimer > 0)));
+                    if (!canTakeMoreDamage) {
+                        logToConsole(`No body parts can take further damage on ${target.name || target.id}. ${damageRemaining} damage points unapplied.`, 'grey');
+                        break;
+                    }
+                    continue; // Skip to next iteration to pick another part
+                }
+
+                this.applyDamage(attacker, target, randomPartName, 1, damageType, weapon);
+                damageDistributionLog.push(`1 to ${randomPartName} (additional)`);
+                damageRemaining--;
+            }
+        }
+        logToConsole(`Explosion damage distribution for ${target.name || target.id}: ${damageDistributionLog.join(', ')}. Total: ${totalDamage}`, 'orange');
     }
 
 
@@ -1790,11 +1975,26 @@
     }
 
     applyDamage(attacker, entity, bodyPartName, damageAmount, damageType, weapon, bulletNum = 0, totalBullets = 0) {
-        const accessKey = bodyPartName.toLowerCase().replace(/\s/g, '');
+        // Ensure bodyPartName matches the camelCase keys used in initializeHealth (e.g., "leftArm")
+        // The bodyPartName coming from UI or random distribution should already be in correct camelCase.
+        // Convert to lowercase for reliable access, as health object keys are lowercase.
+        const accessKey = bodyPartName.toLowerCase();
+        logToConsole(`[applyDamage Debug] Received bodyPartName: "${bodyPartName}", Access Key: "${accessKey}" for ${entity.name || entity.id || 'Player'}`, 'purple'); // DIAGNOSTIC LOG
+
         const entityName = (entity === this.gameState) ? "Player" : (entity.name || entity.id);
         const isPlayerVictim = (entity === this.gameState);
-        let part = isPlayerVictim ? this.gameState.health?.[accessKey] : entity.health?.[accessKey];
-        if (!part) { logToConsole(`Error: Invalid body part '${accessKey}' for ${entityName}.`, 'red'); return; }
+
+        let part = null;
+        if (isPlayerVictim && this.gameState.health && this.gameState.health[accessKey]) {
+            part = this.gameState.health[accessKey];
+        } else if (!isPlayerVictim && entity.health && entity.health[accessKey]) {
+            part = entity.health[accessKey];
+        }
+
+        if (!part) {
+            logToConsole(`Error: Invalid body part '${accessKey}' (from original "${bodyPartName}") for ${entityName}. Health object keys: ${JSON.stringify(isPlayerVictim ? Object.keys(this.gameState.health || {}) : Object.keys(entity.health || {}))}`, 'red');
+            return;
+        }
 
         const effectiveArmor = isPlayerVictim ? window.getArmorForBodyPart(accessKey, entity) : (entity.armor?.[accessKey] || 0);
         const reducedDamage = Math.max(0, damageAmount - effectiveArmor);
@@ -1825,24 +2025,100 @@
 
         if (part.current === 0) {
             const fmtPartName = window.formatBodyPartName ? window.formatBodyPartName(accessKey) : accessKey.toUpperCase();
-            if (part.inCrisis) {
+            // Check if already in crisis from a *previous* hit and now hit again
+            if (part.crisisTimer > 0) {
                 logToConsole(`FATAL HIT: ${entityName}'s already crippled ${fmtPartName} was struck again! Character has died.`, 'darkred');
                 if (window.audioManager && soundPosition) {
-                    const deathSound = isPlayerVictim ? 'ui_error_01.wav' : 'ui_error_01.wav'; // Placeholder for player_death_01.wav or npc_death_01.wav
-                    const deathVolume = isPlayerVictim ? 1.0 : 0.8;
-                    window.audioManager.playSoundAtLocation(deathSound, soundPosition, {}, { volume: deathVolume });
+                    const deathSound = isPlayerVictim ? 'ui_error_01.wav' : 'ui_error_01.wav'; // Placeholder
+                    window.audioManager.playSoundAtLocation(deathSound, soundPosition, {}, { volume: isPlayerVictim ? 1.0 : 0.8 });
                 }
-                window.gameOver(entity); // gameOver handles player vs NPC death differentiation internally for display
-            } else {
-                part.inCrisis = true; part.crisisTimer = 3; part.crisisDamageType = damageType;
-                logToConsole(`CRISIS START: ${entityName}'s ${fmtPartName} critically injured! (Timer: 3 turns).`, isPlayerVictim ? 'red' : 'orangered');
+                part.current = 0; // Ensure HP is 0
+                part.crisisTimer = 0; // End crisis as it's now fatal
+                part.isDestroyed = true; // Mark as destroyed due to fatal re-hit
+                window.gameOver(entity);
+                if (!isPlayerVictim && entity.cr !== undefined && window.xpManager) {
+                    logToConsole(`CombatManager: NPC ${entityName} killed by re-hit during crisis. Awarding XP.`, 'lime');
+                    window.xpManager.awardXp(window.xpManager.calculateXpForKill(entity.cr), this.gameState);
+                    // Notify Quest System about NPC kill
+                    if (window.proceduralQuestManager && typeof window.proceduralQuestManager.checkObjectiveCompletion === 'function') {
+                        window.proceduralQuestManager.checkObjectiveCompletion({ type: "npc_killed", npcId: entity.id, npcTags: entity.tags || [], definitionId: entity.definitionId });
+                    }
+                }
+            } else if (part.crisisTimer === 0 && !part.isDestroyed) { // Not in crisis yet, and part just reached 0 HP
+                // Check if this hit to 0 HP is immediately fatal (e.g. head/torso destruction rules, or if game over handles it)
+                if ((accessKey === "head" || accessKey === "torso")) {
+                    // If a direct hit to 0 on head/torso is instantly fatal without crisis (game rule dependent)
+                    // This part is a bit tricky as gameOver might be called later by health crisis system.
+                    // For now, let's assume crisis starts unless explicitly stated otherwise for instant death.
+                    // The health crisis system should handle the actual death trigger after 3 turns.
+                    // However, if the game has a rule for instant death on head/torso destruction *before* crisis,
+                    // that logic would be here or in gameOver.
+                    // For now, starting crisis for all parts hitting 0 for the first time.
+                }
+                part.crisisTimer = 3;
+                part.crisisDescription = this.generateCrisisDescription(damageType, fmtPartName);
+                logToConsole(`CRISIS START: ${entityName}'s ${fmtPartName} critically injured! (${part.crisisDescription}). Timer: 3 turns.`, isPlayerVictim ? 'red' : 'orangered');
             }
-            if (weapon?.explodesOnImpact) {
+
+            // Catastrophic damage from explosion (can override crisis start if it destroys part)
+            if (weapon?.explodesOnImpact && !part.isDestroyed && part.current === 0) {
                 part.isDestroyed = true;
+                part.crisisTimer = 0;
                 logToConsole(`CRITICAL DAMAGE: ${entityName}'s ${fmtPartName} is DESTROYED by explosion!`, 'darkred');
+                if (accessKey === "head" || accessKey === "torso") {
+                    logToConsole(`${entityName} died from catastrophic destruction of ${fmtPartName}.`, 'darkred');
+                    window.gameOver(entity); // gameOver should handle removing from initiative, etc.
+                    if (!isPlayerVictim && entity.cr !== undefined && window.xpManager) {
+                        logToConsole(`CombatManager: NPC ${entityName} killed by explosion to vital part. Awarding XP.`, 'lime');
+                        window.xpManager.awardXp(window.xpManager.calculateXpForKill(entity.cr), this.gameState);
+                        // Notify Quest System about NPC kill
+                        if (window.proceduralQuestManager && typeof window.proceduralQuestManager.checkObjectiveCompletion === 'function') {
+                            window.proceduralQuestManager.checkObjectiveCompletion({ type: "npc_killed", npcId: entity.id, npcTags: entity.tags || [], definitionId: entity.definitionId });
+                        }
+                    }
+                }
+            }
+            // General check for death if head or torso HP is 0 and crisis timer is also 0 (meaning it resolved to death or was instant)
+            // This is a fallback if other conditions didn't call gameOver or handle XP.
+            // The primary death handling and XP awarding should happen when gameOver is called, or when a crisis timer resolves to death.
+            // This check here is to catch cases where a part is destroyed, leading to 0 HP on a vital part, and it wasn't an explosion.
+            if (!isPlayerVictim &&
+                ((entity.health.head.current <= 0 && entity.health.head.crisisTimer === 0) ||
+                    (entity.health.torso.current <= 0 && entity.health.torso.crisisTimer === 0)) &&
+                !entity.xpAwardedThisDamageEvent && // Ensure XP not already given in this damage event
+                !window.gameOverCalledForEntityThisTurn) { // Ensure gameOver hasn't already handled it this turn for this entity
+
+                if (entity.cr !== undefined && window.xpManager) {
+                    logToConsole(`CombatManager: NPC ${entityName} confirmed dead (vital part 0 HP, no crisis). Awarding XP.`, 'lime');
+                    window.xpManager.awardXp(window.xpManager.calculateXpForKill(entity.cr), this.gameState);
+                    entity.xpAwardedThisDamageEvent = true;
+                    // Notify Quest System
+                    if (window.proceduralQuestManager && typeof window.proceduralQuestManager.checkObjectiveCompletion === 'function') {
+                        window.proceduralQuestManager.checkObjectiveCompletion({ type: "npc_killed", npcId: entity.id, npcTags: entity.tags || [], definitionId: entity.definitionId });
+                    }
+                    // It's important that after this, the NPC is properly removed from combat, lists, etc.
+                    // This might be better handled by a central death processing function called by gameOver.
+                    // For now, we'll assume this is one path to awarding XP before potential removal.
+                }
             }
         }
         if (isPlayerVictim && window.renderHealthTable) window.renderHealthTable(entity);
+        if (entity.xpAwardedThisDamageEvent) delete entity.xpAwardedThisDamageEvent; // Clean up temp flag
+    }
+
+    generateCrisisDescription(damageType, bodyPartName) {
+        // Simple descriptions based on damage type and body part
+        const adj = bodyPartName.replace(" ", " ").toLowerCase(); // e.g. "left arm"
+        switch (damageType) {
+            case "Ballistic": return `${bodyPartName} deeply lacerated`;
+            case "Bludgeoning": return `${bodyPartName} severely bruised`;
+            case "Slashing": return `${bodyPartName} bleeding profusely`;
+            case "Piercing": return `${bodyPartName} punctured`;
+            case "Fire": return `${bodyPartName} badly burned`;
+            case "Explosive": return `${bodyPartName} mangled`;
+            case "Chemical": return `${bodyPartName} corroded`;
+            default: return `${bodyPartName} critically damaged`;
+        }
     }
 
     handleRetargetButtonClick() {
@@ -1867,15 +2143,22 @@
         if (!npc.memory) {
             npc.memory = { lastSeenTargetPos: null, lastSeenTargetTimestamp: 0, recentlyVisitedTiles: [], explorationTarget: null, lastKnownSafePos: { ...(npc.mapPos || { x: 0, y: 0, z: 0 }) } };
         }
-        if (!npc.aggroList) npc.aggroList = [];
+        // Ensure aggroList is initialized
+        if (!npc.aggroList) {
+            npc.aggroList = [];
+        }
 
         const attackInitiated = await window.handleNpcCombatTurn(npc, this.gameState, this, this.assetManager);
 
         if (attackInitiated) {
+            // If handleNpcCombatTurn decided on an attack, it would have set pendingCombatAction.
+            // CombatManager now proceeds to defender declaration and attack resolution.
             this.gameState.combatPhase = 'defenderDeclare';
             this.handleDefenderActionPrompt();
         } else {
-            logToConsole(`CombatManager: NPC ${npcName} did not initiate an attack via handleNpcCombatTurn. Ending turn.`, 'grey');
+            // If handleNpcCombatTurn returned false, it means the NPC took a non-attack action (e.g., move, special ability)
+            // or decided to do nothing. The turn should end.
+            logToConsole(`CombatManager: NPC ${npcName} did not initiate an attack (or completed non-attack actions). Ending turn.`, 'grey');
             await this.nextTurn(npc);
         }
     }

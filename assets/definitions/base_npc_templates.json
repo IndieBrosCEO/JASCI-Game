@@ -1,21 +1,56 @@
-[
+﻿[
   {
     "templateId": "generic_guard_melee",
     "name": "Guard",
     "sprite": "G",
     "color": "slate_gray",
     "health": {
-      "head": {"max": 15, "current": 15, "armor": 1, "crisisTimer": 0},
-      "torso": {"max": 25, "current": 25, "armor": 2, "crisisTimer": 0},
-      "leftArm": {"max": 20, "current": 20, "armor": 1, "crisisTimer": 0},
-      "rightArm": {"max": 20, "current": 20, "armor": 1, "crisisTimer": 0},
-      "leftLeg": {"max": 20, "current": 20, "armor": 0, "crisisTimer": 0},
-      "rightLeg": {"max": 20, "current": 20, "armor": 0, "crisisTimer": 0}
+      "head": {
+        "max": 15,
+        "current": 15,
+        "armor": 1,
+        "crisisTimer": 0
+      },
+      "torso": {
+        "max": 25,
+        "current": 25,
+        "armor": 2,
+        "crisisTimer": 0
+      },
+      "leftArm": {
+        "max": 20,
+        "current": 20,
+        "armor": 1,
+        "crisisTimer": 0
+      },
+      "rightArm": {
+        "max": 20,
+        "current": 20,
+        "armor": 1,
+        "crisisTimer": 0
+      },
+      "leftLeg": {
+        "max": 20,
+        "current": 20,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightLeg": {
+        "max": 20,
+        "current": 20,
+        "armor": 0,
+        "crisisTimer": 0
+      }
     },
     "stats": {
-      "Strength": 5, "Intelligence": 3, "Dexterity": 4,
-      "Constitution": 5, "Perception": 4, "Willpower": 3,
-      "Charisma": 3, "Marksmanship": 3
+      "Strength": 5,
+      "Intelligence": 3,
+      "Dexterity": 4,
+      "Constitution": 5,
+      "Perception": 4,
+      "Willpower": 3,
+      "Charisma": 3,
+      "Marksmanship": 3
     },
     "skills": {
       "MeleeWeapons": 30,
@@ -25,7 +60,12 @@
     },
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
-    "tags": ["humanoid", "guard", "melee_focused"]
+    "tags": [ "humanoid", "guard", "melee_focused" ],
+    "factionId": "guard",
+    "behavior": "patrol",
+    "patrolPoints": [],
+    "cr": 2,
+    "portraitHeadUrl": "assets/portraits/human_guard_head.png"
   },
   {
     "templateId": "generic_civilian",
@@ -33,17 +73,52 @@
     "sprite": "c",
     "color": "light_gray",
     "health": {
-      "head": {"max": 10, "current": 10, "armor": 0, "crisisTimer": 0},
-      "torso": {"max": 15, "current": 15, "armor": 0, "crisisTimer": 0},
-      "leftArm": {"max": 12, "current": 12, "armor": 0, "crisisTimer": 0},
-      "rightArm": {"max": 12, "current": 12, "armor": 0, "crisisTimer": 0},
-      "leftLeg": {"max": 12, "current": 12, "armor": 0, "crisisTimer": 0},
-      "rightLeg": {"max": 12, "current": 12, "armor": 0, "crisisTimer": 0}
+      "head": {
+        "max": 10,
+        "current": 10,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "torso": {
+        "max": 15,
+        "current": 15,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftArm": {
+        "max": 12,
+        "current": 12,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightArm": {
+        "max": 12,
+        "current": 12,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftLeg": {
+        "max": 12,
+        "current": 12,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightLeg": {
+        "max": 12,
+        "current": 12,
+        "armor": 0,
+        "crisisTimer": 0
+      }
     },
     "stats": {
-      "Strength": 3, "Intelligence": 4, "Dexterity": 3,
-      "Constitution": 3, "Perception": 4, "Willpower": 4,
-      "Charisma": 4, "Marksmanship": 2
+      "Strength": 3,
+      "Intelligence": 4,
+      "Dexterity": 3,
+      "Constitution": 3,
+      "Perception": 4,
+      "Willpower": 4,
+      "Charisma": 4,
+      "Marksmanship": 2
     },
     "skills": {
       "Persuasion": 15,
@@ -51,6 +126,11 @@
     },
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
-    "tags": ["humanoid", "civilian"]
+    "tags": [ "humanoid", "civilian" ],
+    "factionId": "civilian",
+    "behavior": "idle",
+    "patrolPoints": [],
+    "cr": 0.25,
+    "portraitHeadUrl": "assets/portraits/human_civilian_head.png"
   }
 ]

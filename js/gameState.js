@@ -155,7 +155,40 @@ const gameState = {
     worldContainers: [],
     uiTypeSoundIndex: 0, // For cycling through ui_type sounds
     isLookModeActive: false, // For Look Mode feature
-    rangedAttackData: null, // For displaying ranged attack line and info { start: {x,y,z}, end: {x,y,z}, distance: "str", modifierText: "str" }
+    rangedAttackData: null, // For displaying ranged attack line and info { start: {x,y,z}, end: {x,y,z}, distance: "str", modifierText: "str" },
+    playerPosture: 'standing', // 'standing', 'crouching', 'prone'
+
+    // Vehicle State
+    vehicles: [], // Array of vehicle instances in the game world
+    // Each vehicle: { id, templateId, name, mapPos: {x,y,z}, currentMapId, chassis, attachedParts: {}, durability: {}, fuel, cargo: [], passengers: [] }
+
+    // Companion State
+    companions: [], // Array of NPC IDs that are currently following the player.
+    // Companion-specific state like 'isFollowingPlayer', 'currentOrders', 'loyalty'
+    // will be added to the NPC objects in gameState.npcs directly.
+
+    // Dynamic Events & Procedural Quests
+    activeDynamicEvents: [], // Stores instances of currently active world events.
+    // Each: { eventInstanceId, templateId, startTimeTicks, currentDurationTicks, stateData: {} }
+    availableProceduralQuests: [], // Stores quests offered but not yet accepted.
+    // Each: { questInstanceId, templateId, factionId, generatedDetails: {}, offerTimeTicks }
+    // gameState.activeQuests (existing array) will be augmented with procedural quest details.
+    // gameState.questFlags (existing object) will be used by dynamic events and quests.
+
+    playerReputation: {}, // Stores player's reputation with different factions { factionId: score }. Initialized as empty, populated by factionManager or game start.
+    factionData: { // To store global faction standings if needed beyond default pair-wise
+        // e.g., could store if a faction is at war with another, affecting all members
+    },
+    isDialogueActive: false, // Flag to indicate if dialogue UI is active
+    oocGlobalTick: 0, // Counter for OOC turn staggering
+    currentMapTraps: [], // Holds instances of traps on the current map {trapId, x, y, z, state}
+    currentWeather: { // Weather system state
+        type: "clear",    // e.g., "clear", "rain_light", "snow_heavy", "windy"
+        intensity: 0,     // e.g., 0.0 to 1.0, influencing effect severity
+        duration: 0,      // Turns remaining for current weather
+        effects: [],      // Active effects, e.g., {type: "visibility_penalty", value: -2}
+        nextChangeAttempt: 0 // Game turn when next weather change check occurs
+    }
 };
 
 // Initialize player object and wornClothing if they don't exist
@@ -163,6 +196,7 @@ if (!gameState.player) {
     gameState.player = {};
 }
 
+gameState.player.isInVehicle = null; // vehicleId if player is in a vehicle, otherwise null
 gameState.player.teamId = 1;
 gameState.player.aggroList = [];
 gameState.player.isGodMode = false;

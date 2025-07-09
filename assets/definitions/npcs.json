@@ -1,9 +1,12 @@
-[
+﻿[
   {
     "id": "training_dummy",
     "name": "Training Dummy",
     "sprite": "D",
     "color": "gray",
+    "factionId": "neutral",
+    "behavior": "idle",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 5,
@@ -61,13 +64,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "dummy", "target", "hostile", "ranged" ],
-    "teamId": 1
+    "teamId": 1,
+    "cr": 0.1,
+    "portraitHeadUrl": "assets/portraits/dummy_head.png"
   },
   {
     "id": "hostile_scavenger",
     "name": "Hostile Scavenger",
     "sprite": "S",
     "color": "darkred",
+    "factionId": "scavenger",
+    "behavior": "patrol_aggressive",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 5,
@@ -126,13 +134,19 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "scavenger", "melee" ],
-    "teamId": 2
+    "teamId": 2,
+    "cr": 0.5,
+    "portraitHeadUrl": "assets/portraits/human_scavenger_head.png"
   },
   {
     "id": "hostile_scavenger_2",
     "name": "Hostile Scavenger (Ally)",
     "sprite": "s",
     "color": "darkred",
+    "factionId": "scavenger",
+    "behavior": "follow_ally",
+    "followTargetId": "hostile_scavenger",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 5,
@@ -191,13 +205,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "scavenger", "melee" ],
-    "teamId": 2
+    "teamId": 2,
+    "cr": 0.5,
+    "portraitHeadUrl": "assets/portraits/human_scavenger_head.png"
   },
   {
     "id": "militia_man",
     "name": "Militia Man",
     "sprite": "M",
     "color": "blue",
+    "factionId": "militia",
+    "behavior": "guard_area",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 5,
@@ -256,13 +275,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "militia" ],
-    "teamId": 3
+    "teamId": 3,
+    "cr": 1,
+    "portraitHeadUrl": "assets/portraits/human_militia_head.png"
   },
   {
     "id": "civilian_militia",
     "name": "Civilian Militia",
     "sprite": "C",
     "color": "blue",
+    "factionId": "militia",
+    "behavior": "patrol",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 5,
@@ -321,13 +345,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "militia" ],
-    "teamId": 3
+    "teamId": 3,
+    "cr": 1.5,
+    "portraitHeadUrl": "assets/portraits/human_militia_head.png"
   },
   {
     "id": "bandit_archer",
     "name": "Bandit Archer",
     "sprite": "A",
     "color": "green",
+    "factionId": "bandit",
+    "behavior": "ranged_attack",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 4,
@@ -385,13 +414,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "bandit", "ranged" ],
-    "teamId": 4
+    "teamId": 4,
+    "cr": 0.5,
+    "portraitHeadUrl": "assets/portraits/human_bandit_head.png"
   },
   {
     "id": "bandit_thug",
     "name": "Bandit Thug",
     "sprite": "T",
     "color": "green",
+    "factionId": "bandit",
+    "behavior": "melee_attack",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 6,
@@ -449,13 +483,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "bandit", "melee" ],
-    "teamId": 4
+    "teamId": 4,
+    "cr": 1,
+    "portraitHeadUrl": "assets/portraits/human_bandit_head.png"
   },
   {
     "id": "cellar_dweller",
     "name": "Cellar Dweller",
     "sprite": "c",
     "color": "darkgreen",
+    "factionId": "mutant",
+    "behavior": "ambush",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 4,
@@ -513,13 +552,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 5,
     "tags": [ "hostile", "mutant", "melee" ],
-    "teamId": 5
+    "teamId": 5,
+    "cr": 0.5,
+    "portraitHeadUrl": "assets/portraits/mutant_dweller_head.png"
   },
   {
     "id": "police_officer",
     "name": "Police Officer",
     "sprite": "P",
     "color": "dodgerblue",
+    "factionId": "police",
+    "behavior": "patrol_alert",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 5,
@@ -578,13 +622,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "law_enforcement", "ranged" ],
-    "teamId": 10
+    "teamId": 10,
+    "cr": 2,
+    "portraitHeadUrl": "assets/portraits/human_police_head.png"
   },
   {
     "id": "hired_gun_merc",
     "name": "Hired Gun",
     "sprite": "H",
     "color": "slategray",
+    "factionId": "bandit",
+    "behavior": "guard_aggressive",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 5,
@@ -643,13 +692,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "mercenary", "ranged", "hostile" ],
-    "teamId": 11
+    "teamId": 11,
+    "cr": 1.5,
+    "portraitHeadUrl": "assets/portraits/human_mercenary_head.png"
   },
   {
     "id": "infiltrator_spy",
     "name": "Infiltrator",
     "sprite": "I",
     "color": "darkviolet",
+    "factionId": "neutral",
+    "behavior": "stealth_observe",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 4,
@@ -709,13 +763,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 7,
     "tags": [ "humanoid", "spy", "stealth", "melee" ],
-    "teamId": 12
+    "teamId": 12,
+    "cr": 2,
+    "portraitHeadUrl": "assets/portraits/human_spy_head.png"
   },
   {
     "id": "soldier_grunt",
     "name": "Soldier",
     "sprite": "R",
     "color": "olive",
+    "factionId": "militia",
+    "behavior": "patrol_aggressive",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 6,
@@ -774,13 +833,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "military", "ranged", "hostile" ],
-    "teamId": 13
+    "teamId": 13,
+    "cr": 2.5,
+    "portraitHeadUrl": "assets/portraits/human_soldier_head.png"
   },
   {
     "id": "outlaw_desperado",
     "name": "Outlaw",
     "sprite": "O",
     "color": "saddlebrown",
+    "factionId": "bandit",
+    "behavior": "ranged_opportunist",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 5,
@@ -839,13 +903,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "criminal", "ranged", "hostile" ],
-    "teamId": 11
+    "teamId": 11,
+    "cr": 1,
+    "portraitHeadUrl": "assets/portraits/human_outlaw_head.png"
   },
   {
     "id": "medic_doctor",
     "name": "Medic",
     "sprite": "+",
     "color": "lightcoral",
+    "factionId": "civilian",
+    "behavior": "support_heal",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 4,
@@ -904,13 +973,31 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "support", "medical", "friendly" ],
-    "teamId": 0
+    "teamId": 0,
+    "cr": 0.25,
+    "portraitHeadUrl": "assets/portraits/human_medic_head.png",
+    "dialogueFile": "medic_doctor_dialogues.json",
+    "isRecruitable": true,
+    "recruitmentRequirements": {
+      "questCompleted": "save_the_clinic",
+      "reputation": {
+        "factionId": "civilian",
+        "level": "neutral"
+      }
+    },
+    "companionBehaviorProfile": "healer_support",
+    "dialogue_recruit_start_node": "medic_recruit_offer",
+    "dialogue_dismiss_node": "medic_dismiss",
+    "dialogue_following_generic": "medic_following_chat"
   },
   {
     "id": "zealot_cultist",
     "name": "Zealot",
     "sprite": "Z",
     "color": "purple",
+    "factionId": "cultist",
+    "behavior": "melee_fanatic",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 5,
@@ -969,13 +1056,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "cultist", "melee", "hostile" ],
-    "teamId": 14
+    "teamId": 14,
+    "cr": 1,
+    "portraitHeadUrl": "assets/portraits/human_cultist_head.png"
   },
   {
     "id": "zombie_basic",
     "name": "Zombie",
     "sprite": "z",
     "color": "darkseagreen",
+    "factionId": "zombie",
+    "behavior": "hostile_seek_and_destroy",
+    "patrolPoints": [],
     "health": {
       "head": {
         "max": 6,
@@ -1029,13 +1121,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
     "tags": [ "undead", "zombie", "melee", "hostile" ],
-    "teamId": 99
+    "teamId": 99,
+    "cr": 1,
+    "portraitHeadUrl": "assets/portraits/zombie_head.png"
   },
   {
     "id": "animal_mountain_lion",
     "name": "Mountain Lion",
     "sprite": "L",
     "color": "goldenrod",
+    "factionId": "creature_hostile",
+    "behavior": "hunt_aggressive",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 15,
@@ -1059,13 +1156,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 8,
     "tags": [ "animal", "mammal", "predator", "hostile", "stealth" ],
-    "teamId": 51
+    "teamId": 51,
+    "cr": 3,
+    "portraitHeadUrl": "assets/portraits/mountain_lion_head.png"
   },
   {
     "id": "animal_bobcat",
     "name": "Bobcat",
     "sprite": "b",
     "color": "tan",
+    "factionId": "creature_hostile",
+    "behavior": "hunt_cautious",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 10,
@@ -1089,13 +1191,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 7,
     "tags": [ "animal", "mammal", "predator", "hostile_if_threatened", "stealth" ],
-    "teamId": 51
+    "teamId": 51,
+    "cr": 1,
+    "portraitHeadUrl": "assets/portraits/bobcat_head.png"
   },
   {
     "id": "animal_coyote",
     "name": "Coyote",
     "sprite": "y",
     "color": "gray",
+    "factionId": "creature_hostile",
+    "behavior": "pack_hunt",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 12,
@@ -1119,13 +1226,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 8,
     "tags": [ "animal", "mammal", "predator", "scavenger", "pack_animal", "hostile_if_threatened" ],
-    "teamId": 51
+    "teamId": 51,
+    "cr": 0.5,
+    "portraitHeadUrl": "assets/portraits/coyote_head.png"
   },
   {
     "id": "animal_raccoon",
     "name": "Raccoon",
     "sprite": "r",
     "color": "dimgray",
+    "factionId": "creature_neutral",
+    "behavior": "wander_scavenge",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 8,
@@ -1149,13 +1261,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "animal", "mammal", "omnivore", "scavenger", "clever", "neutral" ],
-    "teamId": 50
+    "teamId": 50,
+    "cr": 0.25,
+    "portraitHeadUrl": "assets/portraits/raccoon_head.png"
   },
   {
     "id": "animal_red_tailed_hawk",
     "name": "Red-tailed Hawk",
     "sprite": "h",
     "color": "brown",
+    "factionId": "creature_neutral",
+    "behavior": "hunt_aerial",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 6,
@@ -1179,13 +1296,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 9,
     "tags": [ "animal", "bird", "predator", "flying", "neutral" ],
-    "teamId": 50
+    "teamId": 50,
+    "cr": 0.5,
+    "portraitHeadUrl": "assets/portraits/red_tailed_hawk_head.png"
   },
   {
     "id": "animal_turkey_vulture",
     "name": "Turkey Vulture",
     "sprite": "v",
     "color": "black",
+    "factionId": "creature_neutral",
+    "behavior": "wander_scavenge_aerial",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 7,
@@ -1209,13 +1331,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 8,
     "tags": [ "animal", "bird", "scavenger", "flying", "neutral" ],
-    "teamId": 50
+    "teamId": 50,
+    "cr": 0.25,
+    "portraitHeadUrl": "assets/portraits/turkey_vulture_head.png"
   },
   {
     "id": "animal_california_quail",
     "name": "California Quail",
     "sprite": "q",
     "color": "bluegray",
+    "factionId": "creature_prey",
+    "behavior": "flee_group",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 3,
@@ -1239,13 +1366,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "animal", "bird", "prey", "ground_dwelling", "neutral_flees" ],
-    "teamId": 52
+    "teamId": 52,
+    "cr": 0.1,
+    "portraitHeadUrl": "assets/portraits/california_quail_head.png"
   },
   {
     "id": "animal_mule_deer",
     "name": "Mule Deer",
     "sprite": "d",
     "color": "rosybrown",
+    "factionId": "creature_prey",
+    "behavior": "flee_graze",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 20,
@@ -1269,13 +1401,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 8,
     "tags": [ "animal", "mammal", "herbivore", "prey", "neutral_flees" ],
-    "teamId": 52
+    "teamId": 52,
+    "cr": 0.5,
+    "portraitHeadUrl": "assets/portraits/mule_deer_head.png"
   },
   {
     "id": "animal_desert_cottontail",
     "name": "Desert Cottontail",
     "sprite": "u",
     "color": "lightgoldenrodyellow",
+    "factionId": "creature_prey",
+    "behavior": "flee_fast",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 2,
@@ -1299,13 +1436,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 7,
     "tags": [ "animal", "mammal", "herbivore", "prey", "fast", "neutral_flees" ],
-    "teamId": 52
+    "teamId": 52,
+    "cr": 0.1,
+    "portraitHeadUrl": "assets/portraits/desert_cottontail_head.png"
   },
   {
     "id": "animal_ca_ground_squirrel",
     "name": "California Ground Squirrel",
     "sprite": "g",
     "color": "burlywood",
+    "factionId": "creature_prey",
+    "behavior": "flee_burrow",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 3,
@@ -1329,13 +1471,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "animal", "mammal", "rodent", "prey", "burrowing", "neutral_flees" ],
-    "teamId": 52
+    "teamId": 52,
+    "cr": 0.1,
+    "portraitHeadUrl": "assets/portraits/ca_ground_squirrel_head.png"
   },
   {
     "id": "animal_western_fence_lizard",
     "name": "Western Fence Lizard",
     "sprite": "l",
     "color": "darkolivegreen",
+    "factionId": "creature_prey",
+    "behavior": "flee_quick",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 2,
@@ -1359,13 +1506,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 5,
     "tags": [ "animal", "reptile", "insectivore", "prey", "neutral_flees" ],
-    "teamId": 52
+    "teamId": 52,
+    "cr": 0.1,
+    "portraitHeadUrl": "assets/portraits/western_fence_lizard_head.png"
   },
   {
     "id": "animal_western_rattlesnake",
     "name": "Western Rattlesnake",
     "sprite": "S",
     "color": "olivedrab",
+    "factionId": "creature_hostile",
+    "behavior": "ambush_strike",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 7,
@@ -1389,13 +1541,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 5,
     "tags": [ "animal", "reptile", "predator", "venomous", "hostile_if_threatened" ],
-    "teamId": 51
+    "teamId": 51,
+    "cr": 1,
+    "portraitHeadUrl": "assets/portraits/western_rattlesnake_head.png"
   },
   {
     "id": "animal_pacific_tree_frog",
     "name": "Pacific Tree Frog",
     "sprite": "f",
     "color": "limegreen",
+    "factionId": "creature_prey",
+    "behavior": "flee_hop",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 1,
@@ -1419,13 +1576,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
     "tags": [ "animal", "amphibian", "insectivore", "prey", "neutral_flees" ],
-    "teamId": 52
+    "teamId": 52,
+    "cr": 0.1,
+    "portraitHeadUrl": "assets/portraits/pacific_tree_frog_head.png"
   },
   {
     "id": "animal_tarantula",
     "name": "Tarantula",
     "sprite": "t",
     "color": "black",
+    "factionId": "creature_hostile",
+    "behavior": "defensive_strike",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 4,
@@ -1449,13 +1611,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
     "tags": [ "animal", "arachnid", "predator", "venomous_mild", "hostile_if_threatened" ],
-    "teamId": 51
+    "teamId": 51,
+    "cr": 0.25,
+    "portraitHeadUrl": "assets/portraits/tarantula_head.png"
   },
   {
     "id": "animal_monarch_butterfly",
     "name": "Monarch Butterfly",
     "sprite": "B",
     "color": "orange",
+    "factionId": "creature_neutral",
+    "behavior": "wander_flutter",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 1,
@@ -1479,13 +1646,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 7,
     "tags": [ "animal", "insect", "flying", "harmless", "neutral_flees" ],
-    "teamId": 90
+    "teamId": 90,
+    "cr": 0.01,
+    "portraitHeadUrl": "assets/portraits/monarch_butterfly_head.png"
   },
   {
     "id": "animal_annas_hummingbird",
     "name": "Anna's Hummingbird",
     "sprite": "~",
     "color": "magenta",
+    "factionId": "creature_neutral",
+    "behavior": "wander_flutter_fast",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 1,
@@ -1509,13 +1681,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 10,
     "tags": [ "animal", "bird", "flying", "fast", "nectarivore", "neutral_flees" ],
-    "teamId": 90
+    "teamId": 90,
+    "cr": 0.01,
+    "portraitHeadUrl": "assets/portraits/annas_hummingbird_head.png"
   },
   {
     "id": "animal_honey_bee",
     "name": "Honey Bee",
     "sprite": ":",
     "color": "yellow",
+    "factionId": "insect_swarm",
+    "behavior": "swarm_defend",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 1,
@@ -1539,13 +1716,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 7,
     "tags": [ "animal", "insect", "flying", "stinging", "colony", "neutral_defensive" ],
-    "teamId": 91
+    "teamId": 91,
+    "cr": 0.1,
+    "portraitHeadUrl": "assets/portraits/honey_bee_head.png"
   },
   {
     "id": "animal_western_pond_turtle",
     "name": "Western Pond Turtle",
     "sprite": "o",
     "color": "darkgreen",
+    "factionId": "creature_neutral",
+    "behavior": "wander_slow",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 8,
@@ -1569,13 +1751,18 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 3,
     "tags": [ "animal", "reptile", "aquatic", "shelled", "neutral_flees" ],
-    "teamId": 50
+    "teamId": 50,
+    "cr": 0.1,
+    "portraitHeadUrl": "assets/portraits/western_pond_turtle_head.png"
   },
   {
     "id": "animal_rainbow_trout",
     "name": "Rainbow Trout",
     "sprite": "<",
     "color": "silver",
+    "factionId": "creature_prey",
+    "behavior": "flee_aquatic",
+    "patrolPoints": [],
     "health": {
       "body": {
         "max": 4,
@@ -1599,6 +1786,8 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "animal", "fish", "aquatic", "prey", "neutral_flees" ],
-    "teamId": 52
+    "teamId": 52,
+    "cr": 0.1,
+    "portraitHeadUrl": "assets/portraits/rainbow_trout_head.png"
   }
 ]

@@ -204,15 +204,16 @@ function applyHungerThirstDamage(gameState, damageAmount) {
 // Initialize health for various body parts on a character object
 function initializeHealth(character) {
     character.health = {
-        head: { max: 5, current: 5, armor: 0, crisisTimer: 0 },
-        torso: { max: 8, current: 8, armor: 0, crisisTimer: 0 },
-        leftArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
-        rightArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
-        leftLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
-        rightLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 }
+        head: { name: "Head", max: 5, current: 5, armor: 0, crisisTimer: 0, crisisDescription: "" },
+        torso: { name: "Torso", max: 8, current: 8, armor: 0, crisisTimer: 0, crisisDescription: "" },
+        leftArm: { name: "Left Arm", max: 7, current: 7, armor: 0, crisisTimer: 0, crisisDescription: "" },
+        rightArm: { name: "Right Arm", max: 7, current: 7, armor: 0, crisisTimer: 0, crisisDescription: "" },
+        leftLeg: { name: "Left Leg", max: 7, current: 7, armor: 0, crisisTimer: 0, crisisDescription: "" },
+        rightLeg: { name: "Right Leg", max: 7, current: 7, armor: 0, crisisTimer: 0, crisisDescription: "" }
     };
     // renderHealthTable(character) will be called from script.js
 }
+
 
 // Helper function to get total armor for a body part from a character's worn clothing
 function getArmorForBodyPart(bodyPartName, character) {
@@ -242,19 +243,35 @@ function getArmorForBodyPart(bodyPartName, character) {
 // Update crisis timers for body parts at the end of each turn for a character
 function updateHealthCrisis(character) {
     if (!character.health) return;
-    for (let partName in character.health) {
-        let part = character.health[partName];
-        if (part.current === 0 && part.crisisTimer > 0) {
+    const characterName = (character === window.gameState) ? 'Player' : (character.name || character.id);
+
+    for (let partKey in character.health) {
+        let part = character.health[partKey];
+        // A part is in crisis if HP is 0, it's not already flagged as destroyed, and crisisTimer was set (e.g. > 0 or just started)
+        if (part.current === 0 && !part.isDestroyed && part.crisisTimer > 0) {
             part.crisisTimer--;
-            logToConsole(`${partName} crisis timer for ${character.id || 'player'}: ${part.crisisTimer} turn(s) remaining.`);
+            logToConsole(`${characterName}'s ${part.name} in crisis: ${part.crisisDescription}. Timer: ${part.crisisTimer} turns remaining.`, 'orange');
+
             if (part.crisisTimer === 0) {
-                logToConsole(`Health crisis in ${partName} for ${character.id || 'player'} was not treated. Character has died.`);
-                gameOver(character); // Pass character to gameOver
-                return;
+                // If timer runs out, the part is considered destroyed (if not already), and character might die.
+                part.isDestroyed = true;
+                logToConsole(`Health crisis in ${part.name} for ${characterName} was not treated. Part is now destroyed.`, 'red');
+                // Check for death if a vital part is destroyed or other game rules for death apply.
+                // For now, head or torso destruction is fatal.
+                if (part.name === "Head" || part.name === "Torso") {
+                    logToConsole(`${characterName} has died due to untreated crisis in a vital part (${part.name}).`, 'darkred');
+                    gameOver(character); // Pass character to gameOver
+                    return; // Stop further crisis checks if character died
+                }
             }
         }
     }
+    // Re-render health table to show updated crisis timers or destroyed states
+    if (window.renderHealthTable) {
+        window.renderHealthTable(character);
+    }
 }
+
 
 // Apply treatment to a damaged body part of a character
 function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, character) {
@@ -270,29 +287,98 @@ function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, charac
         healing = (restType === "short") ? 1 : 3;
     } else if (treatmentType === "Poorly Tended") {
         dc = 10;
-        healing = (restType === "long") ? 1 : 0;
+        healing = (restType === "long") ? 1 : 0; // Poorly tended long rest heals 1 HP
     } else {
         logToConsole("Invalid treatment type.");
         return;
     }
 
-    const roll = rollDie(20); // rollDie is from utils.js
-    const total = roll + medicineBonus;
-    logToConsole(`Medicine check on ${bodyPart} for ${character.id || 'player'} (${treatmentType}, ${restType}): DV0(${roll}) + bonus(${medicineBonus}) = ${total} (DC ${dc})`);
+    // Perform skill check using Persuasion/Intimidation skill check logic as a template
+    // This assumes a getSkillValue function similar to what's used for Persuasion/Intimidation.
+    // For Medicine, the bonus is directly passed as medicineBonus (e.g., from player's Medicine skill).
+    const roll = rollDie(20);
+    const totalRoll = roll + medicineBonus; // medicineBonus is the character's Medicine skill points/modifier
 
-    if (total >= dc) {
+    logToConsole(`Medicine check on ${part.name} for ${character.name || character.id} (${treatmentType}, ${restType}): Rolled ${roll} + Medicine Bonus ${medicineBonus} = ${totalRoll} (DC ${dc})`);
+
+    if (totalRoll >= dc) {
         let oldHP = part.current;
         part.current = Math.min(part.current + healing, part.max);
-        logToConsole(`Treatment successful on ${bodyPart} for ${character.id || 'player'}: HP increased from ${oldHP} to ${part.current}/${part.max}`);
-        if (part.current > 0) {
+        logToConsole(`Treatment successful on ${part.name}: HP increased from ${oldHP} to ${part.current}/${part.max}.`, "green");
+
+        // If HP is now above 0, and it was in crisis, resolve the crisis.
+        if (part.current > 0 && part.crisisTimer > 0) {
             part.crisisTimer = 0;
-            logToConsole(`Health crisis in ${bodyPart} for ${character.id || 'player'} resolved.`);
+            part.crisisDescription = ""; // Clear crisis description
+            part.isDestroyed = false; // If it was merely in crisis, it's no longer destroyed by that crisis.
+            logToConsole(`Health crisis in ${part.name} for ${character.name || character.id} resolved.`, "green");
         }
     } else {
-        logToConsole(`Treatment failed on ${bodyPart} for ${character.id || 'player'}.`);
+        logToConsole(`Treatment FAILED on ${part.name}.`, "orange");
     }
-    // renderHealthTable(character) will be called from script.js
+
+    if (window.renderHealthTable) {
+        window.renderHealthTable(character);
+    }
 }
+
+// Healing rates for short/long rest (JASCI rules) - To be called from a rest function
+function applyRestHealing(character, restType) {
+    if (!character || !character.health) return;
+    const characterName = (character === window.gameState) ? 'Player' : (character.name || character.id);
+    logToConsole(`${characterName} is attempting a ${restType} rest.`);
+
+    if (restType === "short") {
+        // Short Rest: Heal 1 HP to all damaged body parts not in crisis or destroyed.
+        // JASCI Rule: "A character who takes a short rest may choose to spend one or more of their Hit Dice to recover hit points."
+        // This is often interpreted as a small fixed heal or using hit dice. For simplicity, let's do a small fixed heal.
+        // Or, if we follow "Medicine Checks" for short rest healing:
+        // Standard Treatment (DC 15) + short rest = 1 HP.
+        // Well-Tended (DC 18) + short rest = 2 HP.
+        // Let's assume a basic short rest without active treatment just provides minimal or no direct HP,
+        // and any HP gain comes from successfully applying treatment during that short rest.
+        // The prompt says "Healing Rates: Short rest vs. long rest HP restoration per JASCI rules."
+        // This implies short rests *do* heal. A common simple interpretation is 1 HP to non-critical parts.
+        logToConsole(`${characterName} takes a short rest. Minor wounds may mend slightly. Active treatment recommended for serious injuries.`, "blue");
+        let totalHealedShort = 0;
+        for (const partKey in character.health) {
+            const part = character.health[partKey];
+            if (part.current > 0 && part.current < part.max && part.crisisTimer === 0 && !part.isDestroyed) {
+                const healedAmount = 1; // Minimal healing for non-critical parts on short rest
+                part.current = Math.min(part.current + healedAmount, part.max);
+                totalHealedShort += healedAmount;
+                logToConsole(`Short rest: ${part.name} healed by ${healedAmount} HP. Now ${part.current}/${part.max}.`, "blue");
+            }
+        }
+        if (totalHealedShort > 0) {
+            logToConsole(`${characterName} feels slightly better after a short rest. Total HP recovered: ${totalHealedShort}.`, "blue");
+        } else {
+            logToConsole(`${characterName} gained no direct HP from the short rest. Consider using medicine.`, "blue");
+        }
+
+    } else if (restType === "long") {
+        // Long Rest: Fully heal all HP for all body parts, resolve non-destroyed crises.
+        // JASCI Rule: "A long rest fully restores a character’s hit points."
+        logToConsole(`${characterName} takes a long rest.`, "blue");
+        for (const partKey in character.health) {
+            const part = character.health[partKey];
+            if (!part.isDestroyed) { // Cannot restore destroyed parts with just rest
+                part.current = part.max;
+                if (part.crisisTimer > 0) {
+                    part.crisisTimer = 0;
+                    part.crisisDescription = "";
+                    logToConsole(`Long rest resolved crisis in ${part.name}.`, "green");
+                }
+            }
+        }
+        logToConsole(`${characterName} is fully healed after a long rest.`, "green");
+    }
+
+    if (window.renderHealthTable) {
+        window.renderHealthTable(character);
+    }
+}
+
 
 // Render the health table UI for a character
 function renderHealthTable(character) {
@@ -339,6 +425,7 @@ function formatBodyPartName(part) {
 function gameOver(character) {
     const characterName = (character === gameState) ? 'Player' : (character.name || character.id || 'Unknown NPC');
     logToConsole(`GAME OVER for ${characterName}.`, 'darkred', true); // Ensure critical message is visible
+    window.gameOverCalledForEntityThisTurn = true; // Set flag
 
     if (character === gameState) { // Check if the character that died is the player
         // TODO: Play player_death_01.wav
@@ -386,10 +473,31 @@ function gameOver(character) {
         // If there's a specific combat manager instance available and an endCombat method.
         // This is a bit indirect; ideally, combatManager handles its own cleanup when player dies.
         // The call in applyDamage should be sufficient.
-    } else {
+    } else { // NPC died
         // Logic for NPC death (e.g., remove from map, drop loot)
         // This is mostly handled in combatManager's applyDamage/nextTurn.
+        // However, we should ensure XP and quest updates are triggered here if not already by applyDamage.
+        if (!character.xpAwardedThisDamageEvent && character.cr !== undefined && window.xpManager) {
+            logToConsole(`gameOver for NPC ${characterName}: Awarding XP.`, 'lime');
+            window.xpManager.awardXp(window.xpManager.calculateXpForKill(character.cr), gameState);
+            character.xpAwardedThisDamageEvent = true; // Prevent double award if applyDamage also calls
+        }
+        // Notify Quest System about NPC kill, ensuring it's only once if multiple paths lead here
+        if (!character.questKillNotified && window.proceduralQuestManager && typeof window.proceduralQuestManager.checkObjectiveCompletion === 'function') {
+            logToConsole(`gameOver for NPC ${characterName}: Notifying procedural quest manager.`, 'info');
+            window.proceduralQuestManager.checkObjectiveCompletion({ type: "npc_killed", npcId: character.id, npcTags: character.tags || [], definitionId: character.definitionId });
+            character.questKillNotified = true; // Mark as notified
+        }
+        // Ensure combat manager removes the NPC if it hasn't already
+        if (window.combatManager && window.combatManager.initiativeTracker.find(e => e.entity === character)) {
+            window.combatManager.initiativeTracker = window.combatManager.initiativeTracker.filter(entry => entry.entity !== character);
+            window.gameState.npcs = window.gameState.npcs.filter(npc => npc !== character);
+            logToConsole(`gameOver for NPC ${characterName}: Removed from initiative and game npcs list.`, 'info');
+            window.mapRenderer.scheduleRender(); // Update map if NPC sprite needs to be removed
+        }
     }
+    // Reset the flag after processing
+    setTimeout(() => { window.gameOverCalledForEntityThisTurn = false; }, 0);
 }
 
 // Making functions available for calling from HTML via script.js wrappers
@@ -468,6 +576,7 @@ function getTileLightingLevel(tileX, tileY, tileZ, currentGameState) {
 // Make it globally accessible
 if (typeof window !== 'undefined') {
     window.getTileLightingLevel = getTileLightingLevel;
+    window.applyRestHealing = applyRestHealing; // Expose applyRestHealing
 }
 
 // --- Falling and Fall Damage ---

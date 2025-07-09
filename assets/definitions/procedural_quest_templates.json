@@ -1,0 +1,99 @@
+﻿[
+  {
+    "id": "faction_elimination_critters",
+    "displayNamePattern": "Clear out {npcNamePlural}",
+    "descriptionPattern": "A nest of {npcNamePlural} has become a nuisance near our {factionCampLocation}. Please eliminate {count} of them.",
+    "factionId": "local_settlement_faction",
+    "minReputation": "unfriendly",
+    "maxReputation": "allied",
+    "objectiveDetails": {
+      "type": "kill_tagged_npcs_in_area",
+      "npcTag": "hostile_critter",
+      "countRange": [ 3, 5 ],
+      "areaType": "wilderness_nearby_faction_base",
+      "areaRadius": 20
+    },
+    "rewardBase": {
+      "xp": 75,
+      "gold": 30,
+      "reputationChange": {
+        "factionIdSource": true,
+        "amount": 5
+      }
+    },
+    "timeLimitTicks": 7200,
+    "weight": 10
+  },
+  {
+    "id": "faction_delivery_medical",
+    "displayNamePattern": "Urgent Medical Delivery",
+    "descriptionPattern": "We need these {itemName} delivered to {recipientName} at the {destinationName} urgently. Our usual courier is unavailable.",
+    "factionId": "pd_fallbrook",
+    "minReputation": "neutral",
+    "objectiveDetails": {
+      "type": "deliver_item_to_npc_at_location",
+      "itemPool": [ "medical_supplies_small_package", "chems_painkillers_package" ],
+      "itemQuantity": 1,
+      "recipientNpcTag": "faction_contact_pd",
+      "destinationAreaKey": "fallbrook_pd_hq_interior",
+      "allowDropOffAtLocationIfNpcAbsent": true
+    },
+    "rewardBase": {
+      "xp": 100,
+      "gold": 75,
+      "reputationChange": {
+        "factionIdSource": true,
+        "amount": 10
+      }
+    },
+    "timeLimitTicks": 5400,
+    "weight": 8
+  },
+  {
+    "id": "faction_scout_area",
+    "displayNamePattern": "Scout the {areaDescription}",
+    "descriptionPattern": "We've had reports of unusual activity in the {areaDescription}. Go check it out and report back.",
+    "factionId": "earth_first",
+    "minReputation": "neutral",
+    "objectiveDetails": {
+      "type": "scout_location",
+      "areaType": "ruins_ unexplored",
+      "areaRadius": 10,
+      "discoveryPoints": 3
+    },
+    "rewardBase": {
+      "xp": 120,
+      "reputationChange": {
+        "factionIdSource": true,
+        "amount": 8
+      }
+    },
+    "timeLimitTicks": 10800,
+    "weight": 6
+  },
+  {
+    "id": "faction_retrieve_item",
+    "displayNamePattern": "Retrieve Stolen {itemName}",
+    "descriptionPattern": "Some bandits made off with our {itemName}. Get it back for us. Last seen heading towards {areaDescription}.",
+    "factionId": "guard",
+    "minReputation": "friendly",
+    "objectiveDetails": {
+      "type": "retrieve_item_from_area_or_npcs",
+      "itemPool": [ "valuable_tech_component", "faction_intel_documents" ],
+      "targetNpcTag": "bandit_leader_small_camp",
+      "targetAreaType": "bandit_camp_nearby",
+      "itemPlacement": "container_in_area_or_npc_inventory"
+    },
+    "rewardBase": {
+      "xp": 250,
+      "gold": 150,
+      "reputationChange": {
+        "factionIdSource": true,
+        "amount": 20
+      },
+      "itemPoolReward": [ "generic_ammo_cache_small", "weapon_parts_cache_small" ]
+    },
+    "timeLimitTicks": 14400,
+    "weight": 4
+  }
+]

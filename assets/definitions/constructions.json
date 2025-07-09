@@ -1,0 +1,242 @@
+﻿[
+  {
+    "id": "wall_wood_simple",
+    "name": "Simple Wooden Wall Section",
+    "description": "A basic defensive wall made of wood planks.",
+    "category": "defensive",
+    "components": [
+      {
+        "itemId": "wood_planks",
+        "quantity": 4
+      },
+      {
+        "itemId": "nails",
+        "quantity": 8
+      }
+    ],
+    "skillRequired": "Repair",
+    "skillLevelRequired": 5,
+    "timeToBuild": 30,
+    "tileIdPlaced": "WWV",
+    "health": 50,
+    "tags": [ "blocks_movement", "provides_cover_half", "wall", "wood_structure" ],
+    "buildRequiresAdjacent": true
+  },
+  {
+    "id": "door_wood_simple_built",
+    "name": "Simple Wooden Door",
+    "description": "A simple wooden door that can be opened and closed.",
+    "category": "defensive",
+    "components": [
+      {
+        "itemId": "wood_planks",
+        "quantity": 3
+      },
+      {
+        "itemId": "nails",
+        "quantity": 4
+      },
+      {
+        "itemId": "scrap_metal",
+        "quantity": 1
+      }
+    ],
+    "skillRequired": "Repair",
+    "skillLevelRequired": 8,
+    "timeToBuild": 20,
+    "tileIdPlaced": "WDH",
+    "health": 30,
+    "tags": [ "door", "interactive", "wood_structure" ],
+    "buildRequiresAdjacent": "wall"
+  },
+  {
+    "id": "trap_spike_pit_built",
+    "name": "Spike Pit (Built)",
+    "description": "Dig a pit and line it with sharpened stakes.",
+    "category": "defensive_trap",
+    "components": [
+      {
+        "itemId": "wood_planks",
+        "quantity": 2
+      },
+      {
+        "itemId": "scrap_metal",
+        "quantity": 3
+      }
+    ],
+    "skillRequired": "Survival",
+    "skillLevelRequired": 10,
+    "timeToBuild": 45,
+    "tileIdPlaced": "trap_spikes_hidden_map_tile",
+    "trapToPlace": "spike_pit_simple",
+    "tags": [ "trap_emplacement" ]
+  },
+  {
+    "id": "workbench_basic_built",
+    "name": "Basic Workbench",
+    "description": "A sturdy table for basic crafting and repairs.",
+    "category": "crafting_station",
+    "components": [
+      {
+        "itemId": "wood_planks",
+        "quantity": 5
+      },
+      {
+        "itemId": "nails",
+        "quantity": 10
+      }
+    ],
+    "skillRequired": "Repair",
+    "skillLevelRequired": 3,
+    "timeToBuild": 60,
+    "tileIdPlaced": "workbench_basic_tile",
+    "size": {
+      "width": 2,
+      "height": 1
+    },
+    "allowedTileTags": [ "floor", "indoors" ],
+    "stationType": "workbench_general",
+    "tags": [ "interactive", "crafting_station" ]
+  },
+  {
+    "id": "forge_simple_built",
+    "name": "Simple Forge",
+    "description": "A rudimentary forge for working with metals.",
+    "category": "crafting_station",
+    "components": [
+      {
+        "itemId": "stone_block",
+        "quantity": 10
+      },
+      {
+        "itemId": "metal_scraps",
+        "quantity": 5
+      },
+      {
+        "itemId": "wood_logs",
+        "quantity": 5
+      }
+    ],
+    "skillRequired": "Repair",
+    "skillLevelRequired": 15,
+    "timeToBuild": 120,
+    "tileIdPlaced": "forge_simple_tile",
+    "size": {
+      "width": 1,
+      "height": 1
+    },
+    "allowedTileTags": [ "floor", "outdoors_ok" ],
+    "stationType": "forge",
+    "tags": [ "interactive", "crafting_station", "heat_source_small" ]
+  },
+  {
+    "id": "chemistry_set_built",
+    "name": "Chemistry Set",
+    "description": "Allows for basic chemical reactions and crafting.",
+    "category": "crafting_station",
+    "components": [
+      {
+        "itemId": "scrap_metal",
+        "quantity": 3
+      },
+      {
+        "itemId": "glass_shards",
+        "quantity": 5
+      },
+      {
+        "itemId": "plastic_scrap",
+        "quantity": 2
+      }
+    ],
+    "skillRequired": "Electronics",
+    "skillLevelRequired": 20,
+    "timeToBuild": 90,
+    "tileIdPlaced": "chemistry_set_tile",
+    "size": {
+      "width": 1,
+      "height": 1
+    },
+    "allowedTileTags": [ "floor", "indoors" ],
+    "stationType": "chemistry_bench",
+    "tags": [ "interactive", "crafting_station" ]
+  },
+  {
+    "id": "barricade_metal_built",
+    "name": "Metal Barricade",
+    "description": "A sturdy metal barricade offering good cover.",
+    "category": "defensive",
+    "components": [
+      {
+        "itemId": "metal_sheets",
+        "quantity": 3
+      },
+      {
+        "itemId": "bolts",
+        "quantity": 6
+      }
+    ],
+    "skillRequired": "Repair",
+    "skillLevelRequired": 25,
+    "timeToBuild": 50,
+    "tileIdPlaced": "barricade_metal_tile",
+    "size": {
+      "width": 1,
+      "height": 1
+    },
+    "allowedTileTags": [ "floor", "ground" ],
+    "health": 150,
+    "armorValue": 8,
+    "tags": [ "blocks_movement", "provides_cover_three_quarters", "metal_structure" ]
+  },
+  {
+    "id": "rain_collector_small_built",
+    "name": "Small Rain Collector",
+    "description": "Collects rainwater over time.",
+    "category": "resource_production",
+    "components": [
+      {
+        "itemId": "plastic_scrap",
+        "quantity": 5
+      },
+      {
+        "itemId": "tarp",
+        "quantity": 1
+      }
+    ],
+    "skillRequired": "Survival",
+    "skillLevelRequired": 5,
+    "timeToBuild": 30,
+    "tileIdPlaced": "rain_collector_small_tile",
+    "size": {
+      "width": 1,
+      "height": 1
+    },
+    "allowedTileTags": [ "outdoors_only", "ground" ],
+    "producesItemId": "bottled_water_drink",
+    "productionRatePerTick": 0.001,
+    "storageCapacity": 5,
+    "tags": [ "interactive", "resource_producer", "water_source" ]
+  },
+  {
+    "id": "storage_locker_small_built",
+    "name": "Small Storage Locker",
+    "description": "A small, lockable container for storing items.",
+    "category": "storage",
+    "components": [
+      {
+        "itemId": "wood_planks",
+        "quantity": 3
+      },
+      {
+        "itemId": "scrap_metal",
+        "quantity": 2
+      }
+    ],
+    "skillRequired": "Repair",
+    "skillLevelRequired": 6,
+    "timeToBuild": 25,
+    "tileIdPlaced": "storage_locker_small_tile",
+    "containerCapacity": 15,
+    "tags": [ "interactive", "container", "storage" ]
+  }
+]

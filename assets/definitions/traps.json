@@ -1,0 +1,92 @@
+﻿{
+  "spike_pit_simple": {
+    "id": "spike_pit_simple",
+    "name": "Simple Spike Pit",
+    "description": "A crudely dug pit with sharpened stakes at the bottom. Looks painful.",
+    "detectionDC": 14,
+    "disarmDC": 12,
+    "disarmSkill": "Investigation",
+    "triggerType": "onEnter",
+    "effects": [
+      {
+        "type": "damage",
+        "amount": "2d6",
+        "damageType": "Piercing"
+      },
+      {
+        "type": "status",
+        "effectId": "bleeding_minor",
+        "duration": 3,
+        "target": "victim"
+      }
+    ],
+    "xpOnDisarm": 25,
+    "spriteHidden": "floor_default",
+    "spriteDetected": "trap_spikes_detected",
+    "spriteTriggered": "trap_spikes_triggered",
+    "spriteDisarmed": "trap_spikes_disarmed",
+    "messageOnDetect": "You spot some disturbed earth and what might be the edge of a hidden pit!",
+    "messageOnDisarmSuccess": "You carefully disable the spike pit.",
+    "messageOnDisarmFailure": "Your attempt to disarm the trap fails, but you avoid triggering it... this time.",
+    "messageOnTrigger": "You fall into a spike pit!"
+  },
+  "pressure_plate_darts": {
+    "id": "pressure_plate_darts",
+    "name": "Pressure Plate Dart Trap",
+    "description": "A pressure plate is cleverly hidden in the floor. It likely triggers a mechanism.",
+    "detectionDC": 16,
+    "disarmDC": 15,
+    "disarmSkill": "Electronics",
+    "triggerType": "onEnter",
+    "effects": [
+      {
+        "type": "damage",
+        "amount": "1d4",
+        "damageType": "Piercing",
+        "numProjectiles": "1d3"
+      },
+      {
+        "type": "status",
+        "effectId": "poisoned_weak",
+        "duration": 5,
+        "target": "victim",
+        "applyChance": 0.5
+      }
+    ],
+    "xpOnDisarm": 40,
+    "spriteHidden": "floor_stone_plate_hidden",
+    "spriteDetected": "floor_stone_plate_detected",
+    "spriteTriggered": "floor_stone_plate_triggered",
+    "spriteDisarmed": "floor_stone_plate_disarmed",
+    "messageOnDetect": "You notice a slight seam around a floor tile; it might be a pressure plate.",
+    "messageOnDisarmSuccess": "You've successfully disabled the pressure plate mechanism.",
+    "messageOnDisarmFailureMishap": "As you fumble with the mechanism, you hear a click and darts shoot out!",
+    "messageOnDisarmFailureSafe": "You fail to disable the pressure plate, but manage not to set it off.",
+    "messageOnTrigger": "You step on a pressure plate! Darts shoot out from the walls!"
+  },
+  "tripwire_alarm": {
+    "id": "tripwire_alarm",
+    "name": "Tripwire Alarm",
+    "description": "A thin wire is strung across the path at ankle height.",
+    "detectionDC": 12,
+    "disarmDC": 10,
+    "disarmSkill": "Investigation",
+    "triggerType": "onEnter",
+    "effects": [
+      {
+        "type": "alert",
+        "radius": 15,
+        "message": "A nearby alarm sounds!"
+      }
+    ],
+    "xpOnDisarm": 15,
+    "spriteHidden": null,
+    "spriteDetected": "trap_tripwire_detected",
+    "spriteTriggered": "trap_tripwire_triggered",
+    "spriteDisarmed": "trap_tripwire_disarmed",
+    "messageOnDetect": "You spot a faint glint of a wire stretched across the path.",
+    "messageOnDisarmSuccess": "You carefully cut the tripwire.",
+    "messageOnDisarmFailure": "You fail to disable the tripwire.",
+    "messageOnTrigger": "You stumble on a tripwire, and a loud noise erupts!"
+  }
+}

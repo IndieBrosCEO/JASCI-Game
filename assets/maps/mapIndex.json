@@ -2,7 +2,8 @@
   {
     "id": "FPD",
     "name": "Fallbrook Police Department"
-  },{
+  },
+  {
     "id": "tallBuilding",
     "name": "Tall Building"
   },
@@ -45,5 +46,9 @@
   {
     "id": "beachHouse",
     "name": "Beach House"
+  },
+  {
+    "id": "testVehicleMap",
+    "name": "Vehicle Test Map"
   }
 ]

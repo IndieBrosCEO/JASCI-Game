@@ -1,0 +1,267 @@
+﻿{
+  "guard_01": {
+    "dialogues": {
+      "default": {
+        "startNode": "node1",
+        "nodes": {
+          "node1": {
+            "npcText": "Halt! Who goes there?",
+            "playerChoices": [
+              {
+                "text": "Just a traveler passing through.",
+                "nextNode": "node2"
+              },
+              {
+                "text": "[Intimidate] You should let me pass, for your own good.",
+                "skillCheck": {
+                  "skill": "Intimidation",
+                  "dc": 12,
+                  "successNode": "node_int_success",
+                  "failureNode": "node_int_fail"
+                }
+              },
+              {
+                "text": "Nevermind.",
+                "endsConversation": true
+              }
+            ]
+          },
+          "node2": {
+            "npcText": "State your business. We're on high alert.",
+            "playerChoices": [
+              {
+                "text": "I'm looking for work.",
+                "nextNode": "node_quest_offer",
+                "questFlags": [
+                  {
+                    "flag": "guard_met",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "text": "Just exploring the area.",
+                "nextNode": "node_dismiss"
+              }
+            ]
+          },
+          "node_int_success": {
+            "npcText": "Alright, alright! No need for trouble. Pass.",
+            "playerChoices": [
+              {
+                "text": "(Leave)",
+                "endsConversation": true
+              }
+            ]
+          },
+          "node_int_fail": {
+            "npcText": "Is that a threat? I don't take kindly to threats. Now, state your real business or be on your way!",
+            "playerChoices": [
+              {
+                "text": "My apologies, I meant no offense. I'm just a traveler.",
+                "nextNode": "node2"
+              },
+              {
+                "text": "[Attack] You'll regret this!",
+                "endsConversation": true,
+                "triggersCombat": true
+              }
+            ]
+          },
+          "node_quest_offer": {
+            "npcText": "Work, eh? We might have something for a capable sort. Interested?",
+            "playerChoices": [
+              {
+                "text": "Tell me more.",
+                "nextNode": "node_quest_details",
+                "questFlags": [
+                  {
+                    "flag": "guard_quest_offered",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "text": "Not right now.",
+                "nextNode": "node_dismiss"
+              }
+            ]
+          },
+          "node_quest_details": {
+            "npcText": "There's been talk of bandits on the east road. We need someone to scout it out. Think you can handle that?",
+            "playerChoices": [
+              {
+                "text": "I'll do it.",
+                "nextNode": "node_quest_accept",
+                "questFlags": [
+                  {
+                    "flag": "guard_quest_accepted",
+                    "value": true,
+                    "questId": "scout_east_road",
+                    "status": "started"
+                  }
+                ]
+              },
+              {
+                "text": "Sounds too dangerous for me.",
+                "nextNode": "node_dismiss_quest"
+              }
+            ]
+          },
+          "node_quest_accept": {
+            "npcText": "Good. Report back when you've checked the road. And be careful.",
+            "playerChoices": [
+              {
+                "text": "(Leave)",
+                "endsConversation": true
+              }
+            ]
+          },
+          "node_dismiss_quest": {
+            "npcText": "Suit yourself. Don't let me keep you.",
+            "playerChoices": [
+              {
+                "text": "(Leave)",
+                "endsConversation": true
+              }
+            ]
+          },
+          "node_dismiss": {
+            "npcText": "Alright then, move along. And stay out of trouble.",
+            "playerChoices": [
+              {
+                "text": "(Leave)",
+                "endsConversation": true
+              }
+            ]
+          }
+        }
+      },
+      "quest_scout_east_road_complete": {
+        "startNode": "q_complete_node1",
+        "nodes": {
+          "q_complete_node1": {
+            "npcText": "You're back! What news from the east road?",
+            "playerChoices": [
+              {
+                "text": "The road is clear. No sign of bandits.",
+                "nextNode": "q_complete_success",
+                "questFlags": [
+                  {
+                    "flag": "scout_east_road_player_report_clear",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "text": "I found bandits. Took care of them.",
+                "nextNode": "q_complete_success_bandits",
+                "questFlags": [
+                  {
+                    "flag": "scout_east_road_player_report_bandits_cleared",
+                    "value": true
+                  }
+                ]
+              }
+            ]
+          },
+          "q_complete_success": {
+            "npcText": "Good to hear. Here's something for your trouble.",
+            "playerChoices": [
+              {
+                "text": "(Take reward and leave)",
+                "endsConversation": true,
+                "questFlags": [
+                  {
+                    "flag": "scout_east_road",
+                    "value": "completed_clear",
+                    "questId": "scout_east_road",
+                    "status": "completed"
+                  }
+                ],
+                "rewards": [ "gold_100", "xp_50" ]
+              }
+            ]
+          },
+          "q_complete_success_bandits": {
+            "npcText": "Excellent work! That's a weight off our minds. You've earned this.",
+            "playerChoices": [
+              {
+                "text": "(Take reward and leave)",
+                "endsConversation": true,
+                "questFlags": [
+                  {
+                    "flag": "scout_east_road",
+                    "value": "completed_bandits_cleared",
+                    "questId": "scout_east_road",
+                    "status": "completed"
+                  }
+                ],
+                "rewards": [ "gold_150", "xp_100" ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "generic_villager_01": {
+    "dialogues": {
+      "default": {
+        "startNode": "greet",
+        "nodes": {
+          "greet": {
+            "npcText": "Hello there, traveler. Nice day, isn't it?",
+            "playerChoices": [
+              {
+                "text": "Indeed it is.",
+                "nextNode": "pleasantries"
+              },
+              {
+                "text": "[Persuade] Perhaps you could spare some supplies for a weary traveler?",
+                "skillCheck": {
+                  "skill": "Persuasion",
+                  "dc": 10,
+                  "successNode": "persuade_success",
+                  "failureNode": "persuade_fail"
+                }
+              },
+              {
+                "text": "Goodbye.",
+                "endsConversation": true
+              }
+            ]
+          },
+          "pleasantries": {
+            "npcText": "Just trying to make the best of things, you know?",
+            "playerChoices": [
+              {
+                "text": "I understand. Take care.",
+                "endsConversation": true
+              }
+            ]
+          },
+          "persuade_success": {
+            "npcText": "Well, since you asked so nicely... here, take this. It's not much, but I hope it helps.",
+            "playerChoices": [
+              {
+                "text": "Thank you, that's very kind.",
+                "endsConversation": true,
+                "rewards": [ "item_apple", "item_bandage_simple" ]
+              }
+            ]
+          },
+          "persuade_fail": {
+            "npcText": "Sorry, friend. Times are tough for everyone. I don't have anything to spare.",
+            "playerChoices": [
+              {
+                "text": "I understand. No problem.",
+                "nextNode": "pleasantries"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

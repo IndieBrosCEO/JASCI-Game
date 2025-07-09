@@ -1,0 +1,140 @@
+﻿{
+  "npcId": "medic_doctor",
+  "dialogues": {
+    "default": {
+      "startNode": "start",
+      "nodes": {
+        "start": {
+          "npcText": "Hello there. Need some medical attention, or just passing through?",
+          "playerChoices": [
+            {
+              "text": "I could use some healing.",
+              "nextNode": "offer_healing"
+            },
+            {
+              "text": "I heard you might be looking for some help yourself. (Offer Recruitment)",
+              "nextNode": "medic_recruit_offer_check_prereqs"
+            },
+            {
+              "text": "Just passing through.",
+              "endsConversation": true
+            }
+          ]
+        },
+        "offer_healing": {
+          "npcText": "Alright, let's see what I can do. (Healing not implemented yet)",
+          "playerChoices": [
+            {
+              "text": "Thanks.",
+              "endsConversation": true
+            }
+          ]
+        },
+        "medic_recruit_offer_check_prereqs": {
+          "npcText": "Looking for help, you say? Hmm... what did you have in mind?",
+          "playerChoices": [
+            {
+              "text": "I'm putting together a team. I could use someone with your skills.",
+              "action": "attempt_recruit",
+              "successNode": "medic_recruit_success",
+              "failureNode": "medic_recruit_fail_generic"
+              // This will implicitly use recruitmentRequirements from npc.json, including skill checks.
+            },
+            {
+              "text": "Never mind.",
+              "nextNode": "start"
+            }
+          ]
+        },
+        "medic_recruit_success": {
+          "npcText": "A team, you say? Well, things have been rather... quiet. Alright, I'm in. Lead the way.",
+          "playerChoices": [
+            {
+              "text": "Glad to have you.",
+              "endsConversation": true
+            }
+          ]
+        },
+        "medic_recruit_fail_generic": {
+          "npcText": "I appreciate the offer, but I don't think I'm ready for that right now / I'm not sure you're what I'm looking for.",
+          "playerChoices": [
+            {
+              "text": "Alright. Maybe another time.",
+              "endsConversation": true
+            }
+          ]
+        },
+        "medic_recruit_fail_quest": {
+          "npcText": "I'd love to help, but I can't leave until the clinic is safe. (You need to complete 'Save the Clinic' quest).",
+          "playerChoices": [
+            {
+              "text": "I understand. I'll see what I can do about the clinic.",
+              "endsConversation": true
+            }
+          ]
+        },
+        "medic_recruit_fail_reputation": {
+          "npcText": "While I appreciate the offer, I need to be careful who I associate with. Perhaps if the community thought better of you...",
+          "playerChoices": [
+            {
+              "text": "I see. I'll work on that.",
+              "endsConversation": true
+            }
+          ]
+        },
+        "medic_recruit_fail_skillcheck": {
+          "npcText": "You seem genuine, but I'm not entirely convinced this is a good idea for me. Sorry.",
+          "playerChoices": [
+            {
+              "text": "Fair enough.",
+              "endsConversation": true
+            }
+          ]
+        }
+      }
+    },
+    "medic_following_chat": {
+      "startNode": "start_following",
+      "nodes": {
+        "start_following": {
+          "npcText": "Yes? Need something?",
+          "playerChoices": [
+            {
+              "text": "How are you holding up?",
+              "nextNode": "status_reply"
+            },
+            {
+              "text": "Just checking in.",
+              "endsConversation": true
+            }
+            // Order-giving choices would be added here by interaction.js if "Talk" is used for orders.
+            // Or, "Orders" is a separate interaction menu item.
+          ]
+        },
+        "status_reply": {
+          "npcText": "Doing alright. Ready for whatever comes next.",
+          "playerChoices": [
+            {
+              "text": "Good to hear.",
+              "endsConversation": true
+            }
+          ]
+        }
+      }
+    },
+    "medic_dismiss": {
+      "startNode": "start_dismiss",
+      "nodes": {
+        "start_dismiss": {
+          "npcText": "You sure about this? Alright then, it was... an experience. Take care of yourself.",
+          "playerChoices": [
+            {
+              "text": "You too. Thanks for everything.",
+              "endsConversation": true
+            }
+          ]
+        }
+      }
+    }
+  }
+}

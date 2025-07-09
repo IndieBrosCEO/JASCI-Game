@@ -1,0 +1,87 @@
+﻿[
+  {
+    "id": "buggy_makeshift",
+    "name": "Makeshift Buggy",
+    "description": "A light, fast vehicle cobbled together from scraps. Not very durable, but gets you places.",
+    "chassisId": "chassis_small_buggy",
+    "defaultParts": [
+      {
+        "partId": "engine_basic_v4",
+        "slotType": "engine",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_standard",
+        "slotType": "wheel",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_standard",
+        "slotType": "wheel",
+        "slotIndex": 1
+      },
+      {
+        "partId": "wheel_standard",
+        "slotType": "wheel",
+        "slotIndex": 2
+      },
+      {
+        "partId": "wheel_standard",
+        "slotType": "wheel",
+        "slotIndex": 3
+      },
+      {
+        "partId": "headlights_basic",
+        "slotType": "utility_small",
+        "slotIndex": 0
+      }
+    ],
+    "defaultFuel": 100,
+    "sprite": "V"
+  },
+  {
+    "id": "cart_scavenger",
+    "name": "Scavenger's Cart",
+    "description": "A reinforced chassis with a focus on cargo capacity. Slow but sturdy.",
+    "chassisId": "chassis_small_buggy",
+    "defaultParts": [
+      {
+        "partId": "engine_basic_v4",
+        "slotType": "engine",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_standard",
+        "slotType": "wheel",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_standard",
+        "slotType": "wheel",
+        "slotIndex": 1
+      },
+      {
+        "partId": "wheel_standard",
+        "slotType": "wheel",
+        "slotIndex": 2
+      },
+      {
+        "partId": "wheel_standard",
+        "slotType": "wheel",
+        "slotIndex": 3
+      },
+      {
+        "partId": "armor_plate_steel",
+        "slotType": "armor_light",
+        "slotIndex": 0
+      },
+      {
+        "partId": "storage_box_small",
+        "slotType": "storage_small",
+        "slotIndex": 0
+      }
+    ],
+    "defaultFuel": 150,
+    "sprite": "V sección C"
+  }
+]

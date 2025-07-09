@@ -1,0 +1,49 @@
+﻿{
+  "id": "testVehicleMap",
+  "name": "Vehicle Test Map",
+  "dimensions": {
+    "width": 20,
+    "height": 15
+  },
+  "startPos": {
+    "x": 5,
+    "y": 5,
+    "z": 0
+  },
+  "levels": {
+    "0": {
+      "bottom": [
+        [ "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass" ],
+        [ "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass" ],
+        [ "grass", "grass", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "grass", "grass" ],
+        [ "grass", "grass", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "road_h", "grass", "grass" ],
+        [ "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass" ],
+        [ "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass" ],
+        [ "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass" ],
+        [ "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass" ],
+        [ "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass" ],
+        [ "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass" ],
+        [ "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass" ],
+        [ "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass" ],
+        [ "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass" ],
+        [ "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass" ],
+        [ "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass" ]
+      ],
+      "middle": [],
+      "top": []
+    }
+  },
+  "npcs": [],
+  "portals": [],
+  "vehicles": [
+    {
+      "templateId": "buggy_makeshift",
+      "mapPos": {
+        "x": 10,
+        "y": 3,
+        "z": 0
+      },
+      "name": "Test Buggy"
+    }
+  ]
+}

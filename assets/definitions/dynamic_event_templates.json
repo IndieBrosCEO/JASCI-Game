@@ -1,0 +1,206 @@
+﻿[
+  {
+    "id": "bandit_raid_outpost_easy",
+    "displayName": "Bandit Raid Reported at Outpost",
+    "type": "raid",
+    "minPlayerLevel": 3,
+    "frequency": "common",
+    "durationTicks": 7200,
+    "effects": [
+      {
+        "type": "spawn_npcs",
+        "npcGroupId": "bandit_raiders_small_group",
+        "areaKey": "random_friendly_outpost",
+        "count": "1d2+1",
+        "targetFactionIdForHostility": "player_faction_or_local"
+      },
+      {
+        "type": "set_global_flag",
+        "flag": "event_bandit_raid_outpost_easy_active",
+        "value": true
+      },
+      {
+        "type": "broadcast_message",
+        "message": "Urgent: Bandits are attacking the nearby outpost!",
+        "channel": "emergency"
+      }
+    ],
+    "resolutionConditions": [
+      {
+        "type": "npcs_defeated_in_area",
+        "npcGroupId": "bandit_raiders_small_group",
+        "areaKey": "random_friendly_outpost",
+        "outcome": "success"
+      },
+      {
+        "type": "timer_expires",
+        "outcome": "failure"
+      }
+    ],
+    "rewards_success": [
+      {
+        "type": "xp",
+        "amount": 200
+      },
+      {
+        "type": "reputation",
+        "factionId": "local_settlement_faction",
+        "amount": 15
+      },
+      {
+        "type": "item_pool",
+        "poolId": "bandit_loot_small",
+        "rolls": 1
+      }
+    ],
+    "rewards_failure": [
+      {
+        "type": "reputation",
+        "factionId": "local_settlement_faction",
+        "amount": -10
+      }
+    ],
+    "cleanupActions": [
+      {
+        "type": "remove_global_flag",
+        "flag": "event_bandit_raid_outpost_easy_active"
+      },
+      {
+        "type": "despawn_npcs_by_group",
+        "npcGroupId": "bandit_raiders_small_group",
+        "areaKey": "random_friendly_outpost"
+      }
+    ]
+  },
+  {
+    "id": "weather_acid_rain",
+    "displayName": "Acid Rain Warning!",
+    "type": "weather_hazard",
+    "minPlayerLevel": 1,
+    "frequency": "uncommon",
+    "durationTicks": 3600,
+    "effects": [
+      {
+        "type": "force_weather",
+        "weatherType": "acid_rain",
+        "intensity": 0.6,
+        "zone": "current_map"
+      },
+      {
+        "type": "apply_map_effect",
+        "effectType": "minor_periodic_damage_outdoors",
+        "damageType": "acid",
+        "damageAmount": "1d2",
+        "intervalTicks": 100
+      },
+      {
+        "type": "set_global_flag",
+        "flag": "event_acid_rain_active",
+        "value": true
+      }
+    ],
+    "resolutionConditions": [
+      {
+        "type": "timer_expires",
+        "outcome": "neutral"
+      }
+    ],
+    "cleanupActions": [
+      {
+        "type": "remove_global_flag",
+        "flag": "event_acid_rain_active"
+      },
+      {
+        "type": "remove_map_effect",
+        "effectType": "minor_periodic_damage_outdoors"
+      },
+      { "type": "restore_weather" }
+    ]
+  },
+  {
+    "id": "caravan_ambush_opportunity",
+    "displayName": "Rumors of a Vulnerable Caravan",
+    "type": "opportunity_ambush",
+    "minPlayerLevel": 5,
+    "frequency": "rare",
+    "durationTicks": 10800,
+    "effects": [
+      {
+        "type": "spawn_npcs_escort_mission",
+        "npcGroupId_escort": "merchant_caravan_guards",
+        "npcGroupId_target": "merchant_caravan_civilians",
+        "pathKey": "trade_route_alpha",
+        "count_escort": "1d2+2",
+        "count_target": "1d2"
+      },
+      {
+        "type": "set_global_flag",
+        "flag": "event_caravan_ambush_active",
+        "value": true
+      }
+    ],
+    "resolutionConditions": [
+      {
+        "type": "npcs_eliminated_group",
+        "npcGroupId": "merchant_caravan_civilians",
+        "outcome": "player_success_ruthless"
+      },
+      {
+        "type": "npcs_reach_destination",
+        "npcGroupId": "merchant_caravan_civilians",
+        "pathKey": "trade_route_alpha",
+        "outcome": "player_failure_or_good_escort"
+      },
+      {
+        "type": "timer_expires",
+        "outcome": "expired_neutral"
+      }
+    ],
+    "rewards_player_success_ruthless": [
+      {
+        "type": "xp",
+        "amount": 150
+      },
+      {
+        "type": "item_pool",
+        "poolId": "caravan_loot_medium",
+        "rolls": "1d3"
+      },
+      {
+        "type": "reputation",
+        "factionId": "merchant_guild",
+        "amount": -50
+      },
+      {
+        "type": "reputation",
+        "factionId": "bandit_syndicate",
+        "amount": 10
+      }
+    ],
+    "rewards_player_failure_or_good_escort": [
+      {
+        "type": "xp",
+        "amount": 50
+      },
+      {
+        "type": "reputation",
+        "factionId": "merchant_guild",
+        "amount": 5
+      }
+    ],
+    "cleanupActions": [
+      {
+        "type": "remove_global_flag",
+        "flag": "event_caravan_ambush_active"
+      },
+      {
+        "type": "despawn_npcs_by_group",
+        "npcGroupId": "merchant_caravan_guards"
+      },
+      {
+        "type": "despawn_npcs_by_group",
+        "npcGroupId": "merchant_caravan_civilians"
+      }
+    ]
+  }
+]

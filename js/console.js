@@ -153,6 +153,10 @@ const commandHelpInfo = {
     'placeitem': {
         syntax: 'placeitem <itemID> <quantity> <x> <y>',
         description: 'Spawns a specified quantity of an item at the given coordinates on the floor.'
+    },
+    'togglevehiclemodui': {
+        syntax: 'togglevehiclemodui [vehicle_id]',
+        description: 'Toggles the vehicle modification UI. If vehicle_id is provided, opens for that specific vehicle.'
     }
 };
 
@@ -1114,6 +1118,51 @@ function processConsoleCommand(commandText) {
                     // Manually set isInCombat to false as a fallback, though this is not ideal
                     gameState.isInCombat = false;
                 }
+            }
+            break;
+
+        case 'togglevehiclemodui': // Syntax: togglevehiclemodui [vehicle_id]
+            const vehicleIdArg = args.length > 0 ? args[0] : null;
+            let targetVehicleId = vehicleIdArg;
+
+            if (!targetVehicleId && window.gameState && window.gameState.player && window.gameState.player.isInVehicle) {
+                targetVehicleId = window.gameState.player.isInVehicle;
+                logToConsoleUI(`No vehicle ID provided, attempting to open UI for current vehicle: ${targetVehicleId}`, 'info');
+            } else if (!targetVehicleId) {
+                // Try to find an adjacent vehicle if no ID and not in one
+                if (window.gameState && window.gameState.vehicles && window.gameState.playerPos && window.interaction) {
+                    // Temporarily use interaction's detection logic (or a simplified version)
+                    // This is a bit of a hack for a console command.
+                    // A proper game action would use the interaction system.
+                    const R = 1; // Interaction radius
+                    const { x: px, y: py, z: pz } = window.gameState.playerPos;
+                    const currentMap = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+
+                    if (currentMap) {
+                        for (const vehicle of window.gameState.vehicles) {
+                            if (vehicle.currentMapId === currentMap.id && vehicle.mapPos.z === pz) {
+                                const dist = Math.max(Math.abs(vehicle.mapPos.x - px), Math.abs(vehicle.mapPos.y - py));
+                                if (dist <= R) {
+                                    targetVehicleId = vehicle.id;
+                                    logToConsoleUI(`No vehicle ID provided and not in vehicle. Found adjacent vehicle: ${vehicle.name} (ID: ${targetVehicleId}).`, 'info');
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!targetVehicleId) {
+                logToConsoleUI("Usage: togglevehiclemodui [vehicle_id]. No vehicle ID provided or found nearby/occupied.", 'error');
+                break;
+            }
+
+            if (window.VehicleModificationUI && typeof window.VehicleModificationUI.toggle === 'function') {
+                window.VehicleModificationUI.toggle(targetVehicleId);
+                // UI will log its own open/close status.
+            } else {
+                logToConsoleUI("Error: VehicleModificationUI not available or toggle function missing.", 'error');
             }
             break;
 
