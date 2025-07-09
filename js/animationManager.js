@@ -1197,44 +1197,121 @@ class DiceRollAnimation extends Animation {
         }
 
         this.uiElement.style.transform = 'translate(-50%, -50%)';
-        this.uiElement.style.padding = '20px';
-        this.uiElement.style.background = 'rgba(50, 50, 50, 0.85)';
-        this.uiElement.style.border = '2px solid #ccc';
-        this.uiElement.style.borderRadius = '10px';
+        this.uiElement.style.padding = '10px'; // Reduced padding
+        this.uiElement.style.background = 'rgba(40, 40, 40, 0.9)'; // Slightly darker, more opaque
+        this.uiElement.style.border = '1px solid #888'; // Thinner border
+        this.uiElement.style.borderRadius = '5px'; // Smaller radius
         this.uiElement.style.color = 'white';
-        this.uiElement.style.fontSize = '28px';
+        this.uiElement.style.fontSize = '12px'; // Smaller base font size for the entire box
         this.uiElement.style.fontFamily = 'monospace';
-        this.uiElement.style.zIndex = '1001'; // Above map, below other critical UI if any
-        this.uiElement.textContent = `Rolling ${this.diceNotation}...`;
+        this.uiElement.style.zIndex = '1001';
         document.body.appendChild(this.uiElement);
-        this.visible = true; // This animation is UI based, not map based.
+        this.visible = true;
+
+        this.rollingEntityName = data.rollingEntityName || "";
+        this.modifiers = data.modifiers || [];
+        this.fixedNaturalRoll = data.fixedNaturalRoll;
+        this.fixedResult = data.fixedResult;
+
+        this.baseRollValue = this.fixedNaturalRoll !== undefined ? this.fixedNaturalRoll : 0;
+        this.currentTotalValue = this.fixedNaturalRoll !== undefined ? this.fixedNaturalRoll : 0;
+        this.modifierAnimationStep = -1;
+        this.modifierDisplayDuration = 400; // Slightly faster modifier display
+        this.totalModifierDuration = this.modifiers.length * this.modifierDisplayDuration;
+
+        this.rollEffectDuration = (this.fixedNaturalRoll !== undefined) ? 0 : Math.min(600, this.duration - this.totalModifierDuration - 150); // Faster roll effect
+        this.holdResultDuration = this.duration - this.rollEffectDuration - this.totalModifierDuration;
+
+        // Adjusted font sizes within innerHTML to be relative to the new base or smaller absolute
+        this.uiElement.innerHTML = `
+            <div style="font-size: 0.9em; color: #bbb; margin-bottom: 3px;">${this.rollingEntityName}</div>
+            <div class="dice-value" style="font-size: 1.3em; font-weight: bold; margin-bottom: 3px;">Rolling ${this.diceNotation}...</div>
+            <div class="modifiers-applied" style="font-size: 0.8em; min-height: 15px; margin-top: 3px; line-height: 1.2;"></div>
+            <div class="running-total" style="font-size: 1em; margin-top: 3px; font-weight: bold;"></div>
+        `;
+        this.diceValueElement = this.uiElement.querySelector('.dice-value');
+        this.modifiersAppliedElement = this.uiElement.querySelector('.modifiers-applied');
+        this.runningTotalElement = this.uiElement.querySelector('.running-total');
     }
 
     update() {
         if (this.finished) return;
         const elapsedTime = Date.now() - this.startTime;
 
-        if (elapsedTime < this.rollEffectDuration) {
-            // Simulate rolling numbers
-            this.currentDisplayValue = Math.floor(Math.random() * 20) + 1; // Example for d20
-            this.uiElement.textContent = `${this.currentDisplayValue}`;
-        } else if (!this.result) { // Roll once after effect duration
-            this.result = rollDiceNotation(parseDiceNotation(this.diceNotation)); // from utils.js
-            this.uiElement.textContent = `Rolled: ${this.result}`;
-            if (typeof this.onComplete === 'function') {
-                this.onComplete(this.result);
+        if (this.modifierAnimationStep === -1) { // Initial dice roll phase
+            if (this.fixedNaturalRoll !== undefined) { // If natural roll is provided, skip rolling effect
+                this.baseRollValue = this.fixedNaturalRoll;
+                this.currentTotalValue = this.baseRollValue;
+                this.diceValueElement.textContent = `Natural: ${this.baseRollValue}`;
+                this.runningTotalElement.textContent = `Total: ${this.currentTotalValue}`;
+                this.modifierAnimationStep = 0;
+                this.lastModifierTime = elapsedTime;
+                if (this.modifiers.length === 0) { // No modifiers, and natural roll was fixed
+                    if (this.fixedResult !== undefined) this.runningTotalElement.textContent = `Result: ${this.fixedResult}`;
+                    if (typeof this.onComplete === 'function') this.onComplete(this.fixedResult !== undefined ? this.fixedResult : this.baseRollValue);
+                }
+            } else if (elapsedTime < this.rollEffectDuration) { // Standard rolling effect
+                this.currentDisplayValue = Math.floor(Math.random() * 20) + 1; // Example for d20
+                this.diceValueElement.textContent = `${this.currentDisplayValue}`;
+            } else { // Rolling effect done, determine base roll
+                this.baseRollValue = rollDiceNotation(parseDiceNotation(this.diceNotation));
+                this.currentTotalValue = this.baseRollValue;
+                this.diceValueElement.textContent = `Natural: ${this.baseRollValue}`;
+                this.runningTotalElement.textContent = `Total: ${this.currentTotalValue}`;
+                this.modifierAnimationStep = 0;
+                this.lastModifierTime = elapsedTime;
+                if (typeof this.onComplete === 'function' && this.modifiers.length === 0) {
+                    this.onComplete(this.baseRollValue); // If no modifiers, complete with base roll
+                }
+            }
+        } else if (this.modifierAnimationStep < this.modifiers.length) { // Modifier application phase
+            const timeSinceLastModifier = elapsedTime - this.lastModifierTime;
+            if (timeSinceLastModifier >= this.modifierDisplayDuration) {
+                const modifier = this.modifiers[this.modifierAnimationStep];
+                // currentTotalValue was initialized with baseRollValue (which could be fixedNaturalRoll)
+                // So, we just add the current modifier's value.
+                this.currentTotalValue += modifier.value;
+
+                this.modifiersAppliedElement.innerHTML += `<span style="color: ${modifier.type === 'positive' ? 'lightgreen' : 'salmon'}; margin-right: 5px;">${modifier.text}</span>`;
+                this.runningTotalElement.textContent = `Total: ${this.currentTotalValue}`;
+
+                this.runningTotalElement.style.transition = 'none';
+                this.runningTotalElement.style.color = modifier.type === 'positive' ? 'lightgreen' : 'salmon';
+                this.runningTotalElement.style.transform = modifier.type === 'positive' ? 'translateY(-3px)' : 'translateY(3px)';
+
+                setTimeout(() => {
+                    this.runningTotalElement.style.transition = 'transform 0.2s ease-out, color 0.2s ease-out';
+                    this.runningTotalElement.style.color = 'white';
+                    this.runningTotalElement.style.transform = 'translateY(0px)';
+                }, 50);
+
+                this.modifierAnimationStep++;
+                this.lastModifierTime = elapsedTime;
+
+                if (this.modifierAnimationStep === this.modifiers.length) { // All modifiers applied
+                    // If a fixedResult was provided, ensure the display matches it, even if modifiers calculation differs.
+                    // This is a safeguard or can be used if the sum is pre-calculated.
+                    if (this.fixedResult !== undefined) {
+                        this.runningTotalElement.textContent = `Result: ${this.fixedResult}`;
+                        if (typeof this.onComplete === 'function') this.onComplete(this.fixedResult);
+                    } else {
+                        if (typeof this.onComplete === 'function') this.onComplete(this.currentTotalValue);
+                    }
+                }
             }
         }
 
         if (elapsedTime >= this.duration) {
             this.finished = true;
             this.visible = false;
+            // Ensure final result is displayed if fixedResult was provided, and animation ends abruptly
+            if (this.fixedResult !== undefined && this.modifierAnimationStep <= this.modifiers.length) {
+                this.runningTotalElement.textContent = `Result: ${this.fixedResult}`;
+            }
             if (this.uiElement.parentNode) {
                 this.uiElement.parentNode.removeChild(this.uiElement);
             }
         }
-        // No call to super.update() as this is a UI animation with its own lifecycle.
-        // The promise resolution is handled by AnimationManager based on this.finished.
     }
 }
 window.DiceRollAnimation = DiceRollAnimation;

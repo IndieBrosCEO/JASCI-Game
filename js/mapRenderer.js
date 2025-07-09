@@ -1583,6 +1583,45 @@ window.mapRenderer = {
         }
         // --- End Onion Skinning Logic ---
 
+        // Ranged Attack Line (Moved earlier in the rendering pipeline)
+        if (gameState.isInCombat &&
+            gameState.combatCurrentAttacker === gameState && // Player entity is gameState itself
+            gameState.rangedAttackData &&
+            gameState.rangedAttackData.start &&
+            gameState.rangedAttackData.end &&
+            tileCacheData) {
+            const { start, end, distance, modifierText: rangeDetailsText } = gameState.rangedAttackData;
+            if (start.z === currentZ || end.z === currentZ || (Math.min(start.z, end.z) < currentZ && Math.max(start.z, end.z) > currentZ)) {
+                const linePoints = this.getLine3D(start.x, start.y, start.z, end.x, end.y, end.z);
+                linePoints.forEach((point, index) => {
+                    if (point.z === currentZ) {
+                        if (point.x >= 0 && point.x < W && point.y >= 0 && point.y < H) {
+                            const cachedCell = tileCacheData[point.y]?.[point.x];
+                            if (cachedCell && cachedCell.span) {
+                                cachedCell.span.style.backgroundColor = "rgba(173, 216, 230, 0.3)";
+                                if (point.x === end.x && point.y === end.y) {
+                                    cachedCell.span.dataset.rangedInfo = rangeDetailsText || `Dist: ${distance}`;
+                                    cachedCell.span.style.backgroundColor = "rgba(173, 216, 230, 0.5)";
+                                }
+                                if (index === Math.floor(linePoints.length / 2) && rangeDetailsText) {
+                                    const match = rangeDetailsText.match(/\(([+-]?\d+)\)$/);
+                                    if (match && match[1]) {
+                                        if (modChar.length > 1 && (modChar.startsWith('+') || modChar.startsWith('-'))) { // Corrected: modChar was not defined, should be match[1]
+                                            cachedCell.span.style.backgroundColor = "rgba(100, 200, 255, 0.6)";
+                                            cachedCell.span.dataset.rangedInfo = rangeDetailsText || `Dist: ${distance}`;
+                                        }
+                                    }
+                                    const targetCell = tileCacheData[end.y]?.[end.x];
+                                    if (targetCell && targetCell.span) {
+                                        targetCell.span.dataset.rangedInfo = rangeDetailsText || `Dist: ${distance}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
 
         // NPC Rendering: Only NPCs on the current Z-level
         if (gameState.npcs && gameState.npcs.length > 0 && tileCacheData) {
@@ -1813,20 +1852,7 @@ window.mapRenderer = {
                 if (targetX >= 0 && targetX < W && targetY >= 0 && targetY < H) {
                     const cachedCell = tileCacheData[targetY]?.[targetX];
                     if (cachedCell && cachedCell.span) {
-                        // Check if player or NPC is already on this tile, if so, don't overwrite their sprite with 'X'
-                        // Instead, apply the flashing class to highlight them or the tile.
-                        // The actual textContent ('X') should only be set if the tile is not occupied by player/NPC.
-                        // For now, the flashing class will highlight whatever is there.
-                        // A more advanced solution might overlay the 'X' or change background.
-
-                        // If player is on the target tile, 'X' might obscure player.
-                        // If NPC is on the target tile, 'X' might obscure NPC.
-                        // The current logic below will set textContent to 'X'.
-                        // This could be refined to make the 'X' a background or border effect
-                        // if something important is already on the tile.
-                        // For now, keeping it simple: 'X' shows on the target tile of the current view Z.
-
-                        cachedCell.span.textContent = 'X'; // This will overwrite existing content like player/NPC
+                        cachedCell.span.textContent = 'X';
                         cachedCell.span.style.color = 'red';
                         if (!cachedCell.span.classList.contains('flashing-targeting-cursor')) {
                             cachedCell.span.classList.add('flashing-targeting-cursor');
@@ -1834,48 +1860,30 @@ window.mapRenderer = {
                     }
                 }
             }
-            // TODO: Optionally, add an indicator for off-Z targets if they are visible 
-            // (e.g., through a grate). For instance, change the color of the grate tile.
-            // This would require knowing which tile on currentViewZ corresponds to the view of targetX, targetY on targetZ.
         }
 
         // Combat highlights (attacker/defender) - needs Z awareness for positions
         if (gameState.isInCombat && tileCacheData) {
-            // Clear previous highlights first to handle movement
-            // This is a simplified clear; a more robust way would track previously highlighted cells.
-            // For now, this relies on the main render loop re-evaluating background colors.
-            // The `isAttackerHighlighted` and `isDefenderHighlighted` datasets are not standard and might not be used by CSS.
-            // Better to clear background color directly if it was set.
-            // This clearing loop might be inefficient. Consider clearing only if necessary.
-            /*
-            if (!isInitialRender) { // Only if not initial render, as initial render clears all.
-                for (let yCache = 0; yCache < tileCacheData.length; yCache++) {
-                    for (let xCache = 0; xCache < tileCacheData[yCache].length; xCache++) {
-                        const cellToClear = tileCacheData[yCache][xCache];
-                        if (cellToClear && cellToClear.span && cellToClear.span.style.backgroundColor !== "") {
-                            // Check if it was a combat highlight color, then clear.
-                            // This needs a more specific check if other things set background colors.
-                            // For now, assuming only combat highlights set it this way.
-                            // cellToClear.span.style.backgroundColor = ""; // Clear background
-                        }
-                    }
-                }
+            // Attacker Highlight
+            let attackerHighlightPos = null;
+            if (gameState.combatCurrentAttacker === gameState) {
+                attackerHighlightPos = gameState.playerPos;
+            } else if (gameState.attackerMapPos) {
+                attackerHighlightPos = gameState.attackerMapPos;
             }
-            */
-            // The above clearing logic is commented out as it might be too aggressive or incorrect.
-            // The main rendering loop should correctly set backgrounds each frame.
-            // The flashing-targeting-cursor is handled separately above.
 
-            if (gameState.attackerMapPos && gameState.attackerMapPos.z === currentZ) {
-                const ax = gameState.attackerMapPos.x;
-                const ay = gameState.attackerMapPos.y;
+            if (attackerHighlightPos && attackerHighlightPos.z === currentZ) {
+                const ax = attackerHighlightPos.x;
+                const ay = attackerHighlightPos.y;
                 const attackerCell = tileCacheData[ay]?.[ax];
                 if (attackerCell && attackerCell.span) {
                     const attackerFowStatus = currentFowData?.[ay]?.[ax] || 'hidden';
-                    const rawAttackerHighlight = 'rgba(255, 0, 0, 0.3)';
+                    const rawAttackerHighlight = 'rgba(255, 0, 0, 0.3)'; // Reddish
                     attackerCell.span.style.backgroundColor = getFOWModifiedHighlightColor(rawAttackerHighlight, attackerFowStatus);
                 }
             }
+
+            // Defender Highlight 
             if (gameState.defenderMapPos && gameState.defenderMapPos.z === currentZ) {
                 const dx = gameState.defenderMapPos.x;
                 const dy = gameState.defenderMapPos.y;
@@ -1888,45 +1896,7 @@ window.mapRenderer = {
             }
         }
 
-        // Render Ranged Attack Line
-        if (gameState.isInCombat && gameState.rangedAttackData && gameState.rangedAttackData.start && gameState.rangedAttackData.end && tileCacheData) {
-            const { start, end, distance, modifier } = gameState.rangedAttackData;
-            // Only draw if the line involves the current viewing Z-level in some way
-            if (start.z === currentZ || end.z === currentZ || (Math.min(start.z, end.z) < currentZ && Math.max(start.z, end.z) > currentZ)) {
-                const linePoints = this.getLine3D(start.x, start.y, start.z, end.x, end.y, end.z);
-                linePoints.forEach(point => {
-                    if (point.z === currentZ) { // Only highlight cells on the current viewing Z
-                        if (point.x >= 0 && point.x < W && point.y >= 0 && point.y < H) {
-                            const cachedCell = tileCacheData[point.y]?.[point.x];
-                            if (cachedCell && cachedCell.span) {
-                                // Use a distinct color for the line, e.g., light blue or yellow, semi-transparent
-                                // This will overlay any existing background color.
-                                // A more sophisticated approach might blend or choose based on context.
-                                cachedCell.span.style.backgroundColor = "rgba(173, 216, 230, 0.4)"; // Light blue, semi-transparent
-
-                                // Display distance and modifier near the target or start of the line
-                                // This is tricky to place perfectly without a proper UI overlay system.
-                                // For now, let's try to add it to the target's cell if it's on current Z.
-                                if (point.x === end.x && point.y === end.y && point.z === end.z && point.z === currentZ) {
-                                    // The modifier text will be added to gameState.rangedAttackData.modifierText by combatManager
-                                    const modifierText = gameState.rangedAttackData.modifierText || "";
-                                    const currentText = cachedCell.span.textContent;
-                                    // This will overwrite the cell's character. A better way would be a separate overlay.
-                                    // For wireframe, this might be okay if the line itself is the primary indicator.
-                                    // We can append to title or a custom data attribute for tooltip to pick up.
-                                    cachedCell.span.dataset.rangedInfo = `Dist: ${distance} ${modifierText}`;
-                                    // To make it visible, we could change the sprite temporarily, or rely on tooltip.
-                                    // For now, we'll just set the background, assuming a tooltip might show this data.
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-
-        this.updateMapHighlight(); // This function also needs to be Z-aware if interactableItems can be on other Zs.
+        this.updateMapHighlight();
 
         if (window.gameState && window.gameState.activeAnimations && window.gameState.activeAnimations.filter(a => a.z === undefined || a.z === currentZ).length > 0) {
             window.mapRenderer.scheduleRender();
@@ -2007,20 +1977,6 @@ window.mapRenderer = {
             }
         }
 
-        // Optionally, check 'bottom' layer if some bottom tiles can be inherently impassable (e.g. spikes on floor)
-        // For now, assuming 'bottom' layer is generally passable and 'middle' contains primary obstacles.
-        // If a bottom tile like 'spikes' should be impassable, it might be better on 'middle' conceptually,
-        // or this function would need to check bottom as well.
-        // Example:
-        // const tileOnBottomRaw = levelData.bottom?.[y]?.[x];
-        // const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && ... ) ? ... : tileOnBottomRaw;
-        // if (effectiveTileOnBottom && ...) {
-        //     const tileDefBottom = tilesets[effectiveTileOnBottom];
-        //     if (tileDefBottom && tileDefBottom.tags && tileDefBottom.tags.includes('impassable_bottom_tile')) {
-        //         return effectiveTileOnBottom;
-        //     }
-        // }
-
         return ""; // No impassable tile found at this x,y,z on the primary collision layer (middle)
     },
 
@@ -2032,18 +1988,15 @@ window.mapRenderer = {
         const tilesets = assetManagerInstance ? assetManagerInstance.tilesets : null;
 
         if (!mapData || !mapData.levels || !mapData.dimensions || !tilesets) {
-            // console.log(`${debugPrefix} Initial data missing. Result: false`);
             return false;
         }
         if (x < 0 || y < 0 || y >= mapData.dimensions.height || x >= mapData.dimensions.width) {
-            // console.log(`${debugPrefix} Out of bounds. Result: false`);
             return false;
         }
 
         const zStr = z.toString();
         const currentLevelData = mapData.levels[zStr];
 
-        // --- 1. Check for support from below (Z-1) ---
         let supportedFromBelow = false;
         const zBelowStr = (z - 1).toString();
         const levelDataBelow = mapData.levels[zBelowStr];
@@ -2063,78 +2016,52 @@ window.mapRenderer = {
                 }
             }
         }
-        // if (supportedFromBelow) console.log(`${debugPrefix} Supported from Z-1.`);
 
-        // --- 2. Handle cases where current Z-level data is missing or malformed ---
         if (!currentLevelData || !currentLevelData.bottom || !currentLevelData.middle) {
-            // If no data for current Z, it's only walkable if supported from below (e.g., air over solid ground).
-            // console.log(`${debugPrefix} No/malformed level data for current Z (${zStr}). Relying on supportFromBelow (${supportedFromBelow}). Result: ${supportedFromBelow}`);
             return supportedFromBelow;
         }
 
-        // --- 3. Check Middle Layer of Current Z ---
         const tileOnMiddleRaw = currentLevelData.middle[y]?.[x];
         const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw?.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
 
         if (effectiveTileOnMiddle && tilesets[effectiveTileOnMiddle]) {
             const tileDefMiddle = tilesets[effectiveTileOnMiddle];
-            // console.log(`${debugPrefix} Middle layer @Z${z} has tile: ${effectiveTileOnMiddle}`, tileDefMiddle.tags);
-
             if (tileDefMiddle.tags) {
-                // Explicitly walkable items on middle layer
                 if (tileDefMiddle.tags.includes("walkable_on_z") || tileDefMiddle.tags.includes("z_transition")) {
-                    // console.log(`${debugPrefix} Middle @Z${z} is walkable_on_z or z_transition. Result: true`);
                     return true;
                 }
-                // solid_terrain_top on middle layer is NOT walkable at its own Z unless it's also one of the above.
                 if (tileDefMiddle.tags.includes("solid_terrain_top")) {
-                    // console.log(`${debugPrefix} Middle @Z${z} is solid_terrain_top (and not walkable_on_z/z_trans). Not walkable. Result: false`);
                     return false;
                 }
-                // General impassable check for middle layer
                 if (tileDefMiddle.tags.includes("impassable")) {
-                    // console.log(`${debugPrefix} Middle @Z${z} ('${effectiveTileOnMiddle}') is impassable. Result: false`);
                     return false;
                 }
             }
         } else if (effectiveTileOnMiddle && !tilesets[effectiveTileOnMiddle]) {
-            // console.log(`${debugPrefix} Middle tile ${effectiveTileOnMiddle} at Z=${z} has no definition. Result: false (assuming non-walkable).`);
-            return false; // Unknown tile on middle is not walkable.
+            return false;
         }
-        // If middle layer is empty or has a non-blocking defined tile, proceed.
 
-        // --- 4. Check Bottom Layer of Current Z ---
         const tileOnBottomRaw = currentLevelData.bottom[y]?.[x];
         const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw?.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
 
         if (effectiveTileOnBottom && tilesets[effectiveTileOnBottom]) {
             const tileDefBottom = tilesets[effectiveTileOnBottom];
-            // console.log(`${debugPrefix} Bottom layer @Z${z} has tile: ${effectiveTileOnBottom}`, tileDefBottom.tags);
-
             if (tileDefBottom.tags) {
-                // If bottom layer is impassable (and not a z_transition like a hole allowing passage down)
                 if (tileDefBottom.tags.includes("impassable")) {
-                    // console.log(`${debugPrefix} Bottom layer @Z${z} ('${effectiveTileOnBottom}') is IMPASSABLE. Result: false`);
                     return false;
                 }
-                // If bottom layer is a walkable surface type
                 if (tileDefBottom.tags.includes("floor") ||
                     tileDefBottom.tags.includes("transparent_floor") ||
                     tileDefBottom.tags.includes("z_transition")) {
-                    // console.log(`${debugPrefix} Bottom layer @Z${z} ('${effectiveTileOnBottom}') is a walkable surface type. Result: true`);
                     return true;
                 }
             }
         } else if (effectiveTileOnBottom && !tilesets[effectiveTileOnBottom]) {
-            // console.log(`${debugPrefix} Bottom tile ${effectiveTileOnBottom} at Z=${z} has no definition. Result: false (assuming non-walkable).`);
-            return false; // Unknown tile on bottom is not walkable.
+            return false;
         }
-
-        // --- 5. Rely on Support from Below if Current Z Layers Don't Define Walkability ---
-        // console.log(`${debugPrefix} Current Z layers are clear or non-determinative. Relying on supportFromBelow (${supportedFromBelow}). Result: ${supportedFromBelow}`);
         return supportedFromBelow;
     },
-    isTileEmpty: isTileEmpty, // Added isTileEmpty here
+    isTileEmpty: isTileEmpty,
 
     updateFOW_BFS: function (playerX, playerY, playerZ, visionRadius) {
         const currentMap = this.getCurrentMapData();
@@ -2152,84 +2079,63 @@ window.mapRenderer = {
             return;
         }
 
-        // Ensure FOW data for the current Z-level exists and is correctly dimensioned
         if (!gameState.fowData[playerZStr] || gameState.fowData[playerZStr].length !== H || (H > 0 && gameState.fowData[playerZStr][0].length !== W)) {
             logToConsole(`updateFOW_BFS: FOW data for Z-level ${playerZStr} is missing, malformed, or dimensions mismatch. Initializing/Re-initializing. Map H:${H}, W:${W}. Current FOW H:${gameState.fowData[playerZStr]?.length}, W:${gameState.fowData[playerZStr]?.[0]?.length}`, "info");
             gameState.fowData[playerZStr] = Array(H).fill(null).map(() => Array(W).fill('hidden'));
         }
         const currentFowLayer = gameState.fowData[playerZStr];
 
-        // Additional check just in case initialization failed silently or was corrupted
         if (!currentFowLayer || currentFowLayer.length !== H || (H > 0 && (!currentFowLayer[0] || currentFowLayer[0].length !== W))) {
             logToConsole(`updateFOW_BFS: CRITICAL - FOW data for Z ${playerZStr} remains malformed after attempt to initialize/fix. Aborting. Expected H:${H}, W:${W}. Got H:${currentFowLayer?.length}, W:${currentFowLayer?.[0]?.length}`, "error");
             return;
         }
 
-        // Step 1: Mark all currently 'visible' tiles on this Z-level as 'visited'
         for (let r = 0; r < H; r++) {
             for (let c = 0; c < W; c++) {
-                // The check currentFowLayer[r] is important if H is positive but array was somehow sparse (though Array(H).fill prevents this for new ones)
                 if (currentFowLayer[r] && currentFowLayer[r][c] === 'visible') {
                     currentFowLayer[r][c] = 'visited';
                 }
             }
         }
 
-        // Step 2: BFS/Flood-fill for new visibility
         const queue = [];
-        const visitedThisTurn = new Set(); // To avoid re-queuing/re-processing in current BFS
+        const visitedThisTurn = new Set();
 
-        // Start BFS from player's current tile on their Z-level
         queue.push({ x: playerX, y: playerY, z: playerZ, dist: 0 });
         visitedThisTurn.add(`${playerX},${playerY},${playerZ}`);
 
         while (queue.length > 0) {
             const current = queue.shift();
 
-            // Check if current tile is within vision radius
             if (current.dist > visionRadius) {
                 continue;
             }
 
-            // Mark current tile as visible (on its own Z-level's FOW map)
-            // For this BFS, we are only updating the FOW for playerZ.
             if (current.z === playerZ) {
                 if (current.y >= 0 && current.y < H && current.x >= 0 && current.x < W) {
                     currentFowLayer[current.y][current.x] = 'visible';
                 } else {
-                    // console.warn(`BFS attempting to mark out-of-bounds tile as visible: ${current.x},${current.y} on Z ${playerZ}`);
                     continue;
                 }
             } else {
-                // This BFS is designed to explore from player's Z and update FOW on player's Z.
-                // If isTileBlockingVision could lead to exploring other Zs, this needs adjustment.
-                // For now, strictly same-Z exploration from player.
-                // console.warn(`BFS reached tile on different Z (${current.z}) than playerZ (${playerZ}). Skipping FOW update for it.`);
                 continue;
             }
 
-            // If the current tile blocks vision (for BFS purposes), don't explore from it further
-            // isTileBlockingVision(tileX, tileY, tileZ, playerZ_of_viewer)
             if (this.isTileBlockingVision(current.x, current.y, current.z, playerZ)) {
                 continue;
             }
 
-            // Explore neighbors (only on the same Z-level as player for this FOW model)
             const neighbors = [
-                { dx: 0, dy: -1 }, { dx: 0, dy: 1 }, // Up, Down
-                { dx: -1, dy: 0 }, { dx: 1, dy: 0 }, // Left, Right
-                // Optional: Diagonals
-                // { dx: -1, dy: -1 }, { dx: -1, dy: 1 },
-                // { dx: 1, dy: -1 }, { dx: 1, dy: 1 }
+                { dx: 0, dy: -1 }, { dx: 0, dy: 1 },
+                { dx: -1, dy: 0 }, { dx: 1, dy: 0 },
             ];
 
             for (const neighborDelta of neighbors) {
                 const nextX = current.x + neighborDelta.dx;
                 const nextY = current.y + neighborDelta.dy;
-                const nextZ = current.z; // Keep exploration on the same Z-level as the current BFS node
-                const nextDist = current.dist + 1; // Simple distance increment
+                const nextZ = current.z;
+                const nextDist = current.dist + 1;
 
-                // Boundary checks for nextX, nextY
                 if (nextX < 0 || nextX >= W || nextY < 0 || nextY >= H) {
                     continue;
                 }
@@ -2240,7 +2146,6 @@ window.mapRenderer = {
                 }
             }
         }
-        // logToConsole(`FOW_BFS updated for player at (${playerX}, ${playerY}, Z:${playerZ})`);
-        this.scheduleRender(); // Schedule a render after FOW update
+        this.scheduleRender();
     }
 };

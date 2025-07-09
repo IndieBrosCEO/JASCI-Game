@@ -351,8 +351,8 @@ button.preset-swatch { /* More specific selector */
     /* width will be 100% of #combat-console-stack by default as a block in flex column */
     height: 50%; /* Takes 50% of the #combat-console-stack height */
     /* min-height: 200px; REMOVED for stricter 50/50 split */
-    background-color: rgba(30, 30, 30, 0.95);
-    padding: 15px;
+    background-color: rgba(30, 30, 30, 0.95); /* Default background */
+    padding: 10px; /* Slightly reduced padding */
     color: #fff;
     border: 1px solid #777;
     border-radius: 5px;
@@ -371,11 +371,43 @@ button.preset-swatch { /* More specific selector */
     #combatUIDiv select,
     #combatUIDiv button {
         font-family: monospace; /* Explicitly set for children, or a UI font */
-        margin-bottom: 5px; /* Add some spacing for readability */
+        margin-bottom: 3px; /* Reduced spacing */
+        font-size: 0.9em; /* Slightly smaller font size for combat elements */
     }
 
     #combatUIDiv select, #combatUIDiv button {
-        margin-top: 5px;
+        margin-top: 3px; /* Reduced spacing */
+        padding: 3px 5px; /* Smaller padding for buttons/selects */
+    }
+
+    #combatUIDiv #currentAttacker p, #combatUIDiv #currentAttacker span {
+        color: #ffdddd; /* Lighter red for attacker text */
+    }
+
+    #combatUIDiv #currentAttacker {
+        background-color: rgba(139, 0, 0, 0.3); /* DarkRed background for attacker section */
+        padding: 5px;
+        border-radius: 3px;
+        margin-bottom: 5px;
+    }
+
+    #combatUIDiv #currentDefender p, #combatUIDiv #currentDefender span {
+        color: #ddddff; /* Lighter blue for defender text */
+    }
+
+    #combatUIDiv #currentDefender {
+        background-color: rgba(0, 0, 139, 0.3); /* DarkBlue background for defender section */
+        padding: 5px;
+        border-radius: 3px;
+        margin-bottom: 5px;
+    }
+
+    /* Reduce size of specific result paragraphs */
+    #combatUIDiv #attackRollResult,
+    #combatUIDiv #defenseRollResult,
+    #combatUIDiv #damageResult {
+        font-size: 0.85em;
+        margin: 2px 0;
     }
 
 /* Tooltip styles */
