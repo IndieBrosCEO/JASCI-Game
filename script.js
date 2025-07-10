@@ -2247,36 +2247,60 @@ function startGame() {
 
     renderCharacterInfo(); // This now calls the specific rendering function from js/character.js
 
-    // Set final inventory capacity based on player's chosen Strength stat
-    if (gameState.inventory.container && gameState.stats) {
-        const strengthStat = gameState.stats.find(stat => stat.name === "Strength");
-        let finalPlayerStrengthCapacity = 5; // Fallback capacity
+    // 1. Initialize base "Body Pockets" capacity from Strength
+    // This ensures the player's inherent carrying capacity is set before any items are processed.
+    if (gameState.inventory.container && gameState.stats && typeof window.inventoryManager?.calculateCumulativeCapacity === 'function') {
+        const initialPlayerStrength = gameState.stats.find(stat => stat.name === "Strength")?.points || 1;
+        gameState.inventory.container.maxSlots = Math.max(1, initialPlayerStrength); // Base capacity is Strength, min 1
+        logToConsole(`Initial 'Body Pockets' capacity set to: ${gameState.inventory.container.maxSlots} (from Strength: ${initialPlayerStrength}).`);
+    } else {
+        console.error("Critical error: Cannot set initial Strength-based capacity in startGame.");
+        logToConsole("Error: Could not set initial Strength-based carrying capacity for Body Pockets.");
+        if (gameState.inventory.container) gameState.inventory.container.maxSlots = 3; // Fallback
+    }
 
-        if (strengthStat && typeof strengthStat.points === 'number') {
-            finalPlayerStrengthCapacity = strengthStat.points;
-            // Ensure capacity is not excessively low, e.g., minimum 1
-            if (finalPlayerStrengthCapacity < 1) {
-                logToConsole(`Warning: Strength stat (${finalPlayerStrengthCapacity}) is less than 1. Setting base capacity to 1.`);
-                finalPlayerStrengthCapacity = 1;
+    // 2. Define all starting items (clothes, consumables, etc.)
+    const allStartingItems = [
+        { id: "small_backpack_wearable", nameForLog: "Small Backpack" },
+        { id: "cargo_pants_pockets", nameForLog: "Cargo Pants" },
+        { id: "basic_vest", nameForLog: "Basic Vest" },
+        { id: "large_backpack_item", nameForLog: "Large Backpack" },
+        // Add other items like Canned Beans, Bottled Water if they are default starting items
+        // For example:
+        // { id: "canned_beans_food", nameForLog: "Canned Beans" },
+        // { id: "bottled_water_drink", nameForLog: "Bottled Water" }
+    ];
+
+    logToConsole(`Processing ${allStartingItems.length} starting items. Player inventory capacity: ${gameState.inventory.container.maxSlots} slots.`);
+
+    // 3. Attempt to add all starting items to inventory; if full, place on floor.
+    allStartingItems.forEach(itemInfo => {
+        const itemDef = assetManager.getItem(itemInfo.id);
+        if (itemDef) {
+            const newItemInstance = new Item(itemDef);
+            if (!window.addItem(newItemInstance)) { // addItem uses InventoryManager.addItemToInventory
+                logToConsole(`Inventory full (or item add failed) for: ${itemInfo.nameForLog}. Placing on floor.`);
+                if (!gameState.floorItems) gameState.floorItems = [];
+                gameState.floorItems.push({ x: gameState.playerPos.x, y: gameState.playerPos.y, z: gameState.playerPos.z, item: newItemInstance });
+            } else {
+                logToConsole(`Added starting item: ${itemInfo.nameForLog} to inventory.`);
             }
         } else {
-            console.warn("Could not find Strength stat for player in startGame, or points is not a number. Defaulting initial capacity to fallback 5.");
-            logToConsole("Warning: Could not determine Strength. Base carrying capacity set to fallback value.");
+            logToConsole(`Warning: Starting item definition not found for ID: ${itemInfo.id} (${itemInfo.nameForLog}). Skipping.`);
         }
+    });
 
-        gameState.inventory.container.name = "Body Pockets"; // Ensure correct name
-        gameState.inventory.container.maxSlots = finalPlayerStrengthCapacity;
+    // Player starts with no clothes equipped. Inventory capacity is purely Strength-based.
+    // The player will need to pick up and equip items from the floor or their inventory.
+    // If they equip a backpack, `equipClothing` in InventoryManager will call `calculateCumulativeCapacity`
+    // which will then update `gameState.inventory.container.maxSlots` to include the backpack's capacity.
 
-        logToConsole(`Your base carrying capacity (Body Pockets) is now ${finalPlayerStrengthCapacity} slots, based on your Strength of ${strengthStat ? strengthStat.points : 'N/A'}.`);
-        // updateInventoryUI() will be called later, or as items are added.
-    } else {
-        console.error("Critical error: Cannot set Strength-based capacity in startGame. Inventory container or gameState.stats not available.");
-        logToConsole("Error: Could not set Strength-based carrying capacity.");
+    if (window.mapRenderer && gameState.floorItems.length > 0) {
+        window.mapRenderer.scheduleRender(); // Ensure map re-renders if items were dropped.
     }
 
     gameState.gameStarted = true;
-    window.updateInventoryUI();
-    // if (window.mapRenderer.getCurrentMapData()) window.mapRenderer.scheduleRender(); // Render if map is loaded - gameLoop handles this
+    window.updateInventoryUI(); // Update UI to reflect initial inventory state
 
     // initializeHealth is now in js/character.js, call it with gameState
     window.initializeHealth(gameState);

@@ -50,17 +50,24 @@ const TimeManager = {
         if (gameState.playerHunger > 0) {
             gameState.playerHunger--;
         } else {
-            // Apply damage or status effect for starvation
             logToConsole("Player is starving!", "red");
-            // Example: gameState.player.health.torso.current -= 1; (needs combatManager integration or direct health manipulation)
+            if (typeof window.applyHungerThirstDamage === 'function') {
+                window.applyHungerThirstDamage(gameState, 1); // Apply 1 damage for starvation
+            } else {
+                logToConsole("applyHungerThirstDamage function not found!", "error");
+            }
         }
 
         // Thirst decrement (example: 1 point per hour)
         if (gameState.playerThirst > 0) {
             gameState.playerThirst--;
         } else {
-            // Apply damage or status effect for dehydration
             logToConsole("Player is dehydrated!", "red");
+            if (typeof window.applyHungerThirstDamage === 'function') {
+                window.applyHungerThirstDamage(gameState, 1); // Apply 1 damage for dehydration
+            } else {
+                logToConsole("applyHungerThirstDamage function not found!", "error");
+            }
         }
         // logToConsole(`Hourly needs updated. Hunger: ${gameState.playerHunger}, Thirst: ${gameState.playerThirst}`, 'debug');
     },

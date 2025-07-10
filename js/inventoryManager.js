@@ -674,8 +674,10 @@ const InventoryManager = {
                 // Assuming maxSlots is true slots, and item.size is how many slots it takes.
                 // This needs careful review of how "size" and "slots" are meant to interact.
                 // For now, sticking to original interpretation of item.size for usedSlots.
-                const usedSlots = mainContainer.items.reduce((sum, i) => sum + (i.size || 1), 0);
-                invCapacitySpan.textContent = `${usedSlots}/${mainContainer.maxSlots}`;
+                // const usedSlots = mainContainer.items.reduce((sum, i) => sum + (i.size || 1), 0);
+                // invCapacitySpan.textContent = `${usedSlots}/${mainContainer.maxSlots}`;
+                // Correcting to align with addItemToInventory's slot logic:
+                invCapacitySpan.textContent = `${mainContainer.items.length}/${mainContainer.maxSlots}`;
             }
         } else {
             if (equippedContainersDiv) equippedContainersDiv.innerHTML = "No container equipped.";

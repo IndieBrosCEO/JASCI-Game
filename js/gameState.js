@@ -14,10 +14,12 @@
     BACKPACK: "backpack",
     WAIST: "waist"
 };
+window.ClothingLayers = ClothingLayers; // Make globally accessible
 
 const InventorySizes = {
     XS: 3, S: 6, M: 12, L: 18, XL: 24, XXL: 36
 };
+window.InventorySizes = InventorySizes; // Make globally accessible
 
 const gameState = {
     // mapLevels will store the tile data for all Z-levels of the current map.
