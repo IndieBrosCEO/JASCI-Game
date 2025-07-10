@@ -101,29 +101,67 @@ window.dialogueManager = {
     },
 
     renderCurrentNode() {
-        if (!this.currentDialogueData || !this.currentNodeId || !this.currentDialogueData.nodes[this.currentNodeId]) {
-            logToConsole("Error: Current dialogue node is invalid.", 'red', { data: this.currentDialogueData, nodeId: this.currentNodeId });
+        if (!this.currentDialogueData || !this.currentNodeId || !this.currentDialogueData.nodes[this.currentNodeId] && !this.tempQuestOffer) {
+            // Allow rendering even if node is invalid IF a tempQuestOffer is pending (it will define its own display)
+            // However, if tempQuestOffer relies on a base node that's invalid, that's an issue.
+            // The current logic for tempQuestOffer in handlePlayerChoice assumes the *next* node for quest offer exists.
+            // If that nextNode itself is invalid, then this check is fine.
+            logToConsole("Error: Current dialogue node is invalid and no pending dynamic offer.", 'red', { data: this.currentDialogueData, nodeId: this.currentNodeId });
             this.endDialogue();
             return;
         }
 
-        const node = this.currentDialogueData.nodes[this.currentNodeId];
-        this.npcTextElement.innerHTML = node.npcText.replace(/\n/g, '<br>'); // Support newlines in NPC text
+        this.playerChoicesElement.innerHTML = ''; // Clear old choices
 
-        this.playerChoicesElement.innerHTML = '';
-        node.playerChoices.forEach((choice, index) => {
-            const li = document.createElement('li');
-            let choiceText = choice.text;
-            if (choice.skillCheck) {
-                choiceText = `[${choice.skillCheck.skill}] ${choice.text}`;
+        if (this.tempQuestOffer) {
+            // Dynamically inject quest offer into NPC text and choices for this specific render.
+            // This is a targeted solution for procedural quest offers. A more generic placeholder system
+            // (e.g., replacing "{quest_name}" or "{npc_disposition}" in text) would be a larger feature.
+            const node = this.currentDialogueData.nodes[this.currentNodeId]; // Base node for context if needed
+            const npcNameForOffer = this.currentNpc ? this.currentNpc.name : "Someone";
+            let npcTextWithOffer = node ? node.npcText.replace(/\n/g, '<br>') : ""; // Use node's text as base if available
+
+            npcTextWithOffer += `<br><br><i>[${npcNameForOffer} offers you a task:]</i><br><b>${this.tempQuestOffer.displayName}</b><br>${this.tempQuestOffer.description}`;
+            this.npcTextElement.innerHTML = npcTextWithOffer;
+
+            const acceptChoiceData = { text: "Accept Task", action: "accept_procedural_quest", questInstanceId: this.tempQuestOffer.questInstanceId, successNode: this.tempQuestOffer.successNodeOnAccept || "quest_accepted_generic", failureNode: this.tempQuestOffer.failureNodeOnAccept || "quest_accept_fail_generic" };
+            const declineChoiceData = { text: "Decline Task", nextNode: this.tempQuestOffer.nextNodeOnDecline || (node ? node.playerChoices.find(c => c.text.toLowerCase().includes("decline"))?.nextNode : null) || this.currentDialogueData.startNode };
+
+            [acceptChoiceData, declineChoiceData].forEach((dynamicChoice, index) => {
+                const li = document.createElement('li');
+                // Pass the whole choice object for handlePlayerChoiceDynamic
+                li.innerHTML = `<button data-dynamic-choice-object='${JSON.stringify(dynamicChoice)}'>${index + 1}. ${dynamicChoice.text}</button>`;
+                li.querySelector('button').addEventListener('click', (e) => {
+                    const choiceData = JSON.parse(e.target.dataset.dynamicChoiceObject);
+                    this.handlePlayerChoiceDynamic(choiceData);
+                });
+                this.playerChoicesElement.appendChild(li);
+            });
+            // Important: tempQuestOffer is NOT cleared here. It's cleared after the player makes a choice in handlePlayerChoiceDynamic.
+        } else {
+            // Standard node rendering
+            const node = this.currentDialogueData.nodes[this.currentNodeId];
+            if (!node) { // Should have been caught by the top check, but safeguard
+                logToConsole("Error: Invalid node ID during standard render.", 'red', { nodeId: this.currentNodeId });
+                this.endDialogue();
+                return;
             }
-            li.innerHTML = `<button data-choice-index="${index}">${index + 1}. ${choiceText}</button>`;
-            li.querySelector('button').addEventListener('click', () => this.handlePlayerChoice(index));
-            this.playerChoicesElement.appendChild(li);
-        });
+            this.npcTextElement.innerHTML = node.npcText.replace(/\n/g, '<br>');
+
+            node.playerChoices.forEach((choice, index) => {
+                const li = document.createElement('li');
+                let choiceText = choice.text;
+                if (choice.skillCheck) {
+                    choiceText = `[${choice.skillCheck.skill}] ${choice.text}`;
+                }
+                li.innerHTML = `<button data-choice-index="${index}">${index + 1}. ${choiceText}</button>`;
+                li.querySelector('button').addEventListener('click', () => this.handlePlayerChoice(index));
+                this.playerChoicesElement.appendChild(li);
+            });
+        }
     },
 
-    async handlePlayerChoice(choiceIndex) {
+    async handlePlayerChoice(choiceIndex) { // This handles choices from the static JSON definition
         if (!this.currentDialogueData || !this.currentNodeId || !this.currentDialogueData.nodes[this.currentNodeId]) {
             this.endDialogue();
             return;
@@ -158,7 +196,9 @@ window.dialogueManager = {
                     if (!isNaN(amount)) {
                         window.gameState.playerXP += amount;
                         logToConsole(`Player awarded ${amount} XP. Total XP: ${window.gameState.playerXP}`, 'lime');
-                        // TODO: Add level up check here: if (window.characterManager.checkForLevelUp) window.characterManager.checkForLevelUp();
+                        if (window.characterManager && typeof window.characterManager.checkForLevelUp === 'function') {
+                            window.characterManager.checkForLevelUp(window.gameState);
+                        }
                         if (window.renderCharacterInfo) window.renderCharacterInfo(); // Update UI
                     }
                 } else if (type === "gold" && value) {
@@ -301,24 +341,43 @@ window.dialogueManager = {
         // The renderCurrentNode needs to be aware of this.tempQuestOffer.
         if (this.tempQuestOffer && this.currentDialogueData.nodes[this.currentNodeId]) {
             let nodeToRender = this.currentDialogueData.nodes[this.currentNodeId];
-            // Dynamically inject quest offer into NPC text and choices for this specific render
-            // This is a bit of a hack; ideally, dialogue nodes would have placeholders for dynamic content.
-            const originalNpcText = nodeToRender.npcText;
-            nodeToRender.npcText = `${originalNpcText}<br><br><i>[${this.currentNpc.name} offers you a task:]</i><br><b>${this.tempQuestOffer.displayName}</b><br>${this.tempQuestOffer.description}`;
+            // Dynamically inject quest offer into NPC text and choices for this specific render.
+            // This is a targeted solution for procedural quest offers. A more generic placeholder system
+            // (e.g., replacing "{quest_name}" or "{npc_disposition}" in text) would be a larger feature.
+            // For now, this direct modification achieves the display of the current quest offer.
+            const originalNpcText = nodeToRender.npcText; // Assuming this node is not otherwise dynamically modified elsewhere per render.
+            let tempNpcText = `${originalNpcText}`; // Start with original
 
-            const originalChoices = JSON.parse(JSON.stringify(nodeToRender.playerChoices)); // Deep copy
-            nodeToRender.playerChoices = [
-                { text: "Accept Task", action: "accept_procedural_quest", questInstanceId: this.tempQuestOffer.questInstanceId, successNode: choice.successNodeOnAccept || "quest_accepted_generic", failureNode: choice.failureNodeOnAccept || "quest_accept_fail_generic" },
-                { text: "Decline Task", nextNode: choice.nextNodeOnDecline || nodeToRender.playerChoices.find(c => c.text.toLowerCase().includes("decline"))?.nextNode || this.currentDialogueData.startNode }
-            ];
-            // After rendering with this temporary offer, clear it.
+            // Check if the quest offer text has already been injected (e.g. if re-rendering same node without choice)
+            // This simple check might not be robust enough if originalNpcText could naturally contain similar phrasing.
+            if (!tempNpcText.includes(this.tempQuestOffer.displayName)) {
+                tempNpcText = `${originalNpcText}<br><br><i>[${this.currentNpc.name} offers you a task:]</i><br><b>${this.tempQuestOffer.displayName}</b><br>${this.tempQuestOffer.description}`;
+            }
+
+            this.npcTextElement.innerHTML = tempNpcText.replace(/\n/g, '<br>');
+
+
+            // Temporarily override choices for this render pass to show accept/decline
+            this.playerChoicesElement.innerHTML = ''; // Clear existing choices from node definition for this render
+
+            const acceptChoice = { text: "Accept Task", action: "accept_procedural_quest", questInstanceId: this.tempQuestOffer.questInstanceId, successNode: choice.successNodeOnAccept || "quest_accepted_generic", failureNode: choice.failureNodeOnAccept || "quest_accept_fail_generic" };
+            const declineChoice = { text: "Decline Task", nextNode: choice.nextNodeOnDecline || node.playerChoices.find(c => c.text.toLowerCase().includes("decline"))?.nextNode || this.currentDialogueData.startNode };
+
+            [acceptChoice, declineChoice].forEach((dynamicChoice, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<button data-choice-index="${index}" data-dynamic-choice="true" data-action="${dynamicChoice.action || ''}" data-quest-id="${dynamicChoice.questInstanceId || ''}" data-next-node="${dynamicChoice.nextNode || ''}" data-success-node="${dynamicChoice.successNode || ''}" data-failure-node="${dynamicChoice.failureNode || ''}">${index + 1}. ${dynamicChoice.text}</button>`;
+                li.querySelector('button').addEventListener('click', (e) => {
+                    // Since we are dynamically inserting, the choiceIndex is just 0 or 1 for these two.
+                    // We need to pass the actual choice object or its relevant properties.
+                    this.handlePlayerChoiceDynamic(dynamicChoice);
+                });
+                this.playerChoicesElement.appendChild(li);
+            });
+
+            // Clear the temporary offer AFTER preparing it for rendering.
             // The actual accept/decline choice will handle the next step.
-            // This temporary modification of nodeToRender is for display only for the current render pass.
-            // It will be reset if the same node is visited again without a tempQuestOffer.
-            // A better system would use placeholders in node.npcText and choice.text that get filled.
-
-            // Clear the temporary offer after it has been prepared for rendering in this pass.
-            // The actual choice to accept/decline will handle the next step.
+            // This ensures that if the player cancels or the dialogue ends before choosing,
+            // the temp offer isn't stuck.
             this.tempQuestOffer = null;
         }
 
@@ -327,14 +386,20 @@ window.dialogueManager = {
             logToConsole("Dialogue choice triggers combat!", "red");
             this.endDialogue(); // End dialogue before combat starts
             if (window.combatManager && typeof window.combatManager.startCombat === 'function') {
-                // Make the NPC immediately hostile if not already
-                if (window.factionManager) {
-                    // This is a placeholder for a more direct hostility trigger.
-                    // For now, ensure the player's reputation with the NPC's faction is set to hostile.
-                    // A more direct method would be to set a temporary override or add to an aggro list.
-                    // window.factionManager.setPlayerReputation(this.currentNpc.factionId, window.factionManager.ReputationThreshold.Hostile -10);
+                // Make the NPC immediately hostile by adding player to their aggro list with high threat.
+                if (!this.currentNpc.aggroList) {
+                    this.currentNpc.aggroList = [];
                 }
-                window.combatManager.startCombat([window.gameState.player, this.currentNpc]);
+                // Remove existing player entry to avoid duplicates, then add with high threat
+                this.currentNpc.aggroList = this.currentNpc.aggroList.filter(entry => entry.entityRef !== window.gameState);
+                this.currentNpc.aggroList.unshift({ entityRef: window.gameState, threat: 1000 }); // Add to front with high threat
+
+                logToConsole(`Added player to ${this.currentNpc.name}'s aggro list due to dialogue choice.`, "orange");
+
+                // Optionally, ensure teamId makes them hostile if not already via faction relations.
+                // For now, direct aggro is the primary mechanism.
+
+                window.combatManager.startCombat([window.gameState, this.currentNpc]);
             } else {
                 logToConsole("ERROR: combatManager not found or startCombat is not a function. Cannot trigger combat.", "red");
             }

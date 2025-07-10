@@ -79,6 +79,7 @@ const VehicleModificationUI = {
             this.clearPartDetail();
             logToConsole(`VehicleModificationUI opened for ${vehicle.name}.`, "info");
             // TODO: Play UI open sound
+            if (window.audioManager) window.audioManager.playUiSound('ui_menu_open_01.wav'); // Placeholder
         } else {
             logToConsole("VehicleModificationUI Error: UI Panel not found in DOM.", "error");
         }
@@ -91,6 +92,7 @@ const VehicleModificationUI = {
             this.dom.uiPanel.classList.add('hidden');
             logToConsole("VehicleModificationUI closed.", "info");
             // TODO: Play UI close sound
+            if (window.audioManager) window.audioManager.playUiSound('ui_menu_close_01.wav'); // Placeholder
         }
     },
 
@@ -242,7 +244,25 @@ const VehicleModificationUI = {
             this.dom.repairActionSection.classList.remove('hidden');
             this.dom.repairPartName.textContent = partDef.name;
             // TODO: Dynamically list materials based on partDef.repairMaterials or similar
-            this.dom.repairPartMaterials.textContent = "Scrap Metal x2 (Example)";
+            if (partDef.repairMaterials && window.assetManager && window.inventoryManager) {
+                let materialsText = "Requires: ";
+                const playerHasAllMaterials = partDef.repairMaterials.every(mat => {
+                    const itemDef = window.assetManager.getItem(mat.itemId);
+                    const playerHas = window.inventoryManager.countItems(mat.itemId);
+                    materialsText += `${itemDef ? itemDef.name : mat.itemId} (${playerHas}/${mat.quantity}), `;
+                    return playerHas >= mat.quantity;
+                });
+                this.dom.repairPartMaterials.textContent = materialsText.slice(0, -2); // Remove trailing comma and space
+                this.dom.confirmRepairButton.disabled = !playerHasAllMaterials;
+                if (!playerHasAllMaterials) {
+                    this.dom.repairPartMaterials.style.color = "orange";
+                } else {
+                    this.dom.repairPartMaterials.style.color = ""; // Reset color
+                }
+            } else {
+                this.dom.repairPartMaterials.textContent = "No materials specified or missing manager.";
+                this.dom.confirmRepairButton.disabled = true; // Cannot repair if no materials defined
+            }
             // Store context for the actual repair action
             this.dom.confirmRepairButton.dataset.partId = partId;
             this.dom.confirmRepairButton.dataset.slotType = slotType;
@@ -262,19 +282,37 @@ const VehicleModificationUI = {
             logToConsole("VehicleModUI Error: Missing vehicle or part context for repair.", "error");
             return;
         }
-        if (window.gameState.actionPointsRemaining < 1) {
+        if (window.gameState.actionPointsRemaining < 1) { // AP_COST_REPAIR_PART or similar constant
             logToConsole("Not enough Action Points to repair.", "orange");
             // TODO: Play error sound
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             return;
         }
 
-        // TODO: Actual material consumption check and list
-        const mockMaterials = []; // [{itemId: "metal_scraps", quantity: 2}];
+        const partDef = window.vehicleManager.vehicleParts[partId];
+        if (!partDef) {
+            logToConsole("VehicleModUI Error: Part definition not found for repair.", "error");
+            return;
+        }
 
-        const success = window.vehicleManager.repairVehiclePart(this.currentVehicleId, partId, 50, mockMaterials); // Repair 50% for now
+        // TODO: Actual material consumption check and list - Done in showRepairOptions for enabling button, vehicleManager handles actual consumption
+        // The vehicleManager.repairVehiclePart should ideally take the partDef to access repairMaterials.
+        // For now, we assume vehicleManager can fetch it or it's passed correctly.
+
+        const requiredMaterials = partDef.repairMaterials || [];
+        // Double check materials before attempting (though button should be disabled if not met)
+        if (requiredMaterials.length > 0 && !requiredMaterials.every(mat => window.inventoryManager.countItems(mat.itemId) >= mat.quantity)) {
+            logToConsole("Not enough materials to repair (UI check).", "orange");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_02.wav'); // Different error for materials
+            if (window.uiManager) window.uiManager.showToastNotification("Not enough materials!", "error");
+            return;
+        }
+
+
+        const success = window.vehicleManager.repairVehiclePart(this.currentVehicleId, partId, partDef.durability, requiredMaterials); // Repair to full, pass materials
         if (success) {
-            logToConsole(`Attempted repair on ${partId}.`, "info");
-            window.gameState.actionPointsRemaining--;
+            logToConsole(`Repair successful for ${partDef.name}.`, "info");
+            window.gameState.actionPointsRemaining--; // Use AP_COST_REPAIR_PART
             if (window.turnManager) window.turnManager.updateTurnUI();
             // Refresh UI
             const vehicle = window.vehicleManager.getVehicleById(this.currentVehicleId);
@@ -283,9 +321,12 @@ const VehicleModificationUI = {
                 this.showRepairOptions(partId, this.dom.confirmRepairButton.dataset.slotType, parseInt(this.dom.confirmRepairButton.dataset.slotIndex)); // Reshow details/repair options
             }
             // TODO: Play repair sound
+            if (window.audioManager) window.audioManager.playSoundAtLocation('vehicle_repair_01.wav', vehicle.mapPos, {}, { maxDistance: 20 }); // Placeholder
         } else {
-            logToConsole(`Repair on ${partId} failed or not needed.`, "warn");
+            logToConsole(`Repair on ${partDef.name} failed (e.g., already full, or manager-side material check failed).`, "warn");
             // TODO: Play failure sound if applicable (e.g. no materials)
+            // This assumes vehicleManager.repairVehiclePart returns false if materials were insufficient on its end or part was full.
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         }
     },
 
@@ -316,15 +357,23 @@ const VehicleModificationUI = {
                 for (let i = 0; i < slots.length; i++) {
                     if (slots[i] === null) { // Found an empty compatible slot
                         // TODO: Check AP
-                        if (window.gameState.actionPointsRemaining < 1) {
-                            logToConsole("Not enough AP to install part.", "orange"); return;
+                        const apCostInstall = 1; // Example AP cost
+                        if (window.gameState.actionPointsRemaining < apCostInstall) {
+                            logToConsole("Not enough AP to install part.", "orange");
+                            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+                            return;
                         }
+
                         // TODO: Consume item from player inventory (partDefinitionIdFromInventory)
-                        // if (!window.inventoryManager.removeItem(partDefinitionIdFromInventory, 1)) { logToConsole("Failed to remove item from inventory for install."); return; }
+                        if (!window.inventoryManager.removeItemsFromInventory(partDefinitionIdFromInventory, 1, window.gameState.inventory.container.items)) {
+                            logToConsole(`Failed to remove item ${partDefinitionIdFromInventory} from inventory for install.`, "error");
+                            if (window.uiManager) window.uiManager.showToastNotification("Could not find part in inventory to install.", "error");
+                            return;
+                        }
 
                         if (window.vehicleManager.addPartToVehicle(this.currentVehicleId, vehiclePartIdToInstall, slotType, i)) {
                             logToConsole(`Installed ${partDefToInstall.name} into ${slotType} ${i + 1}.`, "info");
-                            window.gameState.actionPointsRemaining--;
+                            window.gameState.actionPointsRemaining -= apCostInstall;
                             if (window.turnManager) window.turnManager.updateTurnUI();
                             this.renderVehicleSlots(vehicle);
                             this.renderPlayerInventory(vehicle); // Refresh inventory list
@@ -361,19 +410,42 @@ const VehicleModificationUI = {
     handleRemovePart: function (slotType, slotIndex) {
         if (!this.currentVehicleId || !window.vehicleManager) return;
         // TODO: Check AP
-        if (window.gameState.actionPointsRemaining < 1) {
-            logToConsole("Not enough AP to remove part.", "orange"); return;
+        const apCostRemove = 1; // Example AP cost
+        if (window.gameState.actionPointsRemaining < apCostRemove) {
+            logToConsole("Not enough AP to remove part.", "orange");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            return;
         }
 
-        const removedPartDef = window.vehicleManager.removePartFromVehicle(this.currentVehicleId, slotType, slotIndex);
-        if (removedPartDef) {
-            logToConsole(`Removed ${removedPartDef.name} from ${slotType} ${slotIndex + 1}.`, "info");
-            // TODO: Add removedPartDef back to player inventory
-            // const itemEquivalentId = getKeyByValue(window.assetManager.itemsData.vehiclePartEquivalentIdMap, removedPartDef.id); // Need a reverse map or better linking
-            // if (itemEquivalentId) { window.inventoryManager.addItem(new Item(window.assetManager.getItem(itemEquivalentId))); } 
-            // else { logToConsole("Could not find item equivalent for removed part to add to inventory.", "warn"); }
+        const removedPartVehicleDef = window.vehicleManager.removePartFromVehicle(this.currentVehicleId, slotType, slotIndex); // This returns the vehicle part definition
+        if (removedPartVehicleDef) {
+            logToConsole(`Removed ${removedPartVehicleDef.name} from ${slotType} ${slotIndex + 1}.`, "info");
 
-            window.gameState.actionPointsRemaining--;
+            // TODO: Add removedPartDef back to player inventory
+            // We need to find the ITEM ID that corresponds to this VEHICLE PART ID.
+            // Assuming vehiclePartDef.id is the key in vehicleManager.vehicleParts, and this ID is also used as the item ID for the part item.
+            // Or, if there's a mapping like itemDef.vehiclePartEquivalentId === removedPartVehicleDef.id
+            let itemEquivalentId = removedPartVehicleDef.id; // Simplest assumption: the vehicle part ID is the item ID
+
+            // More robust: Search assetManager for an item that defines this vehiclePartEquivalentId
+            if (window.assetManager) {
+                const foundItemEntry = Object.entries(window.assetManager.itemsData).find(([itemId, itemDef]) => itemDef.vehiclePartEquivalentId === removedPartVehicleDef.id);
+                if (foundItemEntry) {
+                    itemEquivalentId = foundItemEntry[0];
+                } else {
+                    // If no explicit mapping, stick with the assumption that part ID is item ID
+                    logToConsole(`VehicleModUI: No specific item found with vehiclePartEquivalentId ${removedPartVehicleDef.id}. Assuming item ID is ${itemEquivalentId}.`, "info_minor");
+                }
+            }
+
+            if (itemEquivalentId && window.inventoryManager.addItemToInventoryById(itemEquivalentId, 1)) {
+                logToConsole(`Added ${removedPartVehicleDef.name} (Item ID: ${itemEquivalentId}) back to player inventory.`, "info");
+            } else {
+                logToConsole(`Could not add ${removedPartVehicleDef.name} (Item ID: ${itemEquivalentId}) to inventory (full or item not found by ID?). Dropping might be an option.`, "warn");
+                if (window.uiManager) window.uiManager.showToastNotification(`${removedPartVehicleDef.name} couldn't be added to inventory!`, "warning");
+            }
+
+            window.gameState.actionPointsRemaining -= apCostRemove;
             if (window.turnManager) window.turnManager.updateTurnUI();
             const vehicle = window.vehicleManager.getVehicleById(this.currentVehicleId);
             if (vehicle) {

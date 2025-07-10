@@ -449,6 +449,7 @@ const InventoryManager = {
                 item: itemInstanceForFloor
             });
             logToConsole(`Dropped ${itemInstanceForFloor.name} on the floor at (${window.gameState.playerPos.x}, ${window.gameState.playerPos.y}, Z:${window.gameState.playerPos.z}).`);
+            // TODO: Play item_drop_01.wav or similar when available.
             if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.6 });
             if (typeof window.mapRenderer !== 'undefined' && typeof window.mapRenderer.scheduleRender === 'function') {
                 window.mapRenderer.scheduleRender();
@@ -499,6 +500,7 @@ const InventoryManager = {
             item.equipped = true;
             window.gameState.inventory.handSlots[handIndex] = item; // Item is already the instance taken from inv
             logToConsole(`Equipped ${item.name} to hand slot ${handIndex + 1}.`);
+            // TODO: Play item_equip_gear_01.wav or similar when available.
             if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 });
             if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
 
@@ -531,6 +533,7 @@ const InventoryManager = {
             itemToUnequip.equipped = false;
             window.gameState.inventory.handSlots[handIndex] = null;
             logToConsole(`Unequipped ${itemToUnequip.name}.`);
+            // TODO: Play item_unequip_gear_01.wav or similar when available.
             if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 });
             if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
 
@@ -878,6 +881,7 @@ const InventoryManager = {
             }
             if (consumed) {
                 logToConsole(`You consumed ${selectedDisplayItem.displayName}. Hunger: ${window.gameState.playerHunger}, Thirst: ${window.gameState.playerThirst}`);
+                // TODO: Play item_consume_food_01.wav or item_consume_drink_01.wav etc. when available.
                 if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.6 });
                 this.removeItem(selectedDisplayItem.id, 1); // Use ID and quantity
                 if (typeof window.updatePlayerStatusDisplay === 'function') window.updatePlayerStatusDisplay();

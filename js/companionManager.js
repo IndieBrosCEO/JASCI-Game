@@ -122,14 +122,17 @@ class CompanionManager {
         npc.isFollowingPlayer = true;
         npc.currentOrders = "follow_close"; // Default order
         npc.loyalty = npcDef.initialLoyalty || 50; // Default loyalty or from definition
+        npc.teamId = this.gameState.player.teamId; // Align team with player
 
-        // Optionally change NPC's faction relationship to player to 'ally'
-        // This might be complex and depends on how factionManager handles dynamic relationships.
-        // For now, this is a placeholder.
-        // this.factionManager.setDirectRelationship(npc.factionId, this.gameState.player.factionId, 'ally');
+        logToConsole(`${npc.name} (Team ID: ${npc.teamId}) has joined your party! Aligned with player team.`, "event-success");
 
-        logToConsole(`${npc.name} has joined your party!`, "event-success");
-        // TODO: Award XP? e.g., window.xpManager.awardXp('recruit_companion');
+        if (window.xpManager && typeof window.xpManager.awardXp === 'function') {
+            const xpAmount = 50; // Example XP for recruiting a companion
+            window.xpManager.awardXp(xpAmount, this.gameState);
+            logToConsole(`Awarded ${xpAmount} XP for recruiting ${npc.name}.`, "lime");
+        } else {
+            logToConsole("xpManager not available to award XP for recruitment.", "warn");
+        }
 
         // DialogueManager will handle navigating to the "recruited" dialogue node.
         return { success: true, reason: `${npc.name} recruited.` };
@@ -149,9 +152,27 @@ class CompanionManager {
 
         npc.isFollowingPlayer = false;
         npc.currentOrders = null;
-        // TODO: Revert NPC behavior to their default (e.g., patrol, idle, original faction behavior)
-        // This might involve setting npc.behavior = npcDef.originalBehavior or similar.
-        // For now, their AI in npcDecisions.js will simply not execute follower logic.
+
+        // Revert teamId to original definition's teamId
+        const npcDef = this.getNpcDefinition(npc.definitionId);
+        if (npcDef && npcDef.teamId !== undefined) {
+            npc.teamId = npcDef.teamId;
+            logToConsole(`${npc.name}'s teamId reverted to ${npc.teamId} (from definition).`, "info");
+        } else if (npcDef) {
+            // Fallback if definition has no teamId, make them neutral civilian-like, or based on factionId
+            // For simplicity, let's try to infer a general teamId from their factionId if possible
+            // This is a rough fallback. Ideally, all NPC defs have a teamId.
+            const defaultFactionTeam = window.factionManager?.Factions[npc.factionId?.toUpperCase()]?.defaultTeamId || 2; // Default to team 2 (e.g. neutral/generic NPC)
+            npc.teamId = defaultFactionTeam;
+            logToConsole(`${npc.name}'s teamId defaulted to ${npc.teamId} based on faction or general default.`, "info");
+        } else {
+            logToConsole(`Could not find definition for ${npc.id} to revert teamId. NPC may behave unpredictably.`, "warn");
+        }
+
+        // Clear exploration target so they pick a new one based on their reverted alignment/AI.
+        if (npc.memory) {
+            npc.memory.explorationTarget = null;
+        }
 
         logToConsole(`${npc.name} has left your party.`, "event");
         // DialogueManager will handle navigating to the "dismissed" dialogue node.
@@ -172,7 +193,7 @@ class CompanionManager {
             if (validOrders.includes(order)) {
                 companion.currentOrders = order;
                 logToConsole(`${companion.name} new orders: ${order}.`, "info");
-                // TODO: Play confirmation sound
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.7 });
                 return true;
             } else {
                 logToConsole(`Invalid order "${order}" for ${companion.name}.`, "warn");
@@ -198,10 +219,16 @@ class CompanionManager {
             }
             logToConsole(logMessage, "info");
 
-            // TODO: Implement loyalty effects (e.g., leaving if too low, bonuses if high)
-            if (companion.loyalty <= 10) {
-                logToConsole(`${companion.name} is very unhappy and might leave soon!`, "warn");
+            if (companion.loyalty <= 5) { // Threshold for potential auto-dismissal
+                logToConsole(`${companion.name}'s loyalty is critically low (${companion.loyalty}). They are leaving!`, "event-failure");
+                this.dismissCompanion(npcId); // Companion leaves
+                // Note: dismissCompanion itself logs the departure.
+                // No need to return false from adjustLoyalty specifically because of this,
+                // as the adjustment itself was successful. The consequence (leaving) is separate.
+            } else if (companion.loyalty <= 15) { // Warning threshold
+                logToConsole(`${companion.name} is very unhappy (Loyalty: ${companion.loyalty}) and might leave if it drops further!`, "warn");
             }
+            // TODO: Implement further loyalty effects (e.g., combat bonuses if high, refusing certain orders if low but not critical).
             return true;
         }
         logToConsole(`adjustLoyalty: Companion ${npcId} not found.`, "warn");

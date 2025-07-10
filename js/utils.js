@@ -477,7 +477,12 @@ function findPath3D(startPos, endPos, entity, mapData, tileset) {
             const nextY = currentNode.y + move.dy;
             const currentZ = currentNode.z; // Neighbor is on the same Z level for this horizontal check
 
-            let cost = 1;
+            let cost = 1; // Base cost for cardinal move
+            // TODO: Add support for diagonal movement and adjust cost (e.g., ~1.41 or alternating 1-2)
+            // TODO: Incorporate difficult terrain cost:
+            //       If tileDefAtNext has a 'moveCostMultiplier' or 'additionalMoveCost' tag, adjust 'cost'.
+            //       e.g., cost *= tileDefAtNext.moveCostMultiplier;
+            // TODO: AP costs are typically for actions, not per-tile movement. MP is handled by caller (attemptCharacterMove).
             let isPassable = window.mapRenderer.isWalkable(nextX, nextY, currentZ); // Initial walkability check
             const tileDefAtNext = getTileDefFromMapDataLayers(nextX, nextY, currentZ, mapData, tileset);
 
@@ -487,12 +492,12 @@ function findPath3D(startPos, endPos, entity, mapData, tileset) {
                         isPassable = false;
                     } else {
                         isPassable = true; // Can path through, even if isWalkable was false due to "impassable" tag
-                        cost = 1 + (tileDefAtNext.openCost || 1);
+                        cost = 1 + (tileDefAtNext.openCost || 1); // Cost to move + cost to open door
                     }
                 } else if (tileDefAtNext.tags.includes("open")) {
                     // If it's an open door, isWalkable should be true. Cost is normal.
                     isPassable = true;
-                    cost = 1;
+                    cost = 1; // Standard move cost through open door
                 }
                 // If 'broken' door, its own 'impassable' tag (or lack thereof) via isWalkable handles it.
             }

@@ -1,4 +1,4 @@
-// mapMaker/eventHandlers.js
+﻿// mapMaker/eventHandlers.js
 "use strict";
 
 // Data Management Imports
@@ -148,7 +148,28 @@ export function handleCellMouseDown(event) {
                 ...toolInteractionInterface.getUIRenderers(), // renderGrid
                 updateNpcEditorUI: (npc, npcDefs) => updateSelectedNpcInfoUI(npc, npcDefs || assetManagerInstance.npcDefinitions),
                 clearOtherSelections: clearAllSelections, // or a more specific version if needed
-                showStatusMessage: (message, type) => { /* TODO: Implement showStatusMessage if desired */ console.log(`Status (${type}): ${message}`); }
+                showStatusMessage: (message, type = 'info') => {
+                    const statusElement = document.getElementById('mapMakerStatusMessage');
+                    if (statusElement) {
+                        statusElement.textContent = message;
+                        // Remove old type classes, then add new one
+                        statusElement.className = 'status-message-area'; // Base class
+                        statusElement.classList.add(`status-${type}`); // Type specific class
+                        statusElement.style.display = 'block';
+
+                        // Clear message after a delay
+                        setTimeout(() => {
+                            // Only clear if the message hasn't been updated by another call
+                            if (statusElement.textContent === message) {
+                                statusElement.style.display = 'none';
+                                statusElement.textContent = '';
+                                statusElement.className = 'status-message-area';
+                            }
+                        }, 3000);
+                    } else {
+                        console.log(`MapMaker Status (${type}): ${message}`); // Fallback
+                    }
+                }
             };
             handleNpcToolClick(x, y, z, mapData, appState, assetManagerInstance, npcToolInteractionInterface);
             break;

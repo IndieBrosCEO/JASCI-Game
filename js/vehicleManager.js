@@ -167,6 +167,8 @@
                 if (partDef.type === "wheel" && partDef.effects && partDef.effects.traction) {
                     // For simplicity, let's average traction. Min might be more realistic.
                     // This is a placeholder for more complex calculation.
+                    // A better approach might involve considering the number of wheels, their condition,
+                    // and the vehicle's total weight distribution. For now, simple averaging.
                     tractionFactor = (tractionFactor + partDef.effects.traction) / 2;
                 }
             }
@@ -240,13 +242,18 @@
         }
 
         // TODO: Check skill requirements (e.g., Mechanics from gameState.player)
-        // For now, assume player has skills.
-        // Example: if (getSkillValue("Mechanics", this.gameState) < partDef.skillRequirements.find(r => r.skillId === "Mechanics").level) { return false; }
-
-
-        // TODO: Consume part from player inventory
-        // This needs inventoryManager.removeItemByNameOrId(partIdToAdd, 1)
-        // For now, assume part is magically available.
+        // Example: partDef.skillRequirements = { "Mechanics": 15 }
+        if (partDef.skillRequirements && partDef.skillRequirements.Mechanics) { // Assuming "Mechanics" skill
+            const playerMechanics = window.characterManager?.getSkillValue(this.gameState.player, "Mechanics") || 0;
+            if (playerMechanics < partDef.skillRequirements.Mechanics) {
+                logToConsole(`VehicleManager: Failed to add part "${partDef.name}". Player Mechanics skill ${playerMechanics} too low. Requires ${partDef.skillRequirements.Mechanics}.`, "warn");
+                if (window.uiManager) window.uiManager.showToastNotification(`Mechanics skill too low (need ${partDef.skillRequirements.Mechanics})!`, "error");
+                // Note: Item consumption was handled by UI before this call. Consider if item should be returned to inventory here if skill check fails.
+                // For now, UI consumed it, skill check here prevents install.
+                return false;
+            }
+        }
+        // Item consumption is handled by the UI before this call.
 
         vehicle.attachedParts[slotType][slotIndex] = partIdToAdd;
         vehicle.durability[partIdToAdd] = partDef.durability; // Set initial durability
@@ -254,6 +261,7 @@
         logToConsole(`VehicleManager: Part "${partDef.name}" added to vehicle "${vehicle.name}" in slot ${slotType}[${slotIndex}].`, "info");
         this.calculateVehicleStats(vehicleId);
         // TODO: Play sound effect for adding part
+        if (window.audioManager) window.audioManager.playSoundAtLocation(partDef.soundOnInstall || 'vehicle_part_install_01.wav', vehicle.mapPos, {}, { maxDistance: 15 });
         return true;
     }
 
@@ -271,10 +279,7 @@
         const partIdToRemove = vehicle.attachedParts[slotType][slotIndex];
         const partDef = this.vehicleParts[partIdToRemove];
 
-        // TODO: Add part back to player inventory (if space) or drop it on the ground.
-        // Needs inventoryManager.addItem(partDef) or similar.
-        // For now, part just vanishes from vehicle.
-        // Example: if (!window.inventoryManager.addItem(new Item(partDef))) { logToConsole("Could not add to inventory, part dropped"); /* drop logic */ }
+        // Inventory addition is handled by the UI after this call.
 
         vehicle.attachedParts[slotType][slotIndex] = null;
         delete vehicle.durability[partIdToRemove];
@@ -282,6 +287,7 @@
         logToConsole(`VehicleManager: Part "${partDef ? partDef.name : partIdToRemove}" removed from vehicle "${vehicle.name}" from slot ${slotType}[${slotIndex}].`, "info");
         this.calculateVehicleStats(vehicleId);
         // TODO: Play sound effect for removing part
+        if (window.audioManager) window.audioManager.playSoundAtLocation(partDef.soundOnRemove || 'vehicle_part_remove_01.wav', vehicle.mapPos, {}, { maxDistance: 15 });
         return partDef; // Return the definition of the removed part
     }
 

@@ -428,8 +428,8 @@ function gameOver(character) {
     window.gameOverCalledForEntityThisTurn = true; // Set flag
 
     if (character === gameState) { // Check if the character that died is the player
-        // TODO: Play player_death_01.wav
-        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav', { volume: 1.0 }); // Placeholder, loud error for death
+        // TODO: Play player_death_01.wav when available.
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav', { volume: 1.0 }); // Using ui_error_01.wav as placeholder.
         logToConsole("Player has died. Cleaning up combat state and ending game.", 'darkred');
         gameState.gameStarted = false;
         gameState.isWaitingForPlayerCombatInput = false; // Crucial for unblocking
@@ -663,6 +663,9 @@ async function handleFalling(characterOrGameState, startX, startY, initialAirZ) 
     // If initialAirZ is NOT walkable, start the fall search from Z-1 of initialAirZ
     currentCheckZ = initialAirZ - 1;
     levelsFallen = 1; // Already fell one level from original Z to initialAirZ
+    // TODO: Play move_fall_start_01.wav when available, if levelsFallen > 0 (i.e., an actual fall is initiated).
+    // This sound should play when the character *begins* to fall from initialAirZ.
+    // Example: if (levelsFallen > 0 && window.audioManager) window.audioManager.playSound('ui_error_01.wav'); // Placeholder
 
     while (currentCheckZ >= minZ) {
         if (window.mapRenderer.isWalkable(startX, startY, currentCheckZ)) {
@@ -770,7 +773,7 @@ function calculateAndApplyFallDamage(characterOrGameState, levelsFallen) {
     // Play hard landing sound if damage is taken
     if (window.audioManager && typeof window.audioManager.playHardLandingSound === 'function') {
         window.audioManager.playHardLandingSound();
-        // TODO: Consider adding a specific "fall damage taken" sound: move_fall_damage_01.wav
+        // TODO: Play move_fall_damage_01.wav when available. Current hard landing sound is a general placeholder.
         // This could be played in addition to or instead of just a hard landing, if damage is significant.
     }
 

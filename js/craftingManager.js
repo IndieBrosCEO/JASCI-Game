@@ -183,12 +183,16 @@ class CraftingManager {
             this.timeManager.advanceTime(this.gameState, recipe.timeToCraft); // Assuming timeToCraft is in game turns/ticks
         }
 
-        // Award XP (placeholder for now)
-        if (recipe.xpAward && this.xpManager && typeof this.xpManager.awardXp === 'function') {
-            this.xpManager.awardXp(recipe.xpAward, this.gameState);
+        // Award XP
+        // TODO: Consider making xpAward data-driven from recipe definition itself.
+        const xpGainedFromCrafting = 5; // Small fixed amount for now
+        if (this.xpManager && typeof this.xpManager.awardXp === 'function') {
+            this.xpManager.awardXp(xpGainedFromCrafting, this.gameState);
+        } else {
+            logToConsole(`${this.logPrefix} xpManager not available, cannot award XP for crafting.`, 'warn');
         }
 
-        logToConsole(`${this.logPrefix} Successfully crafted ${recipe.resultQuantity || 1}x ${resultItemDef.name}.`, 'green');
+        logToConsole(`${this.logPrefix} Successfully crafted ${recipe.resultQuantity || 1}x ${resultItemDef.name}. Awarded ${xpGainedFromCrafting} XP.`, 'green');
         if (window.uiManager) window.uiManager.showToastNotification(`Crafted ${resultItemDef.name}!`, "success");
         if (window.audioManager) window.audioManager.playUiSound('ui_craft_success_01.wav'); // Placeholder
 
@@ -198,34 +202,82 @@ class CraftingManager {
         return true;
     }
 
-    // --- Weapon Modding (Placeholders) ---
-    getApplicableMods(weaponInstance) {
-        // TODO: Find all mod items in player inventory that are compatible with weaponInstance.modSlots and weaponInstance.type/tags
-        return [];
+    // --- Weapon Modding ---
+    getApplicableMods(weaponItemInstance) {
+        if (!weaponItemInstance || !this.gameState.inventory || !this.gameState.inventory.container || !this.assetManager) {
+            logToConsole(`${this.logPrefix} getApplicableMods: Invalid weapon instance or missing managers/inventory.`, "warn");
+            return [];
+        }
+
+        const applicableMods = [];
+        const weaponDef = this.assetManager.getItem(weaponItemInstance.id);
+        if (!weaponDef) {
+            logToConsole(`${this.logPrefix} getApplicableMods: Weapon definition not found for ${weaponItemInstance.id}.`, "warn");
+            return [];
+        }
+
+        const weaponSlots = weaponItemInstance.modSlots || weaponDef.modSlots || [];
+
+        this.gameState.inventory.container.items.forEach(itemInInventory => {
+            const modDef = this.assetManager.getItem(itemInInventory.id); // itemInInventory is an instance, get its base definition
+            if (modDef && (modDef.itemCategory === 'weapon_mod' || modDef.isMod)) { // Check if it's a mod
+                // Check slot compatibility: modDef.modType should be one of the weapon's available slot types
+                if (weaponSlots.includes(modDef.modType)) {
+                    let compatible = true;
+                    // Check weapon category/tag compatibility
+                    if (modDef.appliesToWeaponCategory && modDef.appliesToWeaponCategory.length > 0) {
+                        if (!weaponDef.tags || !weaponDef.tags.some(tag => modDef.appliesToWeaponCategory.includes(tag))) {
+                            compatible = false;
+                        }
+                    }
+                    // Check ammo type compatibility
+                    if (compatible && modDef.appliesToAmmoType) {
+                        if (weaponDef.ammoType !== modDef.appliesToAmmoType) {
+                            compatible = false;
+                        }
+                    }
+
+                    if (compatible) {
+                        applicableMods.push(itemInInventory); // Add the item instance from inventory
+                    }
+                }
+            }
+        });
+        logToConsole(`${this.logPrefix} Found ${applicableMods.length} applicable mods for ${weaponDef.name}.`, "info");
+        return applicableMods;
     }
 
-    applyMod(weaponInstance, modItemInstance, slotType) {
-        // TODO:
-        // 1. Check compatibility (slotType on weapon, modItem.modType, modItem.appliesToWeaponType vs weaponInstance.type/tags)
-        // 2. If slot is occupied, unequip old mod (return to inventory or destroy)
-        // 3. Attach new mod: weaponInstance.modsAttached[slotType] = modItemInstance.id
-        // 4. Apply stat changes from modItemInstance to weaponInstance (e.g. accuracy, damage, range)
-        // 5. Consume modItemInstance from inventory if it's a one-time use.
-        // 6. Update UI.
-        logToConsole(`${this.logPrefix} ApplyMod (Not implemented): Attempt to apply ${modItemInstance?.name} to ${weaponInstance?.name} in slot ${slotType}.`, 'grey');
-        return false;
+    applyMod(weaponItemInstance, modItemInstance, slotType) {
+        // This function in CraftingManager will now be a wrapper for InventoryManager.applyMod
+        if (!window.inventoryManager || typeof window.inventoryManager.applyMod !== 'function') {
+            logToConsole(`${this.logPrefix} applyMod: InventoryManager or its applyMod function is not available.`, "error");
+            return false;
+        }
+        // The CraftingUI will pass the weapon *instance* from handSlots/inventory and mod *instance* from inventory.
+        // InventoryManager.applyMod should handle these instances.
+        const success = window.inventoryManager.applyMod(weaponItemInstance, modItemInstance, slotType);
+        if (success) {
+            logToConsole(`${this.logPrefix} Mod application delegated to InventoryManager and was successful.`, "info");
+            // UI updates (inventory, character info if weapon stats displayed) handled by InventoryManager or CraftingUI
+        } else {
+            logToConsole(`${this.logPrefix} Mod application delegated to InventoryManager and failed.`, "warn");
+        }
+        return success;
     }
 
-    removeMod(weaponInstance, slotType) {
-        // TODO:
-        // 1. Check if slotType has a mod.
-        // 2. Get modItemDef for the attached mod.
-        // 3. Remove stat changes from weaponInstance.
-        // 4. Add mod item back to player inventory (if not destroyed on removal).
-        // 5. Clear slot: weaponInstance.modsAttached[slotType] = null.
-        // 6. Update UI.
-        logToConsole(`${this.logPrefix} RemoveMod (Not implemented): Attempt to remove mod from ${weaponInstance?.name}'s ${slotType} slot.`, 'grey');
-        return false;
+    removeMod(weaponItemInstance, slotType) {
+        // This function in CraftingManager will now be a wrapper for InventoryManager.removeMod
+        if (!window.inventoryManager || typeof window.inventoryManager.removeMod !== 'function') {
+            logToConsole(`${this.logPrefix} removeMod: InventoryManager or its removeMod function is not available.`, "error");
+            return false;
+        }
+        const success = window.inventoryManager.removeMod(weaponItemInstance, slotType);
+        if (success) {
+            logToConsole(`${this.logPrefix} Mod removal delegated to InventoryManager and was successful.`, "info");
+        } else {
+            logToConsole(`${this.logPrefix} Mod removal delegated to InventoryManager and failed.`, "warn");
+        }
+        return success;
     }
 }
 

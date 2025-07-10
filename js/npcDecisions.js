@@ -509,376 +509,434 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
         }
     } // <<<< ADDED CLOSING BRACE FOR THE FUNCTION async function handleNpcOutOfCombatTurn
 } // <<<< ADDED CLOSING BRACE FOR THE FUNCTION async function handleNpcOutOfCombatTurn 2
-    window.handleNpcOutOfCombatTurn = handleNpcOutOfCombatTurn;
+window.handleNpcOutOfCombatTurn = handleNpcOutOfCombatTurn;
 
-    // NPC Target Selection Logic for Combat (moved from combatManager.js)
-    function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) {
-        const npcName = npc.name || npc.id || "NPC";
-        const currentTilesets = window.assetManager ? window.assetManager.tilesets : null;
-        const currentMapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+// NPC Target Selection Logic for Combat (moved from combatManager.js)
+function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) {
+    const npcName = npc.name || npc.id || "NPC";
+    const currentTilesets = window.assetManager ? window.assetManager.tilesets : null;
+    const currentMapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
 
-        logToConsole(`[selectNpcCombatTarget Entry for ${npcName}] assetManager valid: ${!!window.assetManager}, mapRenderer valid: ${!!window.mapRenderer}. currentTilesets keys: ${currentTilesets ? Object.keys(currentTilesets).length : 'N/A'}, currentMapData levels: ${currentMapData ? !!currentMapData.levels : 'N/A'}`, 'purple');
+    logToConsole(`[selectNpcCombatTarget Entry for ${npcName}] assetManager valid: ${!!window.assetManager}, mapRenderer valid: ${!!window.mapRenderer}. currentTilesets keys: ${currentTilesets ? Object.keys(currentTilesets).length : 'N/A'}, currentMapData levels: ${currentMapData ? !!currentMapData.levels : 'N/A'}`, 'purple');
 
-        gameState.combatCurrentDefender = null; // Reset before selection
-        gameState.defenderMapPos = null;    // Reset before selection
+    gameState.combatCurrentDefender = null; // Reset before selection
+    gameState.defenderMapPos = null;    // Reset before selection
 
-        let potentialTargets = [];
+    let potentialTargets = [];
 
-        // 1. Consider existing aggro list (highest threat with LOS)
-        if (npc.aggroList?.length > 0) {
-            for (const aggroEntry of npc.aggroList) {
-                const target = aggroEntry.entityRef;
-                const targetPos = target === gameState ? gameState.playerPos : target.mapPos;
-                if (target && target !== npc && target.health?.torso?.current > 0 && target.health?.head?.current > 0 &&
-                    target.teamId !== npc.teamId && targetPos && initiativeTracker.find(e => e.entity === target)) {
-                    if (window.hasLineOfSight3D(npc.mapPos, targetPos, currentTilesets, currentMapData)) {
-                        potentialTargets.push({ entity: target, pos: targetPos, threat: aggroEntry.threat, type: 'aggro' });
-                    }
+    // 1. Consider existing aggro list (highest threat with LOS)
+    if (npc.aggroList?.length > 0) {
+        for (const aggroEntry of npc.aggroList) {
+            const target = aggroEntry.entityRef;
+            const targetPos = target === gameState ? gameState.playerPos : target.mapPos;
+            if (target && target !== npc && target.health?.torso?.current > 0 && target.health?.head?.current > 0 &&
+                target.teamId !== npc.teamId && targetPos && initiativeTracker.find(e => e.entity === target)) {
+                if (window.hasLineOfSight3D(npc.mapPos, targetPos, currentTilesets, currentMapData)) {
+                    potentialTargets.push({ entity: target, pos: targetPos, threat: aggroEntry.threat, type: 'aggro' });
                 }
             }
         }
+    }
 
-        // 2. Consider all enemies in initiative with LOS
-        initiativeTracker.forEach(entry => {
-            const candidate = entry.entity;
-            const candPos = candidate === gameState ? gameState.playerPos : candidate.mapPos;
-            if (candidate !== npc && candidate.health?.torso?.current > 0 && candidate.health?.head?.current > 0 &&
-                candidate.teamId !== npc.teamId && npc.mapPos && candPos) {
-                if (window.hasLineOfSight3D(npc.mapPos, candPos, currentTilesets, currentMapData)) {
-                    const dist = getDistance3D(npc.mapPos, candPos);
-                    // Add if not already in potentialTargets from aggro list
-                    if (!potentialTargets.some(pt => pt.entity === candidate)) {
-                        potentialTargets.push({ entity: candidate, pos: candPos, distance: dist, type: 'initiative' });
-                    }
+    // 2. Consider all enemies in initiative with LOS
+    initiativeTracker.forEach(entry => {
+        const candidate = entry.entity;
+        const candPos = candidate === gameState ? gameState.playerPos : candidate.mapPos;
+        if (candidate !== npc && candidate.health?.torso?.current > 0 && candidate.health?.head?.current > 0 &&
+            candidate.teamId !== npc.teamId && npc.mapPos && candPos) {
+            if (window.hasLineOfSight3D(npc.mapPos, candPos, currentTilesets, currentMapData)) {
+                const dist = getDistance3D(npc.mapPos, candPos);
+                // Add if not already in potentialTargets from aggro list
+                if (!potentialTargets.some(pt => pt.entity === candidate)) {
+                    potentialTargets.push({ entity: candidate, pos: candPos, distance: dist, type: 'initiative' });
                 }
             }
+        }
+    });
+
+    if (potentialTargets.length === 0) {
+        // logToConsole(`NPC TARGETING: ${npcName} found no valid targets with LOS.`, 'orange');
+        return false;
+    }
+
+    // Companion-specific targeting modifications
+    if (npc.isFollowingPlayer) {
+        const player = gameState; // Assuming player is always gameState for now
+        const companions = gameState.companions.map(id => gameState.npcs.find(n => n.id === id)).filter(c => c);
+
+        potentialTargets.forEach(pt => {
+            pt.score = 0;
+            // Base score: higher threat is better, closer is better for non-aggro
+            if (pt.type === 'aggro') {
+                pt.score += pt.threat * 10; // Weight threat heavily
+            } else { // 'initiative' type
+                pt.score -= pt.distance; // Closer is better
+            }
+
+            // Is target attacking player or a companion?
+            // This is hard to determine directly without knowing who *target* is targeting.
+            // Simplified: if target is close to player/companion and hostile, it's a threat.
+            if (pt.entity !== player && !companions.includes(pt.entity)) { // Target is an enemy
+                const distToPlayer = getDistance3D(pt.pos, player.playerPos);
+                if (distToPlayer <= 5) pt.score += 50; // Threatening player
+
+                companions.forEach(comp => {
+                    if (comp && comp.mapPos) {
+                        const distToComp = getDistance3D(pt.pos, comp.mapPos);
+                        if (distToComp <= 3) pt.score += 30; // Threatening other companion
+                    }
+                });
+            }
+            // TODO: Add logic for companionBehaviorProfile (e.g., "healer_support" might de-prioritize attacking if allies need healing)
         });
+        // TODO: Add more sophisticated target prioritization (e.g., wounded, high threat, squishy)
+        // Example enhancements to pt.score:
+        // - If pt.entity is "wounded" (e.g., <30% HP), pt.score += 20
+        // - If pt.entity is "high_threat" (e.g., player, or specific NPC type), pt.score += 30
+        // - If pt.entity is "squishy" (e.g., low armor/HP), pt.score += 10 (to finish off)
+        // These would require access to target's health, definition, or dynamic threat assessment.
 
-        if (potentialTargets.length === 0) {
-            // logToConsole(`NPC TARGETING: ${npcName} found no valid targets with LOS.`, 'orange');
-            return false;
+        potentialTargets.sort((a, b) => b.score - a.score); // Highest score first
+
+    } else { // Non-companion: sort by threat then distance
+        // TODO: Add more sophisticated target prioritization here too for non-companions.
+        // Factors could include:
+        // - Target is "wounded": Prioritize finishing them off.
+        // - Target is "high threat": e.g., player character, heavily armed NPC.
+        // - Target is "squishy": Easier to kill.
+        // - Target is attacking NPC's allies (if NPC has allies and awareness).
+        // This would involve calculating a 'priority_score' for each potential target.
+        potentialTargets.sort((a, b) => {
+            if (a.type === 'aggro' && b.type !== 'aggro') return -1;
+            if (b.type === 'aggro' && a.type !== 'aggro') return 1;
+            if (a.type === 'aggro' && b.type === 'aggro') return b.threat - a.threat; // Higher threat first
+            return a.distance - b.distance; // Closer distance first for non-aggro
+        });
+    }
+
+    const bestTarget = potentialTargets[0];
+    if (bestTarget) {
+        gameState.combatCurrentDefender = bestTarget.entity;
+        gameState.defenderMapPos = { ...bestTarget.pos };
+        logToConsole(`NPC TARGETING: ${npcName} selected ${bestTarget.entity === gameState ? "Player" : (bestTarget.entity.name || bestTarget.entity.id)}. Score/Details: ${JSON.stringify({ score: bestTarget.score, threat: bestTarget.threat, dist: bestTarget.distance })}`, 'gold');
+
+        if (npc.memory) {
+            npc.memory.lastSeenTargetPos = { ...gameState.defenderMapPos };
+            npc.memory.lastSeenTargetTimestamp = gameState.currentTime?.totalTurns || 0;
+            npc.memory.explorationTarget = null;
         }
+        return true;
+    }
 
-        // Companion-specific targeting modifications
-        if (npc.isFollowingPlayer) {
-            const player = gameState; // Assuming player is always gameState for now
-            const companions = gameState.companions.map(id => gameState.npcs.find(n => n.id === id)).filter(c => c);
+    return false;
+}
+window.selectNpcCombatTarget = selectNpcCombatTarget;
 
-            potentialTargets.forEach(pt => {
-                pt.score = 0;
-                // Base score: higher threat is better, closer is better for non-aggro
-                if (pt.type === 'aggro') {
-                    pt.score += pt.threat * 10; // Weight threat heavily
-                } else { // 'initiative' type
-                    pt.score -= pt.distance; // Closer is better
-                }
-
-                // Is target attacking player or a companion?
-                // This is hard to determine directly without knowing who *target* is targeting.
-                // Simplified: if target is close to player/companion and hostile, it's a threat.
-                if (pt.entity !== player && !companions.includes(pt.entity)) { // Target is an enemy
-                    const distToPlayer = getDistance3D(pt.pos, player.playerPos);
-                    if (distToPlayer <= 5) pt.score += 50; // Threatening player
-
-                    companions.forEach(comp => {
-                        if (comp && comp.mapPos) {
-                            const distToComp = getDistance3D(pt.pos, comp.mapPos);
-                            if (distToComp <= 3) pt.score += 30; // Threatening other companion
-                        }
-                    });
-                }
-
-                // TODO: Add logic for companionBehaviorProfile (e.g., "healer_support" might de-prioritize attacking if allies need healing)
-            });
-
-            potentialTargets.sort((a, b) => b.score - a.score); // Highest score first
-
-        } else { // Non-companion: sort by threat then distance
-            potentialTargets.sort((a, b) => {
-                if (a.type === 'aggro' && b.type !== 'aggro') return -1;
-                if (b.type === 'aggro' && a.type !== 'aggro') return 1;
-                if (a.type === 'aggro' && b.type === 'aggro') return b.threat - a.threat; // Higher threat first
-                return a.distance - b.distance; // Closer distance first for non-aggro
-            });
-        }
-
-        const bestTarget = potentialTargets[0];
-        if (bestTarget) {
-            gameState.combatCurrentDefender = bestTarget.entity;
-            gameState.defenderMapPos = { ...bestTarget.pos };
-            logToConsole(`NPC TARGETING: ${npcName} selected ${bestTarget.entity === gameState ? "Player" : (bestTarget.entity.name || bestTarget.entity.id)}. Score/Details: ${JSON.stringify({ score: bestTarget.score, threat: bestTarget.threat, dist: bestTarget.distance })}`, 'gold');
-
-            if (npc.memory) {
-                npc.memory.lastSeenTargetPos = { ...gameState.defenderMapPos };
-                npc.memory.lastSeenTargetTimestamp = gameState.currentTime?.totalTurns || 0;
-                npc.memory.explorationTarget = null;
-            }
-            return true;
-        }
-
+/**
+ * Evaluates and potentially executes a tactical drop for an NPC.
+ * Moved from CombatManager.
+ * @param {object} npc - The NPC considering the drop.
+ * @param {object} gameState - The global game state.
+ * @param {object} assetManager - Instance of the AssetManager.
+ * @returns {Promise<boolean>} True if a drop action was successfully initiated, false otherwise.
+ */
+async function _evaluateAndExecuteNpcDrop(npc, gameState, assetManager) {
+    if (!npc.mapPos || !gameState.combatCurrentDefender || !gameState.defenderMapPos || typeof window.mapRenderer?.isTileEmpty !== 'function' || typeof window.mapRenderer?.isWalkable !== 'function' || typeof window.npcShouldTakeFall !== 'function') {
         return false;
     }
-    window.selectNpcCombatTarget = selectNpcCombatTarget;
 
-    /**
-     * Evaluates and potentially executes a tactical drop for an NPC.
-     * Moved from CombatManager.
-     * @param {object} npc - The NPC considering the drop.
-     * @param {object} gameState - The global game state.
-     * @param {object} assetManager - Instance of the AssetManager.
-     * @returns {Promise<boolean>} True if a drop action was successfully initiated, false otherwise.
-     */
-    async function _evaluateAndExecuteNpcDrop(npc, gameState, assetManager) {
-        if (!npc.mapPos || !gameState.combatCurrentDefender || !gameState.defenderMapPos || typeof window.mapRenderer?.isTileEmpty !== 'function' || typeof window.mapRenderer?.isWalkable !== 'function' || typeof window.npcShouldTakeFall !== 'function') {
-            return false;
-        }
+    const currentTargetPos = gameState.defenderMapPos;
+    const possibleDrops = [];
+    const adjacentOffsets = [
+        { dx: 0, dy: -1, dir: 'up' }, { dx: 0, dy: 1, dir: 'down' },
+        { dx: -1, dy: 0, dir: 'left' }, { dx: 1, dy: 0, dir: 'right' }
+    ];
+    const mapData = window.mapRenderer.getCurrentMapData();
+    if (!mapData || !mapData.dimensions) return false;
 
-        const currentTargetPos = gameState.defenderMapPos;
-        const possibleDrops = [];
-        const adjacentOffsets = [
-            { dx: 0, dy: -1, dir: 'up' }, { dx: 0, dy: 1, dir: 'down' },
-            { dx: -1, dy: 0, dir: 'left' }, { dx: 1, dy: 0, dir: 'right' }
-        ];
-        const mapData = window.mapRenderer.getCurrentMapData();
-        if (!mapData || !mapData.dimensions) return false;
+    for (const offset of adjacentOffsets) {
+        const adjX = npc.mapPos.x + offset.dx;
+        const adjY = npc.mapPos.y + offset.dy;
+        const adjZ = npc.mapPos.z;
 
-        for (const offset of adjacentOffsets) {
-            const adjX = npc.mapPos.x + offset.dx;
-            const adjY = npc.mapPos.y + offset.dy;
-            const adjZ = npc.mapPos.z;
+        if (adjX < 0 || adjX >= mapData.dimensions.width || adjY < 0 || adjY >= mapData.dimensions.height) continue;
 
-            if (adjX < 0 || adjX >= mapData.dimensions.width || adjY < 0 || adjY >= mapData.dimensions.height) continue;
+        if (window.mapRenderer.isTileEmpty(adjX, adjY, adjZ)) {
+            let landingZ = -Infinity;
+            let currentScanZ = adjZ - 1;
+            let foundLandingSpot = false;
+            const minZLevel = Object.keys(mapData.levels).reduce((min, k) => Math.min(min, parseInt(k)), Infinity);
 
-            if (window.mapRenderer.isTileEmpty(adjX, adjY, adjZ)) {
-                let landingZ = -Infinity;
-                let currentScanZ = adjZ - 1;
-                let foundLandingSpot = false;
-                const minZLevel = Object.keys(mapData.levels).reduce((min, k) => Math.min(min, parseInt(k)), Infinity);
-
-                for (let i = 0; i < 100 && currentScanZ >= minZLevel; i++) {
-                    if (window.mapRenderer.isWalkable(adjX, adjY, currentScanZ)) {
-                        landingZ = currentScanZ;
-                        foundLandingSpot = true;
-                        break;
-                    }
-                    currentScanZ--;
+            for (let i = 0; i < 100 && currentScanZ >= minZLevel; i++) {
+                if (window.mapRenderer.isWalkable(adjX, adjY, currentScanZ)) {
+                    landingZ = currentScanZ;
+                    foundLandingSpot = true;
+                    break;
                 }
+                currentScanZ--;
+            }
 
-                if (foundLandingSpot) {
-                    const fallHeight = adjZ - landingZ;
-                    if (fallHeight > 0) {
-                        if (window.npcShouldTakeFall(npc, fallHeight)) {
-                            possibleDrops.push({
-                                targetDropTile: { x: adjX, y: adjY, z: adjZ },
-                                landingPos: { x: adjX, y: adjY, z: landingZ },
-                                fallHeight: fallHeight,
-                                direction: offset.dir
-                            });
-                        }
+            if (foundLandingSpot) {
+                const fallHeight = adjZ - landingZ;
+                if (fallHeight > 0) {
+                    if (window.npcShouldTakeFall(npc, fallHeight)) {
+                        possibleDrops.push({
+                            targetDropTile: { x: adjX, y: adjY, z: adjZ },
+                            landingPos: { x: adjX, y: adjY, z: landingZ },
+                            fallHeight: fallHeight,
+                            direction: offset.dir
+                        });
                     }
                 }
             }
         }
+    }
 
-        if (possibleDrops.length > 0) {
-            let bestDrop = null;
-            let bestDropScore = -Infinity;
+    if (possibleDrops.length > 0) {
+        let bestDrop = null;
+        let bestDropScore = -Infinity;
 
-            for (const drop of possibleDrops) {
-                let score = 0;
-                const distToTargetAfterDrop = getDistance3D(drop.landingPos, currentTargetPos);
-                score -= distToTargetAfterDrop;
-                if (drop.landingPos.z === currentTargetPos.z) {
-                    score += 50;
-                    if (currentTargetPos.z < npc.mapPos.z) score += 25;
-                }
-                score -= drop.fallHeight * 2;
-                if (score > bestDropScore) {
-                    bestDropScore = score;
-                    bestDrop = drop;
-                }
+        for (const drop of possibleDrops) {
+            let score = 0;
+            const distToTargetAfterDrop = getDistance3D(drop.landingPos, currentTargetPos);
+            score -= distToTargetAfterDrop;
+            if (drop.landingPos.z === currentTargetPos.z) {
+                score += 50;
+                if (currentTargetPos.z < npc.mapPos.z) score += 25;
             }
+            score -= drop.fallHeight * 2;
+            if (score > bestDropScore) {
+                bestDropScore = score;
+                bestDrop = drop;
+            }
+        }
 
-            if (bestDrop && (currentTargetPos.z < npc.mapPos.z && bestDrop.landingPos.z === currentTargetPos.z)) {
-                logToConsole(`NPC ${npc.name || npc.id}: Decided tactical drop to (${bestDrop.targetDropTile.x},${bestDrop.targetDropTile.y}) -> Z:${bestDrop.landingPos.z}. Score: ${bestDropScore.toFixed(1)}`, "yellow");
-                if (npc.currentMovementPoints > 0) {
-                    const mpBeforeMove = npc.currentMovementPoints;
-                    const moveSuccessful = await window.attemptCharacterMove(npc, bestDrop.direction, assetManager);
-                    if (moveSuccessful) {
-                        if (npc.currentMovementPoints < mpBeforeMove) npc.movedThisTurn = true;
-                        gameState.attackerMapPos = { ...npc.mapPos };
-                        window.mapRenderer.scheduleRender();
-                        if (window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
-                        return true;
-                    } else {
-                        logToConsole(`NPC ${npc.name || npc.id}: Tactical drop move initiation failed for direction ${bestDrop.direction}.`, "orange");
-                    }
+        if (bestDrop && (currentTargetPos.z < npc.mapPos.z && bestDrop.landingPos.z === currentTargetPos.z)) {
+            logToConsole(`NPC ${npc.name || npc.id}: Decided tactical drop to (${bestDrop.targetDropTile.x},${bestDrop.targetDropTile.y}) -> Z:${bestDrop.landingPos.z}. Score: ${bestDropScore.toFixed(1)}`, "yellow");
+            if (npc.currentMovementPoints > 0) {
+                const mpBeforeMove = npc.currentMovementPoints;
+                const moveSuccessful = await window.attemptCharacterMove(npc, bestDrop.direction, assetManager);
+                if (moveSuccessful) {
+                    if (npc.currentMovementPoints < mpBeforeMove) npc.movedThisTurn = true;
+                    gameState.attackerMapPos = { ...npc.mapPos };
+                    window.mapRenderer.scheduleRender();
+                    if (window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
+                    return true;
                 } else {
-                    logToConsole(`NPC ${npc.name || npc.id}: Wanted to drop but no MP.`, "orange");
+                    logToConsole(`NPC ${npc.name || npc.id}: Tactical drop move initiation failed for direction ${bestDrop.direction}.`, "orange");
                 }
-            }
-        }
-        return false;
-    }
-    // No window assignment for _evaluateAndExecuteNpcDrop as it's a local helper for handleNpcCombatTurn
-
-
-    /**
-     * Handles the decision-making logic for an NPC's turn in combat.
-     * @param {object} npc - The NPC object.
-     * @param {object} gameState - The global game state.
-     * @param {object} combatManager - Instance of CombatManager (for calling attack resolution).
-     * @param {object} assetManager - Instance of AssetManager.
-     * @returns {Promise<boolean>} True if an attack action was initiated (requiring combatManager to proceed), false otherwise.
-     */
-    async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) {
-        const npcName = npc.name || npc.id || "NPC";
-        logToConsole(`NPC DECISIONS: ${npcName} starting combat turn (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints})`, 'gold');
-
-        // Target selection using the function now in npcDecisions.js
-        // selectNpcCombatTarget needs initiativeTracker, which combatManager holds.
-        // This is a bit awkward. combatManager.executeNpcCombatTurn could pass its initiativeTracker.
-        // For now, let's assume combatManager calls selectNpcCombatTarget itself before calling handleNpcCombatTurn,
-        // or selectNpcCombatTarget is passed the tracker.
-        // Plan update: selectNpcCombatTarget now takes initiativeTracker.
-        // We'll need to ensure combatManager.initiativeTracker is passed here.
-        // For now, this function will assume targeting is done if gameState.combatCurrentDefender is set.
-
-        if (!gameState.combatCurrentDefender && !selectNpcCombatTarget(npc, gameState, combatManager.initiativeTracker, assetManager)) {
-            logToConsole(`NPC ${npcName}: No combat target found. Attempting exploration/memory movement.`, 'gold');
-            // Fallback to OOC-like movement if no target, but still in combat (e.g. seeking)
-            // This reuses the OOC logic for moving around.
-            // Ensure OOC movement respects remaining combat MPs if any, or uses a small budget.
-            const oocMoveBudget = Math.min(npc.currentMovementPoints, 2); // e.g., allow up to 2 OOC moves if stuck in combat
-            if (oocMoveBudget > 0) {
-                const tempOOCPoints = npc.currentMovementPoints;
-                npc.currentMovementPoints = oocMoveBudget; // Temporarily set MP for OOC handler
-                await handleNpcOutOfCombatTurn(npc, gameState, assetManager, oocMoveBudget);
-                npc.currentMovementPoints = tempOOCPoints - (oocMoveBudget - npc.currentMovementPoints); // Restore and deduct used OOC MP
-            }
-            return false; // No attack initiated
-        }
-
-        // Loop for combat actions (attack, move to attack, drop)
-        for (let iter = 0; (npc.currentActionPoints > 0 || npc.currentMovementPoints > 0) && iter < 10; iter++) {
-            // Re-evaluate target each iteration, in case it died or a higher priority one appears
-            if (!selectNpcCombatTarget(npc, gameState, combatManager.initiativeTracker, assetManager)) {
-                logToConsole(`NPC ${npcName}: Target lost mid-turn or no new target. Ending actions.`, 'orange');
-                return false; // No attack can be made
-            }
-            let currentTarget = gameState.combatCurrentDefender;
-            let currentTargetPos = gameState.defenderMapPos;
-
-            if (!currentTarget || currentTarget.health?.torso?.current <= 0 || currentTarget.health?.head?.current <= 0) {
-                if (!selectNpcCombatTarget(npc, gameState, combatManager.initiativeTracker, assetManager)) {
-                    logToConsole(`NPC ${npcName}: Target lost/defeated and no new target found. Ending combat actions.`, 'orange');
-                    return false; // No attack initiated
-                }
-                currentTarget = gameState.combatCurrentDefender;
-                currentTargetPos = gameState.defenderMapPos;
-                if (!currentTarget) break; // Break loop if still no target
-            }
-
-            let actionTakenInIter = false;
-            const weaponToUse = npc.equippedWeaponId ? assetManager.getItem(npc.equippedWeaponId) : null;
-            const attackType = weaponToUse ? (weaponToUse.type.includes("melee") ? "melee" : (weaponToUse.type.includes("firearm") || weaponToUse.type.includes("bow") || weaponToUse.type.includes("crossbow") || weaponToUse.type.includes("weapon_ranged_other") || weaponToUse.type.includes("thrown") ? "ranged" : "melee")) : "melee";
-            const fireMode = weaponToUse?.fireModes?.includes("burst") ? "burst" : (weaponToUse?.fireModes?.[0] || "single");
-            const distanceToTarget3D = npc.mapPos && currentTargetPos ? getDistance3D(npc.mapPos, currentTargetPos) : Infinity;
-
-            // LOS check for ranged attacks (melee is implicitly LOS by distance 1.8)
-            let hasLOStoTarget = false;
-            if (attackType === 'ranged') {
-                const currentTilesets = window.assetManager ? window.assetManager.tilesets : null;
-                const currentMapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
-                hasLOStoTarget = window.hasLineOfSight3D(npc.mapPos, currentTargetPos, currentTilesets, currentMapData);
-            } else { // Melee
-                hasLOStoTarget = (distanceToTarget3D <= 1.8); // Melee implies LOS if adjacent
-            }
-
-            const canAttack = ((attackType === 'melee' && distanceToTarget3D <= 1.8) || (attackType === 'ranged' && hasLOStoTarget));
-
-            if (canAttack && npc.currentActionPoints > 0) {
-                logToConsole(`NPC DECISIONS: ${npcName} attacks ${currentTarget.name || "Player"} with ${weaponToUse ? weaponToUse.name : "Unarmed"}. Dist: ${distanceToTarget3D.toFixed(1)}, LOS: ${hasLOStoTarget}`, 'gold');
-                gameState.pendingCombatAction = {
-                    target: currentTarget, weapon: weaponToUse, attackType,
-                    bodyPart: "Torso", fireMode, actionType: "attack", entity: npc,
-                    actionDescription: `${attackType} by ${npcName}`
-                };
-                npc.currentActionPoints--;
-                actionTakenInIter = true;
-                return true; // Attack initiated, combatManager should handle the rest of the sequence
-            } else if (npc.currentMovementPoints > 0) { // Try to move if cannot attack or need better position
-                let moveTargetPos = currentTargetPos; // Default move towards current combat target
-
-                if (npc.isFollowingPlayer) {
-                    const playerDist = getDistance3D(npc.mapPos, gameState.playerPos);
-                    const DEFEND_PLAYER_RADIUS = 3; // Stay within this radius of player if defending
-
-                    if ((npc.currentOrders === "defend_point" || npc.currentOrders === "follow_close" || npc.companionBehaviorProfile === "healer_support") &&
-                        playerDist > DEFEND_PLAYER_RADIUS) {
-                        // If too far from player while defending/following closely, prioritize moving towards player
-                        moveTargetPos = gameState.playerPos;
-                        logToConsole(`NPC ${npcName} (Companion): Prioritizing move towards player (Order: ${npc.currentOrders}, Profile: ${npc.companionBehaviorProfile}).`, 'lime');
-                    }
-                    // If "wait_here", NPC should not move to attack unless target is already in range (handled by `canAttack`)
-                    if (npc.currentOrders === "wait_here") {
-                        logToConsole(`NPC ${npcName} (Companion): Holding position due to 'wait_here' order.`, 'lime');
-                        moveTargetPos = null; // Prevent movement
-                    }
-                }
-
-                if (moveTargetPos) { // Only move if a valid moveTargetPos is set
-                    if (await _evaluateAndExecuteNpcDrop(npc, gameState, assetManager)) { // Drop is higher priority move
-                        actionTakenInIter = true;
-                    } else {
-                        // Pass current combat animation duration (e.g., 300ms)
-                        if (await moveNpcTowardsTarget(npc, moveTargetPos, gameState, assetManager, 300)) {
-                            actionTakenInIter = true;
-                        }
-                    }
-                }
-            }
-
-            if (!actionTakenInIter) {
-                logToConsole(`NPC ${npcName}: No further action possible this iteration. AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}`, 'grey');
-                break; // No action taken, end NPC's combat actions for this turn
-            }
-            if (npc.currentActionPoints === 0 && npc.currentMovementPoints === 0) {
-                logToConsole(`NPC ${npcName}: Out of AP and MP.`, 'grey');
-                break; // Out of points
-            }
-        }
-        return false; // No attack initiated, or ran out of iterations/points before attacking
-    }
-    window.handleNpcCombatTurn = handleNpcCombatTurn;
-
-
-    /**
-     * Main entry point for an NPC's turn, called from combatManager or turnManager.
-     * It determines if the NPC is in or out of combat and calls the appropriate handler.
-     * @param {object} npc - The NPC object.
-     * @param {object} gameState - The global game state.
-     * @param {object} combatManager - Instance of the CombatManager.
-     * @param {object} assetManager - Instance of the AssetManager.
-     */
-    async function executeNpcTurn(npc, gameState, combatManager, assetManager) {
-        if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) {
-            // logToConsole(`NPC ${npc?.id || 'Unknown'} is incapacitated. Skipping turn.`);
-            return;
-        }
-
-        if (gameState.isInCombat) {
-            // logToConsole(`NPC ${npc.id || npc.name}: Executing COMBAT turn.`);
-            // Placeholder for actual combat logic call which will be moved here
-            // await handleNpcCombatTurn(npc, gameState, combatManager, assetManager);
-            if (combatManager && typeof combatManager.executeNpcCombatTurn === 'function') {
-                await combatManager.executeNpcCombatTurn(npc); // Still calls old combatManager logic for now
             } else {
-                logToConsole(`ERROR: combatManager.executeNpcCombatTurn not found for NPC ${npc.id}`, "red");
+                logToConsole(`NPC ${npc.name || npc.id}: Wanted to drop but no MP.`, "orange");
             }
-        } else {
-            // logToConsole(`NPC ${npc.id || npc.name}: Executing OUT-OF-COMBAT turn.`);
-            await handleNpcOutOfCombatTurn(npc, gameState, assetManager); // Call the new local function
         }
     }
-    window.executeNpcTurn = executeNpcTurn;
+    return false;
+}
+// No window assignment for _evaluateAndExecuteNpcDrop as it's a local helper for handleNpcCombatTurn
+
+
+/**
+ * Handles the decision-making logic for an NPC's turn in combat.
+ * @param {object} npc - The NPC object.
+ * @param {object} gameState - The global game state.
+ * @param {object} combatManager - Instance of CombatManager (for calling attack resolution).
+ * @param {object} assetManager - Instance of AssetManager.
+ * @returns {Promise<boolean>} True if an attack action was initiated (requiring combatManager to proceed), false otherwise.
+ */
+async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) {
+    const npcName = npc.name || npc.id || "NPC";
+    logToConsole(`NPC DECISIONS: ${npcName} starting combat turn (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints})`, 'gold');
+
+    // TODO: Overall NPC Combat AI Enhancements:
+    // - Fleeing Behavior: If health is critically low (e.g., < 25%) and/or morale is broken (if morale system added),
+    //   NPC should prioritize moving away from threats to a safe distance or off-map.
+    //   This might involve finding the furthest valid tile from the highest threat.
+    // - Alert Ally Behavior: If NPC encounters a threat and has allies nearby not in combat,
+    //   it could spend an action/turn to "alert" them. Alerted allies would then join combat or become aware.
+    //   Requires defining alert range and mechanism.
+    // - Nuanced "Can't Reach" Logic: If pathfinding to primary target fails or no direct attack is possible:
+    //   - Consider switching to a secondary target if available.
+    //   - Reposition: Move to get better LOS, flank, or reach cover.
+    //   - Use ranged attacks if melee is blocked, or vice-versa if possible.
+    //   - If truly stuck, take defensive action or wait/delay turn.
+    // - Utility Actions: If no good attack, consider:
+    //   - Reloading: If weapon needs it (already partially handled in _handleRangedAttack).
+    //   - Using beneficial items: Stimpacks if injured, combat drugs if available.
+    //   - Using tactical items: Smoke grenades for cover, flashbangs to disorient.
+    // - Out of Ammo Logic: If primary ranged weapon is out of all ammo (not just current mag):
+    //   - Switch to secondary weapon (if any).
+    //   - Switch to melee weapon (if any).
+    //   - Attempt to find more ammo on the map (if scavenging AI is advanced).
+    //   - Flee.
+    // - Sophisticated Defensive Choices (in _handleDefensiveAction or similar):
+    //   - Seek Cover: Identify nearby tiles offering cover from current threats and move there.
+    //   - Use Defensive Items: e.g., painkiller, medkit if injured and safe to do so.
+    //   - Fall Back: If outnumbered or taking heavy fire, move to a more defensible position.
+
+    // Target selection using the function now in npcDecisions.js
+    // selectNpcCombatTarget needs initiativeTracker, which combatManager holds.
+    // This is a bit awkward. combatManager.executeNpcCombatTurn could pass its initiativeTracker.
+    // For now, let's assume combatManager calls selectNpcCombatTarget itself before calling handleNpcCombatTurn,
+    // or selectNpcCombatTarget is passed the tracker.
+    // Plan update: selectNpcCombatTarget now takes initiativeTracker.
+    // We'll need to ensure combatManager.initiativeTracker is passed here.
+    // For now, this function will assume targeting is done if gameState.combatCurrentDefender is set.
+
+    if (!gameState.combatCurrentDefender && !selectNpcCombatTarget(npc, gameState, combatManager.initiativeTracker, assetManager)) {
+        logToConsole(`NPC ${npcName}: No primary combat target found. Considering secondary objectives or fallback movement.`, 'gold');
+
+        // TODO: If no primary target, consider secondary objectives:
+        // 1. Guard Point: If npc.behavior === "guard" and npc.guardPoint defined, move towards/scan around it.
+        //    (Partially handled if handleNpcOutOfCombatTurn considers npc.memory.lastKnownSafePos as a guard point)
+        // 2. Assist Ally: If allies are in combat nearby, move to support.
+        //    - Find nearest ally in combat.
+        //    - If ally is engaged in melee, consider moving to engage their attacker if possible.
+        //    - If ally is ranged, consider moving to a position that offers covering fire or better LOS on ally's target.
+        // 3. Use Item: If low health and has healing items, use one. If tactical advantage, use grenade/smoke.
+        //    (Requires inventory and item use AI)
+        // 4. Fallback to current behavior: exploration/memory movement (handleNpcOutOfCombatTurn).
+
+        // Current fallback: OOC-like movement (exploration or returning to a point).
+        const oocMoveBudget = Math.min(npc.currentMovementPoints, 2);
+        if (oocMoveBudget > 0) {
+            const tempOOCPoints = npc.currentMovementPoints;
+            npc.currentMovementPoints = oocMoveBudget;
+            await handleNpcOutOfCombatTurn(npc, gameState, assetManager, oocMoveBudget);
+            npc.currentMovementPoints = tempOOCPoints - (oocMoveBudget - npc.currentMovementPoints); // Restore and deduct used OOC MP
+        }
+        return false; // No attack initiated
+    }
+
+    // Loop for combat actions (attack, move to attack, drop)
+    for (let iter = 0; (npc.currentActionPoints > 0 || npc.currentMovementPoints > 0) && iter < 10; iter++) {
+        // Re-evaluate target each iteration, in case it died or a higher priority one appears
+        if (!selectNpcCombatTarget(npc, gameState, combatManager.initiativeTracker, assetManager)) {
+            logToConsole(`NPC ${npcName}: Target lost mid-turn or no new target. Ending actions.`, 'orange');
+            return false; // No attack can be made
+        }
+        let currentTarget = gameState.combatCurrentDefender;
+        let currentTargetPos = gameState.defenderMapPos;
+
+        if (!currentTarget || currentTarget.health?.torso?.current <= 0 || currentTarget.health?.head?.current <= 0) {
+            if (!selectNpcCombatTarget(npc, gameState, combatManager.initiativeTracker, assetManager)) {
+                logToConsole(`NPC ${npcName}: Target lost/defeated and no new target found. Ending combat actions.`, 'orange');
+                return false; // No attack initiated
+            }
+            currentTarget = gameState.combatCurrentDefender;
+            currentTargetPos = gameState.defenderMapPos;
+            if (!currentTarget) break; // Break loop if still no target
+        }
+
+        let actionTakenInIter = false;
+        const weaponToUse = npc.equippedWeaponId ? assetManager.getItem(npc.equippedWeaponId) : null;
+        const attackType = weaponToUse ? (weaponToUse.type.includes("melee") ? "melee" : (weaponToUse.type.includes("firearm") || weaponToUse.type.includes("bow") || weaponToUse.type.includes("crossbow") || weaponToUse.type.includes("weapon_ranged_other") || weaponToUse.type.includes("thrown") ? "ranged" : "melee")) : "melee";
+        const fireMode = weaponToUse?.fireModes?.includes("burst") ? "burst" : (weaponToUse?.fireModes?.[0] || "single");
+        const distanceToTarget3D = npc.mapPos && currentTargetPos ? getDistance3D(npc.mapPos, currentTargetPos) : Infinity;
+
+        // LOS check for ranged attacks (melee is implicitly LOS by distance 1.8)
+        let hasLOStoTarget = false;
+        if (attackType === 'ranged') {
+            const currentTilesets = window.assetManager ? window.assetManager.tilesets : null;
+            const currentMapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+            hasLOStoTarget = window.hasLineOfSight3D(npc.mapPos, currentTargetPos, currentTilesets, currentMapData);
+        } else { // Melee
+            hasLOStoTarget = (distanceToTarget3D <= 1.8); // Melee implies LOS if adjacent
+        }
+
+        const canAttack = ((attackType === 'melee' && distanceToTarget3D <= 1.8) || (attackType === 'ranged' && hasLOStoTarget));
+
+        // TODO: Consider if NPC should use special abilities or items if available
+        // - Check npc.abilities (if defined in their definition) for usable combat abilities (cooldowns, conditions).
+        // - Check npc.inventory for usable items (grenades, stimpacks, special ammo).
+        // - Decision logic:
+        //   - If low health & has heal item -> use heal.
+        //   - If multiple enemies clustered & has grenade -> use grenade.
+        //   - If special attack available & conditions met (e.g., target flanked, NPC buffed) -> use ability.
+        //   - Otherwise, standard weapon attack.
+        // This would involve setting gameState.pendingCombatAction to a different actionType.
+
+        if (canAttack && npc.currentActionPoints > 0) {
+            logToConsole(`NPC DECISIONS: ${npcName} attacks ${currentTarget.name || "Player"} with ${weaponToUse ? weaponToUse.name : "Unarmed"}. Dist: ${distanceToTarget3D.toFixed(1)}, LOS: ${hasLOStoTarget}`, 'gold');
+            gameState.pendingCombatAction = {
+                target: currentTarget, weapon: weaponToUse, attackType,
+                bodyPart: "Torso", fireMode, actionType: "attack", entity: npc,
+                actionDescription: `${attackType} by ${npcName}`
+            };
+            npc.currentActionPoints--;
+            actionTakenInIter = true;
+            return true; // Attack initiated, combatManager should handle the rest of the sequence
+        } else if (npc.currentMovementPoints > 0) { // Try to move if cannot attack or need better position
+            let moveTargetPos = currentTargetPos; // Default move towards current combat target
+
+            if (npc.isFollowingPlayer) {
+                const playerDist = getDistance3D(npc.mapPos, gameState.playerPos);
+                const DEFEND_PLAYER_RADIUS = 3; // Stay within this radius of player if defending
+
+                if ((npc.currentOrders === "defend_point" || npc.currentOrders === "follow_close" || npc.companionBehaviorProfile === "healer_support") &&
+                    playerDist > DEFEND_PLAYER_RADIUS) {
+                    // If too far from player while defending/following closely, prioritize moving towards player
+                    moveTargetPos = gameState.playerPos;
+                    logToConsole(`NPC ${npcName} (Companion): Prioritizing move towards player (Order: ${npc.currentOrders}, Profile: ${npc.companionBehaviorProfile}).`, 'lime');
+                }
+                // If "wait_here", NPC should not move to attack unless target is already in range (handled by `canAttack`)
+                if (npc.currentOrders === "wait_here") {
+                    logToConsole(`NPC ${npcName} (Companion): Holding position due to 'wait_here' order.`, 'lime');
+                    moveTargetPos = null; // Prevent movement
+                }
+            }
+
+            if (moveTargetPos) { // Only move if a valid moveTargetPos is set
+                if (await _evaluateAndExecuteNpcDrop(npc, gameState, assetManager)) { // Drop is higher priority move
+                    actionTakenInIter = true;
+                } else {
+                    // Pass current combat animation duration (e.g., 300ms)
+                    if (await moveNpcTowardsTarget(npc, moveTargetPos, gameState, assetManager, 300)) {
+                        actionTakenInIter = true;
+                    }
+                }
+            }
+        }
+
+        if (!actionTakenInIter) {
+            logToConsole(`NPC ${npcName}: No further action possible this iteration. AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints}`, 'grey');
+            break; // No action taken, end NPC's combat actions for this turn
+        }
+        if (npc.currentActionPoints === 0 && npc.currentMovementPoints === 0) {
+            logToConsole(`NPC ${npcName}: Out of AP and MP.`, 'grey');
+            break; // Out of points
+        }
+    }
+    return false; // No attack initiated, or ran out of iterations/points before attacking
+}
+window.handleNpcCombatTurn = handleNpcCombatTurn;
+
+
+/**
+ * Main entry point for an NPC's turn, called from combatManager or turnManager.
+ * It determines if the NPC is in or out of combat and calls the appropriate handler.
+ * @param {object} npc - The NPC object.
+ * @param {object} gameState - The global game state.
+ * @param {object} combatManager - Instance of the CombatManager.
+ * @param {object} assetManager - Instance of the AssetManager.
+ */
+async function executeNpcTurn(npc, gameState, combatManager, assetManager) {
+    if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) {
+        // logToConsole(`NPC ${npc?.id || 'Unknown'} is incapacitated. Skipping turn.`);
+        return;
+    }
+
+    if (gameState.isInCombat) {
+        // logToConsole(`NPC ${npc.id || npc.name}: Executing COMBAT turn.`);
+        // Placeholder for actual combat logic call which will be moved here
+        // await handleNpcCombatTurn(npc, gameState, combatManager, assetManager);
+        if (combatManager && typeof combatManager.executeNpcCombatTurn === 'function') {
+            await combatManager.executeNpcCombatTurn(npc); // Still calls old combatManager logic for now
+        } else {
+            logToConsole(`ERROR: combatManager.executeNpcCombatTurn not found for NPC ${npc.id}`, "red");
+        }
+    } else {
+        // logToConsole(`NPC ${npc.id || npc.name}: Executing OUT-OF-COMBAT turn.`);
+        await handleNpcOutOfCombatTurn(npc, gameState, assetManager); // Call the new local function
+    }
+}
+window.executeNpcTurn = executeNpcTurn;

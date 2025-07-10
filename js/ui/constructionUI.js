@@ -48,8 +48,13 @@ const ConstructionUI = {
     },
 
     open: function () {
+        if (!this.dom.uiPanel) {
+            console.error("ConstructionUI Error: UI Panel element not found. Cannot open.");
+            return;
+        }
         if (!window.constructionManager) {
-            logToConsole("ConstructionUI Error: ConstructionManager not available.", "error");
+            logToConsole("ConstructionUI Error: ConstructionManager not available. Cannot open Construction UI.", "error");
+            // if (window.uiManager) window.uiManager.showToastNotification("Construction system not ready.", "error");
             return;
         }
         this.isOpen = true;
@@ -63,6 +68,8 @@ const ConstructionUI = {
         this.dom.placementInstructions.classList.add('hidden');
         window.gameState.isConstructionModeActive = false; // Ensure placement mode is off
         logToConsole("ConstructionUI opened.", "info");
+        // TODO: Play UI open sound (e.g., ui_menu_open_01.wav)
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.7 });
     },
 
     close: function () {
@@ -72,6 +79,8 @@ const ConstructionUI = {
         window.gameState.isConstructionModeActive = false; // Ensure placement mode is off
         this.dom.placementInstructions.classList.add('hidden');
         logToConsole("ConstructionUI closed.", "info");
+        // TODO: Play UI close sound (e.g., ui_menu_close_01.wav)
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.6 });
         if (window.mapRenderer) window.mapRenderer.scheduleRender(); // Clear any placement preview
     },
 

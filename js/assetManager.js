@@ -67,6 +67,7 @@
         this.vehicleTemplateDefinitions = {};
         this.dynamicEventTemplates = {}; // New property for dynamic event templates
         this.proceduralQuestTemplates = {}; // New property for procedural quest templates
+        this.trapDefinitionsData = {}; // New property for trap definitions
         let tempItemsById = {};
 
         // Updated to load from new categorized item files
@@ -82,8 +83,9 @@
             'containers.json',
             'vehicle_parts.json',
             'vehicle_templates.json',
-            'dynamic_event_templates.json', // Added dynamic event templates
-            'procedural_quest_templates.json' // Added procedural quest templates
+            'dynamic_event_templates.json',
+            'procedural_quest_templates.json',
+            'traps.json' // Added traps.json
         ];
 
         for (const filename of definitionFiles) {
@@ -127,6 +129,13 @@
                         console.log(`AssetManager: Loaded ${Object.keys(this.proceduralQuestTemplates).length} procedural quest templates.`);
                     } else {
                         console.warn(`AssetManager: Expected array from procedural_quest_templates.json, but got ${typeof parsedJson}. Skipping file.`);
+                    }
+                } else if (filename === 'traps.json') {
+                    if (Array.isArray(parsedJson)) {
+                        this.trapDefinitionsData = Object.fromEntries(parsedJson.map(trap => [trap.id, trap]));
+                        logToConsole(`AssetManager: Loaded ${Object.keys(this.trapDefinitionsData).length} trap definitions.`);
+                    } else {
+                        console.warn(`AssetManager: Expected array from traps.json, but got ${typeof parsedJson}. Skipping file.`);
                     }
                 } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json'].includes(filename)) {
                     // All new item files are arrays of items

@@ -1,10 +1,10 @@
 ﻿// js/dynamicEventManager.js
 
 class DynamicEventManager {
-    constructor(gameState, assetManager, npcManager, weatherManager, questManager) {
+    constructor(gameState, assetManager, /* npcManager (now global) */ weatherManager, questManager) {
         this.gameState = gameState;
         this.assetManager = assetManager;
-        this.npcManager = npcManager; // Assuming an NpcManager or similar for spawning groups
+        this.npcManager = window.npcManager; // Use the global npcManager instance
         this.weatherManager = weatherManager;
         this.questManager = questManager; // For setting global flags via quest system
         this.eventTemplates = {};
@@ -75,7 +75,29 @@ class DynamicEventManager {
                 continue;
             }
 
-            // TODO: Check other global conditions if defined in template (e.g., specific quest completed, world state flag)
+            // Check other global conditions if defined in template
+            let allGlobalConditionsMet = true;
+            if (template.globalConditions && Array.isArray(template.globalConditions)) {
+                for (const condition of template.globalConditions) {
+                    if (condition.type === "questCompleted") {
+                        if (!this.gameState.completedQuests || !this.gameState.completedQuests.includes(condition.questId)) {
+                            allGlobalConditionsMet = false; break;
+                        }
+                    } else if (condition.type === "worldFlag") {
+                        // Assuming questFlags can be used as general world state flags
+                        if (!this.gameState.questFlags || this.gameState.questFlags[condition.flag] !== condition.value) {
+                            allGlobalConditionsMet = false; break;
+                        }
+                    } else {
+                        logToConsole(`${this.logPrefix} Unknown global condition type '${condition.type}' for event '${template.id}'. Skipping condition.`, "warn");
+                    }
+                }
+            }
+
+            if (!allGlobalConditionsMet) {
+                // logToConsole(`${this.logPrefix} Event ${template.id} skipped, global conditions not met.`, "debug");
+                continue;
+            }
 
             this.triggerEvent(template, currentTick);
         }
@@ -139,8 +161,10 @@ class DynamicEventManager {
                 break;
             case "broadcast_message":
                 logToConsole(`EVENT BROADCAST (${effect.channel || 'general'}): ${effect.message}`, "event-critical");
-                // TODO: Show this to player via a more prominent UI notification
-                if (window.uiManager && typeof window.uiManager.showToastNotification === 'function') {
+                // TODO: Show this to player via a more prominent UI notification. 
+                // Currently logged prominently. A dedicated game UI manager with toast/modal capability would be needed for more.
+                // The existing check for window.uiManager.showToastNotification likely refers to a mapMaker UI or a planned game UI manager.
+                if (window.uiManager && typeof window.uiManager.showToastNotification === 'function') { // This uiManager might be from mapMaker or a non-existent game one
                     window.uiManager.showToastNotification(effect.message, 'event', 6000);
                 }
                 break;

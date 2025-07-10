@@ -209,8 +209,8 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                                 window.gameState.currentViewZ = window.gameState.playerPos.z;
                             }
                             if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                                const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
-                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                                // Use globally exposed PLAYER_VISION_RADIUS_CONST
+                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
                             }
                             // updatePlayerStatusDisplay() is called in turnManager.move after attemptCharacterMove returns
                         }
@@ -268,8 +268,8 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                                 window.gameState.currentViewZ = window.gameState.playerPos.z;
                             }
                             if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                                const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
-                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                                // Use globally exposed PLAYER_VISION_RADIUS_CONST
+                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
                             }
                         }
                     } else {
@@ -317,8 +317,8 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                                 window.gameState.currentViewZ = window.gameState.playerPos.z;
                             }
                             if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                                const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
-                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                                // Use globally exposed PLAYER_VISION_RADIUS_CONST
+                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
                             }
                         }
                     } else {
@@ -464,8 +464,8 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                 if (isPlayer) {
                     // For horizontal moves, playerPos.z doesn't change, so currentViewZ doesn't need update based on viewFollowsPlayerZ here.
                     if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                        const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
-                        window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                        // Use globally exposed PLAYER_VISION_RADIUS_CONST
+                        window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
                     }
                 }
                 return true; // Move successful
@@ -563,8 +563,8 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                             window.gameState.currentViewZ = window.gameState.playerPos.z; // Player Z has changed due to fall
                         }
                         if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                            const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
-                            window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                            // Use globally exposed PLAYER_VISION_RADIUS_CONST
+                            window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
                         }
                     }
                     return true;

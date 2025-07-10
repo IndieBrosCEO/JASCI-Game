@@ -942,6 +942,18 @@ window.mapRenderer = {
                 // A more robust system might use tile priorities or transparency flags.
                 if (currentLevelData.building?.[y]?.[x]) finalTileId = currentLevelData.building[y][x];
                 if (currentLevelData.item?.[y]?.[x]) finalTileId = currentLevelData.item[y][x];
+
+                // TODO: Consider if roof display should be different if player is ON a roof tile vs under it.
+                // Current behavior: if gameState.showRoof is true, it attempts to render roof tiles from currentLevelData.
+                // If player is at (x,y,z) and currentLevelData.roof[y][x] exists, and showRoof is true,
+                // that roof tile will be part of finalTileId consideration.
+                // This means if player is ON a roof surface (e.g. Z=1 is the top of a building), and showRoof is true,
+                // it might try to render the roof of Z=1 itself. If showRoof is false, player sees the roof surface they are on.
+                // A more advanced system might:
+                // 1. Distinguish between "roof of current Z-level" vs "roof of Z-level above player".
+                // 2. Automatically hide the roof tile the player is standing directly on if it's part of their current Z-level's "floor".
+                // 3. Change behavior of showRoof based on player's relative position to roof structures.
+                // For now, the global toggle applies uniformly.
                 if (gameState.showRoof && currentLevelData.roof?.[y]?.[x]) {
                     finalTileId = currentLevelData.roof[y][x];
                 }
@@ -1078,6 +1090,16 @@ window.mapRenderer = {
                 }
                 // --- END TEMPORARY DEBUGGING ---
 
+                // TODO (Lighting System Enhancements):
+                // 1. Add support for cone lights (e.g., flashlights) and directional lights.
+                //    - This would require lightSource objects to have 'type', 'direction', 'coneAngle'.
+                //    - isTileIlluminated() would need new logic paths for these light types.
+                // 2. Consider performance implications of many dynamic lights.
+                //    - Strategies: limit total active lights, simplify calculations at distance, spatial partitioning for lights.
+                // 3. Optimize lighting calculations: Cache light values per tile.
+                //    - Invalidate cache only when relevant light sources or map geometry changes.
+                //    - Current system recalculates light for every visible/visited tile each frame.
+
                 if (fowStatus === 'hidden') {
                     displaySprite = ' ';
                     displayColor = '#1a1a1a'; // Dark color for hidden FOW
@@ -1187,8 +1209,13 @@ window.mapRenderer = {
 
                 if (isPlayerCurrentlyOnThisTileAndZ) {
                     const playerFowStatus = currentFowData?.[y]?.[x]; // Use current Z's FOW
-                    // Roof obscuring player would depend on roof data for *this* Z-level, or potentially Z+1.
-                    // For now, use showRoof and roof data from currentLevelData.
+
+                    // TODO: Ensure this works correctly if player is on a z_transition tile that is also a roof (e.g. external stairs).
+                    // Current logic: if `showRoof` is true, and a roof tile exists at player's x,y on currentLevelData.roof,
+                    // it's considered obscuring. If a z_transition tile *is* also defined as such a roof piece, it would obscure.
+                    // This might be desired. If not, the tile definition or this check needs adjustment
+                    // (e.g. if player is on a z_transition tile, `roofIsObscuringPlayer` might need to ignore roofs at that exact tile).
+                    // For now, the logic is consistent: showRoof + roof tile at player's x,y,z_roof_layer = obscuring.
                     const roofIsObscuringPlayer = gameState.showRoof && currentLevelData.roof?.[y]?.[x];
 
                     if (playerFowStatus === 'visible' && !roofIsObscuringPlayer) {
@@ -1276,6 +1303,12 @@ window.mapRenderer = {
                             cachedCell.color = finalColorForTile;
                         }
                         cachedCell.displayedId = finalDisplayIdForTile;
+
+                        // TODO: Placeholder for animated water or other tile effects.
+                        // If finalTileDefForLightingAndFow (or a specific tileDef for animation) has an "animation" property:
+                        // e.g., tileDef.animation = { frames: ["~", "≈"], speed: 500ms }
+                        // Use a global tick or Date.now() % (frames.length * speed) to select current animation character for finalSpriteForTile.
+                        // This would override finalSpriteForTile if an animation applies.
 
                         // Apply tile-defined background highlight first
                         let newBackgroundColor = tileDefinedBackgroundColor;
@@ -1405,9 +1438,12 @@ window.mapRenderer = {
         }
 
         // --- Overlay rendering for Z-1 (Below) and Z+1 (Above) Layers ---
-        // This simplified approach modifies the visual appearance of current Z-level tiles
-        // if they are transparent, to give a glimpse of adjacent Z-levels.
-        // It does not create new DOM elements for adjacent layers.
+        // This section implements onion skinning, which provides a basic "glimpse" effect.
+        // TODO: Further refine 'glimpse' effect for transparent floors/ceilings.
+        // Current onion skinning shows full tiles from adjacent levels if visible through transparent paths.
+        // A more advanced glimpse might involve partial tile rendering, different sprites (e.g., dots),
+        // or varying intensity based on the type/degree of transparency of the intervening tiles.
+        // For now, the existing onion skinning serves as the basic implementation.
 
         // --- Onion Skinning Logic ---
         const BASE_ONION_SKIN_DARKEN_FACTOR = 0.5;
@@ -2017,6 +2053,8 @@ window.mapRenderer = {
         gameState.showRoof = !gameState.showRoof;
         this.scheduleRender();
         logToConsole("Roof layer toggled " + (gameState.showRoof ? "on" : "off"));
+        // TODO: Play move_toggle_roof_01.wav when available.
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.6 });
     },
 
     isPassable: function (tileId) { // This will need to take Z into account for actual game logic

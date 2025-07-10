@@ -1,10 +1,15 @@
-class AudioManager {
+﻿class AudioManager {
     constructor() {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         this.soundBuffers = new Map(); // To store pre-loaded sound data
         this.soundPath = 'assets/sounds/'; // Base path for sound files
         this.isLoading = false;
         this.loadQueue = [];
+
+        // Master Gain Node for global volume control
+        this.masterGainNode = this.audioContext.createGain();
+        this.masterGainNode.gain.setValueAtTime(1.0, this.audioContext.currentTime); // Default to full volume
+        this.masterGainNode.connect(this.audioContext.destination);
 
         // Sounds that are already available as per the user's list
         this.availableSounds = [
@@ -64,6 +69,9 @@ class AudioManager {
             this.audioContext.listener.setPosition(x, y, z);
         }
         // TODO: Update listener orientation if player rotation is a factor.
+        // Currently, player rotation is not a game mechanic, so listener orientation remains fixed.
+        // If rotation is added, update forwardX/Y/Z and upX/Y/Z accordingly.
+        // Example:
         // this.audioContext.listener.forwardX.setValueAtTime(lookDir.x, this.audioContext.currentTime);
         // this.audioContext.listener.forwardY.setValueAtTime(lookDir.y, this.audioContext.currentTime);
         // this.audioContext.listener.forwardZ.setValueAtTime(lookDir.z, this.audioContext.currentTime);
@@ -82,10 +90,15 @@ class AudioManager {
                 const interval = setInterval(() => {
                     if (this.soundBuffers.has(soundName)) {
                         clearInterval(interval);
+                        clearTimeout(timeoutHandle); // Clear the timeout
                         resolve(this.soundBuffers.get(soundName));
                     }
-                    // TODO: Add a timeout or error handling for sounds that never load
                 }, 100);
+                const timeoutHandle = setTimeout(() => {
+                    clearInterval(interval);
+                    console.error(`Timeout waiting for sound ${soundName} (already in queue) to load.`);
+                    reject(new Error(`Timeout waiting for sound ${soundName} to load from queue.`));
+                }, 10000); // 10 second timeout
             });
         }
 
@@ -103,7 +116,7 @@ class AudioManager {
             return audioBuffer;
         } catch (error) {
             console.error(`Error loading sound ${soundName}:`, error);
-            this.soundBuffers.delete(soundName); // Remove placeholder if loading failed
+            this.soundBuffers.delete(soundName); // Ensure no entry exists for the sound if loading failed
             return null;
         } finally {
             // Remove from load queue
@@ -160,7 +173,7 @@ class AudioManager {
         gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
 
         source.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
+        gainNode.connect(this.masterGainNode); // Connect to masterGainNode instead of destination
 
         source.loop = loop;
         source.start(0); // Play immediately
@@ -301,16 +314,23 @@ class AudioManager {
 
         source.connect(panner);
         panner.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
+        gainNode.connect(this.masterGainNode); // Connect to masterGainNode instead of destination
 
         source.start(0);
         return source;
     }
 
 
-    // --- Volume Control (Basic Example) ---
+    // --- Volume Control ---
     setGlobalVolume(volume) {
-        console.warn("Global volume control is not fully implemented yet. This is a placeholder.");
+        if (this.masterGainNode && this.audioContext) {
+            // Clamp volume between 0 and 1 (or higher if you want to allow boosting)
+            const clampedVolume = Math.max(0, Math.min(1, volume));
+            this.masterGainNode.gain.setValueAtTime(clampedVolume, this.audioContext.currentTime);
+            logToConsole(`[AudioManager] Global volume set to ${clampedVolume.toFixed(2)}`, "info");
+        } else {
+            console.error("[AudioManager] MasterGainNode or AudioContext not available to set global volume.");
+        }
     }
 }
 

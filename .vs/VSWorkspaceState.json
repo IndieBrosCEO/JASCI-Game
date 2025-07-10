@@ -5,8 +5,9 @@
     "\\assets\\definitions",
     "\\assets\\dialogues",
     "\\assets\\maps",
-    "\\js"
+    "\\js",
+    "\\js\\ui"
   ],
-  "SelectedNode": "\\TODO_LIST.md",
+  "SelectedNode": "\\js\\ui\\constructionUI.js",
   "PreviewInSolutionExplorer": false
 }

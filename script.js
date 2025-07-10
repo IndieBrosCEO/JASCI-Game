@@ -19,6 +19,9 @@
     requestAnimationFrame(gameLoop);
 }
 
+const PLAYER_VISION_RADIUS_CONST = 10; // Centralized constant
+window.PLAYER_VISION_RADIUS_CONST = PLAYER_VISION_RADIUS_CONST; // Expose globally for other modules
+
 /**************************************************************
  * Global State & Constants
  **************************************************************/
@@ -28,52 +31,7 @@ window.animationManager = new AnimationManager(gameState); // Changed to window.
 window.audioManager = new AudioManager(); // ADDED THIS LINE
 
 // Instantiate other managers that depend on gameState and assetManager
-
-// FactionManager is an object literal assigned globally in its own file.
-// Ensure factionManager.js is loaded before managers that depend on window.factionManager.
-
-if (typeof VehicleManager !== 'undefined') {
-    window.vehicleManager = new VehicleManager(window.gameState, window.assetManager);
-    console.log("SCRIPT.JS: window.vehicleManager created");
-} else {
-    console.error("SCRIPT.JS: VehicleManager class not found. Ensure vehicleManager.js is loaded before script.js and defines the class.");
-}
-
-if (typeof CompanionManager !== 'undefined') {
-    if (window.factionManager) {
-        window.companionManager = new CompanionManager(window.gameState, window.assetManager, window.factionManager);
-        console.log("SCRIPT.JS: window.companionManager created");
-    } else {
-        console.error("SCRIPT.JS: window.factionManager not available for CompanionManager instantiation. Ensure factionManager.js is loaded.");
-    }
-} else {
-    console.error("SCRIPT.JS: CompanionManager class not found. Ensure companionManager.js is loaded and defines the class.");
-}
-
-if (typeof DynamicEventManager !== 'undefined') {
-    // Constructor: (gameState, assetManager, npcManager, weatherManager, questManager)
-    // Assuming npcManager, weatherManager, questManager will be globally available if they are classes/objects.
-    window.dynamicEventManager = new DynamicEventManager(window.gameState, window.assetManager, window.npcManager, window.weatherManager, window.questManager);
-    console.log("SCRIPT.JS: window.dynamicEventManager created");
-} else {
-    console.error("SCRIPT.JS: DynamicEventManager class not found. Ensure dynamicEventManager.js is loaded and defines the class.");
-}
-
-if (typeof ProceduralQuestManager !== 'undefined') {
-    // Constructor: (gameState, assetManager, factionManager, questManager, npcManager, mapUtils)
-    if (window.factionManager) {
-        window.proceduralQuestManager = new ProceduralQuestManager(window.gameState, window.assetManager, window.factionManager, window.questManager, window.npcManager, {} /* mapUtils placeholder */);
-        console.log("SCRIPT.JS: window.proceduralQuestManager created");
-    } else {
-        console.error("SCRIPT.JS: window.factionManager not available for ProceduralQuestManager instantiation.");
-    }
-} else {
-    console.error("SCRIPT.JS: ProceduralQuestManager class not found. Ensure proceduralQuestManager.js is loaded and defines the class.");
-}
-
-// Note: AudioManager, AnimationManager are instantiated above or self-instantiate.
-// Other managers (XP, Trap, Weather) might also need similar checks if they are class-based.
-// For now, addressing the ones that caused "class not found" or dependency errors.
+// ---- MANAGER INSTANTIATIONS MOVED INTO ASYNC INITIALIZE() ----
 
 // let currentMapData = null; // This is now managed in js/mapRenderer.js // This comment is accurate.
 
@@ -197,8 +155,7 @@ function calculateDefenseRoll(defender, defenseType, attackerWeapon, actionConte
 }
 
 async function handleMapSelectionChangeWrapper(mapId) { // Made async to handle map loading properly
-    // TODO: Play ui_map_select_01.wav or a general ui_select_01.wav
-    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Using generic click as placeholder
 
     if (window.mapRenderer && typeof window.mapRenderer.handleMapSelectionChange === 'function') {
         const loadedMapData = await window.mapRenderer.handleMapSelectionChange(mapId); // assetManager.loadMap now returns .levels and .startPos.z
@@ -283,9 +240,56 @@ function spawnNpcsFromMapData(mapData) {
                 if (npcPlacementInfo.equippedWeaponId) {
                     newNpc.equippedWeaponId = npcPlacementInfo.equippedWeaponId;
                 }
-                // TODO: Add similar copying for other overridable properties like stats, specific health values if needed.
-                // This part needs to be selective based on what properties map instances can override.
-                // For now, we've handled id, definitionId, mapPos, name, faceData, and equippedWeaponId.
+
+                // Override stats if provided in map data
+                if (npcPlacementInfo.stats) {
+                    if (Array.isArray(newNpc.stats) && Array.isArray(npcPlacementInfo.stats)) { // Player-like stat array
+                        npcPlacementInfo.stats.forEach(instStat => {
+                            const baseStat = newNpc.stats.find(bs => bs.name === instStat.name);
+                            if (baseStat) {
+                                baseStat.points = instStat.points;
+                            } else {
+                                newNpc.stats.push({ ...instStat });
+                            }
+                        });
+                    } else if (typeof newNpc.stats === 'object' && typeof npcPlacementInfo.stats === 'object') { // NPC-like stat object
+                        for (const statName in npcPlacementInfo.stats) {
+                            newNpc.stats[statName] = npcPlacementInfo.stats[statName];
+                        }
+                    }
+                    logToConsole(`NPC ${newNpc.id} stats overridden from map data.`, "dev");
+                }
+
+                if (typeof window.initializeHealth === 'function') {
+                    window.initializeHealth(newNpc); // Initializes health based on (now potentially overridden) stats
+                } else {
+                    console.error(`initializeHealth function not found for NPC: ${newNpc.id}`);
+                }
+
+                // Override health values if provided in map data (AFTER initializeHealth sets defaults)
+                if (npcPlacementInfo.health) {
+                    for (const partName in npcPlacementInfo.health) {
+                        if (newNpc.health && newNpc.health[partName] && npcPlacementInfo.health[partName]) {
+                            const partOverrides = npcPlacementInfo.health[partName];
+                            if (partOverrides.max !== undefined) {
+                                newNpc.health[partName].max = partOverrides.max;
+                            }
+                            // Ensure current HP is not greater than new max HP.
+                            // If current is not specified in override, it remains default (usually max from initializeHealth).
+                            // If max was overridden to be lower than default current, cap current.
+                            if (partOverrides.current !== undefined) {
+                                newNpc.health[partName].current = Math.min(partOverrides.current, newNpc.health[partName].max);
+                            } else {
+                                // If only max was set and current was not, ensure current is not above new max.
+                                newNpc.health[partName].current = Math.min(newNpc.health[partName].current, newNpc.health[partName].max);
+                            }
+                            if (partOverrides.armor !== undefined) newNpc.health[partName].armor = partOverrides.armor;
+                            if (partOverrides.crisisTimer !== undefined) newNpc.health[partName].crisisTimer = partOverrides.crisisTimer;
+                            // Note: crisisDescription is usually generated dynamically.
+                        }
+                    }
+                    logToConsole(`NPC ${newNpc.id} health specifics overridden from map data.`, "dev");
+                }
 
 
                 if (typeof window.initializeHealth === 'function') {
@@ -427,7 +431,7 @@ function spawnNpcGroupInArea(groupIdOrTag, areaKey, count, targetFactionIdForHos
     return spawnedNpcIds;
 }
 // Make it globally accessible if NpcManager doesn't handle it
-window.spawnNpcGroupInArea = spawnNpcGroupInArea;
+// window.spawnNpcGroupInArea = spawnNpcGroupInArea; // This function is now part of NpcManager
 
 
 function spawnVehiclesFromMapData(mapData) {
@@ -1162,7 +1166,11 @@ function handleKeyDown(event) {
             event.preventDefault(); return;
         }
         if (event.key.toLowerCase() === 'c' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive && !gameState.isConstructionModeActive) { // 'C' for Crafting
-            toggleCraftingMenu();
+            if (window.CraftingUI && typeof window.CraftingUI.toggle === 'function') {
+                window.CraftingUI.toggle(); // Corrected call
+            } else {
+                logToConsole("CraftingUI or its toggle method is not available.", "error");
+            }
             event.preventDefault(); return;
         }
         if (event.key.toLowerCase() === 'b' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'B' for Build/Construction
@@ -1175,6 +1183,7 @@ function handleKeyDown(event) {
             }
             event.preventDefault(); return;
         }
+        // Removed duplicate block for 'c' and 'b' that was here
         if (event.key.toLowerCase() === 'k') { // Crouch (using 'k' as 'c' is for melee targeting)
             if (gameState.playerPosture === 'crouching') {
                 gameState.playerPosture = 'standing';
@@ -1377,7 +1386,11 @@ function handleKeyDown(event) {
                 window.mapRenderer.scheduleRender(); // Re-render
             }
             event.preventDefault(); break;
-        case 'c': case 'C':
+        // Case 'c' for melee targeting removed to prioritize 'C' for Crafting menu.
+        // Melee targeting can be re-assigned if needed.
+        // The following block for 'c' (melee) is now fully commented out as 'c' is used for Crafting.
+        /*
+        case 'c': case 'C': // Old Melee Targeting
             if (gameState.inventory.open || gameState.isInCombat) return;
 
             if (gameState.isTargetingMode && gameState.targetingType === 'melee') {
@@ -1398,6 +1411,7 @@ function handleKeyDown(event) {
                 window.mapRenderer.scheduleRender();
             }
             event.preventDefault(); break;
+        */
         case 'Escape':
             if (gameState.isConstructionModeActive && window.ConstructionUI) {
                 window.ConstructionUI.exitPlacementMode();
@@ -1580,18 +1594,47 @@ function populateKeybinds() {
     keybindsList.innerHTML = ''; // Clear existing items
 
     const keybinds = [
-        "Movement: W, A, S, D / Arrow Keys",
-        "Interact (selected item): F (when action menu is not active)",
+        "Movement (Walk): W, A, S, D / Arrow Keys",
+        "Interact (with highlighted item): F",
         "Open/Close Inventory: I",
-        "End Turn: T",
-        "Dash: X",
-        "Enter Combat Targeting: R or C",
-        "Confirm Target/Action: F (in targeting or action menu)",
-        "Cancel Targeting/Action Menu: Escape",
-        "Cycle Interactable Items: 1-9 (selects item directly)",
-        "Cycle Inventory Items: Up/Down Arrow Keys (in inventory)",
-        "Use/Equip Inventory Item: F (in inventory)",
-        "Toggle Controls Display: H"
+        "End Turn / Pass Time (Out of Combat): T",
+        "Dash (Spend Action for Moves): X",
+        "Toggle Look Mode: L",
+        "Toggle Prone: P",
+        "Toggle Crouch: K",
+        "Search for Traps: V",
+        "Wait (Skip Hours): Shift + T",
+        "Open/Close Console: ` (Backquote/Tilde)",
+        "Open/Close Crafting Menu: C",
+        "Open/Close Construction Menu: B",
+        "Change View Z-Level Down: < / , (Comma)",
+        "Change View Z-Level Up: > / . (Period)",
+        "Reset View to Player Z-Level: / (Forward Slash)",
+        "Zoom Map In: + (Plus) / = (Equals)",
+        "Zoom Map Out: - (Minus)",
+        "Toggle Controls Display: H",
+        "",
+        "--- Inventory Menu ---",
+        "Navigate Items: ArrowUp / ArrowDown / W / S",
+        "Use/Equip/Take Item: F / Enter",
+        "Drop Item (from container/hands): Shift + F",
+        "",
+        "--- Targeting Mode (Ranged/Melee) ---",
+        "Move Targeting Cursor: W, A, S, D / Arrow Keys",
+        "Change Targeting Z-Level Down: < / ,",
+        "Change Targeting Z-Level Up: > / .",
+        "Confirm Target: F",
+        "Cancel Targeting: Escape",
+        "",
+        "--- Action Menu ---",
+        "Navigate Actions: 1-9 (selects action)",
+        "Confirm Action: F / Enter",
+        "Cancel Action Menu: Escape",
+        "",
+        "--- Combat ---",
+        "Toggle Ranged Targeting Mode: R",
+        // Melee targeting is context-sensitive (auto-targets if adjacent) or via general targeting.
+        "Grapple/Release Grapple: G (in Attack Declare, Unarmed selected for attempt)"
     ];
 
     keybinds.forEach(kb => {
@@ -1704,88 +1747,88 @@ async function initialize() { // Made async
         // No explicit initEntityTooltip function is called here anymore.
         logToConsole("Entity tooltip event listeners will be set up with other mapContainer listeners.");
 
-        // Initialize Crafting UI
+        // Instantiate and Initialize Managers that depend on loaded assets
+        // Ensure these are awaited if their .initialize() is async
+
+        // InventoryManager (already instantiated globally, its initialize is simple)
+        if (window.inventoryManager && typeof window.inventoryManager.initialize === 'function') {
+            window.inventoryManager.initialize(); // Typically synchronous
+            logToConsole("InventoryManager initialized (or re-confirmed).", "info");
+        }
+
+        // CraftingManager
+        if (window.CraftingManager && window.assetManager && window.inventoryManager) {
+            window.craftingManager = new CraftingManager(window.gameState, window.assetManager, window.inventoryManager, window.xpManager, window.TimeManager);
+            await window.craftingManager.initialize(); // This is async
+            logToConsole("CraftingManager instance created and initialized.", "info");
+        } else {
+            console.error("SCRIPT.JS: CraftingManager or its core dependencies (AssetManager, InventoryManager) not available for initialization.");
+        }
+
+        // ConstructionManager
+        if (window.ConstructionManager && window.assetManager && window.inventoryManager && window.mapManager && window.TimeManager) {
+            window.constructionManager = new ConstructionManager(window.gameState, window.assetManager, window.inventoryManager, window.mapManager, window.TimeManager);
+            await window.constructionManager.initialize(); // This is async
+            logToConsole("ConstructionManager instance created and initialized.", "info");
+        } else {
+            console.error("SCRIPT.JS: ConstructionManager or its core dependencies not available for initialization.");
+        }
+
+        // TrapManager
+        if (window.TrapManager && window.assetManager && window.combatManager) {
+            window.trapManager = new TrapManager(window.gameState, window.assetManager, window.combatManager);
+            await window.trapManager.initialize(); // This is async
+            logToConsole("TrapManager instance created and initialized.", "info");
+        } else {
+            console.error("SCRIPT.JS: TrapManager or its core dependencies not available for initialization.");
+        }
+
+        // Initialize UIs (after their managers are ready)
         if (window.CraftingUI && typeof window.CraftingUI.initialize === 'function') {
             window.CraftingUI.initialize();
+            logToConsole("CraftingUI initialized.", "info");
         } else {
             console.warn("CraftingUI not available or initialize function missing.");
         }
 
-        // Initialize Vehicle Manager and UI (NEW)
-        if (window.vehicleManager && typeof window.vehicleManager.initialize === 'function') {
-            if (window.vehicleManager.initialize()) { // Check return value
-                logToConsole("VehicleManager initialized successfully.", "info");
-            } else {
-                logToConsole("VehicleManager initialization failed. Check logs.", "warn");
-            }
+        if (window.ConstructionUI && typeof window.ConstructionUI.initialize === 'function') {
+            window.ConstructionUI.initialize();
+            logToConsole("ConstructionUI initialized.", "info");
         } else {
-            console.warn("VehicleManager not available or initialize function missing.");
-            logToConsole("VehicleManager not found for initialization.", "warn");
+            console.warn("ConstructionUI not available or initialize function missing.");
+        }
+
+        // Other managers that were already instantiated globally can have their .initialize() called here if needed,
+        // especially if they also depend on assetManager.loadDefinitions() indirectly.
+        // For example, vehicleManager's initialize method is simple and synchronous currently.
+        if (window.vehicleManager && typeof window.vehicleManager.initialize === 'function') {
+            if (!window.vehicleManager.initialize()) { // It returns boolean
+                logToConsole("VehicleManager initialization failed (returned false).", "warn");
+            } else {
+                logToConsole("VehicleManager initialized successfully.", "info");
+            }
         }
         if (window.VehicleModificationUI && typeof window.VehicleModificationUI.initialize === 'function') {
             window.VehicleModificationUI.initialize();
-            logToConsole("VehicleModificationUI initialized.", "info");
-        } else {
-            console.warn("VehicleModificationUI not available or initialize function missing.");
-        }
-        // End Vehicle Manager and UI Init
-
-        // Initialize Companion Manager (NEW)
-        // Ensure factionManager is available if companionManager depends on it.
-        // For now, assuming factionManager is also global or initialized before this.
-        if (window.FactionManager && !window.factionManager) { // Check if constructor exists but instance doesn't
-            window.factionManager = new window.FactionManager(window.gameState, window.assetManager);
-            if (typeof window.factionManager.initialize === 'function') {
-                window.factionManager.initialize(); // Initialize it if it has such a method
-                logToConsole("FactionManager instance created and initialized for CompanionManager.", "info");
-            } else {
-                logToConsole("FactionManager instance created for CompanionManager (no initialize method found).", "info");
-            }
-        } else if (!window.factionManager) {
-            console.warn("FactionManager not available, CompanionManager might have limited functionality for reputation checks.");
         }
 
-        if (window.CompanionManager) { // Check if CompanionManager class exists
-            window.companionManager = new CompanionManager(window.gameState, window.assetManager, window.factionManager);
-            if (typeof window.companionManager.initialize === 'function') {
-                window.companionManager.initialize();
-                logToConsole("CompanionManager initialized.", "info");
-            } else {
-                logToConsole("CompanionManager instantiated (no initialize method found).", "info");
-            }
-        } else {
-            console.warn("CompanionManager class not found. Companion system will not be available.");
-            logToConsole("CompanionManager class not found for initialization.", "warn");
+        if (window.companionManager && typeof window.companionManager.initialize === 'function') {
+            window.companionManager.initialize(); // Synchronous
         }
-        // End Companion Manager Init
-
-        // Initialize Dynamic Event Manager (NEW)
-        if (window.DynamicEventManager) {
-            // Assuming npcManager, weatherManager, questManager might not be fully fleshed out or global yet.
-            // Pass undefined or basic stubs if necessary, or ensure they are initialized before this.
-            window.dynamicEventManager = new DynamicEventManager(window.gameState, window.assetManager, window.npcManager, window.weatherManager, window.questManager);
-            if (window.dynamicEventManager.initialize()) {
-                logToConsole("DynamicEventManager initialized.", "info");
+        if (window.dynamicEventManager && typeof window.dynamicEventManager.initialize === 'function') {
+            if (!window.dynamicEventManager.initialize()) { // Returns boolean
+                logToConsole("DynamicEventManager initialization failed (returned false).", "warn");
             } else {
-                logToConsole("DynamicEventManager initialization failed.", "warn");
+                logToConsole("DynamicEventManager initialized successfully.", "info");
             }
-        } else {
-            console.warn("DynamicEventManager class not found. Dynamic events will not occur.");
         }
-
-        // Initialize Procedural Quest Manager (NEW)
-        if (window.ProceduralQuestManager) {
-            // mapUtils is a placeholder for now.
-            window.proceduralQuestManager = new ProceduralQuestManager(window.gameState, window.assetManager, window.factionManager, window.questManager, window.npcManager, { /* mapUtils placeholder */ });
-            if (window.proceduralQuestManager.initialize()) {
-                logToConsole("ProceduralQuestManager initialized.", "info");
+        if (window.proceduralQuestManager && typeof window.proceduralQuestManager.initialize === 'function') {
+            if (!window.proceduralQuestManager.initialize()) { // Returns boolean
+                logToConsole("ProceduralQuestManager initialization failed (returned false).", "warn");
             } else {
-                logToConsole("ProceduralQuestManager initialization failed.", "warn");
+                logToConsole("ProceduralQuestManager initialized successfully.", "info");
             }
-        } else {
-            console.warn("ProceduralQuestManager class not found. Procedural quests will not be available.");
         }
-        // End Dynamic/Procedural Managers Init
 
 
         requestAnimationFrame(gameLoop); // Start the main game loop

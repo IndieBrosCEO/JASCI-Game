@@ -9,18 +9,19 @@ class TrapManager {
         this.logPrefix = "[TrapManager]";
     }
 
-    async initialize() {
-        try {
-            this.trapDefinitions = await this.assetManager.loadData('assets/definitions/traps.json');
+    async initialize() { // Keep async if other managers' initialize methods are, for consistency
+        if (this.assetManager && this.assetManager.trapDefinitionsData) {
+            this.trapDefinitions = this.assetManager.trapDefinitionsData;
             if (Object.keys(this.trapDefinitions).length === 0) {
-                logToConsole(`${this.logPrefix} No trap definitions found or loaded.`, 'orange');
+                logToConsole(`${this.logPrefix} No trap definitions found or loaded from AssetManager.`, 'orange');
             } else {
                 logToConsole(`${this.logPrefix} Initialized with ${Object.keys(this.trapDefinitions).length} trap definitions.`, 'blue');
             }
-        } catch (error) {
-            logToConsole(`${this.logPrefix} Error loading trap definitions: ${error.message}`, 'red');
-            this.trapDefinitions = {}; // Ensure it's an empty object on error
+        } else {
+            logToConsole(`${this.logPrefix} Error: Trap definitions (trapDefinitionsData) not found on AssetManager instance. Ensure 'traps.json' is loaded by AssetManager.`, 'red');
+            this.trapDefinitions = {};
         }
+        return true; // Indicate successful initialization, even if no traps loaded
     }
 
     /**
@@ -134,29 +135,54 @@ class TrapManager {
 
         if (!trapInstance) {
             logToConsole(`${this.logPrefix} Attempted to disarm non-existent trap: ${trapUniqueId}`, 'red');
-            return;
+            return false; // Indicate failure
         }
         if (trapInstance.state !== "detected") {
             logToConsole(`${this.logPrefix} Trap ${trapInstance.trapDefId} at (${trapInstance.x},${trapInstance.y}) is not in 'detected' state. Current state: ${trapInstance.state}`, 'orange');
-            return;
+            // Optionally, allow disarming 'hidden' traps if player has some special ability or is very lucky, but typically requires detection.
+            return false; // Indicate failure
         }
 
         const trapDef = this.getTrapDefinition(trapInstance.trapDefId);
         if (!trapDef) {
             logToConsole(`${this.logPrefix} Cannot disarm: Trap definition ${trapInstance.trapDefId} not found.`, 'red');
-            return;
+            return false; // Indicate failure
         }
 
-        const skillToUse = trapDef.disarmSkill || "Investigation";
+        // TODO: Implement trap disarming mechanics (skill checks, tools)
+        // This section is the primary implementation of the TODO.
+
+        const skillToUse = trapDef.disarmSkill || "Thievery"; // Changed default to Thievery as it's common in RPGs
         const dc = trapDef.disarmDC || 15;
+        let skillModifier = getSkillModifier(skillToUse, entity); // Assumes getSkillModifier is globally available
+        let toolUsed = null;
+
+        // Check for required tool and apply bonus/consumption
+        if (trapDef.toolRequiredToDisarm) {
+            const toolDef = trapDef.toolRequiredToDisarm;
+            if (!window.inventoryManager || !window.inventoryManager.hasItem(toolDef.itemId, 1, entity.inventory?.container?.items)) {
+                const toolName = window.assetManager ? (window.assetManager.getItem(toolDef.itemId)?.name || toolDef.itemId) : toolDef.itemId;
+                logToConsole(`${this.logPrefix} Cannot attempt to disarm '${trapDef.name}'. Missing tool: ${toolName}.`, 'orange');
+                if (window.uiManager && entity === this.gameState.player) window.uiManager.showToastNotification(`Missing ${toolName} to disarm!`, "error");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+                return false; // Cannot attempt without tool
+            }
+            toolUsed = toolDef.itemId;
+            if (toolDef.bonus) {
+                skillModifier += toolDef.bonus;
+                logToConsole(`${this.logPrefix} Used ${toolUsed}, bonus +${toolDef.bonus} to disarm check.`, 'silver');
+            }
+        }
+
         const disarmRoll = rollDie(20);
-        const skillModifier = getSkillModifier(skillToUse, entity);
         const totalRoll = disarmRoll + skillModifier;
 
         logToConsole(`${this.logPrefix} Attempting to disarm '${trapDef.name}'. Skill: ${skillToUse}, Roll: ${disarmRoll} + ${skillModifier} (mod) = ${totalRoll} vs DC: ${dc}`, 'silver');
 
+        let disarmSuccess = false;
         if (totalRoll >= dc) {
             // Success
+            disarmSuccess = true;
             trapInstance.state = "disarmed";
             const successMsg = trapDef.messageOnDisarmSuccess || `Successfully disarmed ${trapDef.name}.`;
             logToConsole(successMsg, 'green');
@@ -164,27 +190,24 @@ class TrapManager {
                 window.uiManager.showToastNotification(successMsg, 'success');
             }
 
-            if (trapDef.xpOnDisarm && entity === this.gameState.player) {
-                this.gameState.playerXP += trapDef.xpOnDisarm;
-                logToConsole(`${this.logPrefix} Player awarded ${trapDef.xpOnDisarm} XP for disarming. Total XP: ${this.gameState.playerXP}`, 'lime');
-                // TODO: Check for level up if characterManager exists
-                if (window.renderCharacterInfo) window.renderCharacterInfo();
+            if (trapDef.xpOnDisarm && entity === this.gameState.player && window.xpManager) {
+                window.xpManager.awardXp('disarm_trap', trapDef.xpOnDisarm, entity); // Use xpManager
+                // logToConsole(`${this.logPrefix} Player awarded ${trapDef.xpOnDisarm} XP for disarming.`, 'lime'); // xpManager handles logging
             }
 
-            if (trapDef.disarmedTile && window.mapManager && typeof window.mapManager.updateTileOnLayer === 'function') {
-                // Assuming traps are primarily on 'item' or a dedicated 'trap' layer.
-                // For now, let's assume 'item' layer for visual change.
-                // This might need adjustment based on how traps are visually represented.
-                // window.mapManager.updateTileOnLayer(trapInstance.x, trapInstance.y, trapInstance.z, 'item', trapDef.disarmedTile);
-                logToConsole(`${this.logPrefix} TODO: Update map tile for disarmed trap (visual change). Tile: ${trapDef.disarmedTile}`, 'grey');
+            if (trapDef.disarmedTileId && window.mapManager && typeof window.mapManager.updateTileOnLayer === 'function') {
+                // Example: change the tile sprite to a "disarmed trap" sprite
+                // window.mapManager.updateTileOnLayer(trapInstance.x, trapInstance.y, trapInstance.z, 'objects', trapDef.disarmedTileId);
+                logToConsole(`${this.logPrefix} TODO: Update map tile for disarmed trap (visual change). Tile ID: ${trapDef.disarmedTileId}`, 'grey');
             }
-            if (window.audioManager) window.audioManager.playUiSound('ui_positive_feedback_01.wav'); // Placeholder for disarm success sound
+            if (window.audioManager) window.audioManager.playSoundAtLocation('trap_disarm_success_01.wav', trapInstance, {}, { falloff: 'linear', maxDistance: 15 }); // Placeholder sound
 
         } else {
             // Failure
-            // Simple mishap: critical failure (natural 1) on roll OR roll significantly below DC
+            disarmSuccess = false;
             const mishapChance = trapDef.mishapChanceOnFailure || 0.25; // Default 25% chance to trigger on fail
-            const isMishap = disarmRoll === 1 || (Math.random() < mishapChance);
+            const isCriticalFailure = disarmRoll === 1; // Natural 1 always a mishap?
+            const isMishap = isCriticalFailure || (Math.random() < mishapChance);
 
             if (isMishap) {
                 const mishapMsg = trapDef.messageOnDisarmFailureMishap || `Disarm failed and triggered ${trapDef.name}!`;
@@ -193,18 +216,40 @@ class TrapManager {
                     window.uiManager.showToastNotification(mishapMsg, 'error');
                 }
                 this.triggerTrap(trapInstance.uniqueId, entity); // Trap triggers
-                if (window.audioManager) window.audioManager.playUiSound('ui_error_02.wav'); // Placeholder for disarm fail + trigger sound
+                if (window.audioManager) window.audioManager.playSoundAtLocation('trap_disarm_fail_trigger_01.wav', trapInstance, {}, { falloff: 'linear', maxDistance: 15 }); // Placeholder
             } else {
                 const safeFailMsg = trapDef.messageOnDisarmFailureSafe || `Failed to disarm ${trapDef.name}, but it didn't trigger.`;
                 logToConsole(safeFailMsg, 'orange');
                 if (window.uiManager && entity === this.gameState.player) {
                     window.uiManager.showToastNotification(safeFailMsg, 'warning');
                 }
-                // Trap remains 'detected'. Could add logic for increased DC or locking.
-                if (window.audioManager) window.audioManager.playUiSound('ui_negative_feedback_01.wav'); // Placeholder for disarm safe fail sound
+                if (window.audioManager) window.audioManager.playSoundAtLocation('trap_disarm_fail_safe_01.wav', trapInstance, {}, { falloff: 'linear', maxDistance: 10 }); // Placeholder
             }
         }
+
+        // Handle tool consumption based on success/failure and definition
+        if (toolUsed && trapDef.toolRequiredToDisarm.consumes) {
+            let consumeTool = false;
+            if (trapDef.toolRequiredToDisarm.consumeCondition === "always") {
+                consumeTool = true;
+            } else if (trapDef.toolRequiredToDisarm.consumeCondition === "on_success" && disarmSuccess) {
+                consumeTool = true;
+            } else if (trapDef.toolRequiredToDisarm.consumeCondition === "on_failure" && !disarmSuccess) {
+                consumeTool = true;
+            } else if (!trapDef.toolRequiredToDisarm.consumeCondition) { // Default: consume on use (always)
+                consumeTool = true;
+            }
+
+            if (consumeTool && window.inventoryManager) {
+                window.inventoryManager.removeItemsFromInventory(toolUsed, 1, entity.inventory.container.items);
+                const toolName = window.assetManager ? (window.assetManager.getItem(toolUsed)?.name || toolUsed) : toolUsed;
+                logToConsole(`${this.logPrefix} Tool ${toolName} consumed.`, "grey");
+                if (window.uiManager && entity === this.gameState.player) window.uiManager.showToastNotification(`${toolName} consumed.`, "info_minor");
+            }
+        }
+
         if (window.mapRenderer) window.mapRenderer.scheduleRender();
+        return disarmSuccess;
     }
 
     // --- Trigger Logic ---
@@ -240,7 +285,30 @@ class TrapManager {
 
         trapInstance.state = "triggered";
 
+        // TODO: Play trap activation sound (specific to trapDef.id or type, e.g., trap_spike_trigger_01.wav)
+        if (window.audioManager) {
+            const soundName = trapDef.soundOnTrigger || 'trap_default_trigger_01.wav'; // Use specific or default
+            window.audioManager.playSoundAtLocation(soundName, trapInstance, {}, { falloff: 'linear', maxDistance: 20 });
+        }
+
+        // TODO: Visual effect for trap activation (e.g., via AnimationManager)
+        if (window.animationManager && trapDef.visualEffectOnTrigger) {
+            window.animationManager.playAnimation(
+                trapDef.visualEffectOnTrigger.type, // e.g., 'explosion_small', 'dart_flight'
+                {
+                    pos: { ...trapInstance }, // x, y, z
+                    targetPos: (trapDef.visualEffectOnTrigger.target === 'victim' && victimEntity) ? { ...victimEntity.mapPos } : null,
+                    sprite: trapDef.visualEffectOnTrigger.sprite,
+                    duration: trapDef.visualEffectOnTrigger.duration || 500,
+                    // ... other effect-specific parameters from trapDef.visualEffectOnTrigger
+                }
+            );
+            logToConsole(`${this.logPrefix} Playing visual effect '${trapDef.visualEffectOnTrigger.type}' for trap ${trapDef.name}.`, 'silver');
+        }
+
+
         // Apply effects
+        // TODO: Traps could have different effects: damage, status effects, alerts (This is the implementation area)
         if (trapDef.effects && Array.isArray(trapDef.effects)) {
             trapDef.effects.forEach(effect => {
                 if (effect.type === "damage" && this.combatManager) {
@@ -276,6 +344,8 @@ class TrapManager {
                     // TODO: Implement NPC alerting logic based on radius and sound propagation.
                     if (window.audioManager) window.audioManager.playSoundAtLocation('ui_alarm_01.wav', trapInstance, { volume: 0.8 }); // Placeholder
                 }
+                // Note: The structure supports various effects (damage, status, alert).
+                // Status effect application depends on a global window.statusEffectsManager.
             });
         }
 
@@ -284,11 +354,7 @@ class TrapManager {
             logToConsole(`${this.logPrefix} TODO: Update map tile for triggered trap (visual change). Tile: ${trapDef.triggeredTile}`, 'grey');
         }
 
-        // Standard trap trigger sound
-        if (window.audioManager) {
-            // Choose sound based on trap type if possible, e.g., spike_trap_trigger.wav, dart_trap_fire.wav
-            window.audioManager.playSoundAtLocation('ui_error_02.wav', trapInstance, { volume: 0.7 }); // Generic trigger sound
-        }
+        // Sound was moved up to play before effects for better immediate feedback.
 
         if (window.mapRenderer) window.mapRenderer.scheduleRender();
     }
@@ -319,6 +385,116 @@ class TrapManager {
                 this.triggerTrap(trapInstance.uniqueId, characterEntity);
             }
         }
+    }
+
+    // TODO: Player should be able to place traps from inventory. This would involve:
+    // 1. UI for selecting a trap item from inventory.
+    // 2. Entering a placement mode (similar to construction).
+    // 3. Map click to choose location, with validation (e.g., valid surface, not on existing trap/object).
+    // 4. Consuming the trap item.
+    // 5. Adding a new trap instance to gameState.currentMapTraps.
+    // 6. Potential skill check (e.g., Traps/Survival) for successful placement or effectiveness.
+    // 7. AP/Time cost.
+    // A new method like `placePlayerTrap(trapItemId, x, y, z, placerEntity)` would be needed.
+
+    /**
+     * Player attempts to place a trap item from their inventory.
+     * @param {string} trapItemId - The item ID of the trap to place.
+     * @param {number} x - Target x-coordinate.
+     * @param {number} y - Target y-coordinate.
+     * @param {number} z - Target z-coordinate.
+     * @param {object} placerEntity - The entity placing the trap (usually player).
+     * @returns {boolean} True if placement was successful, false otherwise.
+     */
+    attemptPlaceTrap(trapItemId, x, y, z, placerEntity) {
+        if (!placerEntity || !placerEntity.inventory || !placerEntity.mapPos) {
+            logToConsole(`${this.logPrefix} Invalid placer entity for trap placement.`, 'red');
+            return false;
+        }
+
+        const trapItemDef = this.assetManager.getItem(trapItemId);
+        if (!trapItemDef || trapItemDef.type !== "TRAP_ITEM") { // Assuming a type for placeable trap items
+            logToConsole(`${this.logPrefix} Item ${trapItemId} is not a placeable trap.`, 'orange');
+            if (window.uiManager) window.uiManager.showToastNotification("Not a placeable trap.", "warning");
+            return false;
+        }
+
+        const trapDefId = trapItemDef.placesTrapId; // The actual trap definition ID this item places
+        const trapDef = this.getTrapDefinition(trapDefId);
+        if (!trapDef) {
+            logToConsole(`${this.logPrefix} Trap definition ${trapDefId} not found for item ${trapItemId}.`, 'red');
+            return false;
+        }
+
+        // 1. Validate location (e.g., valid surface, not on existing trap/object, not in wall)
+        if (!window.mapManager.isTilePassable(x, y, z, placerEntity, false)) { // Check if generally placeable, ignore entities for now
+            logToConsole(`${this.logPrefix} Cannot place trap at (${x},${y},${z}): Location not suitable (e.g. wall).`, 'orange');
+            if (window.uiManager) window.uiManager.showToastNotification("Cannot place trap there (obstructed).", "warning");
+            return false;
+        }
+        if (this.getTrapAt(x, y, z)) {
+            logToConsole(`${this.logPrefix} Cannot place trap at (${x},${y},${z}): Another trap already exists there.`, 'orange');
+            if (window.uiManager) window.uiManager.showToastNotification("Another trap is already here.", "warning");
+            return false;
+        }
+        // TODO: Add more checks, e.g., specific required terrain from trapDef.placeableOnTerrain = ["floor", "dirt"]
+
+        // 2. Skill Check (e.g., Traps/Survival) for successful placement or effectiveness.
+        const skillToUse = trapDef.placementSkill || "Survival"; // Or "Traps" if such a skill exists
+        const placementDC = trapDef.placementDC || 10;
+        const skillModifier = getSkillModifier(skillToUse, placerEntity);
+        const placementRoll = rollDie(20) + skillModifier;
+
+        logToConsole(`${this.logPrefix} Attempting to place trap '${trapDef.name}'. Skill: ${skillToUse}, Roll: ${placementRoll} vs DC: ${placementDC}`, 'silver');
+
+        if (placementRoll < placementDC) {
+            logToConsole(`${this.logPrefix} Failed to place trap '${trapDef.name}'. Skill check failed.`, 'orange');
+            if (window.uiManager && placerEntity === this.gameState.player) window.uiManager.showToastNotification(`Failed to place ${trapDef.name} (skill check).`, "warning");
+            // Optional: Consume item even on failure? Or only on critical failure?
+            if (rollDie(4) === 1) { // 25% chance to consume item on placement failure
+                window.inventoryManager.removeItemsFromInventory(trapItemId, 1, placerEntity.inventory.container.items);
+                if (window.uiManager && placerEntity === this.gameState.player) window.uiManager.showToastNotification(`${trapItemDef.name} was wasted!`, "error");
+            }
+            if (window.audioManager) window.audioManager.playSoundAtLocation('trap_place_fail_01.wav', { x, y, z }, {}, { falloff: 'linear', maxDistance: 10 });
+            return false;
+        }
+
+        // 3. Consume the trap item.
+        if (!window.inventoryManager.removeItemsFromInventory(trapItemId, 1, placerEntity.inventory.container.items)) {
+            logToConsole(`${this.logPrefix} Failed to place trap: Could not remove ${trapItemId} from inventory (should not happen if hasItem was checked prior).`, 'red');
+            return false; // Should have been checked before calling this
+        }
+
+        // 4. Add a new trap instance to gameState.currentMapTraps.
+        const newTrapInstance = {
+            trapDefId: trapDefId,
+            x: x,
+            y: y,
+            z: z,
+            state: "hidden", // Placed traps are initially hidden
+            uniqueId: `trap_${this.gameState.currentMapId}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+            placedBy: placerEntity.id // Optional: track who placed it
+        };
+        this.gameState.currentMapTraps.push(newTrapInstance);
+
+        const successMsg = trapDef.messageOnPlaceSuccess || `Successfully placed ${trapDef.name}.`;
+        logToConsole(successMsg, 'green');
+        if (window.uiManager && placerEntity === this.gameState.player) {
+            window.uiManager.showToastNotification(successMsg, 'success');
+        }
+        if (window.audioManager) window.audioManager.playSoundAtLocation(trapDef.soundOnPlace || 'trap_place_success_01.wav', { x, y, z }, {}, { falloff: 'linear', maxDistance: 15 });
+
+
+        // 5. AP/Time cost - should be handled by the caller (e.g., Interaction.js or TurnManager.js)
+        // Example: placerEntity.spendActionPoints(AP_COST_PLACE_TRAP);
+
+        // 6. XP Award
+        if (trapDef.xpOnPlace && placerEntity === this.gameState.player && window.xpManager) {
+            window.xpManager.awardXp('place_trap', trapDef.xpOnPlace, placerEntity);
+        }
+
+        if (window.mapRenderer) window.mapRenderer.scheduleRender(); // To show the trap if it has a visible "hidden" state sprite
+        return true;
     }
 }
 

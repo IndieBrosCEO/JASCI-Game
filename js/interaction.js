@@ -80,7 +80,16 @@ function _getActionsForItem(it) {
                     actions.push("Add Input"); // Simple for now, UI would list what input
                 }
             }
-            // TODO: Add actions for defensive structures (Activate, Reload, Repair)
+            if (def && def.tags && def.tags.includes("defensive_structure")) {
+                // Example actions for a defensive structure
+                if (structureInstance.isActive) { // Assuming an 'isActive' state property
+                    actions.push("Deactivate");
+                } else {
+                    actions.push("Activate");
+                }
+                actions.push("Reload Ammo"); // Assumes it might need ammo
+                actions.push("Repair Structure"); // Generic repair
+            }
             actions.push("Dismantle"); // Placeholder
         }
     }
@@ -108,23 +117,39 @@ function _performAction(action, it) {
     }
 
     // Get the actual tile ID from the map (it might be an object)
+    // For state changes like opening/closing doors, these are typically on the 'middle' or 'building' layer.
+    // If interactable items on the 'bottom' layer were to change their tile ID, this logic would need
+    // to know the source layer of the interaction. For now, 'middle' is the primary target for such changes.
     let tileOnMapRaw = levelData.middle[y]?.[x];
-    // TODO: Determine if we need to check 'bottom' as well, or if 'middle' is always the target for state changes.
-    // For doors, 'middle' is correct. For items that might be on 'bottom', this needs thought.
-    // For now, focusing on 'middle' as doors are the primary issue.
+    let targetLayerForStateChange = 'middle'; // Default layer to modify for state changes
+
+    // If the itemType suggests it might be a 'building' layer item (e.g. some constructions)
+    // and 'middle' is empty, consider 'building'. This is a heuristic.
+    // A more robust system would store the sourceLayer with the interactable item.
+    if ((!tileOnMapRaw || tileOnMapRaw === "") && (itemType === "construction_instance" || itemType === "door")) { // Doors can also be on building
+        tileOnMapRaw = levelData.building?.[y]?.[x];
+        if (tileOnMapRaw && tileOnMapRaw !== "") {
+            targetLayerForStateChange = 'building';
+            logToConsole(`Interaction: Action '${action}' on '${id}' will target 'building' layer.`, 'debug');
+        }
+    }
 
     let currentTileIdOnMap = (typeof tileOnMapRaw === 'object' && tileOnMapRaw !== null && tileOnMapRaw.tileId !== undefined)
         ? tileOnMapRaw.tileId
         : tileOnMapRaw;
 
     // it.id is the ID of the tile definition (e.g., "WDH"). 
-    // currentTileIdOnMap is what's currently on the map at that x,y,z.
+    // currentTileIdOnMap is what's currently on the map at that x,y,z on the targetLayerForStateChange.
     // For state changes (like opening a door), currentTileIdOnMap is what we compare against DOOR_OPEN_MAP etc.
     // And it.id (the definition ID) is used for getting the name.
 
-    if (!currentTileIdOnMap && action !== "Cancel") { // Allow "Cancel" even if tile somehow vanished
-        logToConsole(`Error: No tile found on middle layer at (${x},${y}, Z:${z}) to perform action '${action}'. Expected tile around ID: ${id}`);
-        return;
+    if (!currentTileIdOnMap && action !== "Cancel" && (targetLayerForStateChange === 'middle' || targetLayerForStateChange === 'building')) {
+        // Only error if we expected something on middle/building and it's not there.
+        // Actions on vehicles, NPCs, etc., don't rely on currentTileIdOnMap from these layers.
+        if (itemType === "door" || itemType === "container" || (itemType === "construction_instance" && tileDef && tileDef.tags && tileDef.tags.includes("door_like"))) { // Check if action was on a map tile based item
+            logToConsole(`Error: No tile found on ${targetLayerForStateChange} layer at (${x},${y}, Z:${z}) to perform action '${action}'. Expected tile around ID: ${id}`);
+            return;
+        }
     }
 
     if (!assetManagerInstance || !assetManagerInstance.tilesets) { // Added check for tilesets
@@ -153,7 +178,7 @@ function _performAction(action, it) {
                 window.gameState.player.isInVehicle = vehicle.id;
                 // Player's individual map presence (sprite) will be handled by render logic
                 logToConsole(`Entered ${vehicle.name}.`, "info");
-                // TODO: Add sound effect for entering vehicle
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // TODO: Play vehicle_enter_01.wav when available
             }
         } else if (action === "Exit Vehicle") {
             if (window.gameState.player.isInVehicle === vehicle.id) {
@@ -165,34 +190,39 @@ function _performAction(action, it) {
                 // If vehicle is moving, player exits at its current location.
                 window.gameState.playerPos = { ...vehicle.mapPos };
                 logToConsole(`Exited ${vehicle.name}. You are now at (${vehicle.mapPos.x}, ${vehicle.mapPos.y}, ${vehicle.mapPos.z})`, "info");
-                // TODO: Add sound effect for exiting vehicle
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // TODO: Play vehicle_exit_01.wav when available
             } else {
                 logToConsole("You are not in this vehicle to exit.", "warn");
             }
         } else if (action === "Access Cargo") {
-            logToConsole(`Accessing cargo of ${vehicle.name}... (UI to be implemented)`, "info");
-            // TODO: Open vehicle cargo UI, similar to inventory container UI.
-            // Needs vehicle.cargoDetails to be populated by vehicleManager.
-            if (window.uiManager && typeof window.uiManager.openVehicleCargoUI === 'function') {
-                // window.uiManager.openVehicleCargoUI(vehicle.id);
+            // TODO: Implement a dedicated Vehicle Cargo UI. For now, log and do nothing functional.
+            logToConsole(`Accessing cargo of ${vehicle.name}... (Dedicated Vehicle Cargo UI to be implemented).`, "info");
+            if (window.uiManager && typeof window.uiManager.openVehicleCargoUI === 'function') { // Check if a generic UI manager exists
+                // window.uiManager.openVehicleCargoUI(vehicle.id); // This function does not exist yet
             } else {
-                // logToConsole("Vehicle Cargo UI manager not available.", "warn");
+                logToConsole("No dedicated Vehicle Cargo UI or generic UIManager to handle this yet.", "warn");
             }
         } else if (action === "Refuel") {
-            logToConsole(`Attempting to refuel ${vehicle.name}... (Full logic later)`, "info");
-            // TODO: Prompt for fuel item from player inventory, then call:
-            // window.vehicleManager.refuelVehicle(vehicle.id, amountFromItem, fuelItemId);
-        } else if (action === "Repair Parts") {
-            logToConsole(`Opening repair interface for ${vehicle.name}... (UI to be implemented)`, "info");
-            // TODO: Open vehicle repair UI (calls vehicleManager.repairVehiclePart)
-            if (window.uiManager && typeof window.uiManager.openVehicleModificationUI === 'function') {
-                // window.uiManager.openVehicleModificationUI(vehicle.id, 'repair'); // Specify mode
+            // TODO: Implement UI to select fuel item from player inventory.
+            // For now, simulate attempting to use a generic "gas_can" if player has one.
+            logToConsole(`Attempting to refuel ${vehicle.name}...`, "info");
+            if (window.inventoryManager && window.inventoryManager.hasItem("gas_can_fuel", 1)) { // Assuming "gas_can_fuel" item ID
+                if (window.vehicleManager && window.vehicleManager.refuelVehicle(vehicle.id, 20, "gas_can_fuel")) { // Assuming gas can gives 20 fuel
+                    window.inventoryManager.removeItems("gas_can_fuel", 1, window.gameState.inventory.container.items);
+                    logToConsole("Refueled with a gas can.", "event-success");
+                    if (window.updateInventoryUI) window.updateInventoryUI();
+                } else {
+                    logToConsole("Refuel failed (e.g., tank full or vehicleManager error).", "warn");
+                }
+            } else {
+                logToConsole("No gas can in inventory to refuel.", "orange");
             }
-        } else if (action === "Modify Parts") {
-            logToConsole(`Opening modification interface for ${vehicle.name}... (UI to be implemented)`, "info");
-            // TODO: Open vehicle modification UI (add/remove parts)
-            if (window.uiManager && typeof window.uiManager.openVehicleModificationUI === 'function') {
-                // window.uiManager.openVehicleModificationUI(vehicle.id, 'modify'); // Specify mode
+        } else if (action === "Repair Parts" || action === "Modify Parts") {
+            logToConsole(`Opening modification/repair interface for ${vehicle.name}...`, "info");
+            if (window.VehicleModificationUI && typeof window.VehicleModificationUI.toggle === 'function') {
+                window.VehicleModificationUI.toggle(vehicle.id); // toggle will open if closed
+            } else {
+                logToConsole("VehicleModificationUI not available.", "warn");
             }
         }
         // Note: AP cost for vehicle actions is handled by the caller (performSelectedAction)

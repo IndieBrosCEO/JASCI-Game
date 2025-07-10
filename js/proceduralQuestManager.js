@@ -1,19 +1,37 @@
 ﻿// js/proceduralQuestManager.js
 
 class ProceduralQuestManager {
-    constructor(gameState, assetManager, factionManager, questManager, npcManager, mapUtils) {
+    constructor(gameState, assetManager, factionManager, questManager /* npcManager, mapUtils - now global */) {
         this.gameState = gameState;
         this.assetManager = assetManager;
         this.factionManager = factionManager;
         this.questManager = questManager; // To add to activeQuests
-        this.npcManager = npcManager;     // For finding/placing NPCs
-        this.mapUtils = mapUtils;         // For location-based objective generation
+        this.npcManager = window.npcManager; // Use global instance
+        this.mapUtils = window.mapUtils;     // Use global instance
         this.questTemplates = {};
+        // TODO: Expand with more quest types (escort, defend, explore, use item on target, etc.).
+        //       This would involve new objective types, generation logic, and completion checks.
+        // TODO: Deeper integration with dialogue system for quest giving/briefing/turn-in.
+        //       Current system uses actions in dialogue choices. More dynamic text and NPC reactions needed.
+        // TODO: Better reward generation (specific items, XP amounts based on difficulty, faction standing changes).
+        //       Currently uses fixed rewards from templates.
+        // TODO: Implement a proper Quest Tracking UI for the player.
+        //       Currently, quests are logged to console or managed via dialogue.
+        // TODO: Enhance persistence of active/completed quests, especially if target entities/items are dynamic
+        //       and need specific state restoration on game load beyond what gameState serialization provides.
     }
 
     initialize() {
         if (!this.assetManager) {
             logToConsole("ProceduralQuestManager Error: AssetManager not available.", "error");
+            return false;
+        }
+        if (!this.npcManager) {
+            logToConsole("ProceduralQuestManager Error: NpcManager (window.npcManager) not available.", "error");
+            return false;
+        }
+        if (!this.mapUtils) {
+            logToConsole("ProceduralQuestManager Error: MapUtils (window.mapUtils) not available.", "error");
             return false;
         }
 
@@ -25,7 +43,6 @@ class ProceduralQuestManager {
         } else {
             logToConsole("ProceduralQuestManager Error: Could not access procedural quest templates from AssetManager or none were loaded.", "error");
             // this.questTemplates will remain {}
-            // Depending on strictness, could return false.
         }
 
         if (!this.gameState.availableProceduralQuests) {
@@ -60,6 +77,8 @@ class ProceduralQuestManager {
             if (playerReputation > maxRepStatus.maxThreshold) return false; // Assumes maxThreshold is upper bound of the status
 
             // TODO: Add more conditions: player level, active quests of this type, global flags
+            // Example: if (template.minPlayerLevel && this.gameState.playerLevel < template.minPlayerLevel) return false;
+            // Example: if (template.requiresGlobalFlag && !this.gameState.globalFlags[template.requiresGlobalFlag]) return false;
             return true;
         });
 
@@ -99,6 +118,8 @@ class ProceduralQuestManager {
             finalDisplayName = finalDisplayName.replace("{npcNamePlural}", npcNamePlural);
 
             // TODO: Resolve areaKey for spawning: generatedDetails.targetArea = this.mapUtils.findArea(...)
+            //       Consider proximity to quest giver, avoiding player's current location, and ensuring pathability.
+            //       The current findRandomPointInAreaType is a good start but might need more constraints.
             generatedDetails.targetArea = this.mapUtils.findRandomPointInAreaType(generatedDetails.areaType, generatedDetails.areaRadius, this.mapUtils.getFactionBaseCoords(factionId));
             if (!generatedDetails.targetArea) {
                 logToConsole(`PQM Error: Could not find suitable area for kill quest ${selectedTemplate.id}.`, "error");
@@ -110,22 +131,33 @@ class ProceduralQuestManager {
             generatedDetails.actualItemId = itemToDeliverId; // Store the chosen item
 
             // TODO: Find/designate recipient NPC and destination location
+            //       Ensure NPC is essential or persistent if the quest is long.
+            //       Ensure destination is reachable and makes sense for the NPC.
+            //       Consider using mapUtils to find a suitable named location or dynamic point.
             const recipientNpc = this.npcManager.findNpcByTagOrId(generatedDetails.recipientNpcTag, generatedDetails.destinationAreaKey);
-            const destinationLocation = this.mapUtils.getNamedLocationCoords(generatedDetails.destinationAreaKey);
+            const destinationLocation = this.mapUtils.getNamedLocationCoords(generatedDetails.destinationAreaKey) || this.mapUtils.findRandomPointInAreaType(generatedDetails.destinationAreaType || "any_settlement", 5, recipientNpc ? { x: recipientNpc.x, y: recipientNpc.y, z: recipientNpc.z } : null);
+
 
             if (!itemDef || !recipientNpc || !destinationLocation) {
-                logToConsole(`PQM Error: Could not generate details for delivery quest ${selectedTemplate.id} (item, NPC, or location missing).`, "error");
+                logToConsole(`PQM Error: Could not generate details for delivery quest ${selectedTemplate.id} (item, NPC, or location missing/unfound).`, "error");
                 return null;
             }
             generatedDetails.recipientNpcId = recipientNpc.id;
-            generatedDetails.destinationCoords = destinationLocation.coords;
+            generatedDetails.destinationCoords = destinationLocation.coords || destinationLocation; // destinationLocation might be coords directly if from findRandomPoint
+            generatedDetails.destinationName = destinationLocation.name || `area near ${Math.round(generatedDetails.destinationCoords.x)},${Math.round(generatedDetails.destinationCoords.y)}`;
+
 
             finalDescription = finalDescription.replace("{itemName}", itemDef.name)
                 .replace("{recipientName}", recipientNpc.name)
-                .replace("{destinationName}", destinationLocation.name || generatedDetails.destinationAreaKey);
+                .replace("{destinationName}", generatedDetails.destinationName);
             finalDisplayName = finalDisplayName.replace("{itemName}", itemDef.name); // If pattern uses it
         }
         // Add more else if blocks for other quest types (scout_location, retrieve_item_from_area_or_npcs)
+        // TODO: For "retrieve_item_from_area_or_npcs":
+        //       - Select an appropriate item (not too common, not quest-critical elsewhere).
+        //       - Determine if it's in a container, on the ground in an area, or carried by an NPC.
+        //       - If NPC, ensure NPC can be spawned or exists and is not essential for other reasons.
+        //       - Ensure the area is reachable and makes sense.
 
         const newQuestOffer = {
             questInstanceId: questInstanceId,
@@ -139,6 +171,16 @@ class ProceduralQuestManager {
             status: "offered",
             offerTimeTicks: this.gameState.currentTurn // Or a more precise game tick
         };
+
+        // TODO: Check if character already has this quest or a similar one.
+        // Check against active and already available (but not yet accepted) procedural quests.
+        const similarQuestExists = this.gameState.activeQuests.some(q => q.templateId === newQuestOffer.templateId && q.status === "active") ||
+            this.gameState.availableProceduralQuests.some(q => q.templateId === newQuestOffer.templateId);
+
+        if (similarQuestExists) {
+            logToConsole(`PQM: Similar quest (Template: ${newQuestOffer.templateId}) already active or offered. Skipping generation of new offer.`, "info");
+            return null; // Don't offer a duplicate
+        }
 
         this.gameState.availableProceduralQuests.push(newQuestOffer);
         logToConsole(`PQM: Generated quest offer "${newQuestOffer.displayName}" (ID: ${questInstanceId}) for faction ${factionId}.`, "info");
@@ -167,6 +209,10 @@ class ProceduralQuestManager {
                 logToConsole(`  ${index + 1}. ${obj.text} (${obj.completed ? 'Completed' : 'Pending'})`, "info");
             });
         }
+        // TODO: Notify player through a more robust UI element (e.g., quest log update, toast message).
+        // Currently relies on console logs and dialogue manager updates.
+        if (window.uiManager) window.uiManager.showToastNotification(`Quest Accepted: ${questToActivate.displayName}`, "success");
+        if (window.QuestLogUI) window.QuestLogUI.refreshQuestLog(); // Assuming a QuestLogUI exists and has this method
 
         // If it's a delivery quest, give the player the item
         if (questToActivate.generatedDetails.type === "deliver_item_to_npc_at_location" && questToActivate.generatedDetails.actualItemId) {
@@ -245,6 +291,7 @@ class ProceduralQuestManager {
                 }
             }
             // TODO: Update Quest Log UI
+            if (window.QuestLogUI) window.QuestLogUI.refreshQuestLog();
         }
     }
 
@@ -257,51 +304,92 @@ class ProceduralQuestManager {
         return quest;
     }
 
-    // This would be called by questManager when a relevant game event happens (e.g. NPC killed)
+    // This would be called by questManager when a relevant game event happens (e.g. NPC killed, item acquired, area entered)
     checkObjectiveCompletion(eventData) {
-        // eventData could be { type: "npc_killed", npcId: "...", npcTags: [...] }
-        // or { type: "item_delivered", itemId: "...", recipientId: "..." }
+        // eventData examples:
+        // { type: "npc_killed", npcId: "...", npcTags: [...], coordinates: {x,y,z} }
+        // { type: "item_given_to_npc", itemId: "...", recipientNpcId: "..." }
+        // { type: "item_acquired", itemId: "...", quantity: X }
+        // { type: "area_entered", areaId: "...", coordinates: {x,y,z} }
+        // { type: "interact_with_object", objectId: "...", objectType: "..." }
+
         let questLogNeedsUpdate = false;
         this.gameState.activeQuests.forEach(quest => {
-            if (quest.status === "active" && quest.isProcedural) {
+            if (quest.status === "active" && quest.isProcedural) { // Ensure it's a procedural quest
                 const details = quest.generatedDetails;
-                let objectiveCompletedThisCheck = false;
+                let objectiveCompletedThisCheck = false; // Tracks if any objective within *this* quest got completed in this check cycle
 
-                if (details.type === "kill_tagged_npcs_in_area" && eventData.type === "npc_killed") {
-                    if (eventData.npcTags.includes(details.npcTag)) {
-                        // Optional: Check if killed NPC was in the targetArea if that's strict
-                        const objective = quest.objectives.find(o => o.targetCount); // Assume one kill objective
-                        if (objective && !objective.completed) {
-                            objective.currentCount = (objective.currentCount || 0) + 1;
-                            logToConsole(`PQM: Kill objective for "${quest.displayName}" updated: ${objective.currentCount}/${objective.targetCount} ${details.npcTag}s.`, "info");
-                            if (objective.currentCount >= objective.targetCount) {
+                quest.objectives.forEach(objective => {
+                    if (objective.completed) return; // Skip already completed objectives
+
+                    let currentObjectiveProgressed = false;
+
+                    switch (details.type) {
+                        case "kill_tagged_npcs_in_area":
+                            if (eventData.type === "npc_killed" && eventData.npcTags.includes(details.npcTag)) {
+                                // Optional: Check if killed NPC was in the targetArea if that's strict
+                                // For now, any NPC with the tag counts.
+                                if (objective.targetCount) { // Check if this objective is the kill count one
+                                    objective.currentCount = (objective.currentCount || 0) + 1;
+                                    logToConsole(`PQM: Kill objective for "${quest.displayName}" updated: ${objective.currentCount}/${objective.targetCount} ${details.npcTag}s.`, "info");
+                                    if (objective.currentCount >= objective.targetCount) {
+                                        objective.completed = true;
+                                        objectiveCompletedThisCheck = true;
+                                    }
+                                    currentObjectiveProgressed = true;
+                                }
+                            }
+                            break;
+                        case "deliver_item_to_npc_at_location":
+                            if (eventData.type === "item_given_to_npc" &&
+                                eventData.itemId === details.actualItemId &&
+                                eventData.recipientNpcId === details.recipientNpcId) {
+                                // Optional: Check if player is at details.destinationCoords (or if NPC is there)
+                                // This check assumes the dialogue/interaction system verifies location if necessary
                                 objective.completed = true;
                                 objectiveCompletedThisCheck = true;
+                                currentObjectiveProgressed = true;
+                                logToConsole(`PQM: Delivery objective for "${quest.displayName}" completed.`, "info");
                             }
-                            questLogNeedsUpdate = true;
-                        }
+                            break;
+                        case "retrieve_item_from_area_or_npcs": // Example for a new type
+                            if (eventData.type === "item_acquired" && eventData.itemId === details.targetItemId) {
+                                // This is a simple version. May need to track if it's THE specific item from a location/NPC.
+                                // For now, any acquisition of the item type counts.
+                                objective.currentCount = (objective.currentCount || 0) + (eventData.quantity || 1);
+                                if (objective.currentCount >= details.itemQuantity) {
+                                    objective.completed = true;
+                                    objectiveCompletedThisCheck = true;
+                                }
+                                currentObjectiveProgressed = true;
+                                logToConsole(`PQM: Retrieve objective for "${quest.displayName}" updated: ${objective.currentCount}/${details.itemQuantity} ${details.targetItemId}s.`, "info");
+                            }
+                            break;
+                        case "scout_location": // Example for a new type
+                            if (eventData.type === "area_entered" && eventData.areaId === details.targetAreaId) {
+                                // Could also check proximity to specific coordinates via eventData.coordinates
+                                objective.completed = true;
+                                objectiveCompletedThisCheck = true;
+                                currentObjectiveProgressed = true;
+                                logToConsole(`PQM: Scout objective for "${quest.displayName}" (Area: ${details.targetAreaId}) completed.`, "info");
+                            }
+                            break;
+                        // Add more objective type checks here
                     }
-                } else if (details.type === "deliver_item_to_npc_at_location" && eventData.type === "item_given_to_npc") {
-                    if (eventData.itemId === details.actualItemId && eventData.recipientNpcId === details.recipientNpcId) {
-                        // Optional: Check if player is at details.destinationCoords (or if NPC is there)
-                        const objective = quest.objectives.find(o => o.text.startsWith("Deliver"));
-                        if (objective && !objective.completed) {
-                            objective.completed = true;
-                            objectiveCompletedThisCheck = true;
-                            logToConsole(`PQM: Delivery objective for "${quest.displayName}" completed.`, "info");
-                            questLogNeedsUpdate = true;
-                        }
-                    }
-                }
-                // Add more objective type checks
+                    if (currentObjectiveProgressed) questLogNeedsUpdate = true;
+                });
 
+
+                // After checking all objectives for *this* quest, see if the whole quest is complete
                 if (objectiveCompletedThisCheck && quest.objectives.every(obj => obj.completed)) {
                     this.completeProceduralQuest(quest.questInstanceId);
                 }
             }
         });
+
         if (questLogNeedsUpdate) {
-            // TODO: Signal Quest Log UI to refresh
+            // Signal Quest Log UI to refresh
+            if (window.QuestLogUI) window.QuestLogUI.refreshQuestLog();
         }
     }
 
@@ -315,7 +403,12 @@ class ProceduralQuestManager {
 
             logToConsole(`Procedural Quest "${quest.displayName}" COMPLETED!`, "event-success");
 
+            // TODO: Play quest completion sound/ fanfare (e.g., ui_quest_complete_01.wav)
+            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.9 }); // Generic confirm for now
+
             // Apply rewards
+            // TODO: More complex reward logic (e.g., item choice, faction standing changes based on performance/difficulty).
+            // Current system uses fixed rewards from the quest template.
             if (quest.reward) {
                 if (quest.reward.xp) {
                     this.gameState.XP += quest.reward.xp;
@@ -327,14 +420,12 @@ class ProceduralQuestManager {
                 }
                 if (quest.reward.reputationChange && this.factionManager) {
                     const repChange = quest.reward.reputationChange;
-                    const targetFactionId = repChange.factionIdSource ? quest.factionId : repChange.factionId;
+                    const targetFactionId = repChange.factionIdSource === "quest_giver_faction" ? quest.factionId : repChange.factionId;
                     this.factionManager.adjustPlayerReputation(targetFactionId, repChange.amount, `quest_completed_${quest.templateId}`);
                 }
                 if (quest.reward.itemPoolReward && window.inventoryManager && window.assetManager) {
                     // Placeholder: Grant one random item from the pool
                     const poolId = Array.isArray(quest.reward.itemPoolReward) ? quest.reward.itemPoolReward[Math.floor(Math.random() * quest.reward.itemPoolReward.length)] : quest.reward.itemPoolReward;
-                    // This assumes itemPoolReward is an array of item IDs or a single item ID.
-                    // A real item pool system would be more complex (e.g. defined in items.json or loot_pools.json)
                     const itemDef = this.assetManager.getItem(poolId);
                     if (itemDef) {
                         window.inventoryManager.addItemToInventoryById(itemDef.id, 1);
@@ -342,9 +433,13 @@ class ProceduralQuestManager {
                     }
                 }
             }
-            if (window.renderCharacterInfo) window.renderCharacterInfo();
-            if (window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
-            // TODO: Update Quest Log UI
+            if (window.renderCharacterInfo) window.renderCharacterInfo(); // For XP updates
+            if (window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay(); // For gold updates
+            // TODO: Update Quest Log UI more explicitly here if it exists.
+            if (window.QuestLogUI) window.QuestLogUI.refreshQuestLog();
+            if (window.uiManager) window.uiManager.showToastNotification(`Quest Completed: ${quest.displayName}`, "success", 5000);
+
+
         }
     }
 
@@ -356,9 +451,17 @@ function rollDiceNotationRange(rangeOrDice) {
     if (Array.isArray(rangeOrDice) && rangeOrDice.length === 2) {
         return Math.floor(Math.random() * (rangeOrDice[1] - rangeOrDice[0] + 1)) + rangeOrDice[0];
     } else if (typeof rangeOrDice === 'string') {
-        return rollDiceNotation(rangeOrDice); // Assumes global rollDiceNotation
+        // Ensure rollDiceNotation is available globally or handle its absence
+        if (typeof window.rollDiceNotation === 'function') {
+            return window.rollDiceNotation(rangeOrDice);
+        } else {
+            console.warn(`PQM: rollDiceNotation function not found globally for dice string: ${rangeOrDice}. Defaulting to 1.`);
+            return 1;
+        }
     }
-    return 1; // Default
+    // Default for invalid input or if not array/string (e.g., single number for fixed amount)
+    if (typeof rangeOrDice === 'number') return rangeOrDice;
+    return 1;
 }
 
 
@@ -366,6 +469,8 @@ function rollDiceNotationRange(rangeOrDice) {
 if (typeof window !== 'undefined') {
     // Depends on gameState, assetManager, factionManager, questManager, npcManager, mapUtils
     // Defer instantiation to main script's initialize function
-    // window.proceduralQuestManager = new ProceduralQuestManager(window.gameState, window.assetManager, window.factionManager, window.questManager, window.npcManager, window.mapUtils);
+    // Example in main script:
+    // window.proceduralQuestManager = new ProceduralQuestManager(window.gameState, window.assetManager, window.factionManager, window.questManager);
+    // npcManager and mapUtils are now expected to be globally available as window.npcManager and window.mapUtils when PQM is instantiated.
 }
 window.ProceduralQuestManager = ProceduralQuestManager;

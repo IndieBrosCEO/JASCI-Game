@@ -47,13 +47,26 @@ const CraftingUI = {
 
     // Modified to accept stationType
     open: function (stationType = null) {
-        if (!this.craftingUIElement) return;
+        if (!this.craftingUIElement) {
+            console.error(`${this.logPrefix} Crafting UI panel element not found. Cannot open.`);
+            return;
+        }
+        if (!window.craftingManager) {
+            console.error(`${this.logPrefix} CraftingManager not available. Cannot open Crafting UI.`);
+            logToConsole(`${this.logPrefix} CraftingManager not ready. UI will not open.`, "orange");
+            // Optionally, show a message to the player via a generic UI manager if available
+            // if (window.uiManager) window.uiManager.showToastNotification("Crafting system not ready.", "error");
+            return;
+        }
+
         this.currentStationType = stationType;
         window.gameState.activeCraftingStationType = stationType; // Set global flag
 
         this.renderRecipeList(); // Will use this.currentStationType
         this.craftingUIElement.classList.remove('hidden');
         logToConsole(`${this.logPrefix} Opened ${stationType ? 'at ' + stationType : 'for general crafting'}.`, "silver");
+        // TODO: Play UI open sound (e.g., ui_menu_open_01.wav) - Already has placeholder
+        if (window.audioManager) window.audioManager.playUiSound('ui_menu_open_01.wav', { volume: 0.7 }); // Changed to a more specific open sound
     },
 
     hide: function () {
@@ -63,6 +76,8 @@ const CraftingUI = {
         this.currentStationType = null;
         window.gameState.activeCraftingStationType = null; // Clear global flag
         logToConsole(`${this.logPrefix} Hidden.`, "silver");
+        // TODO: Play UI close sound (e.g., ui_menu_close_01.wav)
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.6 });
     },
 
     // Modified toggle to pass stationType if needed, or clear it

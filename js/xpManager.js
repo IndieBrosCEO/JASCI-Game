@@ -35,14 +35,17 @@ const XPManager = {
 
         // Check for level up - assumes characterManager.js and checkForLevelUp exist
         if (window.characterManager && typeof window.characterManager.checkForLevelUp === 'function') {
+            // Primary mechanism: characterManager handles the actual level up logic.
             window.characterManager.checkForLevelUp(gameState);
         } else {
-            // Fallback or simplified level check if characterManager is not fully integrated yet
-            // This is just a placeholder for the actual leveling logic from character.js
-            const xpForNextLevel = window.characterManager?.getXPForLevel(gameState.level + 1) || (300 * Math.pow(gameState.level, 1.5)); // Simplified fallback
+            // Fallback logging if characterManager or its checkForLevelUp is missing.
+            // The actual leveling logic resides in characterManager.js (or Character class instance).
+            // This block is just a redundant check and log, not performing the level up itself.
+            const xpForNextLevel = (typeof window.characterManager?.getXPForLevel === 'function'
+                ? window.characterManager.getXPForLevel(gameState.level + 1)
+                : (300 * Math.pow(gameState.level, 1.5))); // Simplified fallback for XP threshold
             if (gameState.playerXP >= xpForNextLevel) {
-                logToConsole("Level up condition met (simplified check in XPManager). Full check should be in characterManager.", "yellow");
-                // Actual leveling (stat increases, etc.) should be handled by characterManager.
+                logToConsole("XPManager: Level up condition potentially met based on fallback check. Ensure characterManager.checkForLevelUp() is functioning.", "yellow");
             }
         }
 

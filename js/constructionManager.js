@@ -160,7 +160,41 @@ class ConstructionManager {
             }
         }
 
-        // TODO: Implement adjacency checks (e.g., for walls, doors) based on definition.buildRequiresAdjacent
+        // Adjacency checks
+        if (definition.buildRequiresAdjacent && definition.buildRequiresAdjacent.length > 0) {
+            let foundRequiredAdjacency = false;
+            const { x, y, z } = targetTilePos; // Assuming 1x1 for simplicity of this TODO.
+            // Multi-tile would need to check perimeter based on definition.size.
+
+            const neighbors = [{ dx: 0, dy: -1 }, { dx: 0, dy: 1 }, { dx: -1, dy: 0 }, { dx: 1, dy: 0 }];
+            for (const n of neighbors) {
+                const nx = x + n.dx;
+                const ny = y + n.dy;
+
+                if (nx >= 0 && nx < mapData.dimensions.width && ny >= 0 && ny < mapData.dimensions.height) {
+                    const adjLevelData = mapData.levels[z.toString()];
+                    if (adjLevelData) {
+                        // Check building layer primarily for structural adjacencies
+                        const adjTileRaw = adjLevelData.building?.[ny]?.[nx] || adjLevelData.middle?.[ny]?.[nx]; // Check building then middle
+                        const adjTileId = (typeof adjTileRaw === 'object' && adjTileRaw?.tileId !== undefined) ? adjTileRaw.tileId : adjTileRaw;
+
+                        if (adjTileId && this.assetManager.tilesets[adjTileId]) {
+                            const adjTileDef = this.assetManager.tilesets[adjTileId];
+                            if (adjTileDef.tags) {
+                                if (definition.buildRequiresAdjacent.some(reqTag => adjTileDef.tags.includes(reqTag))) {
+                                    foundRequiredAdjacency = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (!foundRequiredAdjacency) {
+                logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}': Missing required adjacent tile (e.g., wall for a window). Requires one of: [${definition.buildRequiresAdjacent.join(', ')}]`, "orange");
+                return false;
+            }
+        }
 
         logToConsole(`${this.logPrefix} Placement for '${definition.name}' at (${startX},${startY},${z}) seems valid.`, "silver");
         return true;
@@ -177,12 +211,14 @@ class ConstructionManager {
         if (!this.canBuild(constructionId)) {
             logToConsole(`${this.logPrefix} Pre-build check failed for '${constructionId}'. Player may be missing components or skill.`, 'orange');
             if (window.uiManager) window.uiManager.showToastNotification("Cannot build: missing components or skill.", "error");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Sound for failure
             return false;
         }
 
         const definition = this.constructionDefinitions[constructionId];
         if (!this.isValidPlacement(definition, targetTilePos)) {
             if (window.uiManager) window.uiManager.showToastNotification("Cannot build here: Invalid placement.", "error");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Sound for failure
             return false;
         }
 
@@ -191,6 +227,7 @@ class ConstructionManager {
             if (!this.inventoryManager.removeItems(component.itemId, component.quantity, this.gameState.inventory.container.items)) {
                 logToConsole(`${this.logPrefix} CRITICAL ERROR: Failed to remove component ${component.itemId} during construction of '${definition.name}'.`, 'red');
                 if (window.uiManager) window.uiManager.showToastNotification("Construction failed: component error.", "error");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Sound for failure
                 return false;
             }
         }
@@ -221,8 +258,14 @@ class ConstructionManager {
                     if (levelData && levelData.building) {
                         levelData.building[currentY][currentX] = definition.tileIdPlaced;
                     } else {
-                        logToConsole(`${this.logPrefix} CRITICAL ERROR: Cannot place tile for '${definition.name}' at (${currentX},${currentY},${z}). mapManager or map data invalid.`, "red");
-                        // TODO: Rollback consumed components
+                        logToConsole(`${this.logPrefix} CRITICAL ERROR: Cannot place tile for '${definition.name}' at (${currentX},${currentY},${z}). mapManager or map data invalid. Rolling back components.`, "red");
+                        // Rollback consumed components
+                        for (const component of definition.components) {
+                            this.inventoryManager.addItemToInventoryById(component.itemId, component.quantity); // Assuming addItemToInventoryById exists and handles stacking
+                        }
+                        if (window.updateInventoryUI) window.updateInventoryUI();
+                        if (window.uiManager) window.uiManager.showToastNotification("Construction failed: map error (components restored).", "error");
+                        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Sound for failure
                         return false;
                     }
                 }

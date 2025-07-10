@@ -1019,7 +1019,7 @@
             // For now, the rollDiceNotation handles "1d2-1" correctly.
             // damageAmount = unarmedMod <= 0 ? Math.max(0, rollDie(2) - 1) : rollDie(unarmedMod); // Old way
             if (window.audioManager && targetPosition) {
-                window.audioManager.playUnarmedHitSound({ sourcePosition: targetPosition });
+                window.audioManager.playUnarmedHitSound({ sourcePosition: targetPosition }); // Uses existing random unarmed hit sounds
             }
         } else { // Armed Melee
             damageType = weapon.damageType || "Physical";
@@ -1032,10 +1032,18 @@
             // }
             // damageAmount = rollDiceNotation(parseDiceNotation(weapon.damage)); // Old way
             if (window.audioManager && targetPosition) {
-                let hitSoundName = 'melee_unarmed_hit_01.wav'; // Default placeholder
-                if (weapon.type.includes("blade")) hitSoundName = 'ui_click_01.wav';
-                else if (weapon.type.includes("blunt")) hitSoundName = 'ui_click_01.wav';
-                else if (weapon.id === 'chain_saw_melee') hitSoundName = 'ui_error_01.wav';
+                let hitSoundName = 'melee_unarmed_hit_01.wav'; // Default placeholder if no specific armed sound matches
+                if (weapon.type.includes("blade")) {
+                    hitSoundName = 'ui_click_01.wav'; // Placeholder for melee_blade_hit_01.wav or similar
+                } else if (weapon.type.includes("blunt")) {
+                    hitSoundName = 'ui_click_01.wav'; // Placeholder for melee_blunt_hit_01.wav or similar
+                } else if (weapon.id === 'chain_saw_melee') {
+                    hitSoundName = 'ui_error_01.wav'; // Placeholder for chainsaw_hit_flesh_01.wav or impact sound
+                } else if (weapon.id === 'whip') {
+                    // Whip crack sound is played on swing animation; hit sound might be different or part of it.
+                    // For now, using a generic click for a distinct hit impact if any.
+                    hitSoundName = 'ui_click_01.wav'; // Placeholder for whip_hit_01.wav or flesh_impact_light_01.wav
+                }
                 window.audioManager.playSoundAtLocation(hitSoundName, targetPosition, {}, { volume: 0.8 });
             }
         }
@@ -1111,9 +1119,17 @@
             if (window.audioManager && (attacker.mapPos || attacker === this.gameState)) {
                 const reloadSoundPos = attacker === this.gameState ? this.gameState.playerPos : attacker.mapPos;
                 let reloadSound = 'ui_click_01.wav'; // Generic placeholder
-                if (weapon?.type?.includes("pistol")) reloadSound = 'ui_click_01.wav'; // Placeholder for reload_pistol_01.wav
-                else if (weapon?.type?.includes("rifle")) reloadSound = 'ui_click_01.wav'; // Placeholder for reload_rifle_01.wav
-                else if (weapon?.type?.includes("shotgun")) reloadSound = 'ui_click_01.wav'; // Placeholder for reload_shotgun_01.wav
+                if (weapon?.type?.includes("pistol")) {
+                    reloadSound = 'ui_click_01.wav'; // TODO: Play reload_pistol_01.wav when available
+                } else if (weapon?.type?.includes("rifle")) {
+                    reloadSound = 'ui_click_01.wav'; // TODO: Play reload_rifle_01.wav when available (also for SMG if no specific sound)
+                } else if (weapon?.type?.includes("shotgun")) {
+                    reloadSound = 'ui_click_01.wav'; // TODO: Play reload_shotgun_01.wav when available
+                } else if (weapon?.type?.includes("bow")) {
+                    reloadSound = 'ui_click_01.wav'; // TODO: Play reload_bow_01.wav or arrow_nock_01.wav when available
+                } else if (weapon?.type?.includes("crossbow")) {
+                    reloadSound = 'ui_click_01.wav'; // TODO: Play reload_crossbow_01.wav when available
+                }
                 window.audioManager.playSoundAtLocation(reloadSound, reloadSoundPos, {}, { volume: 0.6 });
             }
 
@@ -1196,16 +1212,16 @@
             }
         } else if (attackType === 'ranged' && weapon && !weapon.type?.includes("thrown") && weapon.type !== "weapon_utility_spray" && !weapon.tags?.includes("launcher_treated_as_rifle")) {
             if (window.audioManager && attackerPos) {
-                let fireSoundName = 'ui_click_01.wav'; // Default placeholder for weapon_empty_click_01.wav if ammo is out (needs ammo check)
-                // Assuming ammo check happens before this, otherwise need to handle empty click
-                if (weapon.type.includes("pistol")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_pistol_01.wav
-                else if (weapon.type.includes("submachine_gun")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_smg_01.wav
-                else if (weapon.type.includes("rifle") && !weapon.tags?.includes("assault_rifle") && !weapon.tags?.includes("machine_gun")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_rifle_01.wav
-                else if (weapon.tags?.includes("assault_rifle")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_ar_loop.wav (needs loop management)
-                else if (weapon.type.includes("shotgun")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_shotgun_01.wav
-                else if (weapon.tags?.includes("machine_gun")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_mg_loop.wav (needs loop management)
-                else if (weapon.type.includes("bow")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_bow_01.wav
-                else if (weapon.type.includes("crossbow")) fireSoundName = 'ui_click_01.wav'; // Placeholder for fire_crossbow_01.wav
+                let fireSoundName = 'ui_click_01.wav'; // Default placeholder for generic ranged fire or if specific sound is missing. weapon_empty_click_01.wav is handled before processAttack.
+                // Specific fire sounds (actual files are missing, these are placeholders for when they are added)
+                if (weapon.type.includes("pistol")) fireSoundName = 'ui_click_01.wav'; // TODO: Play fire_pistol_01.wav
+                else if (weapon.type.includes("submachine_gun")) fireSoundName = 'ui_click_01.wav'; // TODO: Play fire_smg_01.wav
+                else if (weapon.type.includes("rifle") && !weapon.tags?.includes("assault_rifle") && !weapon.tags?.includes("machine_gun")) fireSoundName = 'ui_click_01.wav'; // TODO: Play fire_rifle_01.wav
+                else if (weapon.tags?.includes("assault_rifle")) fireSoundName = 'ui_click_01.wav'; // TODO: Play fire_ar_loop.wav (needs loop management)
+                else if (weapon.type.includes("shotgun")) fireSoundName = 'ui_click_01.wav'; // TODO: Play fire_shotgun_01.wav
+                else if (weapon.tags?.includes("machine_gun")) fireSoundName = 'ui_click_01.wav'; // TODO: Play fire_mg_loop.wav (needs loop management)
+                else if (weapon.type.includes("bow")) fireSoundName = 'ui_click_01.wav'; // TODO: Play fire_bow_01.wav
+                else if (weapon.type.includes("crossbow")) fireSoundName = 'ui_click_01.wav'; // TODO: Play fire_crossbow_01.wav
                 window.audioManager.playSoundAtLocation(fireSoundName, attackerPos, {}, { volume: 0.9 });
             }
             if (window.animationManager) {
@@ -1219,16 +1235,20 @@
         } else if (weapon?.tags?.includes("launcher_treated_as_rifle") && weapon.explodesOnImpact) { // Launchers (rocket, grenade launcher)
             if (window.audioManager && attackerPos) {
                 let launchSound = 'ui_error_01.wav'; // Generic loud placeholder
-                if (weapon.ammoType?.includes("rocket")) launchSound = 'ui_error_01.wav'; // Placeholder for fire_rocket_01.wav
-                else launchSound = 'ui_error_01.wav'; // Placeholder for fire_launcher_01.wav (for grenades)
+                if (weapon.ammoType?.includes("rocket")) {
+                    launchSound = 'ui_error_01.wav'; // TODO: Play fire_rocket_01.wav when available
+                } else { // Assuming other launchers (e.g., grenade launchers)
+                    launchSound = 'ui_error_01.wav'; // TODO: Play fire_launcher_01.wav when available
+                }
                 window.audioManager.playSoundAtLocation(launchSound, attackerPos, {}, { volume: 1.0 });
             }
             // Animation for projectile is handled later in processAttack before explosion
         } else if (weapon?.id === 'flamethrower') {
             if (window.audioManager && attackerPos) {
-                window.audioManager.playSoundAtLocation('ui_error_01.wav', attackerPos, {}, { volume: 0.7, loop: false }); // Placeholder for flame_start_01.wav
-                // TODO: Manage flame_loop.wav (start/stop based on duration or continuous fire).
-                // TODO: Play flame_end_01.wav when stopping.
+                window.audioManager.playSoundAtLocation('ui_error_01.wav', attackerPos, {}, { volume: 0.7, loop: false }); // Placeholder for flame_start_01.wav (when available)
+                // TODO: Manage flame_loop.wav (when available). This would require AudioManager to return the sound source
+                // for looping sounds, and for AnimationManager (FlamethrowerAnimation) to manage starting/stopping this loop
+                // and playing flame_end_01.wav (when available) on completion.
             }
             if (window.animationManager) {
                 const targetPos = this.gameState.defenderMapPos || defender?.mapPos || this.gameState.pendingCombatAction?.targetTile;
@@ -1561,12 +1581,14 @@
                 logToConsole(`EXPLOSION: ${explosiveProps.name} detonates. Radius: ${burstRadiusTiles}t`, 'orangered');
                 if (window.audioManager) {
                     let explosionSound = 'ui_error_01.wav'; // Default loud placeholder
-                    // TODO: Differentiate small vs large explosion based on explosiveProps or weapon tags
-                    if (burstRadiusTiles <= 2) explosionSound = 'ui_error_01.wav'; // Placeholder for explosion_small_01.wav
-                    else explosionSound = 'ui_error_01.wav'; // Placeholder for explosion_large_01.wav
+                    if (burstRadiusTiles <= 2) { // Example threshold: 2 tiles (10ft) or less is "small"
+                        explosionSound = 'ui_error_01.wav'; // TODO: Play explosion_small_01.wav when available
+                    } else {
+                        explosionSound = 'ui_error_01.wav'; // TODO: Play explosion_large_01.wav when available
+                    }
                     window.audioManager.playSoundAtLocation(explosionSound, determinedImpactTile, {}, { volume: 1.0 });
-                    // Placeholder for explosion_debris_01.wav
-                    window.audioManager.playSoundAtLocation('ui_click_01.wav', determinedImpactTile, {}, { volume: 0.6, delay: 100 }); // Delayed debris sound
+                    // Placeholder for explosion_debris_01.wav (missing)
+                    window.audioManager.playSoundAtLocation('ui_click_01.wav', determinedImpactTile, {}, { volume: 0.6, delay: 100 }); // Delayed debris sound (using placeholder)
                 }
                 if (window.animationManager) window.animationManager.playAnimation('explosion', { centerPos: determinedImpactTile, radius: burstRadiusTiles, duration: 1000, sourceWeapon: weapon });
                 this.getCharactersInBlastRadius(determinedImpactTile, burstRadiusTiles).forEach(char => {
@@ -1629,18 +1651,18 @@
             const impactTileMolotov = defender.mapPos || this.gameState.defenderMapPos || this.gameState.pendingCombatAction?.targetTile;
             if (impactTileMolotov) {
                 if (window.audioManager) {
-                    window.audioManager.playSoundAtLocation('ui_error_01.wav', impactTileMolotov, {}, { volume: 0.8 }); // Placeholder for molotov_ignite_01.wav
-                    // TODO: Consider playing fire_loop_med.wav if it creates a lasting fire effect. Requires loop management.
+                    window.audioManager.playSoundAtLocation('ui_error_01.wav', impactTileMolotov, {}, { volume: 0.8 }); // Placeholder for molotov_ignite_01.wav (when available)
+                    // TODO: Play fire_loop_med.wav (when available) if Molotov creates lasting fire. Requires AudioManager loop management controlled by effect duration (e.g., via AnimationManager or a new effect system).
                 }
-                if (window.animationManager) window.animationManager.playAnimation('explosion', { centerPos: impactTileMolotov, radius: 1, explosionSprites: ['~', '≈', '*', '#'], color: 'orange', duration: 1500, sourceWeapon: weapon, attacker });
+                if (window.animationManager) window.animationManager.playAnimation('explosion', { centerPos: impactTileMolotov, radius: 1, explosionSprites: ['~', '≈', '*', '#'], color: 'orange', duration: 1500, sourceWeapon: weapon, attacker }); // This is a generic explosion, could be a specific fire spread animation.
             }
         } else if (weapon?.id === 'thermite_grenade_thrown' && hit) { // Thermite
             const impactTileThermite = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || (attacker.mapPos || this.gameState.playerPos);
             if (window.audioManager && impactTileThermite) {
-                // Placeholder for thermite_loop.wav (needs loop management for duration)
-                window.audioManager.playSoundAtLocation('ui_error_01.wav', impactTileThermite, {}, { volume: 0.7, loop: true, duration: 5000 }); // Long loop placeholder
+                // TODO: Play thermite_loop.wav (when available). Current is a placeholder. Requires AudioManager loop management.
+                window.audioManager.playSoundAtLocation('ui_error_01.wav', impactTileThermite, {}, { volume: 0.7, loop: true, duration: 5000 }); // Long loop placeholder for thermite_loop.wav
             }
-            // TODO: Add visual effect for thermite burning
+            // TODO: Add visual effect for thermite burning (e.g., specific animation via AnimationManager or particle effect).
         }
 
 
