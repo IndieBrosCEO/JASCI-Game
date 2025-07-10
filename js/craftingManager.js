@@ -291,3 +291,5 @@ class CraftingManager {
 //         logToConsole("CraftingManager initialized and recipes loaded.");
 //     });
 // }
+
+window.CraftingManager = CraftingManager;

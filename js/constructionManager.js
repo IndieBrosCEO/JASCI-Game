@@ -462,3 +462,5 @@ class ConstructionManager {
 // window.constructionManager = new ConstructionManager(window.gameState, window.assetManager, window.inventoryManager, window.TimeManager, window.xpManager, window.mapManager, window.trapManager);
 // Initialization:
 // if (window.constructionManager) window.constructionManager.initialize();
+
+window.ConstructionManager = ConstructionManager;

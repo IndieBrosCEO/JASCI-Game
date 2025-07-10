@@ -2098,6 +2098,32 @@ window.mapRenderer = {
         return ""; // No impassable tile found at this x,y,z on the primary collision layer (middle)
     },
 
+    updateTileOnLayer: function (x, y, z, layerName, newTileId) {
+        if (!currentMapData || !currentMapData.levels || !currentMapData.levels[z.toString()]) {
+            logToConsole(`[mapRenderer.updateTileOnLayer] Error: Map data or level Z:${z} not available for updating tile.`, "red");
+            return false;
+        }
+        const level = currentMapData.levels[z.toString()];
+        if (!level[layerName]) {
+            logToConsole(`[mapRenderer.updateTileOnLayer] Error: Layer '${layerName}' does not exist on Z:${z}.`, "red");
+            return false;
+        }
+        if (y < 0 || y >= level[layerName].length || x < 0 || x >= level[layerName][y].length) {
+            logToConsole(`[mapRenderer.updateTileOnLayer] Error: Coordinates (${x},${y}) out of bounds for layer '${layerName}' on Z:${z}.`, "red");
+            return false;
+        }
+
+        // TODO: Handle if newTileId is an object {tileId: "...", ...} vs a string ID.
+        // For now, assuming newTileId is a string ID.
+        level[layerName][y][x] = newTileId;
+        logToConsole(`[mapRenderer.updateTileOnLayer] Tile at (${x},${y},${z}) on layer '${layerName}' updated to '${newTileId}'.`, "dev");
+
+        // Important: Invalidate tile cache for this specific tile or re-render if changes are significant
+        // For simplicity, just schedule a full re-render. More optimized would be targeted cache invalidation.
+        this.scheduleRender();
+        return true;
+    },
+
     isWalkable: function (x, y, z) {
         const debugPrefix = `isWalkable(${x},${y},${z}):`;
         // console.log(`${debugPrefix} Checking...`); // Keep console logs minimal

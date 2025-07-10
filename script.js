@@ -1671,6 +1671,8 @@ async function initialize() { // Made async
         console.log("Asset definitions loaded.");
         window.interaction.initInteraction(assetManager);
         window.mapRenderer.initMapRenderer(assetManager); // Initialize mapRenderer with assetManager.
+        window.mapManager = window.mapRenderer; // Assign mapRenderer to mapManager
+        logToConsole("SCRIPT.JS: window.mapManager assigned to window.mapRenderer.", "info");
         window.turnManager.init(assetManager); // Initialize turnManager with assetManager
 
         gameState.inventory.container = new InventoryContainer("Body Pockets", "S"); // Capacity will be updated in startGame based on Strength
@@ -1757,21 +1759,34 @@ async function initialize() { // Made async
         }
 
         // CraftingManager
-        if (window.CraftingManager && window.assetManager && window.inventoryManager) {
+        console.log("SCRIPT.JS: Checking CraftingManager dependencies...");
+        console.log("SCRIPT.JS: typeof window.CraftingManager:", typeof window.CraftingManager);
+        console.log("SCRIPT.JS: typeof window.assetManager:", typeof window.assetManager, "isAvailable:", !!window.assetManager);
+        console.log("SCRIPT.JS: typeof window.inventoryManager:", typeof window.inventoryManager, "isAvailable:", !!window.inventoryManager);
+        console.log("SCRIPT.JS: typeof window.xpManager:", typeof window.xpManager, "isAvailable:", !!window.xpManager);
+        console.log("SCRIPT.JS: typeof window.TimeManager (class):", typeof window.TimeManager, "isAvailable:", !!window.TimeManager);
+
+
+        if (window.CraftingManager && window.assetManager && window.inventoryManager && window.xpManager && window.TimeManager) {
             window.craftingManager = new CraftingManager(window.gameState, window.assetManager, window.inventoryManager, window.xpManager, window.TimeManager);
             await window.craftingManager.initialize(); // This is async
             logToConsole("CraftingManager instance created and initialized.", "info");
         } else {
-            console.error("SCRIPT.JS: CraftingManager or its core dependencies (AssetManager, InventoryManager) not available for initialization.");
+            console.error("SCRIPT.JS: CraftingManager or its core dependencies (AssetManager, InventoryManager, xpManager, TimeManager) not available for initialization.");
         }
 
         // ConstructionManager
+        console.log("SCRIPT.JS: Checking ConstructionManager dependencies...");
+        console.log("SCRIPT.JS: typeof window.ConstructionManager:", typeof window.ConstructionManager);
+        // assetManager, inventoryManager, TimeManager already logged above
+        console.log("SCRIPT.JS: typeof window.mapManager:", typeof window.mapManager, "isAvailable:", !!window.mapManager); // Assuming mapManager is the one needed
+
         if (window.ConstructionManager && window.assetManager && window.inventoryManager && window.mapManager && window.TimeManager) {
             window.constructionManager = new ConstructionManager(window.gameState, window.assetManager, window.inventoryManager, window.mapManager, window.TimeManager);
             await window.constructionManager.initialize(); // This is async
             logToConsole("ConstructionManager instance created and initialized.", "info");
         } else {
-            console.error("SCRIPT.JS: ConstructionManager or its core dependencies not available for initialization.");
+            console.error("SCRIPT.JS: ConstructionManager or its core dependencies (AssetManager, InventoryManager, mapManager, TimeManager) not available for initialization.");
         }
 
         // TrapManager

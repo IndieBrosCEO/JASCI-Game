@@ -131,11 +131,17 @@
                         console.warn(`AssetManager: Expected array from procedural_quest_templates.json, but got ${typeof parsedJson}. Skipping file.`);
                     }
                 } else if (filename === 'traps.json') {
-                    if (Array.isArray(parsedJson)) {
+                    if (typeof parsedJson === 'object' && !Array.isArray(parsedJson)) {
+                        this.trapDefinitionsData = parsedJson; // Directly assign the object
+                        // Optionally, validate that each trap has an 'id' matching its key, or add it if missing.
+                        // For now, direct assignment is simplest if the structure is { "trap_id_1": { ... }, "trap_id_2": { ... } }
+                        // And downstream code expects this.trapDefinitionsData["trap_id_1"]
+                        logToConsole(`AssetManager: Loaded ${Object.keys(this.trapDefinitionsData).length} trap definitions from object.`);
+                    } else if (Array.isArray(parsedJson)) { // Keep handling for array format if it might still occur
                         this.trapDefinitionsData = Object.fromEntries(parsedJson.map(trap => [trap.id, trap]));
-                        logToConsole(`AssetManager: Loaded ${Object.keys(this.trapDefinitionsData).length} trap definitions.`);
+                        logToConsole(`AssetManager: Loaded ${Object.keys(this.trapDefinitionsData).length} trap definitions from array.`);
                     } else {
-                        console.warn(`AssetManager: Expected array from traps.json, but got ${typeof parsedJson}. Skipping file.`);
+                        console.warn(`AssetManager: Expected object or array from traps.json, but got ${typeof parsedJson}. Skipping file.`);
                     }
                 } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json'].includes(filename)) {
                     // All new item files are arrays of items
