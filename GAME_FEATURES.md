@@ -1,4 +1,4 @@
-# JASCI TRPG Adventure - Game Features
+﻿# JASCI TRPG Adventure - Game Features
 
 This document outlines the features of the JASCI TRPG Adventure game, intended for game designers and developers.
 
@@ -523,3 +523,38 @@ A separate map maker tool (`mapMaker.html`, `mapMaker.js`) is available for crea
     *   `npcs`: Array of objects, each specifying an NPC `id` and its `mapPos` (`{x, y, z}`).
     *   `portals`: Array of portal objects, each with `id`, `x`, `y`, `z`, `targetMapId`, `targetX`, `targetY`, `targetZ`.
 *   **Asset Dependency**: Relies on `tileset.json` (which can now include Z-transition tags like `is_stairs_up`, `target_dz`, `z_cost`) and `items.json`.
+
+## Known Issues & Future Enhancements (Summary from TODOs)
+
+This section summarizes areas with pending work, identified by "TODO" or "placeholder" comments in the codebase. For a detailed list, see `TODO_LIST.md`.
+
+*   **Sound Effects**: A significant number of actions across gameplay (combat, movement, UI interaction, item use, vehicle operations, environment changes) are currently using placeholder sounds or lack specific sound effects. Implementation of a richer soundscape is a major area for enhancement.
+*   **Gameplay Mechanics & Systems**:
+    *   **NPC & Companion AI**: TODOs exist for more sophisticated NPC decision-making (target prioritization, fleeing, alerting allies, using special abilities), companion loyalty effects, and reverting companion NPC behavior when dismissed.
+    *   **Procedural Quests**: The system is foundational, with TODOs for more quest types, better integration with dialogue, improved reward generation, UI for quest tracking, and quest persistence.
+    *   **Crafting & Modding**: Needs further development in identifying compatible mods for weapons.
+    *   **Construction**: Adjacency checks for placing structures and rollback of consumed components on failure are noted as TODOs.
+    *   **Vehicles**: Numerous TODOs related to skill checks for modification/repair, consuming parts/fuel/materials from inventory, sound effects for various vehicle actions, and handling of part destruction effects.
+    *   **Traps**: Disarming mechanics, varied trap effects, and player-placeable traps are marked for future implementation.
+    *   **Dynamic Events**: Weighted random chance for event occurrence and checking global conditions need implementation.
+    *   **Character Leveling**: While XP is tracked, the actual leveling logic (referenced from `character.js`) is noted as a placeholder in `xpManager.js`. Dialogue manager also has a TODO for checking level up.
+    *   **Constants**: Some constants (e.g., `PLAYER_VISION_RADIUS_CONST`) are marked for centralization.
+*   **User Interface (UI) & User Experience (UX)**:
+    *   **Vehicle Interaction**: UI for vehicle cargo, repair, and modification needs to be opened/implemented.
+    *   **Notifications**: Dynamic events and procedural quest updates need more prominent UI notifications.
+    *   **Map Maker**: A status message system is noted as a TODO. Input fields in map maker have placeholder text.
+    *   **Console**: Placeholder text in console input.
+    *   **Dialogue System**: Indicated that a more robust system for dynamic content within dialogue text is desirable.
+*   **Audio Management**:
+    *   Listener orientation based on player rotation.
+    *   Timeout/error handling for sound loading.
+    *   Proper loop management for sounds like swimming or flames.
+    *   Global volume control is not fully implemented.
+*   **Visuals & Rendering**:
+    *   Visual effect for thermite burning.
+    *   Map Renderer: "Glimpse" effect for transparent floors/ceilings, support for cone/directional lights, performance optimization for lighting, and animated tile effects are noted. Consideration for roof display when player is on a roof tile.
+*   **Code & System Refinements**:
+    *   `mapUtils` is used as a placeholder in `script.js` for `ProceduralQuestManager`.
+    *   Some logic is described as a "hack" or "simplified version" with TODOs for more robust solutions (e.g., dialogue dynamic content, copying overridable properties in `script.js`).
+    *   Interaction logic: Determining checks for 'bottom' layer in tile interactions.
+    *   Movement Utils: Consideration for Z-level differences for adjacency, diagonal movement costs, and integration with AP/MP.
