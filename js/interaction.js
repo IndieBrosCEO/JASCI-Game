@@ -46,13 +46,18 @@ function _getActionsForItem(it) {
     }
     // Added for vehicles
     if (it.itemType === "vehicle") {
+        console.log(`_getActionsForItem: Detected itemType "vehicle". Item ID: ${it.id}, Item Name: ${it.name}`);
         const playerInThisVehicle = window.gameState && window.gameState.player && window.gameState.player.isInVehicle === it.id;
+        console.log(`_getActionsForItem: playerInThisVehicle check for ${it.id}: ${playerInThisVehicle} (Player in vehicle: ${window.gameState?.player?.isInVehicle})`);
         if (playerInThisVehicle) {
             actions.push("Exit Vehicle");
         } else {
             actions.push("Enter Vehicle");
         }
         actions.push("Access Cargo", "Refuel", "Repair Parts", "Modify Parts");
+    } else if (it.name && (it.name.toLowerCase().includes("buggy") || it.name.toLowerCase().includes("cart"))) {
+        // Fallback logging if itemType is not "vehicle" but name suggests it might be one
+        console.log(`_getActionsForItem: itemType is NOT "vehicle" (${it.itemType}), but name is suspicious: ${it.name}, ID: ${it.id}`);
     }
     // Added for NPCs (potential companions)
     if (it.itemType === "npc") {
@@ -601,20 +606,38 @@ window.interaction = {
 
         // Detect Vehicles
         if (window.gameState && window.gameState.vehicles) {
+            console.log(`detectInteractableItems: Starting vehicle detection. Player at (${px},${py},${pz}). Interaction Radius R=${R}`);
             window.gameState.vehicles.forEach(vehicle => {
-                if (vehicle.currentMapId === currentMap.id && vehicle.mapPos.z === currentZ) {
+                console.log(`detectInteractableItems: Checking vehicle ID: ${vehicle.id}, Name: ${vehicle.name}, MapID: ${vehicle.currentMapId}, Pos: (${vehicle.mapPos?.x},${vehicle.mapPos?.y},${vehicle.mapPos?.z})`);
+                if (vehicle.currentMapId === currentMap.id && vehicle.mapPos && vehicle.mapPos.z === currentZ) {
                     const dist = Math.max(Math.abs(vehicle.mapPos.x - px), Math.abs(vehicle.mapPos.y - py));
+                    console.log(`detectInteractableItems: Vehicle ${vehicle.id} is on current map/Z. Calculated distance to player: ${dist}`);
                     if (dist <= R) {
+                        console.log(`detectInteractableItems: Vehicle ${vehicle.id} IS nearby (dist ${dist} <= R ${R}).`);
                         const alreadyExists = window.gameState.interactableItems.some(item => item.id === vehicle.id && item.itemType === "vehicle");
                         if (!alreadyExists) {
-                            window.gameState.interactableItems.push({
+                            const itemToAdd = {
                                 x: vehicle.mapPos.x, y: vehicle.mapPos.y, z: vehicle.mapPos.z,
                                 id: vehicle.id, name: vehicle.name || "Vehicle", itemType: "vehicle"
-                            });
+                            };
+                            window.gameState.interactableItems.push(itemToAdd);
+                            console.log(`detectInteractableItems: ADDED vehicle to interactableItems:`, JSON.parse(JSON.stringify(itemToAdd)));
+                        } else {
+                            console.log(`detectInteractableItems: Vehicle ${vehicle.id} already in interactableItems.`);
                         }
+                    } else {
+                        console.log(`detectInteractableItems: Vehicle ${vehicle.id} is NOT nearby (dist ${dist} > R ${R}).`);
                     }
+                } else {
+                    let reason = "";
+                    if (vehicle.currentMapId !== currentMap.id) reason += `Not on current map (Vehicle map: ${vehicle.currentMapId}, Current map: ${currentMap.id}). `;
+                    if (!vehicle.mapPos) reason += `Vehicle has no mapPos. `;
+                    else if (vehicle.mapPos.z !== currentZ) reason += `Not on current Z (Vehicle Z: ${vehicle.mapPos.z}, Current Z: ${currentZ}).`;
+                    console.log(`detectInteractableItems: SKIPPING vehicle ${vehicle.id}. Reason: ${reason.trim()}`);
                 }
             });
+        } else {
+            console.log("detectInteractableItems: No gameState.vehicles array found to iterate.");
         }
 
         // Detect Placed Constructions

@@ -48,12 +48,15 @@ const ConstructionUI = {
     },
 
     open: function () {
+        logToConsole("ConstructionUI.open() called.", "debug"); // DEBUG
         if (!this.dom.uiPanel) {
             console.error("ConstructionUI Error: UI Panel element not found. Cannot open.");
+            logToConsole("ConstructionUI.open() - UI Panel element not found.", "error"); // DEBUG
             return;
         }
         if (!window.constructionManager) {
             logToConsole("ConstructionUI Error: ConstructionManager not available. Cannot open Construction UI.", "error");
+            logToConsole("ConstructionUI.open() - ConstructionManager not available.", "error"); // DEBUG
             // if (window.uiManager) window.uiManager.showToastNotification("Construction system not ready.", "error");
             return;
         }
@@ -61,7 +64,9 @@ const ConstructionUI = {
         this.dom.uiPanel.classList.remove('hidden');
         this.selectedCategory = null; // Reset category
         this.selectedConstructionDefId = null;
+        logToConsole("ConstructionUI.open() - Calling populateCategories...", "debug"); // DEBUG
         this.populateCategories(); // Repopulate categories in case definitions changed
+        logToConsole("ConstructionUI.open() - Calling renderBuildableList...", "debug"); // DEBUG
         this.renderBuildableList(); // Render based on no category or first category
         this.clearDetail();
         this.dom.selectButton.disabled = true;
@@ -118,33 +123,58 @@ const ConstructionUI = {
     },
 
     renderBuildableList: function () {
-        if (!this.dom.buildableList || !window.constructionManager) return;
+        logToConsole("ConstructionUI.renderBuildableList() called.", "debug"); // Existing DEBUG log
+        if (!this.dom.buildableList || !window.constructionManager) {
+            logToConsole("ConstructionUI.renderBuildableList() - buildableList DOM or constructionManager missing.", "error");
+            return;
+        }
         this.dom.buildableList.innerHTML = '';
 
-        const buildableItems = window.constructionManager.getBuildableList(); // Gets all player can *skill-wise* build
+        // getBuildableList now returns all definitions, each with a 'meetsSkillReqs' flag.
+        const allDefinitions = window.constructionManager.getBuildableList();
+        logToConsole(`ConstructionUI.renderBuildableList() - Received ${allDefinitions.length} total definitions from manager.`, "debug");
 
-        const itemsInCategory = buildableItems.filter(def =>
+        const itemsInCategory = allDefinitions.filter(def =>
             !this.selectedCategory || def.category === this.selectedCategory || (this.selectedCategory === "uncategorized" && !def.category)
         );
 
-        if (itemsInCategory.length === 0) {
-            this.dom.buildableList.innerHTML = '<li>No buildable items in this category or meet skill requirements.</li>';
+        logToConsole(`ConstructionUI.renderBuildableList() - Filtered to ${itemsInCategory.length} items for category: ${this.selectedCategory || 'All'}.`, "debug");
+
+        if (itemsInCategory.length === 0 && allDefinitions.length > 0) {
+            this.dom.buildableList.innerHTML = '<li>No items in this category.</li>';
+            return;
+        }
+        if (allDefinitions.length === 0) {
+            this.dom.buildableList.innerHTML = '<li>No construction definitions loaded.</li>';
             return;
         }
 
         itemsInCategory.forEach(def => {
             const li = document.createElement('li');
-            const canAfford = window.constructionManager.canBuild(def.id); // Checks components too
+            // constructionManager.canBuild() checks both skills AND components.
+            const canCurrentlyBuild = window.constructionManager.canBuild(def.id);
+
             li.textContent = def.name;
             li.dataset.constructionId = def.id;
-            if (!canAfford) {
-                li.classList.add('cannot-afford');
-                li.title = "Missing components or skill too low.";
+
+            if (!canCurrentlyBuild) {
+                li.classList.add('cannot-build'); // General class for graying out
+                // def.meetsSkillReqs is from the augmented definition list
+                if (!def.meetsSkillReqs) {
+                    li.title = "Skill requirements not met.";
+                } else {
+                    // If skills are met, but canCurrentlyBuild is false, it must be components.
+                    li.title = "Missing required components.";
+                }
+            } else {
+                li.title = "Can build this item."; // Or leave empty if preferred
             }
+
             li.addEventListener('click', () => {
                 this.selectedConstructionDefId = def.id;
-                this.renderDetail(def);
-                this.dom.selectButton.disabled = !canAfford;
+                this.renderDetail(def); // Pass the full augmented definition object
+                // The select button should only be enabled if BOTH skills and components are met.
+                this.dom.selectButton.disabled = !canCurrentlyBuild;
             });
             this.dom.buildableList.appendChild(li);
         });
@@ -154,24 +184,60 @@ const ConstructionUI = {
         this.dom.detailName.textContent = definition.name;
         this.dom.detailDescription.textContent = definition.description;
         this.dom.detailSize.textContent = definition.size ? `${definition.size.width}x${definition.size.height}` : '1x1';
-        this.dom.detailSkill.textContent = definition.skillRequired || 'None';
-        this.dom.detailSkillLevel.textContent = definition.skillLevelRequired || '-';
 
+        // Clear previous skill and component details
+        this.dom.detailSkill.innerHTML = ''; // Assuming detailSkill is a container (e.g., a <ul> or <div>)
+        this.dom.detailSkillLevel.innerHTML = ''; // Clear this if it was separate, or combine into detailSkill
         this.dom.detailComponents.innerHTML = '';
+
+        // Skill Requirement Display
+        if (definition.skillRequired && definition.skillLevelRequired) {
+            const player = window.gameState; // Or however player state is accessed
+            const playerScore = getSkillValue(definition.skillRequired, player); // Ensure getSkillValue is globally accessible or via manager
+            const skillLi = document.createElement('li');
+            const skillSpan = document.createElement('span');
+            skillSpan.textContent = `${definition.skillRequired}: ${playerScore}/${definition.skillLevelRequired}`;
+            if (playerScore >= definition.skillLevelRequired) {
+                skillSpan.classList.add('req-met');
+            } else {
+                skillSpan.classList.add('req-not-met');
+            }
+            skillLi.appendChild(skillSpan);
+            this.dom.detailSkill.appendChild(skillLi); // Append to the skill container
+        } else {
+            const skillLi = document.createElement('li');
+            skillLi.textContent = "Skill: None";
+            this.dom.detailSkill.appendChild(skillLi);
+        }
+        // If detailSkillLevel was a separate DOM element and you want to keep it that way, adjust accordingly.
+        // For simplicity, I'm putting skill level directly in the text above. If it was for the level number only:
+        // this.dom.detailSkillLevel.textContent = definition.skillLevelRequired || '-'; // This would not be colored.
+
+
+        // Component Requirements Display
         if (definition.components && definition.components.length > 0) {
             definition.components.forEach(comp => {
                 const itemDef = window.assetManager ? window.assetManager.getItem(comp.itemId) : null;
                 const compName = itemDef ? itemDef.name : comp.itemId;
-                const playerHas = window.inventoryManager ? window.inventoryManager.countItems(comp.itemId) : 0;
-                const li = document.createElement('li');
-                li.textContent = `${compName}: ${playerHas}/${comp.quantity}`;
-                if (playerHas < comp.quantity) {
-                    li.style.color = 'orange';
+                // Count items from player's main inventory container
+                const playerHas = window.inventoryManager ? window.inventoryManager.countItems(comp.itemId, window.gameState.inventory.container.items) : 0;
+
+                const compLi = document.createElement('li');
+                const compSpan = document.createElement('span');
+                compSpan.textContent = `${compName}: ${playerHas}/${comp.quantity}`;
+
+                if (playerHas >= comp.quantity) {
+                    compSpan.classList.add('req-met');
+                } else {
+                    compSpan.classList.add('req-not-met');
                 }
-                this.dom.detailComponents.appendChild(li);
+                compLi.appendChild(compSpan);
+                this.dom.detailComponents.appendChild(compLi);
             });
         } else {
-            this.dom.detailComponents.innerHTML = '<li>None</li>';
+            const compLi = document.createElement('li');
+            compLi.textContent = 'Components: None';
+            this.dom.detailComponents.appendChild(compLi);
         }
         this.dom.detailTimeToBuild.textContent = `${definition.timeToBuild || 0} turns`;
     },

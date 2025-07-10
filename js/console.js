@@ -157,6 +157,10 @@ const commandHelpInfo = {
     'togglevehiclemodui': {
         syntax: 'togglevehiclemodui [vehicle_id]',
         description: 'Toggles the vehicle modification UI. If vehicle_id is provided, opens for that specific vehicle.'
+    },
+    'spawnvehicle': {
+        syntax: 'spawnvehicle <templateId> [x y z]',
+        description: 'Spawns a vehicle with the given template ID. Optionally spawns at x y z coordinates, otherwise spawns at player location.'
     }
 };
 
@@ -1160,6 +1164,69 @@ function processConsoleCommand(commandText) {
                 // UI will log its own open/close status.
             } else {
                 logToConsoleUI("Error: VehicleModificationUI not available or toggle function missing.", 'error');
+            }
+            break;
+
+        case 'spawnvehicle': // Syntax: spawnvehicle <templateId> [x y z]
+            if (args.length < 1) {
+                logToConsoleUI("Usage: spawnvehicle <templateId> [x y z]", 'error');
+                break;
+            }
+            const vehicleTemplateId = args[0];
+            let spawnPosX, spawnPosY, spawnPosZ;
+
+            if (args.length >= 4) {
+                spawnPosX = parseInt(args[1], 10);
+                spawnPosY = parseInt(args[2], 10);
+                spawnPosZ = parseInt(args[3], 10);
+                if (isNaN(spawnPosX) || isNaN(spawnPosY) || isNaN(spawnPosZ)) {
+                    logToConsoleUI("Error: X, Y, and Z coordinates must be numbers.", 'error');
+                    break;
+                }
+            } else {
+                if (typeof gameState === 'undefined' || !gameState.playerPos) {
+                    logToConsoleUI("Error: Player position not available for default spawn location.", 'error');
+                    break;
+                }
+                spawnPosX = gameState.playerPos.x;
+                spawnPosY = gameState.playerPos.y;
+                spawnPosZ = gameState.playerPos.z;
+            }
+
+            if (typeof window.vehicleManager === 'undefined' || typeof window.vehicleManager.spawnVehicle !== 'function') {
+                logToConsoleUI("Error: vehicleManager not available or spawnVehicle function missing.", 'error');
+                break;
+            }
+
+            // Get current map ID
+            let currentMapId;
+            if (window.mapRenderer && typeof window.mapRenderer.getCurrentMapData === 'function') {
+                const currentMapData = window.mapRenderer.getCurrentMapData();
+                if (currentMapData && currentMapData.id) {
+                    currentMapId = currentMapData.id;
+                }
+            }
+            if (!currentMapId) {
+                // Fallback or default if map ID cannot be determined through mapRenderer
+                if (gameState && gameState.currentMapId) {
+                    currentMapId = gameState.currentMapId;
+                } else {
+                    logToConsoleUI("Error: Could not determine current map ID.", 'error');
+                    break;
+                }
+            }
+
+
+            const spawnedVehicleId = window.vehicleManager.spawnVehicle(vehicleTemplateId, currentMapId, { x: spawnPosX, y: spawnPosY, z: spawnPosZ });
+
+            if (spawnedVehicleId) {
+                const spawnedVehicle = window.vehicleManager.getVehicleById(spawnedVehicleId);
+                logToConsoleUI(`Spawned vehicle "${spawnedVehicle ? spawnedVehicle.name : vehicleTemplateId}" (ID: ${spawnedVehicleId}) at (${spawnPosX},${spawnPosY},${spawnPosZ}) on map ${currentMapId}.`, 'success');
+                if (typeof window.mapRenderer !== 'undefined' && typeof window.mapRenderer.scheduleRender === 'function') {
+                    window.mapRenderer.scheduleRender(); // Re-render to show the new vehicle
+                }
+            } else {
+                logToConsoleUI(`Failed to spawn vehicle with template ID "${vehicleTemplateId}". Check template ID and game state.`, 'error');
             }
             break;
 

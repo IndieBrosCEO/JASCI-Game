@@ -429,3 +429,31 @@ button.preset-swatch { /* More specific selector */
     .tooltip.hidden {
         display: none;
     }
+
+/* Construction UI Specific Styles */
+#constructionBuildableList li.cannot-build {
+    color: #888; /* Gray out the text */
+    font-style: italic; /* Optional: make it italic */
+    /* pointer-events: none; /* Optional: if you want to make them unclickable, though click handler still exists */
+}
+
+    #constructionBuildableList li.cannot-build:hover {
+        /* Optional: remove hover effect if it's normally there */
+        /* background-color: transparent; */
+    }
+
+.req-met {
+    color: #4CAF50; /* Green */
+}
+
+.req-not-met {
+    color: #F44336; /* Red */
+}
+
+/* Ensure list items in details panel are styled correctly if they use these classes directly */
+#detailConstructionSkill li span.req-met,
+#detailConstructionSkill li span.req-not-met,
+#detailConstructionComponents li span.req-met,
+#detailConstructionComponents li span.req-not-met {
+    font-weight: bold; /* Make the requirement text stand out a bit */
+}

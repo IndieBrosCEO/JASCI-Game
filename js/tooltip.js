@@ -105,8 +105,10 @@ function showLookTooltip(event, gameState, mapRenderer, assetManager) {
 
         if (isPlayer && gameState.player.face?.asciiFace) {
             htmlContent += `<div class="section-title">Appearance</div><pre>${gameState.player.face.asciiFace}</pre>`;
-        } else if (!isPlayer && entityObject.faceData?.asciiFace) {
+        } else if (!isPlayer && entityObject.faceData?.asciiFace) { // Humanoid NPC with generated face
             htmlContent += `<div class="section-title">Appearance</div><pre>${entityObject.faceData.asciiFace}</pre>`;
+        } else if (!isPlayer && entityObject.asciiPortrait) { // Animal NPC with predefined portrait
+            htmlContent += `<div class="section-title">Appearance</div><pre>${entityObject.asciiPortrait}</pre>`;
         }
 
         let wieldedWeaponName = "Unarmed";

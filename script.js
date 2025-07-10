@@ -1815,14 +1815,27 @@ async function initialize() { // Made async
 
         // Other managers that were already instantiated globally can have their .initialize() called here if needed,
         // especially if they also depend on assetManager.loadDefinitions() indirectly.
-        // For example, vehicleManager's initialize method is simple and synchronous currently.
-        if (window.vehicleManager && typeof window.vehicleManager.initialize === 'function') {
-            if (!window.vehicleManager.initialize()) { // It returns boolean
-                logToConsole("VehicleManager initialization failed (returned false).", "warn");
-            } else {
-                logToConsole("VehicleManager initialized successfully.", "info");
+
+        // Instantiate VehicleManager and make it globally accessible
+        if (typeof VehicleManager !== 'undefined') {
+            if (!window.vehicleManager) { // Check if it hasn't been created yet
+                window.vehicleManager = new VehicleManager(window.gameState, window.assetManager);
+                logToConsole("SCRIPT.JS: window.vehicleManager created.", window.vehicleManager);
             }
+            // Initialize it
+            if (window.vehicleManager && typeof window.vehicleManager.initialize === 'function') {
+                if (!window.vehicleManager.initialize()) {
+                    logToConsole("VehicleManager initialization failed (returned false).", "warn");
+                } else {
+                    logToConsole("VehicleManager initialized successfully.", "info");
+                }
+            } else {
+                logToConsole("SCRIPT.JS: VehicleManager found but initialize function missing or instance error.", "error");
+            }
+        } else {
+            logToConsole("SCRIPT.JS: VehicleManager class definition not found. Cannot instantiate.", "error");
         }
+
         if (window.VehicleModificationUI && typeof window.VehicleModificationUI.initialize === 'function') {
             window.VehicleModificationUI.initialize();
         }

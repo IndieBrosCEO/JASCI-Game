@@ -19,12 +19,47 @@ class ConstructionManager {
 
     async initialize() {
         try {
-            this.constructionDefinitions = await this.assetManager.loadData('assets/definitions/constructions.json');
-            if (Object.keys(this.constructionDefinitions).length === 0) {
-                logToConsole(`${this.logPrefix} No construction definitions found or loaded.`, 'orange');
+            const loadedDefinitions = await this.assetManager.loadData('assets/definitions/constructions.json');
+            // DEBUG: Log the raw loaded data
+            if (!loadedDefinitions) {
+                logToConsole(`${this.logPrefix} assetManager.loadData returned null or undefined for constructions.json.`, 'red');
+                this.constructionDefinitions = {};
             } else {
-                logToConsole(`${this.logPrefix} Initialized with ${Object.keys(this.constructionDefinitions).length} construction definitions.`, 'blue');
+                // Check if it's an array (expected) or an object (if loadData processes it into an object by ID)
+                // The original code implies it becomes an object where keys are definition IDs.
+                // However, constructions.json is an array. AssetManager.loadData might convert arrays of objects with "id" into objects.
+                // Let's assume loadData returns an array as per the JSON structure, and this manager should convert it.
+
+                if (Array.isArray(loadedDefinitions)) {
+                    this.constructionDefinitions = {};
+                    loadedDefinitions.forEach(def => {
+                        if (def.id) {
+                            this.constructionDefinitions[def.id] = def;
+                        } else {
+                            logToConsole(`${this.logPrefix} Warning: Found a construction definition without an ID. Skipping.`, 'orange');
+                        }
+                    });
+                    logToConsole(`${this.logPrefix} Successfully processed ${Object.keys(this.constructionDefinitions).length} construction definitions from array. First item ID: ${loadedDefinitions.length > 0 ? loadedDefinitions[0].id : 'N/A'}.`, 'green');
+                } else if (typeof loadedDefinitions === 'object' && Object.keys(loadedDefinitions).length > 0) {
+                    // If assetManager.loadData already converted it to an object keyed by ID
+                    this.constructionDefinitions = loadedDefinitions;
+                    logToConsole(`${this.logPrefix} Successfully loaded ${Object.keys(this.constructionDefinitions).length} construction definitions (as object). First key: ${Object.keys(this.constructionDefinitions)[0]}.`, 'green');
+                } else if (typeof loadedDefinitions === 'object' && Object.keys(loadedDefinitions).length === 0) {
+                    logToConsole(`${this.logPrefix} assetManager.loadData returned an empty object for constructions.json.`, 'orange');
+                    this.constructionDefinitions = {};
+                } else {
+                    logToConsole(`${this.logPrefix} Loaded construction definitions is not an array or a non-empty object. Type: ${typeof loadedDefinitions}. Content: ${JSON.stringify(loadedDefinitions)}`, 'red');
+                    this.constructionDefinitions = {};
+                }
             }
+
+            // Original logging logic based on the now processed this.constructionDefinitions
+            if (Object.keys(this.constructionDefinitions).length === 0) {
+                logToConsole(`${this.logPrefix} No construction definitions are available after processing. Check previous logs.`, 'orange');
+            } else {
+                logToConsole(`${this.logPrefix} Final check: Initialized with ${Object.keys(this.constructionDefinitions).length} construction definitions.`, 'blue');
+            }
+
         } catch (error) {
             logToConsole(`${this.logPrefix} Error loading construction recipes: ${error.message}`, 'red');
             this.constructionDefinitions = {};
@@ -37,26 +72,43 @@ class ConstructionManager {
      * @returns {Array<object>} An array of construction definitions.
      */
     getBuildableList() {
-        const buildable = [];
+        const allDefinitionsWithStatus = [];
         const player = this.gameState; // Assuming player skills are on gameState or gameState.player
+        const totalDefinitions = Object.keys(this.constructionDefinitions).length;
+        let skillMetCount = 0;
+
+        logToConsole(`${this.logPrefix} getBuildableList() called. Total definitions available: ${totalDefinitions}`, "debug");
 
         for (const defId in this.constructionDefinitions) {
-            const definition = this.constructionDefinitions[defId];
-            let canAttempt = true;
+            const originalDefinition = this.constructionDefinitions[defId];
+            // Augment the definition with skill requirement status
+            const augmentedDefinition = { ...originalDefinition }; // Shallow copy
+            augmentedDefinition.meetsSkillReqs = true; // Assume true initially
 
-            if (definition.skillRequired && definition.skillLevelRequired) {
-                const playerScore = getSkillValue(definition.skillRequired, player);
-                if (playerScore < definition.skillLevelRequired) {
-                    canAttempt = false;
+            if (originalDefinition.skillRequired && originalDefinition.skillLevelRequired) {
+                const playerScore = getSkillValue(originalDefinition.skillRequired, player); // Ensure getSkillValue is accessible
+                if (playerScore < originalDefinition.skillLevelRequired) {
+                    augmentedDefinition.meetsSkillReqs = false;
+                    // logToConsole(`${this.logPrefix} Item '${originalDefinition.name}' (${defId}) DOES NOT meet skill req. Player ${originalDefinition.skillRequired}: ${playerScore}, Needed: ${originalDefinition.skillLevelRequired}`, "debug-verbose");
+                } else {
+                    skillMetCount++;
+                    // logToConsole(`${this.logPrefix} Item '${originalDefinition.name}' (${defId}) MEETS skill req. Player ${originalDefinition.skillRequired}: ${playerScore}, Needed: ${originalDefinition.skillLevelRequired}`, "debug-verbose");
                 }
+            } else {
+                // No skill required, so player meets requirements by default
+                skillMetCount++;
             }
-            // Future: Could check for known blueprints if not all are known by default
-
-            if (canAttempt) {
-                buildable.push(definition);
-            }
+            allDefinitionsWithStatus.push(augmentedDefinition);
         }
-        return buildable;
+
+        logToConsole(`${this.logPrefix} getBuildableList() processed ${totalDefinitions} definitions. Player meets skill requirements for ${skillMetCount} of them. Returning all ${allDefinitionsWithStatus.length} definitions with status.`, "debug");
+
+        if (allDefinitionsWithStatus.length > 0) {
+            // Example log for the first item's skill status
+            // logToConsole(`${this.logPrefix} First item in list: '${allDefinitionsWithStatus[0].name}', meetsSkillReqs: ${allDefinitionsWithStatus[0].meetsSkillReqs}`, "debug");
+        }
+
+        return allDefinitionsWithStatus;
     }
 
     /**
