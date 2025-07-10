@@ -798,7 +798,7 @@ function handleKeyDown(event) {
 
         for (let i = 0; i < ticksToWait; i++) {
             // Advance time
-            Time.advanceTime(gameState); // Assumes Time object is globally available from time.js
+            TimeManager.advanceTime(gameState); // Corrected to use TimeManager
 
             // Update UI (clock, needs)
             // updatePlayerStatusDisplay is defined in script.js and should be callable
@@ -2372,7 +2372,7 @@ function loadGame() {
                 if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
 
             } else {
-                // If the loaded game state indicates game hadn't started (e.g. save from char creator)
+                // If the loaded game state indicates game was not started (e.g. save from char creator)
                 // Reset to character creator or initial menu.
                 // For now, just log it. A more robust system would handle this.
                 logToConsole("Loaded game state indicates game was not started. UI may be inconsistent.", "warn");

@@ -368,3 +368,4 @@ if (typeof window !== 'undefined') {
     // Defer instantiation to main script's initialize function
     // window.proceduralQuestManager = new ProceduralQuestManager(window.gameState, window.assetManager, window.factionManager, window.questManager, window.npcManager, window.mapUtils);
 }
+window.ProceduralQuestManager = ProceduralQuestManager;

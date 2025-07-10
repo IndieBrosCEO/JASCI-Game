@@ -222,3 +222,4 @@ if (typeof window !== 'undefined') {
     // window.companionManager = new CompanionManager(window.gameState, window.assetManager, window.factionManager);
     // Defer instantiation to main script's initialize function
 }
+window.CompanionManager = CompanionManager;

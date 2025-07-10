@@ -161,13 +161,8 @@
                             <option value="buzz-cut">Buzz Cut</option>
                             <option value="bowl-cut">Bowl Cut</option>
                             <option value="jawline-bob">Jawline Bob</option>
-                            <option value="combover">Combover</option> {/* Renamed from fairy-cut */}
+                            <option value="combover">Combover</option>
                             <option value="french-crop-curls">French Crop (Curls)</option>
-                            {/*
-                            <option value="mullet">Mullet</option>
-                            <option value="shag">Shag</option>
-                            <option value="asymmetrical-bob">Asymmetrical Bob</option>
-                            {/*
                         </select>
                     </div>
                     <div>
@@ -394,10 +389,10 @@
 
     <script src="js/gameState.js"></script>
     <script src="js/utils.js"></script>
-    <script src="js/timeManager.js"></script> {/* Replaced time.js */}
+    <script src="js/timeManager.js"></script>
     <script src="js/assetManager.js"></script>
-    <script src="js/inventoryManager.js"></script> {/* Replaced inventory.js and handles Item, InventoryContainer */}
-    <script src="js/dialogueManager.js"></script> {/* Added missing manager */}
+    <script src="js/inventoryManager.js"></script>
+    <script src="js/dialogueManager.js"></script>
     <script src="js/animationManager.js"></script>
     <script src="js/mapRenderer.js"></script>
     <script src="js/character.js"></script>
@@ -410,20 +405,18 @@
     <script src="js/AudioManager.js"></script>
     <script src="js/faceGenerator.js"></script>
     <script src="js/tooltip.js"></script>
-    {/* Managers that might depend on Item/InventoryContainer or TimeManager should be after them */}
-    <script src="js/craftingManager.js"></script> {/* Add if not present, depends on AssetManager, TimeManager, InventoryManager */}
-    <script src="js/factionManager.js"></script> {/* Add if not present */}
-    <script src="js/vehicleManager.js"></script> {/* Add if not present */}
-    <script src="js/companionManager.js"></script> {/* Add if not present */}
-    <script src="js/dynamicEventManager.js"></script> {/* Add if not present */}
-    <script src="js/proceduralQuestManager.js"></script> {/* Add if not present */}
-    <script src="js/trapManager.js"></script> {/* Add if not present */}
-    <script src="js/weatherManager.js"></script> {/* Add if not present */}
-    <script src="js/xpManager.js"></script> {/* Add if not present */}
-    {/* UI scripts that might depend on managers */}
-    <script src="js/ui/craftingUI.js"></script> {/* Add if not present */}
-    <script src="js/ui/constructionUI.js"></script> {/* Add if not present */}
-    <script src="js/ui/vehicleModificationUI.js"></script> {/* Add if not present */}
+    <script src="js/craftingManager.js"></script>
+    <script src="js/factionManager.js"></script>
+    <script src="js/vehicleManager.js"></script>
+    <script src="js/trapManager.js"></script>
+    <script src="js/weatherManager.js"></script>
+    <script src="js/xpManager.js"></script>
+    <script src="js/ui/craftingUI.js"></script>
+    <script src="js/ui/constructionUI.js"></script>
+    <script src="js/ui/vehicleModificationUI.js"></script>
+    <script src="js/companionManager.js"></script>
+    <script src="js/dynamicEventManager.js"></script>
+    <script src="js/proceduralQuestManager.js"></script>
     <script src="script.js"></script>
 
     <div id="entityTooltip" class="tooltip hidden"></div> <!-- Ensure class "tooltip" for styling -->

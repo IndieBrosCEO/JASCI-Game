@@ -19,14 +19,13 @@ class DynamicEventManager {
             logToConsole("DynamicEventManager Error: AssetManager not available.", "error");
             return false;
         }
-        const eventTemplatesData = this.assetManager.getDefinition('dynamic_event_templates');
-        if (eventTemplatesData) {
-            eventTemplatesData.forEach(template => {
-                this.eventTemplates[template.id] = template;
-            });
+        const allTemplatesObject = this.assetManager.getAllDynamicEventTemplates();
+        if (allTemplatesObject && Object.keys(allTemplatesObject).length > 0) {
+            this.eventTemplates = allTemplatesObject; // Direct assignment
             logToConsole(`DynamicEventManager: Loaded ${Object.keys(this.eventTemplates).length} event templates.`, "info");
         } else {
-            logToConsole("DynamicEventManager Error: Could not load dynamic_event_templates.json.", "error");
+            logToConsole("DynamicEventManager Error: Could not load dynamic_event_templates from AssetManager or it was empty.", "error");
+            this.eventTemplates = {}; // Ensure it's an empty object if loading failed
             return false;
         }
 
@@ -328,3 +327,4 @@ if (typeof window !== 'undefined') {
     // window.dynamicEventManager = new DynamicEventManager(window.gameState, window.assetManager, window.npcManager, window.weatherManager, window.questManager);
     // Defer instantiation to main script's initialize function
 }
+window.DynamicEventManager = DynamicEventManager;
