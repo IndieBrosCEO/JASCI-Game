@@ -1,13 +1,14 @@
 ﻿// js/proceduralQuestManager.js
 
 class ProceduralQuestManager {
-    constructor(gameState, assetManager, factionManager, questManager /* npcManager, mapUtils - now global */) {
+    constructor(gameState, assetManager, npcManagerInstance, factionManagerInstance, timeManagerInstance) {
         this.gameState = gameState;
         this.assetManager = assetManager;
-        this.factionManager = factionManager;
-        this.questManager = questManager; // To add to activeQuests
-        this.npcManager = window.npcManager; // Use global instance
-        this.mapUtils = window.mapUtils;     // Use global instance
+        this.npcManager = npcManagerInstance; // Use passed instance
+        this.factionManager = factionManagerInstance; // Use passed instance
+        this.timeManager = timeManagerInstance; // Use passed instance
+        // this.questManager = questManager; // To add to activeQuests // questManager is not directly passed, but part of gameState
+        this.mapUtils = window.mapUtils;     // Assuming mapUtils is still global for now
         this.questTemplates = {};
         // TODO: Expand with more quest types (escort, defend, explore, use item on target, etc.).
         //       This would involve new objective types, generation logic, and completion checks.

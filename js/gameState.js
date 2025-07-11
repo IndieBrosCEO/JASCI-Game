@@ -174,7 +174,7 @@ const gameState = {
     // Each: { eventInstanceId, templateId, startTimeTicks, currentDurationTicks, stateData: {} }
     availableProceduralQuests: [], // Stores quests offered but not yet accepted.
     // Each: { questInstanceId, templateId, factionId, generatedDetails: {}, offerTimeTicks }
-    // gameState.activeQuests (existing array) will be augmented with procedural quest details.
+    activeQuests: [], // Stores active quests, including procedural ones.
     // gameState.questFlags (existing object) will be used by dynamic events and quests.
 
     playerReputation: {}, // Stores player's reputation with different factions { factionId: score }. Initialized as empty, populated by factionManager or game start.

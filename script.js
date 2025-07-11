@@ -34,7 +34,7 @@ const inventoryManager = new InventoryManager(gameState, assetManager);
 // const mapRenderer = new MapRenderer(gameState, assetManager, window.interaction); // mapRenderer is defined in js/mapRenderer.js
 // const turnManager = new TurnManager(gameState, assetManager, window.mapRenderer, window.interaction, combatManager); // turnManager is defined in js/turnManager.js
 // const dialogueManager = new DialogueManager(gameState, assetManager); // dialogueManager is defined in js/dialogueManager.js
-const faceGenerator = new FaceGenerator(gameState);
+// const faceGenerator = new FaceGenerator(gameState); // FaceGenerator is not a class; functionality is through global functions like initFaceCreator
 // const tooltip = new Tooltip(); // Tooltip.js exports functions directly, not a class
 const craftingManager = new CraftingManager(gameState, assetManager, inventoryManager, window.xpManager, TimeManager); // Use window.xpManager
 const constructionManager = new ConstructionManager(gameState, assetManager, inventoryManager, window.mapRenderer, TimeManager); // Use window.mapRenderer
@@ -43,6 +43,7 @@ const vehicleManager = new VehicleManager(gameState, assetManager, window.mapRen
 const trapManager = new TrapManager(gameState, assetManager, combatManager);
 const weatherManager = new WeatherManager(gameState, window.mapRenderer); // Use window.mapRenderer
 // const xpManager = new XpManager(gameState); // xpManager is defined in js/xpManager.js
+const mapUtils = new MapUtils(gameState, assetManager, window.mapRenderer); // Instantiate MapUtils
 const companionManager = new CompanionManager(gameState, assetManager, window.turnManager, combatManager); // Use window.turnManager
 const npcManager = new NpcManager(gameState, assetManager, window.mapRenderer, combatManager, window.turnManager); // Use window.mapRenderer and window.turnManager
 const dynamicEventManager = new DynamicEventManager(gameState, assetManager, npcManager, window.factionManager, TimeManager); // Use window.factionManager
@@ -63,7 +64,7 @@ window.inventoryManager = inventoryManager;
 // window.mapRenderer = mapRenderer; // js/mapRenderer.js directly assigns to window.mapRenderer
 // window.turnManager = turnManager; // js/turnManager.js directly assigns to window.turnManager
 // window.dialogueManager = dialogueManager; // js/dialogueManager.js directly assigns to window.dialogueManager
-window.faceGenerator = faceGenerator;
+// window.faceGenerator = faceGenerator; // Removed as faceGenerator instantiation was removed
 // window.tooltip = tooltip; // Tooltip functions are already global via js/tooltip.js
 window.craftingManager = craftingManager;
 window.constructionManager = constructionManager;
@@ -72,6 +73,7 @@ window.vehicleManager = vehicleManager;
 window.trapManager = trapManager;
 window.weatherManager = weatherManager;
 // window.xpManager = xpManager; // js/xpManager.js directly assigns to window.xpManager
+window.mapUtils = mapUtils; // Assign mapUtils instance to window
 window.companionManager = companionManager;
 window.npcManager = npcManager;
 window.dynamicEventManager = dynamicEventManager;
@@ -478,10 +480,6 @@ function spawnNpcGroupInArea(groupIdOrTag, areaKey, count, targetFactionIdForHos
     if (spawnedNpcIds.length > 0) window.mapRenderer.scheduleRender();
     return spawnedNpcIds;
 }
-// Make it globally accessible if NpcManager doesn't handle it
-// spawnNpcGroupInArea = spawnNpcGroupInArea; // This function is now part of NpcManager
-
-
 function spawnVehiclesFromMapData(mapData) {
     // gameState.vehicles should already be initialized as an array by gameState.js
     if (!gameState || !Array.isArray(gameState.vehicles)) {
@@ -910,17 +908,17 @@ function handleKeyDown(event) {
             case 'ArrowUp': case 'w':
                 if (gameState.inventory.cursor > 0) {
                     gameState.inventory.cursor--;
-                    window.renderInventoryMenu();
+                    window.inventoryManager.renderInventoryMenu(); // Corrected
                 }
                 event.preventDefault(); return;
             case 'ArrowDown': case 's':
                 if (gameState.inventory.currentlyDisplayedItems && gameState.inventory.cursor < gameState.inventory.currentlyDisplayedItems.length - 1) {
                     gameState.inventory.cursor++;
-                    window.renderInventoryMenu();
+                    window.inventoryManager.renderInventoryMenu(); // Corrected
                 }
                 event.preventDefault(); return;
             case 'Enter': // Keep Enter for interact
-                window.interactInventoryItem();
+                window.inventoryManager.interactInventoryItem(); // Corrected
                 event.preventDefault(); return;
             case 'f': case 'F':
                 if (event.shiftKey) {
@@ -943,19 +941,19 @@ function handleKeyDown(event) {
                         }
 
                         if (selectedDisplayItem.source === 'container') {
-                            if (typeof window.dropItem === 'function') {
+                            if (typeof window.inventoryManager.dropItem === 'function') { // Corrected
                                 logToConsole(`Attempting to drop '${selectedDisplayItem.name}' from container via Shift+F.`);
-                                window.dropItem(selectedDisplayItem.name);
+                                window.inventoryManager.dropItem(selectedDisplayItem.name); // Corrected
                             } else {
-                                logToConsole("dropItem function not found!", "error");
+                                logToConsole("dropItem function not found on inventoryManager!", "error");
                             }
                         } else if (selectedDisplayItem.source === 'hand') {
                             logToConsole(`Attempting to drop '${selectedDisplayItem.name}' from hand via Shift+F.`);
-                            if (typeof window.unequipItem === 'function' && typeof window.dropItem === 'function') {
+                            if (typeof window.inventoryManager.unequipItem === 'function' && typeof window.inventoryManager.dropItem === 'function') { // Corrected
                                 const handIndex = selectedDisplayItem.originalHandIndex;
                                 const itemName = selectedDisplayItem.name;
 
-                                window.unequipItem(handIndex);
+                                window.inventoryManager.unequipItem(handIndex); // Corrected
 
                                 let unequippedItemInContainer = false;
                                 if (window.gameState.inventory.container && window.gameState.inventory.container.items) {
@@ -966,12 +964,12 @@ function handleKeyDown(event) {
 
                                 if (unequippedItemInContainer) {
                                     logToConsole(`Successfully unequipped '${itemName}', now attempting to drop from container.`);
-                                    window.dropItem(itemName);
+                                    window.inventoryManager.dropItem(itemName); // Corrected
                                 } else {
                                     logToConsole(`Could not unequip '${itemName}' to inventory (perhaps full?), or item not found after unequip. Drop cancelled.`, "warn");
                                 }
                             } else {
-                                logToConsole("unequipItem or dropItem function not found!", "error");
+                                logToConsole("unequipItem or dropItem function not found on inventoryManager!", "error");
                             }
                         } else if (selectedDisplayItem.source === 'clothing') {
                             logToConsole("Cannot drop equipped clothing directly. Please unequip it first.", "info");
@@ -983,11 +981,11 @@ function handleKeyDown(event) {
                     }
                 } else {
                     // Just 'f': Interact with item
-                    window.interactInventoryItem();
+                    window.inventoryManager.interactInventoryItem(); // Corrected
                 }
                 event.preventDefault(); return;
             case 'i': case 'I':
-                window.toggleInventoryMenu();
+                window.inventoryManager.toggleInventoryMenu(); // Corrected
                 event.preventDefault(); return;
             default:
                 return; // Other keys do nothing if inventory is open
@@ -995,7 +993,7 @@ function handleKeyDown(event) {
     }
 
     if ((event.key === 'i' || event.key === 'I') && !gameState.inventory.open) {
-        window.toggleInventoryMenu();
+        window.inventoryManager.toggleInventoryMenu(); // Corrected
         event.preventDefault(); return;
     }
 
@@ -1790,7 +1788,7 @@ async function initialize() { // Made async
             console.error("initFaceCreator function not found. Face creator UI may not work.");
         }
         // window.mapRenderer.scheduleRender(); // Initial render of the map (or empty state) - gameLoop will handle this
-        window.updateInventoryUI(); // Initialize inventory display (now from js/inventory.js)
+        window.inventoryManager.updateInventoryUI(); // Initialize inventory display
         updatePlayerStatusDisplay(); // Initial display of clock and needs
 
         // Entity Tooltip System is initialized by direct event listeners on mapContainerElement later in this function.
@@ -1884,6 +1882,12 @@ async function initialize() { // Made async
             } else {
                 logToConsole("DynamicEventManager initialized successfully.", "info");
             }
+        }
+        if (window.mapUtils && typeof window.mapUtils.initialize === 'function') {
+            window.mapUtils.initialize(); // Initialize MapUtils
+            logToConsole("MapUtils initialized.", "info");
+        } else {
+            console.error("SCRIPT.JS: MapUtils not available for initialization or initialize function missing.");
         }
         if (window.proceduralQuestManager && typeof window.proceduralQuestManager.initialize === 'function') {
             if (!window.proceduralQuestManager.initialize()) { // Returns boolean
@@ -2282,7 +2286,7 @@ function startGame() {
     // OLD BACKPACK UPGRADE LOGIC REMOVED
 
     // Add Small Backpack and Cargo Pants as starting items
-    if (gameState.inventory.container && typeof window.addItem === 'function' && assetManager) {
+    if (gameState.inventory.container && typeof window.inventoryManager.addItem === 'function' && assetManager) {
         const itemsToStartWith = [
             { id: "small_backpack_container", nameForLog: "Small Backpack" },
             { id: "cargo_pants_pockets", nameForLog: "Cargo Pants" },
@@ -2293,7 +2297,7 @@ function startGame() {
             const itemDef = assetManager.getItem(itemInfo.id);
             if (itemDef) {
                 const newItem = new Item(itemDef); // Assumes Item constructor is globally available
-                if (window.addItem(newItem)) {
+                if (window.inventoryManager.addItem(newItem)) {
                     logToConsole(`Added starting item: ${itemInfo.nameForLog} to inventory.`);
                 } else {
                     logToConsole(`Failed to add starting item: ${itemInfo.nameForLog} to inventory (addItem returned false).`);
@@ -2319,7 +2323,7 @@ function startGame() {
             // For simplicity, if addItem can handle raw definitions, that's fine too.
             // Assuming Item constructor can take the definition object:
             const newItem = new Item(itemDef);
-            window.addItem(newItem);
+            window.inventoryManager.addItem(newItem);
         } else {
             console.warn(`Clothing item definition not found for ID: ${itemId}`);
         }
@@ -2339,7 +2343,7 @@ function startGame() {
                     newItem.ammoType = itemDef.ammoType;
                     newItem.quantityPerBox = itemDef.quantity; // Assuming 'quantity' in JSON is per-box
                 }
-                window.addItem(newItem);
+                window.inventoryManager.addItem(newItem);
             }
         } else {
             console.warn(`Weapon or ammo definition not found for ID: ${itemEntry.id}`);
@@ -2384,7 +2388,7 @@ function startGame() {
         const itemDef = assetManager.getItem(itemInfo.id);
         if (itemDef) {
             const newItemInstance = new Item(itemDef);
-            if (!window.addItem(newItemInstance)) { // addItem uses InventoryManager.addItemToInventory
+            if (!window.inventoryManager.addItem(newItemInstance)) { // addItem uses InventoryManager.addItemToInventory
                 logToConsole(`Inventory full (or item add failed) for: ${itemInfo.nameForLog}. Placing on floor.`);
                 if (!gameState.floorItems) gameState.floorItems = [];
                 gameState.floorItems.push({ x: gameState.playerPos.x, y: gameState.playerPos.y, z: gameState.playerPos.z, item: newItemInstance });
@@ -2406,7 +2410,7 @@ function startGame() {
     }
 
     gameState.gameStarted = true;
-    window.updateInventoryUI(); // Update UI to reflect initial inventory state
+    window.inventoryManager.updateInventoryUI(); // Update UI to reflect initial inventory state
 
     // initializeHealth is now in js/character.js, call it with gameState
     window.initializeHealth(gameState);
@@ -2559,7 +2563,7 @@ function runConsumableAndNeedsTest() {
         logToConsole("Testing consumption of Canned Beans...");
         // Ensure item is in inventory (addItem checks capacity)
         if (!gameState.inventory.container.items.find(i => i.id === beansDef.id)) {
-            addItem(new Item(beansDef)); // Add one for the test
+            window.inventoryManager.addItem(new Item(beansDef)); // Add one for the test
         }
 
         const beansInventoryItem = gameState.inventory.container.items.find(i => i.id === beansDef.id);
@@ -2587,7 +2591,7 @@ function runConsumableAndNeedsTest() {
     if (waterDef) {
         logToConsole("Testing consumption of Bottled Water...");
         if (!gameState.inventory.container.items.find(i => i.id === waterDef.id)) {
-            addItem(new Item(waterDef)); // Add one for the test
+            window.inventoryManager.addItem(new Item(waterDef)); // Add one for the test
         }
 
         const waterInventoryItem = gameState.inventory.container.items.find(i => i.id === waterDef.id);
@@ -3073,7 +3077,7 @@ async function testItemAddAndEquip() {
     gameState.inventory.container.items = gameState.inventory.container.items.filter(i => i.id !== 'knife_melee');
     const originalItemCount = gameState.inventory.container.items.length;
 
-    window.addItem(new Item(knifeDef)); // Item constructor is from inventory.js
+    window.inventoryManager.addItem(new Item(knifeDef)); // Item constructor is from inventory.js
     const itemInInventory = gameState.inventory.container.items.find(item => item.id === 'knife_melee');
 
     if (!itemInInventory) {
@@ -3463,7 +3467,7 @@ async function testEquipArmorAndUpdateUI() {
         window.unequipClothing(vestDef.layer); // Unequip if already worn
     }
     if (!vestInstance) {
-        window.addItem(new Item(vestDef)); // Add if not in inventory
+        window.inventoryManager.addItem(new Item(vestDef)); // Add if not in inventory
         vestInstance = gameState.inventory.container.items.find(item => item.id === 'basic_vest');
         if (!vestInstance) {
             logToConsole("Equip Armor Test FAIL: Could not add 'basic_vest' to inventory.");

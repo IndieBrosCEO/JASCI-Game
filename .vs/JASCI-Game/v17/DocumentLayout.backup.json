@@ -263,8 +263,7 @@
               "ViewState": "AgIAAFUBAAAAAAAAAAAAAGcBAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-06-24T05:06:48.847Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -302,8 +301,7 @@
               "RelativeToolTip": "js\\ui\\constructionUI.js",
               "ViewState": "AgIAAOEAAAAAAAAAAAAwwBgBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-07-09T09:06:29.573Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-09T09:06:29.573Z"
             },
             {
               "$type": "Document",
@@ -339,8 +337,7 @@
               "RelativeToolTip": "js\\ui\\craftingUI.js",
               "ViewState": "AgIAAEcAAAAAAAAAAAAAAFgAAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-07-09T09:06:41.64Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-09T09:06:41.64Z"
             },
             {
               "$type": "Document",
@@ -352,8 +349,7 @@
               "RelativeToolTip": "js\\animationManager.js",
               "ViewState": "AgIAANIFAAAAAAAAAAAowPwFAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-07-06T01:12:30.801Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-06T01:12:30.801Z"
             },
             {
               "$type": "Document",
@@ -365,8 +361,7 @@
               "RelativeToolTip": "js\\ui\\vehicleModificationUI.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-07-09T09:06:54.574Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-09T09:06:54.574Z"
             },
             {
               "$type": "Document",
@@ -378,8 +373,7 @@
               "RelativeToolTip": "js\\inventoryManager.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-07-09T09:14:04.694Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-09T09:14:04.694Z"
             },
             {
               "$type": "Document",
