@@ -14,12 +14,12 @@
     BACKPACK: "backpack",
     WAIST: "waist"
 };
-window.ClothingLayers = ClothingLayers; // Make globally accessible
+// window.ClothingLayers = ClothingLayers; // No longer needed
 
 const InventorySizes = {
     XS: 3, S: 6, M: 12, L: 18, XL: 24, XXL: 36
 };
-window.InventorySizes = InventorySizes; // Make globally accessible
+// window.InventorySizes = InventorySizes; // No longer needed
 
 const gameState = {
     // mapLevels will store the tile data for all Z-levels of the current map.
@@ -245,4 +245,8 @@ gameState.player.face = {
 // Add wieldedWeapon to player
 gameState.player.wieldedWeapon = "";
 
+// window.gameState = gameState; // No longer needed
+// Ensure gameState, ClothingLayers, and InventorySizes are explicitly attached to window
 window.gameState = gameState;
+window.ClothingLayers = ClothingLayers;
+window.InventorySizes = InventorySizes;

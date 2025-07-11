@@ -20,18 +20,66 @@
 }
 
 const PLAYER_VISION_RADIUS_CONST = 10; // Centralized constant
-window.PLAYER_VISION_RADIUS_CONST = PLAYER_VISION_RADIUS_CONST; // Expose globally for other modules
 
 /**************************************************************
  * Global State & Constants
  **************************************************************/
-window.assetManager = new AssetManager(); // Explicitly assign to window
-console.log("SCRIPT.JS: window.assetManager created", window.assetManager); // Guard Log 1a
-window.animationManager = new AnimationManager(gameState); // Changed to window.animationManager
-window.audioManager = new AudioManager(); // ADDED THIS LINE
+const assetManager = new AssetManager();
+console.log("SCRIPT.JS: assetManager created", assetManager); // Guard Log 1a
+const animationManager = new AnimationManager(gameState);
+const audioManager = new AudioManager();
+const combatManager = new CombatManager(gameState, assetManager);
+const inventoryManager = new InventoryManager(gameState, assetManager);
+const interaction = new Interaction(gameState, assetManager, inventoryManager);
+const mapRenderer = new MapRenderer(gameState, assetManager, interaction);
+const turnManager = new TurnManager(gameState, assetManager, mapRenderer, interaction, combatManager);
+const dialogueManager = new DialogueManager(gameState, assetManager);
+const faceGenerator = new FaceGenerator(gameState);
+const tooltip = new Tooltip();
+const craftingManager = new CraftingManager(gameState, assetManager, inventoryManager, xpManager, TimeManager);
+const constructionManager = new ConstructionManager(gameState, assetManager, inventoryManager, mapRenderer, TimeManager);
+const factionManager = new FactionManager(gameState, assetManager);
+const vehicleManager = new VehicleManager(gameState, assetManager, mapRenderer);
+const trapManager = new TrapManager(gameState, assetManager, combatManager);
+const weatherManager = new WeatherManager(gameState, mapRenderer);
+const xpManager = new XpManager(gameState);
+const companionManager = new CompanionManager(gameState, assetManager, turnManager, combatManager);
+const npcManager = new NpcManager(gameState, assetManager, mapRenderer, combatManager, turnManager);
+const dynamicEventManager = new DynamicEventManager(gameState, assetManager, npcManager, factionManager, TimeManager);
+const proceduralQuestManager = new ProceduralQuestManager(gameState, assetManager, npcManager, factionManager, TimeManager);
 
-// Instantiate other managers that depend on gameState and assetManager
-// ---- MANAGER INSTANTIATIONS MOVED INTO ASYNC INITIALIZE() ----
+// UI Managers (assuming they don't have complex cross-dependencies for instantiation here)
+// If they do, their instantiation might need to be adjusted or moved post-initialize of others.
+const CraftingUI = new CraftingUIManager(craftingManager, inventoryManager, assetManager, gameState);
+const ConstructionUI = new ConstructionUIManager(constructionManager, inventoryManager, assetManager, gameState, mapRenderer);
+const VehicleModificationUI = new VehicleModificationUIManager(vehicleManager, inventoryManager, assetManager, gameState);
+// Ensure all managers are explicitly attached to window object
+window.assetManager = assetManager;
+window.animationManager = animationManager;
+window.audioManager = audioManager;
+window.combatManager = combatManager;
+window.inventoryManager = inventoryManager;
+window.interaction = interaction;
+window.mapRenderer = mapRenderer;
+window.turnManager = turnManager;
+window.dialogueManager = dialogueManager;
+window.faceGenerator = faceGenerator;
+window.tooltip = tooltip;
+window.craftingManager = craftingManager;
+window.constructionManager = constructionManager;
+window.factionManager = factionManager;
+window.vehicleManager = vehicleManager;
+window.trapManager = trapManager;
+window.weatherManager = weatherManager;
+window.xpManager = xpManager;
+window.companionManager = companionManager;
+window.npcManager = npcManager;
+window.dynamicEventManager = dynamicEventManager;
+window.proceduralQuestManager = proceduralQuestManager;
+window.CraftingUI = CraftingUI;
+window.ConstructionUI = ConstructionUI;
+window.VehicleModificationUI = VehicleModificationUI;
+window.PLAYER_VISION_RADIUS_CONST = PLAYER_VISION_RADIUS_CONST;
 
 // let currentMapData = null; // This is now managed in js/mapRenderer.js // This comment is accurate.
 
@@ -155,10 +203,10 @@ function calculateDefenseRoll(defender, defenseType, attackerWeapon, actionConte
 }
 
 async function handleMapSelectionChangeWrapper(mapId) { // Made async to handle map loading properly
-    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Using generic click as placeholder
+    if (audioManager) audioManager.playUiSound('ui_click_01.wav'); // Using generic click as placeholder
 
-    if (window.mapRenderer && typeof window.mapRenderer.handleMapSelectionChange === 'function') {
-        const loadedMapData = await window.mapRenderer.handleMapSelectionChange(mapId); // assetManager.loadMap now returns .levels and .startPos.z
+    if (mapRenderer && typeof mapRenderer.handleMapSelectionChange === 'function') {
+        const loadedMapData = await mapRenderer.handleMapSelectionChange(mapId); // assetManager.loadMap now returns .levels and .startPos.z
         if (loadedMapData) {
             // Sync gameState with the new Z-level structure
             gameState.mapLevels = loadedMapData.levels;
@@ -179,18 +227,18 @@ async function handleMapSelectionChangeWrapper(mapId) { // Made async to handle 
             spawnNpcsFromMapData(loadedMapData); // spawnNpcsFromMapData will need to handle npc.pos.z
             spawnVehiclesFromMapData(loadedMapData); // NEW: Spawn vehicles
 
-            window.mapRenderer.scheduleRender();
-            window.interaction.detectInteractableItems();
-            window.interaction.showInteractableItems();
+            mapRenderer.scheduleRender();
+            interaction.detectInteractableItems();
+            interaction.showInteractableItems();
             // FOW calculation moved to startGame or player move
             logToConsole(`Map ${loadedMapData.name} processed in wrapper.`);
         } else {
             logToConsole(`Map loading failed for ${mapId} in wrapper, no NPC spawning.`);
             gameState.npcs = []; // Clear NPCs if map loading failed
-            window.mapRenderer.scheduleRender(); // Render empty state or previous state
+            mapRenderer.scheduleRender(); // Render empty state or previous state
         }
     } else {
-        console.error("window.mapRenderer.handleMapSelectionChange is not available.");
+        console.error("mapRenderer.handleMapSelectionChange is not available.");
         const errorDisplay = document.getElementById('errorMessageDisplay');
         if (errorDisplay) {
             errorDisplay.textContent = "Error: Map changing function is not available.";
@@ -260,8 +308,8 @@ function spawnNpcsFromMapData(mapData) {
                     logToConsole(`NPC ${newNpc.id} stats overridden from map data.`, "dev");
                 }
 
-                if (typeof window.initializeHealth === 'function') {
-                    window.initializeHealth(newNpc); // Initializes health based on (now potentially overridden) stats
+                if (typeof initializeHealth === 'function') {
+                    initializeHealth(newNpc); // Initializes health based on (now potentially overridden) stats
                 } else {
                     console.error(`initializeHealth function not found for NPC: ${newNpc.id}`);
                 }
@@ -292,8 +340,8 @@ function spawnNpcsFromMapData(mapData) {
                 }
 
 
-                if (typeof window.initializeHealth === 'function') {
-                    window.initializeHealth(newNpc); // Initializes health based on (now potentially overridden) stats
+                if (typeof initializeHealth === 'function') {
+                    initializeHealth(newNpc); // Initializes health based on (now potentially overridden) stats
                 } else {
                     console.error(`initializeHealth function not found for NPC: ${newNpc.id}`);
                     // Basic fallback if initializeHealth is missing
@@ -310,8 +358,8 @@ function spawnNpcsFromMapData(mapData) {
                 };
 
                 // Initialize face data, wielded weapon, and ensure name is set
-                if (typeof window.initializeNpcFace === 'function') {
-                    window.initializeNpcFace(newNpc); // This will also handle default name and weapon
+                if (typeof initializeNpcFace === 'function') {
+                    initializeNpcFace(newNpc); // This will also handle default name and weapon
                 } else {
                     console.error(`initializeNpcFace function not found for NPC: ${newNpc.id}`);
                     // Basic fallbacks if function is missing
@@ -431,12 +479,12 @@ function spawnNpcGroupInArea(groupIdOrTag, areaKey, count, targetFactionIdForHos
     return spawnedNpcIds;
 }
 // Make it globally accessible if NpcManager doesn't handle it
-// window.spawnNpcGroupInArea = spawnNpcGroupInArea; // This function is now part of NpcManager
+// spawnNpcGroupInArea = spawnNpcGroupInArea; // This function is now part of NpcManager
 
 
 function spawnVehiclesFromMapData(mapData) {
     // gameState.vehicles should already be initialized as an array by gameState.js
-    if (!window.gameState || !Array.isArray(window.gameState.vehicles)) {
+    if (!gameState || !Array.isArray(gameState.vehicles)) {
         logToConsole("Error: gameState.vehicles is not initialized or not an array. Cannot spawn vehicles.", "error");
         return;
     }
@@ -445,13 +493,13 @@ function spawnVehiclesFromMapData(mapData) {
     // and this function just adds new ones from the map data if they aren't already present.
     // A more robust system would handle vehicle persistence across map loads.
     // Alternative: Clear vehicles belonging to the currentMapId if vehicles store their map.
-    // window.gameState.vehicles = window.gameState.vehicles.filter(v => v.currentMapId !== mapData.id);
+    // gameState.vehicles = gameState.vehicles.filter(v => v.currentMapId !== mapData.id);
 
 
     if (mapData && mapData.vehicles && Array.isArray(mapData.vehicles)) {
         logToConsole(`Spawning vehicles from map data for map: ${mapData.name || mapData.id}`, "info");
         mapData.vehicles.forEach(vehiclePlacementInfo => {
-            if (!window.vehicleManager || typeof window.vehicleManager.spawnVehicle !== 'function') {
+            if (!vehicleManager || typeof vehicleManager.spawnVehicle !== 'function') {
                 logToConsole("Error: VehicleManager or spawnVehicle function not available.", "error");
                 return; // Cannot spawn
             }
@@ -465,9 +513,9 @@ function spawnVehiclesFromMapData(mapData) {
                 return; // Skip this vehicle
             }
 
-            const newVehicleId = window.vehicleManager.spawnVehicle(templateId, mapData.id, pos);
+            const newVehicleId = vehicleManager.spawnVehicle(templateId, mapData.id, pos);
             if (newVehicleId && nameOverride) {
-                const newVehicleInst = window.vehicleManager.getVehicleById(newVehicleId);
+                const newVehicleInst = vehicleManager.getVehicleById(newVehicleId);
                 if (newVehicleInst) {
                     newVehicleInst.name = nameOverride;
                     logToConsole(`Vehicle "${newVehicleInst.name}" (ID: ${newVehicleId}) spawned and name overridden to "${nameOverride}".`, "info");
@@ -495,15 +543,15 @@ function spawnVehiclesFromMapData(mapData) {
  **************************************************************/
 // All interaction functions previously here (detectInteractableItems, showInteractableItems, 
 // selectItem, getActionsForItem, selectAction, interact, performAction, cancelActionSelection)
-// have been moved to js/interaction.js and are accessed via window.interaction.
+// have been moved to js/interaction.js and are accessed via interaction.
 
 // Perform the action selected by the player
 function performSelectedAction() {
     // Ensure that the call is made to the performSelectedAction in js/interaction.js
-    if (window.interaction && typeof window.interaction.performSelectedAction === 'function') {
-        window.interaction.performSelectedAction();
+    if (interaction && typeof interaction.performSelectedAction === 'function') {
+        interaction.performSelectedAction();
     } else {
-        console.error("window.interaction.performSelectedAction is not available.");
+        console.error("interaction.performSelectedAction is not available.");
     }
 }
 
@@ -547,8 +595,8 @@ function renderCharacterInfo() {
 
     // Call the function from character.js to render stats, skills, and worn clothing
     // gameState is passed as the 'character' object for the player.
-    window.renderCharacterStatsSkillsAndWornClothing(gameState, characterInfoElement);
-    window.renderHealthTable(gameState); // Ensure health table (armor) updates
+    renderCharacterStatsSkillsAndWornClothing(gameState, characterInfoElement);
+    renderHealthTable(gameState); // Ensure health table (armor) updates
     updatePlayerStatusDisplay(); // Update clock and needs display
 
     // Display the ASCII face
@@ -608,12 +656,12 @@ function renderCharacterInfo() {
 
 // Wrapper functions for HTML onchange events
 function handleUpdateStat(name, value) {
-    window.updateStat(name, value, gameState); // from js/character.js
+    updateStat(name, value, gameState); // from js/character.js
     renderCharacterInfo(); // Re-render the relevant parts of character info
 }
 
 function handleUpdateSkill(name, value) {
-    window.updateSkill(name, value, gameState); // from js/character.js
+    updateSkill(name, value, gameState); // from js/character.js
     // No direct need to call renderCharacterInfo unless total skill points display needs update
     // The skill point display is updated directly by updateSkill.
 }
@@ -635,9 +683,9 @@ function handleKeyDown(event) {
         if (!isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isTargetingMode) {
             gameState.isLookModeActive = !gameState.isLookModeActive;
             logToConsole(`Look Mode ${gameState.isLookModeActive ? 'activated' : 'deactivated'}.`);
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Generic UI click
-            if (!gameState.isLookModeActive && typeof window.hideLookTooltip === 'function') {
-                window.hideLookTooltip(); // Hide tooltip when exiting look mode
+            if (audioManager) audioManager.playUiSound('ui_click_01.wav'); // Generic UI click
+            if (!gameState.isLookModeActive && typeof hideLookTooltip === 'function') {
+                hideLookTooltip(); // Hide tooltip when exiting look mode
             }
             event.preventDefault();
             return;
@@ -648,11 +696,11 @@ function handleKeyDown(event) {
     if (event.code === 'Backquote') {
         event.preventDefault();
         isConsoleOpen = !isConsoleOpen;
-        if (window.audioManager) window.audioManager.playUiSound('ui_console_toggle_01.wav');
+        if (audioManager) audioManager.playUiSound('ui_console_toggle_01.wav');
         if (isConsoleOpen) {
             gameConsoleElement.classList.remove('hidden');
-            if (typeof window.logToConsoleUI === 'function') {
-                window.logToConsoleUI("Console opened. Type 'help' for commands.", "info");
+            if (typeof logToConsoleUI === 'function') {
+                logToConsoleUI("Console opened. Type 'help' for commands.", "info");
             }
             consoleInputElement.focus();
         } else {
@@ -670,7 +718,7 @@ function handleKeyDown(event) {
             isConsoleOpen = false;
             gameConsoleElement.classList.add('hidden');
             consoleInputElement.blur(); // Remove focus from input
-            if (window.audioManager) window.audioManager.playUiSound('ui_console_toggle_01.wav'); // Or ui_menu_close_01.wav if preferred for Esc
+            if (audioManager) audioManager.playUiSound('ui_console_toggle_01.wav'); // Or ui_menu_close_01.wav if preferred for Esc
             return;
         }
 
@@ -682,73 +730,73 @@ function handleKeyDown(event) {
                 // Removed DEBUG logs from previous step
 
                 if (commandText) {
-                    if (typeof window.processConsoleCommand === 'function') {
-                        window.processConsoleCommand(commandText);
-                        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
+                    if (typeof processConsoleCommand === 'function') {
+                        processConsoleCommand(commandText);
+                        if (audioManager) audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
                     } else {
                         console.error("processConsoleCommand is not defined from script.js.");
-                        if (typeof window.logToConsoleUI === 'function') {
-                            window.logToConsoleUI("Error: processConsoleCommand not defined!", "error");
-                            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Error sound
+                        if (typeof logToConsoleUI === 'function') {
+                            logToConsoleUI("Error: processConsoleCommand not defined!", "error");
+                            if (audioManager) audioManager.playUiSound('ui_error_01.wav'); // Error sound
                         }
                     }
                     consoleInputElement.value = '';
 
-                    if (window.commandHistory && typeof window.historyIndex === 'number') {
-                        window.historyIndex = window.commandHistory.length; // Reset history index
+                    if (commandHistory && typeof historyIndex === 'number') {
+                        historyIndex = commandHistory.length; // Reset history index
                     }
                 } else {
                     // Play a softer click or nothing if no command entered
-                    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.5 });
+                    if (audioManager) audioManager.playUiSound('ui_click_01.wav', { volume: 0.5 });
                 }
                 return; // Processed 'Enter', stop further handling
             } else if (event.key === 'ArrowUp') {
                 event.preventDefault();
-                if (window.commandHistory && window.commandHistory.length > 0) {
-                    if (window.historyIndex > 0) {
-                        window.historyIndex--;
+                if (commandHistory && commandHistory.length > 0) {
+                    if (historyIndex > 0) {
+                        historyIndex--;
                     }
-                    consoleInputElement.value = window.commandHistory[window.historyIndex] || '';
+                    consoleInputElement.value = commandHistory[historyIndex] || '';
                     consoleInputElement.setSelectionRange(consoleInputElement.value.length, consoleInputElement.value.length);
                     // TODO: Play ui_scroll_01.wav
-                    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
+                    if (audioManager) audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
                 }
                 return; // Processed 'ArrowUp', stop further handling
             } else if (event.key === 'ArrowDown') {
                 event.preventDefault();
-                if (window.commandHistory && window.commandHistory.length > 0) {
-                    if (window.historyIndex < window.commandHistory.length - 1) {
-                        window.historyIndex++;
-                        consoleInputElement.value = window.commandHistory[window.historyIndex];
-                    } else if (window.historyIndex >= window.commandHistory.length - 1) {
-                        window.historyIndex = window.commandHistory.length;
+                if (commandHistory && commandHistory.length > 0) {
+                    if (historyIndex < commandHistory.length - 1) {
+                        historyIndex++;
+                        consoleInputElement.value = commandHistory[historyIndex];
+                    } else if (historyIndex >= commandHistory.length - 1) {
+                        historyIndex = commandHistory.length;
                         consoleInputElement.value = '';
                     }
                     consoleInputElement.setSelectionRange(consoleInputElement.value.length, consoleInputElement.value.length);
                     // TODO: Play ui_scroll_01.wav
-                    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
+                    if (audioManager) audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
                 }
                 return; // Processed 'ArrowDown', stop further handling
             } else if (event.key === 'Tab') {
                 event.preventDefault(); // Prevent tabbing out of the console input
                 // Future: Implement tab completion if desired
                 // For now, just logs or does nothing.
-                // window.logToConsoleUI("Tab completion not yet implemented.", "info");
+                // logToConsoleUI("Tab completion not yet implemented.", "info");
                 // TODO: Play a soft click or specific tab sound if implemented
-                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.3 });
+                if (audioManager) audioManager.playUiSound('ui_click_01.wav', { volume: 0.3 });
             }
             // For other keys (alphanumeric, space, backspace, etc.),
             // allow default behavior so user can type in the input field.
             // No event.preventDefault() for these.
             // TODO: Play ui_type_01.wav on keydown/keypress for typing in console
             // This might be too noisy if played for every char, consider on first char of a word or debounced.
-            // if (window.audioManager && event.key.length === 1) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.2 }); // Placeholder for ui_type_01.wav
+            // if (audioManager && event.key.length === 1) audioManager.playUiSound('ui_click_01.wav', { volume: 0.2 }); // Placeholder for ui_type_01.wav
 
             // NEW SOUND IMPLEMENTATION:
-            if (window.audioManager && event.key.length === 1 && event.target === consoleInputElement) { // Play for single character inputs in console
+            if (audioManager && event.key.length === 1 && event.target === consoleInputElement) { // Play for single character inputs in console
                 gameState.uiTypeSoundIndex = (gameState.uiTypeSoundIndex % 5) + 1; // Cycle from 1 to 5
                 const soundToPlay = `ui_type_0${gameState.uiTypeSoundIndex}.wav`;
-                window.audioManager.playUiSound(soundToPlay, { volume: 0.7 });
+                audioManager.playUiSound(soundToPlay, { volume: 0.7 });
             }
 
         } else {
@@ -770,12 +818,12 @@ function handleKeyDown(event) {
         event.preventDefault();
         if (gameState.isInCombat) {
             logToConsole("Cannot wait during combat.", "orange");
-            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            if (audioManager) audioManager.playUiSound('ui_error_01.wav');
             return;
         }
 
         // Click for initiating the action
-        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+        if (audioManager) audioManager.playUiSound('ui_click_01.wav');
         // TODO: Ideally, a ui_menu_open_01.wav when the prompt appears, but native prompt is hard to hook.
 
         const hoursToWaitStr = prompt("How many hours to wait? (1-24)", "1");
@@ -783,7 +831,7 @@ function handleKeyDown(event) {
         if (hoursToWaitStr === null) { // User pressed cancel
             logToConsole("Wait cancelled.", "info");
             // TODO: Play ui_menu_close_01.wav or a general cancel sound
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            if (audioManager) audioManager.playUiSound('ui_click_01.wav');
             return;
         }
 
@@ -791,11 +839,11 @@ function handleKeyDown(event) {
 
         if (isNaN(hoursToWait) || hoursToWait < 1 || hoursToWait > 24) {
             logToConsole("Invalid number of hours. Please enter a number between 1 and 24.", "error");
-            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Error sound
+            if (audioManager) audioManager.playUiSound('ui_error_01.wav'); // Error sound
             return;
         }
 
-        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
+        if (audioManager) audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
         // TODO: Also play move_wait_01.wav here when available, if distinct from general confirm.
         logToConsole(`Waiting for ${hoursToWait} hour(s)...`, "info");
         const ticksToWait = hoursToWait * 30; // 1 hour = 60 minutes / 2 minutes/tick = 30 ticks
@@ -1445,7 +1493,7 @@ function handleKeyDown(event) {
     }
 }
 
-window.combatManager = new CombatManager(gameState, assetManager);
+// combatManager = new CombatManager(gameState, assetManager); // Moved to top
 
 function checkAndHandlePortal(newX, newY) {
     if (gameState.awaitingPortalConfirmation || gameState.portalPromptActive) {
@@ -1815,27 +1863,14 @@ async function initialize() { // Made async
 
         // Other managers that were already instantiated globally can have their .initialize() called here if needed,
         // especially if they also depend on assetManager.loadDefinitions() indirectly.
-
-        // Instantiate VehicleManager and make it globally accessible
-        if (typeof VehicleManager !== 'undefined') {
-            if (!window.vehicleManager) { // Check if it hasn't been created yet
-                window.vehicleManager = new VehicleManager(window.gameState, window.assetManager);
-                logToConsole("SCRIPT.JS: window.vehicleManager created.", window.vehicleManager);
-            }
-            // Initialize it
-            if (window.vehicleManager && typeof window.vehicleManager.initialize === 'function') {
-                if (!window.vehicleManager.initialize()) {
-                    logToConsole("VehicleManager initialization failed (returned false).", "warn");
-                } else {
-                    logToConsole("VehicleManager initialized successfully.", "info");
-                }
+        // For example, vehicleManager's initialize method is simple and synchronous currently.
+        if (window.vehicleManager && typeof window.vehicleManager.initialize === 'function') {
+            if (!window.vehicleManager.initialize()) { // It returns boolean
+                logToConsole("VehicleManager initialization failed (returned false).", "warn");
             } else {
-                logToConsole("SCRIPT.JS: VehicleManager found but initialize function missing or instance error.", "error");
+                logToConsole("VehicleManager initialized successfully.", "info");
             }
-        } else {
-            logToConsole("SCRIPT.JS: VehicleManager class definition not found. Cannot instantiate.", "error");
         }
-
         if (window.VehicleModificationUI && typeof window.VehicleModificationUI.initialize === 'function') {
             window.VehicleModificationUI.initialize();
         }
