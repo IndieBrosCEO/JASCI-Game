@@ -44,10 +44,11 @@ const trapManager = new TrapManager(gameState, assetManager, combatManager);
 const weatherManager = new WeatherManager(gameState, window.mapRenderer); // Use window.mapRenderer
 // const xpManager = new XpManager(gameState); // xpManager is defined in js/xpManager.js
 const mapUtils = new MapUtils(gameState, assetManager, window.mapRenderer); // Instantiate MapUtils
+window.mapUtils = mapUtils; // Assign mapUtils instance to window
 const companionManager = new CompanionManager(gameState, assetManager, window.turnManager, combatManager); // Use window.turnManager
 const npcManager = new NpcManager(gameState, assetManager, window.mapRenderer, combatManager, window.turnManager); // Use window.mapRenderer and window.turnManager
 const dynamicEventManager = new DynamicEventManager(gameState, assetManager, npcManager, window.factionManager, TimeManager); // Use window.factionManager
-const proceduralQuestManager = new ProceduralQuestManager(gameState, assetManager, npcManager, window.factionManager, TimeManager); // Use window.factionManager
+const proceduralQuestManager = new ProceduralQuestManager(gameState, assetManager, npcManager, window.factionManager, TimeManager, window.mapUtils); // Use window.factionManager
 
 // UI Managers (assuming they don't have complex cross-dependencies for instantiation here)
 // If they do, their instantiation might need to be adjusted or moved post-initialize of others.
@@ -2398,6 +2399,7 @@ function startGame() {
         { id: "cargo_pants_pockets", nameForLog: "Cargo Pants" },
         { id: "basic_vest", nameForLog: "Basic Vest" },
         { id: "large_backpack_item", nameForLog: "Large Backpack" },
+        { id: "fishing_rod_simple", nameForLog: "Fishing Rod" }
         // Add other items like Canned Beans, Bottled Water if they are default starting items
         // For example:
         // { id: "canned_beans_food", nameForLog: "Canned Beans" },

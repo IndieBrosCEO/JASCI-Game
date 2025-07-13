@@ -285,7 +285,7 @@ async function move_internal(direction) {
         if (window.trapManager && typeof window.trapManager.checkForTraps === 'function') {
             // Pass the player entity (gameState itself for player skills/pos)
             // false for isActiveSearch, 0 for searchRadius (current tile only for passive check)
-            window.trapManager.checkForTraps(gameState, false, 0);
+            window.trapManager.checkForTraps(window.gameState.player, false, 0);
         }
 
     } else {

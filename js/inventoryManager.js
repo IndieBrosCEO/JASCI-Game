@@ -582,6 +582,16 @@ class InventoryManager {
         }
         collectedFloorItems.forEach(fi => this.gameState.inventory.currentlyDisplayedItems.push(fi));
 
+        if (this.gameState.inventory.container && this.gameState.inventory.container.items) {
+            this.gameState.inventory.container.items.forEach(item => {
+                if (item.tags && item.tags.includes('container') && item.items) {
+                    item.items.forEach(innerItem => {
+                        this.gameState.inventory.currentlyDisplayedItems.push({ ...innerItem, equipped: false, source: 'worldContainer', containerRef: item, displayName: innerItem.name });
+                    });
+                }
+            });
+        }
+
         if (this.gameState.worldContainers && this.gameState.worldContainers.length > 0 && this.gameState.playerPos) {
             const { x: playerX, y: playerY, z: playerZ } = this.gameState.playerPos;
             const R = 1;

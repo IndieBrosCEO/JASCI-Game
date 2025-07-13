@@ -3,6 +3,7 @@
         this.tilesets = {};
         this.itemsById = {};
         this.npcDefinitions = {}; // Renamed from npcsById
+        this.fishDefinitions = {};
         this.mapsById = {};
         this.currentMap = null;
         this.mapIndexData = null; // For storing mapIndex.json content
@@ -63,6 +64,7 @@
         this.tilesets = {};
         this.itemsById = {};
         this.npcDefinitions = {};
+        this.fishDefinitions = {};
         this.vehiclePartDefinitions = {};
         this.vehicleTemplateDefinitions = {};
         this.dynamicEventTemplates = {}; // New property for dynamic event templates
@@ -79,6 +81,7 @@
             'ammunition.json',
             'consumables.json',
             'clothing.json',
+            'fish.json',
             'tools.json',
             'crafting_materials.json',
             'containers.json',
@@ -104,6 +107,8 @@
                     console.log("AssetManager: Base tilesets loaded:", this.tilesets);
                 } else if (filename === 'npcs.json') {
                     this.npcDefinitions = Object.fromEntries(parsedJson.map(npc => [npc.id, npc]));
+                } else if (filename === 'fish.json') {
+                    this.fishDefinitions = parsedJson;
                 } else if (filename === 'vehicle_parts.json') {
                     if (Array.isArray(parsedJson)) {
                         this.vehiclePartDefinitions = Object.fromEntries(parsedJson.map(part => [part.id, part]));
@@ -220,6 +225,26 @@
 
     getNpc(npcId) {
         return this.npcDefinitions[npcId] || null; // Use npcDefinitions
+    }
+
+    async loadData(url) {
+        try {
+            const response = await fetch(`${url}?t=${Date.now()}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Failed to load data from ${url}:`, error);
+            return null;
+        }
+    }
+
+    getFish(fishId) {
+        if (fishId) {
+            return this.fishDefinitions[fishId] || null;
+        }
+        return this.fishDefinitions;
     }
 
     async loadMap(mapId) {

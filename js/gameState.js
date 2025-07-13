@@ -17,7 +17,7 @@
 // window.ClothingLayers = ClothingLayers; // No longer needed
 
 const InventorySizes = {
-    XS: 3, S: 6, M: 12, L: 18, XL: 24, XXL: 36
+    XS: 5, S: 10, M: 20, L: 30, XL: 40
 };
 // window.InventorySizes = InventorySizes; // No longer needed
 
@@ -245,6 +245,7 @@ gameState.player.face = {
     glasses: "none", // e.g., "none", "round", "square"
     eyeColor: "#000000", // Default black
     hairColor: "#000000", // Default black
+    eyebrowColor: "#000000",
     lipColor: "#FFC0CB", // Default pink
     skinColor: "#F5DEB3", // Default wheat
     asciiFace: "" // To store the generated ASCII face string

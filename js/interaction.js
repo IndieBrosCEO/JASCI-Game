@@ -24,9 +24,9 @@ function _getActionsForItem(it) {
     }
 
     const tileDef = assetManagerInstance.tilesets[it.id];
-    if (!tileDef) return ["Cancel"];
+    if (it.itemType !== 'npc' && !tileDef) return ["Cancel"];
 
-    const tags = tileDef.tags || [];
+    const tags = tileDef ? tileDef.tags || [] : [];
     const actions = ["Cancel"];
 
     if (tags.includes("door") || tags.includes("window")) {
@@ -39,6 +39,9 @@ function _getActionsForItem(it) {
     }
     if (tags.includes("climbable")) {
         actions.push("Climb Up", "Climb Down");
+    }
+    if (window.fishingManager && window.fishingManager.isAdjacentToWater(window.gameState.playerPos) && window.fishingManager.getEquippedFishingPole(window.gameState)) {
+        actions.push("Fish");
     }
     // Added for traps
     if (it.itemType === "trap" && it.trapState === "detected") {
@@ -472,6 +475,10 @@ function _performAction(action, it) {
         } else {
             logToConsole("Not enough Action Points to attempt disarm.", "orange");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+        }
+    } else if (action === "Fish") {
+        if (window.fishingManager) {
+            window.fishingManager.startFishing(window.gameState);
         }
     }
 

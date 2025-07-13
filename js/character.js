@@ -893,7 +893,7 @@ function initializeNpcFace(npc) {
     if (npc.faceData && typeof window.generateAsciiFace === 'function') {
         // Ensure all necessary sub-properties for generateAsciiFace are present,
         // otherwise generateAsciiFace might fail. generateRandomFaceParams should ensure this.
-        const requiredParams = ['headWidth', 'headHeight', 'eyeSize', 'browHeight', 'browAngle', 'browWidth', 'noseWidth', 'noseHeight', 'mouthWidth', 'mouthFullness', 'hairstyle', 'facialHair', 'glasses', 'eyeColor', 'hairColor', 'lipColor', 'skinColor'];
+        const requiredParams = ['headWidth', 'headHeight', 'eyeSize', 'browHeight', 'browAngle', 'browWidth', 'noseWidth', 'noseHeight', 'mouthWidth', 'mouthFullness', 'hairstyle', 'facialHair', 'glasses', 'eyeColor', 'hairColor', 'eyebrowColor', 'lipColor', 'skinColor'];
         let allParamsPresent = true;
         for (const param of requiredParams) {
             if (npc.faceData[param] === undefined) {

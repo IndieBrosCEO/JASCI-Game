@@ -195,6 +195,11 @@
                         <div id="hairPresetContainer" class="preset-colors-container"></div>
                     </div>
                     <div>
+                        <label for="eyebrowColorPicker">Eyebrow Color:</label>
+                        <input type="color" id="eyebrowColorPicker" value="#000000">
+                        <div id="eyebrowPresetContainer" class="preset-colors-container"></div>
+                    </div>
+                    <div>
                         <label for="lipColorPicker">Lip Color:</label>
                         <input type="color" id="lipColorPicker" value="#FFC0CB">
                         <div id="lipPresetContainer" class="preset-colors-container"></div>
@@ -408,6 +413,7 @@
     <script src="js/craftingManager.js"></script>
     <script src="js/constructionManager.js"></script>
     <script src="js/factionManager.js"></script>
+    <script src="js/fishingManager.js"></script>
     <script src="js/vehicleManager.js"></script>
     <script src="js/trapManager.js"></script>
     <script src="js/weatherManager.js"></script>
@@ -422,6 +428,13 @@
     <script src="js/proceduralQuestManager.js"></script>
 
     <div id="entityTooltip" class="tooltip hidden"></div>
+
+    <div id="dialogueUI" class="hidden">
+        <div id="dialogueContent">
+            <div id="dialogueNPCText"></div>
+            <ul id="dialoguePlayerChoices"></ul>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 

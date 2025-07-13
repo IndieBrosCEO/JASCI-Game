@@ -1774,5 +1774,74 @@
     "teamId": 52,
     "cr": 0.1,
     "asciiPortrait": "<span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#A9A9A9; background-color:#696969;\">^</span><span style=\"color:#C0C0C0; background-color:#808080;\">..</span><span style=\"color:#C0C0C0; background-color:#808080;\">__</span><br><span style=\"color:#C0C0C0; background-color:#808080;\">&lt;</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">o</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">)</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">\\</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">_</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">_</span><span style=\"color:#C0C0C0; background-color:#808080;\">&lt;</span><br><span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#A9A9A9; background-color:#696969;\">v</span><span style=\"color:#C0C0C0; background-color:#808080;\">''</span><span style=\"color:#C0C0C0; background-color:#808080;\">\"\"</span>"
+  },
+  {
+    "id": "fish_joe",
+    "name": "Fish Joe",
+    "sprite": "F",
+    "color": "cyan",
+    "factionId": "civilian",
+    "behavior": "idle",
+    "health": {
+      "head": {
+        "max": 5,
+        "current": 5,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "torso": {
+        "max": 8,
+        "current": 8,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftArm": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightArm": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "leftLeg": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      },
+      "rightLeg": {
+        "max": 7,
+        "current": 7,
+        "armor": 0,
+        "crisisTimer": 0
+      }
+    },
+    "stats": {
+      "Strength": 3,
+      "Dexterity": 4,
+      "Constitution": 3,
+      "Intelligence": 4,
+      "Perception": 5,
+      "Willpower": 4,
+      "Charisma": 5,
+      "Marksmanship": 2
+    },
+    "skills": {
+      "Unarmed": 15,
+      "MeleeWeapons": 15,
+      "Guns": 10,
+      "Survival": 30
+    },
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 6,
+    "tags": [ "friendly", "humanoid", "merchant", "quest_giver" ],
+    "teamId": 0,
+    "cr": 0.5,
+    "dialogueFile": "fishmonger_dialogues.json",
+    "dialogue_start_node": "fish_joe_default"
   }
 ]

@@ -3,6 +3,7 @@
 const PRESET_COLORS = {
     skin: ['#F5DEB3', '#FFDAB9', '#D2B48C', '#A0522D', '#8D5524', '#654321'], // Wheat, PeachPuff, Tan, Sienna, DarkBrown, VeryDarkBrown
     hair: ['#000000', '#2C1E12', '#593E2A', '#A87A58', '#B8860B', '#FF0000', '#C0C0C0', '#E6E6FA'], // Black, DarkBrown, Brown, LightBrown, Gold, Red, Silver, Lavender(fantasy)
+    eyebrows: ['#000000', '#2C1E12', '#593E2A', '#A87A58', '#B8860B', '#FF0000', '#C0C0C0', '#E6E6FA'], // Black, DarkBrown, Brown, LightBrown, Gold, Red, Silver, Lavender(fantasy)
     eyes: ['#000000', '#0000FF', '#008000', '#A52A2A', '#606060', '#4682B4', '#FFC0CB'], // Black, Blue, Green, Brown, Grey, SteelBlue, Pink(fantasy)
     lips: ['#FFC0CB', '#E06377', '#D2691E', '#BF40BF', '#B07050', '#800000']  // Pink, Coral, Chocolate, Orchid, RosyBrown, Maroon
 };
@@ -228,7 +229,7 @@ function _drawEyes(canvas, faceParams, coords) {
 
 function _drawBrows(canvas, faceParams, coords) {
     const { baseWidth, baseHeight, headStartX, headEndX, headEndY, browY, leftEyeX, rightEyeX } = coords;
-    const browColor = faceParams.hairColor;
+    const browColor = faceParams.eyebrowColor;
     const browWidth = faceParams.browWidth;
     const baseSkinColor = faceParams.skinColor; // For contact shadow
 
@@ -1112,6 +1113,7 @@ function updateFacePreview() {
 
     faceParams.eyeColor = document.getElementById('eyeColorPicker').value;
     faceParams.hairColor = document.getElementById('hairColorPicker').value;
+    faceParams.eyebrowColor = document.getElementById('eyebrowColorPicker').value;
     faceParams.lipColor = document.getElementById('lipColorPicker').value;
     faceParams.skinColor = document.getElementById('skinColorPicker').value;
 
@@ -1135,7 +1137,7 @@ function initFaceCreator() {
         'browAngleRange', 'browWidthRange', 'noseWidthRange', 'noseHeightRange', // Added browWidthRange
         'mouthWidthRange', 'mouthFullnessRange', 'hairstyleSelect',
         'facialHairSelect', 'glassesSelect', 'eyeColorPicker',
-        'hairColorPicker', 'lipColorPicker', 'skinColorPicker'
+        'hairColorPicker', 'eyebrowColorPicker', 'lipColorPicker', 'skinColorPicker'
     ];
 
     controls.forEach(controlId => {
@@ -1158,6 +1160,7 @@ function initFaceCreator() {
     const colorPickerToPresetMap = {
         'skinColorPicker': PRESET_COLORS.skin,
         'hairColorPicker': PRESET_COLORS.hair,
+        'eyebrowColorPicker': PRESET_COLORS.eyebrows,
         'eyeColorPicker': PRESET_COLORS.eyes,
         'lipColorPicker': PRESET_COLORS.lips
     };
@@ -1239,7 +1242,7 @@ function _updateUIAfterRandomOrPreset() {
     }
 
     const colorPickerMap = {
-        eyeColor: 'eyeColorPicker', hairColor: 'hairColorPicker',
+        eyeColor: 'eyeColorPicker', hairColor: 'hairColorPicker', eyebrowColor: 'eyebrowColorPicker',
         lipColor: 'lipColorPicker', skinColor: 'skinColorPicker'
     };
     for (const param in colorPickerMap) {
@@ -1285,6 +1288,7 @@ function applyRandomFaceParams() {
     // Colors
     face.skinColor = _getRandomElement(PRESET_COLORS.skin);
     face.hairColor = _getRandomElement(PRESET_COLORS.hair);
+    face.eyebrowColor = _getRandomElement(PRESET_COLORS.eyebrows);
     face.eyeColor = _getRandomElement(PRESET_COLORS.eyes);
     face.lipColor = _getRandomElement(PRESET_COLORS.lips);
 
@@ -1339,6 +1343,7 @@ function generateRandomFaceParams(faceParamsObject) {
 
     faceParamsObject.skinColor = _getRandomElement(PRESET_COLORS.skin);
     faceParamsObject.hairColor = _getRandomElement(PRESET_COLORS.hair);
+    faceParamsObject.eyebrowColor = _getRandomElement(PRESET_COLORS.eyebrows);
     faceParamsObject.eyeColor = _getRandomElement(PRESET_COLORS.eyes);
     faceParamsObject.lipColor = _getRandomElement(PRESET_COLORS.lips);
 

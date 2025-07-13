@@ -1,0 +1,63 @@
+{
+  "fish_joe_default": {
+    "start": {
+      "text": "Hey there, looking to buy or sell some fish? Or maybe you're interested in a little challenge?",
+      "options": [
+        {
+          "text": "I'd like to sell some fish.",
+          "next": "sell_fish"
+        },
+        {
+          "text": "What kind of challenge?",
+          "next": "quest_intro"
+        },
+        {
+          "text": "Nothing right now, thanks.",
+          "next": "end"
+        }
+      ]
+    },
+    "sell_fish": {
+      "text": "Alright, let's see what you've got. I'll take any fish you have off your hands for a fair price.",
+      "action": "sell_fish",
+      "next": "start"
+    },
+    "quest_intro": {
+      "text": "I'm looking for a skilled angler to help me complete a collection. I need one of each type of fish, from the common carp to the legendary ancient bass. If you can bring them all to me, I'll make it worth your while.",
+      "options": [
+        {
+          "text": "I'm up for the challenge.",
+          "next": "quest_accept"
+        },
+        {
+          "text": "I'm not interested right now.",
+          "next": "start"
+        }
+      ]
+    },
+    "quest_accept": {
+      "text": "Excellent! I knew you were the right person for the job. Come back to me when you've caught them all.",
+      "action": "start_quest",
+      "quest_id": "fish_collection",
+      "next": "end"
+    },
+    "quest_incomplete": {
+      "text": "You're making good progress, but you still have more fish to catch. Keep at it!",
+      "next": "end"
+    },
+    "quest_complete": {
+      "text": "Amazing! You've done it! You've caught every type of fish. As promised, here is your reward.",
+      "action": "complete_quest",
+      "quest_id": "fish_collection",
+      "reward": {
+        "xp": 500,
+        "silver": 200
+      },
+      "next": "end"
+    },
+    "end": {
+      "text": "Good luck out there, and may your lines be tight!",
+      "options": []
+    }
+  }
+}

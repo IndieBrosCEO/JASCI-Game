@@ -322,23 +322,14 @@ function processConsoleCommand(commandText) {
                 break;
             }
 
-            let itemsAddedCount = 0;
-            for (let i = 0; i < quantityToAdd; i++) {
-                if (typeof Item === 'function' && typeof window.addItem === 'function') { // Item can be global, addItem on window
-                    const newItem = new Item(itemDef);
-                    if (window.addItem(newItem)) {
-                        itemsAddedCount++;
-                    } else {
-                        logToConsoleUI(`Failed to add item '${itemIdToAdd}' (inventory full or error). Added ${itemsAddedCount} of ${quantityToAdd}.`, 'error'); // Direct call
-                        break;
-                    }
+            if (window.inventoryManager && typeof window.inventoryManager.addItemToInventoryById === 'function') {
+                if (window.inventoryManager.addItemToInventoryById(itemIdToAdd, quantityToAdd)) {
+                    logToConsoleUI(`Added ${quantityToAdd}x '${itemDef.name || itemIdToAdd}' to inventory.`, 'success');
                 } else {
-                    logToConsoleUI("Error: Item constructor or addItem function not available.", 'error'); // Direct call
-                    break;
+                    logToConsoleUI(`Failed to add item '${itemIdToAdd}' (inventory full or error).`, 'error');
                 }
-            }
-            if (itemsAddedCount > 0) {
-                logToConsoleUI(`Added ${itemsAddedCount}x '${itemDef.name || itemIdToAdd}' to inventory.`, 'success'); // Direct call
+            } else {
+                logToConsoleUI("Error: inventoryManager.addItemToInventoryById function not available.", 'error');
             }
             if (typeof window.updateInventoryUI === 'function') {
                 window.updateInventoryUI();

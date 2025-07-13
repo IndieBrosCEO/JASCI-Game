@@ -882,7 +882,7 @@
     "isClothing": false,
     "size": 4,
     "weightLbs": 2,
-    "tags": [ "tool", "fishing", "survival", "fisherman", "forager" ],
+    "tags": [ "tool", "fishing", "survival", "fisherman", "forager", "fishing_pole" ],
     "equipSlots": [ "hand" ],
     "action": "castLine",
     "requires": [ "fishing_lure_or_bait" ],

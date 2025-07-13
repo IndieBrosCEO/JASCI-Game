@@ -1,0 +1,44 @@
+{
+  "common_carp": {
+    "id": "common_carp",
+    "name": "Common Carp",
+    "description": "A common freshwater fish.",
+    "rarity": 10,
+    "value": 5
+  },
+  "silver_perch": {
+    "id": "silver_perch",
+    "name": "Silver Perch",
+    "description": "A small, shiny fish.",
+    "rarity": 8,
+    "value": 8
+  },
+  "golden_trout": {
+    "id": "golden_trout",
+    "name": "Golden Trout",
+    "description": "A rare and beautiful fish with golden scales.",
+    "rarity": 3,
+    "value": 25
+  },
+  "ancient_bass": {
+    "id": "ancient_bass",
+    "name": "Ancient Bass",
+    "description": "A legendary fish that has lived for centuries.",
+    "rarity": 1,
+    "value": 100
+  },
+  "rusty_can": {
+    "id": "rusty_can",
+    "name": "Rusty Can",
+    "description": "Just an old, rusty can. Not a fish.",
+    "rarity": 15,
+    "value": 0
+  },
+  "old_boot": {
+    "id": "old_boot",
+    "name": "Old Boot",
+    "description": "A soggy old boot. Definitely not a fish.",
+    "rarity": 15,
+    "value": 0
+  }
+}
