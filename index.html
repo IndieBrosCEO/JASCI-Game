@@ -109,9 +109,19 @@
                         <span id="headHeightValue">7</span>
                     </div>
                     <div>
+                        <label for="skinColorPicker">Skin Color:</label>
+                        <input type="color" id="skinColorPicker" value="#F5DEB3">
+                        <div id="skinPresetContainer" class="preset-colors-container"></div>
+                    </div>
+                    <div>
                         <label for="eyeSizeRange">Eye Size (1-3):</label>
                         <input type="range" id="eyeSizeRange" min="1" max="3" value="2">
                         <span id="eyeSizeValue">2</span>
+                    </div>
+                    <div>
+                        <label for="eyeColorPicker">Eye Color:</label>
+                        <input type="color" id="eyeColorPicker" value="#000000">
+                        <div id="eyePresetContainer" class="preset-colors-container"></div>
                     </div>
                     <div>
                         <label for="browHeightRange">Brow Height (0-1):</label>
@@ -127,6 +137,11 @@
                         <label for="browWidthRange">Brow Width (1-3):</label>
                         <input type="range" id="browWidthRange" min="1" max="3" value="2">
                         <span id="browWidthValue">2</span>
+                    </div>
+                    <div>
+                        <label for="eyebrowColorPicker">Eyebrow Color:</label>
+                        <input type="color" id="eyebrowColorPicker" value="#000000">
+                        <div id="eyebrowPresetContainer" class="preset-colors-container"></div>
                     </div>
                     <div>
                         <label for="noseWidthRange">Nose Width (1-5):</label>
@@ -149,6 +164,11 @@
                         <span id="mouthFullnessValue">1</span>
                     </div>
                     <div>
+                        <label for="lipColorPicker">Lip Color:</label>
+                        <input type="color" id="lipColorPicker" value="#FFC0CB">
+                        <div id="lipPresetContainer" class="preset-colors-container"></div>
+                    </div>
+                    <div>
                         <label for="hairstyleSelect">Hairstyle:</label>
                         <select id="hairstyleSelect">
                             <option value="bald">Bald</option>
@@ -163,6 +183,21 @@
                             <option value="jawline-bob">Jawline Bob</option>
                             <option value="combover">Combover</option>
                             <option value="french-crop-curls">French Crop (Curls)</option>
+                            <option value="afro">Afro</option>
+                            <option value="liberty-spikes">Liberty Spikes</option>
+                            <option value="ponytail">Ponytail</option>
+                            <option value="pigtails">Pigtails</option>
+                            <option value="dreads">Dreads</option>
+                            <option value="cornrows">Cornrows</option>
+                            <option value="top-knot">Top Knot</option>
+                            <option value="reverse-mohawk">Reverse Mohawk</option>
+                            <option value="flat-top">Flat Top</option>
+                            <option value="high-top">High Top</option>
+                            <option value="pompadour">Pompadour</option>
+                            <option value="beehive">Beehive</option>
+                            <option value="double-buns">Double Buns</option>
+                            <option value="devilock">Devilock</option>
+                            <option value="really-high-top">Really High Top</option>
                         </select>
                     </div>
                     <div>
@@ -176,6 +211,11 @@
                         </select>
                     </div>
                     <div>
+                        <label for="hairColorPicker">Hair Color:</label>
+                        <input type="color" id="hairColorPicker" value="#000000">
+                        <div id="hairPresetContainer" class="preset-colors-container"></div>
+                    </div>
+                    <div>
                         <label for="glassesSelect">Glasses:</label>
                         <select id="glassesSelect">
                             <option value="none" selected>None</option>
@@ -185,29 +225,8 @@
                         </select>
                     </div>
                     <div>
-                        <label for="eyeColorPicker">Eye Color:</label>
-                        <input type="color" id="eyeColorPicker" value="#000000">
-                        <div id="eyePresetContainer" class="preset-colors-container"></div>
-                    </div>
-                    <div>
-                        <label for="hairColorPicker">Hair Color:</label>
-                        <input type="color" id="hairColorPicker" value="#000000">
-                        <div id="hairPresetContainer" class="preset-colors-container"></div>
-                    </div>
-                    <div>
-                        <label for="eyebrowColorPicker">Eyebrow Color:</label>
-                        <input type="color" id="eyebrowColorPicker" value="#000000">
-                        <div id="eyebrowPresetContainer" class="preset-colors-container"></div>
-                    </div>
-                    <div>
-                        <label for="lipColorPicker">Lip Color:</label>
-                        <input type="color" id="lipColorPicker" value="#FFC0CB">
-                        <div id="lipPresetContainer" class="preset-colors-container"></div>
-                    </div>
-                    <div>
-                        <label for="skinColorPicker">Skin Color:</label>
-                        <input type="color" id="skinColorPicker" value="#F5DEB3">
-                        <div id="skinPresetContainer" class="preset-colors-container"></div>
+                        <label for="glassesColorPicker">Glasses Color:</label>
+                        <input type="color" id="glassesColorPicker" value="#707070">
                     </div>
                     <button type="button" id="randomizeFaceButton" style="margin-top: 10px; margin-bottom: 5px;">Randomize Face</button>
                     <h4>Preview:</h4>

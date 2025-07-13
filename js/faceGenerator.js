@@ -37,7 +37,7 @@ function generateAsciiFace(faceParams) {
 
     // Initialize canvas with objects
     const baseWidth = Math.max(15, faceParams.headWidth + 6);
-    const baseHeight = Math.max(10, faceParams.headHeight + 6);
+    const baseHeight = Math.max(20, faceParams.headHeight + 12);
     let canvas = Array(baseHeight).fill(null).map(() =>
         Array(baseWidth).fill(null).map(() => ({ char: ' ', type: 'empty', color: null }))
     );
@@ -908,6 +908,279 @@ function _drawHairstyle(canvas, faceParams, coords) {
             break;
         }
         // Removed "long-side-part" case
+        case "afro": {
+            const curlChar = '&'; // Or '@', 'o'
+            const cropSideChar = '`';
+            // Top curly part, with a bit of a fringe
+            const fringeLength = Math.floor(headActualHeight / 2);
+            for (let y = headStartY - 2; y < headStartY + fringeLength; y++) {
+                if (y < 0 || y >= baseHeight || !canvas[y]) continue;
+                for (let x = headStartX - 1; x <= headEndX + 1; x++) {
+                    if (x < 0 || x >= baseWidth) continue;
+                    // Make it a bit uneven/textured for curls
+                    if ((x + y) % 2 === 0 || y < headStartY) { // Density for curls
+                        if (canvas[y][x].type === 'empty') {
+                            canvas[y][x] = { char: curlChar, type: 'hair', color: hairColor };
+                        }
+                    } else if (canvas[y][x].type === 'empty') { // Fill gaps lightly
+                        if (canvas[y][x].type === 'empty') {
+                            canvas[y][x] = { char: '.', type: 'hair', color: hairColor };
+                        }
+                    }
+                }
+            }
+            // Short sides (fade can be implied by less density or stopping higher)
+            for (let y = headStartY; y < headEndY - Math.floor(headActualHeight / 3); y++) {
+                if (y >= 0 && y < baseHeight) {
+                    if (headStartX - 1 >= 0 && canvas[y]) {
+                        if (canvas[y][headStartX - 1].type === 'empty') {
+                            canvas[y][headStartX - 1] = { char: cropSideChar, type: 'hair', color: hairColor };
+                        }
+                    }
+                    if (headStartX - 2 >= 0 && y < headStartY + Math.floor(headActualHeight / 3) && canvas[y]) { // Fade higher up
+                        if (canvas[y][headStartX - 2].type === 'empty') {
+                            canvas[y][headStartX - 2] = { char: cropSideChar, type: 'hair', color: hairColor };
+                        }
+                    }
+                    if (headEndX + 1 < baseWidth && canvas[y]) {
+                        if (canvas[y][headEndX + 1].type === 'empty') {
+                            canvas[y][headEndX + 1] = { char: cropSideChar, type: 'hair', color: hairColor };
+                        }
+                    }
+                    if (headEndX + 2 < baseWidth && y < headStartY + Math.floor(headActualHeight / 3) && canvas[y]) { // Fade higher up
+                        if (canvas[y][headEndX + 2].type === 'empty') {
+                            canvas[y][headEndX + 2] = { char: cropSideChar, type: 'hair', color: hairColor };
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        case "liberty-spikes": {
+            const spikeChar = '^';
+            for (let i = 0; i < 5; i++) {
+                const spikeX = headStartX + Math.floor(headActualWidth / 5 * i) + 1;
+                for (let y = headStartY - 3; y < headStartY; y++) {
+                    if (y >= 0 && y < baseHeight && canvas[y] && spikeX >= 0 && spikeX < baseWidth) {
+                        canvas[y][spikeX] = { char: spikeChar, type: 'hair', color: hairColor };
+                    }
+                }
+            }
+            break;
+        }
+        case "ponytail": {
+            _drawHairstyle(canvas, { ...faceParams, hairstyle: "short" }, coords);
+            const ponytailChar = '|';
+            for (let y = headEndY + 1; y <= headEndY + 3; y++) {
+                if (y >= 0 && y < baseHeight && canvas[y]) {
+                    const ponytailX = headStartX + Math.floor(headActualWidth / 2);
+                    if (ponytailX >= 0 && ponytailX < baseWidth) {
+                        canvas[y][ponytailX] = { char: ponytailChar, type: 'hair', color: hairColor };
+                    }
+                }
+            }
+            break;
+        }
+        case "pigtails": {
+            _drawHairstyle(canvas, { ...faceParams, hairstyle: "short" }, coords);
+            const pigtailChar = '||';
+            for (let y = headStartY + 1; y <= headStartY + 4; y++) {
+                if (y >= 0 && y < baseHeight && canvas[y]) {
+                    if (headStartX - 2 >= 0) {
+                        canvas[y][headStartX - 2] = { char: pigtailChar, type: 'hair', color: hairColor };
+                    }
+                    if (headEndX + 2 < baseWidth) {
+                        canvas[y][headEndX + 2] = { char: pigtailChar, type: 'hair', color: hairColor };
+                    }
+                }
+            }
+            break;
+        }
+        case "dreads": {
+            const dreadChar = 'M';
+            for (let y = headStartY - 1; y <= headEndY + 2; y++) {
+                if (y >= 0 && y < baseHeight && canvas[y]) {
+                    for (let x = headStartX - 1; x <= headEndX + 1; x++) {
+                        if (x >= 0 && x < baseWidth && (x + y) % 2 === 0) {
+                            if (canvas[y][x].type === 'empty') {
+                                canvas[y][x] = { char: dreadChar, type: 'hair', color: hairColor };
+                            }
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        case "cornrows": {
+            const dreadChar = 'M';
+            // Top layer
+            for (let x = headStartX; x <= headEndX; x++) {
+                if (headStartY - 1 >= 0 && x >= 0 && x < baseWidth && canvas[headStartY - 1]) {
+                    if ((x + headStartY - 1) % 2 === 0) {
+                        if (canvas[headStartY - 1][x].type === 'empty') {
+                            canvas[headStartY - 1][x] = { char: dreadChar, type: 'hair', color: hairColor };
+                        }
+                    }
+                }
+            }
+            // Sides, very close to head
+            for (let y = headStartY; y <= headEndY; y++) {
+                if (y >= 0 && y < baseHeight) {
+                    if (headStartX - 1 >= 0 && canvas[y] && (y < headStartY + headActualHeight / 2)) { // Only upper sides
+                        if ((headStartX - 1 + y) % 2 === 0) {
+                            if (canvas[y][headStartX - 1].type === 'empty') {
+                                canvas[y][headStartX - 1] = { char: dreadChar, type: 'hair', color: hairColor };
+                            }
+                        }
+                    }
+                    if (headEndX + 1 < baseWidth && canvas[y] && (y < headStartY + headActualHeight / 2)) {
+                        if ((headEndX + 1 + y) % 2 === 0) {
+                            if (canvas[y][headEndX + 1].type === 'empty') {
+                                canvas[y][headEndX + 1] = { char: dreadChar, type: 'hair', color: hairColor };
+                            }
+                        }
+                    }
+                }
+            }
+            // Cover corners that might have been skin/border
+            if (headStartY >= 0 && headStartX >= 0 && canvas[headStartY] && canvas[headStartY][headStartX] && canvas[headStartY][headStartX].type !== 'eye') {
+                if ((headStartX + headStartY) % 2 === 0) {
+                    if (canvas[headStartY][headStartX].type === 'empty') {
+                        canvas[headStartY][headStartX] = { char: dreadChar, type: 'hair', color: hairColor };
+                    }
+                }
+            }
+            if (headStartY >= 0 && headEndX < baseWidth && canvas[headStartY] && canvas[headStartY][headEndX] && canvas[headStartY][headEndX].type !== 'eye') {
+                if ((headEndX + headStartY) % 2 === 0) {
+                    if (canvas[headStartY][headEndX].type === 'empty') {
+                        canvas[headStartY][headEndX] = { char: dreadChar, type: 'hair', color: hairColor };
+                    }
+                }
+            }
+            break;
+        }
+        case "top-knot": {
+            _drawHairstyle(canvas, { ...faceParams, hairstyle: "short" }, coords);
+            const knotChar = 'O';
+            if (headStartY - 2 >= 0 && canvas[headStartY - 2]) {
+                const knotX = headStartX + Math.floor(headActualWidth / 2);
+                if (knotX >= 0 && knotX < baseWidth) {
+                    canvas[headStartY - 2][knotX] = { char: knotChar, type: 'hair', color: hairColor };
+                }
+            }
+            break;
+        }
+        case "reverse-mohawk": {
+            const mohawkWidth = Math.max(1, Math.floor(headActualWidth / 3));
+            const mohawkActualStartX = headStartX + Math.floor((headActualWidth - mohawkWidth) / 2);
+            for (let y = headStartY - 2; y < headStartY; y++) {
+                if (y >= 0 && y < baseHeight && canvas[y]) {
+                    for (let x = headStartX; x <= headEndX; x++) {
+                        if (x < mohawkActualStartX || x >= mohawkActualStartX + mohawkWidth) {
+                            if (x >= 0 && x < baseWidth) {
+                                canvas[y][x] = { char: '^', type: 'hair', color: hairColor };
+                            }
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        case "flat-top": {
+            const flatTopChar = '-';
+            for (let y = headStartY - 2; y < headStartY; y++) {
+                if (y >= 0 && y < baseHeight && canvas[y]) {
+                    for (let x = headStartX; x <= headEndX; x++) {
+                        if (x >= 0 && x < baseWidth) {
+                            canvas[y][x] = { char: flatTopChar, type: 'hair', color: hairColor };
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        case "high-top": {
+            const highTopChar = '|';
+            for (let y = headStartY - 3; y < headStartY; y++) {
+                if (y >= 0 && y < baseHeight && canvas[y]) {
+                    for (let x = headStartX; x <= headEndX; x++) {
+                        if (x >= 0 && x < baseWidth) {
+                            canvas[y][x] = { char: highTopChar, type: 'hair', color: hairColor };
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        case "pompadour": {
+            const pompChar = 'O';
+            for (let y = headStartY - 2; y < headStartY; y++) {
+                if (y >= 0 && y < baseHeight && canvas[y]) {
+                    for (let x = headStartX; x <= headEndX; x++) {
+                        if (x >= 0 && x < baseWidth) {
+                            if (x > headStartX + 1 && x < headEndX - 1) {
+                                canvas[y - 1][x] = { char: pompChar, type: 'hair', color: hairColor };
+                            }
+                            canvas[y][x] = { char: pompChar, type: 'hair', color: hairColor };
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        case "beehive": {
+            _drawHairstyle(canvas, { ...faceParams, hairstyle: "short" }, coords);
+            const beehiveChar = '&';
+            for (let y = headStartY - 5; y < headStartY; y++) {
+                if (y >= 0 && y < baseHeight && canvas[y]) {
+                    for (let x = headStartX + 1; x < headEndX; x++) {
+                        if (x >= 0 && x < baseWidth) {
+                            canvas[y][x] = { char: beehiveChar, type: 'hair', color: hairColor };
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        case "double-buns": {
+            _drawHairstyle(canvas, { ...faceParams, hairstyle: "short" }, coords);
+            const bunChar = 'OO';
+            if (headStartY + 1 < baseHeight && canvas[headStartY + 1]) {
+                if (headStartX - 2 >= 0) {
+                    canvas[headStartY + 1][headStartX - 2] = { char: bunChar, type: 'hair', color: hairColor };
+                }
+                if (headEndX + 2 < baseWidth) {
+                    canvas[headStartY + 1][headEndX + 2] = { char: bunChar, type: 'hair', color: hairColor };
+                }
+            }
+            break;
+        }
+        case "devilock": {
+            _drawHairstyle(canvas, { ...faceParams, hairstyle: "buzz-cut" }, coords);
+            const devilockChar = '/';
+            for (let y = headStartY; y < headEndY; y++) {
+                if (y >= 0 && y < baseHeight && canvas[y]) {
+                    const x = headStartX + Math.floor(headActualWidth / 2);
+                    if (x >= 0 && x < baseWidth) {
+                        canvas[y][x] = { char: devilockChar, type: 'hair', color: hairColor };
+                    }
+                }
+            }
+            break;
+        }
+        case "really-high-top": {
+            const highTopChar = '|';
+            for (let y = headStartY - 12; y < headStartY; y++) {
+                if (y >= 0 && y < baseHeight && canvas[y]) {
+                    for (let x = headStartX; x <= headEndX; x++) {
+                        if (x >= 0 && x < baseWidth) {
+                            canvas[y][x] = { char: highTopChar, type: 'hair', color: hairColor };
+                        }
+                    }
+                }
+            }
+            break;
+        }
     } // This closes the switch (faceParams.hairstyle) statement
 } // This closes the _drawHairstyle function
 
@@ -997,7 +1270,7 @@ function _drawFacialHair(canvas, faceParams, coords) {
 
 function _drawGlasses(canvas, faceParams, coords) {
     const { baseWidth, baseHeight, eyeY, leftEyeX, rightEyeX } = coords;
-    const glassesFrameColor = '#707070'; // A distinct grey for frames
+    const glassesFrameColor = faceParams.glassesColor || '#707070'; // A distinct grey for frames
     // const glassesLensColor = faceParams.eyeColor; // Lens could be transparent or slightly tinted based on eye color
 
     switch (faceParams.glasses) {
@@ -1110,6 +1383,7 @@ function updateFacePreview() {
     faceParams.hairstyle = document.getElementById('hairstyleSelect').value;
     faceParams.facialHair = document.getElementById('facialHairSelect').value;
     faceParams.glasses = document.getElementById('glassesSelect').value;
+    faceParams.glassesColor = document.getElementById('glassesColorPicker').value;
 
     faceParams.eyeColor = document.getElementById('eyeColorPicker').value;
     faceParams.hairColor = document.getElementById('hairColorPicker').value;
@@ -1136,7 +1410,7 @@ function initFaceCreator() {
         'headWidthRange', 'headHeightRange', 'eyeSizeRange', 'browHeightRange',
         'browAngleRange', 'browWidthRange', 'noseWidthRange', 'noseHeightRange', // Added browWidthRange
         'mouthWidthRange', 'mouthFullnessRange', 'hairstyleSelect',
-        'facialHairSelect', 'glassesSelect', 'eyeColorPicker',
+        'facialHairSelect', 'glassesSelect', 'glassesColorPicker', 'eyeColorPicker',
         'hairColorPicker', 'eyebrowColorPicker', 'lipColorPicker', 'skinColorPicker'
     ];
 
@@ -1286,6 +1560,7 @@ function applyRandomFaceParams() {
     });
 
     // Colors
+    face.glassesColor = '#707070';
     face.skinColor = _getRandomElement(PRESET_COLORS.skin);
     face.hairColor = _getRandomElement(PRESET_COLORS.hair);
     face.eyebrowColor = _getRandomElement(PRESET_COLORS.eyebrows);
@@ -1340,6 +1615,7 @@ function generateRandomFaceParams(faceParamsObject) {
     faceParamsObject.hairstyle = _getRandomElement(paramDefinitions.hairstyles);
     faceParamsObject.facialHair = _getRandomElement(paramDefinitions.facialHairs);
     faceParamsObject.glasses = _getRandomElement(paramDefinitions.glassesTypes);
+    faceParamsObject.glassesColor = '#707070';
 
     faceParamsObject.skinColor = _getRandomElement(PRESET_COLORS.skin);
     faceParamsObject.hairColor = _getRandomElement(PRESET_COLORS.hair);
