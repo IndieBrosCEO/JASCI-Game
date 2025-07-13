@@ -435,25 +435,51 @@ button.preset-swatch { /* More specific selector */
     color: #888; /* Gray out the text */
     font-style: italic; /* Optional: make it italic */
     /* pointer-events: none; /* Optional: if you want to make them unclickable, though click handler still exists */
+    opacity: 0.6; /* Make it visually more distinct as grayed out */
 }
 
     #constructionBuildableList li.cannot-build:hover {
         /* Optional: remove hover effect if it's normally there */
         /* background-color: transparent; */
+        /* text-decoration: none; /* Remove underline if it's added by default on hover */
     }
 
+/* Crafting UI: Style for unavailable recipes */
+#craftingRecipeList li.recipe-unavailable {
+    color: #888; /* Gray out the text - same as cannot-build */
+    font-style: italic;
+    opacity: 0.6; /* Consistent opacity for grayed-out items */
+}
+
+    #craftingRecipeList li.recipe-unavailable:hover {
+        /* Optional: consistent hover behavior for unavailable items */
+        /* background-color: transparent; */
+    }
+
+
+/* Requirement Styling (used by both Crafting and Construction detail views) */
 .req-met {
     color: #4CAF50; /* Green */
+    font-weight: bold;
 }
 
 .req-not-met {
     color: #F44336; /* Red */
+    font-weight: bold;
 }
 
 /* Ensure list items in details panel are styled correctly if they use these classes directly */
+/* These specific overrides might not be strictly necessary if .req-met and .req-not-met are applied directly to spans */
 #detailConstructionSkill li span.req-met,
 #detailConstructionSkill li span.req-not-met,
 #detailConstructionComponents li span.req-met,
 #detailConstructionComponents li span.req-not-met {
-    font-weight: bold; /* Make the requirement text stand out a bit */
+    /* font-weight: bold; /* Already added to the base .req-met/.req-not-met */
 }
+
+/* Crafting UI detail component list uses direct style.color, which is fine.
+   If we wanted to switch it to classes, we would add:
+   #detailRecipeComponents li span.req-met { color: #4CAF50; font-weight: bold; }
+   #detailRecipeComponents li span.req-not-met { color: #F44336; font-weight: bold; }
+   But current JS handles this with direct style.color, which is acceptable.
+*/

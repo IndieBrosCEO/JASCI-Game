@@ -13,6 +13,41 @@
       "radius": 8,
       "intensity": 0.9,
       "cone_angle": 60
+    },
+    "recipe": {
+      "description": "Assemble a basic flashlight.",
+      "components": [
+        {
+          "itemId": "plastic_casing_small_device",
+          "quantity": 1
+        },
+        {
+          "itemId": "led_basic",
+          "quantity": 1
+        },
+        {
+          "itemId": "wire_insulated_thin",
+          "quantity": 1
+        },
+        {
+          "itemId": "battery_cell_small",
+          "quantity": 1
+        },
+        {
+          "itemId": "lens_crude_glass",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 2
+        }
+      ],
+      "tools_required": [ "soldering_iron_kit", "screwdriver_set_multi" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 25,
+      "batch_size": 1
     }
   },
   {
@@ -43,6 +78,27 @@
       "color": "#FFFFE0",
       "radius": 3,
       "intensity": 0.5
+    },
+    "recipe": {
+      "description": "Make simple wax candles.",
+      "components": [
+        {
+          "itemId": "beeswax_chunk",
+          "quantity": 1
+        },
+        {
+          "itemId": "wick_basic_cloth_or_fiber",
+          "quantity": 3
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 0
+        }
+      ],
+      "time_to_craft": 5,
+      "batch_size": 3
     }
   },
   {
@@ -81,7 +137,34 @@
     "weightLbs": 0.5,
     "tags": [ "tool", "stealth", "thief", "spy", "assassin", "saboteur" ],
     "equipSlots": [ "utility" ],
-    "action": "attemptLockpick"
+    "action": "attemptLockpick",
+    "recipe": {
+      "description": "Fashion a basic set of lockpicks and a tension wrench.",
+      "components": [
+        {
+          "itemId": "metal_wire_stiff",
+          "quantity": 2
+        },
+        {
+          "itemId": "metal_rod_thin",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        },
+        {
+          "skill": "Sleight of Hand",
+          "level": 2
+        }
+      ],
+      "tools_required": [ "file_small_metal", "pliers_set" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 30,
+      "batch_size": 1
+    }
   },
   {
     "id": "binoculars_standard",
@@ -119,7 +202,29 @@
     "size": 1,
     "weightLbs": 0.2,
     "tags": [ "tool", "utility", "communication", "spy", "soldier", "scout" ],
-    "action": "signal"
+    "action": "signal",
+    "recipe": {
+      "description": "Create a signal mirror by polishing a thin sheet of metal.",
+      "components": [
+        {
+          "itemId": "metal_sheet_thin",
+          "quantity": 1
+        },
+        {
+          "itemId": "cloth_scrap",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "tools_required": [ "file_small_metal", "sand_pile" ],
+      "time_to_craft": 15,
+      "batch_size": 1
+    }
   },
   {
     "id": "blacksmith_hammer",
@@ -132,7 +237,29 @@
     "weightLbs": 4,
     "tags": [ "tool", "crafting", "blacksmithing", "metalworking", "armorer", "weaponsmith" ],
     "equipSlots": [ "hand" ],
-    "action": "shapeMetal"
+    "action": "shapeMetal",
+    "recipe": {
+      "description": "Forge a heavy blacksmith's hammer.",
+      "components": [
+        {
+          "itemId": "steel_ingot",
+          "quantity": 1
+        },
+        {
+          "itemId": "wood_log",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 60,
+      "batch_size": 1
+    }
   },
   {
     "id": "tongs_blacksmith",
@@ -145,7 +272,25 @@
     "weightLbs": 2,
     "tags": [ "tool", "crafting", "blacksmithing", "metalworking", "armorer", "weaponsmith" ],
     "equipSlots": [ "hand" ],
-    "action": "holdHotMetal"
+    "action": "holdHotMetal",
+    "recipe": {
+      "description": "Forge a pair of blacksmith's tongs.",
+      "components": [
+        {
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 2
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        }
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 40,
+      "batch_size": 1
+    }
   },
   {
     "id": "woodworking_chisels_set",
@@ -171,7 +316,30 @@
     "weightLbs": 2.5,
     "tags": [ "tool", "crafting", "woodworking", "carpenter", "logger" ],
     "equipSlots": [ "hand" ],
-    "action": "sawWood"
+    "action": "sawWood",
+    "recipe": {
+      "description": "Craft a basic hand saw.",
+      "components": [
+        {
+          "itemId": "metal_sheet_sturdy",
+          "quantity": 1
+        },
+        {
+          "itemId": "wood_planks",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [ "file_small_metal" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 45,
+      "batch_size": 1
+    }
   },
   {
     "id": "cobblers_awl",
@@ -184,20 +352,28 @@
     "weightLbs": 0.3,
     "tags": [ "tool", "crafting", "leatherworking", "cobbler", "tanner", "seamstress" ],
     "equipSlots": [ "hand" ],
-    "action": "punchHole"
-  },
-  {
-    "id": "sewing_kit_basic",
-    "name": "Basic Sewing Kit",
-    "description": "Contains needles, thread, pins, and small scissors for mending or creating garments.",
-    "type": "tool",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [ "tool", "crafting", "tailoring", "seamstress", "weaver" ],
-    "action": "sewFabric",
-    "components": [ "needles", "thread_spools", "pins", "small_scissors" ]
+    "action": "punchHole",
+    "recipe": {
+      "description": "Fashion a cobbler's awl for punching holes.",
+      "components": [
+        {
+          "itemId": "needle_steel_heavy",
+          "quantity": 1
+        },
+        {
+          "itemId": "wood_stick",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "time_to_craft": 10,
+      "batch_size": 1
+    }
   },
   {
     "id": "tanning_knife",
@@ -709,7 +885,32 @@
     "tags": [ "tool", "fishing", "survival", "fisherman", "forager" ],
     "equipSlots": [ "hand" ],
     "action": "castLine",
-    "requires": [ "fishing_lure_or_bait" ]
+    "requires": [ "fishing_lure_or_bait" ],
+    "recipe": {
+      "description": "Assemble a simple fishing rod.",
+      "components": [
+        {
+          "itemId": "wood_stick",
+          "quantity": 1
+        },
+        {
+          "itemId": "cordage_basic_plant_fiber",
+          "quantity": 2
+        },
+        {
+          "itemId": "hook_metal_small",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 1
+        }
+      ],
+      "time_to_craft": 20,
+      "batch_size": 1
+    }
   },
   {
     "id": "chefs_knives_set",
@@ -995,5 +1196,729 @@
     "weightLbs": 5,
     "tags": [ "tool", "survival", "comfort", "nomad", "drifter", "traveler", "scout", "refugee" ],
     "action": "setupBedding"
+  },
+  {
+    "id": "heat_gun_tool",
+    "name": "Heat Gun",
+    "description": "An electric tool that emits a stream of hot air, used for stripping paint, shrinking tubing, or carefully melting plastics.",
+    "type": "tool",
+    "canEquip": true,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 2.5,
+    "tags": [ "tool", "crafting", "electronics", "repair", "requires_power_cell_medium" ],
+    "equipSlots": [ "hand" ],
+    "action": "applyHeat",
+    "recipe": {
+      "description": "Assemble a basic electric heat gun.",
+      "components": [
+        {
+          "itemId": "plastic_casing_medium_device",
+          "quantity": 1
+        },
+        {
+          "itemId": "heating_element_nichrome_wire",
+          "quantity": 2
+        },
+        {
+          "itemId": "motor_small_electric",
+          "quantity": 1
+        },
+        {
+          "itemId": "wire_insulated_thin",
+          "quantity": 3
+        },
+        {
+          "itemId": "switch_basic_toggle",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 4
+        },
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 45,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "mortar_pestle",
+    "name": "Mortar and Pestle",
+    "description": "A bowl (mortar) and a grinder (pestle) used to crush and grind substances.",
+    "type": "tool",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 1.5,
+    "tags": [ "tool", "crafting", "chemistry", "herbalism", "cooking" ],
+    "action": "grindMaterials",
+    "recipe": {
+      "description": "Carve a mortar and pestle from stone or hard wood.",
+      "components": [
+        {
+          "itemId": "rock_hard_suitable",
+          "quantity": 2
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 2
+        }
+      ],
+      "time_to_craft": 60,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "crucible_basic",
+    "name": "Basic Crucible",
+    "description": "A ceramic or metal container in which materials may be melted or subjected to very high temperatures.",
+    "type": "tool",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 1.0,
+    "tags": [ "tool", "crafting", "metalworking", "chemistry", "forge_accessory" ],
+    "action": "holdMoltenMaterial",
+    "recipe": {
+      "description": "Form a crucible from heat-resistant clay.",
+      "components": [
+        {
+          "itemId": "clay_lump_refractory",
+          "quantity": 3
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 30,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "file_small_metal",
+    "name": "Small Metal File",
+    "description": "A small file for shaping and smoothing metal or other hard materials.",
+    "type": "tool",
+    "canEquip": true,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [ "tool", "crafting", "metalworking", "woodworking" ],
+    "equipSlots": [ "hand" ],
+    "action": "fileMaterial",
+    "recipe": {
+      "description": "Fashion a small file from a piece of hardened steel.",
+      "components": [
+        {
+          "itemId": "steel_rod_thin_hardened",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        }
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 20,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "pliers_set",
+    "name": "Pliers Set",
+    "description": "A set of pliers for gripping, bending, and cutting.",
+    "type": "tool",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 1.5,
+    "tags": [ "tool", "crafting", "mechanical", "electrical", "repair" ],
+    "action": "gripOrBend",
+    "recipe": {
+      "description": "Forge and assemble a basic set of pliers.",
+      "components": [
+        {
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 2
+        },
+        {
+          "itemId": "rivet_small_metal",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 40,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "knife_heavy_duty",
+    "name": "Heavy Duty Knife",
+    "description": "A large, robust knife for tough cutting tasks.",
+    "type": "tool",
+    "canEquip": true,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 1.2,
+    "tags": [ "tool", "crafting", "survival", "weapon_melee_blade" ],
+    "equipSlots": [ "hand" ],
+    "action": "cutHeavyMaterial",
+    "damage": "1d4+1",
+    "damageType": "Slashing",
+    "recipe": {
+      "description": "Forge a sturdy, heavy-bladed knife.",
+      "components": [
+        {
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 1
+        },
+        {
+          "itemId": "wood_handle_simple_tool",
+          "quantity": 1
+        },
+        {
+          "itemId": "rivet_small_metal",
+          "quantity": 2
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        }
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 50,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "spindle_simple",
+    "name": "Simple Spindle",
+    "description": "A basic weighted stick with a hook or notch, used for hand-spinning fibers into thread.",
+    "type": "tool",
+    "canEquip": true,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.3,
+    "tags": [ "tool", "crafting", "textile_production", "spinning" ],
+    "equipSlots": [ "hand" ],
+    "action": "spinFibers",
+    "recipe": {
+      "description": "Fashion a simple spindle from a stick and a small weight.",
+      "components": [
+        {
+          "itemId": "wood_stick",
+          "quantity": 1
+        },
+        {
+          "itemId": "clay_lump",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 0
+        }
+      ],
+      "time_to_craft": 10,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "sewing_kit_basic",
+    "name": "Basic Sewing Kit",
+    "description": "Contains needles, thread, pins, and small scissors for mending or creating garments.",
+    "type": "tool",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [ "tool", "crafting", "tailoring", "repair" ],
+    "action": "sewFabric",
+    "recipe": {
+      "description": "Assemble a basic sewing kit.",
+      "components": [
+        {
+          "itemId": "needle_steel",
+          "quantity": 3
+        },
+        {
+          "itemId": "thread_simple_plant_fiber",
+          "quantity": 10
+        },
+        {
+          "itemId": "cloth_scrap",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 0
+        }
+      ],
+      "time_to_craft": 5,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "sewing_kit_heavy",
+    "name": "Heavy-Duty Sewing Kit",
+    "description": "A robust sewing kit with stronger needles, thick thread, an awl, and shears for working with canvas, leather, or other tough materials.",
+    "type": "tool",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 1.0,
+    "tags": [ "tool", "crafting", "tailoring", "leatherworking", "repair_heavy" ],
+    "action": "sewHeavyFabric",
+    "recipe": {
+      "description": "Assemble a heavy-duty sewing kit.",
+      "components": [
+        {
+          "itemId": "needle_steel_heavy",
+          "quantity": 3
+        },
+        {
+          "itemId": "thread_strong_synthetic",
+          "quantity": 5
+        },
+        {
+          "itemId": "cobblers_awl",
+          "quantity": 1
+        },
+        {
+          "itemId": "tin_snips",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "time_to_craft": 15,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "chisel_stone",
+    "name": "Stone Chisel",
+    "description": "A hardened metal chisel for shaping stone.",
+    "type": "tool",
+    "canEquip": true,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.8,
+    "tags": [ "tool", "crafting", "stonemasonry" ],
+    "equipSlots": [ "hand" ],
+    "action": "chiselStone",
+    "recipe": {
+      "description": "Forge a stone chisel.",
+      "components": [
+        {
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 1
+        },
+        {
+          "itemId": "wood_handle_simple_tool",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 15,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "tap_and_die_set",
+    "name": "Tap and Die Set",
+    "description": "A set of tools used to create screw threads (tapping for internal threads, dies for external threads).",
+    "type": "tool",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 3.0,
+    "tags": [ "tool", "crafting", "metalworking", "mechanical_repair" ],
+    "action": "createThreads",
+    "recipe": {
+      "description": "Forge a basic tap and die set from high-quality steel.",
+      "components": [
+        {
+          "itemId": "steel_ingot",
+          "quantity": 2
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 6
+        }
+      ],
+      "tools_required": [ "blacksmith_hammer", "tongs_blacksmith", "file_small_metal" ],
+      "station_required": "forge_advanced",
+      "time_to_craft": 120,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "scraper_tool_blunt",
+    "name": "Blunt Scraper Tool",
+    "description": "A tool with a dull, broad edge, used for scraping hides or other soft materials without cutting them.",
+    "type": "tool",
+    "canEquip": true,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 1.0,
+    "tags": [ "tool", "crafting", "leatherworking", "hide_processing" ],
+    "equipSlots": [ "hand" ],
+    "action": "scrapeSoftMaterial",
+    "recipe": {
+      "description": "Fashion a blunt scraper from metal or hard wood.",
+      "components": [
+        {
+          "itemId": "metal_sheet_thin",
+          "quantity": 1
+        },
+        {
+          "itemId": "wood_handle_simple_tool",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 20,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "hand_reloader_tool",
+    "name": "Hand Reloader Tool",
+    "description": "A compact, manual tool for reloading metallic cartridges one by one. Slower than a bench press.",
+    "type": "tool",
+    "size": 2,
+    "weightLbs": 2.5,
+    "tags": [ "tool", "crafting", "reloading", "gunsmithing" ],
+    "action": "reloadCartridge",
+    "recipe": {
+      "description": "Assemble a hand-operated reloading tool.",
+      "components": [
+        {
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 1
+        },
+        {
+          "itemId": "mechanical_parts_simple",
+          "quantity": 2
+        },
+        {
+          "itemId": "wood_handle_simple_tool",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        }
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 45,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "shotshell_press_basic",
+    "name": "Basic Shotshell Press",
+    "description": "A manual press for reloading shotgun shells.",
+    "type": "tool",
+    "size": 3,
+    "weightLbs": 5,
+    "tags": [ "tool", "crafting", "reloading", "gunsmithing", "shotgun_specific" ],
+    "action": "reloadShotshell",
+    "recipe": {
+      "description": "Assemble a basic press for reloading shotgun shells.",
+      "components": [
+        {
+          "itemId": "steel_ingot",
+          "quantity": 1
+        },
+        {
+          "itemId": "mechanical_parts_simple",
+          "quantity": 3
+        },
+        {
+          "itemId": "wood_planks",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 70,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "rivet_gun_manual",
+    "name": "Manual Rivet Gun",
+    "description": "A hand-operated tool for setting rivets.",
+    "type": "tool",
+    "size": 2,
+    "weightLbs": 2.0,
+    "tags": [ "tool", "crafting", "metalworking", "repair" ],
+    "action": "setRivet",
+    "recipe": {
+      "description": "Assemble a manual rivet gun.",
+      "components": [
+        {
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 2
+        },
+        {
+          "itemId": "mechanical_parts_simple",
+          "quantity": 2
+        },
+        {
+          "itemId": "spring_small_metal",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 50,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "pressure_plate_dart_trap_kit",
+    "name": "Dart Trap Kit (Pressure Plate)",
+    "description": "A kit containing components to assemble a pressure-plate triggered dart trap.",
+    "type": "tool_trap_kit",
+    "size": 2,
+    "weightLbs": 3.0,
+    "value": 75,
+    "tags": [ "tool", "trap_kit", "mechanical", "requires_placement" ],
+    "action": "placeTrap",
+    "placesTrapId": "pressure_plate_darts",
+    "recipe": {
+      "description": "Assemble components for a pressure plate dart trap.",
+      "components": [
+        {
+          "itemId": "mechanical_parts_simple",
+          "quantity": 3
+        },
+        {
+          "itemId": "metal_rod_thin",
+          "quantity": 5
+        },
+        {
+          "itemId": "spring_small_metal",
+          "quantity": 2
+        },
+        {
+          "itemId": "wood_planks",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        },
+        {
+          "skill": "Explosives",
+          "level": 2
+        }
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 60,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "tripwire_alarm_kit",
+    "name": "Tripwire Alarm Kit",
+    "description": "A kit to set up a simple tripwire that triggers a noisemaker.",
+    "type": "tool_trap_kit",
+    "size": 1,
+    "weightLbs": 0.5,
+    "value": 20,
+    "tags": [ "tool", "trap_kit", "mechanical", "alarm", "requires_placement" ],
+    "action": "placeTrap",
+    "placesTrapId": "tripwire_alarm",
+    "recipe": {
+      "description": "Assemble components for a tripwire alarm.",
+      "components": [
+        {
+          "itemId": "metal_wire_stiff",
+          "quantity": 3
+        },
+        {
+          "itemId": "metal_bits_small",
+          "quantity": 5
+        },
+        {
+          "itemId": "wood_stick",
+          "quantity": 2
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "time_to_craft": 15,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "tire_iron",
+    "name": "Tire Iron",
+    "description": "A metal lever used for removing and mounting tires.",
+    "type": "tool",
+    "size": 3,
+    "weightLbs": 2.0,
+    "tags": [ "tool", "vehicle_maintenance", "mechanical" ],
+    "action": "changeTire",
+    "recipe": {
+      "description": "Forge a sturdy tire iron.",
+      "components": [
+        {
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 30,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "tin_snips",
+    "name": "Tin Snips",
+    "description": "Hand tool used to cut thin sheet metal.",
+    "type": "tool",
+    "size": 2,
+    "weightLbs": 1.0,
+    "tags": [ "tool", "crafting", "metalworking" ],
+    "action": "cutSheetMetal",
+    "recipe": {
+      "description": "Forge a pair of tin snips.",
+      "components": [
+        {
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 2
+        },
+        {
+          "itemId": "rivet_small_metal",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        }
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 35,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "concrete_mixer_small",
+    "name": "Small Concrete Mixer",
+    "description": "A portable machine for mixing concrete.",
+    "type": "tool",
+    "size": 4,
+    "weightLbs": 70,
+    "tags": [ "tool", "crafting", "construction", "requires_power_cell_large" ],
+    "action": "mixConcrete",
+    "recipe": {
+      "description": "Assemble a small concrete mixer.",
+      "components": [
+        {
+          "itemId": "steel_sheet_sturdy",
+          "quantity": 3
+        },
+        {
+          "itemId": "motor_small_electric",
+          "quantity": 1
+        },
+        {
+          "itemId": "mechanical_parts_simple",
+          "quantity": 4
+        },
+        {
+          "itemId": "rubber_strips_or_chunks",
+          "quantity": 2
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 6
+        },
+        {
+          "skill": "Electronics",
+          "level": 4
+        }
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 150,
+      "batch_size": 1
+    }
   }
 ]

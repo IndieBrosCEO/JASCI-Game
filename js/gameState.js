@@ -30,7 +30,15 @@ const gameState = {
 
     // fowData is now a dictionary keyed by Z-level.
     // e.g., fowData["0"] = Array(H).fill(null).map(() => Array(W).fill('hidden'))
-    fowData: {}, // Fog of War data, per Z-level
+    // It will also contain fowCurrentlyVisible, also keyed by Z-level,
+    // storing an array of {x,y} coords for tiles made visible in the last FOW update for that Z.
+    fowData: {
+        // Example structure:
+        // "0": Array(H).fill(null).map(() => Array(W).fill('hidden')),
+        // fowCurrentlyVisible: {
+        //    "0": [{x:1,y:1}, {x:1,y:2}] 
+        // }
+    }, // Fog of War data, per Z-level
 
     // lightSources will now contain objects with x, y, z coordinates.
     lightSources: [], // Added for lighting system

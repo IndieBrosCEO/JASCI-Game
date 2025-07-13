@@ -396,10 +396,179 @@ window.getDistance3D = getDistance3D;
  * @param {object} tileset - The tileset definitions.
  * @returns {Array<object>|null} An array of {x, y, z} points representing the path, or null if no path is found.
  */
+// function findPath3D(startPos, endPos, entity, mapData, tileset) { // Original definition
+//    // ... original function body
+// }
+// window.findPath3D = findPath3D; // Original assignment
+
+// Wrapped version for profiling
 function findPath3D(startPos, endPos, entity, mapData, tileset) {
-    if (!window.mapRenderer || typeof window.mapRenderer.isWalkable !== 'function' || typeof window.mapRenderer.isTileEmpty !== 'function') {
-        logToConsole("findPath3D: mapRenderer.isWalkable or mapRenderer.isTileEmpty is not available.", "error");
+    return profileFunction("findPath3D", (_startPos, _endPos, _entity, _mapData, _tileset) => {
+        // Original function body starts here, using underscored parameter names
+        if (!window.mapRenderer || typeof window.mapRenderer.isWalkable !== 'function' || typeof window.mapRenderer.isTileEmpty !== 'function') {
+            logToConsole("findPath3D: mapRenderer.isWalkable or mapRenderer.isTileEmpty is not available.", "error");
+            return null;
+        }
+        if (!_mapData || !_mapData.levels || !_mapData.dimensions) {
+            logToConsole("findPath3D: Missing mapData, levels, or dimensions.", "error");
+            return null;
+        }
+        if (!_tileset) {
+            logToConsole("findPath3D: Tileset data not provided.", "error");
+            return null;
+        }
+
+        const openSet = [];
+        const closedSet = new Set();
+
+        const startNode = {
+            x: _startPos.x, y: _startPos.y, z: _startPos.z,
+            g: 0,
+            h: heuristic(_startPos, _endPos),
+            f: heuristic(_startPos, _endPos),
+            parent: null
+        };
+        openSet.push(startNode);
+
+        function heuristic(posA, posB) {
+            return Math.abs(posA.x - posB.x) + Math.abs(posA.y - posB.y) + Math.abs(posA.z - posB.z);
+        }
+
+        function getNodeKey(node) {
+            return `${node.x},${node.y},${node.z}`;
+        }
+
+        function getTileDefFromMapDataLayers(x, y, z, currentMapData, currentTileset) {
+            const zStr = z.toString();
+            if (!currentMapData.levels[zStr]) return null;
+
+            let tileIdRaw = currentMapData.levels[zStr].building?.[y]?.[x];
+            if (!tileIdRaw) tileIdRaw = currentMapData.levels[zStr].item?.[y]?.[x];
+            if (!tileIdRaw) tileIdRaw = currentMapData.levels[zStr].middle?.[y]?.[x];
+            if (!tileIdRaw) tileIdRaw = currentMapData.levels[zStr].bottom?.[y]?.[x];
+
+            if (tileIdRaw) {
+                const baseId = (typeof tileIdRaw === 'object' && tileIdRaw.tileId) ? tileIdRaw.tileId : tileIdRaw;
+                if (currentTileset && currentTileset[baseId]) return currentTileset[baseId];
+            }
+            return null;
+        }
+
+        while (openSet.length > 0) {
+            openSet.sort((a, b) => a.f - b.f);
+            const currentNode = openSet.shift();
+            const currentKey = getNodeKey(currentNode);
+
+            if (currentNode.x === _endPos.x && currentNode.y === _endPos.y && currentNode.z === _endPos.z) {
+                const path = [];
+                let temp = currentNode;
+                while (temp) {
+                    path.push({ x: temp.x, y: temp.y, z: temp.z });
+                    temp = temp.parent;
+                }
+                return path.reverse();
+            }
+
+            closedSet.add(currentKey);
+            const neighbors = [];
+            const cardinalMoves = [
+                { dx: 0, dy: -1, dz: 0 }, { dx: 0, dy: 1, dz: 0 },
+                { dx: -1, dy: 0, dz: 0 }, { dx: 1, dy: 0, dz: 0 }
+            ];
+
+            for (const move of cardinalMoves) {
+                const nextX = currentNode.x + move.dx;
+                const nextY = currentNode.y + move.dy;
+                const currentZ = currentNode.z;
+
+                let cost = 1;
+                let isPassable = window.mapRenderer.isWalkable(nextX, nextY, currentZ);
+                const tileDefAtNext = getTileDefFromMapDataLayers(nextX, nextY, currentZ, _mapData, _tileset);
+
+                if (tileDefAtNext && tileDefAtNext.tags && tileDefAtNext.tags.includes("door")) {
+                    if (tileDefAtNext.tags.includes("closed")) {
+                        if (tileDefAtNext.isLocked === true) {
+                            isPassable = false;
+                        } else {
+                            isPassable = true;
+                            cost = 1 + (tileDefAtNext.openCost || 1);
+                        }
+                    } else if (tileDefAtNext.tags.includes("open")) {
+                        isPassable = true;
+                        cost = 1;
+                    }
+                }
+
+                if (isPassable) {
+                    neighbors.push({ x: nextX, y: nextY, z: currentZ, cost: cost });
+                    if (tileDefAtNext && tileDefAtNext.tags?.includes('z_transition') && tileDefAtNext.target_dz !== undefined) {
+                        const finalDestZ = currentZ + tileDefAtNext.target_dz;
+                        if (window.mapRenderer.isWalkable(nextX, nextY, finalDestZ)) {
+                            const zCost = tileDefAtNext.z_cost || 1;
+                            neighbors.push({ x: nextX, y: nextY, z: finalDestZ, cost: cost + zCost });
+                        }
+                    }
+                }
+            }
+
+            const currentTileDef = getTileDefFromMapDataLayers(currentNode.x, currentNode.y, currentNode.z, _mapData, _tileset);
+            if (currentTileDef && currentTileDef.tags?.includes('z_transition') && currentTileDef.target_dz !== undefined) {
+                const targetZ = currentNode.z + currentTileDef.target_dz;
+                if (window.mapRenderer.isWalkable(currentNode.x, currentNode.y, targetZ)) {
+                    neighbors.push({
+                        x: currentNode.x, y: currentNode.y, z: targetZ,
+                        cost: currentTileDef.z_cost || 1
+                    });
+                }
+            }
+
+            for (const move of cardinalMoves) {
+                const stepNextX = currentNode.x + move.dx;
+                const stepNextY = currentNode.y + move.dy;
+                const stepCurrentZ = currentNode.z;
+                const targetUpZ = stepCurrentZ + 1;
+                const isTargetImpassableAtCurrentZ = !window.mapRenderer.isWalkable(stepNextX, stepNextY, stepCurrentZ) &&
+                    window.mapRenderer.getCollisionTileAt(stepNextX, stepNextY, stepCurrentZ) !== "";
+                if (isTargetImpassableAtCurrentZ &&
+                    window.mapRenderer.isTileEmpty(currentNode.x, currentNode.y, targetUpZ) &&
+                    window.mapRenderer.isWalkable(stepNextX, stepNextY, targetUpZ)) {
+                    neighbors.push({ x: stepNextX, y: stepNextY, z: targetUpZ, cost: 2 });
+                }
+                const targetDownZ = stepCurrentZ - 1;
+                if (window.mapRenderer.isTileEmpty(stepNextX, stepNextY, stepCurrentZ) &&
+                    !window.mapRenderer.isWalkable(stepNextX, stepNextY, stepCurrentZ) &&
+                    window.mapRenderer.isWalkable(stepNextX, stepNextY, targetDownZ)) {
+                    neighbors.push({ x: stepNextX, y: stepNextY, z: targetDownZ, cost: 1 });
+                }
+            }
+
+            for (const neighborPos of neighbors) {
+                const neighborKey = getNodeKey(neighborPos);
+                if (closedSet.has(neighborKey)) continue;
+                const gCost = currentNode.g + neighborPos.cost;
+                let existingNeighbor = openSet.find(node => node.x === neighborPos.x && node.y === neighborPos.y && node.z === neighborPos.z);
+                if (!existingNeighbor) {
+                    openSet.push({
+                        x: neighborPos.x, y: neighborPos.y, z: neighborPos.z,
+                        g: gCost, h: heuristic(neighborPos, _endPos),
+                        f: gCost + heuristic(neighborPos, _endPos), parent: currentNode
+                    });
+                } else if (gCost < existingNeighbor.g) {
+                    existingNeighbor.g = gCost;
+                    existingNeighbor.f = gCost + existingNeighbor.h;
+                    existingNeighbor.parent = currentNode;
+                }
+            }
+        }
+        logToConsole(`findPath3D: No path found from (${_startPos.x},${_startPos.y},${_startPos.z}) to (${_endPos.x},${_endPos.y},${_endPos.z}).`, "orange");
         return null;
+        // Original function body ends here
+    }, startPos, endPos, entity, mapData, tileset);
+}
+window.findPath3D = findPath3D;
+
+
+/**
     }
     if (!mapData || !mapData.levels || !mapData.dimensions) {
         logToConsole("findPath3D: Missing mapData, levels, or dimensions.", "error");
@@ -410,8 +579,10 @@ function findPath3D(startPos, endPos, entity, mapData, tileset) {
         return null;
     }
 
-    const openSet = [];
+    // const openSet = []; // Old array-based open set
+    const openSet = new PriorityQueue((a, b) => a.f < b.f); 
     const closedSet = new Set();
+    const openSetMap = new Map(); // To keep track of nodes in openSet and their gCosts for efficient updates
 
     const startNode = {
         x: startPos.x, y: startPos.y, z: startPos.z,
@@ -421,6 +592,7 @@ function findPath3D(startPos, endPos, entity, mapData, tileset) {
         parent: null
     };
     openSet.push(startNode);
+    openSetMap.set(getNodeKey(startNode), startNode);
 
     function heuristic(posA, posB) {
         return Math.abs(posA.x - posB.x) + Math.abs(posA.y - posB.y) + Math.abs(posA.z - posB.z);
@@ -585,10 +757,75 @@ window.findPath3D = findPath3D;
  * @param {object} endPos - The target position {x, y, z}.
  * @returns {boolean} True if there is a clear line of sight, false otherwise.
  */
-function hasLineOfSight3D(startPos, endPos, tilesetsData, mapDataFromCaller) { // Parameters added
-    logToConsole(`[hasLineOfSight3D Entry] Received tilesetsData is valid: ${!!tilesetsData} (Keys: ${tilesetsData ? Object.keys(tilesetsData).length : 'N/A'}), mapDataFromCaller is valid: ${!!mapDataFromCaller} (Levels: ${mapDataFromCaller ? !!mapDataFromCaller.levels : 'N/A'})`, 'magenta');
+// function hasLineOfSight3D(startPos, endPos, tilesetsData, mapDataFromCaller) { // Parameters added // Original
+//     // ... original function body
+// }
+// window.hasLineOfSight3D = hasLineOfSight3D; // Original
 
-    let tilesets = tilesetsData;
+// Wrapped version for profiling
+function hasLineOfSight3D(startPos, endPos, tilesetsData, mapDataFromCaller) {
+    return profileFunction("hasLineOfSight3D", (_startPos, _endPos, _tilesetsData, _mapDataFromCaller) => {
+        // Original function body starts here
+        logToConsole(`[hasLineOfSight3D Entry] Received tilesetsData is valid: ${!!_tilesetsData} (Keys: ${_tilesetsData ? Object.keys(_tilesetsData).length : 'N/A'}), mapDataFromCaller is valid: ${!!_mapDataFromCaller} (Levels: ${_mapDataFromCaller ? !!_mapDataFromCaller.levels : 'N/A'})`, 'magenta');
+
+        let tilesets = _tilesetsData;
+        let mapData = _mapDataFromCaller;
+        let usingFallbackData = false;
+
+        if (!tilesets || !mapData || (typeof mapData === 'object' && mapData !== null && !mapData.levels)) { // Check mapData.levels more carefully
+            logToConsole(`[hasLineOfSight3D] Passed parameters appear invalid or incomplete. Attempting fallback to global fetch. Passed tilesets: ${!!_tilesetsData}, mapData: ${!!_mapDataFromCaller}, mapData.levels: ${_mapDataFromCaller && typeof _mapDataFromCaller === 'object' ? !!_mapDataFromCaller.levels : 'N/A'}`, 'orange');
+            tilesets = window.assetManager ? window.assetManager.tilesets : null;
+            mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+            usingFallbackData = true;
+            if (tilesets && Object.keys(tilesets).length > 0 && mapData && mapData.levels) {
+                logToConsole(`[hasLineOfSight3D] Fallback successful. Tilesets keys: ${Object.keys(tilesets).length}, MapData levels present: ${!!mapData.levels}`, 'green');
+            } else {
+                logToConsole(`[hasLineOfSight3D] Fallback FAILED. Global tilesets: ${!!tilesets} (Keys: ${tilesets ? Object.keys(tilesets).length : 'N/A'}), Global mapData: ${!!mapData}, Global mapData.levels: ${mapData && typeof mapData === 'object' ? !!mapData.levels : 'N/A'}`, 'red');
+            }
+        }
+
+        if (!_startPos || !_endPos ||
+            _startPos.x === undefined || _startPos.y === undefined || _startPos.z === undefined ||
+            _endPos.x === undefined || _endPos.y === undefined || _endPos.z === undefined) {
+            logToConsole("hasLineOfSight3D: Invalid input positions (start/end).", "error");
+            return false;
+        }
+
+        if (typeof getLine3D !== 'function') {
+            logToConsole("hasLineOfSight3D: getLine3D function is not available.", "error");
+            return false;
+        }
+        if (typeof window.mapRenderer?.isTileBlockingVision !== 'function') {
+            logToConsole("hasLineOfSight3D: mapRenderer.isTileBlockingVision function is not available.", "error");
+            return false;
+        }
+
+        if (!tilesets || Object.keys(tilesets).length === 0 || !mapData || (typeof mapData === 'object' && mapData !== null && !mapData.levels)) {
+            logToConsole(`hasLineOfSight3D: Critical data STILL missing ${usingFallbackData ? '(after fallback attempt)' : '(with passed params)'}. Tilesets: ${!!tilesets} (Keys: ${tilesets ? Object.keys(tilesets).length : 'N/A'}), MapData: ${!!mapData}, MapData.levels: ${mapData && typeof mapData === 'object' ? !!mapData.levels : 'N/A'}. Assuming no LOS.`, "red");
+            return false;
+        }
+
+        const line = getLine3D(_startPos.x, _startPos.y, _startPos.z, _endPos.x, _endPos.y, _endPos.z);
+
+        if (!line || line.length === 0) {
+            return false;
+        }
+        if (line.length === 1) {
+            return true;
+        }
+
+        for (const point of line.slice(1)) {
+            if (window.mapRenderer.isTileBlockingVision(point.x, point.y, point.z, _startPos.z)) {
+                return false;
+            }
+        }
+        return true;
+        // Original function body ends here
+    }, startPos, endPos, tilesetsData, mapDataFromCaller);
+}
+window.hasLineOfSight3D = hasLineOfSight3D;
+
+/**
     let mapData = mapDataFromCaller;
     let usingFallbackData = false;
 
@@ -792,3 +1029,155 @@ function mapToScreenCoordinates(mapX, mapY, mapZ) {
     return { x: screenX, y: screenY };
 }
 window.mapToScreenCoordinates = mapToScreenCoordinates;
+
+// Min-Priority Queue Implementation (Min-Heap)
+class PriorityQueue {
+    constructor(comparator = (a, b) => a.f < b.f) { // Expects nodes to have an 'f' property for A*
+        this._heap = [];
+        this._comparator = comparator;
+    }
+
+    size() {
+        return this._heap.length;
+    }
+
+    isEmpty() {
+        return this.size() === 0;
+    }
+
+    peek() {
+        return this._heap[0];
+    }
+
+    push(...values) {
+        values.forEach(value => {
+            this._heap.push(value);
+            this._siftUp();
+        });
+        return this.size();
+    }
+
+    pop() {
+        const poppedValue = this.peek();
+        const bottom = this.size() - 1;
+        if (bottom > 0) {
+            this._swap(0, bottom);
+        }
+        this._heap.pop();
+        this._siftDown();
+        return poppedValue;
+    }
+
+    replace(value) {
+        const replacedValue = this.peek();
+        this._heap[0] = value;
+        this._siftDown();
+        return replacedValue;
+    }
+
+    _parent(i) {
+        return ((i + 1) >>> 1) - 1;
+    }
+
+    _left(i) {
+        return (i << 1) + 1;
+    }
+
+    _right(i) {
+        return (i + 1) << 1;
+    }
+
+    _greater(i, j) {
+        return this._comparator(this._heap[i], this._heap[j]);
+    }
+
+    _swap(i, j) {
+        [this._heap[i], this._heap[j]] = [this._heap[j], this._heap[i]];
+    }
+
+    _siftUp() {
+        let node = this.size() - 1;
+        while (node > 0 && this._greater(node, this._parent(node))) {
+            this._swap(node, this._parent(node));
+            node = this._parent(node);
+        }
+    }
+
+    _siftDown() {
+        let node = 0;
+        while (
+            (this._left(node) < this.size() && this._greater(this._left(node), node)) ||
+            (this._right(node) < this.size() && this._greater(this._right(node), node))
+        ) {
+            let maxChild = (this._right(node) < this.size() && this._greater(this._right(node), this._left(node))) ? this._right(node) : this._left(node);
+            this._swap(node, maxChild);
+            node = maxChild;
+        }
+    }
+
+    // Method to update a node's position if its priority changes (needed for A*)
+    // This is a simplified version; a more robust heap would allow efficient updates.
+    // For A*, if a shorter path to an existing node in openSet is found, its 'f' value changes.
+    // The heap needs to be re-heapified or the node needs to be removed and re-inserted.
+    // A common approach is to allow duplicates with different priorities and let the pop() find the best one,
+    // or to use a more complex heap that supports decrease-key.
+    // For this implementation, we'll rely on potentially adding a better path as a new entry,
+    // and the closedSet will prevent reprocessing the same coordinates if a worse path was already expanded.
+    // A find and update method could be:
+    // updateNode(node) { /* find node, update priority, then sift up/down */ }
+    // However, for simplicity, we'll just push new nodes if a better path is found,
+    // and the closedSet will handle not reprocessing.
+}
+
+
+// Performance Profiling
+window.dev_profiler = {}; // Store timings
+window.dev_profiler_enabled = false; // Enable via console: window.dev_profiler_enabled = true
+
+function profileFunction(name, func, ...args) {
+    if (!window.dev_profiler_enabled) {
+        return func(...args);
+    }
+
+    const start = performance.now();
+    const result = func(...args);
+    const end = performance.now();
+    const duration = end - start;
+
+    if (!window.dev_profiler[name]) {
+        window.dev_profiler[name] = {
+            calls: 0,
+            totalTime: 0,
+            maxTime: 0,
+            avgTime: 0,
+            history: []
+        };
+    }
+
+    const stats = window.dev_profiler[name];
+    stats.calls++;
+    stats.totalTime += duration;
+    stats.maxTime = Math.max(stats.maxTime, duration);
+    stats.avgTime = stats.totalTime / stats.calls;
+    stats.history.push(duration);
+    if (stats.history.length > 100) { // Keep last 100 timings
+        stats.history.shift();
+    }
+
+    // Optional: Log if a call is particularly slow
+    // if (duration > 16) { // e.g. > 1 frame at 60fps
+    //     logToConsole(`Profiler: ${name} took ${duration.toFixed(2)}ms (Call #${stats.calls})`, 'magenta');
+    // }
+
+    return result;
+}
+window.profileFunction = profileFunction;
+
+// Example usage (do not uncomment here, apply in specific files):
+// Original: someFunction(arg1, arg2);
+// Profiled: profileFunction("someFunction", someFunction, arg1, arg2);
+//
+// To view stats in console:
+// console.log(window.dev_profiler);
+// To reset stats:
+// window.dev_profiler = {};

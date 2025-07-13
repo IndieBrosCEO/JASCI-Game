@@ -83,76 +83,133 @@ class CraftingUIManager {
     }
 
     toggle(stationType = null) {
+        // logToConsole(`${this.logPrefix} toggle() called with stationType: ${stationType}. Current UI stationType: ${this.currentStationType}. Is hidden: ${this.craftingUIElement.classList.contains('hidden')}. Call stack:`, new Error().stack);
         if (!this.craftingUIElement) return;
+
         if (this.craftingUIElement.classList.contains('hidden')) {
+            // logToConsole(`${this.logPrefix} toggle: UI is hidden, calling open(${stationType === null ? 'general' : stationType})`);
             this.open(stationType);
         } else {
-            if (this.currentStationType !== stationType) {
+            // UI is currently open
+            if (stationType === null || stationType === undefined) {
+                // If toggling general crafting and it's already open (currentStationType might be null or a specific station), just hide it.
+                // logToConsole(`${this.logPrefix} toggle: General toggle for already open UI (current: '${this.currentStationType}'). Hiding.`);
                 this.hide();
-                if (stationType !== undefined) {
-                    this.open(stationType);
-                }
+            } else if (this.currentStationType !== stationType) {
+                // It's open, but for a different station, and a new specific stationType is provided.
+                // logToConsole(`${this.logPrefix} toggle: UI is open for '${this.currentStationType}', but different station '${stationType}' requested. Hiding then re-opening.`);
+                this.hide();
+                this.open(stationType); // Re-open for the new station
             } else {
+                // It's open for the exact same specific station, and toggle is called again for that station. Hide it.
+                // logToConsole(`${this.logPrefix} toggle: UI is open for station '${this.currentStationType}' and same station toggle requested. Hiding.`);
                 this.hide();
             }
         }
     }
 
     renderRecipeList() {
-        if (!this.craftingManager || !this.recipeListElement) { // Check instance property
+        // logToConsole(`${this.logPrefix} renderRecipeList CALLED. Current station: ${this.currentStationType}`);
+        if (!this.craftingManager || !this.recipeListElement) {
             console.error(`${this.logPrefix} CraftingManager or recipe list element not available.`);
             return;
         }
 
         this.recipeListElement.innerHTML = '';
-        let allRecipes = this.craftingManager.getKnownAndAvailableRecipes();
+        let allSystemRecipes = [];
+        if (this.craftingManager && typeof this.craftingManager.getAllRecipes === 'function') {
+            allSystemRecipes = this.craftingManager.getAllRecipes(); // This method now logs internally
+            logToConsole(`[CraftingUI] renderRecipeList: Received ${allSystemRecipes.length} recipes from getAllRecipes().`);
+            if (allSystemRecipes.length > 0) {
+                logToConsole(`[CraftingUI]   First recipe object received by UI:`, allSystemRecipes[0]);
+                if (allSystemRecipes[0] && typeof allSystemRecipes[0].id !== 'undefined') {
+                    logToConsole(`[CraftingUI]   ID of first recipe received: ${allSystemRecipes[0].id}`);
+                } else {
+                    logToConsole(`[CraftingUI]   First recipe received by UI IS UNDEFINED or MISSING 'id' property.`, 'orange');
+                }
+            }
+        } else {
+            logToConsole(`[CraftingUI] renderRecipeList: this.craftingManager or getAllRecipes is not available.`, 'red');
+            allSystemRecipes = [];
+        }
 
+
+        // Filter by station type if a station is active
+        let recipesToShow = [];
         if (this.currentStationType) {
-            allRecipes = allRecipes.filter(recipe =>
+            // logToConsole(`[CraftingUI] Filtering for station: ${this.currentStationType}`);
+            recipesToShow = allSystemRecipes.filter(recipe =>
                 !recipe.requiredStationType || recipe.requiredStationType === this.currentStationType
             );
         } else {
-            allRecipes = allRecipes.filter(recipe => !recipe.requiredStationType);
+            // If no specific station, show recipes that don't require a station (hand-craftable)
+            // logToConsole('[CraftingUI] Filtering for hand-craftable (no station required).');
+            recipesToShow = allSystemRecipes.filter(recipe => !recipe.requiredStationType);
         }
+        // logToConsole(`[CraftingUI] recipesToShow after station filtering (count: ${recipesToShow.length}):`, JSON.parse(JSON.stringify(recipesToShow)));
 
-        if (allRecipes.length === 0) {
+        // If no station-specific recipes, but we want to show all, then don't filter by station if the goal is to show everything regardless of current context.
+        // For this feature, we want to show all recipes *potentially* craftable at a station, or hand-craftable.
+        // The current filtering by station type is correct. We list recipes compatible with the current context.
+
+        if (recipesToShow.length === 0) {
+            // logToConsole('[CraftingUI] No recipes to show after filtering. Displaying empty message.');
             this.recipeListElement.innerHTML = `<li>No recipes available ${this.currentStationType ? 'for this station' : 'for hand-crafting'}.</li>`;
             this.clearRecipeDetails();
             return;
         }
 
-        // Store availableRecipes to be used later for default display
-        const availableRecipes = allRecipes;
+        recipesToShow.forEach((recipe, index) => {
+            // Enhanced logging for each item before the check
+            logToConsole(`[CraftingUI] Processing recipe at index ${index}:`, recipe);
+            if (recipe && typeof recipe.id !== 'undefined') {
+                logToConsole(`[CraftingUI]   Recipe ID: ${recipe.id}, Name: ${recipe.name}`);
+            } else {
+                logToConsole(`[CraftingUI]   Recipe at index ${index} is undefined or has no id. Skipping.`, 'orange');
+                return; // Skip this iteration if fundamental properties are missing
+            }
 
-        allRecipes.forEach(recipe => {
             const listItem = document.createElement('li');
+            // Check if the player *can actually craft it now* (skills, materials, correct station type already filtered)
             const canCurrentlyCraft = this.craftingManager.canCraft(recipe.id, this.gameState.inventory.container.items);
 
-            listItem.textContent = recipe.name;
+            listItem.textContent = recipe.name || 'Unnamed Recipe'; // Fallback for name
             listItem.dataset.recipeId = recipe.id;
             listItem.style.cursor = "pointer";
-            listItem.style.color = canCurrentlyCraft ? "lightgreen" : "lightcoral";
+
+            if (canCurrentlyCraft) {
+                listItem.style.color = "lightgreen"; // Or use a class: listItem.classList.add('craftable');
+                listItem.title = "You can craft this.";
+            } else {
+                listItem.style.color = "lightcoral"; // Existing color for "cannot craft right now"
+                listItem.classList.add('recipe-unavailable'); // Class for gray-out styling
+                listItem.title = "Cannot craft: Missing skill, materials, or wrong station.";
+            }
             listItem.addEventListener('click', () => this.displayRecipeDetails(recipe));
             this.recipeListElement.appendChild(listItem);
         });
 
-        if (this.selectedRecipeId && availableRecipes.find(r => r.id === this.selectedRecipeId)) {
-            this.displayRecipeDetails(availableRecipes.find(r => r.id === this.selectedRecipeId));
-        } else if (availableRecipes.length > 0) {
-            this.displayRecipeDetails(availableRecipes[0]);
+        // Logic for selecting a default recipe to display details for
+        const recipeToSelect = recipesToShow.find(r => r && r.id === this.selectedRecipeId);
+
+        if (recipeToSelect) {
+            this.displayRecipeDetails(recipeToSelect);
+        } else if (recipesToShow.length > 0 && recipesToShow[0] && typeof recipesToShow[0].id !== 'undefined') {
+            this.displayRecipeDetails(recipesToShow[0]); // Display first in the current list if it's valid
         } else {
             this.clearRecipeDetails();
         }
     }
 
     displayRecipeDetails(recipe) {
-        if (!recipe || !this.recipeDetailName) {
+        if (!recipe || typeof recipe.id === 'undefined' || !this.recipeDetailName) {
+            logToConsole(`${this.logPrefix} displayRecipeDetails: Invalid recipe or missing detail name element. Recipe:`, recipe, 'orange');
             this.clearRecipeDetails();
             return;
         }
         this.selectedRecipeId = recipe.id;
 
-        this.recipeDetailName.textContent = recipe.name || "-";
+        this.recipeDetailName.textContent = recipe.name || "Unnamed Recipe";
         const resultItemDef = this.assetManager ? this.assetManager.getItem(recipe.resultItemId) : { name: recipe.resultItemId };
         this.recipeDetailResult.textContent = resultItemDef?.name || recipe.resultItemId;
         this.recipeDetailResultQty.textContent = recipe.resultQuantity || 1;
@@ -239,3 +296,18 @@ class CraftingUIManager {
 // Removed: window.CraftingUI = CraftingUI;
 // Initialization will be handled by script.js creating an instance of CraftingUIManager
 // and potentially assigning it to window.CraftingUI there.
+
+// --- BEGIN TEMPORARY DEBUGGING ---
+// Attempt to explicitly assign the class to the window object
+// to see if it helps with the "CraftingUIManager is undefined" issue in script.js
+try {
+    if (typeof CraftingUIManager !== 'undefined') {
+        window.CraftingUIManager = CraftingUIManager;
+        console.log('[CraftingUIManager DEBUG] Successfully assigned CraftingUIManager class to window.CraftingUIManager.');
+    } else {
+        console.error('[CraftingUIManager DEBUG] CraftingUIManager class name is undefined at point of explicit window assignment.');
+    }
+} catch (e) {
+    console.error('[CraftingUIManager DEBUG] Error during explicit window assignment:', e);
+}
+// --- END TEMPORARY DEBUGGING ---

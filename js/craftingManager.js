@@ -52,44 +52,29 @@ class CraftingManager {
     }
 
     /**
-     * Gets all recipes the player currently meets the skill and workbench requirements for.
-     * Does NOT check for components.
-     * @returns {Array<object>} An array of recipe definitions.
+     * Gets all recipes known by the system.
+     * Does NOT check for components, skills, or workbench.
+     * @returns {Array<object>} An array of all recipe definitions.
      */
-    getKnownAndAvailableRecipes() {
-        // For now, player knows all recipes. Future: implement recipe learning.
-        const available = [];
-        const player = this.gameState; // Assuming player skills are on gameState or gameState.player
+    getAllRecipes() {
+        logToConsole(`${this.logPrefix} getAllRecipes CALLED.`);
+        if (!this.recipes || typeof this.recipes !== 'object') {
+            logToConsole(`${this.logPrefix}   this.recipes is not a valid object or is null/undefined. Value:`, this.recipes, 'orange');
+            return [];
+        }
 
-        for (const recipeId in this.recipes) {
-            const recipe = this.recipes[recipeId];
-            let canAttempt = true;
+        const recipeValues = Object.values(this.recipes);
+        logToConsole(`${this.logPrefix}   Object.values(this.recipes) produced an array of length: ${recipeValues.length}`);
 
-            // Check skill requirement
-            if (recipe.skillRequired && recipe.skillLevelRequired) {
-                const playerScore = getSkillValue(recipe.skillRequired, player);
-                if (playerScore < recipe.skillLevelRequired) {
-                    canAttempt = false;
-                }
-            }
-
-            // Check workbench requirement
-            // This needs a way to know what workbenches are nearby or being interacted with.
-            // For now, assume no workbench needed unless specified, or player is at a generic one.
-            // A more complex system would pass a nearbyWorkbenchId or check player's surroundings.
-            if (recipe.workbenchRequired) {
-                // Placeholder: Assume player is NOT at the required workbench for now if one is needed.
-                // This will be refined when base building / interactable workbenches are implemented.
-                // canAttempt = false; 
-                // For testing, let's assume for now that if a workbench is required, the player is magically at one.
-                // logToConsole(`${this.logPrefix} Recipe ${recipe.name} requires workbench ${recipe.workbenchRequired}. (Workbench check not fully implemented yet)`, 'grey');
-            }
-
-            if (canAttempt) {
-                available.push(recipe);
+        if (recipeValues.length > 0) {
+            logToConsole(`${this.logPrefix}   First recipe object from Object.values():`, recipeValues[0]);
+            if (typeof recipeValues[0].id !== 'undefined') {
+                logToConsole(`${this.logPrefix}   ID of first recipe: ${recipeValues[0].id}`);
+            } else {
+                logToConsole(`${this.logPrefix}   First recipe object MISSING 'id' property.`, 'orange');
             }
         }
-        return available;
+        return recipeValues;
     }
 
     /**
@@ -105,16 +90,16 @@ class CraftingManager {
             return false;
         }
 
-        // Re-check skill and workbench (though getKnownAndAvailableRecipes should pre-filter)
+        // Check skill requirements
         const player = this.gameState;
         if (recipe.skillRequired && recipe.skillLevelRequired) {
             if (getSkillValue(recipe.skillRequired, player) < recipe.skillLevelRequired) return false;
         }
 
-        // NEW: Check requiredStationType against gameState.activeCraftingStationType
+        // Check requiredStationType against gameState.activeCraftingStationType
+        // This check is important for determining if crafting is possible *at the current station*
         if (recipe.requiredStationType) {
             if (!this.gameState.activeCraftingStationType || this.gameState.activeCraftingStationType !== recipe.requiredStationType) {
-                // logToConsole(`${this.logPrefix} Cannot craft '${recipe.name}'. Requires station '${recipe.requiredStationType}', but currently at '${this.gameState.activeCraftingStationType || "no station"}'.`, 'orange');
                 return false;
             }
         }

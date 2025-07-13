@@ -14,9 +14,28 @@
         "quantity": 8
       }
     ],
-    "skillRequired": "Repair",
-    "skillLevelRequired": 5,
-    "timeToBuild": 30,
+    "recipe": {
+      "description": "Construct a simple defensive wall section from wood planks and nails.",
+      "components": [
+        {
+          "itemId": "wood_planks",
+          "quantity": 4
+        },
+        {
+          "itemId": "nails",
+          "quantity": 8
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "tools_required": [ "hammer_peen" ],
+      "time_to_craft": 30,
+      "batch_size": 1
+    },
     "tileIdPlaced": "WWV",
     "health": 50,
     "tags": [ "blocks_movement", "provides_cover_half", "wall", "wood_structure" ],
@@ -41,9 +60,32 @@
         "quantity": 1
       }
     ],
-    "skillRequired": "Repair",
-    "skillLevelRequired": 8,
-    "timeToBuild": 20,
+    "recipe": {
+      "description": "Construct a simple wooden door.",
+      "components": [
+        {
+          "itemId": "wood_planks",
+          "quantity": 3
+        },
+        {
+          "itemId": "nails",
+          "quantity": 4
+        },
+        {
+          "itemId": "scrap_metal",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 8
+        }
+      ],
+      "tools_required": [ "hammer_peen", "hand_saw_wood" ],
+      "time_to_craft": 20,
+      "batch_size": 1
+    },
     "tileIdPlaced": "WDH",
     "health": 30,
     "tags": [ "door", "interactive", "wood_structure" ],
@@ -64,9 +106,28 @@
         "quantity": 3
       }
     ],
-    "skillRequired": "Survival",
-    "skillLevelRequired": 10,
-    "timeToBuild": 45,
+    "recipe": {
+      "description": "Dig a pit and line it with sharpened stakes made from wood and metal.",
+      "components": [
+        {
+          "itemId": "wood_planks",
+          "quantity": 2
+        },
+        {
+          "itemId": "scrap_metal",
+          "quantity": 3
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 10
+        }
+      ],
+      "tools_required": [ "shovel", "hatchet_melee" ],
+      "time_to_craft": 45,
+      "batch_size": 1
+    },
     "tileIdPlaced": "trap_spikes_hidden_map_tile",
     "trapToPlace": "spike_pit_simple",
     "tags": [ "trap_emplacement" ]
@@ -86,9 +147,28 @@
         "quantity": 10
       }
     ],
-    "skillRequired": "Repair",
-    "skillLevelRequired": 3,
-    "timeToBuild": 60,
+    "recipe": {
+      "description": "Construct a sturdy workbench for basic crafting and repairs.",
+      "components": [
+        {
+          "itemId": "wood_planks",
+          "quantity": 5
+        },
+        {
+          "itemId": "nails",
+          "quantity": 10
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [ "hammer_peen", "hand_saw_wood" ],
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
     "tileIdPlaced": "workbench_basic_tile",
     "size": {
       "width": 2,
@@ -117,9 +197,32 @@
         "quantity": 5
       }
     ],
-    "skillRequired": "Repair",
-    "skillLevelRequired": 15,
-    "timeToBuild": 120,
+    "recipe": {
+      "description": "Construct a rudimentary forge for working with metals.",
+      "components": [
+        {
+          "itemId": "stone_block_hewn",
+          "quantity": 10
+        },
+        {
+          "itemId": "scrap_metal",
+          "quantity": 5
+        },
+        {
+          "itemId": "wood_log",
+          "quantity": 5
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 15
+        }
+      ],
+      "tools_required": [ "blacksmith_hammer", "tongs_blacksmith", "shovel" ],
+      "time_to_craft": 120,
+      "batch_size": 1
+    },
     "tileIdPlaced": "forge_simple_tile",
     "size": {
       "width": 1,
@@ -148,9 +251,32 @@
         "quantity": 2
       }
     ],
-    "skillRequired": "Electronics",
-    "skillLevelRequired": 20,
-    "timeToBuild": 90,
+    "recipe": {
+      "description": "Assemble a basic chemistry set for chemical reactions.",
+      "components": [
+        {
+          "itemId": "scrap_metal",
+          "quantity": 3
+        },
+        {
+          "itemId": "sharp_glass",
+          "quantity": 5
+        },
+        {
+          "itemId": "plastic_scrap_processed",
+          "quantity": 2
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 20
+        }
+      ],
+      "tools_required": [ "soldering_iron_kit", "pliers_set", "glassblowers_pipe" ],
+      "time_to_craft": 90,
+      "batch_size": 1
+    },
     "tileIdPlaced": "chemistry_set_tile",
     "size": {
       "width": 1,
@@ -175,9 +301,28 @@
         "quantity": 6
       }
     ],
-    "skillRequired": "Repair",
-    "skillLevelRequired": 25,
-    "timeToBuild": 50,
+    "recipe": {
+      "description": "Construct a sturdy metal barricade from metal sheets and bolts.",
+      "components": [
+        {
+          "itemId": "metal_sheet_sturdy",
+          "quantity": 3
+        },
+        {
+          "itemId": "bolts_and_nuts_set",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 25
+        }
+      ],
+      "tools_required": [ "wrench_set", "rivet_gun_manual" ],
+      "time_to_craft": 50,
+      "batch_size": 1
+    },
     "tileIdPlaced": "barricade_metal_tile",
     "size": {
       "width": 1,
@@ -203,9 +348,28 @@
         "quantity": 1
       }
     ],
-    "skillRequired": "Survival",
-    "skillLevelRequired": 5,
-    "timeToBuild": 30,
+    "recipe": {
+      "description": "Construct a small rain collector from processed plastic and a tarp.",
+      "components": [
+        {
+          "itemId": "plastic_scrap_processed",
+          "quantity": 5
+        },
+        {
+          "itemId": "tarp_basic",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 5
+        }
+      ],
+      "tools_required": [ "knife_melee" ],
+      "time_to_craft": 30,
+      "batch_size": 1
+    },
     "tileIdPlaced": "rain_collector_small_tile",
     "size": {
       "width": 1,
@@ -232,11 +396,614 @@
         "quantity": 2
       }
     ],
-    "skillRequired": "Repair",
-    "skillLevelRequired": 6,
-    "timeToBuild": 25,
+    "recipe": {
+      "description": "Construct a small storage locker from wood and metal components.",
+      "components": [
+        {
+          "itemId": "wood_planks",
+          "quantity": 3
+        },
+        {
+          "itemId": "scrap_metal",
+          "quantity": 2
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 6
+        }
+      ],
+      "tools_required": [ "hammer_peen", "hand_saw_wood", "metal_snips_heavy" ],
+      "time_to_craft": 25,
+      "batch_size": 1
+    },
     "tileIdPlaced": "storage_locker_small_tile",
     "containerCapacity": 15,
     "tags": [ "interactive", "container", "storage" ]
+  },
+  {
+    "id": "reloading_bench",
+    "name": "Reloading Bench",
+    "description": "A sturdy bench equipped with presses and measures for reloading ammunition.",
+    "category": "crafting_station",
+    "components": [
+      {
+        "itemId": "wood_planks",
+        "quantity": 8
+      },
+      {
+        "itemId": "steel_ingot",
+        "quantity": 2
+      },
+      {
+        "itemId": "mechanical_parts_simple",
+        "quantity": 5
+      },
+      {
+        "itemId": "bolts_and_nuts_set",
+        "quantity": 1
+      },
+      {
+        "itemId": "nails",
+        "quantity": 20
+      }
+    ],
+    "recipe": {
+      "description": "Construct a dedicated bench for reloading ammunition.",
+      "components": [
+        {
+          "itemId": "wood_planks",
+          "quantity": 8
+        },
+        {
+          "itemId": "steel_ingot",
+          "quantity": 2
+        },
+        {
+          "itemId": "mechanical_parts_simple",
+          "quantity": 5
+        },
+        {
+          "itemId": "bolts_and_nuts_set",
+          "quantity": 1
+        },
+        {
+          "itemId": "nails",
+          "quantity": 20
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 7
+        }
+      ],
+      "tools_required": [ "hammer_peen", "hand_saw_wood", "wrench_set", "hand_drill" ],
+      "time_to_craft": 180,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "reloading_bench_tile",
+    "size": {
+      "width": 2,
+      "height": 1
+    },
+    "allowedTileTags": [ "floor", "indoors" ],
+    "stationType": "reloading_general",
+    "tags": [ "interactive", "crafting_station", "gunsmithing" ]
+  },
+  {
+    "id": "munitions_bench",
+    "name": "Munitions Crafting Bench",
+    "description": "A specialized workbench for safely assembling explosives and advanced ammunition.",
+    "category": "crafting_station",
+    "components": [
+      {
+        "itemId": "reloading_bench_tile",
+        "quantity": 1
+      },
+      {
+        "itemId": "metal_sheet_sturdy",
+        "quantity": 4
+      },
+      {
+        "itemId": "plexiglass_sheet_thick",
+        "quantity": 1
+      },
+      {
+        "itemId": "bolts_and_nuts_set",
+        "quantity": 2
+      }
+    ],
+    "recipe": {
+      "description": "Construct a reinforced bench for munitions work, building upon a reloading bench.",
+      "components": [
+        {
+          "itemId": "reloading_bench_tile",
+          "quantity": 1
+        },
+        {
+          "itemId": "metal_sheet_sturdy",
+          "quantity": 4
+        },
+        {
+          "itemId": "plexiglass_sheet_thick",
+          "quantity": 1
+        },
+        {
+          "itemId": "bolts_and_nuts_set",
+          "quantity": 2
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 8
+        },
+        {
+          "skill": "Electronics",
+          "level": 5
+        }
+      ],
+      "tools_required": [ "wrench_set", "rivet_gun_manual", "welding_torch_oxyacetylene" ],
+      "time_to_craft": 240,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "munitions_bench_tile",
+    "size": {
+      "width": 2,
+      "height": 1
+    },
+    "allowedTileTags": [ "floor", "indoors", "reinforced_area_optional" ],
+    "stationType": "munitions_assembly",
+    "tags": [ "interactive", "crafting_station", "explosives_work", "advanced_gunsmithing" ]
+  },
+  {
+    "id": "placeable_dart_trap",
+    "name": "Set Pressure Plate Dart Trap",
+    "description": "Set up a previously crafted dart trap kit.",
+    "category": "defensive_trap",
+    "components": [
+      {
+        "itemId": "pressure_plate_dart_trap_kit",
+        "quantity": 1
+      }
+    ],
+    "recipe": {
+      "description": "Carefully place and arm a dart trap kit.",
+      "components": [
+        {
+          "itemId": "pressure_plate_dart_trap_kit",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Explosives",
+          "level": 3
+        },
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "time_to_craft": 20,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "floor_stone_plate_hidden",
+    "trapToPlace": "pressure_plate_darts",
+    "tags": [ "trap_emplacement", "requires_kit" ]
+  },
+  {
+    "id": "placeable_tripwire_alarm",
+    "name": "Set Tripwire Alarm",
+    "description": "Set up a previously crafted tripwire alarm kit.",
+    "category": "defensive_trap",
+    "components": [
+      {
+        "itemId": "tripwire_alarm_kit",
+        "quantity": 1
+      }
+    ],
+    "recipe": {
+      "description": "Carefully place and arm a tripwire alarm kit.",
+      "components": [
+        {
+          "itemId": "tripwire_alarm_kit",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "time_to_craft": 10,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "trap_tripwire_set_tile",
+    "trapToPlace": "tripwire_alarm",
+    "tags": [ "trap_emplacement", "requires_kit" ]
+  },
+  {
+    "id": "armor_crafting_jig",
+    "name": "Armor Crafting Jig",
+    "description": "A specialized jig and setup for working with heavy armor components and ballistic materials.",
+    "category": "crafting_station",
+    "components": [
+      {
+        "itemId": "workbench_basic_tile",
+        "quantity": 1
+      },
+      {
+        "itemId": "steel_ingot",
+        "quantity": 3
+      },
+      {
+        "itemId": "mechanical_parts_simple",
+        "quantity": 4
+      },
+      {
+        "itemId": "bolts_and_nuts_set",
+        "quantity": 2
+      }
+    ],
+    "recipe": {
+      "description": "Construct an armor crafting jig.",
+      "components": [
+        {
+          "itemId": "workbench_basic_tile",
+          "quantity": 1
+        },
+        {
+          "itemId": "steel_ingot",
+          "quantity": 3
+        },
+        {
+          "itemId": "mechanical_parts_simple",
+          "quantity": 4
+        },
+        {
+          "itemId": "bolts_and_nuts_set",
+          "quantity": 2
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 7
+        }
+      ],
+      "tools_required": [ "wrench_set", "hand_drill", "welding_torch_oxyacetylene" ],
+      "time_to_craft": 200,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "armor_jig_tile",
+    "size": {
+      "width": 2,
+      "height": 2
+    },
+    "allowedTileTags": [ "floor", "indoors" ],
+    "stationType": "armor_station",
+    "tags": [ "interactive", "crafting_station", "armor_crafting" ]
+  },
+  {
+    "id": "machine_shop_lathe",
+    "name": "Machine Shop Lathe",
+    "description": "A machine tool for shaping metal or wood by rotating the workpiece against a cutting tool.",
+    "category": "crafting_station_advanced",
+    "components": [
+      {
+        "itemId": "steel_ingot",
+        "quantity": 10
+      },
+      {
+        "itemId": "mechanical_parts_vehicle_grade",
+        "quantity": 5
+      },
+      {
+        "itemId": "motor_large_electric",
+        "quantity": 1
+      },
+      {
+        "itemId": "copper_wire_spool",
+        "quantity": 3
+      },
+      {
+        "itemId": "bolts_and_nuts_set",
+        "quantity": 4
+      }
+    ],
+    "recipe": {
+      "description": "Assemble a heavy-duty machine shop lathe.",
+      "components": [
+        {
+          "itemId": "steel_ingot",
+          "quantity": 10
+        },
+        {
+          "itemId": "mechanical_parts_vehicle_grade",
+          "quantity": 5
+        },
+        {
+          "itemId": "motor_large_electric",
+          "quantity": 1
+        },
+        {
+          "itemId": "copper_wire_spool",
+          "quantity": 3
+        },
+        {
+          "itemId": "bolts_and_nuts_set",
+          "quantity": 4
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 10
+        },
+        {
+          "skill": "Electronics",
+          "level": 7
+        }
+      ],
+      "tools_required": [ "wrench_set", "welding_torch_oxyacetylene", "multimeter_digital" ],
+      "time_to_craft": 800,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "lathe_tile",
+    "size": {
+      "width": 3,
+      "height": 1
+    },
+    "allowedTileTags": [ "floor", "indoors", "requires_power_grid" ],
+    "stationType": "machining_lathe",
+    "tags": [ "interactive", "crafting_station", "metalworking", "woodworking", "precision_work" ]
+  },
+  {
+    "id": "vehicle_assembly_station",
+    "name": "Vehicle Assembly Station",
+    "description": "A large, reinforced bay with hoists and tools for constructing and heavily modifying vehicles.",
+    "category": "crafting_station_advanced",
+    "components": [
+      {
+        "itemId": "steel_ingot",
+        "quantity": 20
+      },
+      {
+        "itemId": "concrete_mix_bag",
+        "quantity": 4
+      },
+      {
+        "itemId": "mechanical_parts_vehicle_grade",
+        "quantity": 8
+      },
+      {
+        "itemId": "motor_large_electric",
+        "quantity": 1
+      },
+      {
+        "itemId": "bolts_and_nuts_set",
+        "quantity": 10
+      }
+    ],
+    "recipe": {
+      "description": "Construct a vehicle assembly station.",
+      "components": [
+        {
+          "itemId": "steel_ingot",
+          "quantity": 20
+        },
+        {
+          "itemId": "concrete_mix_bag",
+          "quantity": 4
+        },
+        {
+          "itemId": "mechanical_parts_vehicle_grade",
+          "quantity": 8
+        },
+        {
+          "itemId": "motor_large_electric",
+          "quantity": 1
+        },
+        {
+          "itemId": "bolts_and_nuts_set",
+          "quantity": 10
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 12
+        },
+        {
+          "skill": "Electronics",
+          "level": 6
+        }
+      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "wrench_set", "concrete_mixer_small" ],
+      "time_to_craft": 2400,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "vehicle_bay_tile",
+    "size": {
+      "width": 4,
+      "height": 3
+    },
+    "allowedTileTags": [ "floor_reinforced", "indoors_large", "requires_power_grid" ],
+    "stationType": "vehicle_assembly",
+    "tags": [ "interactive", "crafting_station", "vehicle_crafting", "large_construction" ]
+  },
+  {
+    "id": "engine_assembly_jig",
+    "name": "Engine Assembly Jig",
+    "description": "A specialized jig for assembling and fine-tuning engines.",
+    "category": "crafting_station_advanced",
+    "components": [
+      {
+        "itemId": "workbench_basic_tile",
+        "quantity": 1
+      },
+      {
+        "itemId": "steel_ingot",
+        "quantity": 5
+      },
+      {
+        "itemId": "mechanical_parts_simple",
+        "quantity": 6
+      },
+      {
+        "itemId": "bolts_and_nuts_set",
+        "quantity": 3
+      }
+    ],
+    "recipe": {
+      "description": "Construct an engine assembly jig.",
+      "components": [
+        {
+          "itemId": "workbench_basic_tile",
+          "quantity": 1
+        },
+        {
+          "itemId": "steel_ingot",
+          "quantity": 5
+        },
+        {
+          "itemId": "mechanical_parts_simple",
+          "quantity": 6
+        },
+        {
+          "itemId": "bolts_and_nuts_set",
+          "quantity": 3
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 8
+        }
+      ],
+      "tools_required": [ "wrench_set", "hand_drill", "welding_torch_oxyacetylene" ],
+      "time_to_craft": 300,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "engine_jig_tile",
+    "size": {
+      "width": 2,
+      "height": 1
+    },
+    "allowedTileTags": [ "floor", "indoors" ],
+    "stationType": "engine_work",
+    "tags": [ "interactive", "crafting_station", "engine_crafting", "mechanical" ]
+  },
+  {
+    "id": "loom_simple",
+    "name": "Simple Loom",
+    "description": "A basic loom for weaving cloth from thread or fibers.",
+    "category": "crafting_station",
+    "components": [
+      {
+        "itemId": "wood_planks",
+        "quantity": 6
+      },
+      {
+        "itemId": "wood_stick",
+        "quantity": 4
+      },
+      {
+        "itemId": "cordage_basic_plant_fiber",
+        "quantity": 5
+      }
+    ],
+    "recipe": {
+      "description": "Construct a simple wooden loom.",
+      "components": [
+        {
+          "itemId": "wood_planks",
+          "quantity": 6
+        },
+        {
+          "itemId": "wood_stick",
+          "quantity": 4
+        },
+        {
+          "itemId": "cordage_basic_plant_fiber",
+          "quantity": 5
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "tools_required": [ "hand_saw_wood", "knife_melee" ],
+      "time_to_craft": 90,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "loom_tile",
+    "size": {
+      "width": 2,
+      "height": 1
+    },
+    "allowedTileTags": [ "floor", "indoors" ],
+    "stationType": "weaving",
+    "tags": [ "interactive", "crafting_station", "textile_work" ]
+  },
+  {
+    "id": "tanning_rack_simple",
+    "name": "Simple Tanning Rack",
+    "description": "A wooden frame for stretching hides during the tanning process.",
+    "category": "crafting_station",
+    "components": [
+      {
+        "itemId": "wood_log",
+        "quantity": 2
+      },
+      {
+        "itemId": "wood_stick",
+        "quantity": 4
+      },
+      {
+        "itemId": "cordage_basic_plant_fiber",
+        "quantity": 3
+      }
+    ],
+    "recipe": {
+      "description": "Construct a simple wooden tanning rack.",
+      "components": [
+        {
+          "itemId": "wood_log",
+          "quantity": 2
+        },
+        {
+          "itemId": "wood_stick",
+          "quantity": 4
+        },
+        {
+          "itemId": "cordage_basic_plant_fiber",
+          "quantity": 3
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 1
+        }
+      ],
+      "tools_required": [ "hand_saw_wood", "knife_melee" ],
+      "time_to_craft": 45,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "tanning_rack_tile",
+    "size": {
+      "width": 2,
+      "height": 1
+    },
+    "allowedTileTags": [ "ground", "outdoors_ok" ],
+    "stationType": "tanning",
+    "tags": [ "interactive", "crafting_station", "leather_work" ]
   }
 ]

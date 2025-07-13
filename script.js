@@ -36,8 +36,8 @@ const inventoryManager = new InventoryManager(gameState, assetManager);
 // const dialogueManager = new DialogueManager(gameState, assetManager); // dialogueManager is defined in js/dialogueManager.js
 // const faceGenerator = new FaceGenerator(gameState); // FaceGenerator is not a class; functionality is through global functions like initFaceCreator
 // const tooltip = new Tooltip(); // Tooltip.js exports functions directly, not a class
-const craftingManager = new CraftingManager(gameState, assetManager, inventoryManager, window.xpManager, TimeManager); // Use window.xpManager
-const constructionManager = new ConstructionManager(gameState, assetManager, inventoryManager, window.mapRenderer, TimeManager); // Use window.mapRenderer
+// const craftingManager = new CraftingManager(gameState, assetManager, inventoryManager, window.xpManager, TimeManager); // Instantiated later
+// const constructionManager = new ConstructionManager(gameState, assetManager, inventoryManager, window.mapRenderer, TimeManager); // Instantiated later
 // const factionManager = new FactionManager(gameState, assetManager); // factionManager is defined in js/factionManager.js
 const vehicleManager = new VehicleManager(gameState, assetManager, window.mapRenderer); // Use window.mapRenderer
 const trapManager = new TrapManager(gameState, assetManager, combatManager);
@@ -51,8 +51,8 @@ const proceduralQuestManager = new ProceduralQuestManager(gameState, assetManage
 
 // UI Managers (assuming they don't have complex cross-dependencies for instantiation here)
 // If they do, their instantiation might need to be adjusted or moved post-initialize of others.
-const CraftingUI = new CraftingUIManager(craftingManager, inventoryManager, assetManager, gameState);
-const ConstructionUI = new ConstructionUIManager(constructionManager, inventoryManager, assetManager, gameState, mapRenderer);
+// const CraftingUI = new CraftingUIManager(craftingManager, inventoryManager, assetManager, gameState); // Instantiated later
+// const ConstructionUI = new ConstructionUIManager(constructionManager, inventoryManager, assetManager, gameState, mapRenderer); // Instantiated later
 const VehicleModificationUI = new VehicleModificationUIManager(vehicleManager, inventoryManager, assetManager, gameState);
 // Ensure all managers are explicitly attached to window object
 window.assetManager = assetManager;
@@ -66,8 +66,8 @@ window.inventoryManager = inventoryManager;
 // window.dialogueManager = dialogueManager; // js/dialogueManager.js directly assigns to window.dialogueManager
 // window.faceGenerator = faceGenerator; // Removed as faceGenerator instantiation was removed
 // window.tooltip = tooltip; // Tooltip functions are already global via js/tooltip.js
-window.craftingManager = craftingManager;
-window.constructionManager = constructionManager;
+// window.craftingManager = craftingManager; // Instantiated and assigned later
+// window.constructionManager = constructionManager; // Instantiated and assigned later
 // window.factionManager = factionManager; // js/factionManager.js directly assigns to window.factionManager
 window.vehicleManager = vehicleManager;
 window.trapManager = trapManager;
@@ -78,8 +78,8 @@ window.companionManager = companionManager;
 window.npcManager = npcManager;
 window.dynamicEventManager = dynamicEventManager;
 window.proceduralQuestManager = proceduralQuestManager;
-window.CraftingUI = CraftingUI;
-window.ConstructionUI = ConstructionUI;
+// window.CraftingUI = CraftingUI; // This was causing an error as CraftingUI (const) is commented out. Correct assignment is in initialize().
+// window.ConstructionUI = ConstructionUI; // This was causing an error as ConstructionUI (const) is commented out. Correct assignment is in initialize().
 window.VehicleModificationUI = VehicleModificationUI;
 window.PLAYER_VISION_RADIUS_CONST = PLAYER_VISION_RADIUS_CONST;
 
@@ -1806,33 +1806,26 @@ async function initialize() { // Made async
 
         // CraftingManager
         console.log("SCRIPT.JS: Checking CraftingManager dependencies...");
-        console.log("SCRIPT.JS: typeof window.CraftingManager:", typeof window.CraftingManager);
-        console.log("SCRIPT.JS: typeof window.assetManager:", typeof window.assetManager, "isAvailable:", !!window.assetManager);
-        console.log("SCRIPT.JS: typeof window.inventoryManager:", typeof window.inventoryManager, "isAvailable:", !!window.inventoryManager);
-        console.log("SCRIPT.JS: typeof window.xpManager:", typeof window.xpManager, "isAvailable:", !!window.xpManager);
-        console.log("SCRIPT.JS: typeof window.TimeManager (class):", typeof window.TimeManager, "isAvailable:", !!window.TimeManager);
-
-
         if (window.CraftingManager && window.assetManager && window.inventoryManager && window.xpManager && window.TimeManager) {
+            // Instantiate ONCE, assign to window, then initialize
             window.craftingManager = new CraftingManager(window.gameState, window.assetManager, window.inventoryManager, window.xpManager, window.TimeManager);
             await window.craftingManager.initialize(); // This is async
-            logToConsole("CraftingManager instance created and initialized.", "info");
+            logToConsole("CraftingManager instance created, assigned to window, and initialized.", "info");
         } else {
-            console.error("SCRIPT.JS: CraftingManager or its core dependencies (AssetManager, InventoryManager, xpManager, TimeManager) not available for initialization.");
+            console.error("SCRIPT.JS: CraftingManager class or its core dependencies not available for initialization. Crafting will be broken.");
+            window.craftingManager = null; // Ensure it's null if not properly initialized
         }
 
         // ConstructionManager
         console.log("SCRIPT.JS: Checking ConstructionManager dependencies...");
-        console.log("SCRIPT.JS: typeof window.ConstructionManager:", typeof window.ConstructionManager);
-        // assetManager, inventoryManager, TimeManager already logged above
-        console.log("SCRIPT.JS: typeof window.mapManager:", typeof window.mapManager, "isAvailable:", !!window.mapManager); // Assuming mapManager is the one needed
-
         if (window.ConstructionManager && window.assetManager && window.inventoryManager && window.mapManager && window.TimeManager) {
+            // Instantiate ONCE, assign to window, then initialize
             window.constructionManager = new ConstructionManager(window.gameState, window.assetManager, window.inventoryManager, window.mapManager, window.TimeManager);
             await window.constructionManager.initialize(); // This is async
-            logToConsole("ConstructionManager instance created and initialized.", "info");
+            logToConsole("ConstructionManager instance created, assigned to window, and initialized.", "info");
         } else {
-            console.error("SCRIPT.JS: ConstructionManager or its core dependencies (AssetManager, InventoryManager, mapManager, TimeManager) not available for initialization.");
+            console.error("SCRIPT.JS: ConstructionManager class or its core dependencies not available for initialization. Construction will be broken.");
+            window.constructionManager = null; // Ensure it's null if not properly initialized
         }
 
         // TrapManager
@@ -1845,18 +1838,48 @@ async function initialize() { // Made async
         }
 
         // Initialize UIs (after their managers are ready)
-        if (window.CraftingUI && typeof window.CraftingUI.initialize === 'function') {
-            window.CraftingUI.initialize();
-            logToConsole("CraftingUI initialized.", "info");
+        // Ensure CraftingUI is instantiated AFTER window.craftingManager is initialized
+        console.log("SCRIPT.JS: Pre-CraftingUI instantiation check:");
+        console.log("SCRIPT.JS: typeof window.CraftingUIManager:", typeof window.CraftingUIManager);
+        console.log("SCRIPT.JS: window.CraftingUIManager (actual value):", window.CraftingUIManager);
+        console.log("SCRIPT.JS: typeof window.craftingManager:", typeof window.craftingManager);
+        console.log("SCRIPT.JS: window.craftingManager (actual value):", window.craftingManager);
+        console.log("SCRIPT.JS: window.craftingManager.recipes (if manager exists):", window.craftingManager ? window.craftingManager.recipes : "N/A");
+
+
+        if (window.CraftingUIManager && window.craftingManager && window.inventoryManager && window.assetManager && window.gameState) {
+            window.CraftingUI = new CraftingUIManager(window.craftingManager, window.inventoryManager, window.assetManager, window.gameState);
+            if (typeof window.CraftingUI.initialize === 'function') {
+                window.CraftingUI.initialize();
+                logToConsole("CraftingUI instance created and initialized.", "info");
+            } else {
+                console.warn("CraftingUI was instantiated, but its initialize function is missing.");
+            }
         } else {
-            console.warn("CraftingUI not available or initialize function missing.");
+            console.error("SCRIPT.JS: CraftingUIManager class or its dependencies (craftingManager, etc.) not available for CraftingUI instantiation.");
+            window.CraftingUI = null; // Ensure it's null if not properly initialized
         }
 
-        if (window.ConstructionUI && typeof window.ConstructionUI.initialize === 'function') {
-            window.ConstructionUI.initialize();
-            logToConsole("ConstructionUI initialized.", "info");
+        // Ensure ConstructionUI is instantiated AFTER window.constructionManager is initialized
+        console.log("SCRIPT.JS: Pre-ConstructionUI instantiation check:");
+        console.log("SCRIPT.JS: typeof window.ConstructionUIManager:", typeof window.ConstructionUIManager);
+        console.log("SCRIPT.JS: window.ConstructionUIManager (actual value):", window.ConstructionUIManager);
+        console.log("SCRIPT.JS: typeof window.constructionManager:", typeof window.constructionManager);
+        console.log("SCRIPT.JS: window.constructionManager (actual value):", window.constructionManager);
+        console.log("SCRIPT.JS: window.constructionManager.constructionDefinitions (if manager exists):", window.constructionManager ? Object.keys(window.constructionManager.constructionDefinitions).length : "N/A");
+
+
+        if (window.ConstructionUIManager && window.constructionManager && window.inventoryManager && window.assetManager && window.gameState && window.mapManager) {
+            window.ConstructionUI = new ConstructionUIManager(window.constructionManager, window.inventoryManager, window.assetManager, window.gameState, window.mapManager);
+            if (typeof window.ConstructionUI.initialize === 'function') {
+                window.ConstructionUI.initialize();
+                logToConsole("ConstructionUI instance created and initialized.", "info");
+            } else {
+                console.warn("ConstructionUI was instantiated, but its initialize function is missing.");
+            }
         } else {
-            console.warn("ConstructionUI not available or initialize function missing.");
+            console.error("SCRIPT.JS: ConstructionUIManager class or its dependencies not available for ConstructionUI instantiation.");
+            window.ConstructionUI = null; // Ensure it's null
         }
 
         // Other managers that were already instantiated globally can have their .initialize() called here if needed,

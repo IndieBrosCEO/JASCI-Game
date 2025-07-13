@@ -5,22 +5,29 @@
     "type": "chassis",
     "durability": 100,
     "weight": 150,
-    "craftingMaterials": [
-      {
-        "itemId": "metal_scraps",
-        "quantity": 50
-      },
-      {
-        "itemId": "mechanical_parts",
-        "quantity": 10
-      }
-    ],
-    "skillRequirements": [
-      {
-        "skillId": "Mechanics",
-        "level": 20
-      }
-    ],
+    "recipe": {
+      "description": "Weld and bolt together a small buggy chassis.",
+      "components": [
+        {
+          "itemId": "scrap_metal",
+          "quantity": 50
+        },
+        {
+          "itemId": "mechanical_parts_vehicle_grade",
+          "quantity": 10
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 20
+        }
+      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "wrench_set", "rivet_gun_manual" ],
+      "station_required": "vehicle_assembly_station",
+      "time_to_craft": 1200,
+      "batch_size": 1
+    },
     "slotPoints": {
       "engine": 1,
       "wheel": 4,
@@ -36,22 +43,33 @@
     "type": "engine",
     "durability": 50,
     "weight": 80,
-    "craftingMaterials": [
-      {
-        "itemId": "metal_scraps",
-        "quantity": 20
-      },
-      {
-        "itemId": "engine_components",
-        "quantity": 5
-      }
-    ],
-    "skillRequirements": [
-      {
-        "skillId": "Mechanics",
-        "level": 15
-      }
-    ],
+    "recipe": {
+      "description": "Assemble a basic V4 engine from a parts kit.",
+      "components": [
+        {
+          "itemId": "engine_parts_kit_v4",
+          "quantity": 1
+        },
+        {
+          "itemId": "scrap_metal",
+          "quantity": 10
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 15
+        },
+        {
+          "skill": "Electronics",
+          "level": 10
+        }
+      ],
+      "tools_required": [ "wrench_set", "screwdriver_set_multi", "precision_oil_can" ],
+      "station_required": "engine_assembly_jig",
+      "time_to_craft": 900,
+      "batch_size": 1
+    },
     "effects": {
       "power": 100,
       "fuelEfficiency": 0.1
@@ -64,22 +82,29 @@
     "type": "wheel",
     "durability": 30,
     "weight": 15,
-    "craftingMaterials": [
-      {
-        "itemId": "rubber_strips",
-        "quantity": 5
-      },
-      {
-        "itemId": "metal_scraps",
-        "quantity": 2
-      }
-    ],
-    "skillRequirements": [
-      {
-        "skillId": "Mechanics",
-        "level": 5
-      }
-    ],
+    "recipe": {
+      "description": "Assemble a standard wheel from rubber and a metal rim.",
+      "components": [
+        {
+          "itemId": "rubber_strips_or_chunks",
+          "quantity": 5
+        },
+        {
+          "itemId": "scrap_metal",
+          "quantity": 2
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "tools_required": [ "wrench_set", "tire_iron" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 40,
+      "batch_size": 1
+    },
     "effects": {
       "traction": 0.8
     }
@@ -90,18 +115,25 @@
     "type": "armor_light",
     "durability": 80,
     "weight": 40,
-    "craftingMaterials": [
-      {
-        "itemId": "steel_plates",
-        "quantity": 5
-      }
-    ],
-    "skillRequirements": [
-      {
-        "skillId": "Mechanics",
-        "level": 25
-      }
-    ],
+    "recipe": {
+      "description": "Forge and shape heavy steel armor plates for vehicles.",
+      "components": [
+        {
+          "itemId": "steel_plate_vehicle_grade",
+          "quantity": 5
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 25
+        }
+      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "blacksmith_hammer" ],
+      "station_required": "forge_advanced",
+      "time_to_craft": 300,
+      "batch_size": 1
+    },
     "effects": {
       "armorValue": 10
     }
@@ -112,22 +144,33 @@
     "type": "storage_small",
     "durability": 25,
     "weight": 10,
-    "craftingMaterials": [
-      {
-        "itemId": "wood_planks",
-        "quantity": 10
-      },
-      {
-        "itemId": "metal_scraps",
-        "quantity": 2
-      }
-    ],
-    "skillRequirements": [
-      {
-        "skillId": "Crafting",
-        "level": 10
-      }
-    ],
+    "recipe": {
+      "description": "Construct a small wooden storage box, reinforced with metal.",
+      "components": [
+        {
+          "itemId": "wood_planks",
+          "quantity": 10
+        },
+        {
+          "itemId": "scrap_metal",
+          "quantity": 2
+        },
+        {
+          "itemId": "nails",
+          "quantity": 20
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 10
+        }
+      ],
+      "tools_required": [ "hand_saw_wood", "hammer_peen", "metal_snips_heavy" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 90,
+      "batch_size": 1
+    },
     "effects": {
       "cargoCapacity": 10
     }
@@ -138,22 +181,33 @@
     "type": "utility_small",
     "durability": 40,
     "weight": 25,
-    "craftingMaterials": [
-      {
-        "itemId": "metal_scraps",
-        "quantity": 15
-      },
-      {
-        "itemId": "mechanical_parts",
-        "quantity": 5
-      }
-    ],
-    "skillRequirements": [
-      {
-        "skillId": "Mechanics",
-        "level": 30
-      }
-    ],
+    "recipe": {
+      "description": "Fabricate a light turret mount for vehicles.",
+      "components": [
+        {
+          "itemId": "steel_ingot",
+          "quantity": 3
+        },
+        {
+          "itemId": "mechanical_parts_vehicle_grade",
+          "quantity": 3
+        },
+        {
+          "itemId": "gears_assorted",
+          "quantity": 5
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 30
+        }
+      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "wrench_set", "hand_drill" ],
+      "station_required": "machine_shop_lathe",
+      "time_to_craft": 400,
+      "batch_size": 1
+    },
     "effects": {
       "allowsWeaponMount": "light_ranged"
     }
@@ -164,22 +218,37 @@
     "type": "utility_small",
     "durability": 15,
     "weight": 5,
-    "craftingMaterials": [
-      {
-        "itemId": "electronics_scrap",
-        "quantity": 5
-      },
-      {
-        "itemId": "glass_shards",
-        "quantity": 2
-      }
-    ],
-    "skillRequirements": [
-      {
-        "skillId": "Electronics",
-        "level": 10
-      }
-    ],
+    "recipe": {
+      "description": "Assemble a pair of basic vehicle headlights.",
+      "components": [
+        {
+          "itemId": "electronics_scrap",
+          "quantity": 5
+        },
+        {
+          "itemId": "lens_crude_glass",
+          "quantity": 2
+        },
+        {
+          "itemId": "plastic_casing_small_device",
+          "quantity": 2
+        },
+        {
+          "itemId": "wire_insulated_thin",
+          "quantity": 4
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 10
+        }
+      ],
+      "tools_required": [ "soldering_iron_kit", "screwdriver_set_multi" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
     "effects": {
       "providesLight": true
     }

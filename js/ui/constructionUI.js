@@ -126,47 +126,64 @@ class ConstructionUIManager {
     }
 
     renderBuildableList() {
-        logToConsole(`${this.logPrefix}.renderBuildableList() called.`, "debug");
+        // logToConsole(`${this.logPrefix}.renderBuildableList() called.`, "debug");
         if (!this.dom.buildableList || !this.constructionManager) {
             logToConsole(`${this.logPrefix}.renderBuildableList() - buildableList DOM or constructionManager missing.`, "error");
             return;
         }
         this.dom.buildableList.innerHTML = '';
 
-        const allDefinitions = this.constructionManager.getBuildableList();
-        logToConsole(`${this.logPrefix}.renderBuildableList() - Received ${allDefinitions.length} total definitions from manager.`, "debug");
+        // Get ALL construction definitions with their skill status
+        let allDefinitionsWithSkillStatus = [];
+        if (this.constructionManager && typeof this.constructionManager.getAllConstructionDefinitionsWithStatus === 'function') {
+            allDefinitionsWithSkillStatus = this.constructionManager.getAllConstructionDefinitionsWithStatus();
+            logToConsole(`${this.logPrefix}.renderBuildableList() - Received from manager (count: ${allDefinitionsWithSkillStatus.length}):`, JSON.parse(JSON.stringify(allDefinitionsWithSkillStatus)));
+        } else {
+            logToConsole(`${this.logPrefix}.renderBuildableList() - constructionManager or getAllConstructionDefinitionsWithStatus method missing.`, "error");
+        }
 
-        const itemsInCategory = allDefinitions.filter(def =>
-            !this.selectedCategory || def.category === this.selectedCategory || (this.selectedCategory === "uncategorized" && !def.category)
+        const itemsInCategory = allDefinitionsWithSkillStatus.filter(def =>
+            def && (!this.selectedCategory || def.category === this.selectedCategory || (this.selectedCategory === "uncategorized" && !def.category))
         );
 
-        logToConsole(`${this.logPrefix}.renderBuildableList() - Filtered to ${itemsInCategory.length} items for category: ${this.selectedCategory || 'All'}.`, "debug");
+        logToConsole(`${this.logPrefix}.renderBuildableList() - Filtered to itemsInCategory (count: ${itemsInCategory.length}) for category: ${this.selectedCategory || 'All'}.`, "debug", JSON.parse(JSON.stringify(itemsInCategory)));
 
-        if (itemsInCategory.length === 0 && allDefinitions.length > 0) {
+        if (itemsInCategory.length === 0 && allDefinitionsWithSkillStatus.length > 0) {
             this.dom.buildableList.innerHTML = '<li>No items in this category.</li>';
+            this.clearDetail();
+            this.dom.selectButton.disabled = true;
             return;
         }
-        if (allDefinitions.length === 0) {
+        if (allDefinitionsWithSkillStatus.length === 0) {
             this.dom.buildableList.innerHTML = '<li>No construction definitions loaded.</li>';
+            this.clearDetail();
+            this.dom.selectButton.disabled = true;
             return;
         }
 
         itemsInCategory.forEach(def => {
             const li = document.createElement('li');
+            // Now check full buildability (skills + components)
             const canCurrentlyBuild = this.constructionManager.canBuild(def.id);
 
             li.textContent = def.name;
             li.dataset.constructionId = def.id;
+            li.style.cursor = "pointer";
+
 
             if (!canCurrentlyBuild) {
-                li.classList.add('cannot-build');
+                li.classList.add('cannot-build'); // This class should make it appear grayed out
+                // The title will provide more specific reasons on hover.
                 if (!def.meetsSkillReqs) {
                     li.title = "Skill requirements not met.";
                 } else {
+                    // If skills are met, it must be missing components (or potentially placement, but that's not checked here)
                     li.title = "Missing required components.";
                 }
             } else {
-                li.title = "Can build this item.";
+                li.title = "You can build this.";
+                // Potentially add a 'can-build' class if specific styling for available items is needed beyond default.
+                // li.classList.add('can-build');
             }
 
             li.addEventListener('click', () => {
@@ -278,3 +295,16 @@ class ConstructionUIManager {
 // Removed: window.ConstructionUI = ConstructionUI;
 // Initialization will be handled by script.js creating an instance of ConstructionUIManager
 // and assigning it to window.ConstructionUI there.
+
+// --- BEGIN TEMPORARY DEBUGGING ---
+try {
+    if (typeof ConstructionUIManager !== 'undefined') {
+        window.ConstructionUIManager = ConstructionUIManager;
+        console.log('[ConstructionUIManager DEBUG] Successfully assigned ConstructionUIManager class to window.ConstructionUIManager.');
+    } else {
+        console.error('[ConstructionUIManager DEBUG] ConstructionUIManager class name is undefined at point of explicit window assignment.');
+    }
+} catch (e) {
+    console.error('[ConstructionUIManager DEBUG] Error during explicit window assignment:', e);
+}
+// --- END TEMPORARY DEBUGGING ---

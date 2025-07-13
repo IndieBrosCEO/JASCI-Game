@@ -16,7 +16,38 @@
     ],
     "damage": "4d6",
     "damageType": "Concussion",
-    "burstRadiusFt": 10
+    "burstRadiusFt": 10,
+    "recipe": {
+      "id": "c4_semtex_explosive",
+      "description": "Synthesize and form a block of C4/Semtex plastic explosive. Extremely dangerous.",
+      "components": [
+        {
+          "itemId": "explosive_compound_generic_b",
+          "quantity": 3
+        },
+        {
+          "itemId": "plastic_scrap_processed",
+          "quantity": 1
+        },
+        {
+          "itemId": "wire_insulated_thin",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Explosives",
+          "level": 8
+        },
+        {
+          "skill": "Electronics",
+          "level": 4
+        }
+      ],
+      "station_required": "munitions_bench",
+      "time_to_craft": 60,
+      "batch_size": 1
+    }
   },
   {
     "id": "det_cord_explosive",
@@ -54,7 +85,38 @@
     ],
     "damage": "2d6",
     "damageType": "Concussion",
-    "burstRadiusFt": 5
+    "burstRadiusFt": 5,
+    "recipe": {
+      "id": "dynamite_explosive",
+      "description": "Craft sticks of dynamite.",
+      "components": [
+        {
+          "itemId": "gunpowder_basic",
+          "quantity": 5
+        },
+        {
+          "itemId": "chemical_reagent_saltpeter",
+          "quantity": 2
+        },
+        {
+          "itemId": "cloth_sheet_rough_fiber",
+          "quantity": 1
+        },
+        {
+          "itemId": "thread_simple_plant_fiber",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Explosives",
+          "level": 5
+        }
+      ],
+      "station_required": "munitions_bench",
+      "time_to_craft": 30,
+      "batch_size": 1
+    }
   },
   {
     "id": "bandage",
@@ -73,6 +135,28 @@
     "effects": {
       "health": 10,
       "stopBleeding": true
+    },
+    "recipe": {
+      "id": "bandage",
+      "description": "Craft a more effective bandage with some antiseptic properties.",
+      "components": [
+        {
+          "itemId": "cloth_scrap",
+          "quantity": 3
+        },
+        {
+          "itemId": "antiseptic_herbal_pulp",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Medicine",
+          "level": 2
+        }
+      ],
+      "time_to_craft": 8,
+      "batch_size": 1
     }
   },
   {
@@ -92,6 +176,37 @@
     "effects": {
       "health": 50,
       "stopBleeding": true
+    },
+    "recipe": {
+      "id": "first_aid_kit",
+      "description": "Assemble a first-aid kit with various medical supplies.",
+      "components": [
+        {
+          "itemId": "bandage",
+          "quantity": 2
+        },
+        {
+          "itemId": "antiseptic_herbal_pulp",
+          "quantity": 2
+        },
+        {
+          "itemId": "splint_wood_simple",
+          "quantity": 1
+        },
+        {
+          "itemId": "cloth_scrap",
+          "quantity": 3
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Medicine",
+          "level": 4
+        }
+      ],
+      "tools_required": [ "sewing_kit_basic" ],
+      "time_to_craft": 40,
+      "batch_size": 1
     }
   },
   {
@@ -204,6 +319,30 @@
     ],
     "effects": {
       "purifyWater": 1
+    },
+    "recipe": {
+      "id": "water_purification_tablets",
+      "description": "Create water purification tablets from iodine and a filler.",
+      "components": [
+        {
+          "itemId": "iodine_crystals",
+          "quantity": 1
+        },
+        {
+          "itemId": "charcoal_bits",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 4
+        }
+      ],
+      "tools_required": [ "mortar_pestle" ],
+      "station_required": "chemistry_set_tile",
+      "time_to_craft": 15,
+      "batch_size": 10
     }
   },
   {
@@ -323,7 +462,39 @@
       "durationHours": 2,
       "sootheBurn": true
     },
-    "doses": 5
+    "doses": 5,
+    "recipe": {
+      "id": "herbal_salve_healing",
+      "description": "Create a healing salve from medicinal herbs and a base.",
+      "components": [
+        {
+          "itemId": "medicinal_herb_comfrey",
+          "quantity": 3
+        },
+        {
+          "itemId": "animal_fat_rendered",
+          "quantity": 1
+        },
+        {
+          "itemId": "cloth_scrap",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 3
+        },
+        {
+          "skill": "Medicine",
+          "level": 2
+        }
+      ],
+      "tools_required": [ "mortar_pestle" ],
+      "station_required": "campfire_basic_tile",
+      "time_to_craft": 20,
+      "batch_size": 1
+    }
   },
   {
     "id": "chemical_reagent_generic",
@@ -366,7 +537,34 @@
     "weightLbs": 0.3,
     "tags": [ "consumable", "crafting", "ink", "scribe", "archivist", "cartographer", "writer" ],
     "effects": { "resource_ink": 100 },
-    "color": "black"
+    "color": "black",
+    "recipe": {
+      "id": "ink_pot_black",
+      "description": "Mix soot and a binder to create black ink.",
+      "components": [
+        {
+          "itemId": "charcoal_bits",
+          "quantity": 5
+        },
+        {
+          "itemId": "water_clean_item",
+          "quantity": 1
+        },
+        {
+          "itemId": "adhesive_paste_basic",
+          "quantity": 1
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 1
+        }
+      ],
+      "tools_required": [ "mortar_pestle" ],
+      "time_to_craft": 10,
+      "batch_size": 1
+    }
   },
   {
     "id": "parchment_roll_blank",
@@ -378,7 +576,35 @@
     "size": 1,
     "weightLbs": 0.5,
     "tags": [ "consumable", "crafting", "paper", "scribe", "archivist", "cartographer", "historian" ],
-    "effects": { "resource_writing_surface": 50 }
+    "effects": { "resource_writing_surface": 50 },
+    "recipe": {
+      "id": "parchment_roll_blank",
+      "description": "Prepare animal hides to create a roll of parchment.",
+      "components": [
+        {
+          "itemId": "animal_hide_fine",
+          "quantity": 2
+        },
+        {
+          "itemId": "lime_solution_basic",
+          "quantity": 1
+        },
+        {
+          "itemId": "water_clean_item",
+          "quantity": 2
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 4
+        }
+      ],
+      "tools_required": [ "tanning_knife", "scraper_tool_blunt" ],
+      "station_required": "tanning_rack_simple",
+      "time_to_craft": 240,
+      "batch_size": 1
+    }
   },
   {
     "id": "incense_sticks_sandalwood",
@@ -433,16 +659,22 @@
     "color": "white",
     "tags": [ "medical", "healing", "consumable", "first_aid" ],
     "recipe": {
+      "id": "bandage_simple",
+      "description": "Craft a simple bandage from cloth scraps.",
       "components": [
         {
           "itemId": "cloth_scrap",
           "quantity": 2
         }
       ],
-      "skillRequired": "first_aid",
-      "skillLevelRequired": 1,
-      "timeToCraft": 5,
-      "xpAward": 2
+      "skills_required": [
+        {
+          "skill": "Medicine",
+          "level": 1
+        }
+      ],
+      "time_to_craft": 5,
+      "batch_size": 1
     }
   }
 ]

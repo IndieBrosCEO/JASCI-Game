@@ -14,7 +14,38 @@
       "rifle"
     ],
     "ammoType": "5.56mm",
-    "quantity": 30
+    "quantity": 30,
+    "recipe": {
+      "id": "ammo_556mm",
+      "description": "Reload 5.56mm rifle cartridges.",
+      "components": [
+        {
+          "itemId": "casing_brass_rifle_small",
+          "quantity": 10
+        },
+        {
+          "itemId": "primer_rifle_small",
+          "quantity": 10
+        },
+        {
+          "itemId": "gunpowder_basic",
+          "quantity": 3
+        },
+        {
+          "itemId": "bullet_projectile_5_56mm",
+          "quantity": 10
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 3
+        }
+      ],
+      "station_required": "reloading_bench",
+      "time_to_craft": 20,
+      "batch_size": 10
+    }
   },
   {
     "id": "ammo_762mm",
@@ -102,7 +133,39 @@
       "smg"
     ],
     "ammoType": "9mm",
-    "quantity": 50
+    "quantity": 50,
+    "recipe": {
+      "id": "ammo_9mm",
+      "description": "Reload 9mm pistol cartridges.",
+      "components": [
+        {
+          "itemId": "casing_brass_pistol_small",
+          "quantity": 10
+        },
+        {
+          "itemId": "primer_pistol_small",
+          "quantity": 10
+        },
+        {
+          "itemId": "gunpowder_basic",
+          "quantity": 2
+        },
+        {
+          "itemId": "bullet_projectile_9mm",
+          "quantity": 10
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 2
+        }
+      ],
+      "tools_required": [ "hand_reloader_tool" ],
+      "station_required": "reloading_bench",
+      "time_to_craft": 15,
+      "batch_size": 10
+    }
   },
   {
     "id": "ammo_10mm",
@@ -273,7 +336,43 @@
       "shotgun"
     ],
     "ammoType": "12gauge_buckshot",
-    "quantity": 10
+    "quantity": 10,
+    "recipe": {
+      "id": "ammo_12gauge_buckshot",
+      "description": "Reload 12-gauge buckshot shells.",
+      "components": [
+        {
+          "itemId": "shotshell_hull_12ga",
+          "quantity": 5
+        },
+        {
+          "itemId": "primer_shotgun",
+          "quantity": 5
+        },
+        {
+          "itemId": "gunpowder_basic",
+          "quantity": 2
+        },
+        {
+          "itemId": "shot_lead_pellets_buckshot",
+          "quantity": 5
+        },
+        {
+          "itemId": "wad_shotgun",
+          "quantity": 5
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 1
+        }
+      ],
+      "tools_required": [ "shotshell_press_basic" ],
+      "station_required": "reloading_bench",
+      "time_to_craft": 10,
+      "batch_size": 5
+    }
   },
   {
     "id": "ammo_arrow",
@@ -290,7 +389,33 @@
       "ranged"
     ],
     "ammoType": "arrow",
-    "quantity": 12
+    "quantity": 12,
+    "recipe": {
+      "id": "ammo_arrow",
+      "description": "Craft basic arrows from wood, feathers, and crude stone heads.",
+      "components": [
+        {
+          "itemId": "arrow_shaft_wood",
+          "quantity": 3
+        },
+        {
+          "itemId": "feather",
+          "quantity": 6
+        },
+        {
+          "itemId": "arrowhead_stone_crude",
+          "quantity": 3
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 1
+        }
+      ],
+      "time_to_craft": 10,
+      "batch_size": 3
+    }
   },
   {
     "id": "ammo_crossbow_bolt",
@@ -307,7 +432,33 @@
       "ranged"
     ],
     "ammoType": "crossbow_bolt",
-    "quantity": 12
+    "quantity": 12,
+    "recipe": {
+      "id": "ammo_crossbow_bolt",
+      "description": "Craft sturdy crossbow bolts with metal heads.",
+      "components": [
+        {
+          "itemId": "arrow_shaft_sturdy_wood",
+          "quantity": 3
+        },
+        {
+          "itemId": "feather",
+          "quantity": 6
+        },
+        {
+          "itemId": "bolthead_metal_basic",
+          "quantity": 3
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 2
+        }
+      ],
+      "time_to_craft": 15,
+      "batch_size": 3
+    }
   },
   {
     "id": "ammo_40mm_grenade_frag",
@@ -329,6 +480,41 @@
     "quantity": 1,
     "damage": "3d6",
     "damageType": "Slashing",
-    "burstRadiusFt": 10
+    "burstRadiusFt": 10,
+    "recipe": {
+      "id": "ammo_40mm_grenade_frag",
+      "description": "Assemble a 40mm fragmentation grenade.",
+      "components": [
+        {
+          "itemId": "casing_grenade_40mm_metal",
+          "quantity": 1
+        },
+        {
+          "itemId": "fuze_timed_impact_grenade",
+          "quantity": 1
+        },
+        {
+          "itemId": "explosive_compound_generic_b",
+          "quantity": 2
+        },
+        {
+          "itemId": "metal_bits_small",
+          "quantity": 10
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Explosives",
+          "level": 6
+        },
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "station_required": "munitions_bench",
+      "time_to_craft": 40,
+      "batch_size": 1
+    }
   }
 ]

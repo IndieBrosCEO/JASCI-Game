@@ -1679,6 +1679,7 @@
     "damage": "1d6",
     "damageType": "Bludgeoning",
     "recipe": {
+      "description": "Fashion a crude club from a stick and some cloth for grip.",
       "components": [
         {
           "itemId": "wood_stick",
@@ -1689,10 +1690,14 @@
           "quantity": 1
         }
       ],
-      "skillRequired": "crafting_basic",
-      "skillLevelRequired": 0,
-      "timeToCraft": 10,
-      "xpAward": 5
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 0
+        }
+      ],
+      "time_to_craft": 10,
+      "batch_size": 1
     }
   },
   {

@@ -68,6 +68,7 @@
         this.dynamicEventTemplates = {}; // New property for dynamic event templates
         this.proceduralQuestTemplates = {}; // New property for procedural quest templates
         this.trapDefinitionsData = {}; // New property for trap definitions
+        this.constructionDefinitions = {}; // New property for construction definitions
         let tempItemsById = {};
 
         // Updated to load from new categorized item files
@@ -85,7 +86,8 @@
             'vehicle_templates.json',
             'dynamic_event_templates.json',
             'procedural_quest_templates.json',
-            'traps.json' // Added traps.json
+            'traps.json', // Added traps.json
+            'constructions.json' // Added constructions.json
         ];
 
         for (const filename of definitionFiles) {
@@ -142,6 +144,14 @@
                         logToConsole(`AssetManager: Loaded ${Object.keys(this.trapDefinitionsData).length} trap definitions from array.`);
                     } else {
                         console.warn(`AssetManager: Expected object or array from traps.json, but got ${typeof parsedJson}. Skipping file.`);
+                    }
+                } else if (filename === 'constructions.json') {
+                    if (Array.isArray(parsedJson)) {
+                        this.constructionDefinitions = Object.fromEntries(parsedJson.map(def => [def.id, def]));
+                        console.log(`AssetManager: Loaded ${Object.keys(this.constructionDefinitions).length} construction definitions.`);
+                    } else {
+                        console.warn(`AssetManager: Expected array from constructions.json, but got ${typeof parsedJson}. Skipping file.`);
+                        this.constructionDefinitions = {}; // Ensure it's an empty object on failure
                     }
                 } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json'].includes(filename)) {
                     // All new item files are arrays of items

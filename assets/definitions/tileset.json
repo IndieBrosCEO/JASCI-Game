@@ -1395,5 +1395,138 @@
     "target_dz": 1,
     "z_cost": 1,
     "description": "A sturdy ladder allowing travel between Z-levels. Can be climbed up or down."
+  },
+  "workbench_basic_tile": {
+    "sprite": "W",
+    "name": "Basic Workbench",
+    "color": "#DEB887",
+    "tags": [ "interactive", "crafting_station", "workbench_general", "building", "furniture", "middle", "impassable" ],
+    "description": "A sturdy table for basic crafting and repairs.",
+    "stationType": "workbench_general"
+  },
+  "forge_simple_tile": {
+    "sprite": "F",
+    "name": "Simple Forge",
+    "color": "#FF4500",
+    "tags": [ "interactive", "crafting_station", "forge", "building", "furniture", "middle", "impassable", "heat_source_small" ],
+    "description": "A rudimentary forge for working with metals.",
+    "stationType": "forge",
+    "emitsLight": true,
+    "lightColor": "#FFA500",
+    "lightRadius": 3,
+    "lightIntensity": 0.7
+  },
+  "chemistry_set_tile": {
+    "sprite": "C",
+    "name": "Chemistry Set",
+    "color": "#ADD8E6",
+    "tags": [ "interactive", "crafting_station", "chemistry_bench", "building", "furniture", "middle", "impassable" ],
+    "description": "Allows for basic chemical reactions and crafting.",
+    "stationType": "chemistry_bench"
+  },
+  "campfire_basic_tile": {
+    "sprite": "c",
+    "name": "Basic Campfire",
+    "color": "#FF8C00",
+    "tags": [ "interactive", "crafting_station", "heat_source_small", "cooking_station", "light_source", "natural_structure", "middle" ],
+    "description": "A simple campfire for warmth, light, and basic cooking.",
+    "stationType": "campfire_cooking",
+    "emitsLight": true,
+    "lightColor": "#FFA500",
+    "lightRadius": 4,
+    "lightIntensity": 0.8
+  },
+  "reloading_bench_tile": {
+    "sprite": "R",
+    "name": "Reloading Bench",
+    "color": "#A0522D",
+    "tags": [ "interactive", "crafting_station", "reloading_general", "building", "furniture", "middle", "impassable", "gunsmithing" ],
+    "description": "A sturdy bench equipped with presses and measures for reloading ammunition.",
+    "stationType": "reloading_general"
+  },
+  "munitions_bench_tile": {
+    "sprite": "M",
+    "name": "Munitions Crafting Bench",
+    "color": "#556B2F",
+    "tags": [ "interactive", "crafting_station", "munitions_assembly", "building", "furniture", "middle", "impassable", "explosives_work" ],
+    "description": "A specialized workbench for safely assembling explosives and advanced ammunition.",
+    "stationType": "munitions_assembly"
+  },
+  "armor_jig_tile": {
+    "sprite": "A",
+    "name": "Armor Crafting Jig",
+    "color": "#708090",
+    "tags": [ "interactive", "crafting_station", "armor_station", "building", "furniture", "middle", "impassable", "armor_crafting" ],
+    "description": "A specialized jig for working with heavy armor components.",
+    "stationType": "armor_station"
+  },
+  "lathe_tile": {
+    "sprite": "L",
+    "name": "Machine Shop Lathe",
+    "color": "#B0C4DE",
+    "tags": [ "interactive", "crafting_station", "machining_lathe", "building", "furniture", "middle", "impassable", "requires_power_grid", "metalworking", "precision_work" ],
+    "description": "A machine tool for shaping metal or wood.",
+    "stationType": "machining_lathe"
+  },
+  "vehicle_bay_tile": {
+    "sprite": "V",
+    "name": "Vehicle Assembly Bay",
+    "color": "#696969",
+    "tags": [ "interactive", "crafting_station", "vehicle_assembly", "building", "furniture", "middle", "impassable", "requires_power_grid", "large_construction" ],
+    "description": "A large bay for constructing and modifying vehicles.",
+    "stationType": "vehicle_assembly"
+  },
+  "engine_jig_tile": {
+    "sprite": "E",
+    "name": "Engine Assembly Jig",
+    "color": "#778899",
+    "tags": [ "interactive", "crafting_station", "engine_work", "building", "furniture", "middle", "impassable", "mechanical" ],
+    "description": "A specialized jig for assembling engines.",
+    "stationType": "engine_work"
+  },
+  "loom_tile": {
+    "sprite": "H",
+    "name": "Simple Loom",
+    "color": "#D2B48C",
+    "tags": [ "interactive", "crafting_station", "weaving", "building", "furniture", "middle", "impassable", "textile_work" ],
+    "description": "A basic loom for weaving cloth.",
+    "stationType": "weaving"
+  },
+  "tanning_rack_tile": {
+    "sprite": "T",
+    "name": "Simple Tanning Rack",
+    "color": "#8B4513",
+    "tags": [ "interactive", "crafting_station", "tanning", "building", "furniture", "middle", "impassable", "leather_work" ],
+    "description": "A wooden frame for stretching hides.",
+    "stationType": "tanning"
+  },
+  "trap_tripwire_set_tile": {
+    "sprite": "/",
+    "name": "Set Tripwire",
+    "color": "#FF0000",
+    "tags": [ "trap_visible", "interactive", "bottom" ],
+    "description": "A nearly invisible tripwire has been set here."
+  },
+  "floor_stone_plate_hidden": {
+    "sprite": ".",
+    "name": "Stone Floor (Hidden Plate)",
+    "color": "#A9A9A9",
+    "tags": [ "floor", "building", "bottom", "trap_concealing" ],
+    "description": "A stone floor tile. Something seems off about this one."
+  },
+  "trap_spikes_hidden_map_tile": {
+    "sprite": ".",
+    "name": "Dirt Floor (Hidden Spikes)",
+    "color": "#A52A2A",
+    "tags": [ "floor", "landscape", "bottom", "trap_concealing" ],
+    "description": "A patch of dirt. The ground feels uneven."
+  },
+  "electronics_bench_adv_tile": {
+    "sprite": "e",
+    "name": "Advanced Electronics Bench",
+    "color": "#AFEEEE",
+    "tags": [ "interactive", "crafting_station", "electronics_advanced", "building", "furniture", "middle", "impassable", "requires_power_grid" ],
+    "description": "A bench with specialized tools for complex electronics work.",
+    "stationType": "electronics_advanced"
   }
 }
