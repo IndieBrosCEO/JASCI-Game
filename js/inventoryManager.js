@@ -68,7 +68,7 @@ class InventoryManager {
             // Default to "Body Pockets", size 'S'. Capacity updated later by startGame based on Strength.
             this.gameState.inventory.container = new InventoryContainer("Body Pockets", "S");
         }
-        logToConsole(`${this.logPrefix} Initialized. Player inventory container is:`, this.gameState.inventory.container);
+        logToConsole(`${this.logPrefix} Initialized. Player inventory container is:`, 'blue', 'dev');
     }
 
     countItems(itemId, inventoryItems) {
@@ -116,17 +116,17 @@ class InventoryManager {
 
     addItemToInventory(itemToAddInstance, quantity, inventoryItems, maxSlots) {
         if (!itemToAddInstance || !itemToAddInstance.id || quantity <= 0) {
-            logToConsole(`${this.logPrefix} addItemToInventory: Invalid item or quantity.`, "warn", { itemToAddInstance, quantity });
+            logToConsole(`${this.logPrefix} addItemToInventory: Invalid item or quantity.`, "warn", "dev");
             return false;
         }
         if (!inventoryItems || !Array.isArray(inventoryItems)) {
-            logToConsole(`${this.logPrefix} addItemToInventory: inventoryItems is not a valid array.`, "error");
+            logToConsole(`${this.logPrefix} addItemToInventory: inventoryItems is not a valid array.`, "error", "dev");
             return false;
         }
 
         const itemDef = this.assetManager ? this.assetManager.getItem(itemToAddInstance.id) : itemToAddInstance;
         if (!itemDef) {
-            logToConsole(`${this.logPrefix} addItemToInventory: Item definition not found for ID ${itemToAddInstance.id}.`, "error");
+            logToConsole(`${this.logPrefix} addItemToInventory: Item definition not found for ID ${itemToAddInstance.id}.`, "error", "dev");
             return false;
         }
         const isStackable = itemDef.stackable || false;
@@ -166,12 +166,12 @@ class InventoryManager {
 
     addItemToInventoryById(itemId, quantity) {
         if (!this.gameState.inventory.container) {
-            logToConsole(`${this.logPrefix} Main inventory container not initialized. Cannot add item by ID.`, "error");
+            logToConsole(`${this.logPrefix} Main inventory container not initialized. Cannot add item by ID.`, "error", "dev");
             return false;
         }
         const itemDef = this.assetManager.getItem(itemId);
         if (!itemDef) {
-            logToConsole(`${this.logPrefix} Item definition not found for ID: ${itemId}`, "error");
+            logToConsole(`${this.logPrefix} Item definition not found for ID: ${itemId}`, "error", "dev");
             return false;
         }
         const itemInstance = new Item(itemDef); // Create instance from definition
@@ -181,13 +181,13 @@ class InventoryManager {
 
     applyMod(weaponItemInstance, modItemInstance, targetSlotType) {
         if (!weaponItemInstance || !modItemInstance || !targetSlotType) {
-            logToConsole(`${this.logPrefix}.applyMod] Invalid arguments.`, "red");
+            logToConsole(`${this.logPrefix}.applyMod] Invalid arguments.`, "red", "dev");
             return false;
         }
         const weaponDef = this.assetManager.getItem(weaponItemInstance.id);
         const modDef = this.assetManager.getItem(modItemInstance.id);
         if (!weaponDef || !modDef) {
-            logToConsole(`[${this.logPrefix}.applyMod] Weapon or Mod definition not found.`, "red");
+            logToConsole(`[${this.logPrefix}.applyMod] Weapon or Mod definition not found.`, "red", "dev");
             return false;
         }
         if (!weaponItemInstance.modSlots) weaponItemInstance.modSlots = weaponDef.modSlots ? [...weaponDef.modSlots] : [];
@@ -261,6 +261,23 @@ class InventoryManager {
         }
     }
 
+    handleScroll(event) {
+        if (!this.gameState.inventory.open) return;
+
+        const delta = Math.sign(event.deltaY);
+
+        if (delta > 0) {
+            // Scroll down
+            this.gameState.inventory.cursor = Math.min(this.gameState.inventory.cursor + 1, this.gameState.inventory.currentlyDisplayedItems.length - 1);
+        } else {
+            // Scroll up
+            this.gameState.inventory.cursor = Math.max(this.gameState.inventory.cursor - 1, 0);
+        }
+
+        this.renderInventoryMenu();
+        event.preventDefault();
+    }
+
     removeModStatEffects(weaponItemInstance, modId) {
         const modDef = this.assetManager.getItem(modId);
         if (!modDef || !modDef.effects) return;
@@ -311,7 +328,7 @@ class InventoryManager {
     // addItem uses this.addItemToInventory which uses this.assetManager
     addItem(itemInstance) {
         if (!this.gameState.inventory.container) {
-            logToConsole(`${this.logPrefix} Inventory container not initialized. Cannot add item.`, "error");
+            logToConsole(`${this.logPrefix} Inventory container not initialized. Cannot add item.`, "error", "dev");
             return false;
         }
         const quantityToAdd = itemInstance.quantity || 1;
@@ -329,7 +346,7 @@ class InventoryManager {
 
     removeItem(itemIdOrName, quantity = 1) {
         if (!this.gameState.inventory.container) {
-            logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error");
+            logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error", "dev");
             return null;
         }
         const inv = this.gameState.inventory.container.items;
@@ -361,7 +378,7 @@ class InventoryManager {
         const itemDefToDrop = this.removeItem(itemName, 1);
         if (itemDefToDrop) {
             if (!this.gameState.playerPos || typeof this.gameState.playerPos.x === 'undefined' || typeof this.gameState.playerPos.y === 'undefined') {
-                logToConsole("Cannot drop item: Player position is unknown.", "error");
+                logToConsole("Cannot drop item: Player position is unknown.", "error", "dev");
                 this.addItem(new Item(itemDefToDrop)); // Try to add back
                 return false;
             }
@@ -386,7 +403,7 @@ class InventoryManager {
 
     equipItem(itemName, handIndex) {
         if (!this.gameState.inventory.container) {
-            logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error"); return;
+            logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error", "dev"); return;
         }
         const inv = this.gameState.inventory.container.items;
         const itemIndex = inv.findIndex(i => i.name === itemName);
@@ -417,13 +434,13 @@ class InventoryManager {
                 window.combatManager.populateWeaponSelect();
             }
         } else {
-            logToConsole(`Failed to remove ${item.name} from inventory during equip.`, "error");
+            logToConsole(`Failed to remove ${item.name} from inventory during equip.`, "error", "dev");
         }
     }
 
     unequipItem(handIndex) {
         if (!this.gameState.inventory.container) {
-            logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error"); return;
+            logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error", "dev"); return;
         }
         const itemToUnequip = this.gameState.inventory.handSlots[handIndex];
         if (!itemToUnequip) {
@@ -447,21 +464,21 @@ class InventoryManager {
 
     equipClothing(itemName) {
         if (!this.gameState.inventory.container) {
-            logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error"); return;
+            logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error", "dev"); return;
         }
         const inv = this.gameState.inventory.container.items;
         const itemIndex = inv.findIndex(i => i.name === itemName);
         if (itemIndex === -1) {
-            logToConsole(`Error: Item "${itemName}" not found in inventory.`, "error");
+            logToConsole(`Error: Item "${itemName}" not found in inventory.`, "error", "dev");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
         }
         const item = inv[itemIndex];
         if (!item.isClothing) {
-            logToConsole(`Error: "${itemName}" is not clothing.`, "error");
+            logToConsole(`Error: "${itemName}" is not clothing.`, "error", "dev");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
         }
         if (!item.layer || !Object.values(window.ClothingLayers || {}).includes(item.layer)) {
-            logToConsole(`Error: "${itemName}" has an invalid or missing clothing layer: ${item.layer}.`, "error");
+            logToConsole(`Error: "${itemName}" has an invalid or missing clothing layer: ${item.layer}.`, "error", "dev");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
         }
         const targetLayer = item.layer;
@@ -478,16 +495,16 @@ class InventoryManager {
             if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
             if (window.renderCharacterInfo) window.renderCharacterInfo();
         } else {
-            logToConsole(`Failed to remove ${item.name} from inventory during equip.`, "error");
+            logToConsole(`Failed to remove ${item.name} from inventory during equip.`, "error", "dev");
         }
     }
 
     unequipClothing(clothingLayer) {
         if (!this.gameState.inventory.container) {
-            logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error"); return;
+            logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error", "dev"); return;
         }
         if (!clothingLayer || !this.gameState.player.wornClothing.hasOwnProperty(clothingLayer)) {
-            logToConsole(`Error: Invalid clothing layer "${clothingLayer}".`, "error");
+            logToConsole(`Error: Invalid clothing layer "${clothingLayer}".`, "error", "dev");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
         }
         const itemToUnequip = this.gameState.player.wornClothing[clothingLayer];
@@ -502,7 +519,7 @@ class InventoryManager {
             logToConsole(`Unequipped ${itemToUnequip.name} from ${clothingLayer}.`);
             if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 });
         } else {
-            logToConsole(`Critical Warning: Not enough inventory space to unequip ${itemToUnequip.name}. Item remains equipped.`, "error");
+            logToConsole(`Critical Warning: Not enough inventory space to unequip ${itemToUnequip.name}. Item remains equipped.`, "error", "dev");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
         }
         if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
@@ -582,28 +599,68 @@ class InventoryManager {
         }
         collectedFloorItems.forEach(fi => this.gameState.inventory.currentlyDisplayedItems.push(fi));
 
-        if (this.gameState.inventory.container && this.gameState.inventory.container.items) {
-            this.gameState.inventory.container.items.forEach(item => {
-                if (item.tags && item.tags.includes('container') && item.items) {
-                    item.items.forEach(innerItem => {
-                        this.gameState.inventory.currentlyDisplayedItems.push({ ...innerItem, equipped: false, source: 'worldContainer', containerRef: item, displayName: innerItem.name });
-                    });
+
+        // Clear the world containers before populating them
+        this.gameState.worldContainers = [];
+
+        // Detect nearby containers from the map and add them to gameState.worldContainers
+        if (this.gameState.playerPos) {
+            const R = 1; // Interaction radius
+            const { x: px, y: py, z: pz } = this.gameState.playerPos;
+            const currentMap = window.mapRenderer.getCurrentMapData();
+
+            if (currentMap && currentMap.levels) {
+                const zStr = pz.toString();
+                const levelData = currentMap.levels[zStr];
+
+                if (levelData) {
+                    for (let y_scan = Math.max(0, py - R); y_scan <= Math.min(currentMap.dimensions.height - 1, py + R); y_scan++) {
+                        for (let x_scan = Math.max(0, px - R); x_scan <= Math.min(currentMap.dimensions.width - 1, px + R); x_scan++) {
+                            const tileIdFromMap = levelData.middle?.[y_scan]?.[x_scan] || levelData.bottom?.[y_scan]?.[x_scan];
+                            const baseTileId = (typeof tileIdFromMap === 'object' && tileIdFromMap !== null && tileIdFromMap.tileId !== undefined)
+                                ? tileIdFromMap.tileId
+                                : tileIdFromMap;
+
+                            if (baseTileId) {
+                                const tileDef = this.assetManager.getTileset(baseTileId);
+                                if (tileDef && tileDef.tags && tileDef.tags.includes('container')) {
+                                    // Found a container tile, now find the corresponding container instance in gameState.containers
+                                    const containerInstance = this.gameState.containers.find(c => c.x === x_scan && c.y === y_scan && c.z === pz);
+                                    if (containerInstance && !this.gameState.worldContainers.some(wc => wc.id === containerInstance.id)) {
+                                        this.gameState.worldContainers.push(containerInstance);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-            });
+            }
         }
 
-        if (this.gameState.worldContainers && this.gameState.worldContainers.length > 0 && this.gameState.playerPos) {
-            const { x: playerX, y: playerY, z: playerZ } = this.gameState.playerPos;
-            const R = 1;
+        // Now, display items from the detected world containers
+        if (this.gameState.worldContainers && this.gameState.worldContainers.length > 0) {
             this.gameState.worldContainers.forEach(container => {
-                if (container.x >= playerX - R && container.x <= playerX + R &&
-                    container.y >= playerY - R && container.y <= playerY + R &&
-                    container.z === playerZ) {
-                    if (container.items && container.items.length > 0) {
-                        container.items.forEach((item, itemIdx) => {
-                            this.gameState.inventory.currentlyDisplayedItems.push({ ...item, equipped: false, source: 'worldContainer', containerRef: container, originalItemIndex: itemIdx, displayName: item.name });
+                // Always show the container, even if empty
+                if (!container.items || container.items.length === 0) {
+                    this.gameState.inventory.currentlyDisplayedItems.push({
+                        id: `empty_container_${container.id}`,
+                        name: `[${container.name}] (Empty)`,
+                        source: 'worldContainer',
+                        containerRef: container,
+                        isPlaceholder: true, // Flag to identify this as a non-item entry
+                        displayName: `[${container.name}] (Empty)`
+                    });
+                } else {
+                    container.items.forEach((item, itemIdx) => {
+                        this.gameState.inventory.currentlyDisplayedItems.push({
+                            ...item,
+                            equipped: false,
+                            source: 'worldContainer',
+                            containerRef: container,
+                            originalItemIndex: itemIdx,
+                            displayName: `[${container.name}] ${item.name}` // Prepend container name
                         });
-                    }
+                    });
                 }
             });
         }
@@ -623,31 +680,47 @@ class InventoryManager {
         let lastContainerNameRendered = null;
         this.gameState.inventory.currentlyDisplayedItems.forEach((item, idx) => {
             let prefix = "";
+            let headerText = null;
+
             if (item.source === 'floor' && !floorHeaderRendered) {
-                const floorHeader = document.createElement("div");
-                floorHeader.textContent = "--- Floor ---";
-                floorHeader.classList.add("inventory-subheader");
-                list.appendChild(floorHeader);
-                floorHeaderRendered = true; lastContainerNameRendered = null;
-            } else if (item.source === 'worldContainer') {
-                if (item.containerRef && item.containerRef.name !== lastContainerNameRendered) {
-                    const containerHeader = document.createElement("div");
-                    containerHeader.textContent = `--- Nearby: ${item.containerRef.name} ---`;
-                    containerHeader.classList.add("inventory-subheader");
-                    list.appendChild(containerHeader);
-                    lastContainerNameRendered = item.containerRef.name;
-                }
+                headerText = "--- Floor ---";
+                floorHeaderRendered = true;
+                lastContainerNameRendered = null;
+            } else if (item.source === 'worldContainer' && item.containerRef && item.containerRef.name !== lastContainerNameRendered) {
+                headerText = `--- ${item.containerRef.name} ---`;
+                lastContainerNameRendered = item.containerRef.name;
                 floorHeaderRendered = false;
             } else if (item.source !== 'floor' && item.source !== 'worldContainer') {
-                floorHeaderRendered = false; lastContainerNameRendered = null;
+                floorHeaderRendered = false;
+                lastContainerNameRendered = null;
             }
+
+            if (headerText) {
+                const headerDiv = document.createElement("div");
+                headerDiv.textContent = headerText;
+                headerDiv.classList.add("inventory-subheader");
+                list.appendChild(headerDiv);
+            }
+
             const d = document.createElement("div");
-            if (item.equipped) prefix = "[EQUIPPED] ";
-            else if (item.source === 'floor') prefix = "[FLOOR] ";
-            else if (item.source === 'worldContainer') prefix = "[NEARBY] ";
-            const sizeText = item.size !== undefined ? ` (Size: ${item.size})` : "";
-            const quantityText = item.quantity > 1 ? ` (x${item.quantity})` : "";
+            if (item.equipped) {
+                prefix = `[EQUIPPED] `;
+            } else if (item.source === 'floor') {
+                prefix = "[FLOOR] ";
+            }
+
+            let sizeText = "";
+            if (item.isPlaceholder) {
+                // For empty container placeholders, show capacity
+                sizeText = ` (Capacity: ${item.containerRef.capacity || 0})`;
+            } else {
+                // For actual items, show size
+                sizeText = item.size !== undefined ? ` (Size: ${item.size})` : "";
+            }
+
+            const quantityText = !item.isPlaceholder && item.quantity > 1 ? ` (x${item.quantity})` : "";
             const nameToDisplay = item.displayName || item.name || "Unknown Item";
+
             d.textContent = `${idx + 1}. ${prefix}${nameToDisplay}${quantityText}${sizeText}`;
             if (idx === this.gameState.inventory.cursor) d.classList.add("selected");
             list.appendChild(d);
@@ -686,9 +759,13 @@ class InventoryManager {
         }
         const selectedDisplayItem = this.gameState.inventory.currentlyDisplayedItems[cursorIndex];
         if (!selectedDisplayItem) {
-            logToConsole("No item selected at cursor position.", "warn"); return;
+            logToConsole("No item selected at cursor position.", "warn", "dev"); return;
         }
 
+        if (selectedDisplayItem.isPlaceholder) {
+            logToConsole("This is an empty container.", "info");
+            return;
+        }
         if (selectedDisplayItem.source === 'floor') {
             const itemToTake = selectedDisplayItem.originalFloorItemEntry.item;
             if (this.addItem(itemToTake)) { // addItem uses this.addItemToInventory from the class
@@ -705,7 +782,7 @@ class InventoryManager {
             const container = selectedDisplayItem.containerRef;
             const itemIndexInContainer = selectedDisplayItem.originalItemIndex;
             if (!container || !container.items || !container.items[itemIndexInContainer]) {
-                logToConsole("Error: Could not find item in world container.", "error");
+                logToConsole("Error: Could not find item in world container.", "error", "dev");
                 if (this.gameState.inventory.open) this.renderInventoryMenu(); return;
             }
             const actualItemFromContainer = container.items[itemIndexInContainer];
@@ -774,4 +851,4 @@ class InventoryManager {
 // If any global functions are truly needed independently of an inventoryManager instance,
 // they should be defined as standalone functions or static methods and explicitly assigned to window.
 
-logToConsole("InventoryManager class defined. Old global function assignments removed.", "blue");
+logToConsole("InventoryManager class defined. Old global function assignments removed.", "blue", "dev");

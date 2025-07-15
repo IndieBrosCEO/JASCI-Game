@@ -705,7 +705,10 @@ async function handleFalling(characterOrGameState, startX, startY, initialAirZ) 
 
         window.calculateAndApplyFallDamage(characterOrGameState, levelsFallen);
 
-        window.mapRenderer?.scheduleRender();
+        // Force a final render at the new location AFTER the animation promise resolves
+        if (window.mapRenderer) {
+            window.mapRenderer.scheduleRender();
+        }
         if (characterOrGameState === gameState) {
             window.interaction?.detectInteractableItems();
             window.interaction?.showInteractableItems();
@@ -736,7 +739,11 @@ async function handleFalling(characterOrGameState, startX, startY, initialAirZ) 
             characterOrGameState.mapPos = { x: startX, y: startY, z: lastSafeZ };
         }
         window.calculateAndApplyFallDamage(characterOrGameState, 20 * 2); // Max damage (20d3 implies 40 levels for calc)
-        window.mapRenderer?.scheduleRender();
+
+        // Force a final render at the new location AFTER the animation promise resolves
+        if (window.mapRenderer) {
+            window.mapRenderer.scheduleRender();
+        }
         if (characterOrGameState === gameState) {
             window.interaction?.detectInteractableItems();
             window.interaction?.showInteractableItems();

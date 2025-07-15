@@ -35,7 +35,7 @@ function _getActionsForItem(it) {
         if (tags.includes("breakable")) actions.push("Break Down");
     }
     if (tags.includes("container")) {
-        actions.push("Inspect", "Loot");
+        actions.push("Loot");
     }
     if (tags.includes("climbable")) {
         actions.push("Climb Up", "Climb Down");
@@ -308,7 +308,7 @@ function _performAction(action, it) {
                     // If dialogueManager's startDialogue can take a specific start node ID, use it.
                     // Otherwise, it might need a way to specify starting node for an existing dialogue file.
                     // For now, assume startDialogue handles it or we adapt it.
-                    logToConsole(`Talking to companion ${npc.name} (Node: ${dialogueNodeToStart || 'default start'})`, "info");
+                    logToConsole(`Talking to companion ${npc.name} (Node: ${dialogueNodeToStart || 'default start'})`, "info", "dev");
                     window.dialogueManager.startDialogue(npc, dialogueNodeToStart); // Pass specific node if applicable
                 } else {
                     // Standard talk, dialogue manager will pick appropriate start node (e.g. default, quest-related)
@@ -337,7 +337,7 @@ function _performAction(action, it) {
                 // Optionally, trigger dismiss dialogue
                 const npcDef = window.assetManager.getNpc(npc.definitionId);
                 if (npcDef && npcDef.dialogue_dismiss_node && window.dialogueManager) {
-                    logToConsole(`Starting dismiss dialogue with ${npc.name}.`, "info");
+                    logToConsole(`Starting dismiss dialogue with ${npc.name}.`, "info", "dev");
                     // Assuming startDialogue can take a specific node from the NPC's default dialogue file.
                     // This might require dialogueManager to load the NPC's dialogue file first, then go to node.
                     // window.dialogueManager.startDialogue(npc, npcDef.dialogue_dismiss_node);
@@ -358,26 +358,31 @@ function _performAction(action, it) {
     } else if (action === "Break Down" && DOOR_BREAK_MAP[currentTileIdOnMap]) {
         levelData.middle[y][x] = DOOR_BREAK_MAP[currentTileIdOnMap];
         logToConsole(`Broke ${tileName}`);
-    } else if (action === "Inspect" || action === "Loot") {
+    } else if (action === "Loot") {
         // Get tile definition to check its tags
         // Note: tileDef was already fetched if itemType is tile/door/container/trap.
         // If it's another itemType, tileDef would be null here.
-        const tileDefForInspect = tileDef || assetManagerInstance.tilesets[it.id];
+        const tileDefForLoot = tileDef || assetManagerInstance.tilesets[it.id];
 
-        if (tileDefForInspect && tileDefForInspect.tags && tileDefForInspect.tags.includes("container")) {
-            if (action === "Loot") {
-                // Specific, minimal action for "Loot" on a container
-                logToConsole(`Interacted with ${tileName}. Check inventory when nearby to see contents.`);
-            } else if (action === "Inspect") {
-                // Default inspect behavior for a container
-                logToConsole(`Inspecting ${tileName}: It's a container. Contents visible in inventory when nearby.`);
-                // Alternative using description:
-                // logToConsole(`Inspecting ${tileName}: ${tileDefForInspect.description || 'A container.'}`);
+        if (tileDefForLoot && tileDefForLoot.tags && tileDefForLoot.tags.includes("container")) {
+            // The logic to show container contents is now handled by the inventory menu itself.
+            // This action simply serves to indicate interaction, perhaps opening the inventory if it's closed.
+            logToConsole(`You check the ${tileName}. Its contents are now visible in your inventory screen.`);
+
+            // If the inventory is not open, open it.
+            if (!window.gameState.inventory.open) {
+                if (window.inventoryManager && typeof window.inventoryManager.toggleInventoryMenu === 'function') {
+                    window.inventoryManager.toggleInventoryMenu();
+                }
+            } else {
+                // If it's already open, just re-render to ensure the nearby container is shown.
+                if (window.inventoryManager && typeof window.inventoryManager.renderInventoryMenu === 'function') {
+                    window.inventoryManager.renderInventoryMenu();
+                }
             }
         } else {
-            // Default behavior for non-container items that might be inspectable/lootable
-            // (or if tileDefForInspect is missing for some reason)
-            logToConsole(`${action}ing ${tileName}.`); // Added a period for consistency
+            // Fallback for "Loot" on a non-container (should not happen with current action generation)
+            logToConsole(`You can't loot the ${tileName}.`);
         }
     } else if (action === "Climb Up") {
         if (tileDef && tileDef.tags && tileDef.tags.includes("climbable")) {
@@ -783,7 +788,7 @@ window.interaction = {
         const actionText = selectedActionElement.textContent.split('. ')[1];
         const item = gameState.interactableItems[gameState.selectedItemIndex];
 
-        logToConsole(`Performing action: ${actionText} on ${item.id} at (${item.x}, ${item.y})`); // Assumes logToConsole global
+        logToConsole(`Performing action: ${actionText} on ${item.id} at (${item.x}, ${item.y})`, 'dev'); // Assumes logToConsole global
 
         if (actionText === "Cancel") {
             // Cancel sound will be played by cancelActionSelection, called below
@@ -809,5 +814,31 @@ window.interaction = {
         const actionList = document.getElementById('actionList');
         if (actionList) actionList.innerHTML = '';
         window.mapRenderer.updateMapHighlight(); // Assumes mapRenderer is global
+    },
+
+    handleScroll: function (event) {
+        if (gameState.isActionMenuActive) {
+            const delta = Math.sign(event.deltaY);
+            if (delta > 0) {
+                // Scroll down
+                gameState.selectedActionIndex = Math.min(gameState.selectedActionIndex + 1, document.getElementById('actionList').children.length - 1);
+            } else {
+                // Scroll up
+                gameState.selectedActionIndex = Math.max(gameState.selectedActionIndex - 1, 0);
+            }
+            this.selectAction(gameState.selectedActionIndex);
+            event.preventDefault();
+        } else if (gameState.interactableItems.length > 0) {
+            const delta = Math.sign(event.deltaY);
+            if (delta > 0) {
+                // Scroll down
+                gameState.selectedItemIndex = Math.min(gameState.selectedItemIndex + 1, gameState.interactableItems.length - 1);
+            } else {
+                // Scroll up
+                gameState.selectedItemIndex = Math.max(gameState.selectedItemIndex - 1, 0);
+            }
+            this.selectItem(gameState.selectedItemIndex);
+            event.preventDefault();
+        }
     }
 };

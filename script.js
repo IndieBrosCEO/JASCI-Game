@@ -1936,6 +1936,14 @@ async function initialize() { // Made async
 
     document.addEventListener('keydown', handleKeyDown);
 
+    window.addEventListener('wheel', function (e) {
+        if (window.inventoryManager && gameState.inventory.open) {
+            window.inventoryManager.handleScroll(e);
+        } else if (window.interaction) {
+            window.interaction.handleScroll(e);
+        }
+    }, { passive: false });
+
     const mapContainerElement = document.getElementById('mapContainer'); // Renamed to avoid conflict
     if (mapContainerElement) {
         mapContainerElement.addEventListener('click', (event) => {

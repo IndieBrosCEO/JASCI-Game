@@ -21,8 +21,11 @@ const CONSOLE_MESSAGE_DELAY = 50; // milliseconds for message delay
  * Utility & Logging Functions
  **************************************************************/
 
-function logToConsole(message, color) { // color is optional
-    console.log(message); // Keep original console.log for raw debugging
+function logToConsole(message, color, type = 'game') { // color is optional, type added
+    if (type === 'dev') {
+        console.log(`[DEV] ${message}`); // Keep original console.log for raw debugging
+        return; // Do not show in player console
+    }
 
     const messageObject = { text: message };
     if (color) {

@@ -675,12 +675,16 @@ window.mapRenderer = {
                                                 capacity: capacity,
                                                 items: []
                                             };
-                                            console.log(`MAP_RENDERER: Creating container instance: ID ${containerInstance.id}, TileID: ${containerInstance.tileId}, Name: ${containerInstance.name}, Pos: (${containerInstance.x},${containerInstance.y}, Z:${containerInstance.z}), Capacity: ${containerInstance.capacity}`);
-                                            gameState.containers.push(containerInstance);
-                                            if (typeof window.populateContainer === 'function') {
-                                                window.populateContainer(containerInstance);
-                                            } else {
-                                                logToConsole(`Error: populateContainer function not found. Cannot populate ${containerInstance.name}.`, "red");
+                                            // Check if a container with the same position already exists
+                                            const existingContainer = gameState.containers.find(c => c.x === c && c.y === r && c.z === z);
+                                            if (!existingContainer) {
+                                                console.log(`MAP_RENDERER: Creating container instance: ID ${containerInstance.id}, TileID: ${containerInstance.tileId}, Name: ${containerInstance.name}, Pos: (${containerInstance.x},${containerInstance.y}, Z:${containerInstance.z}), Capacity: ${containerInstance.capacity}`);
+                                                gameState.containers.push(containerInstance);
+                                                if (typeof window.populateContainer === 'function') {
+                                                    window.populateContainer(containerInstance);
+                                                } else {
+                                                    logToConsole(`Error: populateContainer function not found. Cannot populate ${containerInstance.name}.`, "red");
+                                                }
                                             }
                                         }
                                     }
@@ -689,12 +693,11 @@ window.mapRenderer = {
                         }
                     }
                 }
-                if (gameState.containers.length > 0) { // This log should be after the loop for all Z levels
+                if (gameState.containers.length > 0) {
                     logToConsole(`Initialized ${gameState.containers.length} container instances from map tiles across all Z-levels.`);
                 }
-            } // This closes the "if (mapData && mapData.dimensions...)" block
-
-        } else { // This 'else' corresponds to "if (mapData && mapData.dimensions...)"
+            }
+        } else {
             Object.keys(gameState.fowData).forEach(key => {
                 if (key !== "fowCurrentlyVisible") delete gameState.fowData[key];
             });
