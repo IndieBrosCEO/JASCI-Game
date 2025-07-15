@@ -292,7 +292,7 @@
               "RelativeDocumentMoniker": "index.html",
               "ToolTip": "C:\\Users\\tikip\\OneDrive\\Documents\\GitHub\\JASCI-Game\\index.html",
               "RelativeToolTip": "index.html",
-              "ViewState": "AgIAAKwBAAAAAAAAAAAAwLYBAAArAAAAAAAAAA==",
+              "ViewState": "AgIAAKwBAAAAAAAAAAAAwLYBAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-06-24T05:06:48.847Z",
               "IsPinned": true,
@@ -345,8 +345,7 @@
               "RelativeToolTip": "js\\inventoryManager.js",
               "ViewState": "AgIAADADAAAAAAAAAAAUwFYDAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-07-09T09:14:04.694Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-09T09:14:04.694Z"
             },
             {
               "$type": "Document",
