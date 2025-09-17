@@ -483,3 +483,42 @@ button.preset-swatch { /* More specific selector */
    #detailRecipeComponents li span.req-not-met { color: #F44336; font-weight: bold; }
    But current JS handles this with direct style.color, which is acceptable.
 */
+
+/* Console Autocomplete Styles */
+#gameConsole {
+    position: relative;
+}
+
+#consoleInput {
+    width: 100%;
+    background-color: #111;
+    color: white;
+    border: 1px solid #444;
+    padding: 5px;
+    box-sizing: border-box;
+    height: 28px;
+}
+
+#consoleSuggestions {
+    display: none; /* Hidden by default */
+    position: absolute;
+    bottom: 28px; /* Position above the input */
+    left: 0;
+    right: 0;
+    background: #222;
+    border: 1px solid #444;
+    border-bottom: none;
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.suggestion-item {
+    padding: 5px;
+    cursor: pointer;
+    border-bottom: 1px solid #444;
+}
+
+.suggestion-item.selected, .suggestion-item:hover {
+    background-color: #444;
+}
