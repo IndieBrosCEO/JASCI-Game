@@ -1239,17 +1239,17 @@ function updateSuggestions(inputValue) {
 
     if (parts.length === 1) {
         // Command suggestions
-        suggestions = Object.keys(commandHelpInfo).filter(cmd => cmd.startsWith(command));
+        suggestions = Object.keys(commandHelpInfo).filter(cmd => cmd.includes(command));
     } else {
         // Argument suggestions
         switch (command) {
             case 'additem':
             case 'removeitem':
             case 'placeitem':
-                suggestions = Object.keys(window.assetManager.itemsById).filter(id => id.toLowerCase().startsWith(currentArg.toLowerCase()));
+                suggestions = Object.keys(window.assetManager.itemsById).filter(id => id.toLowerCase().includes(currentArg.toLowerCase()));
                 break;
             case 'spawnnpc':
-                suggestions = Object.keys(window.assetManager.npcsById).filter(id => id.toLowerCase().startsWith(currentArg.toLowerCase()));
+                suggestions = Object.keys(window.assetManager.npcsById).filter(id => id.toLowerCase().includes(currentArg.toLowerCase()));
                 break;
             // Add more cases for other commands that need argument suggestions
             default:
