@@ -1228,8 +1228,94 @@ function processConsoleCommand(commandText) {
     }
 }
 
+// --- Autocomplete Suggestions ---
+let suggestions = [];
+let suggestionIndex = -1;
+
+function updateSuggestions(inputValue) {
+    const parts = inputValue.split(' ');
+    const command = parts[0].toLowerCase();
+    const currentArg = parts.length > 1 ? parts[parts.length - 1] : '';
+
+    if (parts.length === 1) {
+        // Command suggestions
+        suggestions = Object.keys(commandHelpInfo).filter(cmd => cmd.startsWith(command));
+    } else {
+        // Argument suggestions
+        switch (command) {
+            case 'additem':
+            case 'removeitem':
+            case 'placeitem':
+                suggestions = Object.keys(window.assetManager.itemsById).filter(id => id.toLowerCase().startsWith(currentArg.toLowerCase()));
+                break;
+            case 'spawnnpc':
+                suggestions = Object.keys(window.assetManager.npcsById).filter(id => id.toLowerCase().startsWith(currentArg.toLowerCase()));
+                break;
+            // Add more cases for other commands that need argument suggestions
+            default:
+                suggestions = [];
+        }
+    }
+    suggestionIndex = -1; // Reset selection
+    showSuggestions();
+}
+
+function showSuggestions() {
+    const suggestionsBox = document.getElementById('consoleSuggestions');
+    if (!suggestionsBox) return;
+
+    suggestionsBox.innerHTML = '';
+    if (suggestions.length > 0) {
+        suggestionsBox.style.display = 'block';
+        suggestions.forEach((suggestion, index) => {
+            const div = document.createElement('div');
+            div.textContent = suggestion;
+            div.classList.add('suggestion-item');
+            if (index === suggestionIndex) {
+                div.classList.add('selected');
+            }
+            div.addEventListener('click', () => {
+                const parts = consoleInputElement.value.split(' ');
+                parts[parts.length - 1] = suggestion;
+                consoleInputElement.value = parts.join(' ') + ' ';
+                suggestionsBox.style.display = 'none';
+                consoleInputElement.focus();
+            });
+            suggestionsBox.appendChild(div);
+        });
+    } else {
+        suggestionsBox.style.display = 'none';
+    }
+}
+
+function handleAutocomplete() {
+    if (suggestions.length > 0) {
+        if (suggestionIndex === -1) suggestionIndex = 0;
+        const parts = consoleInputElement.value.split(' ');
+        parts[parts.length - 1] = suggestions[suggestionIndex];
+        consoleInputElement.value = parts.join(' ') + ' ';
+        updateSuggestions(consoleInputElement.value);
+    }
+}
+
+function navigateSuggestions(direction) {
+    if (suggestions.length > 0) {
+        if (direction === 'up') {
+            suggestionIndex = (suggestionIndex > 0) ? suggestionIndex - 1 : suggestions.length - 1;
+        } else {
+            suggestionIndex = (suggestionIndex < suggestions.length - 1) ? suggestionIndex + 1 : 0;
+        }
+        showSuggestions();
+    }
+}
+
+
 // Expose functions to global scope for other scripts to use
 window.processConsoleCommand = processConsoleCommand;
 window.logToConsoleUI = logToConsoleUI;
+window.updateSuggestions = updateSuggestions;
+window.handleAutocomplete = handleAutocomplete;
+window.navigateSuggestions = navigateSuggestions;
+
 
 console.log("js/console.js loaded and core functions/state exposed to window.");

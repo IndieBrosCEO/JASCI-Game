@@ -704,6 +704,7 @@ function handleKeyDown(event) {
             consoleInputElement.focus();
         } else {
             gameConsoleElement.classList.add('hidden');
+            document.getElementById('consoleSuggestions').style.display = 'none';
         }
         return; // Stop further processing in handleKeyDown if it was the toggle key
     }
@@ -716,6 +717,7 @@ function handleKeyDown(event) {
             event.preventDefault();
             isConsoleOpen = false;
             gameConsoleElement.classList.add('hidden');
+            document.getElementById('consoleSuggestions').style.display = 'none';
             consoleInputElement.blur(); // Remove focus from input
             if (audioManager) audioManager.playUiSound('ui_console_toggle_01.wav'); // Or ui_menu_close_01.wav if preferred for Esc
             return;
@@ -751,38 +753,41 @@ function handleKeyDown(event) {
                 return; // Processed 'Enter', stop further handling
             } else if (event.key === 'ArrowUp') {
                 event.preventDefault();
-                if (commandHistory && commandHistory.length > 0) {
+                if (suggestions.length > 0) {
+                    navigateSuggestions('up');
+                } else if (commandHistory && commandHistory.length > 0) {
                     if (historyIndex > 0) {
                         historyIndex--;
                     }
                     consoleInputElement.value = commandHistory[historyIndex] || '';
                     consoleInputElement.setSelectionRange(consoleInputElement.value.length, consoleInputElement.value.length);
-                    // TODO: Play ui_scroll_01.wav
-                    if (audioManager) audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
                 }
-                return; // Processed 'ArrowUp', stop further handling
+                if (audioManager) audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
+                return;
             } else if (event.key === 'ArrowDown') {
                 event.preventDefault();
-                if (commandHistory && commandHistory.length > 0) {
+                if (suggestions.length > 0) {
+                    navigateSuggestions('down');
+                } else if (commandHistory && commandHistory.length > 0) {
                     if (historyIndex < commandHistory.length - 1) {
                         historyIndex++;
                         consoleInputElement.value = commandHistory[historyIndex];
-                    } else if (historyIndex >= commandHistory.length - 1) {
+                    } else {
                         historyIndex = commandHistory.length;
                         consoleInputElement.value = '';
                     }
                     consoleInputElement.setSelectionRange(consoleInputElement.value.length, consoleInputElement.value.length);
-                    // TODO: Play ui_scroll_01.wav
-                    if (audioManager) audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
                 }
-                return; // Processed 'ArrowDown', stop further handling
+                if (audioManager) audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
+                return;
             } else if (event.key === 'Tab') {
-                event.preventDefault(); // Prevent tabbing out of the console input
-                // Future: Implement tab completion if desired
-                // For now, just logs or does nothing.
-                // logToConsoleUI("Tab completion not yet implemented.", "info");
-                // TODO: Play a soft click or specific tab sound if implemented
+                event.preventDefault();
+                handleAutocomplete();
                 if (audioManager) audioManager.playUiSound('ui_click_01.wav', { volume: 0.3 });
+            } else {
+                // For other keys, update suggestions
+                // Use a slight delay to allow the input value to update
+                setTimeout(() => updateSuggestions(consoleInputElement.value), 0);
             }
             // For other keys (alphanumeric, space, backspace, etc.),
             // allow default behavior so user can type in the input field.
