@@ -1171,7 +1171,7 @@ window.mapRenderer = {
                             );
                             if (playerCombatAnim) drawStaticPlayer = false;
                         }
-                        if (drawStaticPlayer) {
+                        if (drawStaticPlayer && !(gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y && currentZ === gameState.targetingCoords.z)) {
                             finalSpriteForTile = "☻";
                             finalColorForTile = "green";
                             finalDisplayIdForTile = "PLAYER_STATIC";
