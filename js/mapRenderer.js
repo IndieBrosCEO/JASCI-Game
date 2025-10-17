@@ -1275,14 +1275,14 @@ window.mapRenderer = {
                     }
 
                     // Targeting cursor class already handled by the clearing loop and specific addition later
-                }
-                 if (gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y && currentZ === gameState.targetingCoords.z) {
+                    if (gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y && currentZ === gameState.targetingCoords.z) {
                         span.textContent = 'X';
                         span.style.color = 'red';
                         span.classList.add('flashing-targeting-cursor');
                     } else {
                         span.classList.remove('flashing-targeting-cursor');
                     }
+                }
             }
             if (isInitialRender) { // Add <br> after each row for the viewport
                 const br = document.createElement("br");

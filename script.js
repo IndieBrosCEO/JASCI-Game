@@ -936,20 +936,24 @@ function handleKeyDown(event) {
     // Non-combat key handling starts here
     if (gameState.inventory.open) {
         switch (event.key) {
-            case 'ArrowUp': case 'w':
+            case 'ArrowUp':
+            case 'w':
                 if (gameState.inventory.cursor > 0) {
                     gameState.inventory.cursor--;
-                    window.inventoryManager.renderInventoryMenu(); // Corrected
+                    window.inventoryManager.renderInventoryMenu();
                 }
-                event.preventDefault(); return;
-            case 'ArrowDown': case 's':
+                event.preventDefault();
+                return;
+            case 'ArrowDown':
+            case 's':
                 if (gameState.inventory.currentlyDisplayedItems && gameState.inventory.cursor < gameState.inventory.currentlyDisplayedItems.length - 1) {
                     gameState.inventory.cursor++;
-                    window.inventoryManager.renderInventoryMenu(); // Corrected
+                    window.inventoryManager.renderInventoryMenu();
                 }
-                event.preventDefault(); return;
-            case 'Enter': // Keep Enter for interact
-                window.inventoryManager.interactInventoryItem(); // Corrected
+                event.preventDefault();
+                return;
+            case 'Enter':
+                 window.inventoryManager.interactInventoryItem(); // Corrected
                 event.preventDefault(); return;
             case 'f': case 'F':
                 if (event.shiftKey) {
@@ -1241,6 +1245,146 @@ function handleKeyDown(event) {
                 if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             }
             event.preventDefault(); return;
+        }
+        if (window.ConstructionUI && !window.ConstructionUI.dom.uiPanel.classList.contains('hidden')) {
+            const categoryList = document.getElementById('constructionCategoryList');
+            const buildableList = document.getElementById('constructionBuildableList');
+
+            if (categoryList && categoryList.children.length > 0) {
+                let selectedIndex = -1;
+                for (let i = 0; i < categoryList.children.length; i++) {
+                    if (categoryList.children[i].classList.contains('selected')) {
+                        selectedIndex = i;
+                        break;
+                    }
+                }
+
+                if (event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
+                    if (selectedIndex > 0) {
+                        categoryList.children[selectedIndex].classList.remove('selected');
+                        categoryList.children[selectedIndex - 1].classList.add('selected');
+                        window.ConstructionUI.selectedCategory = categoryList.children[selectedIndex - 1].dataset.category;
+                        window.ConstructionUI.renderBuildableList();
+                    }
+                    event.preventDefault();
+                    return;
+                }
+                if (event.key === 'ArrowDown' || event.key.toLowerCase() === 's') {
+                    if (selectedIndex < categoryList.children.length - 1) {
+                        if (selectedIndex !== -1) {
+                            categoryList.children[selectedIndex].classList.remove('selected');
+                        }
+                        categoryList.children[selectedIndex + 1].classList.add('selected');
+                        window.ConstructionUI.selectedCategory = categoryList.children[selectedIndex + 1].dataset.category;
+                        window.ConstructionUI.renderBuildableList();
+                    }
+                    event.preventDefault();
+                    return;
+                }
+                if (event.key >= '1' && event.key <= '9') {
+                    const categoryIndex = parseInt(event.key, 10) - 1;
+                    if (categoryIndex < categoryList.children.length) {
+                        if (selectedIndex !== -1) {
+                            categoryList.children[selectedIndex].classList.remove('selected');
+                        }
+                        categoryList.children[categoryIndex].classList.add('selected');
+                        window.ConstructionUI.selectedCategory = categoryList.children[categoryIndex].dataset.category;
+                        window.ConstructionUI.renderBuildableList();
+                    }
+                    event.preventDefault();
+                    return;
+                }
+            }
+            if (buildableList && buildableList.children.length > 0) {
+                let selectedIndex = -1;
+                for (let i = 0; i < buildableList.children.length; i++) {
+                    if (buildableList.children[i].classList.contains('selected')) {
+                        selectedIndex = i;
+                        break;
+                    }
+                }
+
+                if (event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
+                    if (selectedIndex > 0) {
+                        buildableList.children[selectedIndex].classList.remove('selected');
+                        buildableList.children[selectedIndex - 1].classList.add('selected');
+                        window.ConstructionUI.selectedConstructionDefId = buildableList.children[selectedIndex - 1].dataset.constructionId;
+                        window.ConstructionUI.renderDetail(window.constructionManager.constructionDefinitions[window.ConstructionUI.selectedConstructionDefId]);
+                    }
+                    event.preventDefault();
+                    return;
+                }
+                if (event.key === 'ArrowDown' || event.key.toLowerCase() === 's') {
+                    if (selectedIndex < buildableList.children.length - 1) {
+                        if (selectedIndex !== -1) {
+                            buildableList.children[selectedIndex].classList.remove('selected');
+                        }
+                        buildableList.children[selectedIndex + 1].classList.add('selected');
+                        window.ConstructionUI.selectedConstructionDefId = buildableList.children[selectedIndex + 1].dataset.constructionId;
+                        window.ConstructionUI.renderDetail(window.constructionManager.constructionDefinitions[window.ConstructionUI.selectedConstructionDefId]);
+                    }
+                    event.preventDefault();
+                    return;
+                }
+                if (event.key >= '1' && event.key <= '9') {
+                    const buildableIndex = parseInt(event.key, 10) - 1;
+                    if (buildableIndex < buildableList.children.length) {
+                        if (selectedIndex !== -1) {
+                            buildableList.children[selectedIndex].classList.remove('selected');
+                        }
+                        buildableList.children[buildableIndex].classList.add('selected');
+                        window.ConstructionUI.selectedConstructionDefId = buildableList.children[buildableIndex].dataset.constructionId;
+                        window.ConstructionUI.renderDetail(window.constructionManager.constructionDefinitions[window.ConstructionUI.selectedConstructionDefId]);
+                    }
+                    event.preventDefault();
+                    return;
+                }
+            }
+        }
+        if (window.CraftingUI && !window.CraftingUI.craftingUIElement.classList.contains('hidden')) {
+            const recipeList = document.getElementById('craftingRecipeList');
+            if (recipeList && recipeList.children.length > 0) {
+                let selectedIndex = -1;
+                for (let i = 0; i < recipeList.children.length; i++) {
+                    if (recipeList.children[i].classList.contains('selected')) {
+                        selectedIndex = i;
+                        break;
+                    }
+                }
+
+                if (event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
+                    if (selectedIndex > 0) {
+                        recipeList.children[selectedIndex].classList.remove('selected');
+                        recipeList.children[selectedIndex - 1].classList.add('selected');
+                        window.CraftingUI.displayRecipeDetails(window.craftingManager.recipes[recipeList.children[selectedIndex - 1].dataset.recipeId]);
+                    }
+                    event.preventDefault();
+                    return;
+                }
+                if (event.key === 'ArrowDown' || event.key.toLowerCase() === 's') {
+                    if (selectedIndex < recipeList.children.length - 1) {
+                        if (selectedIndex !== -1) {
+                            recipeList.children[selectedIndex].classList.remove('selected');
+                        }
+                        recipeList.children[selectedIndex + 1].classList.add('selected');
+                        window.CraftingUI.displayRecipeDetails(window.craftingManager.recipes[recipeList.children[selectedIndex + 1].dataset.recipeId]);
+                    }
+                    event.preventDefault();
+                    return;
+                }
+                if (event.key >= '1' && event.key <= '9') {
+                    const recipeIndex = parseInt(event.key, 10) - 1;
+                    if (recipeIndex < recipeList.children.length) {
+                        if (selectedIndex !== -1) {
+                            recipeList.children[selectedIndex].classList.remove('selected');
+                        }
+                        recipeList.children[recipeIndex].classList.add('selected');
+                        window.CraftingUI.displayRecipeDetails(window.craftingManager.recipes[recipeList.children[recipeIndex].dataset.recipeId]);
+                    }
+                    event.preventDefault();
+                    return;
+                }
+            }
         }
         if (event.key.toLowerCase() === 'c' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive && !gameState.isConstructionModeActive) { // 'C' for Crafting
             if (window.CraftingUI && typeof window.CraftingUI.toggle === 'function') {
