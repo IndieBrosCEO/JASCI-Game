@@ -689,6 +689,31 @@ function handleKeyDown(event) {
             event.preventDefault();
             return;
         }
+        if (event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
+            if (gameState.isActionMenuActive) {
+                gameState.selectedActionIndex = Math.max(0, gameState.selectedActionIndex - 1);
+                interaction.selectAction(gameState.selectedActionIndex);
+            } else if (gameState.interactableItems.length > 0) {
+                gameState.selectedItemIndex = Math.max(0, gameState.selectedItemIndex - 1);
+                interaction.selectItem(gameState.selectedItemIndex);
+            }
+            event.preventDefault();
+            return;
+        }
+        if (event.key === 'ArrowDown' || event.key.toLowerCase() === 's') {
+            if (gameState.isActionMenuActive) {
+                const actionList = document.getElementById('actionList');
+                if (actionList) {
+                    gameState.selectedActionIndex = Math.min(actionList.children.length - 1, gameState.selectedActionIndex + 1);
+                    interaction.selectAction(gameState.selectedActionIndex);
+                }
+            } else if (gameState.interactableItems.length > 0) {
+                gameState.selectedItemIndex = Math.min(gameState.interactableItems.length - 1, gameState.selectedItemIndex + 1);
+                interaction.selectItem(gameState.selectedItemIndex);
+            }
+            event.preventDefault();
+            return;
+        }
     }
 
     // Console Toggle (Backquote key, often with Shift for tilde '~')
@@ -1941,13 +1966,6 @@ async function initialize() { // Made async
 
     document.addEventListener('keydown', handleKeyDown);
 
-    window.addEventListener('wheel', function (e) {
-        if (window.inventoryManager && gameState.inventory.open) {
-            window.inventoryManager.handleScroll(e);
-        } else if (window.interaction) {
-            window.interaction.handleScroll(e);
-        }
-    }, { passive: false });
 
     const mapContainerElement = document.getElementById('mapContainer'); // Renamed to avoid conflict
     if (mapContainerElement) {

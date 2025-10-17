@@ -816,29 +816,4 @@ window.interaction = {
         window.mapRenderer.updateMapHighlight(); // Assumes mapRenderer is global
     },
 
-    handleScroll: function (event) {
-        if (gameState.isActionMenuActive) {
-            const delta = Math.sign(event.deltaY);
-            if (delta > 0) {
-                // Scroll down
-                gameState.selectedActionIndex = Math.min(gameState.selectedActionIndex + 1, document.getElementById('actionList').children.length - 1);
-            } else {
-                // Scroll up
-                gameState.selectedActionIndex = Math.max(gameState.selectedActionIndex - 1, 0);
-            }
-            this.selectAction(gameState.selectedActionIndex);
-            event.preventDefault();
-        } else if (gameState.interactableItems.length > 0) {
-            const delta = Math.sign(event.deltaY);
-            if (delta > 0) {
-                // Scroll down
-                gameState.selectedItemIndex = Math.min(gameState.selectedItemIndex + 1, gameState.interactableItems.length - 1);
-            } else {
-                // Scroll up
-                gameState.selectedItemIndex = Math.max(gameState.selectedItemIndex - 1, 0);
-            }
-            this.selectItem(gameState.selectedItemIndex);
-            event.preventDefault();
-        }
-    }
 };

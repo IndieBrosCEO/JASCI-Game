@@ -946,21 +946,6 @@ window.mapRenderer = {
         const currentFowData = gameState.fowData[currentZStr]; // Ensure currentFowData is sourced for the current Z level
         const AMBIENT_STRENGTH_VISITED = 0.2;
 
-        // Clear targeting cursors from previous frame (only for viewport tiles that had it)
-        if (!isInitialRender && tileCacheData) {
-            for (let y = startRow; y <= endRow; y++) { // Iterate viewport rows
-                for (let x = startCol; x <= endCol; x++) { // Iterate viewport columns
-                    const cachedCell = tileCacheData[y]?.[x]; // Access cache with absolute y, x
-                    if (cachedCell && cachedCell.span && cachedCell.span.classList.contains('flashing-targeting-cursor')) {
-                        // Only remove if it's NOT the current target.
-                        if (!(gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y && gameState.targetingCoords.z === currentZ)) {
-                            cachedCell.span.classList.remove('flashing-targeting-cursor');
-                        }
-                    }
-                }
-            }
-        }
-
         // --- Render current Z-level (gameState.currentViewZ) ---
         // Iterate only over the visible viewport tiles
         // 'y' and 'x' here are ABSOLUTE map coordinates.
@@ -1291,6 +1276,13 @@ window.mapRenderer = {
 
                     // Targeting cursor class already handled by the clearing loop and specific addition later
                 }
+                 if (gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y && currentZ === gameState.targetingCoords.z) {
+                        span.textContent = 'X';
+                        span.style.color = 'red';
+                        span.classList.add('flashing-targeting-cursor');
+                    } else {
+                        span.classList.remove('flashing-targeting-cursor');
+                    }
             }
             if (isInitialRender) { // Add <br> after each row for the viewport
                 const br = document.createElement("br");
@@ -1736,23 +1728,6 @@ window.mapRenderer = {
             });
         }
 
-
-        // Targeting Cursor (Viewport Aware)
-        if (gameState.isTargetingMode && tileCacheData) {
-            const targetX = gameState.targetingCoords.x; // absolute
-            const targetY = gameState.targetingCoords.y; // absolute
-            const targetZ = gameState.targetingCoords.z;
-            if (targetZ === currentZ && targetX >= startCol && targetX <= endCol && targetY >= startRow && targetY <= endRow) {
-                const cachedCell = tileCacheData[targetY]?.[targetX]; // Absolute
-                if (cachedCell && cachedCell.span) {
-                    cachedCell.span.textContent = 'X';
-                    cachedCell.span.style.color = 'red';
-                    if (!cachedCell.span.classList.contains('flashing-targeting-cursor')) {
-                        cachedCell.span.classList.add('flashing-targeting-cursor');
-                    }
-                }
-            }
-        }
 
         // Combat highlights (Viewport Aware)
         if (gameState.isInCombat && tileCacheData) {

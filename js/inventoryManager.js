@@ -261,22 +261,6 @@ class InventoryManager {
         }
     }
 
-    handleScroll(event) {
-        if (!this.gameState.inventory.open) return;
-
-        const delta = Math.sign(event.deltaY);
-
-        if (delta > 0) {
-            // Scroll down
-            this.gameState.inventory.cursor = Math.min(this.gameState.inventory.cursor + 1, this.gameState.inventory.currentlyDisplayedItems.length - 1);
-        } else {
-            // Scroll up
-            this.gameState.inventory.cursor = Math.max(this.gameState.inventory.cursor - 1, 0);
-        }
-
-        this.renderInventoryMenu();
-        event.preventDefault();
-    }
 
     removeModStatEffects(weaponItemInstance, modId) {
         const modDef = this.assetManager.getItem(modId);
