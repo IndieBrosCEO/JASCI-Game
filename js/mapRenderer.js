@@ -1129,7 +1129,11 @@ window.mapRenderer = {
                 let finalColorForTile = displayColor;
                 let finalDisplayIdForTile = displayId;
 
-                if (window.trapManager && typeof window.trapManager.getTrapAt === 'function') {
+                if (gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y && currentZ === gameState.targetingCoords.z) {
+                    finalSpriteForTile = 'X';
+                    finalColorForTile = 'red';
+                    finalDisplayIdForTile = 'TARGET_CURSOR';
+                } else if (window.trapManager && typeof window.trapManager.getTrapAt === 'function') {
                     const trapInstance = window.trapManager.getTrapAt(x, y, currentZ);
                     if (trapInstance && trapInstance.state !== "hidden") {
                         const trapDef = window.trapManager.getTrapDefinition(trapInstance.trapDefId);
@@ -1171,7 +1175,7 @@ window.mapRenderer = {
                             );
                             if (playerCombatAnim) drawStaticPlayer = false;
                         }
-                        if (drawStaticPlayer && !(gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y && currentZ === gameState.targetingCoords.z)) {
+                        if (drawStaticPlayer) {
                             finalSpriteForTile = "☻";
                             finalColorForTile = "green";
                             finalDisplayIdForTile = "PLAYER_STATIC";
@@ -1275,13 +1279,6 @@ window.mapRenderer = {
                     }
 
                     // Targeting cursor class already handled by the clearing loop and specific addition later
-                    if (gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y && currentZ === gameState.targetingCoords.z) {
-                        span.textContent = 'X';
-                        span.style.color = 'red';
-                        span.classList.add('flashing-targeting-cursor');
-                    } else {
-                        span.classList.remove('flashing-targeting-cursor');
-                    }
                 }
             }
             if (isInitialRender) { // Add <br> after each row for the viewport
