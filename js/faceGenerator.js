@@ -130,7 +130,7 @@ function generateAsciiFace(faceParams) {
         }
         htmlOutputLines.push(lineHtml);
     }
-    return htmlOutputLines.join('\n');
+    return htmlOutputLines.join('<br>');
 }
 
 
@@ -1398,7 +1398,7 @@ function updateFacePreview() {
     // Update preview
     const previewElement = document.getElementById('asciiFacePreview');
     if (previewElement) {
-        previewElement.textContent = asciiFace;
+        previewElement.innerHTML = asciiFace; // Changed from textContent to innerHTML
     }
 }
 
