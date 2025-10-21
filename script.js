@@ -614,9 +614,9 @@ function renderCharacterInfo() {
     }
     const charInfoAsciiFaceElement = document.getElementById('charInfoAsciiFace');
     if (charInfoAsciiFaceElement && gameState.player && gameState.player.face && gameState.player.face.asciiFace) {
-        charInfoAsciiFaceElement.innerHTML = gameState.player.face.asciiFace; // Changed from textContent to innerHTML
+        charInfoAsciiFaceElement.textContent = gameState.player.face.asciiFace;
     } else if (charInfoAsciiFaceElement) {
-        charInfoAsciiFaceElement.innerHTML = "No face data available."; // Changed from textContent to innerHTML
+        charInfoAsciiFaceElement.textContent = "No face data available.";
     }
 
     // Companion List

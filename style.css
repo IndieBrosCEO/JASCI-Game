@@ -269,11 +269,6 @@ th, td {
     overflow-x: auto;
 }
 
-    #asciiFacePreview span,
-    #charInfoAsciiFace span {
-        display: inline; /* Ensures characters flow together naturally like text */
-        /* vertical-align: top; removed as it's less relevant for display:inline and might cause issues */
-    }
 
 /* Randomize Face Button */
 #randomizeFaceButton {
