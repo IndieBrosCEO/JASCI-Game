@@ -246,10 +246,12 @@ th, td {
     border: 1px solid #555;
     background-color: #1a1a1a;
     padding: 10px;
-    margin-top: 10px;
-    min-height: 120px; /* Adjusted min-height */
-    line-height: 0.7em;
-    overflow-x: auto; /* Allow horizontal scroll if face is too wide */
+    margin-top: 5px;
+    min-height: 120px;
+    line-height: 1.1em;
+    overflow-x: auto;
+    letter-spacing: normal;
+    font-stretch: normal;
 }
 
 /* Character Info Panel Face Preview */
@@ -267,6 +269,8 @@ th, td {
     min-height: 120px;
     line-height: 1.1em;
     overflow-x: auto;
+    letter-spacing: normal;
+    font-stretch: normal;
 }
 
     #asciiFacePreview span,

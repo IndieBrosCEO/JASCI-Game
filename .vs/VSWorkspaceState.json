@@ -6,7 +6,10 @@
     "\\assets\\dialogues",
     "\\assets\\maps",
     "\\js",
-    "\\js\\ui"
+    "\\js\\ui",
+    "\\jules-scratch",
+    "\\jules-scratch\\verification"
   ],
+  "SelectedNode": "\\jules-scratch\\verification\\verify_face_rendering.py",
   "PreviewInSolutionExplorer": false
 }
