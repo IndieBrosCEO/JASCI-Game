@@ -1958,7 +1958,7 @@ async function initialize() { // Made async
 
         window.renderTables(gameState);
         if (typeof window.initFaceCreator === 'function') {
-            window.initFaceCreator(); // Initialize face creator event listeners and preview
+            await window.initFaceCreator(); // Initialize face creator event listeners and preview
         } else {
             console.error("initFaceCreator function not found. Face creator UI may not work.");
         }
