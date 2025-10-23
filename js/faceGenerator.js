@@ -113,7 +113,7 @@ function generateAsciiFace(faceParams) {
             const cellData = canvas[y][x];
 
             if (cellData.type === 'empty' || cellData.char === ' ') {
-                lineHtml += ' '; // Add a single space for empty cells
+                lineHtml += '&nbsp;'; // Use non-breaking space for consistent spacing
                 continue;
             }
 
@@ -1405,7 +1405,9 @@ function updateFacePreview() {
 /**
  * Initializes the face creator by setting up event listeners.
  */
-function initFaceCreator() {
+async function initFaceCreator() {
+    await document.fonts.ready; // Wait for custom fonts to be loaded
+
     const controls = [
         'headWidthRange', 'headHeightRange', 'eyeSizeRange', 'browHeightRange',
         'browAngleRange', 'browWidthRange', 'noseWidthRange', 'noseHeightRange', // Added browWidthRange
