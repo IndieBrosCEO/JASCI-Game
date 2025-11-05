@@ -245,7 +245,7 @@
         if (attackDeclUI && !this.gameState.isRetargeting) attackDeclUI.classList.remove('hidden');
         this.populateWeaponSelect();
         const bodyPartSelect = document.getElementById('combatBodyPartSelect');
-        if (bodyPartSelect) bodyPartSelect.value = "Torso";
+        if (bodyPartSelect) bodyPartSelect.value = "torso";
 
         // Update LOS line display
         if (this.gameState.combatCurrentAttacker && (this.gameState.combatCurrentDefender || this.gameState.defenderMapPos)) {
@@ -381,7 +381,7 @@
                 nextAttackerFound = true;
             } else {
                 attackerName = isPlayer ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id || "Unknown NPC");
-                logToConsole(`Skipping turn for incapacitated or invalid entity: ${attackerName}. HeadHP: ${headHealth}, TorsoHP: ${torsoHealth}`, 'grey');
+                logToConsole(`Skipping turn for incapacitated or invalid entity: ${attackerName}. HeadHP: ${headHealth}, torsoHP: ${torsoHealth}`, 'grey');
                 // If it's the player and they are dead, combat should end or game over.
                 if (isPlayer && (headHealth <= 0 || torsoHealth <= 0)) {
                     logToConsole("Player is incapacitated. Ending combat.", "red");
@@ -422,7 +422,7 @@
                     if (partToDamage) {
                         const DPT = effect.damagePerTurn;
                         partToDamage.current = Math.max(0, partToDamage.current - DPT);
-                        logToConsole(`${attackerName} takes ${DPT} ${effect.damageType} from ${effect.displayName}. Torso: ${partToDamage.current}/${partToDamage.max}`, 'red');
+                        logToConsole(`${attackerName} takes ${DPT} ${effect.damageType} from ${effect.displayName}. torso: ${partToDamage.current}/${partToDamage.max}`, 'red');
                         if (partToDamage.current <= 0) {
                             logToConsole(`DEFEATED: ${attackerName} by ${effect.displayName}!`, 'darkred');
                             if (currentEntry.isPlayer) { this.endCombat(); window.gameOver(this.gameState); return; }
@@ -508,7 +508,7 @@
                     const tearGasDamage = Math.max(0, rollDiceNotation(parseDiceNotation("1d2-1")));
                     if (tearGasDamage > 0) {
                         logToConsole(`${combatantName} takes ${tearGasDamage} damage from tear gas.`, 'red');
-                        this.applyDamage(this.gameState.combatCurrentAttacker || { name: "Environment" }, combatant, "Torso", tearGasDamage, "Chemical", { name: "Tear Gas Cloud" });
+                        this.applyDamage(this.gameState.combatCurrentAttacker || { name: "Environment" }, combatant, "torso", tearGasDamage, "Chemical", { name: "Tear Gas Cloud" });
                         let healthEntity = combatant === this.gameState ? this.gameState : combatant;
                         if (healthEntity.health.torso.current <= 0 || healthEntity.health.head.current <= 0) {
                             logToConsole(`DEFEATED: ${combatantName} succumbed to tear gas!`, 'darkred');
@@ -1682,7 +1682,7 @@
                             logToConsole(`${splashTarget.name || "Player"} hit by acid splash!`, 'darkgreen');
                             // Acid sizzle for splash targets
                             if (window.audioManager && splashTarget.mapPos) window.audioManager.playSoundAtLocation('ui_click_01.wav', splashTarget.mapPos, {}, { volume: 0.4 }); // Placeholder for acid_sizzle_01.wav
-                            this.applyDamage(attacker, splashTarget, "Torso", splashDamageAmount, "Acid", { name: "Acid Splash" });
+                            this.applyDamage(attacker, splashTarget, "torso", splashDamageAmount, "Acid", { name: "Acid Splash" });
                         }
                     });
                 }
