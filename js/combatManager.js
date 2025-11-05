@@ -2000,7 +2000,7 @@
         // Ensure bodyPartName matches the camelCase keys used in initializeHealth (e.g., "leftArm")
         // The bodyPartName coming from UI or random distribution should already be in correct camelCase.
         // Convert to lowercase for reliable access, as health object keys are lowercase.
-        const accessKey = bodyPartName.toLowerCase();
+        const accessKey = bodyPartName;
         logToConsole(`[applyDamage Debug] Received bodyPartName: "${bodyPartName}", Access Key: "${accessKey}" for ${entity.name || entity.id || 'Player'}`, 'purple'); // DIAGNOSTIC LOG
 
         const entityName = (entity === this.gameState) ? "Player" : (entity.name || entity.id);
