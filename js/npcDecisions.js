@@ -859,7 +859,7 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
             logToConsole(`NPC DECISIONS: ${npcName} attacks ${currentTarget.name || "Player"} with ${weaponToUse ? weaponToUse.name : "Unarmed"}. Dist: ${distanceToTarget3D.toFixed(1)}, LOS: ${hasLOStoTarget}`, 'gold');
             gameState.pendingCombatAction = {
                 target: currentTarget, weapon: weaponToUse, attackType,
-                bodyPart: "Torso", fireMode, actionType: "attack", entity: npc,
+                bodyPart: "torso", fireMode, actionType: "attack", entity: npc,
                 actionDescription: `${attackType} by ${npcName}`
             };
             npc.currentActionPoints--;

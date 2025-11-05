@@ -322,7 +322,7 @@ class TrapManager {
                             logToConsole(`${this.logPrefix} Applying damage from '${trapDef.name}': ${rolledDamage} ${damageType} to ${victimName} (Projectile ${i + 1}/${numProjectiles}).`, 'orange');
                             // applyDamage(attacker, entity, bodyPartName, damageAmount, damageType, weapon)
                             // For traps, attacker can be null or a generic "Trap" entity. Body part is often random or torso.
-                            this.combatManager.applyDamage({ name: trapDef.name, id: trapDef.id }, victimEntity, "Torso", rolledDamage, damageType, { name: trapDef.name });
+                            this.combatManager.applyDamage({ name: trapDef.name, id: trapDef.id }, victimEntity, "torso", rolledDamage, damageType, { name: trapDef.name });
                         }
                     }
                 } else if (effect.type === "status" && typeof window.statusEffectsManager?.applyStatusEffect === 'function') {

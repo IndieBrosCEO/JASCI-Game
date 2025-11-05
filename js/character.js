@@ -162,7 +162,7 @@ function renderCharacterStatsSkillsAndWornClothing(character, characterInfoEleme
 }
 
 function applyHungerThirstDamage(gameState, damageAmount) {
-    logToConsole(`DEBUG: applyHungerThirstDamage CALLED. Damage: ${damageAmount}. Initial Torso HP: ${gameState.health && gameState.health.torso ? gameState.health.torso.current : 'N/A'}`);
+    logToConsole(`DEBUG: applyHungerThirstDamage CALLED. Damage: ${damageAmount}. Initial torso HP: ${gameState.health && gameState.health.torso ? gameState.health.torso.current : 'N/A'}`);
     // The 'character' parameter in other health functions is analogous to 'gameState' here,
     // as player-specific health is directly on gameState.health.
     if (!gameState.health || !gameState.health.torso) {
@@ -175,14 +175,14 @@ function applyHungerThirstDamage(gameState, damageAmount) {
 
     logToConsole(`DEBUG: Modifying torso HP. Current HP before change: ${torso.current}, Damage to apply: ${damageAmount}`);
     torso.current = Math.max(0, torso.current - damageAmount);
-    logToConsole(`DEBUG: Torso HP modified. Current HP after change: ${torso.current}`);
+    logToConsole(`DEBUG: torso HP modified. Current HP after change: ${torso.current}`);
     logToConsole(`Player's torso damaged by ${damageAmount} due to hunger/thirst. HP: ${oldHp} -> ${torso.current}/${torso.max}`);
 
     if (torso.current === 0 && torso.crisisTimer === 0) {
         // Start crisis timer if torso HP drops to 0 and it's not already in crisis.
         // This aligns with how other damage might trigger a crisis.
         torso.crisisTimer = 3; // Default crisis timer duration
-        logToConsole(`Torso HP reached 0 due to hunger/thirst. Crisis timer started for player's torso.`);
+        logToConsole(`torso HP reached 0 due to hunger/thirst. Crisis timer started for player's torso.`);
     }
 
     // Update health UI
