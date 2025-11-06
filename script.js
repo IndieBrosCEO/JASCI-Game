@@ -2434,6 +2434,36 @@ async function initialize() { // Made async
         console.error("retargetButton not found in the DOM during initialization.");
     }
 
+    // Settings Modal Listeners
+    const openSettingsButton = document.getElementById('openSettingsButton');
+    const closeSettingsButton = document.getElementById('closeSettingsButton');
+    const settingsModal = document.getElementById('settingsModal');
+    const musicVolumeSlider = document.getElementById('musicVolume');
+    const sfxVolumeSlider = document.getElementById('sfxVolume');
+
+    if (openSettingsButton && closeSettingsButton && settingsModal) {
+        openSettingsButton.addEventListener('click', () => {
+            settingsModal.classList.remove('hidden');
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+        });
+
+        closeSettingsButton.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+        });
+    }
+
+    if (musicVolumeSlider && window.audioManager) {
+        musicVolumeSlider.addEventListener('input', (event) => {
+            window.audioManager.setMusicVolume(parseFloat(event.target.value));
+        });
+    }
+
+    if (sfxVolumeSlider && window.audioManager) {
+        sfxVolumeSlider.addEventListener('input', (event) => {
+            window.audioManager.setSfxVolume(parseFloat(event.target.value));
+        });
+    }
 }
 /**************************************************************
  * Start Game
@@ -2444,6 +2474,8 @@ function startGame() {
         const startGameSounds = ['ui_start_game_01.wav', 'ui_start_game_02.wav'];
         const randomStartSound = startGameSounds[Math.floor(Math.random() * startGameSounds.length)];
         window.audioManager.playUiSound(randomStartSound, { volume: 0.8 });
+        // Start the music playlist
+        window.audioManager.playMusic();
     }
 
     const characterCreator = document.getElementById('character-creator');

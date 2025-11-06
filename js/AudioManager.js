@@ -1,4 +1,4 @@
-﻿class AudioManager {
+class AudioManager {
     constructor() {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         this.soundBuffers = new Map(); // To store pre-loaded sound data
@@ -10,6 +10,21 @@
         this.masterGainNode = this.audioContext.createGain();
         this.masterGainNode.gain.setValueAtTime(1.0, this.audioContext.currentTime); // Default to full volume
         this.masterGainNode.connect(this.audioContext.destination);
+
+        // Music and SFX Gain Nodes
+        this.musicGainNode = this.audioContext.createGain();
+        this.musicGainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime); // Default music volume
+        this.musicGainNode.connect(this.masterGainNode);
+
+        this.sfxGainNode = this.audioContext.createGain();
+        this.sfxGainNode.gain.setValueAtTime(1.0, this.audioContext.currentTime); // Default SFX volume
+        this.sfxGainNode.connect(this.masterGainNode);
+
+        this.musicTracks = ['music/Low_Key.mp3', 'music/Mudlark.mp3', 'music/numb.mp3'];
+        this.currentTrackIndex = -1;
+        this.musicSourceNode = null; // To hold the current music source
+        this.isMusicPlaying = false;
+
 
         // Sounds that are already available as per the user's list
         this.availableSounds = [
@@ -173,7 +188,7 @@
         gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
 
         source.connect(gainNode);
-        gainNode.connect(this.masterGainNode); // Connect to masterGainNode instead of destination
+        gainNode.connect(this.sfxGainNode); // Connect to the SFX gain node
 
         source.loop = loop;
         source.start(0); // Play immediately
@@ -314,22 +329,106 @@
 
         source.connect(panner);
         panner.connect(gainNode);
-        gainNode.connect(this.masterGainNode); // Connect to masterGainNode instead of destination
+        gainNode.connect(this.sfxGainNode); // Connect to the SFX gain node
 
         source.start(0);
         return source;
     }
 
 
+    // --- Music Playback ---
+
+    playMusic() {
+        if (this.isMusicPlaying) {
+            console.log("Music is already playing.");
+            return;
+        }
+        if (this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
+        }
+        this.isMusicPlaying = true;
+        this.playNextTrack();
+    }
+
+    stopMusic() {
+        if (this.musicSourceNode) {
+            this.musicSourceNode.onended = null; // Prevent playNextTrack from firing
+            this.musicSourceNode.stop();
+        }
+        this.isMusicPlaying = false;
+    }
+
+    playNextTrack() {
+        if (!this.isMusicPlaying) {
+            return; // Stop the loop if music has been stopped
+        }
+
+        // Simple shuffle: pick a random track that isn't the current one
+        let nextTrackIndex;
+        do {
+            nextTrackIndex = Math.floor(Math.random() * this.musicTracks.length);
+        } while (this.musicTracks.length > 1 && nextTrackIndex === this.currentTrackIndex);
+        this.currentTrackIndex = nextTrackIndex;
+
+        const trackName = this.musicTracks[this.currentTrackIndex];
+
+        // We can't use loadSound for music as it's not preloaded and stored in soundBuffers
+        fetch(this.soundPath + trackName)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to load music: ${trackName}`);
+                }
+                return response.arrayBuffer();
+            })
+            .then(arrayBuffer => this.audioContext.decodeAudioData(arrayBuffer))
+            .then(audioBuffer => {
+                this.musicSourceNode = this.audioContext.createBufferSource();
+                this.musicSourceNode.buffer = audioBuffer;
+                this.musicSourceNode.connect(this.musicGainNode);
+                this.musicSourceNode.start(0);
+
+                this.musicSourceNode.onended = () => {
+                    // Wait for a short gap before playing the next song
+                    setTimeout(() => this.playNextTrack(), 5000); // 5-second gap
+                };
+            })
+            .catch(error => {
+                console.error(`Error playing music track ${trackName}:`, error);
+                // Try again after a delay
+                setTimeout(() => this.playNextTrack(), 10000); // 10-second delay on error
+            });
+    }
+
     // --- Volume Control ---
-    setGlobalVolume(volume) {
+    setMasterVolume(volume) {
         if (this.masterGainNode && this.audioContext) {
-            // Clamp volume between 0 and 1 (or higher if you want to allow boosting)
+            // Clamp volume between 0 and 1
             const clampedVolume = Math.max(0, Math.min(1, volume));
             this.masterGainNode.gain.setValueAtTime(clampedVolume, this.audioContext.currentTime);
-            logToConsole(`[AudioManager] Global volume set to ${clampedVolume.toFixed(2)}`, "info");
+            // Use console.log as logToConsole might not be available here.
+            console.log(`[AudioManager] Master volume set to ${clampedVolume.toFixed(2)}`);
         } else {
-            console.error("[AudioManager] MasterGainNode or AudioContext not available to set global volume.");
+            console.error("[AudioManager] MasterGainNode or AudioContext not available to set master volume.");
+        }
+    }
+
+    setMusicVolume(volume) {
+        if (this.musicGainNode && this.audioContext) {
+            const clampedVolume = Math.max(0, Math.min(1, volume));
+            this.musicGainNode.gain.setValueAtTime(clampedVolume, this.audioContext.currentTime);
+            console.log(`[AudioManager] Music volume set to ${clampedVolume.toFixed(2)}`);
+        } else {
+            console.error("[AudioManager] MusicGainNode or AudioContext not available to set music volume.");
+        }
+    }
+
+    setSfxVolume(volume) {
+        if (this.sfxGainNode && this.audioContext) {
+            const clampedVolume = Math.max(0, Math.min(1, volume));
+            this.sfxGainNode.gain.setValueAtTime(clampedVolume, this.audioContext.currentTime);
+            console.log(`[AudioManager] SFX volume set to ${clampedVolume.toFixed(2)}`);
+        } else {
+            console.error("[AudioManager] SfxGainNode or AudioContext not available to set SFX volume.");
         }
     }
 }
