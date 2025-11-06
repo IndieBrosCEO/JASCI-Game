@@ -670,6 +670,15 @@ function handleUpdateSkill(name, value) {
  **************************************************************/
 // Keydown event handler for movement and actions
 function handleKeyDown(event) {
+    // If the event target is an input field, textarea, or select, do not process game keybinds
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT') {
+        // Exception: Allow 'Escape' to pass through, e.g., to close a console or menu.
+        // The console's own handler will check `event.target` and decide what to do.
+        if (event.key !== 'Escape') {
+            return;
+        }
+    }
+
     if (gameState.awaitingPortalConfirmation || gameState.portalPromptActive) {
         // Allow only specific keys if needed (e.g., Enter/Escape for a custom modal)
         // For window.confirm, it blocks anyway, but this prevents other game logic.
