@@ -477,6 +477,14 @@
             <label for="sfxVolume">SFX Volume:</label>
             <input type="range" id="sfxVolume" min="0" max="1" step="0.01" value="1.0">
         </div>
+
+        <div id="jukebox" style="margin-top: 20px; border-top: 1px solid white; padding-top: 15px;">
+            <h3>Jukebox</h3>
+            <p>Now Playing: <span id="currentTrackDisplay">None</span></p>
+            <button id="toggleMusicButton">Pause</button>
+            <button id="skipTrackButton">Skip</button>
+        </div>
+
         <button id="closeSettingsButton" style="margin-top: 15px;">Close</button>
     </div>
 </body>

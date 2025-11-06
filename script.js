@@ -2454,16 +2454,51 @@ async function initialize() { // Made async
     }
 
     if (musicVolumeSlider && window.audioManager) {
+        // Set initial value
+        musicVolumeSlider.value = window.audioManager.getMusicVolume();
         musicVolumeSlider.addEventListener('input', (event) => {
             window.audioManager.setMusicVolume(parseFloat(event.target.value));
         });
     }
 
     if (sfxVolumeSlider && window.audioManager) {
+        // Set initial value
+        sfxVolumeSlider.value = window.audioManager.getSfxVolume();
         sfxVolumeSlider.addEventListener('input', (event) => {
             window.audioManager.setSfxVolume(parseFloat(event.target.value));
         });
     }
+
+    // Jukebox UI Listeners
+    const nowPlayingElement = document.getElementById('currentTrackDisplay');
+    const playPauseButton = document.getElementById('toggleMusicButton');
+    const skipButton = document.getElementById('skipTrackButton');
+
+    if (playPauseButton && window.audioManager) {
+        playPauseButton.addEventListener('click', () => {
+            window.audioManager.toggleMusic();
+            playPauseButton.textContent = window.audioManager.isMusicPlaying() ? 'Pause' : 'Play';
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+        });
+    }
+
+    if (skipButton && window.audioManager) {
+        skipButton.addEventListener('click', () => {
+            window.audioManager.skipTrack();
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+        });
+    }
+
+    // Listen for the custom event when the track changes
+    document.addEventListener('trackchanged', (event) => {
+        if (nowPlayingElement) {
+            nowPlayingElement.textContent = event.detail.trackName;
+        }
+        if (playPauseButton) {
+            // Ensure button text is correct when a new track starts automatically
+            playPauseButton.textContent = 'Pause';
+        }
+    });
 }
 /**************************************************************
  * Start Game
@@ -2474,8 +2509,10 @@ function startGame() {
         const startGameSounds = ['ui_start_game_01.wav', 'ui_start_game_02.wav'];
         const randomStartSound = startGameSounds[Math.floor(Math.random() * startGameSounds.length)];
         window.audioManager.playUiSound(randomStartSound, { volume: 0.8 });
-        // Start the music playlist
-        window.audioManager.playMusic();
+        // Start the music playlist after a delay
+        setTimeout(() => {
+            window.audioManager.playMusic(0); // Start music with 0 delay after the initial wait
+        }, 3000); // 3-second delay before music starts
     }
 
     const characterCreator = document.getElementById('character-creator');
