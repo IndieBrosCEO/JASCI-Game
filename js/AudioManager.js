@@ -22,8 +22,9 @@ class AudioManager {
 
         this.musicTracks = ['music/Low_Key.mp3', 'music/Mudlark.mp3', 'music/numb.mp3'];
         this.currentTrackIndex = -1;
+        this.currentTrackName = "None";
         this.musicSourceNode = null; // To hold the current music source
-        this.isMusicPlaying = false;
+        this._isMusicPlaying = false;
 
 
         // Sounds that are already available as per the user's list
@@ -338,16 +339,23 @@ class AudioManager {
 
     // --- Music Playback ---
 
-    playMusic() {
-        if (this.isMusicPlaying) {
+    isMusicPlaying() {
+        return this._isMusicPlaying;
+    }
+
+    playMusic(delay = 0) {
+        if (this._isMusicPlaying) {
             console.log("Music is already playing.");
             return;
         }
         if (this.audioContext.state === 'suspended') {
             this.audioContext.resume();
         }
-        this.isMusicPlaying = true;
-        this.playNextTrack();
+
+        setTimeout(() => {
+            this._isMusicPlaying = true;
+            this.playNextTrack();
+        }, delay);
     }
 
     stopMusic() {
@@ -355,48 +363,77 @@ class AudioManager {
             this.musicSourceNode.onended = null; // Prevent playNextTrack from firing
             this.musicSourceNode.stop();
         }
-        this.isMusicPlaying = false;
+        this._isMusicPlaying = false;
+        this.currentTrackName = "None";
+        this._dispatchTrackChangedEvent();
     }
 
+    skipTrack() {
+        if (this.musicSourceNode) {
+            this.musicSourceNode.onended = null;
+            this.musicSourceNode.stop();
+        }
+        this.playNextTrack();
+    }
+
+    toggleMusic() {
+        if (this._isMusicPlaying) {
+            this.stopMusic();
+        } else {
+            this.playMusic();
+        }
+        return this._isMusicPlaying;
+    }
+
+
     playNextTrack() {
-        if (!this.isMusicPlaying) {
-            return; // Stop the loop if music has been stopped
+        if (!this._isMusicPlaying) {
+            this.currentTrackName = "None";
+            this._dispatchTrackChangedEvent();
+            return;
         }
 
-        // Simple shuffle: pick a random track that isn't the current one
         let nextTrackIndex;
         do {
             nextTrackIndex = Math.floor(Math.random() * this.musicTracks.length);
         } while (this.musicTracks.length > 1 && nextTrackIndex === this.currentTrackIndex);
         this.currentTrackIndex = nextTrackIndex;
 
-        const trackName = this.musicTracks[this.currentTrackIndex];
+        const trackPath = this.musicTracks[this.currentTrackIndex];
+        this.currentTrackName = trackPath.split('/').pop().replace('.mp3', '');
+        this._dispatchTrackChangedEvent();
 
-        // We can't use loadSound for music as it's not preloaded and stored in soundBuffers
-        fetch(this.soundPath + trackName)
+        fetch(this.soundPath + trackPath)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`Failed to load music: ${trackName}`);
+                    throw new Error(`Failed to load music: ${trackPath}`);
                 }
                 return response.arrayBuffer();
             })
             .then(arrayBuffer => this.audioContext.decodeAudioData(arrayBuffer))
             .then(audioBuffer => {
+                if (!this._isMusicPlaying) return;
+
                 this.musicSourceNode = this.audioContext.createBufferSource();
                 this.musicSourceNode.buffer = audioBuffer;
                 this.musicSourceNode.connect(this.musicGainNode);
                 this.musicSourceNode.start(0);
 
                 this.musicSourceNode.onended = () => {
-                    // Wait for a short gap before playing the next song
-                    setTimeout(() => this.playNextTrack(), 5000); // 5-second gap
+                    setTimeout(() => this.playNextTrack(), 5000);
                 };
             })
             .catch(error => {
-                console.error(`Error playing music track ${trackName}:`, error);
-                // Try again after a delay
-                setTimeout(() => this.playNextTrack(), 10000); // 10-second delay on error
+                console.error(`Error playing music track ${trackPath}:`, error);
+                setTimeout(() => this.playNextTrack(), 10000);
             });
+    }
+
+    _dispatchTrackChangedEvent() {
+        const event = new CustomEvent('trackchanged', {
+            detail: { trackName: this.currentTrackName }
+        });
+        document.dispatchEvent(event);
     }
 
     // --- Volume Control ---
@@ -430,6 +467,20 @@ class AudioManager {
         } else {
             console.error("[AudioManager] SfxGainNode or AudioContext not available to set SFX volume.");
         }
+    }
+
+    getMusicVolume() {
+        if (this.musicGainNode) {
+            return this.musicGainNode.gain.value;
+        }
+        return 1.0; // Default value
+    }
+
+    getSfxVolume() {
+        if (this.sfxGainNode) {
+            return this.sfxGainNode.gain.value;
+        }
+        return 1.0; // Default value
     }
 }
 
