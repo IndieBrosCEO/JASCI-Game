@@ -670,15 +670,6 @@ function handleUpdateSkill(name, value) {
  **************************************************************/
 // Keydown event handler for movement and actions
 function handleKeyDown(event) {
-    // If the event target is an input field, textarea, or select, do not process game keybinds
-    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT') {
-        // Exception: Allow 'Escape' to pass through, e.g., to close a console or menu.
-        // The console's own handler will check `event.target` and decide what to do.
-        if (event.key !== 'Escape') {
-            return;
-        }
-    }
-
     if (gameState.awaitingPortalConfirmation || gameState.portalPromptActive) {
         // Allow only specific keys if needed (e.g., Enter/Escape for a custom modal)
         // For window.confirm, it blocks anyway, but this prevents other game logic.
@@ -1197,6 +1188,12 @@ function handleKeyDown(event) {
         window.mapRenderer.scheduleRender(); // Re-render if view Z changed
     }
 
+
+    // If the event target is an input field, textarea, or select, do not process the general game actions below.
+    // This is placed after specific UI handlers (like the console) to allow them to function.
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT') {
+        return;
+    }
 
     // Default game actions (player movement, interaction, etc.)
     // This block is processed if not in targeting mode OR if in targeting mode but no targeting movement key was pressed,
