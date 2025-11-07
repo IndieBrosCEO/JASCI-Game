@@ -1963,6 +1963,7 @@ async function initialize() { // Made async
         }
 
         window.renderTables(gameState);
+        window.renderDerivedStats(gameState);
         if (typeof window.initFaceCreator === 'function') {
             await window.initFaceCreator(); // Initialize face creator event listeners and preview
         } else {
