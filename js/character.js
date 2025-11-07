@@ -81,6 +81,35 @@ function renderTables(character) {
     const skillsBody = document.getElementById('skillsBody');
     if (!statsBody || !skillsBody) return;
 
+    const statDescriptions = {
+        "Strength": "Physical power.",
+        "Intelligence": "Reasoning, memory, and knowledge.",
+        "Dexterity": "Agility, speed, and nimbleness.",
+        "Constitution": "Toughness and health.",
+        "Perception": "Awareness and ability to spot hidden things.",
+        "Willpower": "Resistance to mental effects.",
+        "Charisma": "Force of personality, persuasiveness, and social influence",
+        "Marksmanship": "Affects accuracy with firearms."
+    };
+
+    const skillDescriptions = {
+        "Animal Handling": "Governs the ability to interact with and control animals.",
+        "Electronics": "The ability to use, repair, and modify electronic devices.",
+        "Explosives": "Skill in handling, identifying, and disarming explosive devices.",
+        "Guns": "Proficiency with all types of firearms.",
+        "Intimidation": "The ability to influence others through fear and threats.",
+        "Investigation": "The skill of uncovering clues and solving mysteries.",
+        "Lockpick": "The ability to open locks without a key.",
+        "Medicine": "The skill of healing wounds and treating illnesses.",
+        "Melee Weapons": "Proficiency with all types of melee weapons.",
+        "Persuasion": "The ability to influence others through diplomacy and reason.",
+        "Repair": "The skill of fixing broken items and machinery.",
+        "Sleight of Hand": "The ability to perform feats of manual dexterity, such as picking pockets.",
+        "Stealth": "The skill of moving quietly and avoiding detection.",
+        "Survival": "The ability to survive in the wilderness.",
+        "Unarmed": "Proficiency in hand-to-hand combat."
+    };
+
     // The onchange handlers will need to be updated to pass the character object (gameState for player)
     // This is tricky because the HTML is static.
     // A common solution is to have these functions globally accessible and refer to a global player object,
@@ -92,14 +121,14 @@ function renderTables(character) {
     // script.js: function handleUpdateStat(name, value) { updateStat(name, value, gameState); renderCharacterInfo(gameState); }
 
     const statsHtml = character.stats.map(stat => `
-        <div class="stat" style="background-color: ${stat.bgColor}; color: ${stat.textColor};">
+        <div class="stat" style="background-color: ${stat.bgColor}; color: ${stat.textColor};" title="${statDescriptions[stat.name] || ''}">
             <span>${stat.name}:</span>
             <input type="number" value="${stat.points}" min="${character.MIN_STAT_VALUE}" 
                    max="${character.MAX_STAT_VALUE}" 
                    onchange="handleUpdateStat('${stat.name}', this.value)"> 
         </div>`).join('');
     const skillsHtml = character.skills.map(skill => `
-        <div class="skill" style="background-color: ${skill.bgColor}; color: ${skill.textColor};">
+        <div class="skill" style="background-color: ${skill.bgColor}; color: ${skill.textColor};" title="${skillDescriptions[skill.name] || ''}">
             <span>${skill.name}:</span>
             <input type="number" value="${skill.points}" min="0" max="100" 
                    onchange="handleUpdateSkill('${skill.name}', this.value)">
