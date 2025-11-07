@@ -64,6 +64,7 @@ function updateStat(name, value, character) {
     if (window.audioManager && newValue !== oldPoints) { // Play confirm only if value changed
         window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.6 }); // Placeholder for specific stat add/sub
     }
+    renderDerivedStats(character);
     // Original renderCharacterInfo() was called here.
     // This might need to call a more specific update function later,
     // or the main game loop handles re-rendering.
@@ -533,6 +534,40 @@ function gameOver(character) {
 // or for direct use if modules were fully implemented.
 // No explicit exports needed due to current script loading model.
 
+// Render derived stats
+function renderDerivedStats(character) {
+    const derivedStats = calculateDerivedStats(character);
+    const derivedStatsContainer = document.getElementById('derivedStats');
+    if (!derivedStatsContainer) return;
+
+    let html = '<h3>Derived Stats</h3>';
+    for (const [stat, value] of Object.entries(derivedStats)) {
+        html += `<div>${stat}: ${value}</div>`;
+    }
+    derivedStatsContainer.innerHTML = html;
+}
+
+// Calculate derived stats based on core stats
+function calculateDerivedStats(character) {
+    const getStat = (name) => character.stats.find(s => s.name === name)?.points || 0;
+
+    const constitution = getStat("Constitution");
+    const strength = getStat("Strength");
+    const dexterity = getStat("Dexterity");
+
+    const hitPoints = 10 + (constitution * 2);
+    const carryWeight = 50 + (strength * 10);
+    const actionPoints = 2 + Math.floor(dexterity / 3);
+
+    return {
+        "Hit Points": hitPoints,
+        "Carry Weight": carryWeight,
+        "Action Points": actionPoints
+    };
+}
+
+window.renderDerivedStats = renderDerivedStats;
+window.calculateDerivedStats = calculateDerivedStats;
 window.updateSkill = updateSkill;
 window.updateStat = updateStat;
 window.renderTables = renderTables;
