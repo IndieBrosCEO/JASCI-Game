@@ -20,7 +20,7 @@
         this.sfxGainNode.gain.setValueAtTime(1.0, this.audioContext.currentTime); // Default SFX volume
         this.sfxGainNode.connect(this.masterGainNode);
 
-        this.musicTracks = ['music/Low_Key.mp3', 'music/Mudlark.mp3', 'music/numb.mp3', 'music/Cruising.mp3'];
+        this.musicTracks = ['music/Low_Key.mp3', 'music/Mudlark.mp3', 'music/numb.mp3', 'music/Cruising.mp3', 'music/Investigation.mp3'];
         this.currentTrackIndex = -1;
         this.currentTrackName = "None";
         this.musicSourceNode = null; // To hold the current music source
