@@ -1,0 +1,28 @@
+{
+    "start": {
+        "text": "Hello, {playerName}. What can I do for you?",
+        "choices": [
+            {
+                "text": "Who are you?",
+                "goTo": "who_are_you"
+            },
+            {
+                "text": "Nothing.",
+                "goTo": "end"
+            }
+        ]
+    },
+    "who_are_you": {
+        "text": "I'm just a person trying to get by. My name is {npcName}.",
+        "choices": [
+            {
+                "text": "Pleasure to meet you.",
+                "goTo": "start"
+            }
+        ]
+    },
+    "end": {
+        "text": "Farewell.",
+        "choices": []
+    }
+}

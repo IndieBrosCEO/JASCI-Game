@@ -291,6 +291,11 @@
 
         <!-- Middle Column -->
         <div id="middle-panel">
+            <div id="dialogueUI" class="hidden">
+                <div id="dialoguePortrait"></div>
+                <div id="dialogueText"></div>
+                <div id="dialogueOptions"></div>
+            </div>
             <div id="mapContainer">
                 <!-- Map content goes here -->
             </div>
@@ -434,6 +439,7 @@
     <script src="js/combatManager.js"></script>
     <script src="js/console.js"></script>
     <script src="js/AudioManager.js"></script>
+    <script src="js/characterManager.js"></script>
     <script src="js/faceGenerator.js"></script>
     <script src="js/tooltip.js"></script>
     <script src="js/craftingManager.js"></script>
@@ -454,13 +460,6 @@
     <script src="js/proceduralQuestManager.js"></script>
 
     <div id="entityTooltip" class="tooltip hidden"></div>
-
-    <div id="dialogueUI" class="hidden">
-        <div id="dialogueContent">
-            <div id="dialogueNPCText"></div>
-            <ul id="dialoguePlayerChoices"></ul>
-        </div>
-    </div>
 
     <script src="script.js"></script>
 

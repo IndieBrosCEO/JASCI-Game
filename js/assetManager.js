@@ -3,6 +3,7 @@
         this.tilesets = {};
         this.itemsById = {};
         this.npcDefinitions = {}; // Renamed from npcsById
+        this.dialogues = {};
         this.fishDefinitions = {};
         this.mapsById = {};
         this.currentMap = null;
@@ -178,6 +179,28 @@
         console.log("Base asset definitions loaded.");
         this.itemsById = tempItemsById; // All items are now consolidated into itemsById
         console.log("AssetManager: All items loaded:", this.itemsById);
+
+        // After loading NPCs, load their dialogue files
+        const dialogueFilesToLoad = new Set();
+        Object.values(this.npcDefinitions).forEach(npcDef => {
+            if (npcDef.dialogueFile) {
+                dialogueFilesToLoad.add(npcDef.dialogueFile);
+            }
+        });
+
+        for (const filename of dialogueFilesToLoad) {
+            const url = `/assets/dialogue/${filename}?t=${Date.now()}`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} for ${filename}`);
+                }
+                this.dialogues[filename] = await response.json();
+                console.log(`AssetManager: Dialogue file '${filename}' loaded successfully.`);
+            } catch (error) {
+                console.error(`Failed to load dialogue file ${filename}:`, error);
+            }
+        }
     }
 
     getVehiclePart(partId) {
@@ -225,6 +248,14 @@
 
     getNpc(npcId) {
         return this.npcDefinitions[npcId] || null; // Use npcDefinitions
+    }
+
+    getDialogue(dialogueId) {
+        if (!this.dialogues[dialogueId]) {
+            console.error(`Dialogue file with id '${dialogueId}' not found in assetManager.`);
+            return null;
+        }
+        return this.dialogues[dialogueId];
     }
 
     async loadData(url) {

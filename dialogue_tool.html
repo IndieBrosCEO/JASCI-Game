@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JASCI Dialogue Tree Editor</title>
+    <style>
+        body { font-family: sans-serif; display: flex; height: 100vh; margin: 0; }
+        #sidebar { width: 250px; border-right: 1px solid #ccc; padding: 10px; overflow-y: auto; }
+        #editor { flex-grow: 1; padding: 10px; }
+        .node-item { padding: 5px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .node-item.active { background-color: #e0e0e0; }
+        textarea { width: 100%; height: 100px; }
+        .choice { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
+        #io-section { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h3>Dialogue Nodes</h3>
+        <div id="node-list"></div>
+        <button id="add-node">Add New Node</button>
+    </div>
+    <div id="editor">
+        <h2>Node Editor</h2>
+        <div>
+            <label for="node-key">Node Key:</label>
+            <input type="text" id="node-key" placeholder="e.g., start, quest_accepted">
+        </div>
+        <div>
+            <label for="npc-text">NPC Text:</label>
+            <textarea id="npc-text" placeholder="Enter NPC dialogue here. Use {playerName} and {npcName} for variables."></textarea>
+        </div>
+        <h3>Choices</h3>
+        <div id="choices-container"></div>
+        <button id="add-choice">Add Choice</button>
+        <hr>
+        <div id="io-section">
+            <h3>Import/Export</h3>
+            <button id="export-json">Export to JSON</button>
+            <label for="import-file" style="cursor: pointer; background-color: #f0f0f0; padding: 5px 10px; border: 1px solid #ccc;">Import from JSON</label>
+            <input type="file" id="import-file" style="display: none;">
+        </div>
+    </div>
+
+    <script>
+        let dialogueData = {
+            "start": {
+                "text": "Hello, {playerName}! I'm {npcName}. Welcome to the dialogue editor.",
+                "choices": [
+                    {
+                        "text": "Tell me more about this tool.",
+                        "goTo": "tool_explanation"
+                    },
+                    {
+                        "text": "Goodbye.",
+                        "goTo": "end"
+                    }
+                ]
+            },
+            "tool_explanation": {
+                "text": "You can add nodes, write text, and create choices. Then export it all to a JSON file for the game.",
+                "choices": [
+                    {
+                        "text": "Got it, thanks!",
+                        "goTo": "start"
+                    }
+                ]
+            },
+             "end": {
+                "text": "Farewell!",
+                "choices": []
+            }
+        };
+
+        let activeNodeKey = "start";
+
+        const nodeList = document.getElementById('node-list');
+        const nodeKeyInput = document.getElementById('node-key');
+        const npcTextInput = document.getElementById('npc-text');
+        const choicesContainer = document.getElementById('choices-container');
+
+        function renderNodeList() {
+            nodeList.innerHTML = '';
+            for (const key in dialogueData) {
+                const div = document.createElement('div');
+                div.textContent = key;
+                div.className = 'node-item';
+                if (key === activeNodeKey) {
+                    div.classList.add('active');
+                }
+                div.onclick = () => {
+                    activeNodeKey = key;
+                    render();
+                };
+                nodeList.appendChild(div);
+            }
+        }
+
+        function renderEditor() {
+            const node = dialogueData[activeNodeKey];
+            if (!node) return;
+
+            nodeKeyInput.value = activeNodeKey;
+            npcTextInput.value = node.text || '';
+            choicesContainer.innerHTML = '';
+
+            (node.choices || []).forEach((choice, index) => {
+                const choiceDiv = document.createElement('div');
+                choiceDiv.className = 'choice';
+                choiceDiv.innerHTML = `
+                    <label>Choice ${index + 1} Text:</label>
+                    <input type="text" class="choice-text" value="${choice.text || ''}" data-index="${index}">
+                    <label>Go To Node:</label>
+                    <input type="text" class="choice-goto" value="${choice.goTo || ''}" data-index="${index}">
+                    <button class="remove-choice" data-index="${index}">Remove</button>
+                `;
+                choicesContainer.appendChild(choiceDiv);
+            });
+        }
+
+        function render() {
+            renderNodeList();
+            renderEditor();
+        }
+
+        // Event Listeners
+        document.getElementById('add-node').onclick = () => {
+            const newNodeKey = prompt("Enter new node key:", "newNode");
+            if (newNodeKey && !dialogueData[newNodeKey]) {
+                dialogueData[newNodeKey] = { text: "", choices: [] };
+                activeNodeKey = newNodeKey;
+                render();
+            } else if (dialogueData[newNodeKey]) {
+                alert("Node key already exists.");
+            }
+        };
+
+        document.getElementById('add-choice').onclick = () => {
+            const node = dialogueData[activeNodeKey];
+            if (node) {
+                if (!node.choices) {
+                    node.choices = [];
+                }
+                node.choices.push({ text: "", goTo: "" });
+                renderEditor();
+            }
+        };
+
+        nodeKeyInput.onchange = () => {
+            const oldKey = activeNodeKey;
+            const newKey = nodeKeyInput.value;
+            if (newKey && !dialogueData[newKey]) {
+                const nodeData = dialogueData[oldKey];
+                delete dialogueData[oldKey];
+                dialogueData[newKey] = nodeData;
+
+                // Update references in other nodes
+                for(const key in dialogueData){
+                    const node = dialogueData[key];
+                    if(node.choices){
+                        node.choices.forEach(c => {
+                            if(c.goTo === oldKey){
+                                c.goTo = newKey;
+                            }
+                        });
+                    }
+                }
+
+                activeNodeKey = newKey;
+                render();
+            } else if (dialogueData[newKey] && newKey !== oldKey) {
+                alert("Node key already exists.");
+                nodeKeyInput.value = oldKey;
+            }
+        };
+
+        npcTextInput.onchange = () => {
+            dialogueData[activeNodeKey].text = npcTextInput.value;
+        };
+
+        choicesContainer.addEventListener('change', (e) => {
+            const index = e.target.dataset.index;
+            if (e.target.classList.contains('choice-text')) {
+                dialogueData[activeNodeKey].choices[index].text = e.target.value;
+            }
+            if (e.target.classList.contains('choice-goto')) {
+                dialogueData[activeNodeKey].choices[index].goTo = e.target.value;
+            }
+        });
+
+        choicesContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-choice')) {
+                const index = e.target.dataset.index;
+                dialogueData[activeNodeKey].choices.splice(index, 1);
+                renderEditor();
+            }
+        });
+
+        document.getElementById('export-json').onclick = () => {
+            const dataStr = JSON.stringify(dialogueData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+            const exportFileDefaultName = 'dialogue.json';
+
+            let linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        };
+
+        document.getElementById('import-file').onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    dialogueData = JSON.parse(event.target.result);
+                    activeNodeKey = Object.keys(dialogueData)[0] || "start";
+                    render();
+                } catch (err) {
+                    alert("Error parsing JSON file.");
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        render();
+    </script>
+</body>
+</html>
