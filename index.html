@@ -238,7 +238,7 @@
                     <pre id="asciiFacePreview" style="border: 1px solid #ccc; padding: 5px; min-height: 100px; background-color: #111;"></pre>
                 </div>
 
-                <button onclick="startGame()">Start Game</button>
+                <button id="startGameButton" disabled>Start Game</button>
                 <button onclick="saveGame()">Save Game</button>
                 <button onclick="loadGame()">Load Game</button>
             </div>
@@ -292,7 +292,11 @@
         <!-- Middle Column -->
         <div id="middle-panel">
             <div id="dialogueUI" class="hidden">
-                <div id="dialoguePortrait"></div>
+                <div id="dialoguePortrait">
+                    <img id="speakerPortraitImage" src="" alt="Speaker Portrait" style="display: none; max-width: 100px; max-height: 100px;">
+                    <pre id="speakerAsciiPortrait"></pre>
+                    <strong id="speakerName"></strong>
+                </div>
                 <div id="dialogueText"></div>
                 <div id="dialogueOptions"></div>
             </div>

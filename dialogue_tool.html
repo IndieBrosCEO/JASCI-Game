@@ -1,17 +1,54 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>JASCI Dialogue Tree Editor</title>
     <style>
-        body { font-family: sans-serif; display: flex; height: 100vh; margin: 0; }
-        #sidebar { width: 250px; border-right: 1px solid #ccc; padding: 10px; overflow-y: auto; }
-        #editor { flex-grow: 1; padding: 10px; }
-        .node-item { padding: 5px; cursor: pointer; border-bottom: 1px solid #eee; }
-        .node-item.active { background-color: #e0e0e0; }
-        textarea { width: 100%; height: 100px; }
-        .choice { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
-        #io-section { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
+        body {
+            font-family: sans-serif;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #sidebar {
+            width: 250px;
+            border-right: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        #editor {
+            flex-grow: 1;
+            padding: 10px;
+        }
+
+        .node-item {
+            padding: 5px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+            .node-item.active {
+                background-color: #e0e0e0;
+            }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+        }
+
+        .choice {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        #io-section {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -30,6 +67,10 @@
             <label for="npc-text">NPC Text:</label>
             <textarea id="npc-text" placeholder="Enter NPC dialogue here. Use {playerName} and {npcName} for variables."></textarea>
         </div>
+        <div>
+            <label for="node-actions">Actions (one per line):</label>
+            <textarea id="node-actions" placeholder="e.g., giveItem:health_potion,1&#10;startCombat"></textarea>
+        </div>
         <h3>Choices</h3>
         <div id="choices-container"></div>
         <button id="add-choice">Add Choice</button>
@@ -38,7 +79,8 @@
             <h3>Import/Export</h3>
             <button id="export-json">Export to JSON</button>
             <label for="import-file" style="cursor: pointer; background-color: #f0f0f0; padding: 5px 10px; border: 1px solid #ccc;">Import from JSON</label>
-            <input type="file" id="import-file" style="display: none;">
+            <input type="file" id="import-file" accept=".json" style="display: none;">
+            <button id="clear-tree">Clear Tree</button>
         </div>
     </div>
 
@@ -66,7 +108,7 @@
                     }
                 ]
             },
-             "end": {
+            "end": {
                 "text": "Farewell!",
                 "choices": []
             }
@@ -77,6 +119,7 @@
         const nodeList = document.getElementById('node-list');
         const nodeKeyInput = document.getElementById('node-key');
         const npcTextInput = document.getElementById('npc-text');
+        const nodeActionsInput = document.getElementById('node-actions');
         const choicesContainer = document.getElementById('choices-container');
 
         function renderNodeList() {
@@ -102,18 +145,21 @@
 
             nodeKeyInput.value = activeNodeKey;
             npcTextInput.value = node.text || '';
+            nodeActionsInput.value = (node.actions || []).join('\n');
             choicesContainer.innerHTML = '';
 
             (node.choices || []).forEach((choice, index) => {
                 const choiceDiv = document.createElement('div');
                 choiceDiv.className = 'choice';
                 choiceDiv.innerHTML = `
-                    <label>Choice ${index + 1} Text:</label>
-                    <input type="text" class="choice-text" value="${choice.text || ''}" data-index="${index}">
-                    <label>Go To Node:</label>
-                    <input type="text" class="choice-goto" value="${choice.goTo || ''}" data-index="${index}">
-                    <button class="remove-choice" data-index="${index}">Remove</button>
-                `;
+                        <label>Choice ${index + 1} Text:</label>
+                        <input type="text" class="choice-text" value="${choice.text || ''}" data-index="${index}">
+                        <label>Go To Node:</label>
+                        <input type="text" class="choice-goto" value="${choice.goTo || ''}" data-index="${index}"><br>
+                        <label>Condition (e.g., skill:Charisma>10):</label>
+                        <input type="text" class="choice-condition" value="${(choice.condition && choice.condition.expression) || ''}" data-index="${index}" placeholder="skill:STAT>VALUE">
+                        <button class="remove-choice" data-index="${index}" style="float: right;">Remove</button>
+                    `;
                 choicesContainer.appendChild(choiceDiv);
             });
         }
@@ -155,11 +201,11 @@
                 dialogueData[newKey] = nodeData;
 
                 // Update references in other nodes
-                for(const key in dialogueData){
+                for (const key in dialogueData) {
                     const node = dialogueData[key];
-                    if(node.choices){
+                    if (node.choices) {
                         node.choices.forEach(c => {
-                            if(c.goTo === oldKey){
+                            if (c.goTo === oldKey) {
                                 c.goTo = newKey;
                             }
                         });
@@ -178,6 +224,15 @@
             dialogueData[activeNodeKey].text = npcTextInput.value;
         };
 
+        nodeActionsInput.onchange = () => {
+            const actions = nodeActionsInput.value.split('\n').map(a => a.trim()).filter(a => a);
+            if (actions.length > 0) {
+                dialogueData[activeNodeKey].actions = actions;
+            } else {
+                delete dialogueData[activeNodeKey].actions;
+            }
+        };
+
         choicesContainer.addEventListener('change', (e) => {
             const index = e.target.dataset.index;
             if (e.target.classList.contains('choice-text')) {
@@ -185,6 +240,17 @@
             }
             if (e.target.classList.contains('choice-goto')) {
                 dialogueData[activeNodeKey].choices[index].goTo = e.target.value;
+            }
+            if (e.target.classList.contains('choice-condition')) {
+                const conditionStr = e.target.value;
+                if (conditionStr) {
+                    dialogueData[activeNodeKey].choices[index].condition = {
+                        "type": "skillCheck",
+                        "expression": conditionStr
+                    };
+                } else {
+                    delete dialogueData[activeNodeKey].choices[index].condition;
+                }
             }
         });
 
@@ -198,7 +264,7 @@
 
         document.getElementById('export-json').onclick = () => {
             const dataStr = JSON.stringify(dialogueData, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
             const exportFileDefaultName = 'dialogue.json';
 
@@ -222,6 +288,20 @@
                 }
             };
             reader.readAsText(file);
+            e.target.value = ''; // Reset file input
+        };
+
+        document.getElementById('clear-tree').onclick = () => {
+            if (confirm("Are you sure you want to clear the entire dialogue tree? This cannot be undone.")) {
+                dialogueData = {
+                    "start": {
+                        "text": "This is a new, empty dialogue tree.",
+                        "choices": []
+                    }
+                };
+                activeNodeKey = "start";
+                render();
+            }
         };
 
         render();

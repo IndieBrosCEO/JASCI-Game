@@ -283,7 +283,7 @@
         let mapJsonData;
         let loadedFromPath = '';
 
-        const baseMapPath = `/Maps/${mapId}.json?t=${Date.now()}`;
+        const baseMapPath = `/assets/maps/${mapId}.json?t=${Date.now()}`;
         console.log(`AssetManager.loadMap: Attempting to load base map from: ${baseMapPath}`);
         try {
             const response = await fetch(baseMapPath);

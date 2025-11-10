@@ -94,14 +94,14 @@ function renderTables(character) {
     const statsHtml = character.stats.map(stat => `
         <div class="stat" style="background-color: ${stat.bgColor}; color: ${stat.textColor};">
             <span>${stat.name}:</span>
-            <input type="number" value="${stat.points}" min="${character.MIN_STAT_VALUE}"
-                   max="${character.MAX_STAT_VALUE}"
-                   onchange="handleUpdateStat('${stat.name}', this.value)">
+            <input type="number" value="${stat.points}" min="${character.MIN_STAT_VALUE}" 
+                   max="${character.MAX_STAT_VALUE}" 
+                   onchange="handleUpdateStat('${stat.name}', this.value)"> 
         </div>`).join('');
     const skillsHtml = character.skills.map(skill => `
         <div class="skill" style="background-color: ${skill.bgColor}; color: ${skill.textColor};">
             <span>${skill.name}:</span>
-            <input type="number" value="${skill.points}" min="0" max="100"
+            <input type="number" value="${skill.points}" min="0" max="100" 
                    onchange="handleUpdateSkill('${skill.name}', this.value)">
         </div>`).join('');
     statsBody.innerHTML = statsHtml;
@@ -396,7 +396,7 @@ function renderHealthTable(character) {
         row.innerHTML = `
             <td>${formatBodyPartName(partNameKey)}</td>
             <td>${current}/${max}</td>
-            <td>${effectiveArmor}</td>
+            <td>${effectiveArmor}</td> 
             <td>${crisisTimer > 0 ? crisisTimer : "—"}</td>
         `;
         if (current === 0) {

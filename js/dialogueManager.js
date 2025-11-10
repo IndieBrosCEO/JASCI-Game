@@ -1,4 +1,4 @@
-// js/dialogueManager.js
+﻿// js/dialogueManager.js
 
 class DialogueManager {
     constructor(gameState, assetManager) {
@@ -10,11 +10,14 @@ class DialogueManager {
         this.isActive = false;
 
         this.dialogueUI = document.getElementById('dialogueUI');
-        this.dialogueNPCText = document.getElementById('dialogueNPCText');
-        this.dialoguePlayerChoices = document.getElementById('dialoguePlayerChoices');
+        this.dialogueText = document.getElementById('dialogueText'); // Renamed for clarity
+        this.dialogueOptions = document.getElementById('dialogueOptions'); // Renamed for clarity
+        this.speakerName = document.getElementById('speakerName');
+        this.speakerPortraitImage = document.getElementById('speakerPortraitImage');
+        this.speakerAsciiPortrait = document.getElementById('speakerAsciiPortrait');
 
-        if (!this.dialogueUI || !this.dialogueNPCText || !this.dialoguePlayerChoices) {
-            console.error("Dialogue UI elements not found in the DOM.");
+        if (!this.dialogueUI || !this.dialogueText || !this.dialogueOptions || !this.speakerName || !this.speakerPortraitImage || !this.speakerAsciiPortrait) {
+            console.error("Some dialogue UI elements not found in the DOM.");
         }
     }
 
@@ -58,32 +61,37 @@ class DialogueManager {
             return;
         }
 
-        this.dialogueNPCText.innerHTML = this.parseText(node.text);
-        this.dialoguePlayerChoices.innerHTML = '';
+        if (node.actions) {
+            this.executeActions(node.actions);
+        }
+
+        this.updateSpeakerDisplay();
+
+        this.dialogueText.innerHTML = this.parseText(node.text);
+        this.dialogueOptions.innerHTML = '';
 
         if (node.choices && node.choices.length > 0) {
             node.choices.forEach(choice => {
-                // TODO: Implement condition checking
-                // if (this.evaluateConditions(choice.conditions)) {
-                const li = document.createElement('li');
-                li.textContent = this.parseText(choice.text);
-                li.onclick = () => this.selectChoice(choice);
-                this.dialoguePlayerChoices.appendChild(li);
-                // }
+                if (this.evaluateCondition(choice.condition)) {
+                    const li = document.createElement('li');
+                    li.textContent = `> ${this.parseText(choice.text)}`;
+                    li.onclick = () => this.selectChoice(choice);
+                    this.dialogueOptions.appendChild(li);
+                }
             });
         } else {
             // If there are no choices, it's either a monologue leading to another node or the end.
             if (node.next) {
                 // Automatically go to the next node after a short delay (or a click)
-                 const li = document.createElement('li');
-                 li.textContent = "[Continue]";
-                 li.onclick = () => this.displayNode(node.next);
-                 this.dialoguePlayerChoices.appendChild(li);
+                const li = document.createElement('li');
+                li.textContent = "[Continue]";
+                li.onclick = () => this.displayNode(node.next);
+                this.dialogueOptions.appendChild(li);
             } else {
-                 const li = document.createElement('li');
-                 li.textContent = "[End Conversation]";
-                 li.onclick = () => this.endDialogue();
-                 this.dialoguePlayerChoices.appendChild(li);
+                const li = document.createElement('li');
+                li.textContent = "[End Conversation]";
+                li.onclick = () => this.endDialogue();
+                this.dialogueOptions.appendChild(li);
             }
         }
     }
@@ -122,17 +130,120 @@ class DialogueManager {
 
     showSimpleMessage(title, message) {
         this.dialogueUI.classList.remove('hidden');
-        this.dialogueNPCText.innerHTML = `<strong>${title}:</strong> ${message}`;
-        this.dialoguePlayerChoices.innerHTML = '';
+        this.speakerName.textContent = title;
+        this.speakerPortraitImage.style.display = 'none';
+        this.speakerAsciiPortrait.style.display = 'none';
+        this.dialogueText.innerHTML = message;
+        this.dialogueOptions.innerHTML = '';
         const li = document.createElement('li');
         li.textContent = "[Close]";
         li.onclick = () => this.dialogueUI.classList.add('hidden');
-        this.dialoguePlayerChoices.appendChild(li);
+        this.dialogueOptions.appendChild(li);
     }
 
-    // TODO: Stubs for more advanced features
-    // evaluateConditions(conditions) { return true; }
-    // executeActions(actions) { }
+    updateSpeakerDisplay() {
+        if (!this.currentNpc) return;
+
+        const npcDef = this.assetManager.getNpc(this.currentNpc.definitionId);
+        this.speakerName.textContent = this.currentNpc.name;
+
+        if (npcDef.portraitHeadUrl) {
+            this.speakerPortraitImage.src = npcDef.portraitHeadUrl;
+            this.speakerPortraitImage.style.display = 'block';
+            this.speakerAsciiPortrait.style.display = 'none';
+        } else if (npcDef.asciiPortrait) {
+            this.speakerAsciiPortrait.innerHTML = npcDef.asciiPortrait;
+            this.speakerAsciiPortrait.style.display = 'block';
+            this.speakerPortraitImage.style.display = 'none';
+        } else {
+            // Fallback for player or NPCs without portraits
+            this.speakerPortraitImage.style.display = 'none';
+            this.speakerAsciiPortrait.style.display = 'none';
+        }
+    }
+
+    evaluateCondition(condition) {
+        if (!condition) {
+            return true; // No condition means the choice is always available.
+        }
+
+        if (condition.type === 'skillCheck' && condition.expression) {
+            // E.g., "skill:Charisma>10"
+            const parts = condition.expression.match(/(\w+):(\w+)([><=]+)(\d+)/);
+            if (!parts) {
+                console.warn(`Invalid condition expression: ${condition.expression}`);
+                return true; // Default to true if expression is malformed
+            }
+
+            const [, type, statName, operator, valueStr] = parts;
+            const value = parseInt(valueStr, 10);
+            let playerValue;
+
+            if (type === 'skill') {
+                playerValue = this.gameState.player.skills[statName] || 0;
+            } else if (type === 'stat') {
+                playerValue = this.gameState.player.stats[statName] || 0;
+            } else {
+                console.warn(`Unknown condition type: ${type}`);
+                return true;
+            }
+
+            switch (operator) {
+                case '>': return playerValue > value;
+                case '<': return playerValue < value;
+                case '>=': return playerValue >= value;
+                case '<=': return playerValue <= value;
+                case '==': return playerValue == value;
+                case '=': return playerValue == value;
+                default:
+                    console.warn(`Unsupported operator in condition: ${operator}`);
+                    return true;
+            }
+        }
+
+        // Add other condition types here (e.g., item check, quest status)
+
+        return true; // Default to true if condition type is unknown
+    }
+
+    executeActions(actions) {
+        if (!actions) return;
+
+        actions.forEach(actionString => {
+            const [action, ...args] = actionString.split(':');
+            const params = args.length > 0 ? args.join(':').split(',') : [];
+
+            switch (action) {
+                case 'giveItem':
+                    if (params.length === 2) {
+                        const itemId = params[0];
+                        const quantity = parseInt(params[1], 10);
+                        // Assuming you have a global inventoryManager
+                        if (window.inventoryManager) {
+                            window.inventoryManager.addItem(itemId, quantity);
+                            console.log(`Gave player ${quantity} of ${itemId}`);
+                        } else {
+                            console.warn("inventoryManager not found, cannot give item.");
+                        }
+                    } else {
+                        console.warn(`Invalid giveItem action format: ${actionString}`);
+                    }
+                    break;
+                case 'startCombat':
+                    console.log("startCombat action triggered");
+                    if (this.currentNpc && window.combatManager) {
+                        this.endDialogue(); // End dialogue before starting combat
+                        window.combatManager.startCombat(this.gameState.player, [this.currentNpc]);
+                    } else {
+                        console.warn("Cannot start combat: currentNpc or combatManager is missing.");
+                    }
+                    break;
+                // Add more actions here
+                default:
+                    console.warn(`Unknown dialogue action: ${action}`);
+            }
+        });
+    }
 }
 
 // This makes the DialogueManager globally available.
