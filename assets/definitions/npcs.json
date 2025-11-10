@@ -273,7 +273,8 @@
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "militia" ],
     "teamId": 3,
-    "cr": 1
+    "cr": 1,
+    "dialogueFile": "generic.json"
   },
   {
     "id": "civilian_militia",
