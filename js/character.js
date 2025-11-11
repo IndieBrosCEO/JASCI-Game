@@ -42,19 +42,6 @@ function updateSkill(name, value, character) {
     if (skillPointsElement) {
         skillPointsElement.textContent = character.MAX_SKILL_POINTS - updatedTotal;
     }
-    checkStartGameButton();
-}
-
-function checkStartGameButton() {
-    const startGameButton = document.getElementById('startGameButton');
-    const charName = document.getElementById('charName').value.trim();
-    const skillPoints = parseInt(document.getElementById('skillPoints').textContent);
-
-    if (charName !== "" && charName !== "Name Here" && skillPoints === 0) {
-        startGameButton.disabled = false;
-    } else {
-        startGameButton.disabled = true;
-    }
 }
 
 // Update stat values for the character
@@ -86,15 +73,9 @@ function updateStat(name, value, character) {
     // If this function is called from an onchange event in HTML, that HTML needs to be updated too.
     // The prompt mentions refactoring calls in script.js, so we'll handle it there.
     // Let's assume renderCharacterInfo will be called from script.js after this.
-    checkStartGameButton();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const charNameInput = document.getElementById('charName');
-    if (charNameInput) {
-        charNameInput.addEventListener('input', checkStartGameButton);
-    }
-
     const startGameButton = document.getElementById('startGameButton');
     if (startGameButton) {
         startGameButton.addEventListener('click', startGame);
@@ -162,7 +143,6 @@ function renderTables(character) {
         </div>`).join('');
     statsBody.innerHTML = statsHtml;
     skillsBody.innerHTML = skillsHtml;
-    checkStartGameButton();
 }
 
 function startGame() {
