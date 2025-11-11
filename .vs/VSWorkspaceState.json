@@ -5,10 +5,9 @@
     "\\assets\\definitions",
     "\\assets\\dialogue",
     "\\assets\\maps",
-    "\\js",
-    "\\js\\ui",
     "\\jules-scratch",
-    "\\jules-scratch\\verification"
+    "\\jules-scratch\\verification",
+    "\\Maps"
   ],
   "PreviewInSolutionExplorer": false
 }

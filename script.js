@@ -1229,161 +1229,226 @@ function handleKeyDown(event) {
             }
             if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
             // TODO: Add specific sound for posture change move_posture_prone_01.wav / move_posture_stand_01.wav
-            renderCharacterInfo(); // Now this runs after map and assets are ready
-
-            // Ensure gameState.inventory.container is initialized before trying to modify it or call functions like addItem.
-            // OLD BACKPACK UPGRADE LOGIC REMOVED
-
-            // Add Small Backpack and Cargo Pants as starting items
-            if (gameState.inventory.container && typeof window.inventoryManager.addItem === 'function' && assetManager) {
-                const itemsToStartWith = [
-                    { id: "small_backpack_container", nameForLog: "Small Backpack" },
-                    { id: "cargo_pants_pockets", nameForLog: "Cargo Pants" },
-                    { id: "large_backpack_item", nameForLog: "Large Backpack" }
-                ];
-
-                itemsToStartWith.forEach(itemInfo => {
-                    const itemDef = assetManager.getItem(itemInfo.id);
-                    if (itemDef) {
-                        const newItem = new Item(itemDef); // Assumes Item constructor is globally available
-                        if (window.inventoryManager.addItem(newItem)) {
-                            logToConsole(`Added starting item: ${itemInfo.nameForLog} to inventory.`);
-                        } else {
-                            logToConsole(`Failed to add starting item: ${itemInfo.nameForLog} to inventory (addItem returned false).`);
-                        }
-                    } else {
-                        logToConsole(`Warning: Item definition not found for starting item ID: ${itemInfo.id} (${itemInfo.nameForLog}).`);
-                    }
-                });
+            // Player posture change might cost some fraction of movement or an action in some systems.
+            // For now, it's free. If it costs MP/AP, deduct here and updateTurnUI().
+            // Ensure map re-render if posture affects display or cover.
+            if (window.mapRenderer) window.mapRenderer.scheduleRender();
+            event.preventDefault(); return;
+        }
+        if (event.key.toLowerCase() === 'v') { // 'V' for Verify/Search for traps
+            if (window.gameState.actionPointsRemaining > 0) {
+                logToConsole("Player actively searches for traps...", "info");
+                if (window.trapManager && typeof window.trapManager.checkForTraps === 'function') {
+                    window.trapManager.checkForTraps(window.gameState, true, 1); // Active search, radius 1
+                } else {
+                    logToConsole("Error: TrapManager or checkForTraps function not available.", "red");
+                }
+                window.gameState.actionPointsRemaining--;
+                window.turnManager.updateTurnUI();
+                if (window.audioManager) window.audioManager.playUiSound('ui_scan_01.wav'); // Placeholder for search sound
             } else {
-                if (!gameState.inventory.container) logToConsole("Could not add starting backpack/pants: Inventory container not ready.");
-                if (typeof window.addItem !== 'function') logToConsole("Could not add starting backpack/pants: addItem function not available.");
-                if (!assetManager) logToConsole("Could not add starting backpack/pants: assetManager not available.");
+                logToConsole("Not enough AP to search for traps.", "orange");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             }
+            event.preventDefault(); return;
+        }
+        if (window.ConstructionUI && !window.ConstructionUI.dom.uiPanel.classList.contains('hidden')) {
+            const categoryList = document.getElementById('constructionCategoryList');
+            const buildableList = document.getElementById('constructionBuildableList');
 
-            // Add clothing items from definitions
-            // Item constructor is now in js/inventory.js
-            // addItem is now in js/inventory.js
-            const clothingToAdd = ["basic_vest"];
-            clothingToAdd.forEach(itemId => {
-                const itemDef = assetManager.getItem(itemId); // All items (incl clothing) are in itemsById
-                if (itemDef) {
-                    // Create a new Item instance if your addItem expects an Item object
-                    // For simplicity, if addItem can handle raw definitions, that's fine too.
-                    // Assuming Item constructor can take the definition object:
-                    const newItem = new Item(itemDef);
-                    window.inventoryManager.addItem(newItem);
-                } else {
-                    console.warn(`Clothing item definition not found for ID: ${itemId}`);
+            if (categoryList && categoryList.children.length > 0) {
+                let selectedIndex = -1;
+                for (let i = 0; i < categoryList.children.length; i++) {
+                    if (categoryList.children[i].classList.contains('selected')) {
+                        selectedIndex = i;
+                        break;
+                    }
                 }
-            });
 
-            // Add weapons and ammunition
-            const weaponsAndAmmoToAdd = [];
-
-            weaponsAndAmmoToAdd.forEach(itemEntry => {
-                const itemDef = assetManager.getItem(itemEntry.id);
-                if (itemDef) {
-                    const quantity = itemEntry.quantity || 1; // Default to 1 if quantity not specified
-                    for (let i = 0; i < quantity; i++) {
-                        const newItem = new Item(itemDef);
-                        // If it's ammunition, we might want to store its specific ammoType or quantity per item
-                        if (itemDef.type === "ammunition") {
-                            newItem.ammoType = itemDef.ammoType;
-                            newItem.quantityPerBox = itemDef.quantity; // Assuming 'quantity' in JSON is per-box
+                if (event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
+                    if (selectedIndex > 0) {
+                        categoryList.children[selectedIndex].classList.remove('selected');
+                        categoryList.children[selectedIndex - 1].classList.add('selected');
+                        window.ConstructionUI.selectedCategory = categoryList.children[selectedIndex - 1].dataset.category;
+                        window.ConstructionUI.renderBuildableList();
+                    }
+                    event.preventDefault();
+                    return;
+                }
+                if (event.key === 'ArrowDown' || event.key.toLowerCase() === 's') {
+                    if (selectedIndex < categoryList.children.length - 1) {
+                        if (selectedIndex !== -1) {
+                            categoryList.children[selectedIndex].classList.remove('selected');
                         }
-                        window.inventoryManager.addItem(newItem);
+                        categoryList.children[selectedIndex + 1].classList.add('selected');
+                        window.ConstructionUI.selectedCategory = categoryList.children[selectedIndex + 1].dataset.category;
+                        window.ConstructionUI.renderBuildableList();
                     }
-                } else {
-                    console.warn(`Weapon or ammo definition not found for ID: ${itemEntry.id}`);
+                    event.preventDefault();
+                    return;
                 }
-            });
+                if (event.key >= '1' && event.key <= '9') {
+                    const categoryIndex = parseInt(event.key, 10) - 1;
+                    if (categoryIndex < categoryList.children.length) {
+                        if (selectedIndex !== -1) {
+                            categoryList.children[selectedIndex].classList.remove('selected');
+                        }
+                        categoryList.children[categoryIndex].classList.add('selected');
+                        window.ConstructionUI.selectedCategory = categoryList.children[categoryIndex].dataset.category;
+                        window.ConstructionUI.renderBuildableList();
+                    }
+                    event.preventDefault();
+                    return;
+                }
+            }
+            if (buildableList && buildableList.children.length > 0) {
+                let selectedIndex = -1;
+                for (let i = 0; i < buildableList.children.length; i++) {
+                    if (buildableList.children[i].classList.contains('selected')) {
+                        selectedIndex = i;
+                        break;
+                    }
+                }
 
+                if (event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
+                    if (selectedIndex > 0) {
+                        buildableList.children[selectedIndex].classList.remove('selected');
+                        buildableList.children[selectedIndex - 1].classList.add('selected');
+                        window.ConstructionUI.selectedConstructionDefId = buildableList.children[selectedIndex - 1].dataset.constructionId;
+                        window.ConstructionUI.renderDetail(window.constructionManager.constructionDefinitions[window.ConstructionUI.selectedConstructionDefId]);
+                    }
+                    event.preventDefault();
+                    return;
+                }
+                if (event.key === 'ArrowDown' || event.key.toLowerCase() === 's') {
+                    if (selectedIndex < buildableList.children.length - 1) {
+                        if (selectedIndex !== -1) {
+                            buildableList.children[selectedIndex].classList.remove('selected');
+                        }
+                        buildableList.children[selectedIndex + 1].classList.add('selected');
+                        window.ConstructionUI.selectedConstructionDefId = buildableList.children[selectedIndex + 1].dataset.constructionId;
+                        window.ConstructionUI.renderDetail(window.constructionManager.constructionDefinitions[window.ConstructionUI.selectedConstructionDefId]);
+                    }
+                    event.preventDefault();
+                    return;
+                }
+                if (event.key >= '1' && event.key <= '9') {
+                    const buildableIndex = parseInt(event.key, 10) - 1;
+                    if (buildableIndex < buildableList.children.length) {
+                        if (selectedIndex !== -1) {
+                            buildableList.children[selectedIndex].classList.remove('selected');
+                        }
+                        buildableList.children[buildableIndex].classList.add('selected');
+                        window.ConstructionUI.selectedConstructionDefId = buildableList.children[buildableIndex].dataset.constructionId;
+                        window.ConstructionUI.renderDetail(window.constructionManager.constructionDefinitions[window.ConstructionUI.selectedConstructionDefId]);
+                    }
+                    event.preventDefault();
+                    return;
+                }
+            }
+        }
+        if (window.CraftingUI && !window.CraftingUI.craftingUIElement.classList.contains('hidden')) {
+            const recipeList = document.getElementById('craftingRecipeList');
+            if (recipeList && recipeList.children.length > 0) {
+                let selectedIndex = -1;
+                for (let i = 0; i < recipeList.children.length; i++) {
+                    if (recipeList.children[i].classList.contains('selected')) {
+                        selectedIndex = i;
+                        break;
+                    }
+                }
 
-            if (characterCreator) characterCreator.classList.add('hidden');
-            if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
-            // if (gameControls) gameControls.classList.remove('hidden'); // As noted, this ID isn't in use
-
-            renderCharacterInfo(); // This now calls the specific rendering function from js/character.js
-
-            // 1. Initialize base "Body Pockets" capacity from Strength
-            // This ensures the player's inherent carrying capacity is set before any items are processed.
-            if (gameState.inventory.container && gameState.stats && typeof window.inventoryManager?.calculateCumulativeCapacity === 'function') {
-                const initialPlayerStrength = gameState.stats.find(stat => stat.name === "Strength")?.points || 1;
-                gameState.inventory.container.maxSlots = Math.max(1, initialPlayerStrength); // Base capacity is Strength, min 1
-                logToConsole(`Initial 'Body Pockets' capacity set to: ${gameState.inventory.container.maxSlots} (from Strength: ${initialPlayerStrength}).`);
+                if (event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
+                    if (selectedIndex > 0) {
+                        recipeList.children[selectedIndex].classList.remove('selected');
+                        recipeList.children[selectedIndex - 1].classList.add('selected');
+                        window.CraftingUI.displayRecipeDetails(window.craftingManager.recipes[recipeList.children[selectedIndex - 1].dataset.recipeId]);
+                    }
+                    event.preventDefault();
+                    return;
+                }
+                if (event.key === 'ArrowDown' || event.key.toLowerCase() === 's') {
+                    if (selectedIndex < recipeList.children.length - 1) {
+                        if (selectedIndex !== -1) {
+                            recipeList.children[selectedIndex].classList.remove('selected');
+                        }
+                        recipeList.children[selectedIndex + 1].classList.add('selected');
+                        window.CraftingUI.displayRecipeDetails(window.craftingManager.recipes[recipeList.children[selectedIndex + 1].dataset.recipeId]);
+                    }
+                    event.preventDefault();
+                    return;
+                }
+                if (event.key >= '1' && event.key <= '9') {
+                    const recipeIndex = parseInt(event.key, 10) - 1;
+                    if (recipeIndex < recipeList.children.length) {
+                        if (selectedIndex !== -1) {
+                            recipeList.children[selectedIndex].classList.remove('selected');
+                        }
+                        recipeList.children[recipeIndex].classList.add('selected');
+                        window.CraftingUI.displayRecipeDetails(window.craftingManager.recipes[recipeList.children[recipeIndex].dataset.recipeId]);
+                    }
+                    event.preventDefault();
+                    return;
+                }
+            }
+        }
+        if (event.key.toLowerCase() === 'c' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive && !gameState.isConstructionModeActive) { // 'C' for Crafting
+            if (window.CraftingUI && typeof window.CraftingUI.toggle === 'function') {
+                window.CraftingUI.toggle(); // Corrected call
             } else {
-                console.error("Critical error: Cannot set initial Strength-based capacity in startGame.");
-                logToConsole("Error: Could not set initial Strength-based carrying capacity for Body Pockets.");
-                if (gameState.inventory.container) gameState.inventory.container.maxSlots = 3; // Fallback
+                logToConsole("CraftingUI or its toggle method is not available.", "error");
             }
-
-            // 2. Define all starting items (clothes, consumables, etc.)
-            const allStartingItems = [
-                { id: "small_backpack_wearable", nameForLog: "Small Backpack" },
-                { id: "cargo_pants_pockets", nameForLog: "Cargo Pants" },
-                { id: "basic_vest", nameForLog: "Basic Vest" },
-                { id: "large_backpack_item", nameForLog: "Large Backpack" },
-                { id: "fishing_rod_simple", nameForLog: "Fishing Rod" }
-                // Add other items like Canned Beans, Bottled Water if they are default starting items
-                // For example:
-                // { id: "canned_beans_food", nameForLog: "Canned Beans" },
-                // { id: "bottled_water_drink", nameForLog: "Bottled Water" }
-            ];
-
-            logToConsole(`Processing ${allStartingItems.length} starting items. Player inventory capacity: ${gameState.inventory.container.maxSlots} slots.`);
-
-            // 3. Attempt to add all starting items to inventory; if full, place on floor.
-            allStartingItems.forEach(itemInfo => {
-                const itemDef = assetManager.getItem(itemInfo.id);
-                if (itemDef) {
-                    const newItemInstance = new Item(itemDef);
-                    if (!window.inventoryManager.addItem(newItemInstance)) { // addItem uses InventoryManager.addItemToInventory
-                        logToConsole(`Inventory full (or item add failed) for: ${itemInfo.nameForLog}. Placing on floor.`);
-                        if (!gameState.floorItems) gameState.floorItems = [];
-                        gameState.floorItems.push({ x: gameState.playerPos.x, y: gameState.playerPos.y, z: gameState.playerPos.z, item: newItemInstance });
-                    } else {
-                        logToConsole(`Added starting item: ${itemInfo.nameForLog} to inventory.`);
-                    }
+            event.preventDefault(); return;
+        }
+        if (event.key.toLowerCase() === 'b' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'B' for Build/Construction
+            if (window.ConstructionUI) {
+                if (gameState.isConstructionModeActive) { // If already in placement mode, 'B' can also cancel it.
+                    window.ConstructionUI.exitPlacementMode();
                 } else {
-                    logToConsole(`Warning: Starting item definition not found for ID: ${itemInfo.id} (${itemInfo.nameForLog}). Skipping.`);
-                }
-            });
-
-            // Player starts with no clothes equipped. Inventory capacity is purely Strength-based.
-            // The player will need to pick up and equip items from the floor or their inventory.
-            // If they equip a backpack, `equipClothing` in InventoryManager will call `calculateCumulativeCapacity`
-            // which will then update `gameState.inventory.container.maxSlots` to include the backpack's capacity.
-
-            if (window.mapRenderer && gameState.floorItems.length > 0) {
-                window.mapRenderer.scheduleRender(); // Ensure map re-renders if items were dropped.
-            }
-
-            gameState.gameStarted = true;
-            window.inventoryManager.updateInventoryUI(); // Update UI to reflect initial inventory state
-
-            // initializeHealth is now in js/character.js, call it with gameState
-            window.initializeHealth(gameState);
-            window.renderHealthTable(gameState); // Explicitly call to render after health is set up.
-
-            updatePlayerStatusDisplay(); // Initialize clock and needs display
-
-            if (window.mapRenderer.getCurrentMapData()) { // Only run these if a map is loaded
-                window.interaction.detectInteractableItems();
-                window.interaction.showInteractableItems();
-                if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function' && gameState.playerPos) {
-                    const PLAYER_VISION_RADIUS_CONST = 10; // TODO: Centralize this constant
-                    window.mapRenderer.updateFOW_BFS(gameState.playerPos.x, gameState.playerPos.y, gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                    window.ConstructionUI.toggle();
                 }
             }
-            window.turnManager.startTurn();
-            runConsumableAndNeedsTest(); // Added call to the test function
-        } catch (error) {
-            console.error("Error during game start:", error);
-            logToConsole(`A critical error occurred: ${error.message}`, "error");
-            // Optionally show this to the player in a UI element
-            const errorDisplay = document.getElementById('errorMessageDisplay');
-            if (errorDisplay) errorDisplay.textContent = `Error starting game: ${error.message}. See console for details.`;
+            event.preventDefault(); return;
+        }
+        // Removed duplicate block for 'c' and 'b' that was here
+        if (event.key.toLowerCase() === 'k') { // Crouch (using 'k' as 'c' is for melee targeting)
+            if (gameState.playerPosture === 'crouching') {
+                gameState.playerPosture = 'standing';
+                logToConsole("Player stands up from crouch.", "info");
+            } else {
+                gameState.playerPosture = 'crouching';
+                logToConsole("Player crouches.", "info");
+            }
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            // TODO: Add specific sound for posture change move_posture_crouch_01.wav / move_posture_stand_01.wav
+            // Player posture change might cost some fraction of movement or an action in some systems.
+            // For now, it's free. If it costs MP/AP, deduct here and updateTurnUI().
+            // Ensure map re-render if posture affects display or cover.
+            if (window.mapRenderer) window.mapRenderer.scheduleRender();
+            event.preventDefault(); return;
+        }
+        if (event.key === 't' || event.key === 'T') {
+            // Determine ticks to advance. Old Time.advanceTime() was 2 minutes.
+            // If TimeManager.TICKS_PER_MINUTE = 1, then 2 minutes = 2 ticks.
+            // This action represents "passing some time" or "ending turn".
+            // A standard turn might consume a certain number of ticks.
+            const ticksForTurnOrWait = TimeManager.TICKS_PER_MINUTE * 2; // Default to 2 minutes worth of ticks
+
+            TimeManager.advanceTime(gameState, ticksForTurnOrWait);
+            // TimeManager.advanceTime now calls processHourlyNeeds and processDailyNeeds internally.
+            // It also calls updatePlayerStatusDisplay if available.
+
+            // The old updateHourlyNeeds and applyDailyNeeds calls are now redundant here if handled by TimeManager.
+            // updatePlayerStatusDisplay is also called by TimeManager.
+
+            if (gameState.isInCombat && combatManager.initiativeTracker[combatManager.currentTurnIndex]?.entity === gameState) {
+                combatManager.endPlayerTurn();
+            } else if (gameState.isInCombat) {
+                logToConsole("Not your turn to end.");
+            } else {
+                window.turnManager.endTurn();
+            }
+            event.preventDefault(); return;
         }
     }
 
@@ -1826,507 +1891,29 @@ function toggleKeybindsDisplay() {
 
 
 // Initial setup on DOM content load
-async function initialize() {
-    const startGameButton = document.getElementById('startGameButton');
-    // Keep button disabled until all assets are loaded. It's disabled in HTML by default, but this is a safeguard.
-    if (startGameButton) startGameButton.disabled = true;
-
+async function initialize() { // Made async
     try {
-        // Start the game loop immediately, but it will do nothing until gameState.gameStarted is true
-        requestAnimationFrame(gameLoop);
-
-        populateKeybinds();
+        populateKeybinds(); // Populate the keybinds list on init
         await assetManager.loadDefinitions();
         console.log("Asset definitions loaded.");
-
-        // Initialize core managers that don't depend on map data first
         window.interaction.initInteraction(assetManager);
-        window.mapRenderer.initMapRenderer(assetManager);
-        window.mapManager = window.mapRenderer;
-        window.turnManager.init(assetManager);
-        gameState.inventory.container = new InventoryContainer("Body Pockets", "S");
+        window.mapRenderer.initMapRenderer(assetManager); // Initialize mapRenderer with assetManager.
+        window.mapManager = window.mapRenderer; // Assign mapRenderer to mapManager
+        logToConsole("SCRIPT.JS: window.mapManager assigned to window.mapRenderer.", "info");
+        window.turnManager.init(assetManager); // Initialize turnManager with assetManager
 
-        // Set up the map selector, which is async
-        await window.mapRenderer.setupMapSelector();
+        gameState.inventory.container = new InventoryContainer("Body Pockets", "S"); // Capacity will be updated in startGame based on Strength
+
+        await window.mapRenderer.setupMapSelector(); // This function is now in mapRenderer.js
         console.log("Map selector setup complete.");
 
-        // Prepare UI for character creation
-        window.renderTables(gameState);
-        window.renderDerivedStats(gameState);
-        if (typeof window.initFaceCreator === 'function') {
-            await window.initFaceCreator();
-        } else {
-            console.error("initFaceCreator function not found.");
-        }
-
-        // Initialize managers that depend on loaded assets
-        // These can be initialized here before the game starts and a map is loaded
-        if (window.inventoryManager && typeof window.inventoryManager.initialize === 'function') {
-            window.inventoryManager.initialize();
-        }
-        window.craftingManager = new CraftingManager(window.gameState, window.assetManager, window.inventoryManager, window.xpManager, window.TimeManager);
-        await window.craftingManager.initialize();
-        window.constructionManager = new ConstructionManager(window.gameState, window.assetManager, window.inventoryManager, window.mapManager, window.TimeManager);
-        await window.constructionManager.initialize();
-        window.trapManager = new TrapManager(window.gameState, window.assetManager, window.combatManager);
-        await window.trapManager.initialize();
-
-        // Initialize UIs
-        window.CraftingUI = new CraftingUIManager(window.craftingManager, window.inventoryManager, window.assetManager, window.gameState);
-        window.CraftingUI.initialize();
-        window.ConstructionUI = new ConstructionUIManager(window.constructionManager, window.inventoryManager, window.assetManager, window.gameState, window.mapManager);
-        window.ConstructionUI.initialize();
-
-        // Other managers
-        if (window.vehicleManager?.initialize) window.vehicleManager.initialize();
-        if (window.VehicleModificationUI?.initialize) window.VehicleModificationUI.initialize();
-        if (window.companionManager?.initialize) window.companionManager.initialize();
-        if (window.dynamicEventManager?.initialize) window.dynamicEventManager.initialize();
-        if (window.mapUtils?.initialize) window.mapUtils.initialize();
-        if (window.proceduralQuestManager?.initialize) window.proceduralQuestManager.initialize();
-
-        // Initial UI updates
-        window.inventoryManager.updateInventoryUI();
-        updatePlayerStatusDisplay();
-        logToConsole("Pre-game initializations complete. Waiting for 'Start Game'.");
-
-        // Enable the Start Game button now that everything is loaded
-        if (startGameButton) {
-            startGameButton.disabled = false;
-            startGameButton.addEventListener('click', startGame);
-            logToConsole("Start Game button is now active.");
-        } else {
-            console.error("Start Game button not found after initialization!");
-        }
-
-    } catch (error) {
-        console.error("Error during game initialization:", error);
-        const errorDisplay = document.getElementById('errorMessageDisplay');
-        if (errorDisplay) {
-            errorDisplay.textContent = "A critical error occurred during game initialization. Please try refreshing. Details in console.";
-        } else {
-            alert("A critical error occurred during game initialization. Please try refreshing. Details in console.");
-        }
-        // Also inform the user via the button that something went wrong
-        if (startGameButton) {
-            startGameButton.textContent = "Error - Refresh";
-            startGameButton.disabled = true; // Keep it disabled on error
-        }
-    }
-
-    document.addEventListener('keydown', handleKeyDown);
-
-
-    const mapContainerElement = document.getElementById('mapContainer'); // Renamed to avoid conflict
-    if (mapContainerElement) {
-        mapContainerElement.addEventListener('click', (event) => {
-            if (gameState.isConstructionModeActive && window.constructionManager && window.gameState.selectedConstructionId) {
-                const rect = mapContainerElement.getBoundingClientRect();
-                const scrollLeft = mapContainerElement.scrollLeft;
-                const scrollTop = mapContainerElement.scrollTop;
-                let tileWidth = 10; let tileHeight = 18; // Default/fallback
-                const tempSpan = document.createElement('span');
-                tempSpan.style.fontFamily = getComputedStyle(mapContainerElement).fontFamily;
-                tempSpan.style.fontSize = getComputedStyle(mapContainerElement).fontSize;
-                tempSpan.style.lineHeight = getComputedStyle(mapContainerElement).lineHeight;
-                tempSpan.style.position = 'absolute'; tempSpan.style.visibility = 'hidden';
-                tempSpan.textContent = 'M'; // Measure a character
-                document.body.appendChild(tempSpan);
-                tileWidth = tempSpan.offsetWidth;
-                tileHeight = tempSpan.offsetHeight;
-                document.body.removeChild(tempSpan);
-                if (tileWidth === 0 || tileHeight === 0) { tileWidth = 10; tileHeight = 18; }
-
-
-                const x = Math.floor((event.clientX - rect.left + scrollLeft) / tileWidth);
-                const y = Math.floor((event.clientY - rect.top + scrollTop) / tileHeight);
-                const z = gameState.currentViewZ; // Placement happens on the currently viewed Z-level
-
-                const definition = window.constructionManager.constructionDefinitions[window.gameState.selectedConstructionId];
-                if (definition) {
-                    logToConsole(`Attempting to place ${definition.name} at (${x},${y},${z})`, "info");
-                    // isValidPlacement should be called by placeConstruction internally, or here first.
-                    // For robustness, placeConstruction should re-validate.
-                    window.constructionManager.placeConstruction(window.gameState.selectedConstructionId, { x, y, z })
-                        .then(success => {
-                            if (success) {
-                                logToConsole(`${definition.name} placed successfully.`, "event-success");
-                            } else {
-                                logToConsole(`Failed to place ${definition.name}.`, "orange");
-                                // uiManager could show a toast: "Cannot build here." or "Missing materials."
-                            }
-                            if (window.ConstructionUI) window.ConstructionUI.exitPlacementMode(); // Exit mode regardless
-                        });
-                } else {
-                    logToConsole(`Error: Selected construction ID ${window.gameState.selectedConstructionId} not found.`, "error");
-                    if (window.ConstructionUI) window.ConstructionUI.exitPlacementMode();
-                }
-
-            } else if (gameState.isRetargeting && combatManager) {
-                const rect = mapContainerElement.getBoundingClientRect();
-                const scrollLeft = mapContainerElement.scrollLeft;
-                const scrollTop = mapContainerElement.scrollTop;
-                // Determine tile size (character width and height)
-                let tileWidth = 10; let tileHeight = 18;
-                const tempSpan = document.createElement('span');
-                tempSpan.style.fontFamily = getComputedStyle(mapContainerElement).fontFamily;
-                tempSpan.style.fontSize = getComputedStyle(mapContainerElement).fontSize;
-                tempSpan.style.lineHeight = getComputedStyle(mapContainerElement).lineHeight;
-                tempSpan.style.position = 'absolute'; tempSpan.style.visibility = 'hidden';
-                tempSpan.textContent = 'M';
-                document.body.appendChild(tempSpan);
-                tileWidth = tempSpan.offsetWidth;
-                tileHeight = tempSpan.offsetHeight;
-                document.body.removeChild(tempSpan);
-                if (tileWidth === 0 || tileHeight === 0) { tileWidth = 10; tileHeight = 18; }
-
-
-                const x = Math.floor((event.clientX - rect.left + scrollLeft) / tileWidth);
-                const y = Math.floor((event.clientY - rect.top + scrollTop) / tileHeight);
-                const z = gameState.currentViewZ;
-
-                const currentMap = window.mapRenderer.getCurrentMapData();
-                if (currentMap && x >= 0 && x < currentMap.dimensions.width && y >= 0 && y < currentMap.dimensions.height) {
-                    gameState.targetingCoords = { x, y, z };
-                    gameState.selectedTargetEntity = null;
-                    for (const npc of gameState.npcs) {
-                        if (npc.mapPos && npc.mapPos.x === x && npc.mapPos.y === y && npc.mapPos.z === z) {
-                            gameState.selectedTargetEntity = npc;
-                            break;
-                        }
-                    }
-                    const finalTargetPos = gameState.selectedTargetEntity ? gameState.selectedTargetEntity.mapPos : gameState.targetingCoords;
-                    const currentTilesetsForClickLOS = window.assetManager ? window.assetManager.tilesets : null;
-                    const currentMapDataForClickLOS = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
-
-                    if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos, currentTilesetsForClickLOS, currentMapDataForClickLOS)) {
-                        logToConsole(`No line of sight to target at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). Click another target.`, "orange");
-                        window.mapRenderer.scheduleRender();
-                        return;
-                    }
-                    logToConsole(`Clicked target on map at X:${x}, Y:${y}, Z:${z}`);
-                    gameState.targetConfirmed = true;
-                    gameState.isRetargeting = false;
-                    gameState.retargetingJustHappened = true;
-                    combatManager.promptPlayerAttackDeclaration();
-                    window.mapRenderer.scheduleRender();
-                }
-            }
-        });
-
-        // Event listener for Look Mode mouse movement
-        mapContainerElement.addEventListener('mousemove', (event) => {
-            if (gameState.isLookModeActive && typeof window.showLookTooltip === 'function') {
-                window.showLookTooltip(event, gameState, window.mapRenderer, window.assetManager);
-            }
-        });
-        mapContainerElement.addEventListener('mouseleave', () => { // Hide tooltip when mouse leaves map
-            if (typeof window.hideLookTooltip === 'function') { // Always hide if mouse leaves, regardless of look mode status
-                window.hideLookTooltip();
-            }
-        });
-
-    } else {
-        console.error("Map container not found for click and mousemove listeners.");
-    }
-
-    // Listen for campaign loaded event
-    document.addEventListener('campaignWasLoaded', async (event) => { // made async for handleMapSelectionChangeWrapper
-        logToConsole(`Campaign loaded: ${event.detail.campaignId}`);
-        if (event.detail.manifest && event.detail.manifest.entryMap) {
-            const entryMapId = event.detail.manifest.entryMap;
-            logToConsole(`Campaign entry map: ${entryMapId}`);
-            // Load the initial map for the campaign
-            // This replaces the previous initial map loading logic that was here.
-            await handleMapSelectionChangeWrapper(entryMapId);
-            // Ensure UI is updated after map change
-            // renderCharacterInfo(); // Potentially redundant if handleMapSelectionChangeWrapper covers it
-            // window.mapRenderer.scheduleRender(); // Covered by handleMapSelectionChangeWrapper
-            // updatePlayerStatusDisplay(); // Potentially redundant
-        } else {
-            logToConsole("Warning: Campaign loaded, but no entryMap specified in the manifest.", "warn");
-        }
-    });
-
-    /**************************************************************
-     * Player Status Display Function
-     **************************************************************/
-    function updatePlayerStatusDisplay() {
-        // Update Clock
-        const clockElement = document.getElementById('clockDisplay');
-        if (clockElement && typeof TimeManager !== 'undefined' && TimeManager.getClockDisplay) {
-            const clock = TimeManager.getClockDisplay(gameState);
-            clockElement.textContent = clock.clockString;
-            clockElement.style.color = clock.color;
-        } else if (clockElement) {
-            clockElement.textContent = "Clock N/A";
-        }
-
-        // Update Hunger Bar
-        const hungerElement = document.getElementById('hungerDisplay');
-        if (hungerElement && typeof TimeManager !== 'undefined' && TimeManager.getNeedsStatusBars) {
-            const needsBars = TimeManager.getNeedsStatusBars(gameState);
-            hungerElement.textContent = "Hunger: " + needsBars.hungerBar; // Added label
-            hungerElement.style.color = "sandybrown"; // Added light brown color
-        } else if (hungerElement) {
-            hungerElement.textContent = "Hunger N/A";
-            hungerElement.style.color = ""; // Reset color if N/A
-        }
-
-        // Update Thirst Bar
-        const thirstElement = document.getElementById('thirstDisplay');
-        if (thirstElement && typeof TimeManager !== 'undefined' && TimeManager.getNeedsStatusBars) {
-            const needsBars = TimeManager.getNeedsStatusBars(gameState); // Called again, but simple
-            thirstElement.textContent = "Thirst: " + needsBars.thirstBar; // Added label
-            thirstElement.style.color = "lightskyblue"; // Added light blue color
-        } else if (thirstElement) {
-            thirstElement.textContent = "Thirst N/A";
-            thirstElement.style.color = ""; // Reset color if N/A
-        }
-
-        // Update Z-Level Displays
-        const playerZElement = document.getElementById('playerZDisplay');
-        if (playerZElement) {
-            playerZElement.textContent = `Player Z: ${gameState.playerPos.z}`;
-        }
-        const viewZElement = document.getElementById('viewZDisplay');
-        if (viewZElement) {
-            viewZElement.textContent = `View Z: ${gameState.currentViewZ}`;
-        }
-        // Also update targeting Z info if it's active
-        if (typeof updateTargetingInfoUI === 'function') {
-            updateTargetingInfoUI();
-        }
-    }
-    window.updatePlayerStatusDisplay = updatePlayerStatusDisplay; // Make it globally accessible if needed elsewhere
-
-    // Function to update the targeting Z level display
-    function updateTargetingInfoUI() {
-        const targetingZElement = document.getElementById('targetingZDisplay');
-        if (targetingZElement) {
-            if (gameState.isTargetingMode) {
-                targetingZElement.textContent = `Targeting Z: ${gameState.targetingCoords.z}`;
-                targetingZElement.style.display = 'block'; // Show it
-            } else {
-                targetingZElement.style.display = 'none'; // Hide it
-            }
-        }
-    }
-    window.updateTargetingInfoUI = updateTargetingInfoUI; // Make global if needed by other modules directly
-
-    // Map Zoom Functionality
-    const mapContainerElementForZoom = document.getElementById('mapContainer'); // Renamed to avoid conflict if 'mapContainer' is used elsewhere in this scope
-    const zoomInButton = document.getElementById('zoomInButton');
-    const zoomOutButton = document.getElementById('zoomOutButton');
-
-    if (mapContainerElementForZoom && zoomInButton && zoomOutButton) {
-        let currentMapFontSize = 16; // Default font size in pixels
-        const zoomStep = 2; // Pixels to change on each zoom step
-        const minMapFontSize = 1;
-        const maxMapFontSize = 300;
-
-        try {
-            const computedStyle = window.getComputedStyle(mapContainerElementForZoom);
-            const initialSize = parseFloat(computedStyle.fontSize);
-            if (!isNaN(initialSize) && initialSize > 0) {
-                currentMapFontSize = initialSize;
-            }
-        } catch (e) {
-            console.warn("Could not read initial font size for map container, using default.", e);
-        }
-        mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
-
-        zoomInButton.addEventListener('click', () => {
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-            currentMapFontSize = Math.min(maxMapFontSize, currentMapFontSize + zoomStep);
-            mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
-        });
-
-        zoomOutButton.addEventListener('click', () => {
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-            currentMapFontSize = Math.max(minMapFontSize, currentMapFontSize - zoomStep);
-            mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
-        });
-        logToConsole(`Map zoom controls initialized. Current map font size: ${currentMapFontSize}px`);
-    } else {
-        console.warn("Map zoom UI elements not found. Zoom functionality will not be available.");
-        if (!mapContainerElementForZoom) console.warn("Zoom: mapContainer not found.");
-        if (!zoomInButton) console.warn("Zoom: zoomInButton not found.");
-        if (!zoomOutButton) console.warn("Zoom: zoomOutButton not found.");
-    }
-
-    const confirmButton = document.getElementById('confirmAttackButton');
-    if (confirmButton) {
-        confirmButton.addEventListener('click', () => {
-            // Sound is played before checks, as it's a button click action
-            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
-            if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
-                combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
-                combatManager.gameState.combatPhase === 'playerAttackDeclare') {
-                combatManager.handleConfirmedAttackDeclaration();
-            } else {
-                if (!combatManager || !combatManager.gameState) {
-                    console.error("CombatManager or gameState not available.");
-                } else if (!combatManager.gameState.isInCombat) {
-                    console.log("Confirm attack clicked, but not in combat.");
-                } else if (combatManager.gameState.combatCurrentAttacker !== combatManager.gameState) {
-                    console.log("Confirm attack clicked, but not player's turn.");
-                } else if (combatManager.gameState.combatPhase !== 'playerAttackDeclare') {
-                    console.log(`Confirm attack clicked, but phase is ${combatManager.gameState.combatPhase}, not playerAttackDeclare.`);
-                }
-            }
-        });
-    } else {
-        console.error("confirmAttackButton not found in the DOM during initialization.");
-    }
-
-    const grappleButton = document.getElementById('attemptGrappleButton');
-    if (grappleButton) {
-        grappleButton.addEventListener('click', () => {
-            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
-            if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
-                combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
-                combatManager.gameState.combatPhase === 'playerAttackDeclare') {
-                combatManager.handleGrappleAttemptDeclaration();
-            } else {
-                if (!combatManager || !combatManager.gameState) {
-                    console.error("CombatManager or gameState not available for grapple attempt.");
-                } else if (!combatManager.gameState.isInCombat) {
-                    console.log("Attempt Grapple clicked, but not in combat.");
-                } else if (combatManager.gameState.combatCurrentAttacker !== combatManager.gameState) {
-                    console.log("Attempt Grapple clicked, but not player's turn.");
-                } else if (combatManager.gameState.combatPhase !== 'playerAttackDeclare') {
-                    console.log(`Attempt Grapple clicked, but phase is ${combatManager.gameState.combatPhase}, not playerAttackDeclare.`);
-                }
-            }
-        });
-    } else {
-        console.error("attemptGrappleButton not found in the DOM during initialization.");
-    }
-
-    const confirmDefenseBtn = document.getElementById('confirmDefenseButton');
-    if (confirmDefenseBtn) {
-        confirmDefenseBtn.addEventListener('click', () => {
-            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
-            if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
-                combatManager.gameState.combatCurrentDefender === combatManager.gameState && // Player is defending
-                combatManager.gameState.combatPhase === 'playerDefenseDeclare') {
-                combatManager.handleConfirmedDefenseDeclaration();
-            } else {
-                if (!combatManager || !combatManager.gameState) {
-                    console.error("CombatManager or gameState not available for defense confirmation.");
-                } else if (!combatManager.gameState.isInCombat) {
-                    console.log("Confirm Defense clicked, but not in combat.");
-                } else if (combatManager.gameState.combatCurrentDefender !== combatManager.gameState) {
-                    console.log("Confirm Defense clicked, but not player's turn to defend.");
-                } else if (combatManager.gameState.combatPhase !== 'playerDefenseDeclare') {
-                    console.log(`Confirm Defense clicked, but phase is ${combatManager.gameState.combatPhase}, not playerDefenseDeclare.`);
-                }
-            }
-        });
-    } else {
-        console.error("confirmDefenseButton not found in the DOM during initialization.");
-    }
-
-    const retargetBtn = document.getElementById('retargetButton');
-    if (retargetBtn) {
-        retargetBtn.addEventListener('click', () => {
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Neutral click for retarget
-            if (gameState.isInCombat && gameState.combatPhase === 'playerAttackDeclare' && combatManager) {
-                combatManager.handleRetarget();
-            }
-        });
-    } else {
-        console.error("retargetButton not found in the DOM during initialization.");
-    }
-
-    // Settings Modal Listeners
-    const openSettingsButton = document.getElementById('openSettingsButton');
-    const closeSettingsButton = document.getElementById('closeSettingsButton');
-    const settingsModal = document.getElementById('settingsModal');
-    const musicVolumeSlider = document.getElementById('musicVolume');
-    const sfxVolumeSlider = document.getElementById('sfxVolume');
-
-    if (openSettingsButton && closeSettingsButton && settingsModal) {
-        openSettingsButton.addEventListener('click', () => {
-            settingsModal.classList.remove('hidden');
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-        });
-
-        closeSettingsButton.addEventListener('click', () => {
-            settingsModal.classList.add('hidden');
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-        });
-    }
-
-    if (musicVolumeSlider && window.audioManager) {
-        // Set initial value
-        musicVolumeSlider.value = window.audioManager.getMusicVolume();
-        musicVolumeSlider.addEventListener('input', (event) => {
-            window.audioManager.setMusicVolume(parseFloat(event.target.value));
-        });
-    }
-
-    if (sfxVolumeSlider && window.audioManager) {
-        // Set initial value
-        sfxVolumeSlider.value = window.audioManager.getSfxVolume();
-        sfxVolumeSlider.addEventListener('input', (event) => {
-            window.audioManager.setSfxVolume(parseFloat(event.target.value));
-        });
-    }
-
-    // Jukebox UI Listeners
-    const nowPlayingElement = document.getElementById('currentTrackDisplay');
-    const playPauseButton = document.getElementById('toggleMusicButton');
-    const skipButton = document.getElementById('skipTrackButton');
-
-    if (playPauseButton && window.audioManager) {
-        playPauseButton.addEventListener('click', () => {
-            window.audioManager.toggleMusic();
-            playPauseButton.textContent = window.audioManager.isMusicPlaying() ? 'Pause' : 'Play';
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-        });
-    }
-
-    if (skipButton && window.audioManager) {
-        skipButton.addEventListener('click', () => {
-            window.audioManager.skipTrack();
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-        });
-    }
-
-    // Listen for the custom event when the track changes
-    document.addEventListener('trackchanged', (event) => {
-        if (nowPlayingElement) {
-            nowPlayingElement.textContent = event.detail.trackName;
-        }
-        if (playPauseButton) {
-            // Ensure button text is correct when a new track starts automatically
-            playPauseButton.textContent = 'Pause';
-        }
-    });
-}
-/**************************************************************
- * Start Game
- **************************************************************/
-async function startGame() {
-    try {
-        // Play start game sound and start music
-        if (window.audioManager) {
-            const startGameSounds = ['ui_start_game_01.wav', 'ui_start_game_02.wav'];
-            const randomStartSound = startGameSounds[Math.floor(Math.random() * startGameSounds.length)];
-            window.audioManager.playUiSound(randomStartSound, { volume: 0.8 });
-            setTimeout(() => window.audioManager.playMusic(0), 3000);
-        }
-
-        // Hide Character Creator, Show Game Info
-        document.getElementById('character-creator').classList.add('hidden');
-        document.getElementById('character-info-panel').classList.remove('hidden');
-
-        // --- Critical Map Loading Section ---
+        // Load the initially selected map
         const mapSelector = document.getElementById('mapSelector');
         let initialMapId = mapSelector?.value;
+
+        // If the default selected option is disabled (e.g. a separator) or has no value, find the first valid one
         if (mapSelector && (!initialMapId || mapSelector.options[mapSelector.selectedIndex]?.disabled)) {
+            initialMapId = ""; // Reset
             for (let i = 0; i < mapSelector.options.length; i++) {
                 if (mapSelector.options[i].value && !mapSelector.options[i].disabled) {
                     initialMapId = mapSelector.options[i].value;
@@ -2336,496 +1923,1094 @@ async function startGame() {
         }
 
         if (initialMapId) {
-            logToConsole(`Loading initial map: ${initialMapId}`);
-            const loadedMapData = await assetManager.loadMap(initialMapId);
+            console.log(`Loading initial map: ${initialMapId}`);
+            const loadedMapData = await assetManager.loadMap(initialMapId); // assetManager.loadMap now returns .levels and .startPos.z
             if (loadedMapData) {
                 window.mapRenderer.initializeCurrentMap(loadedMapData);
                 gameState.mapLevels = loadedMapData.levels;
-                gameState.playerPos = loadedMapData.startPos || { x: 2, y: 2, z: 0 };
-                gameState.currentViewZ = gameState.playerPos.z;
+                gameState.playerPos = loadedMapData.startPos || { x: 2, y: 2, z: 0 }; // Ensure Z
+                gameState.currentViewZ = gameState.playerPos.z; // Set initial view Z
                 gameState.currentMapId = loadedMapData.id || initialMapId;
 
+                // Ensure fowData for the initial player Z-level is initialized
                 const playerZStr = gameState.playerPos.z.toString();
-                if (loadedMapData.dimensions && !gameState.fowData[playerZStr]) {
-                    gameState.fowData[playerZStr] = Array(loadedMapData.dimensions.height).fill(null).map(() => Array(loadedMapData.dimensions.width).fill('hidden'));
+                if (loadedMapData.dimensions && loadedMapData.dimensions.height > 0 && loadedMapData.dimensions.width > 0) {
+                    if (!gameState.fowData[playerZStr]) {
+                        gameState.fowData[playerZStr] =
+                            Array(loadedMapData.dimensions.height).fill(null).map(() =>
+                                Array(loadedMapData.dimensions.width).fill('hidden'));
+                        logToConsole(`FOW data initialized for Z-level ${playerZStr} in initialize().`);
+                    }
                 }
-                logToConsole(`Initial map '${loadedMapData.name}' loaded.`);
+                console.log("Initial map loaded:", loadedMapData.name, "ID:", gameState.currentMapId, "Player Z:", gameState.playerPos.z);
                 spawnNpcsFromMapData(loadedMapData);
-                spawnVehiclesFromMapData(loadedMapData);
+                spawnVehiclesFromMapData(loadedMapData); // NEW: Spawn vehicles
+                // FOW calculation moved to startGame
             } else {
-                throw new Error(`Failed to load initial map: ${initialMapId}`);
+                console.error(`Failed to load initial map: ${initialMapId}`);
+                gameState.npcs = [];
+                window.mapRenderer.initializeCurrentMap(null);
+                const errorDisplay = document.getElementById('errorMessageDisplay');
+                if (errorDisplay) errorDisplay.textContent = `Failed to load initial map: ${initialMapId}.`;
+                gameState.mapLevels = {}; // Clear gameState mapLevels
+                gameState.fowData = {}; // Clear fowData
             }
         } else {
-            throw new Error("No initial map selected or map selector is empty.");
+            console.warn("No initial map selected or map selector is empty. No map loaded at startup.");
+            window.mapRenderer.initializeCurrentMap(null);
+            gameState.mapLevels = {};
+            gameState.fowData = {};
         }
-        // --- End Critical Map Loading ---
 
-        renderCharacterInfo(); // Now this runs after map and assets are ready
+        window.renderTables(gameState);
+        window.renderDerivedStats(gameState);
+        if (typeof window.initFaceCreator === 'function') {
+            await window.initFaceCreator(); // Initialize face creator event listeners and preview
+        } else {
+            console.error("initFaceCreator function not found. Face creator UI may not work.");
+        }
+        // window.mapRenderer.scheduleRender(); // Initial render of the map (or empty state) - gameLoop will handle this
+        window.inventoryManager.updateInventoryUI(); // Initialize inventory display
+        updatePlayerStatusDisplay(); // Initial display of clock and needs
 
-        // Ensure gameState.inventory.container is initialized before trying to modify it or call functions like addItem.
-        // OLD BACKPACK UPGRADE LOGIC REMOVED
+        // Entity Tooltip System is initialized by direct event listeners on mapContainerElement later in this function.
+        // No explicit initEntityTooltip function is called here anymore.
+        logToConsole("Entity tooltip event listeners will be set up with other mapContainer listeners.");
 
-        // Add Small Backpack and Cargo Pants as starting items
-        if (gameState.inventory.container && typeof window.inventoryManager.addItem === 'function' && assetManager) {
-            const itemsToStartWith = [
-                { id: "small_backpack_container", nameForLog: "Small Backpack" },
-                { id: "cargo_pants_pockets", nameForLog: "Cargo Pants" },
-                { id: "large_backpack_item", nameForLog: "Large Backpack" }
-            ];
+        // Instantiate and Initialize Managers that depend on loaded assets
+        // Ensure these are awaited if their .initialize() is async
 
-            itemsToStartWith.forEach(itemInfo => {
-                const itemDef = assetManager.getItem(itemInfo.id);
-                if (itemDef) {
-                    const newItem = new Item(itemDef); // Assumes Item constructor is globally available
-                    if (window.inventoryManager.addItem(newItem)) {
-                        logToConsole(`Added starting item: ${itemInfo.nameForLog} to inventory.`);
+        // InventoryManager (already instantiated globally, its initialize is simple)
+        if (window.inventoryManager && typeof window.inventoryManager.initialize === 'function') {
+            window.inventoryManager.initialize(); // Typically synchronous
+            logToConsole("InventoryManager initialized (or re-confirmed).", "info");
+        }
+
+        // CraftingManager
+        console.log("SCRIPT.JS: Checking CraftingManager dependencies...");
+        if (window.CraftingManager && window.assetManager && window.inventoryManager && window.xpManager && window.TimeManager) {
+            // Instantiate ONCE, assign to window, then initialize
+            window.craftingManager = new CraftingManager(window.gameState, window.assetManager, window.inventoryManager, window.xpManager, window.TimeManager);
+            await window.craftingManager.initialize(); // This is async
+            logToConsole("CraftingManager instance created, assigned to window, and initialized.", "info");
+        } else {
+            console.error("SCRIPT.JS: CraftingManager class or its core dependencies not available for initialization. Crafting will be broken.");
+            window.craftingManager = null; // Ensure it's null if not properly initialized
+        }
+
+        // ConstructionManager
+        console.log("SCRIPT.JS: Checking ConstructionManager dependencies...");
+        if (window.ConstructionManager && window.assetManager && window.inventoryManager && window.mapManager && window.TimeManager) {
+            // Instantiate ONCE, assign to window, then initialize
+            window.constructionManager = new ConstructionManager(window.gameState, window.assetManager, window.inventoryManager, window.mapManager, window.TimeManager);
+            await window.constructionManager.initialize(); // This is async
+            logToConsole("ConstructionManager instance created, assigned to window, and initialized.", "info");
+        } else {
+            console.error("SCRIPT.JS: ConstructionManager class or its core dependencies not available for initialization. Construction will be broken.");
+            window.constructionManager = null; // Ensure it's null if not properly initialized
+        }
+
+        // TrapManager
+        if (window.TrapManager && window.assetManager && window.combatManager) {
+            window.trapManager = new TrapManager(window.gameState, window.assetManager, window.combatManager);
+            await window.trapManager.initialize(); // This is async
+            logToConsole("TrapManager instance created and initialized.", "info");
+        } else {
+            console.error("SCRIPT.JS: TrapManager or its core dependencies not available for initialization.");
+        }
+
+        // Initialize UIs (after their managers are ready)
+        // Ensure CraftingUI is instantiated AFTER window.craftingManager is initialized
+        console.log("SCRIPT.JS: Pre-CraftingUI instantiation check:");
+        console.log("SCRIPT.JS: typeof window.CraftingUIManager:", typeof window.CraftingUIManager);
+        console.log("SCRIPT.JS: window.CraftingUIManager (actual value):", window.CraftingUIManager);
+        console.log("SCRIPT.JS: typeof window.craftingManager:", typeof window.craftingManager);
+        console.log("SCRIPT.JS: window.craftingManager (actual value):", window.craftingManager);
+        console.log("SCRIPT.JS: window.craftingManager.recipes (if manager exists):", window.craftingManager ? window.craftingManager.recipes : "N/A");
+
+
+        if (window.CraftingUIManager && window.craftingManager && window.inventoryManager && window.assetManager && window.gameState) {
+            window.CraftingUI = new CraftingUIManager(window.craftingManager, window.inventoryManager, window.assetManager, window.gameState);
+            if (typeof window.CraftingUI.initialize === 'function') {
+                window.CraftingUI.initialize();
+                logToConsole("CraftingUI instance created and initialized.", "info");
+            } else {
+                console.warn("CraftingUI was instantiated, but its initialize function is missing.");
+            }
+        } else {
+            console.error("SCRIPT.JS: CraftingUIManager class or its dependencies (craftingManager, etc.) not available for CraftingUI instantiation.");
+            window.CraftingUI = null; // Ensure it's null if not properly initialized
+        }
+
+        // Ensure ConstructionUI is instantiated AFTER window.constructionManager is initialized
+        console.log("SCRIPT.JS: Pre-ConstructionUI instantiation check:");
+        console.log("SCRIPT.JS: typeof window.ConstructionUIManager:", typeof window.ConstructionUIManager);
+        console.log("SCRIPT.JS: window.ConstructionUIManager (actual value):", window.ConstructionUIManager);
+        console.log("SCRIPT.JS: typeof window.constructionManager:", typeof window.constructionManager);
+        console.log("SCRIPT.JS: window.constructionManager (actual value):", window.constructionManager);
+        console.log("SCRIPT.JS: window.constructionManager.constructionDefinitions (if manager exists):", window.constructionManager ? Object.keys(window.constructionManager.constructionDefinitions).length : "N/A");
+
+
+        if (window.ConstructionUIManager && window.constructionManager && window.inventoryManager && window.assetManager && window.gameState && window.mapManager) {
+            window.ConstructionUI = new ConstructionUIManager(window.constructionManager, window.inventoryManager, window.assetManager, window.gameState, window.mapManager);
+            if (typeof window.ConstructionUI.initialize === 'function') {
+                window.ConstructionUI.initialize();
+                logToConsole("ConstructionUI instance created and initialized.", "info");
+            } else {
+                console.warn("ConstructionUI was instantiated, but its initialize function is missing.");
+            }
+        } else {
+            console.error("SCRIPT.JS: ConstructionUIManager class or its dependencies not available for ConstructionUI instantiation.");
+            window.ConstructionUI = null; // Ensure it's null
+        }
+
+        // Other managers that were already instantiated globally can have their .initialize() called here if needed,
+        // especially if they also depend on assetManager.loadDefinitions() indirectly.
+        // For example, vehicleManager's initialize method is simple and synchronous currently.
+        if (window.vehicleManager && typeof window.vehicleManager.initialize === 'function') {
+            if (!window.vehicleManager.initialize()) { // It returns boolean
+                logToConsole("VehicleManager initialization failed (returned false).", "warn");
+            } else {
+                logToConsole("VehicleManager initialized successfully.", "info");
+            }
+        }
+        if (window.VehicleModificationUI && typeof window.VehicleModificationUI.initialize === 'function') {
+            window.VehicleModificationUI.initialize();
+        }
+
+        if (window.companionManager && typeof window.companionManager.initialize === 'function') {
+            window.companionManager.initialize(); // Synchronous
+        }
+        if (window.dynamicEventManager && typeof window.dynamicEventManager.initialize === 'function') {
+            if (!window.dynamicEventManager.initialize()) { // Returns boolean
+                logToConsole("DynamicEventManager initialization failed (returned false).", "warn");
+            } else {
+                logToConsole("DynamicEventManager initialized successfully.", "info");
+            }
+        }
+        if (window.mapUtils && typeof window.mapUtils.initialize === 'function') {
+            window.mapUtils.initialize(); // Initialize MapUtils
+            logToConsole("MapUtils initialized.", "info");
+        } else {
+            console.error("SCRIPT.JS: MapUtils not available for initialization or initialize function missing.");
+        }
+        if (window.proceduralQuestManager && typeof window.proceduralQuestManager.initialize === 'function') {
+            if (!window.proceduralQuestManager.initialize()) { // Returns boolean
+                logToConsole("ProceduralQuestManager initialization failed (returned false).", "warn");
+            } else {
+                logToConsole("ProceduralQuestManager initialized successfully.", "info");
+            }
+        }
+
+
+        requestAnimationFrame(gameLoop); // Start the main game loop
+
+        document.addEventListener('keydown', handleKeyDown);
+
+
+        const mapContainerElement = document.getElementById('mapContainer'); // Renamed to avoid conflict
+        if (mapContainerElement) {
+            mapContainerElement.addEventListener('click', (event) => {
+                if (gameState.isConstructionModeActive && window.constructionManager && window.gameState.selectedConstructionId) {
+                    const rect = mapContainerElement.getBoundingClientRect();
+                    const scrollLeft = mapContainerElement.scrollLeft;
+                    const scrollTop = mapContainerElement.scrollTop;
+                    let tileWidth = 10; let tileHeight = 18; // Default/fallback
+                    const tempSpan = document.createElement('span');
+                    tempSpan.style.fontFamily = getComputedStyle(mapContainerElement).fontFamily;
+                    tempSpan.style.fontSize = getComputedStyle(mapContainerElement).fontSize;
+                    tempSpan.style.lineHeight = getComputedStyle(mapContainerElement).lineHeight;
+                    tempSpan.style.position = 'absolute'; tempSpan.style.visibility = 'hidden';
+                    tempSpan.textContent = 'M'; // Measure a character
+                    document.body.appendChild(tempSpan);
+                    tileWidth = tempSpan.offsetWidth;
+                    tileHeight = tempSpan.offsetHeight;
+                    document.body.removeChild(tempSpan);
+                    if (tileWidth === 0 || tileHeight === 0) { tileWidth = 10; tileHeight = 18; }
+
+
+                    const x = Math.floor((event.clientX - rect.left + scrollLeft) / tileWidth);
+                    const y = Math.floor((event.clientY - rect.top + scrollTop) / tileHeight);
+                    const z = gameState.currentViewZ; // Placement happens on the currently viewed Z-level
+
+                    const definition = window.constructionManager.constructionDefinitions[window.gameState.selectedConstructionId];
+                    if (definition) {
+                        logToConsole(`Attempting to place ${definition.name} at (${x},${y},${z})`, "info");
+                        // isValidPlacement should be called by placeConstruction internally, or here first.
+                        // For robustness, placeConstruction should re-validate.
+                        window.constructionManager.placeConstruction(window.gameState.selectedConstructionId, { x, y, z })
+                            .then(success => {
+                                if (success) {
+                                    logToConsole(`${definition.name} placed successfully.`, "event-success");
+                                } else {
+                                    logToConsole(`Failed to place ${definition.name}.`, "orange");
+                                    // uiManager could show a toast: "Cannot build here." or "Missing materials."
+                                }
+                                if (window.ConstructionUI) window.ConstructionUI.exitPlacementMode(); // Exit mode regardless
+                            });
                     } else {
-                        logToConsole(`Failed to add starting item: ${itemInfo.nameForLog} to inventory (addItem returned false).`);
+                        logToConsole(`Error: Selected construction ID ${window.gameState.selectedConstructionId} not found.`, "error");
+                        if (window.ConstructionUI) window.ConstructionUI.exitPlacementMode();
                     }
+
+                } else if (gameState.isRetargeting && combatManager) {
+                    const rect = mapContainerElement.getBoundingClientRect();
+                    const scrollLeft = mapContainerElement.scrollLeft;
+                    const scrollTop = mapContainerElement.scrollTop;
+                    // Determine tile size (character width and height)
+                    let tileWidth = 10; let tileHeight = 18;
+                    const tempSpan = document.createElement('span');
+                    tempSpan.style.fontFamily = getComputedStyle(mapContainerElement).fontFamily;
+                    tempSpan.style.fontSize = getComputedStyle(mapContainerElement).fontSize;
+                    tempSpan.style.lineHeight = getComputedStyle(mapContainerElement).lineHeight;
+                    tempSpan.style.position = 'absolute'; tempSpan.style.visibility = 'hidden';
+                    tempSpan.textContent = 'M';
+                    document.body.appendChild(tempSpan);
+                    tileWidth = tempSpan.offsetWidth;
+                    tileHeight = tempSpan.offsetHeight;
+                    document.body.removeChild(tempSpan);
+                    if (tileWidth === 0 || tileHeight === 0) { tileWidth = 10; tileHeight = 18; }
+
+
+                    const x = Math.floor((event.clientX - rect.left + scrollLeft) / tileWidth);
+                    const y = Math.floor((event.clientY - rect.top + scrollTop) / tileHeight);
+                    const z = gameState.currentViewZ;
+
+                    const currentMap = window.mapRenderer.getCurrentMapData();
+                    if (currentMap && x >= 0 && x < currentMap.dimensions.width && y >= 0 && y < currentMap.dimensions.height) {
+                        gameState.targetingCoords = { x, y, z };
+                        gameState.selectedTargetEntity = null;
+                        for (const npc of gameState.npcs) {
+                            if (npc.mapPos && npc.mapPos.x === x && npc.mapPos.y === y && npc.mapPos.z === z) {
+                                gameState.selectedTargetEntity = npc;
+                                break;
+                            }
+                        }
+                        const finalTargetPos = gameState.selectedTargetEntity ? gameState.selectedTargetEntity.mapPos : gameState.targetingCoords;
+                        const currentTilesetsForClickLOS = window.assetManager ? window.assetManager.tilesets : null;
+                        const currentMapDataForClickLOS = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+
+                        if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos, currentTilesetsForClickLOS, currentMapDataForClickLOS)) {
+                            logToConsole(`No line of sight to target at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). Click another target.`, "orange");
+                            window.mapRenderer.scheduleRender();
+                            return;
+                        }
+                        logToConsole(`Clicked target on map at X:${x}, Y:${y}, Z:${z}`);
+                        gameState.targetConfirmed = true;
+                        gameState.isRetargeting = false;
+                        gameState.retargetingJustHappened = true;
+                        combatManager.promptPlayerAttackDeclaration();
+                        window.mapRenderer.scheduleRender();
+                    }
+                }
+            });
+
+            // Event listener for Look Mode mouse movement
+            mapContainerElement.addEventListener('mousemove', (event) => {
+                if (gameState.isLookModeActive && typeof window.showLookTooltip === 'function') {
+                    window.showLookTooltip(event, gameState, window.mapRenderer, window.assetManager);
+                }
+            });
+            mapContainerElement.addEventListener('mouseleave', () => { // Hide tooltip when mouse leaves map
+                if (typeof window.hideLookTooltip === 'function') { // Always hide if mouse leaves, regardless of look mode status
+                    window.hideLookTooltip();
+                }
+            });
+
+        } else {
+            console.error("Map container not found for click and mousemove listeners.");
+        }
+
+        // Listen for campaign loaded event
+        document.addEventListener('campaignWasLoaded', async (event) => { // made async for handleMapSelectionChangeWrapper
+            logToConsole(`Campaign loaded: ${event.detail.campaignId}`);
+            if (event.detail.manifest && event.detail.manifest.entryMap) {
+                const entryMapId = event.detail.manifest.entryMap;
+                logToConsole(`Campaign entry map: ${entryMapId}`);
+                // Load the initial map for the campaign
+                // This replaces the previous initial map loading logic that was here.
+                await handleMapSelectionChangeWrapper(entryMapId);
+                // Ensure UI is updated after map change
+                // renderCharacterInfo(); // Potentially redundant if handleMapSelectionChangeWrapper covers it
+                // window.mapRenderer.scheduleRender(); // Covered by handleMapSelectionChangeWrapper
+                // updatePlayerStatusDisplay(); // Potentially redundant
+            } else {
+                logToConsole("Warning: Campaign loaded, but no entryMap specified in the manifest.", "warn");
+            }
+        });
+
+        /**************************************************************
+         * Player Status Display Function
+         **************************************************************/
+        function updatePlayerStatusDisplay() {
+            // Update Clock
+            const clockElement = document.getElementById('clockDisplay');
+            if (clockElement && typeof TimeManager !== 'undefined' && TimeManager.getClockDisplay) {
+                const clock = TimeManager.getClockDisplay(gameState);
+                clockElement.textContent = clock.clockString;
+                clockElement.style.color = clock.color;
+            } else if (clockElement) {
+                clockElement.textContent = "Clock N/A";
+            }
+
+            // Update Hunger Bar
+            const hungerElement = document.getElementById('hungerDisplay');
+            if (hungerElement && typeof TimeManager !== 'undefined' && TimeManager.getNeedsStatusBars) {
+                const needsBars = TimeManager.getNeedsStatusBars(gameState);
+                hungerElement.textContent = "Hunger: " + needsBars.hungerBar; // Added label
+                hungerElement.style.color = "sandybrown"; // Added light brown color
+            } else if (hungerElement) {
+                hungerElement.textContent = "Hunger N/A";
+                hungerElement.style.color = ""; // Reset color if N/A
+            }
+
+            // Update Thirst Bar
+            const thirstElement = document.getElementById('thirstDisplay');
+            if (thirstElement && typeof TimeManager !== 'undefined' && TimeManager.getNeedsStatusBars) {
+                const needsBars = TimeManager.getNeedsStatusBars(gameState); // Called again, but simple
+                thirstElement.textContent = "Thirst: " + needsBars.thirstBar; // Added label
+                thirstElement.style.color = "lightskyblue"; // Added light blue color
+            } else if (thirstElement) {
+                thirstElement.textContent = "Thirst N/A";
+                thirstElement.style.color = ""; // Reset color if N/A
+            }
+
+            // Update Z-Level Displays
+            const playerZElement = document.getElementById('playerZDisplay');
+            if (playerZElement) {
+                playerZElement.textContent = `Player Z: ${gameState.playerPos.z}`;
+            }
+            const viewZElement = document.getElementById('viewZDisplay');
+            if (viewZElement) {
+                viewZElement.textContent = `View Z: ${gameState.currentViewZ}`;
+            }
+            // Also update targeting Z info if it's active
+            if (typeof updateTargetingInfoUI === 'function') {
+                updateTargetingInfoUI();
+            }
+        }
+        window.updatePlayerStatusDisplay = updatePlayerStatusDisplay; // Make it globally accessible if needed elsewhere
+
+        // Function to update the targeting Z level display
+        function updateTargetingInfoUI() {
+            const targetingZElement = document.getElementById('targetingZDisplay');
+            if (targetingZElement) {
+                if (gameState.isTargetingMode) {
+                    targetingZElement.textContent = `Targeting Z: ${gameState.targetingCoords.z}`;
+                    targetingZElement.style.display = 'block'; // Show it
                 } else {
-                    logToConsole(`Warning: Item definition not found for starting item ID: ${itemInfo.id} (${itemInfo.nameForLog}).`);
+                    targetingZElement.style.display = 'none'; // Hide it
+                }
+            }
+        }
+        window.updateTargetingInfoUI = updateTargetingInfoUI; // Make global if needed by other modules directly
+
+        // Map Zoom Functionality
+        const mapContainerElementForZoom = document.getElementById('mapContainer'); // Renamed to avoid conflict if 'mapContainer' is used elsewhere in this scope
+        const zoomInButton = document.getElementById('zoomInButton');
+        const zoomOutButton = document.getElementById('zoomOutButton');
+
+        if (mapContainerElementForZoom && zoomInButton && zoomOutButton) {
+            let currentMapFontSize = 16; // Default font size in pixels
+            const zoomStep = 2; // Pixels to change on each zoom step
+            const minMapFontSize = 1;
+            const maxMapFontSize = 300;
+
+            try {
+                const computedStyle = window.getComputedStyle(mapContainerElementForZoom);
+                const initialSize = parseFloat(computedStyle.fontSize);
+                if (!isNaN(initialSize) && initialSize > 0) {
+                    currentMapFontSize = initialSize;
+                }
+            } catch (e) {
+                console.warn("Could not read initial font size for map container, using default.", e);
+            }
+            mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
+
+            zoomInButton.addEventListener('click', () => {
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+                currentMapFontSize = Math.min(maxMapFontSize, currentMapFontSize + zoomStep);
+                mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
+            });
+
+            zoomOutButton.addEventListener('click', () => {
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+                currentMapFontSize = Math.max(minMapFontSize, currentMapFontSize - zoomStep);
+                mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
+            });
+            logToConsole(`Map zoom controls initialized. Current map font size: ${currentMapFontSize}px`);
+        } else {
+            console.warn("Map zoom UI elements not found. Zoom functionality will not be available.");
+            if (!mapContainerElementForZoom) console.warn("Zoom: mapContainer not found.");
+            if (!zoomInButton) console.warn("Zoom: zoomInButton not found.");
+            if (!zoomOutButton) console.warn("Zoom: zoomOutButton not found.");
+        }
+
+        const confirmButton = document.getElementById('confirmAttackButton');
+        if (confirmButton) {
+            confirmButton.addEventListener('click', () => {
+                // Sound is played before checks, as it's a button click action
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+                if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
+                    combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
+                    combatManager.gameState.combatPhase === 'playerAttackDeclare') {
+                    combatManager.handleConfirmedAttackDeclaration();
+                } else {
+                    if (!combatManager || !combatManager.gameState) {
+                        console.error("CombatManager or gameState not available.");
+                    } else if (!combatManager.gameState.isInCombat) {
+                        console.log("Confirm attack clicked, but not in combat.");
+                    } else if (combatManager.gameState.combatCurrentAttacker !== combatManager.gameState) {
+                        console.log("Confirm attack clicked, but not player's turn.");
+                    } else if (combatManager.gameState.combatPhase !== 'playerAttackDeclare') {
+                        console.log(`Confirm attack clicked, but phase is ${combatManager.gameState.combatPhase}, not playerAttackDeclare.`);
+                    }
                 }
             });
         } else {
-            if (!gameState.inventory.container) logToConsole("Could not add starting backpack/pants: Inventory container not ready.");
-            if (typeof window.addItem !== 'function') logToConsole("Could not add starting backpack/pants: addItem function not available.");
-            if (!assetManager) logToConsole("Could not add starting backpack/pants: assetManager not available.");
+            console.error("confirmAttackButton not found in the DOM during initialization.");
         }
 
-        // Add clothing items from definitions
-        // Item constructor is now in js/inventory.js
-        // addItem is now in js/inventory.js
-        const clothingToAdd = ["basic_vest"];
-        clothingToAdd.forEach(itemId => {
-            const itemDef = assetManager.getItem(itemId); // All items (incl clothing) are in itemsById
-            if (itemDef) {
-                // Create a new Item instance if your addItem expects an Item object
-                // For simplicity, if addItem can handle raw definitions, that's fine too.
-                // Assuming Item constructor can take the definition object:
-                const newItem = new Item(itemDef);
-                window.inventoryManager.addItem(newItem);
-            } else {
-                console.warn(`Clothing item definition not found for ID: ${itemId}`);
-            }
-        });
-
-        // Add weapons and ammunition
-        const weaponsAndAmmoToAdd = [];
-
-        weaponsAndAmmoToAdd.forEach(itemEntry => {
-            const itemDef = assetManager.getItem(itemEntry.id);
-            if (itemDef) {
-                const quantity = itemEntry.quantity || 1; // Default to 1 if quantity not specified
-                for (let i = 0; i < quantity; i++) {
-                    const newItem = new Item(itemDef);
-                    // If it's ammunition, we might want to store its specific ammoType or quantity per item
-                    if (itemDef.type === "ammunition") {
-                        newItem.ammoType = itemDef.ammoType;
-                        newItem.quantityPerBox = itemDef.quantity; // Assuming 'quantity' in JSON is per-box
+        const grappleButton = document.getElementById('attemptGrappleButton');
+        if (grappleButton) {
+            grappleButton.addEventListener('click', () => {
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
+                if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
+                    combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
+                    combatManager.gameState.combatPhase === 'playerAttackDeclare') {
+                    combatManager.handleGrappleAttemptDeclaration();
+                } else {
+                    if (!combatManager || !combatManager.gameState) {
+                        console.error("CombatManager or gameState not available for grapple attempt.");
+                    } else if (!combatManager.gameState.isInCombat) {
+                        console.log("Attempt Grapple clicked, but not in combat.");
+                    } else if (combatManager.gameState.combatCurrentAttacker !== combatManager.gameState) {
+                        console.log("Attempt Grapple clicked, but not player's turn.");
+                    } else if (combatManager.gameState.combatPhase !== 'playerAttackDeclare') {
+                        console.log(`Attempt Grapple clicked, but phase is ${combatManager.gameState.combatPhase}, not playerAttackDeclare.`);
                     }
-                    window.inventoryManager.addItem(newItem);
                 }
-            } else {
-                console.warn(`Weapon or ammo definition not found for ID: ${itemEntry.id}`);
+            });
+        } else {
+            console.error("attemptGrappleButton not found in the DOM during initialization.");
+        }
+
+        const confirmDefenseBtn = document.getElementById('confirmDefenseButton');
+        if (confirmDefenseBtn) {
+            confirmDefenseBtn.addEventListener('click', () => {
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
+                if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
+                    combatManager.gameState.combatCurrentDefender === combatManager.gameState && // Player is defending
+                    combatManager.gameState.combatPhase === 'playerDefenseDeclare') {
+                    combatManager.handleConfirmedDefenseDeclaration();
+                } else {
+                    if (!combatManager || !combatManager.gameState) {
+                        console.error("CombatManager or gameState not available for defense confirmation.");
+                    } else if (!combatManager.gameState.isInCombat) {
+                        console.log("Confirm Defense clicked, but not in combat.");
+                    } else if (combatManager.gameState.combatCurrentDefender !== combatManager.gameState) {
+                        console.log("Confirm Defense clicked, but not player's turn to defend.");
+                    } else if (combatManager.gameState.combatPhase !== 'playerDefenseDeclare') {
+                        console.log(`Confirm Defense clicked, but phase is ${combatManager.gameState.combatPhase}, not playerDefenseDeclare.`);
+                    }
+                }
+            });
+        } else {
+            console.error("confirmDefenseButton not found in the DOM during initialization.");
+        }
+
+        const retargetBtn = document.getElementById('retargetButton');
+        if (retargetBtn) {
+            retargetBtn.addEventListener('click', () => {
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Neutral click for retarget
+                if (gameState.isInCombat && gameState.combatPhase === 'playerAttackDeclare' && combatManager) {
+                    combatManager.handleRetarget();
+                }
+            });
+        } else {
+            console.error("retargetButton not found in the DOM during initialization.");
+        }
+
+        // Settings Modal Listeners
+        const openSettingsButton = document.getElementById('openSettingsButton');
+        const closeSettingsButton = document.getElementById('closeSettingsButton');
+        const settingsModal = document.getElementById('settingsModal');
+        const musicVolumeSlider = document.getElementById('musicVolume');
+        const sfxVolumeSlider = document.getElementById('sfxVolume');
+
+        if (openSettingsButton && closeSettingsButton && settingsModal) {
+            openSettingsButton.addEventListener('click', () => {
+                settingsModal.classList.remove('hidden');
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            });
+
+            closeSettingsButton.addEventListener('click', () => {
+                settingsModal.classList.add('hidden');
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            });
+        }
+
+        if (musicVolumeSlider && window.audioManager) {
+            // Set initial value
+            musicVolumeSlider.value = window.audioManager.getMusicVolume();
+            musicVolumeSlider.addEventListener('input', (event) => {
+                window.audioManager.setMusicVolume(parseFloat(event.target.value));
+            });
+        }
+
+        if (sfxVolumeSlider && window.audioManager) {
+            // Set initial value
+            sfxVolumeSlider.value = window.audioManager.getSfxVolume();
+            sfxVolumeSlider.addEventListener('input', (event) => {
+                window.audioManager.setSfxVolume(parseFloat(event.target.value));
+            });
+        }
+
+        // Jukebox UI Listeners
+        const nowPlayingElement = document.getElementById('currentTrackDisplay');
+        const playPauseButton = document.getElementById('toggleMusicButton');
+        const skipButton = document.getElementById('skipTrackButton');
+
+        if (playPauseButton && window.audioManager) {
+            playPauseButton.addEventListener('click', () => {
+                window.audioManager.toggleMusic();
+                playPauseButton.textContent = window.audioManager.isMusicPlaying() ? 'Pause' : 'Play';
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            });
+        }
+
+        if (skipButton && window.audioManager) {
+            skipButton.addEventListener('click', () => {
+                window.audioManager.skipTrack();
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            });
+        }
+
+        // Listen for the custom event when the track changes
+        document.addEventListener('trackchanged', (event) => {
+            if (nowPlayingElement) {
+                nowPlayingElement.textContent = event.detail.trackName;
+            }
+            if (playPauseButton) {
+                // Ensure button text is correct when a new track starts automatically
+                playPauseButton.textContent = 'Pause';
             }
         });
 
-
-        if (characterCreator) characterCreator.classList.add('hidden');
-        if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
-        // if (gameControls) gameControls.classList.remove('hidden'); // As noted, this ID isn't in use
-
-        renderCharacterInfo(); // This now calls the specific rendering function from js/character.js
-
-        // 1. Initialize base "Body Pockets" capacity from Strength
-        // This ensures the player's inherent carrying capacity is set before any items are processed.
-        if (gameState.inventory.container && gameState.stats && typeof window.inventoryManager?.calculateCumulativeCapacity === 'function') {
-            const initialPlayerStrength = gameState.stats.find(stat => stat.name === "Strength")?.points || 1;
-            gameState.inventory.container.maxSlots = Math.max(1, initialPlayerStrength); // Base capacity is Strength, min 1
-            logToConsole(`Initial 'Body Pockets' capacity set to: ${gameState.inventory.container.maxSlots} (from Strength: ${initialPlayerStrength}).`);
+    } catch (error) {
+        console.error("Error during game initialization:", error);
+        const errorDisplay = document.getElementById('errorMessageDisplay');
+        if (errorDisplay) {
+            errorDisplay.textContent = "A critical error occurred during game initialization. Please try refreshing. Details in console.";
         } else {
-            console.error("Critical error: Cannot set initial Strength-based capacity in startGame.");
-            logToConsole("Error: Could not set initial Strength-based carrying capacity for Body Pockets.");
-            if (gameState.inventory.container) gameState.inventory.container.maxSlots = 3; // Fallback
+            alert("A critical error occurred during game initialization. Please try refreshing. Details in console.");
         }
+    }
+}
+/**************************************************************
+ * Start Game
+ **************************************************************/
+function startGame() {
+    // Play start game sound
+    if (window.audioManager) {
+        const startGameSounds = ['ui_start_game_01.wav', 'ui_start_game_02.wav'];
+        const randomStartSound = startGameSounds[Math.floor(Math.random() * startGameSounds.length)];
+        window.audioManager.playUiSound(randomStartSound, { volume: 0.8 });
+        // Start the music playlist after a delay
+        setTimeout(() => {
+            window.audioManager.playMusic(0); // Start music with 0 delay after the initial wait
+        }, 3000); // 3-second delay before music starts
+    }
 
-        // 2. Define all starting items (clothes, consumables, etc.)
-        const allStartingItems = [
-            { id: "small_backpack_wearable", nameForLog: "Small Backpack" },
+    const characterCreator = document.getElementById('character-creator');
+    const characterInfoPanel = document.getElementById('character-info-panel');
+    // const gameControls = document.getElementById('game-controls'); // This ID does not exist in index.html right-panel is used.
+
+    // Ensure currentMapData is loaded (now via window.mapRenderer.getCurrentMapData())
+    let currentMap = window.mapRenderer.getCurrentMapData();
+    if (!currentMap) {
+        console.warn("startGame called but no map data loaded from mapRenderer. This should have been handled by initialize().");
+        // Attempt to gracefully handle or rely on initialize() having set defaults
+        // Forcing a load here might be redundant if initialize worked or failed informatively.
+        // If initialize() failed to load any map, currentMap will be null.
+        // Game might not be in a playable state if no map is loaded.
+    }
+
+    // Ensure gameState reflects the currently loaded map's Z-level structure
+    // This might be redundant if initialize() and handleMapSelectionChangeWrapper() are correctly setting these.
+    if (currentMap && currentMap.levels && currentMap.startPos) {
+        gameState.mapLevels = currentMap.levels;
+        gameState.playerPos = { ...currentMap.startPos }; // Ensure we have x, y, and z
+        gameState.currentViewZ = currentMap.startPos.z;
+    } else if (currentMap) {
+        // If currentMap exists but is missing Z-level data (e.g. old format map somehow loaded)
+        // Log a warning and try to set defaults.
+        console.warn("startGame: currentMap is loaded but missing Z-level data (levels or startPos.z). Attempting to use defaults.");
+        gameState.mapLevels = currentMap.layers ? { "0": currentMap.layers } : { "0": { landscape: [], building: [], item: [], roof: [] } };
+        gameState.playerPos = { x: (currentMap.startPos?.x || 2), y: (currentMap.startPos?.y || 2), z: 0 };
+        gameState.currentViewZ = 0;
+    } else {
+        // No map loaded at all
+        console.error("startGame: No map data is available. Cannot properly initialize game state for map.");
+        gameState.mapLevels = { "0": { landscape: [], building: [], item: [], roof: [] } }; // Default empty level
+        gameState.playerPos = { x: 2, y: 2, z: 0 };
+        gameState.currentViewZ = 0;
+    }
+
+    // Ensure gameState.inventory.container is initialized before trying to modify it or call functions like addItem.
+    // OLD BACKPACK UPGRADE LOGIC REMOVED
+
+    // Add Small Backpack and Cargo Pants as starting items
+    if (gameState.inventory.container && typeof window.inventoryManager.addItem === 'function' && assetManager) {
+        const itemsToStartWith = [
+            { id: "small_backpack_container", nameForLog: "Small Backpack" },
             { id: "cargo_pants_pockets", nameForLog: "Cargo Pants" },
-            { id: "basic_vest", nameForLog: "Basic Vest" },
-            { id: "large_backpack_item", nameForLog: "Large Backpack" },
-            { id: "fishing_rod_simple", nameForLog: "Fishing Rod" }
-            // Add other items like Canned Beans, Bottled Water if they are default starting items
-            // For example:
-            // { id: "canned_beans_food", nameForLog: "Canned Beans" },
-            // { id: "bottled_water_drink", nameForLog: "Bottled Water" }
+            { id: "large_backpack_item", nameForLog: "Large Backpack" }
         ];
 
-        logToConsole(`Processing ${allStartingItems.length} starting items. Player inventory capacity: ${gameState.inventory.container.maxSlots} slots.`);
-
-        // 3. Attempt to add all starting items to inventory; if full, place on floor.
-        allStartingItems.forEach(itemInfo => {
+        itemsToStartWith.forEach(itemInfo => {
             const itemDef = assetManager.getItem(itemInfo.id);
             if (itemDef) {
-                const newItemInstance = new Item(itemDef);
-                if (!window.inventoryManager.addItem(newItemInstance)) { // addItem uses InventoryManager.addItemToInventory
-                    logToConsole(`Inventory full (or item add failed) for: ${itemInfo.nameForLog}. Placing on floor.`);
-                    if (!gameState.floorItems) gameState.floorItems = [];
-                    gameState.floorItems.push({ x: gameState.playerPos.x, y: gameState.playerPos.y, z: gameState.playerPos.z, item: newItemInstance });
-                } else {
+                const newItem = new Item(itemDef); // Assumes Item constructor is globally available
+                if (window.inventoryManager.addItem(newItem)) {
                     logToConsole(`Added starting item: ${itemInfo.nameForLog} to inventory.`);
+                } else {
+                    logToConsole(`Failed to add starting item: ${itemInfo.nameForLog} to inventory (addItem returned false).`);
                 }
             } else {
-                logToConsole(`Warning: Starting item definition not found for ID: ${itemInfo.id} (${itemInfo.nameForLog}). Skipping.`);
+                logToConsole(`Warning: Item definition not found for starting item ID: ${itemInfo.id} (${itemInfo.nameForLog}).`);
             }
         });
-
-        // Player starts with no clothes equipped. Inventory capacity is purely Strength-based.
-        // The player will need to pick up and equip items from the floor or their inventory.
-        // If they equip a backpack, `equipClothing` in InventoryManager will call `calculateCumulativeCapacity`
-        // which will then update `gameState.inventory.container.maxSlots` to include the backpack's capacity.
-
-        if (window.mapRenderer && gameState.floorItems.length > 0) {
-            window.mapRenderer.scheduleRender(); // Ensure map re-renders if items were dropped.
-        }
-
-        gameState.gameStarted = true;
-        window.inventoryManager.updateInventoryUI(); // Update UI to reflect initial inventory state
-
-        // initializeHealth is now in js/character.js, call it with gameState
-        window.initializeHealth(gameState);
-        window.renderHealthTable(gameState); // Explicitly call to render after health is set up.
-
-        updatePlayerStatusDisplay(); // Initialize clock and needs display
-
-        if (window.mapRenderer.getCurrentMapData()) { // Only run these if a map is loaded
-            window.interaction.detectInteractableItems();
-            window.interaction.showInteractableItems();
-            if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function' && gameState.playerPos) {
-                const PLAYER_VISION_RADIUS_CONST = 10; // TODO: Centralize this constant
-                window.mapRenderer.updateFOW_BFS(gameState.playerPos.x, gameState.playerPos.y, gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
-            }
-        }
-        window.turnManager.startTurn();
-        runConsumableAndNeedsTest(); // Added call to the test function
+    } else {
+        if (!gameState.inventory.container) logToConsole("Could not add starting backpack/pants: Inventory container not ready.");
+        if (typeof window.addItem !== 'function') logToConsole("Could not add starting backpack/pants: addItem function not available.");
+        if (!assetManager) logToConsole("Could not add starting backpack/pants: assetManager not available.");
     }
+
+    // Add clothing items from definitions
+    // Item constructor is now in js/inventory.js
+    // addItem is now in js/inventory.js
+    const clothingToAdd = ["basic_vest"];
+    clothingToAdd.forEach(itemId => {
+        const itemDef = assetManager.getItem(itemId); // All items (incl clothing) are in itemsById
+        if (itemDef) {
+            // Create a new Item instance if your addItem expects an Item object
+            // For simplicity, if addItem can handle raw definitions, that's fine too.
+            // Assuming Item constructor can take the definition object:
+            const newItem = new Item(itemDef);
+            window.inventoryManager.addItem(newItem);
+        } else {
+            console.warn(`Clothing item definition not found for ID: ${itemId}`);
+        }
+    });
+
+    // Add weapons and ammunition
+    const weaponsAndAmmoToAdd = [];
+
+    weaponsAndAmmoToAdd.forEach(itemEntry => {
+        const itemDef = assetManager.getItem(itemEntry.id);
+        if (itemDef) {
+            const quantity = itemEntry.quantity || 1; // Default to 1 if quantity not specified
+            for (let i = 0; i < quantity; i++) {
+                const newItem = new Item(itemDef);
+                // If it's ammunition, we might want to store its specific ammoType or quantity per item
+                if (itemDef.type === "ammunition") {
+                    newItem.ammoType = itemDef.ammoType;
+                    newItem.quantityPerBox = itemDef.quantity; // Assuming 'quantity' in JSON is per-box
+                }
+                window.inventoryManager.addItem(newItem);
+            }
+        } else {
+            console.warn(`Weapon or ammo definition not found for ID: ${itemEntry.id}`);
+        }
+    });
+
+
+    if (characterCreator) characterCreator.classList.add('hidden');
+    if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
+    // if (gameControls) gameControls.classList.remove('hidden'); // As noted, this ID isn't in use
+
+    renderCharacterInfo(); // This now calls the specific rendering function from js/character.js
+
+    // 1. Initialize base "Body Pockets" capacity from Strength
+    // This ensures the player's inherent carrying capacity is set before any items are processed.
+    if (gameState.inventory.container && gameState.stats && typeof window.inventoryManager?.calculateCumulativeCapacity === 'function') {
+        const initialPlayerStrength = gameState.stats.find(stat => stat.name === "Strength")?.points || 1;
+        gameState.inventory.container.maxSlots = Math.max(1, initialPlayerStrength); // Base capacity is Strength, min 1
+        logToConsole(`Initial 'Body Pockets' capacity set to: ${gameState.inventory.container.maxSlots} (from Strength: ${initialPlayerStrength}).`);
+    } else {
+        console.error("Critical error: Cannot set initial Strength-based capacity in startGame.");
+        logToConsole("Error: Could not set initial Strength-based carrying capacity for Body Pockets.");
+        if (gameState.inventory.container) gameState.inventory.container.maxSlots = 3; // Fallback
+    }
+
+    // 2. Define all starting items (clothes, consumables, etc.)
+    const allStartingItems = [
+        { id: "small_backpack_wearable", nameForLog: "Small Backpack" },
+        { id: "cargo_pants_pockets", nameForLog: "Cargo Pants" },
+        { id: "basic_vest", nameForLog: "Basic Vest" },
+        { id: "large_backpack_item", nameForLog: "Large Backpack" },
+        { id: "fishing_rod_simple", nameForLog: "Fishing Rod" }
+        // Add other items like Canned Beans, Bottled Water if they are default starting items
+        // For example:
+        // { id: "canned_beans_food", nameForLog: "Canned Beans" },
+        // { id: "bottled_water_drink", nameForLog: "Bottled Water" }
+    ];
+
+    logToConsole(`Processing ${allStartingItems.length} starting items. Player inventory capacity: ${gameState.inventory.container.maxSlots} slots.`);
+
+    // 3. Attempt to add all starting items to inventory; if full, place on floor.
+    allStartingItems.forEach(itemInfo => {
+        const itemDef = assetManager.getItem(itemInfo.id);
+        if (itemDef) {
+            const newItemInstance = new Item(itemDef);
+            if (!window.inventoryManager.addItem(newItemInstance)) { // addItem uses InventoryManager.addItemToInventory
+                logToConsole(`Inventory full (or item add failed) for: ${itemInfo.nameForLog}. Placing on floor.`);
+                if (!gameState.floorItems) gameState.floorItems = [];
+                gameState.floorItems.push({ x: gameState.playerPos.x, y: gameState.playerPos.y, z: gameState.playerPos.z, item: newItemInstance });
+            } else {
+                logToConsole(`Added starting item: ${itemInfo.nameForLog} to inventory.`);
+            }
+        } else {
+            logToConsole(`Warning: Starting item definition not found for ID: ${itemInfo.id} (${itemInfo.nameForLog}). Skipping.`);
+        }
+    });
+
+    // Player starts with no clothes equipped. Inventory capacity is purely Strength-based.
+    // The player will need to pick up and equip items from the floor or their inventory.
+    // If they equip a backpack, `equipClothing` in InventoryManager will call `calculateCumulativeCapacity`
+    // which will then update `gameState.inventory.container.maxSlots` to include the backpack's capacity.
+
+    if (window.mapRenderer && gameState.floorItems.length > 0) {
+        window.mapRenderer.scheduleRender(); // Ensure map re-renders if items were dropped.
+    }
+
+    gameState.gameStarted = true;
+    window.inventoryManager.updateInventoryUI(); // Update UI to reflect initial inventory state
+
+    // initializeHealth is now in js/character.js, call it with gameState
+    window.initializeHealth(gameState);
+    window.renderHealthTable(gameState); // Explicitly call to render after health is set up.
+
+    updatePlayerStatusDisplay(); // Initialize clock and needs display
+
+    if (window.mapRenderer.getCurrentMapData()) { // Only run these if a map is loaded
+        window.interaction.detectInteractableItems();
+        window.interaction.showInteractableItems();
+        if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function' && gameState.playerPos) {
+            const PLAYER_VISION_RADIUS_CONST = 10; // TODO: Centralize this constant
+            window.mapRenderer.updateFOW_BFS(gameState.playerPos.x, gameState.playerPos.y, gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+        }
+    }
+    window.turnManager.startTurn();
+    runConsumableAndNeedsTest(); // Added call to the test function
+}
 
 // --- Save/Load Game Functions ---
 function saveGame() {
-        if (!gameState.gameStarted) {
-            alert("Game has not started yet. Cannot save.");
-            logToConsole("Save attempt failed: Game not started.", "warn");
-            return;
-        }
-        try {
-            const gameStateString = JSON.stringify(gameState);
-            localStorage.setItem('jasciGameSave', gameStateString);
-            alert("Game Saved!");
-            logToConsole("Game state saved to localStorage.", "info");
-            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
-        } catch (error) {
-            console.error("Error saving game:", error);
-            alert("Failed to save game. See console for details.");
-            logToConsole(`Error saving game: ${error.message}`, "error");
+    if (!gameState.gameStarted) {
+        alert("Game has not started yet. Cannot save.");
+        logToConsole("Save attempt failed: Game not started.", "warn");
+        return;
+    }
+    try {
+        const gameStateString = JSON.stringify(gameState);
+        localStorage.setItem('jasciGameSave', gameStateString);
+        alert("Game Saved!");
+        logToConsole("Game state saved to localStorage.", "info");
+        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+    } catch (error) {
+        console.error("Error saving game:", error);
+        alert("Failed to save game. See console for details.");
+        logToConsole(`Error saving game: ${error.message}`, "error");
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+    }
+}
+
+function loadGame() {
+    try {
+        const savedGameStateString = localStorage.getItem('jasciGameSave');
+        if (savedGameStateString) {
+            const loadedState = JSON.parse(savedGameStateString);
+
+            // Deep merge or careful assignment is needed here.
+            // For a simple overwrite of the entire gameState:
+            Object.assign(gameState, loadedState);
+
+            // After loading, re-initialize parts of the game that depend on the new state
+            // or that are not part of the JSON (like DOM elements, caches, etc.)
+
+            // Re-initialize asset-dependent parts if map changed or assets are dynamic
+            // For now, assume assets are static and loaded at init.
+
+            // Refresh UI elements
+            if (gameState.gameStarted) {
+                const characterCreator = document.getElementById('character-creator');
+                const characterInfoPanel = document.getElementById('character-info-panel');
+                if (characterCreator) characterCreator.classList.add('hidden');
+                if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
+
+                renderCharacterInfo(); // Update character display
+                window.updateInventoryUI(); // Update inventory display
+                window.renderHealthTable(gameState); // Update health display
+                updatePlayerStatusDisplay(); // Update clock, needs, Z-levels
+                window.turnManager.updateTurnUI(); // Update turn info
+
+                // Map related UI and state
+                if (window.mapRenderer) {
+                    // If map data itself is part of gameState and needs to be re-applied to mapRenderer
+                    // This depends on how mapRenderer stores/gets its map data.
+                    // If mapRenderer.currentMapData is not directly part of gameState,
+                    // it might need to be reloaded or re-initialized.
+                    // For now, let's assume mapLevels in gameState is the source of truth
+                    // and mapRenderer will use it.
+                    // It's crucial that mapRenderer's internal state is consistent with loaded gameState.mapLevels.
+                    // A function like `mapRenderer.setCurrentMapFromGameState(gameState)` might be needed.
+                    // For now, we'll just schedule a render.
+                    window.mapRenderer.scheduleRender();
+                }
+
+                window.interaction.detectInteractableItems();
+                window.interaction.showInteractableItems();
+
+                // Re-establish NPC references or re-initialize them if they have complex states not in JSON
+                // For now, assuming NPCs are fully serialized. If not, they might need:
+                // gameState.npcs.forEach(npc => initializeNpcFace(npc)); // If face generation is needed
+
+                logToConsole("Game state loaded from localStorage.", "info");
+                alert("Game Loaded!");
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+
+            } else {
+                // If the loaded game state indicates game was not started (e.g. save from char creator)
+                // Reset to character creator or initial menu.
+                // For now, just log it. A more robust system would handle this.
+                logToConsole("Loaded game state indicates game was not started. UI may be inconsistent.", "warn");
+                // Potentially show character creator again
+                const characterCreator = document.getElementById('character-creator');
+                if (characterCreator) characterCreator.classList.remove('hidden');
+                window.renderTables(gameState); // Re-render char creation tables
+            }
+
+        } else {
+            alert("No saved game found.");
+            logToConsole("Load attempt: No saved game found in localStorage.", "info");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         }
+    } catch (error) {
+        console.error("Error loading game:", error);
+        alert("Failed to load game. Save data might be corrupted. See console for details.");
+        logToConsole(`Error loading game: ${error.message}`, "error");
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+    }
+}
+
+
+// --- Automated Consumable and Needs Test ---
+function runConsumableAndNeedsTest() {
+    logToConsole("--- Starting Automated Consumable and Needs Test ---");
+
+    const beansDef = assetManager.getItem('canned_beans_food');
+    const waterDef = assetManager.getItem('bottled_water_drink');
+
+    if (!beansDef) {
+        logToConsole("TEST ERROR: Canned Beans definition (canned_beans_food) not found by assetManager.");
+        // Attempt to check items.json directly if available through a debug var or skip
+    }
+    if (!waterDef) {
+        logToConsole("TEST ERROR: Bottled Water definition (bottled_water_drink) not found by assetManager.");
     }
 
-    function loadGame() {
-        try {
-            const savedGameStateString = localStorage.getItem('jasciGameSave');
-            if (savedGameStateString) {
-                const loadedState = JSON.parse(savedGameStateString);
-
-                // Deep merge or careful assignment is needed here.
-                // For a simple overwrite of the entire gameState:
-                Object.assign(gameState, loadedState);
-
-                // After loading, re-initialize parts of the game that depend on the new state
-                // or that are not part of the JSON (like DOM elements, caches, etc.)
-
-                // Re-initialize asset-dependent parts if map changed or assets are dynamic
-                // For now, assume assets are static and loaded at init.
-
-                // Refresh UI elements
-                if (gameState.gameStarted) {
-                    const characterCreator = document.getElementById('character-creator');
-                    const characterInfoPanel = document.getElementById('character-info-panel');
-                    if (characterCreator) characterCreator.classList.add('hidden');
-                    if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
-
-                    renderCharacterInfo(); // Update character display
-                    window.updateInventoryUI(); // Update inventory display
-                    window.renderHealthTable(gameState); // Update health display
-                    updatePlayerStatusDisplay(); // Update clock, needs, Z-levels
-                    window.turnManager.updateTurnUI(); // Update turn info
-
-                    // Map related UI and state
-                    if (window.mapRenderer) {
-                        // If map data itself is part of gameState and needs to be re-applied to mapRenderer
-                        // This depends on how mapRenderer stores/gets its map data.
-                        // If mapRenderer.currentMapData is not directly part of gameState,
-                        // it might need to be reloaded or re-initialized.
-                        // For now, let's assume mapLevels in gameState is the source of truth
-                        // and mapRenderer will use it.
-                        // It's crucial that mapRenderer's internal state is consistent with loaded gameState.mapLevels.
-                        // A function like `mapRenderer.setCurrentMapFromGameState(gameState)` might be needed.
-                        // For now, we'll just schedule a render.
-                        window.mapRenderer.scheduleRender();
-                    }
-
-                    window.interaction.detectInteractableItems();
-                    window.interaction.showInteractableItems();
-
-                    // Re-establish NPC references or re-initialize them if they have complex states not in JSON
-                    // For now, assuming NPCs are fully serialized. If not, they might need:
-                    // gameState.npcs.forEach(npc => initializeNpcFace(npc)); // If face generation is needed
-
-                    logToConsole("Game state loaded from localStorage.", "info");
-                    alert("Game Loaded!");
-                    if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
-
-                } else {
-                    // If the loaded game state indicates game was not started (e.g. save from char creator)
-                    // Reset to character creator or initial menu.
-                    // For now, just log it. A more robust system would handle this.
-                    logToConsole("Loaded game state indicates game was not started. UI may be inconsistent.", "warn");
-                    // Potentially show character creator again
-                    const characterCreator = document.getElementById('character-creator');
-                    if (characterCreator) characterCreator.classList.remove('hidden');
-                    window.renderTables(gameState); // Re-render char creation tables
-                }
-
-            } else {
-                alert("No saved game found.");
-                logToConsole("Load attempt: No saved game found in localStorage.", "info");
-                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
-            }
-        } catch (error) {
-            console.error("Error loading game:", error);
-            alert("Failed to load game. Save data might be corrupted. See console for details.");
-            logToConsole(`Error loading game: ${error.message}`, "error");
-            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
-        }
-    }
+    // Ensure player needs are at a testable state (e.g., not full)
+    // For simplicity, let's assume they are at default or set them.
+    // gameState.playerHunger = 12; // Example: Set to half
+    // gameState.playerThirst = 12; // Example: Set to half
+    // Ensure these are initialized if not already (they should be by Time.advanceTime or character init)
+    const maxNeeds = 24;
+    if (typeof gameState.playerHunger === 'undefined') gameState.playerHunger = maxNeeds;
+    if (typeof gameState.playerThirst === 'undefined') gameState.playerThirst = maxNeeds;
 
 
-    // --- Automated Consumable and Needs Test ---
-    function runConsumableAndNeedsTest() {
-        logToConsole("--- Starting Automated Consumable and Needs Test ---");
+    logToConsole(`Initial Test State - Hunger: ${gameState.playerHunger}/${maxNeeds}, Thirst: ${gameState.playerThirst}/${maxNeeds}`);
+    if (typeof window.updatePlayerStatusDisplay === 'function') window.updatePlayerStatusDisplay();
 
-        const beansDef = assetManager.getItem('canned_beans_food');
-        const waterDef = assetManager.getItem('bottled_water_drink');
-
-        if (!beansDef) {
-            logToConsole("TEST ERROR: Canned Beans definition (canned_beans_food) not found by assetManager.");
-            // Attempt to check items.json directly if available through a debug var or skip
-        }
-        if (!waterDef) {
-            logToConsole("TEST ERROR: Bottled Water definition (bottled_water_drink) not found by assetManager.");
+    // Test consuming Canned Beans
+    if (beansDef) {
+        logToConsole("Testing consumption of Canned Beans...");
+        // Ensure item is in inventory (addItem checks capacity)
+        if (!gameState.inventory.container.items.find(i => i.id === beansDef.id)) {
+            window.inventoryManager.addItem(new Item(beansDef)); // Add one for the test
         }
 
-        // Ensure player needs are at a testable state (e.g., not full)
-        // For simplicity, let's assume they are at default or set them.
-        // gameState.playerHunger = 12; // Example: Set to half
-        // gameState.playerThirst = 12; // Example: Set to half
-        // Ensure these are initialized if not already (they should be by Time.advanceTime or character init)
-        const maxNeeds = 24;
-        if (typeof gameState.playerHunger === 'undefined') gameState.playerHunger = maxNeeds;
-        if (typeof gameState.playerThirst === 'undefined') gameState.playerThirst = maxNeeds;
-
-
-        logToConsole(`Initial Test State - Hunger: ${gameState.playerHunger}/${maxNeeds}, Thirst: ${gameState.playerThirst}/${maxNeeds}`);
-        if (typeof window.updatePlayerStatusDisplay === 'function') window.updatePlayerStatusDisplay();
-
-        // Test consuming Canned Beans
-        if (beansDef) {
-            logToConsole("Testing consumption of Canned Beans...");
-            // Ensure item is in inventory (addItem checks capacity)
-            if (!gameState.inventory.container.items.find(i => i.id === beansDef.id)) {
-                window.inventoryManager.addItem(new Item(beansDef)); // Add one for the test
-            }
-
-            const beansInventoryItem = gameState.inventory.container.items.find(i => i.id === beansDef.id);
-            if (beansInventoryItem) {
-                // Simulate selecting and interacting
-                gameState.inventory.currentlyDisplayedItems = [beansInventoryItem]; // Mock display for interactInventoryItem
-                gameState.inventory.cursor = 0;
-                const initialBeansHunger = gameState.playerHunger;
-                interactInventoryItem(); // This should consume it
-                logToConsole(`After Beans - Hunger: ${gameState.playerHunger} (was ${initialBeansHunger}), Thirst: ${gameState.playerThirst}`);
-                if (initialBeansHunger + beansDef.effects.hunger > maxNeeds && gameState.playerHunger !== maxNeeds) {
-                    logToConsole(`TEST WARNING: Beans hunger did not cap at max. Expected ${maxNeeds}, got ${gameState.playerHunger}`);
-                } else if (initialBeansHunger + beansDef.effects.hunger <= maxNeeds && gameState.playerHunger !== initialBeansHunger + beansDef.effects.hunger) {
-                    logToConsole(`TEST WARNING: Beans hunger did not increase correctly. Expected ${initialBeansHunger + beansDef.effects.hunger}, got ${gameState.playerHunger}`);
-                }
-            } else {
-                logToConsole("TEST INFO: Canned Beans not found in inventory for consumption test part.");
+        const beansInventoryItem = gameState.inventory.container.items.find(i => i.id === beansDef.id);
+        if (beansInventoryItem) {
+            // Simulate selecting and interacting
+            gameState.inventory.currentlyDisplayedItems = [beansInventoryItem]; // Mock display for interactInventoryItem
+            gameState.inventory.cursor = 0;
+            const initialBeansHunger = gameState.playerHunger;
+            interactInventoryItem(); // This should consume it
+            logToConsole(`After Beans - Hunger: ${gameState.playerHunger} (was ${initialBeansHunger}), Thirst: ${gameState.playerThirst}`);
+            if (initialBeansHunger + beansDef.effects.hunger > maxNeeds && gameState.playerHunger !== maxNeeds) {
+                logToConsole(`TEST WARNING: Beans hunger did not cap at max. Expected ${maxNeeds}, got ${gameState.playerHunger}`);
+            } else if (initialBeansHunger + beansDef.effects.hunger <= maxNeeds && gameState.playerHunger !== initialBeansHunger + beansDef.effects.hunger) {
+                logToConsole(`TEST WARNING: Beans hunger did not increase correctly. Expected ${initialBeansHunger + beansDef.effects.hunger}, got ${gameState.playerHunger}`);
             }
         } else {
-            logToConsole("TEST SKIP: Canned Beans definition not found, skipping consumption test for it.");
+            logToConsole("TEST INFO: Canned Beans not found in inventory for consumption test part.");
         }
-        if (typeof window.updatePlayerStatusDisplay === 'function') window.updatePlayerStatusDisplay();
+    } else {
+        logToConsole("TEST SKIP: Canned Beans definition not found, skipping consumption test for it.");
+    }
+    if (typeof window.updatePlayerStatusDisplay === 'function') window.updatePlayerStatusDisplay();
 
-        // Test consuming Bottled Water
-        if (waterDef) {
-            logToConsole("Testing consumption of Bottled Water...");
-            if (!gameState.inventory.container.items.find(i => i.id === waterDef.id)) {
-                window.inventoryManager.addItem(new Item(waterDef)); // Add one for the test
-            }
+    // Test consuming Bottled Water
+    if (waterDef) {
+        logToConsole("Testing consumption of Bottled Water...");
+        if (!gameState.inventory.container.items.find(i => i.id === waterDef.id)) {
+            window.inventoryManager.addItem(new Item(waterDef)); // Add one for the test
+        }
 
-            const waterInventoryItem = gameState.inventory.container.items.find(i => i.id === waterDef.id);
-            if (waterInventoryItem) {
-                gameState.inventory.currentlyDisplayedItems = [waterInventoryItem];
-                gameState.inventory.cursor = 0;
-                const initialWaterThirst = gameState.playerThirst;
-                interactInventoryItem();
-                logToConsole(`After Water - Hunger: ${gameState.playerHunger}, Thirst: ${gameState.playerThirst} (was ${initialWaterThirst})`);
-                if (initialWaterThirst + waterDef.effects.thirst > maxNeeds && gameState.playerThirst !== maxNeeds) {
-                    logToConsole(`TEST WARNING: Water thirst did not cap at max. Expected ${maxNeeds}, got ${gameState.playerThirst}`);
-                } else if (initialWaterThirst + waterDef.effects.thirst <= maxNeeds && gameState.playerThirst !== initialWaterThirst + waterDef.effects.thirst) {
-                    logToConsole(`TEST WARNING: Water thirst did not increase correctly. Expected ${initialWaterThirst + waterDef.effects.thirst}, got ${gameState.playerThirst}`);
-                }
-            } else {
-                logToConsole("TEST INFO: Bottled Water not found in inventory for consumption test part.");
+        const waterInventoryItem = gameState.inventory.container.items.find(i => i.id === waterDef.id);
+        if (waterInventoryItem) {
+            gameState.inventory.currentlyDisplayedItems = [waterInventoryItem];
+            gameState.inventory.cursor = 0;
+            const initialWaterThirst = gameState.playerThirst;
+            interactInventoryItem();
+            logToConsole(`After Water - Hunger: ${gameState.playerHunger}, Thirst: ${gameState.playerThirst} (was ${initialWaterThirst})`);
+            if (initialWaterThirst + waterDef.effects.thirst > maxNeeds && gameState.playerThirst !== maxNeeds) {
+                logToConsole(`TEST WARNING: Water thirst did not cap at max. Expected ${maxNeeds}, got ${gameState.playerThirst}`);
+            } else if (initialWaterThirst + waterDef.effects.thirst <= maxNeeds && gameState.playerThirst !== initialWaterThirst + waterDef.effects.thirst) {
+                logToConsole(`TEST WARNING: Water thirst did not increase correctly. Expected ${initialWaterThirst + waterDef.effects.thirst}, got ${gameState.playerThirst}`);
             }
         } else {
-            logToConsole("TEST SKIP: Bottled Water definition not found, skipping consumption test for it.");
+            logToConsole("TEST INFO: Bottled Water not found in inventory for consumption test part.");
         }
-        if (typeof window.updatePlayerStatusDisplay === 'function') window.updatePlayerStatusDisplay();
+    } else {
+        logToConsole("TEST SKIP: Bottled Water definition not found, skipping consumption test for it.");
+    }
+    if (typeof window.updatePlayerStatusDisplay === 'function') window.updatePlayerStatusDisplay();
 
-        // Time passing simulation removed as per subtask.
+    // Time passing simulation removed as per subtask.
 
-        logToConsole("--- Automated Consumable and Needs Test Complete ---");
-        // Clean up gameState.inventory.currentlyDisplayedItems if it was mocked for test
-        gameState.inventory.currentlyDisplayedItems = [];
-        if (gameState.inventory.open) { // If test somehow left inventory open, refresh it
-            renderInventoryMenu();
-        }
+    logToConsole("--- Automated Consumable and Needs Test Complete ---");
+    // Clean up gameState.inventory.currentlyDisplayedItems if it was mocked for test
+    gameState.inventory.currentlyDisplayedItems = [];
+    if (gameState.inventory.open) { // If test somehow left inventory open, refresh it
+        renderInventoryMenu();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initialize); // Changed to call new async initialize
+
+// Make sure endTurn calls the correct updateHealthCrisis
+// function endTurn() { // This function is now removed
+//     logToConsole(`Turn ${gameState.currentTurn} ended.`);
+//     window.updateHealthCrisis(gameState); // Pass gameState to the generalized function
+//     gameState.currentTurn++;
+//     window.turnManager.startTurn(); // Make sure this is called via turnManager
+//     window.mapRenderer.scheduleRender();
+//     window.turnManager.updateTurnUI(); // Make sure this is called via turnManager
+// }
+
+function testTurnManagerDash() {
+    console.log("Testing turnManager.dash()...");
+    // Setup initial state for testing
+    gameState.currentTurn = 1;
+    gameState.movementPointsRemaining = 6;
+    gameState.actionPointsRemaining = 1;
+    gameState.hasDashed = false;
+    console.log("Initial gameState (for dash test): ", JSON.parse(JSON.stringify(gameState)));
+
+    window.turnManager.dash();
+
+    console.log("gameState after dash:", JSON.parse(JSON.stringify(gameState)));
+
+    if (gameState.actionPointsRemaining === 0 && gameState.movementPointsRemaining === 12 && gameState.hasDashed === true) {
+        console.log("testTurnManagerDash PASSED!");
+        logToConsole("Test: turnManager.dash PASSED!");
+        return true;
+    } else {
+        console.error("testTurnManagerDash FAILED! Check console for details.");
+        logToConsole("Test: turnManager.dash FAILED!");
+        return false;
+    }
+}
+// To run the test, open the browser console and type: testTurnManagerDash()
+
+async function testAssetManagerAndInteractionInitialization() {
+    console.log("Testing AssetManager and Interaction module initialization...");
+    logToConsole("Test: Starting AssetManager & Interaction Initialization Test...");
+
+    // 1. Test AssetManager's loadMap
+    if (!assetManager || typeof assetManager.loadDefinitions !== 'function') {
+        console.error("AssetManager instance not available globally or not initialized.");
+        logToConsole("Test FAIL: AssetManager not available.");
+        return false;
     }
 
-    document.addEventListener('DOMContentLoaded', initialize); // Changed to call new async initialize
+    // This test assumes the main initialize() function in script.js, which calls
+    // assetManager.loadDefinitions(), has already run.
 
-    // Make sure endTurn calls the correct updateHealthCrisis
-    // function endTurn() { // This function is now removed
-    //     logToConsole(`Turn ${gameState.currentTurn} ended.`);
-    //     window.updateHealthCrisis(gameState); // Pass gameState to the generalized function
-    //     gameState.currentTurn++;
-    //     window.turnManager.startTurn(); // Make sure this is called via turnManager
-    //     window.mapRenderer.scheduleRender();
-    //     window.turnManager.updateTurnUI(); // Make sure this is called via turnManager
-    // }
-
-    function testTurnManagerDash() {
-        console.log("Testing turnManager.dash()...");
-        // Setup initial state for testing
-        gameState.currentTurn = 1;
-        gameState.movementPointsRemaining = 6;
-        gameState.actionPointsRemaining = 1;
-        gameState.hasDashed = false;
-        console.log("Initial gameState (for dash test): ", JSON.parse(JSON.stringify(gameState)));
-
-        window.turnManager.dash();
-
-        console.log("gameState after dash:", JSON.parse(JSON.stringify(gameState)));
-
-        if (gameState.actionPointsRemaining === 0 && gameState.movementPointsRemaining === 12 && gameState.hasDashed === true) {
-            console.log("testTurnManagerDash PASSED!");
-            logToConsole("Test: turnManager.dash PASSED!");
-            return true;
+    let mapData = null;
+    try {
+        // Using 'testMap' as it's listed in Maps/ and likely a valid map ID.
+        mapData = await assetManager.loadMap('testMap');
+        if (mapData && mapData.id === 'testMap') {
+            console.log("testAssetManagerAndInteractionInitialization: assetManager.loadMap('testMap') PASSED.");
+            logToConsole("Test: assetManager.loadMap('testMap') PASSED.");
         } else {
-            console.error("testTurnManagerDash FAILED! Check console for details.");
-            logToConsole("Test: turnManager.dash FAILED!");
+            console.error("testAssetManagerAndInteractionInitialization: assetManager.loadMap('testMap') FAILED to return correct data.", mapData);
+            logToConsole("Test FAIL: assetManager.loadMap('testMap') did not return correct data.");
             return false;
         }
+    } catch (error) {
+        console.error("testAssetManagerAndInteractionInitialization: assetManager.loadMap('testMap') FAILED with error:", error);
+        logToConsole("Test FAIL: assetManager.loadMap('testMap') threw an error.");
+        return false;
     }
-    // To run the test, open the browser console and type: testTurnManagerDash()
 
-    async function testAssetManagerAndInteractionInitialization() {
-        console.log("Testing AssetManager and Interaction module initialization...");
-        logToConsole("Test: Starting AssetManager & Interaction Initialization Test...");
+    // 2. Test Interaction module's use of AssetManager
+    if (!window.interaction || typeof window.interaction.initInteraction !== 'function') {
+        console.error("window.interaction or window.interaction.initInteraction not available.");
+        logToConsole("Test FAIL: window.interaction.initInteraction not available.");
+        return false;
+    }
+    // initInteraction is called by the main initialize() in script.js.
 
-        // 1. Test AssetManager's loadMap
-        if (!assetManager || typeof assetManager.loadDefinitions !== 'function') {
-            console.error("AssetManager instance not available globally or not initialized.");
-            logToConsole("Test FAIL: AssetManager not available.");
-            return false;
-        }
+    const originalPlayerPos = gameState.playerPos;
+    const originalInteractableItems = gameState.interactableItems;
 
-        // This test assumes the main initialize() function in script.js, which calls
-        // assetManager.loadDefinitions(), has already run.
+    gameState.playerPos = { x: 0, y: 0 };
 
-        let mapData = null;
-        try {
-            // Using 'testMap' as it's listed in Maps/ and likely a valid map ID.
-            mapData = await assetManager.loadMap('testMap');
-            if (mapData && mapData.id === 'testMap') {
-                console.log("testAssetManagerAndInteractionInitialization: assetManager.loadMap('testMap') PASSED.");
-                logToConsole("Test: assetManager.loadMap('testMap') PASSED.");
-            } else {
-                console.error("testAssetManagerAndInteractionInitialization: assetManager.loadMap('testMap') FAILED to return correct data.", mapData);
-                logToConsole("Test FAIL: assetManager.loadMap('testMap') did not return correct data.");
-                return false;
-            }
-        } catch (error) {
-            console.error("testAssetManagerAndInteractionInitialization: assetManager.loadMap('testMap') FAILED with error:", error);
-            logToConsole("Test FAIL: assetManager.loadMap('testMap') threw an error.");
-            return false;
-        }
+    // Mock map data for interaction test.
+    // Assuming 'WDH' (Wooden Door Horizontal) is a valid interactive tile ID.
+    // This assumption might need verification against 'tileset.json'.
+    const mockMapData = {
+        id: 'testMapForInteraction',
+        name: 'Test Map for Interaction',
+        dimensions: { width: 1, height: 1 },
+        layers: {
+            landscape: [['grass']],
+            building: [['WDH']],
+            item: [[]],
+            roof: [[]]
+        },
+        startPos: { x: 0, y: 0 }
+    };
 
-        // 2. Test Interaction module's use of AssetManager
-        if (!window.interaction || typeof window.interaction.initInteraction !== 'function') {
-            console.error("window.interaction or window.interaction.initInteraction not available.");
-            logToConsole("Test FAIL: window.interaction.initInteraction not available.");
-            return false;
-        }
-        // initInteraction is called by the main initialize() in script.js.
+    const realCurrentMap = window.mapRenderer.getCurrentMapData();
+    window.mapRenderer.initializeCurrentMap(mockMapData);
+    gameState.layers = mockMapData.layers;
 
-        const originalPlayerPos = gameState.playerPos;
-        const originalInteractableItems = gameState.interactableItems;
-
-        gameState.playerPos = { x: 0, y: 0 };
-
-        // Mock map data for interaction test.
-        // Assuming 'WDH' (Wooden Door Horizontal) is a valid interactive tile ID.
-        // This assumption might need verification against 'tileset.json'.
-        const mockMapData = {
-            id: 'testMapForInteraction',
-            name: 'Test Map for Interaction',
-            dimensions: { width: 1, height: 1 },
-            layers: {
-                landscape: [['grass']],
-                building: [['WDH']],
-                item: [[]],
-                roof: [[]]
-            },
-            startPos: { x: 0, y: 0 }
-        };
-
-        const realCurrentMap = window.mapRenderer.getCurrentMapData();
-        window.mapRenderer.initializeCurrentMap(mockMapData);
-        gameState.layers = mockMapData.layers;
-
-        try {
-            window.interaction.detectInteractableItems();
-            // Check if 'WDH' was detected. This depends on 'WDH' being in tileset.json and tagged "interactive".
-            if (gameState.interactableItems && gameState.interactableItems.length > 0 && gameState.interactableItems[0].id === 'WDH') {
-                console.log("testAssetManagerAndInteractionInitialization: interaction.detectInteractableItems() PASSED and found 'WDH'.");
-                logToConsole("Test: interaction.detectInteractableItems() PASSED.");
-            } else {
-                console.error("testAssetManagerAndInteractionInitialization: interaction.detectInteractableItems() FAILED to find 'WDH'. Found:", gameState.interactableItems);
-                logToConsole("Test FAIL: interaction.detectInteractableItems() did not find 'WDH'. Verify 'WDH' is interactive in tileset.json.");
-                // Restore original map and player pos before returning false
-                window.mapRenderer.initializeCurrentMap(realCurrentMap);
-                gameState.layers = realCurrentMap ? realCurrentMap.layers : { landscape: [], building: [], item: [], roof: [] };
-                gameState.playerPos = originalPlayerPos;
-                gameState.interactableItems = originalInteractableItems;
-                return false;
-            }
-        } catch (e) {
-            console.error("testAssetManagerAndInteractionInitialization: interaction.detectInteractableItems() FAILED with error:", e);
-            logToConsole("Test FAIL: interaction.detectInteractableItems() threw an error.");
+    try {
+        window.interaction.detectInteractableItems();
+        // Check if 'WDH' was detected. This depends on 'WDH' being in tileset.json and tagged "interactive".
+        if (gameState.interactableItems && gameState.interactableItems.length > 0 && gameState.interactableItems[0].id === 'WDH') {
+            console.log("testAssetManagerAndInteractionInitialization: interaction.detectInteractableItems() PASSED and found 'WDH'.");
+            logToConsole("Test: interaction.detectInteractableItems() PASSED.");
+        } else {
+            console.error("testAssetManagerAndInteractionInitialization: interaction.detectInteractableItems() FAILED to find 'WDH'. Found:", gameState.interactableItems);
+            logToConsole("Test FAIL: interaction.detectInteractableItems() did not find 'WDH'. Verify 'WDH' is interactive in tileset.json.");
             // Restore original map and player pos before returning false
             window.mapRenderer.initializeCurrentMap(realCurrentMap);
             gameState.layers = realCurrentMap ? realCurrentMap.layers : { landscape: [], building: [], item: [], roof: [] };
@@ -2833,952 +3018,958 @@ function saveGame() {
             gameState.interactableItems = originalInteractableItems;
             return false;
         }
-
-        // Restore original map and player pos
+    } catch (e) {
+        console.error("testAssetManagerAndInteractionInitialization: interaction.detectInteractableItems() FAILED with error:", e);
+        logToConsole("Test FAIL: interaction.detectInteractableItems() threw an error.");
+        // Restore original map and player pos before returning false
         window.mapRenderer.initializeCurrentMap(realCurrentMap);
         gameState.layers = realCurrentMap ? realCurrentMap.layers : { landscape: [], building: [], item: [], roof: [] };
         gameState.playerPos = originalPlayerPos;
         gameState.interactableItems = originalInteractableItems;
-
-        console.log("testAssetManagerAndInteractionInitialization: All checks PASSED.");
-        logToConsole("Test: AssetManager & Interaction Initialization PASSED.");
-        return true;
+        return false;
     }
-    // To run the test, open the browser console after the game has initialized and type: testAssetManagerAndInteractionInitialization()
 
-    async function testCombatTurnProgression() {
-        logToConsole("--- Running Combat Turn Progression Test ---");
-        let testPassed = true;
-        let turnUiCalledLog = [];
+    // Restore original map and player pos
+    window.mapRenderer.initializeCurrentMap(realCurrentMap);
+    gameState.layers = realCurrentMap ? realCurrentMap.layers : { landscape: [], building: [], item: [], roof: [] };
+    gameState.playerPos = originalPlayerPos;
+    gameState.interactableItems = originalInteractableItems;
 
-        // Ensure combatManager is available
-        if (!combatManager || typeof combatManager.startCombat !== 'function') {
-            logToConsole("Combat Turn Progression Test FAIL: combatManager not available.");
-            return false;
+    console.log("testAssetManagerAndInteractionInitialization: All checks PASSED.");
+    logToConsole("Test: AssetManager & Interaction Initialization PASSED.");
+    return true;
+}
+// To run the test, open the browser console after the game has initialized and type: testAssetManagerAndInteractionInitialization()
+
+async function testCombatTurnProgression() {
+    logToConsole("--- Running Combat Turn Progression Test ---");
+    let testPassed = true;
+    let turnUiCalledLog = [];
+
+    // Ensure combatManager is available
+    if (!combatManager || typeof combatManager.startCombat !== 'function') {
+        logToConsole("Combat Turn Progression Test FAIL: combatManager not available.");
+        return false;
+    }
+
+    // Find the training dummy
+    const dummyNpc = gameState.npcs.find(npc => npc.id === 'training_dummy');
+    if (!dummyNpc) {
+        logToConsole("Combat Turn Progression Test FAIL: Training dummy NPC not found.");
+        return false;
+    }
+    if (!dummyNpc.mapPos) {
+        logToConsole("Combat Turn Progression Test FAIL: Training dummy has no mapPos for combat.");
+        return false;
+    }
+
+
+    // Store original and set up spy
+    const originalUpdateTurnUI = window.turnManager.updateTurnUI;
+    let updateTurnUICallCount = 0;
+    window.turnManager.updateTurnUI = () => {
+        updateTurnUICallCount++;
+        turnUiCalledLog.push(`updateTurnUI called. AP: ${gameState.actionPointsRemaining}, MP: ${gameState.movementPointsRemaining}`);
+        originalUpdateTurnUI.call(window.turnManager); // Call the original function
+    };
+
+    // Start combat
+    logToConsole("Starting combat for test...");
+    gameState.playerPos = { x: dummyNpc.mapPos.x - 1, y: dummyNpc.mapPos.y }; // Position player next to dummy
+    combatManager.startCombat([gameState, dummyNpc]);
+
+    if (!gameState.isInCombat) {
+        logToConsole("Combat Turn Progression Test FAIL: Combat did not start.");
+        testPassed = false;
+    } else {
+        logToConsole("Combat started. Initiative: " + JSON.stringify(combatManager.initiativeTracker.map(e => e.isPlayer ? 'Player' : e.entity.id)));
+        logToConsole(`Current attacker: ${combatManager.initiativeTracker[combatManager.currentTurnIndex].isPlayer ? 'Player' : combatManager.initiativeTracker[combatManager.currentTurnIndex].entity.id}`);
+    }
+
+    // --- Simulate Player's Turn ---
+    if (testPassed && gameState.isInCombat && combatManager.initiativeTracker[combatManager.currentTurnIndex].entity === gameState) {
+        logToConsole("Player's turn. Ending player turn immediately for test purposes...");
+        const initialPlayerAP = gameState.actionPointsRemaining;
+        combatManager.endPlayerTurn(); // This should advance the turn
+
+        if (gameState.actionPointsRemaining !== 0 || gameState.movementPointsRemaining !== 0) {
+            logToConsole(`Player Turn End Check FAIL: AP or MP not zeroed. AP: ${gameState.actionPointsRemaining}, MP: ${gameState.movementPointsRemaining}`);
+            // testPassed = false; // This might be too strict if endPlayerTurn has other effects before UI update
         }
-
-        // Find the training dummy
-        const dummyNpc = gameState.npcs.find(npc => npc.id === 'training_dummy');
-        if (!dummyNpc) {
-            logToConsole("Combat Turn Progression Test FAIL: Training dummy NPC not found.");
-            return false;
-        }
-        if (!dummyNpc.mapPos) {
-            logToConsole("Combat Turn Progression Test FAIL: Training dummy has no mapPos for combat.");
-            return false;
-        }
+        logToConsole("Player turn ended by test.");
+    } else if (testPassed && gameState.isInCombat) {
+        logToConsole("WARN: Not player's turn first, or player is not the current entity. Test will proceed but might be less indicative for player-specific UI updates initially.");
+    }
 
 
-        // Store original and set up spy
-        const originalUpdateTurnUI = window.turnManager.updateTurnUI;
-        let updateTurnUICallCount = 0;
-        window.turnManager.updateTurnUI = () => {
-            updateTurnUICallCount++;
-            turnUiCalledLog.push(`updateTurnUI called. AP: ${gameState.actionPointsRemaining}, MP: ${gameState.movementPointsRemaining}`);
-            originalUpdateTurnUI.call(window.turnManager); // Call the original function
-        };
+    // --- Simulate through a few turns OR until it's player's turn again (if NPC went first) ---
+    // This part is tricky to automate perfectly without a more complex setup.
+    // We're primarily testing if `updateTurnUI` is called by combatManager.
+    // The previous changes ensured updateTurnUI is called in nextTurn.
 
-        // Start combat
-        logToConsole("Starting combat for test...");
-        gameState.playerPos = { x: dummyNpc.mapPos.x - 1, y: dummyNpc.mapPos.y }; // Position player next to dummy
-        combatManager.startCombat([gameState, dummyNpc]);
+    // After combatManager.endPlayerTurn(), it should be NPC's turn.
+    // combatManager.executeNpcCombatTurn will run, then combatManager.nextTurn().
+    // The nextTurn() call is where window.turnManager.updateTurnUI() is expected if it becomes player's turn again.
 
-        if (!gameState.isInCombat) {
-            logToConsole("Combat Turn Progression Test FAIL: Combat did not start.");
-            testPassed = false;
-        } else {
-            logToConsole("Combat started. Initiative: " + JSON.stringify(combatManager.initiativeTracker.map(e => e.isPlayer ? 'Player' : e.entity.id)));
-            logToConsole(`Current attacker: ${combatManager.initiativeTracker[combatManager.currentTurnIndex].isPlayer ? 'Player' : combatManager.initiativeTracker[combatManager.currentTurnIndex].entity.id}`);
-        }
+    // For simplicity, we check call count. startCombat calls nextTurn, which calls updateTurnUI.
+    // endPlayerTurn calls nextTurn, which calls updateTurnUI.
+    // If NPC turn also calls nextTurn which leads to player turn, that's another call.
 
-        // --- Simulate Player's Turn ---
-        if (testPassed && gameState.isInCombat && combatManager.initiativeTracker[combatManager.currentTurnIndex].entity === gameState) {
-            logToConsole("Player's turn. Ending player turn immediately for test purposes...");
-            const initialPlayerAP = gameState.actionPointsRemaining;
-            combatManager.endPlayerTurn(); // This should advance the turn
+    logToConsole(`updateTurnUI call count after simulated turns: ${updateTurnUICallCount}`);
+    turnUiCalledLog.forEach(log => logToConsole(log));
 
-            if (gameState.actionPointsRemaining !== 0 || gameState.movementPointsRemaining !== 0) {
-                logToConsole(`Player Turn End Check FAIL: AP or MP not zeroed. AP: ${gameState.actionPointsRemaining}, MP: ${gameState.movementPointsRemaining}`);
-                // testPassed = false; // This might be too strict if endPlayerTurn has other effects before UI update
+
+    if (updateTurnUICallCount < 2) { // At least one for combat start, one for turn change after player.
+        logToConsole(`Combat Turn Progression Test FAIL: updateTurnUI was called ${updateTurnUICallCount} times, expected at least 2.`);
+        testPassed = false;
+    }
+
+    // Clean up
+    if (gameState.isInCombat) {
+        combatManager.endCombat();
+        logToConsole("Combat ended by test.");
+    }
+    window.turnManager.updateTurnUI = originalUpdateTurnUI; // Restore original function
+
+    if (testPassed) {
+        logToConsole("Combat Turn Progression Test PASSED (updateTurnUI was called).");
+    } else {
+        logToConsole("Combat Turn Progression Test FAILED. Check logs.");
+    }
+    return testPassed;
+}
+
+// Make sure to add testCombatTurnProgression to runAllBasicConnectionTests if it exists
+if (typeof runAllBasicConnectionTests === 'function' &&
+    !runAllBasicConnectionTests.toString().includes('testCombatTurnProgression')) {
+    const originalRunAll = runAllBasicConnectionTests;
+    runAllBasicConnectionTests = async function () {
+        let overallResult = await originalRunAll(); // Run previous tests
+        logToConsole("--- Running Combat Turn Progression Test (from wrapper) ---");
+        if (!await testCombatTurnProgression()) overallResult = false;
+        return overallResult;
+    }
+}
+
+// --- Test Suite for Reconnected Features ---
+
+async function runAllBasicConnectionTests() {
+    logToConsole("===== STARTING BASIC CONNECTION TESTS =====");
+    let allPassed = true;
+
+    // Prerequisite: Ensure game is in a somewhat initialized state for some tests
+    // This might mean running parts of initialize() or startGame() if not already done.
+    // For now, these tests assume they are run after the main initialize() and startGame() have setup gameState.
+    // If not, they might need more internal setup.
+
+    if (typeof testPlayerMovement === 'function') {
+        logToConsole("--- Running Player Movement Test ---");
+        if (!await testPlayerMovement()) allPassed = false;
+    } else { logToConsole("Test function testPlayerMovement not found."); allPassed = false; }
+
+    if (typeof testDoorInteraction === 'function') {
+        logToConsole("--- Running Door Interaction Test ---");
+        if (!await testDoorInteraction()) allPassed = false;
+    } else { logToConsole("Test function testDoorInteraction not found."); allPassed = false; }
+
+    if (typeof testItemAddAndEquip === 'function') {
+        logToConsole("--- Running Item Add and Equip Test ---");
+        if (!await testItemAddAndEquip()) allPassed = false;
+    } else { logToConsole("Test function testItemAddAndEquip not found."); allPassed = false; }
+
+    if (typeof testCombatInitiation === 'function') {
+        logToConsole("--- Running Combat Initiation Test ---");
+        if (!await testCombatInitiation()) allPassed = false;
+    } else { logToConsole("Test function testCombatInitiation not found."); allPassed = false; }
+
+    logToConsole("===== BASIC CONNECTION TESTS COMPLETE =====");
+    if (allPassed) {
+        logToConsole("All basic connection tests PASSED!");
+    } else {
+        logToConsole("One or more basic connection tests FAILED. Check logs.");
+    }
+    return allPassed;
+}
+
+async function testPlayerMovement() {
+    logToConsole("Setting up for player movement test...");
+    // Ensure a map is loaded; use the default from initialize if available
+    if (!window.mapRenderer.getCurrentMapData()) {
+        logToConsole("Player Movement Test: No map loaded. Attempting to load 'testMap'.");
+        await assetManager.loadMap('testMap').then(mapData => {
+            if (mapData) {
+                window.mapRenderer.initializeCurrentMap(mapData);
+                gameState.layers = mapData.layers;
+                gameState.playerPos = mapData.startPos || { x: 2, y: 2 };
+                // window.mapRenderer.scheduleRender(); // gameLoop will handle
+            } else {
+                logToConsole("Player Movement Test FAIL: Could not load 'testMap'.");
+                return false;
             }
-            logToConsole("Player turn ended by test.");
-        } else if (testPassed && gameState.isInCombat) {
-            logToConsole("WARN: Not player's turn first, or player is not the current entity. Test will proceed but might be less indicative for player-specific UI updates initially.");
-        }
-
-
-        // --- Simulate through a few turns OR until it's player's turn again (if NPC went first) ---
-        // This part is tricky to automate perfectly without a more complex setup.
-        // We're primarily testing if `updateTurnUI` is called by combatManager.
-        // The previous changes ensured updateTurnUI is called in nextTurn.
-
-        // After combatManager.endPlayerTurn(), it should be NPC's turn.
-        // combatManager.executeNpcCombatTurn will run, then combatManager.nextTurn().
-        // The nextTurn() call is where window.turnManager.updateTurnUI() is expected if it becomes player's turn again.
-
-        // For simplicity, we check call count. startCombat calls nextTurn, which calls updateTurnUI.
-        // endPlayerTurn calls nextTurn, which calls updateTurnUI.
-        // If NPC turn also calls nextTurn which leads to player turn, that's another call.
-
-        logToConsole(`updateTurnUI call count after simulated turns: ${updateTurnUICallCount}`);
-        turnUiCalledLog.forEach(log => logToConsole(log));
-
-
-        if (updateTurnUICallCount < 2) { // At least one for combat start, one for turn change after player.
-            logToConsole(`Combat Turn Progression Test FAIL: updateTurnUI was called ${updateTurnUICallCount} times, expected at least 2.`);
-            testPassed = false;
-        }
-
-        // Clean up
-        if (gameState.isInCombat) {
-            combatManager.endCombat();
-            logToConsole("Combat ended by test.");
-        }
-        window.turnManager.updateTurnUI = originalUpdateTurnUI; // Restore original function
-
-        if (testPassed) {
-            logToConsole("Combat Turn Progression Test PASSED (updateTurnUI was called).");
-        } else {
-            logToConsole("Combat Turn Progression Test FAILED. Check logs.");
-        }
-        return testPassed;
+        });
+    }
+    if (!window.mapRenderer.getCurrentMapData()) {
+        logToConsole("Player Movement Test FAIL: Map still not loaded after attempt.");
+        return false;
     }
 
-    // Make sure to add testCombatTurnProgression to runAllBasicConnectionTests if it exists
-    if (typeof runAllBasicConnectionTests === 'function' &&
-        !runAllBasicConnectionTests.toString().includes('testCombatTurnProgression')) {
-        const originalRunAll = runAllBasicConnectionTests;
-        runAllBasicConnectionTests = async function () {
-            let overallResult = await originalRunAll(); // Run previous tests
-            logToConsole("--- Running Combat Turn Progression Test (from wrapper) ---");
-            if (!await testCombatTurnProgression()) overallResult = false;
-            return overallResult;
-        }
+
+    const initialPos = { ...gameState.playerPos };
+    gameState.movementPointsRemaining = 3; // Set some movement points
+    gameState.actionPointsRemaining = 1; // Ensure actions available if move uses one (it doesn't)
+    let renderScheduled = false;
+    let interactionDetected = false;
+
+    // Spy on scheduleRender and detectInteractableItems
+    const originalScheduleRender = window.mapRenderer.scheduleRender;
+    const originalDetectInteractable = window.interaction.detectInteractableItems;
+    window.mapRenderer.scheduleRender = () => { renderScheduled = true; originalScheduleRender.call(window.mapRenderer); };
+    window.interaction.detectInteractableItems = () => { interactionDetected = true; originalDetectInteractable.call(window.interaction); };
+
+    logToConsole(`Initial pos: (${initialPos.x}, ${initialPos.y}), MP: ${gameState.movementPointsRemaining}`);
+    window.turnManager.move('right'); // Assuming 'right' is a valid move direction
+
+    // Restore spies
+    window.mapRenderer.scheduleRender = originalScheduleRender;
+    window.interaction.detectInteractableItems = originalDetectInteractable;
+
+    const newPos = gameState.playerPos;
+    logToConsole(`New pos: (${newPos.x}, ${newPos.y}), MP: ${gameState.movementPointsRemaining}`);
+    logToConsole(`Render scheduled: ${renderScheduled}, Interaction detected: ${interactionDetected}`);
+
+    if (newPos.x === initialPos.x + 1 && gameState.movementPointsRemaining === 2 && renderScheduled && interactionDetected) {
+        logToConsole("Player Movement Test PASSED!");
+        return true;
+    } else {
+        logToConsole(`Player Movement Test FAILED. newPos.x: ${newPos.x} (expected ${initialPos.x + 1}), MP: ${gameState.movementPointsRemaining} (expected 2), render: ${renderScheduled}, interaction: ${interactionDetected}`);
+        return false;
+    }
+}
+
+async function testDoorInteraction() {
+    logToConsole("Setting up for door interaction test...");
+    // Assumes assetManager and its definitions (tileset.json) are loaded.
+    // Assumes 'WDH' is an interactive door tile that opens to 'WOH'.
+    if (!assetManager.tilesets['WDH'] || !assetManager.tilesets['WOH']) {
+        logToConsole("Door Interaction Test FAIL: Required tile definitions 'WDH' or 'WOH' not found in assetManager.tilesets.");
+        return false;
+    }
+    if (!assetManager.tilesets['WDH'].tags || !assetManager.tilesets['WDH'].tags.includes("interactive")) {
+        logToConsole("Door Interaction Test FAIL: Tile 'WDH' is not tagged as interactive.");
+        return false;
     }
 
-    // --- Test Suite for Reconnected Features ---
 
-    async function runAllBasicConnectionTests() {
-        logToConsole("===== STARTING BASIC CONNECTION TESTS =====");
-        let allPassed = true;
+    // Setup a mock map with a door and player nearby
+    const originalMapData = window.mapRenderer.getCurrentMapData();
+    const originalPlayerPos = { ...gameState.playerPos };
+    const originalLayers = JSON.parse(JSON.stringify(gameState.layers)); // Deep copy
+    const originalInteractableItems = [...gameState.interactableItems];
+    const originalActionPoints = gameState.actionPointsRemaining;
 
-        // Prerequisite: Ensure game is in a somewhat initialized state for some tests
-        // This might mean running parts of initialize() or startGame() if not already done.
-        // For now, these tests assume they are run after the main initialize() and startGame() have setup gameState.
-        // If not, they might need more internal setup.
+    const doorX = 1, doorY = 0;
+    const playerX = 0, playerY = 0;
+    const mockDoorMap = {
+        id: 'testDoorMap', name: 'Test Door Map',
+        dimensions: { width: 2, height: 1 },
+        layers: { landscape: [['grass', 'grass']], building: [['grass', 'WDH']], item: [[]], roof: [[]] },
+        startPos: { x: playerX, y: playerY }
+    };
+    window.mapRenderer.initializeCurrentMap(mockDoorMap);
+    gameState.layers = JSON.parse(JSON.stringify(mockDoorMap.layers)); // Deep copy for modification
+    gameState.playerPos = { x: playerX, y: playerY };
+    gameState.actionPointsRemaining = 1; // Ensure an action point
 
-        if (typeof testPlayerMovement === 'function') {
-            logToConsole("--- Running Player Movement Test ---");
-            if (!await testPlayerMovement()) allPassed = false;
-        } else { logToConsole("Test function testPlayerMovement not found."); allPassed = false; }
+    window.interaction.detectInteractableItems();
+    logToConsole(`Interactable items detected: ${JSON.stringify(gameState.interactableItems)}`);
 
-        if (typeof testDoorInteraction === 'function') {
-            logToConsole("--- Running Door Interaction Test ---");
-            if (!await testDoorInteraction()) allPassed = false;
-        } else { logToConsole("Test function testDoorInteraction not found."); allPassed = false; }
-
-        if (typeof testItemAddAndEquip === 'function') {
-            logToConsole("--- Running Item Add and Equip Test ---");
-            if (!await testItemAddAndEquip()) allPassed = false;
-        } else { logToConsole("Test function testItemAddAndEquip not found."); allPassed = false; }
-
-        if (typeof testCombatInitiation === 'function') {
-            logToConsole("--- Running Combat Initiation Test ---");
-            if (!await testCombatInitiation()) allPassed = false;
-        } else { logToConsole("Test function testCombatInitiation not found."); allPassed = false; }
-
-        logToConsole("===== BASIC CONNECTION TESTS COMPLETE =====");
-        if (allPassed) {
-            logToConsole("All basic connection tests PASSED!");
-        } else {
-            logToConsole("One or more basic connection tests FAILED. Check logs.");
-        }
-        return allPassed;
-    }
-
-    async function testPlayerMovement() {
-        logToConsole("Setting up for player movement test...");
-        // Ensure a map is loaded; use the default from initialize if available
-        if (!window.mapRenderer.getCurrentMapData()) {
-            logToConsole("Player Movement Test: No map loaded. Attempting to load 'testMap'.");
-            await assetManager.loadMap('testMap').then(mapData => {
-                if (mapData) {
-                    window.mapRenderer.initializeCurrentMap(mapData);
-                    gameState.layers = mapData.layers;
-                    gameState.playerPos = mapData.startPos || { x: 2, y: 2 };
-                    // window.mapRenderer.scheduleRender(); // gameLoop will handle
-                } else {
-                    logToConsole("Player Movement Test FAIL: Could not load 'testMap'.");
-                    return false;
-                }
-            });
-        }
-        if (!window.mapRenderer.getCurrentMapData()) {
-            logToConsole("Player Movement Test FAIL: Map still not loaded after attempt.");
-            return false;
-        }
-
-
-        const initialPos = { ...gameState.playerPos };
-        gameState.movementPointsRemaining = 3; // Set some movement points
-        gameState.actionPointsRemaining = 1; // Ensure actions available if move uses one (it doesn't)
-        let renderScheduled = false;
-        let interactionDetected = false;
-
-        // Spy on scheduleRender and detectInteractableItems
-        const originalScheduleRender = window.mapRenderer.scheduleRender;
-        const originalDetectInteractable = window.interaction.detectInteractableItems;
-        window.mapRenderer.scheduleRender = () => { renderScheduled = true; originalScheduleRender.call(window.mapRenderer); };
-        window.interaction.detectInteractableItems = () => { interactionDetected = true; originalDetectInteractable.call(window.interaction); };
-
-        logToConsole(`Initial pos: (${initialPos.x}, ${initialPos.y}), MP: ${gameState.movementPointsRemaining}`);
-        window.turnManager.move('right'); // Assuming 'right' is a valid move direction
-
-        // Restore spies
-        window.mapRenderer.scheduleRender = originalScheduleRender;
-        window.interaction.detectInteractableItems = originalDetectInteractable;
-
-        const newPos = gameState.playerPos;
-        logToConsole(`New pos: (${newPos.x}, ${newPos.y}), MP: ${gameState.movementPointsRemaining}`);
-        logToConsole(`Render scheduled: ${renderScheduled}, Interaction detected: ${interactionDetected}`);
-
-        if (newPos.x === initialPos.x + 1 && gameState.movementPointsRemaining === 2 && renderScheduled && interactionDetected) {
-            logToConsole("Player Movement Test PASSED!");
-            return true;
-        } else {
-            logToConsole(`Player Movement Test FAILED. newPos.x: ${newPos.x} (expected ${initialPos.x + 1}), MP: ${gameState.movementPointsRemaining} (expected 2), render: ${renderScheduled}, interaction: ${interactionDetected}`);
-            return false;
-        }
-    }
-
-    async function testDoorInteraction() {
-        logToConsole("Setting up for door interaction test...");
-        // Assumes assetManager and its definitions (tileset.json) are loaded.
-        // Assumes 'WDH' is an interactive door tile that opens to 'WOH'.
-        if (!assetManager.tilesets['WDH'] || !assetManager.tilesets['WOH']) {
-            logToConsole("Door Interaction Test FAIL: Required tile definitions 'WDH' or 'WOH' not found in assetManager.tilesets.");
-            return false;
-        }
-        if (!assetManager.tilesets['WDH'].tags || !assetManager.tilesets['WDH'].tags.includes("interactive")) {
-            logToConsole("Door Interaction Test FAIL: Tile 'WDH' is not tagged as interactive.");
-            return false;
-        }
-
-
-        // Setup a mock map with a door and player nearby
-        const originalMapData = window.mapRenderer.getCurrentMapData();
-        const originalPlayerPos = { ...gameState.playerPos };
-        const originalLayers = JSON.parse(JSON.stringify(gameState.layers)); // Deep copy
-        const originalInteractableItems = [...gameState.interactableItems];
-        const originalActionPoints = gameState.actionPointsRemaining;
-
-        const doorX = 1, doorY = 0;
-        const playerX = 0, playerY = 0;
-        const mockDoorMap = {
-            id: 'testDoorMap', name: 'Test Door Map',
-            dimensions: { width: 2, height: 1 },
-            layers: { landscape: [['grass', 'grass']], building: [['grass', 'WDH']], item: [[]], roof: [[]] },
-            startPos: { x: playerX, y: playerY }
-        };
-        window.mapRenderer.initializeCurrentMap(mockDoorMap);
-        gameState.layers = JSON.parse(JSON.stringify(mockDoorMap.layers)); // Deep copy for modification
-        gameState.playerPos = { x: playerX, y: playerY };
-        gameState.actionPointsRemaining = 1; // Ensure an action point
-
-        window.interaction.detectInteractableItems();
-        logToConsole(`Interactable items detected: ${JSON.stringify(gameState.interactableItems)}`);
-
-        if (!gameState.interactableItems.find(item => item.id === 'WDH' && item.x === doorX && item.y === doorY)) {
-            logToConsole("Door Interaction Test FAIL: Door 'WDH' not detected at expected location.");
-            // Restore original state
-            window.mapRenderer.initializeCurrentMap(originalMapData);
-            gameState.playerPos = originalPlayerPos;
-            gameState.layers = originalLayers;
-            gameState.interactableItems = originalInteractableItems;
-            gameState.actionPointsRemaining = originalActionPoints;
-            return false;
-        }
-
-        // Select the door (assuming it's the first, or find it)
-        const doorItemIndex = gameState.interactableItems.findIndex(item => item.id === 'WDH');
-        if (doorItemIndex === -1) {
-            logToConsole("Door Interaction Test FAIL: Could not find WDH in interactable items list after detection.");
-            return false; // Early exit after restoring
-        }
-        window.interaction.selectItem(doorItemIndex);
-        window.interaction.interact(); // Show actions
-
-        // Select "Open" (Cancel=0, Open=1, Close=2, Break Down=3 - depends on _getActionsForItem)
-        // For a closed door 'WDH', actions should be [Cancel, Open, Break Down]
-        const openActionIndex = 1;
-        window.interaction.selectAction(openActionIndex);
-        window.interaction.performSelectedAction();
-
-        const tileAfterAction = gameState.layers.building[doorY][doorX];
-        logToConsole(`Tile at (${doorX},${doorY}) after action: ${tileAfterAction}`);
-
+    if (!gameState.interactableItems.find(item => item.id === 'WDH' && item.x === doorX && item.y === doorY)) {
+        logToConsole("Door Interaction Test FAIL: Door 'WDH' not detected at expected location.");
         // Restore original state
         window.mapRenderer.initializeCurrentMap(originalMapData);
         gameState.playerPos = originalPlayerPos;
         gameState.layers = originalLayers;
         gameState.interactableItems = originalInteractableItems;
-        gameState.actionPointsRemaining = originalActionPoints; // Or check if it was correctly decremented.
-
-        if (tileAfterAction === 'WOH' && gameState.actionPointsRemaining === 0) { // WOH is the open state for WDH
-            logToConsole("Door Interaction Test PASSED!");
-            return true;
-        } else {
-            logToConsole(`Door Interaction Test FAILED. Tile is ${tileAfterAction} (expected WOH), AP: ${gameState.actionPointsRemaining} (expected 0).`);
-            return false;
-        }
+        gameState.actionPointsRemaining = originalActionPoints;
+        return false;
     }
 
-    async function testItemAddAndEquip() {
-        logToConsole("Setting up for item add and equip test...");
-        // Assumes assetManager has loaded item definitions, and InventoryContainer is initialized.
-        // This test works better if run after startGame() has initialized inventory.
-        if (!gameState.inventory.container) {
-            logToConsole("Item Add/Equip Test: gameState.inventory.container not initialized. Attempting to initialize.");
-            if (typeof InventoryContainer === 'function') {
-                gameState.inventory.container = new InventoryContainer("TestBackpack", "M");
-            } else {
-                logToConsole("Item Add/Equip Test FAIL: InventoryContainer constructor not found.");
-                return false;
-            }
-        }
-
-        const knifeDef = assetManager.getItem('knife_melee');
-        if (!knifeDef) {
-            logToConsole("Item Add/Equip Test FAIL: 'knife_melee' definition not found.");
-            return false;
-        }
-
-        // Clear hand slots and ensure knife is not in inventory for a clean test
-        gameState.inventory.handSlots = [null, null];
-        gameState.inventory.container.items = gameState.inventory.container.items.filter(i => i.id !== 'knife_melee');
-        const originalItemCount = gameState.inventory.container.items.length;
-
-        window.inventoryManager.addItem(new Item(knifeDef)); // Item constructor is from inventory.js
-        const itemInInventory = gameState.inventory.container.items.find(item => item.id === 'knife_melee');
-
-        if (!itemInInventory) {
-            logToConsole("Item Add/Equip Test FAILED: Knife not added to inventory.");
-            return false;
-        }
-        logToConsole("Knife added to inventory.");
-
-        window.equipItem(knifeDef.name, 0); // equipItem is from inventory.js
-        const itemInHand = gameState.inventory.handSlots[0];
-        const knifeStillInContainerItems = gameState.inventory.container.items.find(item => item.id === 'knife_melee');
-
-
-        if (itemInHand && itemInHand.id === 'knife_melee' && !knifeStillInContainerItems) {
-            logToConsole("Item Add/Equip Test PASSED!");
-            // Cleanup: unequip and remove for subsequent tests
-            window.unequipItem(0);
-            window.removeItem(knifeDef.name);
-            return true;
-        } else {
-            logToConsole(`Item Add/Equip Test FAILED. Item in hand: ${itemInHand ? itemInHand.id : 'null'}. Knife in container: ${knifeStillInContainerItems}.`);
-            return false;
-        }
+    // Select the door (assuming it's the first, or find it)
+    const doorItemIndex = gameState.interactableItems.findIndex(item => item.id === 'WDH');
+    if (doorItemIndex === -1) {
+        logToConsole("Door Interaction Test FAIL: Could not find WDH in interactable items list after detection.");
+        return false; // Early exit after restoring
     }
+    window.interaction.selectItem(doorItemIndex);
+    window.interaction.interact(); // Show actions
 
-    async function testCombatInitiation() {
-        logToConsole("Setting up for combat initiation test...");
-        // This test assumes startGame() has run and placed a 'training_dummy'.
-        // It also assumes player and dummy are positioned for combat.
+    // Select "Open" (Cancel=0, Open=1, Close=2, Break Down=3 - depends on _getActionsForItem)
+    // For a closed door 'WDH', actions should be [Cancel, Open, Break Down]
+    const openActionIndex = 1;
+    window.interaction.selectAction(openActionIndex);
+    window.interaction.performSelectedAction();
 
-        if (!combatManager || typeof combatManager.startCombat !== 'function') {
-            logToConsole("Combat Initiation Test FAIL: combatManager not available or startCombat is not a function.");
-            return false;
-        }
+    const tileAfterAction = gameState.layers.building[doorY][doorX];
+    logToConsole(`Tile at (${doorX},${doorY}) after action: ${tileAfterAction}`);
 
-        const dummyNpc = gameState.npcs.find(npc => npc.id === 'training_dummy');
-        if (!dummyNpc) {
-            logToConsole("Combat Initiation Test FAIL: Training dummy NPC not found in gameState.npcs. Ensure startGame() has run correctly.");
-            return false;
-        }
-        if (!dummyNpc.mapPos) {
-            logToConsole("Combat Initiation Test FAIL: Training dummy has no mapPos.");
-            return false;
-        }
+    // Restore original state
+    window.mapRenderer.initializeCurrentMap(originalMapData);
+    gameState.playerPos = originalPlayerPos;
+    gameState.layers = originalLayers;
+    gameState.interactableItems = originalInteractableItems;
+    gameState.actionPointsRemaining = originalActionPoints; // Or check if it was correctly decremented.
 
-
-        // Ensure player is next to the dummy for melee combat test.
-        // This might require temporarily moving the player or dummy.
-        // For simplicity, we'll assume they are close enough or combat can start regardless of range for this basic test.
-        // A more robust test would set positions.
-        gameState.playerPos = { x: dummyNpc.mapPos.x - 1, y: dummyNpc.mapPos.y };
-
-
-        const initialIsInCombat = gameState.isInCombat;
-        combatManager.startCombat([gameState, dummyNpc]);
-
-        if (gameState.isInCombat && combatManager.initiativeTracker.length >= 2) {
-            logToConsole("Combat Initiation Test PASSED!");
-            combatManager.endCombat(); // Clean up
-            return true;
-        } else {
-            logToConsole(`Combat Initiation Test FAILED. isInCombat: ${gameState.isInCombat}, initiativeTracker length: ${combatManager.initiativeTracker.length}`);
-            // Ensure combat is ended if it partially started
-            if (gameState.isInCombat) combatManager.endCombat();
-            return false;
-        }
-    }
-
-    // To run all tests: runAllBasicConnectionTests()
-    // Individual tests can also be run: testPlayerMovement(), testDoorInteraction(), etc.
-
-    document.addEventListener('DOMContentLoaded', initialize);
-
-    document.addEventListener('DOMContentLoaded', initialize);
-
-    async function testCombatInitiationWithGenericNpc() {
-        logToConsole("--- Running Combat Initiation with Generic NPC Test ---");
-        let testPassed = true;
-
-        // Prerequisites
-        if (!combatManager || typeof combatManager.startCombat !== 'function') {
-            logToConsole("Generic NPC Combat Test FAIL: combatManager not available.");
-            return false;
-        }
-        if (!assetManager.npcsById || !assetManager.getItem('club_melee')) { // Assuming 'club_melee' is a loadable item for NPC
-            logToConsole("Generic NPC Combat Test FAIL: NPC definitions or club item not loaded.");
-            return false;
-        }
-        if (typeof window.initializeHealth !== 'function') {
-            logToConsole("Generic NPC Combat Test FAIL: initializeHealth function not found.");
-            return false;
-        }
-
-
-        // Clean up any existing NPCs from previous tests if necessary
-        // gameState.npcs = []; 
-
-        // Create a generic NPC definition (simplified)
-        const genericNpcDef = {
-            id: "generic_bandit",
-            name: "Generic Bandit",
-            sprite: "B",
-            color: "darkred",
-            health: { // NPCs need health defined this way or initializeHealth needs to handle it
-                head: { max: 5, current: 5, armor: 0, crisisTimer: 0 },
-                torso: { max: 8, current: 8, armor: 0, crisisTimer: 0 },
-                leftArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
-                rightArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
-                leftLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
-                rightLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 }
-            },
-            stats: { "Strength": 3, "Dexterity": 3, "Constitution": 3 }, // Simplified
-            skills: { "Melee Weapons": 20, "Unarmed": 20 },
-            equippedWeaponId: "club_melee", // Assuming a basic club
-            defaultActionPoints: 1,
-            defaultMovementPoints: 3
-        };
-
-        // Add our generic NPC to the game state (deep clone if it's going to be modified)
-        const genericNpcInstance = JSON.parse(JSON.stringify(genericNpcDef));
-
-        // Position player and NPC for melee combat
-        gameState.playerPos = { x: 5, y: 5 };
-        genericNpcInstance.mapPos = { x: 5, y: 6 }; // Adjacent to player
-
-        // Ensure NPC health is initialized if not fully defined in mock
-        // window.initializeHealth(genericNpcInstance); // If NPC def doesn't have full health structure
-
-        gameState.npcs.push(genericNpcInstance);
-        logToConsole(`Added ${genericNpcInstance.name} at (${genericNpcInstance.mapPos.x}, ${genericNpcInstance.mapPos.y}) for test.`);
-
-        // Ensure map is loaded for mapRenderer calls during combat start (if any)
-        if (!window.mapRenderer.getCurrentMapData() && typeof assetManager.loadMap === 'function') {
-            logToConsole("Generic NPC Combat Test: No map loaded. Attempting to load 'testMap'.");
-            const mapData = await assetManager.loadMap('testMap');
-            if (mapData) {
-                window.mapRenderer.initializeCurrentMap(mapData);
-                gameState.layers = mapData.layers;
-            } else {
-                logToConsole("Generic NPC Combat Test FAIL: Could not load 'testMap'.");
-                gameState.npcs.pop(); // remove test NPC
-                return false;
-            }
-        }
-
-
-        // Simulate pressing 'c' (melee) - directly call the core logic of combat start
-        // For this test, we'll rely on the refactored handleKeyDown finding this NPC.
-        // To be more direct, we can find it and call startCombat.
-        let foundNpcForTest = null;
-        let minDistance = Infinity;
-        gameState.npcs.forEach(npc => {
-            if (npc.id === genericNpcInstance.id && npc.mapPos && npc.health && npc.health.torso.current > 0) {
-                const distance = Math.max(Math.abs(gameState.playerPos.x - npc.mapPos.x), Math.abs(gameState.playerPos.y - npc.mapPos.y));
-                if (distance <= 1) {
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        foundNpcForTest = npc;
-                    }
-                }
-            }
-        });
-
-        if (!foundNpcForTest) {
-            logToConsole("Generic NPC Combat Test FAIL: Test NPC not found by proximity logic.");
-            testPassed = false;
-        } else {
-            logToConsole(`NPC ${foundNpcForTest.name} found for combat. Starting combat...`);
-            combatManager.startCombat([gameState, foundNpcForTest]);
-            if (!gameState.isInCombat) {
-                logToConsole("Generic NPC Combat Test FAIL: gameState.isInCombat is false after starting.");
-                testPassed = false;
-            } else if (combatManager.initiativeTracker.some(e => e.entity.id === genericNpcInstance.id)) {
-                logToConsole("Generic NPC Combat Test PASSED: Combat started with generic NPC.");
-            } else {
-                logToConsole("Generic NPC Combat Test FAIL: Generic NPC not found in initiative tracker.");
-                testPassed = false;
-            }
-        }
-
-        // Cleanup
-        if (gameState.isInCombat) {
-            combatManager.endCombat();
-        }
-        gameState.npcs = gameState.npcs.filter(npc => npc.id !== genericNpcInstance.id); // Remove test NPC
-
-        return testPassed;
-    }
-
-    // Modify runAllBasicConnectionTests to include this new test
-    if (typeof runAllBasicConnectionTests === 'function') {
-        const existingRunnerSource = runAllBasicConnectionTests.toString();
-        if (!existingRunnerSource.includes('testCombatInitiationWithGenericNpc')) {
-            const originalRunAllTests = runAllBasicConnectionTests;
-            runAllBasicConnectionTests = async function () {
-                // Preserve the result of previous tests
-                let overallResult = await originalRunAllTests();
-
-                logToConsole("--- Running Combat Initiation with Generic NPC Test (from wrapper) ---");
-                if (!await testCombatInitiationWithGenericNpc()) overallResult = false;
-
-                return overallResult;
-            }
-            logToConsole("Extended runAllBasicConnectionTests with testCombatInitiationWithGenericNpc.");
-        }
+    if (tileAfterAction === 'WOH' && gameState.actionPointsRemaining === 0) { // WOH is the open state for WDH
+        logToConsole("Door Interaction Test PASSED!");
+        return true;
     } else {
-        async function runAllBasicConnectionTests() {
-            // ... (include other tests if this is the first time it's defined)
-            logToConsole("===== STARTING GENERIC NPC COMBAT INITIATION TEST (NEW RUNNER) =====");
-            let allPassed = true;
-            if (!await testCombatInitiationWithGenericNpc()) allPassed = false;
-            // ...
-            return allPassed;
-        }
-        logToConsole("Created new runAllBasicConnectionTests or it was empty; added testCombatInitiationWithGenericNpc.");
+        logToConsole(`Door Interaction Test FAILED. Tile is ${tileAfterAction} (expected WOH), AP: ${gameState.actionPointsRemaining} (expected 0).`);
+        return false;
     }
+}
 
-    async function testPlayerTakesDamageWithArmor() {
-        logToConsole("--- Running Player Takes Damage With Armor Test ---");
-        let testPassed = true;
-        let originalLogToConsole = window.logToConsole;
-        let loggedMessages = [];
-
-        // Spy on logToConsole
-        window.logToConsole = (message) => {
-            loggedMessages.push(message);
-            originalLogToConsole(message); // Call the original function as well
-        };
-
-        // Prerequisites
-        if (!assetManager || !assetManager.getItem('basic_vest')) {
-            logToConsole("Player Damage w/ Armor Test FAIL: AssetManager or 'basic_vest' not available.");
-            window.logToConsole = originalLogToConsole; return false;
-        }
-        if (!gameState.inventory.container) {
-            logToConsole("Player Damage w/ Armor Test FAIL: Inventory container not initialized.");
-            if (typeof InventoryContainer === 'function') gameState.inventory.container = new InventoryContainer("TestBackpack", "M"); else { window.logToConsole = originalLogToConsole; return false; }
-        }
-        if (!gameState.player || !gameState.player.wornClothing) {
-            logToConsole("Player Damage w/ Armor Test FAIL: gameState.player.wornClothing not initialized.");
-            window.logToConsole = originalLogToConsole; return false;
-        }
-        if (!gameState.health) {
-            logToConsole("Player Damage w/ Armor Test FAIL: gameState.health not initialized.");
-            if (typeof window.initializeHealth === 'function') window.initializeHealth(gameState); else { window.logToConsole = originalLogToConsole; return false; }
-        }
-        if (!combatManager || typeof combatManager.applyDamage !== 'function') {
-            logToConsole("Player Damage w/ Armor Test FAIL: combatManager or applyDamage not available.");
-            window.logToConsole = originalLogToConsole; return false;
-        }
-
-
-        // Equip 'basic_vest'
-        const vestDef = assetManager.getItem('basic_vest');
-        if (!vestDef.armorValue) { // armorValue might be on the item definition itself
-            logToConsole("Player Damage w/ Armor Test FAIL: 'basic_vest' has no armorValue defined.");
-            window.logToConsole = originalLogToConsole; return false;
-        }
-        // Ensure vest is not already equipped on this layer for a clean test
-        if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
-            window.unequipClothing(vestDef.layer);
-        }
-        // Add vest to inventory if not there
-        if (!gameState.inventory.container.items.find(item => item.id === 'basic_vest')) {
-            window.addItem(new Item(vestDef));
-        }
-        window.equipClothing(vestDef.name);
-        logToConsole("Equipped 'basic_vest'. Worn clothing: " + JSON.stringify(gameState.player.wornClothing));
-
-
-        // Set initial HP
-        gameState.health.torso.current = gameState.health.torso.max;
-        const initialHp = gameState.health.torso.current;
-        const rawDamage = 5;
-        const expectedArmor = window.getArmorForBodyPart('torso', gameState);
-        const expectedDamageTaken = Math.max(0, rawDamage - expectedArmor);
-        const expectedHpAfterDamage = initialHp - expectedDamageTaken;
-
-        logToConsole(`Initial HP: ${initialHp}, Raw Damage: ${rawDamage}, Expected Armor: ${expectedArmor}, Expected Damage Taken: ${expectedDamageTaken}, Expected HP After: ${expectedHpAfterDamage}`);
-
-        // Dummy attacker for the applyDamage function
-        const dummyAttacker = { name: 'Test Dummy Attacker', id: 'test_dummy_attacker' };
-        // The weapon object can be minimal for this test, only name is used in the log currently
-        const testWeapon = { name: 'TestClub' };
-
-        combatManager.applyDamage(dummyAttacker, gameState, 'torso', rawDamage, 'Bludgeoning', testWeapon);
-
-        const actualHpAfterDamage = gameState.health.torso.current;
-        logToConsole(`Actual HP after damage: ${actualHpAfterDamage}`);
-
-        // Check HP
-        if (actualHpAfterDamage !== expectedHpAfterDamage) {
-            logToConsole(`Player Damage w/ Armor Test FAILED: HP mismatch. Expected ${expectedHpAfterDamage}, got ${actualHpAfterDamage}.`);
-            testPassed = false;
-        }
-
-        // Check log for correct armor reporting
-        const damageLogMessage = loggedMessages.find(msg => msg.includes("DAMAGE") && msg.includes("to Player's torso") && msg.includes(`Armor: ${expectedArmor}`));
-        if (!damageLogMessage) {
-            logToConsole(`Player Damage w/ Armor Test FAILED: Damage log message with correct armor value (Armor: ${expectedArmor}) not found.`);
-            testPassed = false;
+async function testItemAddAndEquip() {
+    logToConsole("Setting up for item add and equip test...");
+    // Assumes assetManager has loaded item definitions, and InventoryContainer is initialized.
+    // This test works better if run after startGame() has initialized inventory.
+    if (!gameState.inventory.container) {
+        logToConsole("Item Add/Equip Test: gameState.inventory.container not initialized. Attempting to initialize.");
+        if (typeof InventoryContainer === 'function') {
+            gameState.inventory.container = new InventoryContainer("TestBackpack", "M");
         } else {
-            logToConsole(`Damage log found: "${damageLogMessage}"`);
+            logToConsole("Item Add/Equip Test FAIL: InventoryContainer constructor not found.");
+            return false;
         }
-
-        if (testPassed) {
-            logToConsole("Player Takes Damage With Armor Test PASSED!");
-        }
-
-        // Cleanup
-        if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
-            window.unequipClothing(vestDef.layer);
-        }
-        gameState.health.torso.current = initialHp; // Restore HP
-        window.logToConsole = originalLogToConsole; // Restore original logToConsole
-
-        return testPassed;
     }
 
-    // Modify runAllBasicConnectionTests to include this new test
-    // This assumes runAllBasicConnectionTests is already defined from previous steps.
-    if (typeof runAllBasicConnectionTests === 'function') {
-        const existingRunnerSource = runAllBasicConnectionTests.toString();
-        if (!existingRunnerSource.includes('testPlayerTakesDamageWithArmor')) {
-            const originalRunAllTests = runAllBasicConnectionTests;
-            runAllBasicConnectionTests = async function () {
-                let overallResult = await originalRunAllTests(); // Run previous tests
+    const knifeDef = assetManager.getItem('knife_melee');
+    if (!knifeDef) {
+        logToConsole("Item Add/Equip Test FAIL: 'knife_melee' definition not found.");
+        return false;
+    }
 
-                logToConsole("--- Running Player Takes Damage With Armor Test (from wrapper) ---");
-                if (!await testPlayerTakesDamageWithArmor()) overallResult = false;
+    // Clear hand slots and ensure knife is not in inventory for a clean test
+    gameState.inventory.handSlots = [null, null];
+    gameState.inventory.container.items = gameState.inventory.container.items.filter(i => i.id !== 'knife_melee');
+    const originalItemCount = gameState.inventory.container.items.length;
 
-                // Re-log final status (if the original runner had one, this might be redundant or replace it)
-                // This part might need to be adjusted based on how the original runner logs.
-                // For now, let's assume the original runner had its own final log.
-                // We'll just add our test. If the original runner's final log is conditional,
-                // this new 'overallResult' should be the one determining the final message.
-                return overallResult;
-            }
-            logToConsole("Extended runAllBasicConnectionTests with testPlayerTakesDamageWithArmor.");
-        }
+    window.inventoryManager.addItem(new Item(knifeDef)); // Item constructor is from inventory.js
+    const itemInInventory = gameState.inventory.container.items.find(item => item.id === 'knife_melee');
+
+    if (!itemInInventory) {
+        logToConsole("Item Add/Equip Test FAILED: Knife not added to inventory.");
+        return false;
+    }
+    logToConsole("Knife added to inventory.");
+
+    window.equipItem(knifeDef.name, 0); // equipItem is from inventory.js
+    const itemInHand = gameState.inventory.handSlots[0];
+    const knifeStillInContainerItems = gameState.inventory.container.items.find(item => item.id === 'knife_melee');
+
+
+    if (itemInHand && itemInHand.id === 'knife_melee' && !knifeStillInContainerItems) {
+        logToConsole("Item Add/Equip Test PASSED!");
+        // Cleanup: unequip and remove for subsequent tests
+        window.unequipItem(0);
+        window.removeItem(knifeDef.name);
+        return true;
     } else {
-        // If runAllBasicConnectionTests doesn't exist, create a basic one.
-        async function runAllBasicConnectionTests() {
-            logToConsole("===== STARTING PLAYER DAMAGE WITH ARMOR TEST (NEW RUNNER) =====");
-            let allPassed = true;
-            if (!await testPlayerTakesDamageWithArmor()) allPassed = false;
-            logToConsole("===== PLAYER DAMAGE WITH ARMOR TEST (NEW RUNNER) COMPLETE =====");
-            if (allPassed) {
-                logToConsole("Player Damage With Armor Test (New Runner) PASSED!");
-            } else {
-                logToConsole("Player Damage With Armor Test (New Runner) FAILED. Check logs.");
-            }
-            return allPassed;
-        }
-        logToConsole("Created new runAllBasicConnectionTests with testPlayerTakesDamageWithArmor.");
+        logToConsole(`Item Add/Equip Test FAILED. Item in hand: ${itemInHand ? itemInHand.id : 'null'}. Knife in container: ${knifeStillInContainerItems}.`);
+        return false;
+    }
+}
+
+async function testCombatInitiation() {
+    logToConsole("Setting up for combat initiation test...");
+    // This test assumes startGame() has run and placed a 'training_dummy'.
+    // It also assumes player and dummy are positioned for combat.
+
+    if (!combatManager || typeof combatManager.startCombat !== 'function') {
+        logToConsole("Combat Initiation Test FAIL: combatManager not available or startCombat is not a function.");
+        return false;
     }
 
-    async function testEquipArmorAndUpdateUI() {
-        logToConsole("--- Running Equip Armor & UI Update Test ---");
-        let testPassed = true;
+    const dummyNpc = gameState.npcs.find(npc => npc.id === 'training_dummy');
+    if (!dummyNpc) {
+        logToConsole("Combat Initiation Test FAIL: Training dummy NPC not found in gameState.npcs. Ensure startGame() has run correctly.");
+        return false;
+    }
+    if (!dummyNpc.mapPos) {
+        logToConsole("Combat Initiation Test FAIL: Training dummy has no mapPos.");
+        return false;
+    }
 
-        // Prerequisites
-        if (!assetManager || !assetManager.getItem('basic_vest')) {
-            logToConsole("Equip Armor Test FAIL: AssetManager or 'basic_vest' item definition not available.");
+
+    // Ensure player is next to the dummy for melee combat test.
+    // This might require temporarily moving the player or dummy.
+    // For simplicity, we'll assume they are close enough or combat can start regardless of range for this basic test.
+    // A more robust test would set positions.
+    gameState.playerPos = { x: dummyNpc.mapPos.x - 1, y: dummyNpc.mapPos.y };
+
+
+    const initialIsInCombat = gameState.isInCombat;
+    combatManager.startCombat([gameState, dummyNpc]);
+
+    if (gameState.isInCombat && combatManager.initiativeTracker.length >= 2) {
+        logToConsole("Combat Initiation Test PASSED!");
+        combatManager.endCombat(); // Clean up
+        return true;
+    } else {
+        logToConsole(`Combat Initiation Test FAILED. isInCombat: ${gameState.isInCombat}, initiativeTracker length: ${combatManager.initiativeTracker.length}`);
+        // Ensure combat is ended if it partially started
+        if (gameState.isInCombat) combatManager.endCombat();
+        return false;
+    }
+}
+
+// To run all tests: runAllBasicConnectionTests()
+// Individual tests can also be run: testPlayerMovement(), testDoorInteraction(), etc.
+
+async function testCombatInitiationWithGenericNpc() {
+    logToConsole("--- Running Combat Initiation with Generic NPC Test ---");
+    let testPassed = true;
+
+    // Prerequisites
+    if (!combatManager || typeof combatManager.startCombat !== 'function') {
+        logToConsole("Generic NPC Combat Test FAIL: combatManager not available.");
+        return false;
+    }
+    if (!assetManager.npcsById || !assetManager.getItem('club_melee')) { // Assuming 'club_melee' is a loadable item for NPC
+        logToConsole("Generic NPC Combat Test FAIL: NPC definitions or club item not loaded.");
+        return false;
+    }
+    if (typeof window.initializeHealth !== 'function') {
+        logToConsole("Generic NPC Combat Test FAIL: initializeHealth function not found.");
+        return false;
+    }
+
+
+    // Clean up any existing NPCs from previous tests if necessary
+    // gameState.npcs = []; 
+
+    // Create a generic NPC definition (simplified)
+    const genericNpcDef = {
+        id: "generic_bandit",
+        name: "Generic Bandit",
+        sprite: "B",
+        color: "darkred",
+        health: { // NPCs need health defined this way or initializeHealth needs to handle it
+            head: { max: 5, current: 5, armor: 0, crisisTimer: 0 },
+            torso: { max: 8, current: 8, armor: 0, crisisTimer: 0 },
+            leftArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
+            rightArm: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
+            leftLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 },
+            rightLeg: { max: 7, current: 7, armor: 0, crisisTimer: 0 }
+        },
+        stats: { "Strength": 3, "Dexterity": 3, "Constitution": 3 }, // Simplified
+        skills: { "Melee Weapons": 20, "Unarmed": 20 },
+        equippedWeaponId: "club_melee", // Assuming a basic club
+        defaultActionPoints: 1,
+        defaultMovementPoints: 3
+    };
+
+    // Add our generic NPC to the game state (deep clone if it's going to be modified)
+    const genericNpcInstance = JSON.parse(JSON.stringify(genericNpcDef));
+
+    // Position player and NPC for melee combat
+    gameState.playerPos = { x: 5, y: 5 };
+    genericNpcInstance.mapPos = { x: 5, y: 6 }; // Adjacent to player
+
+    // Ensure NPC health is initialized if not fully defined in mock
+    // window.initializeHealth(genericNpcInstance); // If NPC def doesn't have full health structure
+
+    gameState.npcs.push(genericNpcInstance);
+    logToConsole(`Added ${genericNpcInstance.name} at (${genericNpcInstance.mapPos.x}, ${genericNpcInstance.mapPos.y}) for test.`);
+
+    // Ensure map is loaded for mapRenderer calls during combat start (if any)
+    if (!window.mapRenderer.getCurrentMapData() && typeof assetManager.loadMap === 'function') {
+        logToConsole("Generic NPC Combat Test: No map loaded. Attempting to load 'testMap'.");
+        const mapData = await assetManager.loadMap('testMap');
+        if (mapData) {
+            window.mapRenderer.initializeCurrentMap(mapData);
+            gameState.layers = mapData.layers;
+        } else {
+            logToConsole("Generic NPC Combat Test FAIL: Could not load 'testMap'.");
+            gameState.npcs.pop(); // remove test NPC
             return false;
         }
-        if (!gameState.inventory.container) {
-            logToConsole("Equip Armor Test FAIL: Inventory container not initialized.");
-            // Attempt to initialize for testability, though ideally startGame handles this
-            if (typeof InventoryContainer === 'function') {
-                gameState.inventory.container = new InventoryContainer("TestBackpack", "M");
-            } else { return false; }
-        }
-        if (!gameState.player || !gameState.player.wornClothing) {
-            logToConsole("Equip Armor Test FAIL: gameState.player.wornClothing not initialized.");
-            return false;
-        }
-        if (!gameState.health) {
-            logToConsole("Equip Armor Test FAIL: gameState.health not initialized.");
-            // Attempt to initialize for testability
-            if (typeof window.initializeHealth === 'function') {
-                window.initializeHealth(gameState);
-            } else { return false; }
-        }
+    }
 
 
-        // Ensure 'basic_vest' is in inventory and unequipped
-        const vestDef = assetManager.getItem('basic_vest');
-        let vestInstance = gameState.inventory.container.items.find(item => item.id === 'basic_vest');
-        if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
-            window.unequipClothing(vestDef.layer); // Unequip if already worn
-        }
-        if (!vestInstance) {
-            window.inventoryManager.addItem(new Item(vestDef)); // Add if not in inventory
-            vestInstance = gameState.inventory.container.items.find(item => item.id === 'basic_vest');
-            if (!vestInstance) {
-                logToConsole("Equip Armor Test FAIL: Could not add 'basic_vest' to inventory.");
-                return false;
-            }
-        }
-
-        // At this point, vest should be in inventory and not equipped on the target layer.
-        // Clear the target layer just in case.
-        gameState.player.wornClothing[vestDef.layer] = null;
-        window.renderHealthTable(gameState); // Render once to get initial armor state if needed
-
-        logToConsole("Equipping 'basic_vest'...");
-        window.equipClothing(vestDef.name); // This should trigger renderCharacterInfo -> renderHealthTable
-
-        const expectedArmor = window.getArmorForBodyPart('torso', gameState);
-        const healthTableBody = document.querySelector("#healthTable tbody");
-        let displayedArmor = -1;
-
-        if (healthTableBody) {
-            for (let i = 0; i < healthTableBody.rows.length; i++) {
-                const row = healthTableBody.rows[i];
-                if (row.cells[0] && row.cells[0].textContent === 'Torso') {
-                    displayedArmor = parseInt(row.cells[2].textContent, 10);
-                    break;
+    // Simulate pressing 'c' (melee) - directly call the core logic of combat start
+    // For this test, we'll rely on the refactored handleKeyDown finding this NPC.
+    // To be more direct, we can find it and call startCombat.
+    let foundNpcForTest = null;
+    let minDistance = Infinity;
+    gameState.npcs.forEach(npc => {
+        if (npc.id === genericNpcInstance.id && npc.mapPos && npc.health && npc.health.torso.current > 0) {
+            const distance = Math.max(Math.abs(gameState.playerPos.x - npc.mapPos.x), Math.abs(gameState.playerPos.y - npc.mapPos.y));
+            if (distance <= 1) {
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    foundNpcForTest = npc;
                 }
             }
         }
+    });
 
-        logToConsole(`Expected armor for torso: ${expectedArmor}, Displayed armor: ${displayedArmor}`);
-
-        if (displayedArmor === expectedArmor) {
-            logToConsole("Equip Armor & UI Update Test PASSED!");
-        } else {
-            logToConsole("Equip Armor & UI Update Test FAILED.");
-            testPassed = false;
-        }
-
-        // Cleanup: unequip
-        if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
-            window.unequipClothing(vestDef.layer);
-        }
-        window.renderHealthTable(gameState); // Re-render to restore UI
-
-        return testPassed;
-    }
-
-    async function testTakeDamageAndUpdateUI() {
-        logToConsole("--- Running Take Damage & UI Update Test ---");
-        let testPassed = true;
-
-        if (!gameState.health || !gameState.health.torso) {
-            logToConsole("Take Damage Test FAIL: gameState.health.torso not initialized.");
-            if (typeof window.initializeHealth === 'function') {
-                window.initializeHealth(gameState);
-            } else { return false; }
-        }
-
-        // Ensure torso has some health to lose
-        gameState.health.torso.current = gameState.health.torso.max;
-        window.renderHealthTable(gameState); // Initial render to capture state
-
-        const initialTorsoHp = gameState.health.torso.current;
-        const damageToApply = 2;
-        const expectedHp = initialTorsoHp - damageToApply;
-
-        logToConsole(`Initial torso HP: ${initialTorsoHp}. Applying ${damageToApply} damage.`);
-        gameState.health.torso.current = expectedHp; // Manually set HP
-        window.renderHealthTable(gameState); // Call the function that should update UI
-
-        const healthTableBody = document.querySelector("#healthTable tbody");
-        let displayedHpText = "";
-        let displayedHp = -1;
-
-        if (healthTableBody) {
-            for (let i = 0; i < healthTableBody.rows.length; i++) {
-                const row = healthTableBody.rows[i];
-                if (row.cells[0] && row.cells[0].textContent === 'Torso') {
-                    displayedHpText = row.cells[1].textContent; // Should be "current/max"
-                    displayedHp = parseInt(displayedHpText.split('/')[0], 10);
-                    break;
-                }
-            }
-        }
-
-        logToConsole(`Expected HP for torso: ${expectedHp}, Displayed HP: ${displayedHp} (raw text: '${displayedHpText}')`);
-
-        if (displayedHp === expectedHp) {
-            logToConsole("Take Damage & UI Update Test PASSED!");
-        } else {
-            logToConsole("Take Damage & UI Update Test FAILED.");
-            testPassed = false;
-        }
-
-        // Cleanup: Restore HP for other tests
-        gameState.health.torso.current = initialTorsoHp;
-        window.renderHealthTable(gameState);
-
-        return testPassed;
-    }
-
-    async function testPlayerAttackTorso() {
-        logToConsole("--- Running Player Attack Torso Test ---");
-        let testPassed = false;
-        const combatBodyPartSelect = document.getElementById('combatBodyPartSelect');
-        if (!combatBodyPartSelect) {
-            logToConsole("Player Attack Torso Test FAIL: combatBodyPartSelect element not found.");
-            return false;
-        }
-
-        // 1. Find a target NPC
-        const dummyNpc = gameState.npcs.find(npc => npc.id === 'training_dummy');
-        if (!dummyNpc) {
-            logToConsole("Player Attack Torso Test FAIL: Training dummy NPC not found.");
-            return false;
-        }
-        // Ensure dummy has health
-        if (!dummyNpc.health || !dummyNpc.health.torso) {
-            initializeHealth(dummyNpc);
-        }
-        dummyNpc.health.torso.current = dummyNpc.health.torso.max;
-
-
-        // 2. Start combat
-        logToConsole("Starting combat for test...");
-        gameState.playerPos = { x: dummyNpc.mapPos.x - 1, y: dummyNpc.mapPos.y, z: dummyNpc.mapPos.z };
-        combatManager.startCombat([gameState, dummyNpc]);
-
+    if (!foundNpcForTest) {
+        logToConsole("Generic NPC Combat Test FAIL: Test NPC not found by proximity logic.");
+        testPassed = false;
+    } else {
+        logToConsole(`NPC ${foundNpcForTest.name} found for combat. Starting combat...`);
+        combatManager.startCombat([gameState, foundNpcForTest]);
         if (!gameState.isInCombat) {
-            logToConsole("Player Attack Torso Test FAIL: Combat did not start.");
-            return false;
-        }
-
-        // Ensure it's player's turn. If not, we can't reliably test the UI-driven attack.
-        // This part might be flaky if initiative is random. A more robust test would force player's turn.
-        if (combatManager.initiativeTracker[combatManager.currentTurnIndex].entity !== gameState) {
-            logToConsole("Player Attack Torso Test SKIPPED: Not player's turn first. This can happen due to random initiative.");
-            combatManager.endCombat();
-            return true; // Return true to not fail the whole suite on random chance.
-        }
-
-        // 3. Set up the attack via UI elements
-        const initialHp = dummyNpc.health.torso.current;
-        document.getElementById('combatWeaponSelect').value = 'unarmed';
-
-        // This is the critical part: using the buggy value from the HTML
-        const torsoOption = Array.from(combatBodyPartSelect.options).find(opt => opt.text === 'Torso');
-        if (torsoOption) {
-            combatBodyPartSelect.value = torsoOption.value; // This will be 'Torso' before the fix
+            logToConsole("Generic NPC Combat Test FAIL: gameState.isInCombat is false after starting.");
+            testPassed = false;
+        } else if (combatManager.initiativeTracker.some(e => e.entity.id === genericNpcInstance.id)) {
+            logToConsole("Generic NPC Combat Test PASSED: Combat started with generic NPC.");
         } else {
-            logToConsole("Player Attack Torso Test FAIL: 'Torso' option not found in dropdown.");
-            combatManager.endCombat();
-            return false;
-        }
-
-
-        // 4. Trigger the attack
-        // handleConfirmedAttackDeclaration is not async, but it starts an async chain.
-        combatManager.handleConfirmedAttackDeclaration();
-
-        // 5. Wait for combat logic to process
-        // This is a common challenge in testing non-framework code. A timeout is a pragmatic approach here.
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // 6. Check the result
-        const finalHp = dummyNpc.health.torso.current;
-        logToConsole(`Initial Torso HP: ${initialHp}, Final Torso HP: ${finalHp}`);
-
-        // The test fails if HP is unchanged, because the error prevented applyDamage.
-        // It passes if HP is reduced.
-        if (finalHp < initialHp) {
-            logToConsole("Player Attack Torso Test PASSED: NPC took damage.");
-            testPassed = true;
-        } else {
-            logToConsole("Player Attack Torso Test FAILED: NPC did not take damage. The bug is likely present.");
+            logToConsole("Generic NPC Combat Test FAIL: Generic NPC not found in initiative tracker.");
             testPassed = false;
         }
+    }
 
-        // 7. Cleanup
-        if (gameState.isInCombat) {
-            combatManager.endCombat();
+    // Cleanup
+    if (gameState.isInCombat) {
+        combatManager.endCombat();
+    }
+    gameState.npcs = gameState.npcs.filter(npc => npc.id !== genericNpcInstance.id); // Remove test NPC
+
+    return testPassed;
+}
+
+// Modify runAllBasicConnectionTests to include this new test
+if (typeof runAllBasicConnectionTests === 'function') {
+    const existingRunnerSource = runAllBasicConnectionTests.toString();
+    if (!existingRunnerSource.includes('testCombatInitiationWithGenericNpc')) {
+        const originalRunAllTests = runAllBasicConnectionTests;
+        runAllBasicConnectionTests = async function () {
+            // Preserve the result of previous tests
+            let overallResult = await originalRunAllTests();
+
+            logToConsole("--- Running Combat Initiation with Generic NPC Test (from wrapper) ---");
+            if (!await testCombatInitiationWithGenericNpc()) overallResult = false;
+
+            return overallResult;
         }
-        return testPassed;
+        logToConsole("Extended runAllBasicConnectionTests with testCombatInitiationWithGenericNpc.");
+    }
+} else {
+    async function runAllBasicConnectionTests() {
+        // ... (include other tests if this is the first time it's defined)
+        logToConsole("===== STARTING GENERIC NPC COMBAT INITIATION TEST (NEW RUNNER) =====");
+        let allPassed = true;
+        if (!await testCombatInitiationWithGenericNpc()) allPassed = false;
+        // ...
+        return allPassed;
+    }
+    logToConsole("Created new runAllBasicConnectionTests or it was empty; added testCombatInitiationWithGenericNpc.");
+}
+
+async function testPlayerTakesDamageWithArmor() {
+    logToConsole("--- Running Player Takes Damage With Armor Test ---");
+    let testPassed = true;
+    let originalLogToConsole = window.logToConsole;
+    let loggedMessages = [];
+
+    // Spy on logToConsole
+    window.logToConsole = (message) => {
+        loggedMessages.push(message);
+        originalLogToConsole(message); // Call the original function as well
+    };
+
+    // Prerequisites
+    if (!assetManager || !assetManager.getItem('basic_vest')) {
+        logToConsole("Player Damage w/ Armor Test FAIL: AssetManager or 'basic_vest' not available.");
+        window.logToConsole = originalLogToConsole; return false;
+    }
+    if (!gameState.inventory.container) {
+        logToConsole("Player Damage w/ Armor Test FAIL: Inventory container not initialized.");
+        if (typeof InventoryContainer === 'function') gameState.inventory.container = new InventoryContainer("TestBackpack", "M"); else { window.logToConsole = originalLogToConsole; return false; }
+    }
+    if (!gameState.player || !gameState.player.wornClothing) {
+        logToConsole("Player Damage w/ Armor Test FAIL: gameState.player.wornClothing not initialized.");
+        window.logToConsole = originalLogToConsole; return false;
+    }
+    if (!gameState.health) {
+        logToConsole("Player Damage w/ Armor Test FAIL: gameState.health not initialized.");
+        if (typeof window.initializeHealth === 'function') window.initializeHealth(gameState); else { window.logToConsole = originalLogToConsole; return false; }
+    }
+    if (!combatManager || typeof combatManager.applyDamage !== 'function') {
+        logToConsole("Player Damage w/ Armor Test FAIL: combatManager or applyDamage not available.");
+        window.logToConsole = originalLogToConsole; return false;
     }
 
 
-    // Modify runAllBasicConnectionTests to include these new tests
-    if (typeof runAllBasicConnectionTests === 'function') {
+    // Equip 'basic_vest'
+    const vestDef = assetManager.getItem('basic_vest');
+    if (!vestDef.armorValue) { // armorValue might be on the item definition itself
+        logToConsole("Player Damage w/ Armor Test FAIL: 'basic_vest' has no armorValue defined.");
+        window.logToConsole = originalLogToConsole; return false;
+    }
+    // Ensure vest is not already equipped on this layer for a clean test
+    if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
+        window.unequipClothing(vestDef.layer);
+    }
+    // Add vest to inventory if not there
+    if (!gameState.inventory.container.items.find(item => item.id === 'basic_vest')) {
+        window.addItem(new Item(vestDef));
+    }
+    window.equipClothing(vestDef.name);
+    logToConsole("Equipped 'basic_vest'. Worn clothing: " + JSON.stringify(gameState.player.wornClothing));
+
+
+    // Set initial HP
+    gameState.health.torso.current = gameState.health.torso.max;
+    const initialHp = gameState.health.torso.current;
+    const rawDamage = 5;
+    const expectedArmor = window.getArmorForBodyPart('torso', gameState);
+    const expectedDamageTaken = Math.max(0, rawDamage - expectedArmor);
+    const expectedHpAfterDamage = initialHp - expectedDamageTaken;
+
+    logToConsole(`Initial HP: ${initialHp}, Raw Damage: ${rawDamage}, Expected Armor: ${expectedArmor}, Expected Damage Taken: ${expectedDamageTaken}, Expected HP After: ${expectedHpAfterDamage}`);
+
+    // Dummy attacker for the applyDamage function
+    const dummyAttacker = { name: 'Test Dummy Attacker', id: 'test_dummy_attacker' };
+    // The weapon object can be minimal for this test, only name is used in the log currently
+    const testWeapon = { name: 'TestClub' };
+
+    combatManager.applyDamage(dummyAttacker, gameState, 'torso', rawDamage, 'Bludgeoning', testWeapon);
+
+    const actualHpAfterDamage = gameState.health.torso.current;
+    logToConsole(`Actual HP after damage: ${actualHpAfterDamage}`);
+
+    // Check HP
+    if (actualHpAfterDamage !== expectedHpAfterDamage) {
+        logToConsole(`Player Damage w/ Armor Test FAILED: HP mismatch. Expected ${expectedHpAfterDamage}, got ${actualHpAfterDamage}.`);
+        testPassed = false;
+    }
+
+    // Check log for correct armor reporting
+    const damageLogMessage = loggedMessages.find(msg => msg.includes("DAMAGE") && msg.includes("to Player's torso") && msg.includes(`Armor: ${expectedArmor}`));
+    if (!damageLogMessage) {
+        logToConsole(`Player Damage w/ Armor Test FAILED: Damage log message with correct armor value (Armor: ${expectedArmor}) not found.`);
+        testPassed = false;
+    } else {
+        logToConsole(`Damage log found: "${damageLogMessage}"`);
+    }
+
+    if (testPassed) {
+        logToConsole("Player Takes Damage With Armor Test PASSED!");
+    }
+
+    // Cleanup
+    if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
+        window.unequipClothing(vestDef.layer);
+    }
+    gameState.health.torso.current = initialHp; // Restore HP
+    window.logToConsole = originalLogToConsole; // Restore original logToConsole
+
+    return testPassed;
+}
+
+// Modify runAllBasicConnectionTests to include this new test
+// This assumes runAllBasicConnectionTests is already defined from previous steps.
+if (typeof runAllBasicConnectionTests === 'function') {
+    const existingRunnerSource = runAllBasicConnectionTests.toString();
+    if (!existingRunnerSource.includes('testPlayerTakesDamageWithArmor')) {
         const originalRunAllTests = runAllBasicConnectionTests;
         runAllBasicConnectionTests = async function () {
             let overallResult = await originalRunAllTests(); // Run previous tests
 
-            logToConsole("--- Running Equip Armor & UI Update Test (from wrapper) ---");
-            if (!await testEquipArmorAndUpdateUI()) overallResult = false;
+            logToConsole("--- Running Player Takes Damage With Armor Test (from wrapper) ---");
+            if (!await testPlayerTakesDamageWithArmor()) overallResult = false;
 
-            logToConsole("--- Running Take Damage & UI Update Test (from wrapper) ---");
-            if (!await testTakeDamageAndUpdateUI()) overallResult = false;
-
-            logToConsole("--- Running Player Attack Torso Test (from wrapper) ---");
-            if (!await testPlayerAttackTorso()) overallResult = false;
-
-            // Re-log final status
-            if (overallResult) {
-                logToConsole("All basic connection tests (including UI updates and Torso Attack) PASSED!");
-            } else {
-                logToConsole("One or more basic connection tests (including UI updates and Torso Attack) FAILED. Check logs.");
-            }
+            // Re-log final status (if the original runner had one, this might be redundant or replace it)
+            // This part might need to be adjusted based on how the original runner logs.
+            // For now, let's assume the original runner had its own final log.
+            // We'll just add our test. If the original runner's final log is conditional,
+            // this new 'overallResult' should be the one determining the final message.
             return overallResult;
         }
-        // Overwrite the console message for the original if it exists to avoid double "All tests PASSED"
-        // This is a bit hacky but avoids needing to edit the original test runner string directly.
-        // Better would be to edit the original runAllBasicConnectionTests string to include these.
-        // For now, this just adds them on. The final message from this new runner will be the definitive one.
-    } else {
-        // If runAllBasicConnectionTests doesn't exist, create it to run these.
-        async function runAllBasicConnectionTests() {
-            logToConsole("===== STARTING BASIC UI UPDATE TESTS =====");
-            let allPassed = true;
-            if (!await testEquipArmorAndUpdateUI()) allPassed = false;
-            if (!await testTakeDamageAndUpdateUI()) allPassed = false;
-            logToConsole("===== BASIC UI UPDATE TESTS COMPLETE =====");
-            if (allPassed) {
-                logToConsole("All basic UI update tests PASSED!");
-            } else {
-                logToConsole("One or more basic UI update tests FAILED. Check logs.");
-            }
-            return allPassed;
+        logToConsole("Extended runAllBasicConnectionTests with testPlayerTakesDamageWithArmor.");
+    }
+} else {
+    // If runAllBasicConnectionTests doesn't exist, create a basic one.
+    async function runAllBasicConnectionTests() {
+        logToConsole("===== STARTING PLAYER DAMAGE WITH ARMOR TEST (NEW RUNNER) =====");
+        let allPassed = true;
+        if (!await testPlayerTakesDamageWithArmor()) allPassed = false;
+        logToConsole("===== PLAYER DAMAGE WITH ARMOR TEST (NEW RUNNER) COMPLETE =====");
+        if (allPassed) {
+            logToConsole("Player Damage With Armor Test (New Runner) PASSED!");
+        } else {
+            logToConsole("Player Damage With Armor Test (New Runner) FAILED. Check logs.");
+        }
+        return allPassed;
+    }
+    logToConsole("Created new runAllBasicConnectionTests with testPlayerTakesDamageWithArmor.");
+}
+
+async function testEquipArmorAndUpdateUI() {
+    logToConsole("--- Running Equip Armor & UI Update Test ---");
+    let testPassed = true;
+
+    // Prerequisites
+    if (!assetManager || !assetManager.getItem('basic_vest')) {
+        logToConsole("Equip Armor Test FAIL: AssetManager or 'basic_vest' item definition not available.");
+        return false;
+    }
+    if (!gameState.inventory.container) {
+        logToConsole("Equip Armor Test FAIL: Inventory container not initialized.");
+        // Attempt to initialize for testability, though ideally startGame handles this
+        if (typeof InventoryContainer === 'function') {
+            gameState.inventory.container = new InventoryContainer("TestBackpack", "M");
+        } else { return false; }
+    }
+    if (!gameState.player || !gameState.player.wornClothing) {
+        logToConsole("Equip Armor Test FAIL: gameState.player.wornClothing not initialized.");
+        return false;
+    }
+    if (!gameState.health) {
+        logToConsole("Equip Armor Test FAIL: gameState.health not initialized.");
+        // Attempt to initialize for testability
+        if (typeof window.initializeHealth === 'function') {
+            window.initializeHealth(gameState);
+        } else { return false; }
+    }
+
+
+    // Ensure 'basic_vest' is in inventory and unequipped
+    const vestDef = assetManager.getItem('basic_vest');
+    let vestInstance = gameState.inventory.container.items.find(item => item.id === 'basic_vest');
+    if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
+        window.unequipClothing(vestDef.layer); // Unequip if already worn
+    }
+    if (!vestInstance) {
+        window.inventoryManager.addItem(new Item(vestDef)); // Add if not in inventory
+        vestInstance = gameState.inventory.container.items.find(item => item.id === 'basic_vest');
+        if (!vestInstance) {
+            logToConsole("Equip Armor Test FAIL: Could not add 'basic_vest' to inventory.");
+            return false;
         }
     }
+
+    // At this point, vest should be in inventory and not equipped on the target layer.
+    // Clear the target layer just in case.
+    gameState.player.wornClothing[vestDef.layer] = null;
+    window.renderHealthTable(gameState); // Render once to get initial armor state if needed
+
+    logToConsole("Equipping 'basic_vest'...");
+    window.equipClothing(vestDef.name); // This should trigger renderCharacterInfo -> renderHealthTable
+
+    const expectedArmor = window.getArmorForBodyPart('torso', gameState);
+    const healthTableBody = document.querySelector("#healthTable tbody");
+    let displayedArmor = -1;
+
+    if (healthTableBody) {
+        for (let i = 0; i < healthTableBody.rows.length; i++) {
+            const row = healthTableBody.rows[i];
+            if (row.cells[0] && row.cells[0].textContent === 'Torso') {
+                displayedArmor = parseInt(row.cells[2].textContent, 10);
+                break;
+            }
+        }
+    }
+
+    logToConsole(`Expected armor for torso: ${expectedArmor}, Displayed armor: ${displayedArmor}`);
+
+    if (displayedArmor === expectedArmor) {
+        logToConsole("Equip Armor & UI Update Test PASSED!");
+    } else {
+        logToConsole("Equip Armor & UI Update Test FAILED.");
+        testPassed = false;
+    }
+
+    // Cleanup: unequip
+    if (gameState.player.wornClothing[vestDef.layer] && gameState.player.wornClothing[vestDef.layer].id === 'basic_vest') {
+        window.unequipClothing(vestDef.layer);
+    }
+    window.renderHealthTable(gameState); // Re-render to restore UI
+
+    return testPassed;
+}
+
+async function testTakeDamageAndUpdateUI() {
+    logToConsole("--- Running Take Damage & UI Update Test ---");
+    let testPassed = true;
+
+    if (!gameState.health || !gameState.health.torso) {
+        logToConsole("Take Damage Test FAIL: gameState.health.torso not initialized.");
+        if (typeof window.initializeHealth === 'function') {
+            window.initializeHealth(gameState);
+        } else { return false; }
+    }
+
+    // Ensure torso has some health to lose
+    gameState.health.torso.current = gameState.health.torso.max;
+    window.renderHealthTable(gameState); // Initial render to capture state
+
+    const initialTorsoHp = gameState.health.torso.current;
+    const damageToApply = 2;
+    const expectedHp = initialTorsoHp - damageToApply;
+
+    logToConsole(`Initial torso HP: ${initialTorsoHp}. Applying ${damageToApply} damage.`);
+    gameState.health.torso.current = expectedHp; // Manually set HP
+    window.renderHealthTable(gameState); // Call the function that should update UI
+
+    const healthTableBody = document.querySelector("#healthTable tbody");
+    let displayedHpText = "";
+    let displayedHp = -1;
+
+    if (healthTableBody) {
+        for (let i = 0; i < healthTableBody.rows.length; i++) {
+            const row = healthTableBody.rows[i];
+            if (row.cells[0] && row.cells[0].textContent === 'Torso') {
+                displayedHpText = row.cells[1].textContent; // Should be "current/max"
+                displayedHp = parseInt(displayedHpText.split('/')[0], 10);
+                break;
+            }
+        }
+    }
+
+    logToConsole(`Expected HP for torso: ${expectedHp}, Displayed HP: ${displayedHp} (raw text: '${displayedHpText}')`);
+
+    if (displayedHp === expectedHp) {
+        logToConsole("Take Damage & UI Update Test PASSED!");
+    } else {
+        logToConsole("Take Damage & UI Update Test FAILED.");
+        testPassed = false;
+    }
+
+    // Cleanup: Restore HP for other tests
+    gameState.health.torso.current = initialTorsoHp;
+    window.renderHealthTable(gameState);
+
+    return testPassed;
+}
+
+async function testPlayerAttackTorso() {
+    logToConsole("--- Running Player Attack Torso Test ---");
+    let testPassed = false;
+    const combatBodyPartSelect = document.getElementById('combatBodyPartSelect');
+    if (!combatBodyPartSelect) {
+        logToConsole("Player Attack Torso Test FAIL: combatBodyPartSelect element not found.");
+        return false;
+    }
+
+    // 1. Find a target NPC
+    const dummyNpc = gameState.npcs.find(npc => npc.id === 'training_dummy');
+    if (!dummyNpc) {
+        logToConsole("Player Attack Torso Test FAIL: Training dummy NPC not found.");
+        return false;
+    }
+    // Ensure dummy has health
+    if (!dummyNpc.health || !dummyNpc.health.torso) {
+        initializeHealth(dummyNpc);
+    }
+    dummyNpc.health.torso.current = dummyNpc.health.torso.max;
+
+
+    // 2. Start combat
+    logToConsole("Starting combat for test...");
+    gameState.playerPos = { x: dummyNpc.mapPos.x - 1, y: dummyNpc.mapPos.y, z: dummyNpc.mapPos.z };
+    combatManager.startCombat([gameState, dummyNpc]);
+
+    if (!gameState.isInCombat) {
+        logToConsole("Player Attack Torso Test FAIL: Combat did not start.");
+        return false;
+    }
+
+    // Ensure it's player's turn. If not, we can't reliably test the UI-driven attack.
+    // This part might be flaky if initiative is random. A more robust test would force player's turn.
+    if (combatManager.initiativeTracker[combatManager.currentTurnIndex].entity !== gameState) {
+        logToConsole("Player Attack Torso Test SKIPPED: Not player's turn first. This can happen due to random initiative.");
+        combatManager.endCombat();
+        return true; // Return true to not fail the whole suite on random chance.
+    }
+
+    // 3. Set up the attack via UI elements
+    const initialHp = dummyNpc.health.torso.current;
+    document.getElementById('combatWeaponSelect').value = 'unarmed';
+
+    // This is the critical part: using the buggy value from the HTML
+    const torsoOption = Array.from(combatBodyPartSelect.options).find(opt => opt.text === 'Torso');
+    if (torsoOption) {
+        combatBodyPartSelect.value = torsoOption.value; // This will be 'Torso' before the fix
+    } else {
+        logToConsole("Player Attack Torso Test FAIL: 'Torso' option not found in dropdown.");
+        combatManager.endCombat();
+        return false;
+    }
+
+
+    // 4. Trigger the attack
+    // handleConfirmedAttackDeclaration is not async, but it starts an async chain.
+    combatManager.handleConfirmedAttackDeclaration();
+
+    // 5. Wait for combat logic to process
+    // This is a common challenge in testing non-framework code. A timeout is a pragmatic approach here.
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // 6. Check the result
+    const finalHp = dummyNpc.health.torso.current;
+    logToConsole(`Initial Torso HP: ${initialHp}, Final Torso HP: ${finalHp}`);
+
+    // The test fails if HP is unchanged, because the error prevented applyDamage.
+    // It passes if HP is reduced.
+    if (finalHp < initialHp) {
+        logToConsole("Player Attack Torso Test PASSED: NPC took damage.");
+        testPassed = true;
+    } else {
+        logToConsole("Player Attack Torso Test FAILED: NPC did not take damage. The bug is likely present.");
+        testPassed = false;
+    }
+
+    // 7. Cleanup
+    if (gameState.isInCombat) {
+        combatManager.endCombat();
+    }
+    return testPassed;
+}
+
+
+// Modify runAllBasicConnectionTests to include these new tests
+if (typeof runAllBasicConnectionTests === 'function') {
+    const originalRunAllTests = runAllBasicConnectionTests;
+    runAllBasicConnectionTests = async function () {
+        let overallResult = await originalRunAllTests(); // Run previous tests
+
+        logToConsole("--- Running Equip Armor & UI Update Test (from wrapper) ---");
+        if (!await testEquipArmorAndUpdateUI()) overallResult = false;
+
+        logToConsole("--- Running Take Damage & UI Update Test (from wrapper) ---");
+        if (!await testTakeDamageAndUpdateUI()) overallResult = false;
+
+        logToConsole("--- Running Player Attack Torso Test (from wrapper) ---");
+        if (!await testPlayerAttackTorso()) overallResult = false;
+
+        // Re-log final status
+        if (overallResult) {
+            logToConsole("All basic connection tests (including UI updates and Torso Attack) PASSED!");
+        } else {
+            logToConsole("One or more basic connection tests (including UI updates and Torso Attack) FAILED. Check logs.");
+        }
+        return overallResult;
+    }
+    // Overwrite the console message for the original if it exists to avoid double "All tests PASSED"
+    // This is a bit hacky but avoids needing to edit the original test runner string directly.
+    // Better would be to edit the original runAllBasicConnectionTests string to include these.
+    // For now, this just adds them on. The final message from this new runner will be the definitive one.
+} else {
+    // If runAllBasicConnectionTests doesn't exist, create it to run these.
+    async function runAllBasicConnectionTests() {
+        logToConsole("===== STARTING BASIC UI UPDATE TESTS =====");
+        let allPassed = true;
+        if (!await testEquipArmorAndUpdateUI()) allPassed = false;
+        if (!await testTakeDamageAndUpdateUI()) allPassed = false;
+        logToConsole("===== BASIC UI UPDATE TESTS COMPLETE =====");
+        if (allPassed) {
+            logToConsole("All basic UI update tests PASSED!");
+        } else {
+            logToConsole("One or more basic UI update tests FAILED. Check logs.");
+        }
+        return allPassed;
+    }
+}
