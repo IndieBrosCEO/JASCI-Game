@@ -42,6 +42,19 @@ function updateSkill(name, value, character) {
     if (skillPointsElement) {
         skillPointsElement.textContent = character.MAX_SKILL_POINTS - updatedTotal;
     }
+    checkStartGameButton();
+}
+
+function checkStartGameButton() {
+    const startGameButton = document.getElementById('startGameButton');
+    const charName = document.getElementById('charName').value.trim();
+    const skillPoints = parseInt(document.getElementById('skillPoints').textContent);
+
+    if (charName !== "" && charName !== "Name Here" && skillPoints === 0) {
+        startGameButton.disabled = false;
+    } else {
+        startGameButton.disabled = true;
+    }
 }
 
 // Update stat values for the character
@@ -73,7 +86,20 @@ function updateStat(name, value, character) {
     // If this function is called from an onchange event in HTML, that HTML needs to be updated too.
     // The prompt mentions refactoring calls in script.js, so we'll handle it there.
     // Let's assume renderCharacterInfo will be called from script.js after this.
+    checkStartGameButton();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const charNameInput = document.getElementById('charName');
+    if (charNameInput) {
+        charNameInput.addEventListener('input', checkStartGameButton);
+    }
+
+    const startGameButton = document.getElementById('startGameButton');
+    if (startGameButton) {
+        startGameButton.addEventListener('click', startGame);
+    }
+});
 
 // Render the tables for stats and skills on the character creator
 // Assumes 'character' has 'stats', 'skills', 'MIN_STAT_VALUE', 'MAX_STAT_VALUE'
@@ -136,6 +162,250 @@ function renderTables(character) {
         </div>`).join('');
     statsBody.innerHTML = statsHtml;
     skillsBody.innerHTML = skillsHtml;
+    checkStartGameButton();
+}
+
+function startGame() {
+    // Play start game sound
+    if (window.audioManager) {
+        const startGameSounds = ['ui_start_game_01.wav', 'ui_start_game_02.wav'];
+        const randomStartSound = startGameSounds[Math.floor(Math.random() * startGameSounds.length)];
+        window.audioManager.playUiSound(randomStartSound, {
+            volume: 0.8
+        });
+        // Start the music playlist after a delay
+        setTimeout(() => {
+            window.audioManager.playMusic(0); // Start music with 0 delay after the initial wait
+        }, 3000); // 3-second delay before music starts
+    }
+
+    const characterCreator = document.getElementById('character-creator');
+    const characterInfoPanel = document.getElementById('character-info-panel');
+    // const gameControls = document.getElementById('game-controls'); // This ID does not exist in index.html right-panel is used.
+
+    // Ensure currentMapData is loaded (now via window.mapRenderer.getCurrentMapData())
+    let currentMap = window.mapRenderer.getCurrentMapData();
+    if (!currentMap) {
+        console.warn("startGame called but no map data loaded from mapRenderer. This should have been handled by initialize().");
+        // Attempt to gracefully handle or rely on initialize() having set defaults
+        // Forcing a load here might be redundant if initialize worked or failed informatively.
+        // If initialize() failed to load any map, currentMap will be null.
+        // Game might not be in a playable state if no map is loaded.
+    }
+
+    // Ensure gameState reflects the currently loaded map's Z-level structure
+    // This might be redundant if initialize() and handleMapSelectionChangeWrapper() are correctly setting these.
+    if (currentMap && currentMap.levels && currentMap.startPos) {
+        gameState.mapLevels = currentMap.levels;
+        gameState.playerPos = { ...currentMap.startPos
+        }; // Ensure we have x, y, and z
+        gameState.currentViewZ = currentMap.startPos.z;
+    } else if (currentMap) {
+        // If currentMap exists but is missing Z-level data (e.g. old format map somehow loaded)
+        // Log a warning and try to set defaults.
+        console.warn("startGame: currentMap is loaded but missing Z-level data (levels or startPos.z). Attempting to use defaults.");
+        gameState.mapLevels = currentMap.layers ? {
+            "0": currentMap.layers
+        } : {
+            "0": {
+                landscape: [],
+                building: [],
+                item: [],
+                roof: []
+            }
+        };
+        gameState.playerPos = {
+            x: (currentMap.startPos?.x || 2),
+            y: (currentMap.startPos?.y || 2),
+            z: 0
+        };
+        gameState.currentViewZ = 0;
+    } else {
+        // No map loaded at all
+        console.error("startGame: No map data is available. Cannot properly initialize game state for map.");
+        gameState.mapLevels = {
+            "0": {
+                landscape: [],
+                building: [],
+                item: [],
+                roof: []
+            }
+        }; // Default empty level
+        gameState.playerPos = {
+            x: 2,
+            y: 2,
+            z: 0
+        };
+        gameState.currentViewZ = 0;
+    }
+
+    // Ensure gameState.inventory.container is initialized before trying to modify it or call functions like addItem.
+    // OLD BACKPACK UPGRADE LOGIC REMOVED
+
+    // Add Small Backpack and Cargo Pants as starting items
+    if (gameState.inventory.container && typeof window.inventoryManager.addItem === 'function' && assetManager) {
+        const itemsToStartWith = [{
+            id: "small_backpack_container",
+            nameForLog: "Small Backpack"
+        }, {
+            id: "cargo_pants_pockets",
+            nameForLog: "Cargo Pants"
+        }, {
+            id: "large_backpack_item",
+            nameForLog: "Large Backpack"
+        }];
+
+        itemsToStartWith.forEach(itemInfo => {
+            const itemDef = assetManager.getItem(itemInfo.id);
+            if (itemDef) {
+                const newItem = new Item(itemDef); // Assumes Item constructor is globally available
+                if (window.inventoryManager.addItem(newItem)) {
+                    logToConsole(`Added starting item: ${itemInfo.nameForLog} to inventory.`);
+                } else {
+                    logToConsole(`Failed to add starting item: ${itemInfo.nameForLog} to inventory (addItem returned false).`);
+                }
+            } else {
+                logToConsole(`Warning: Item definition not found for starting item ID: ${itemInfo.id} (${itemInfo.nameForLog}).`);
+            }
+        });
+    } else {
+        if (!gameState.inventory.container) logToConsole("Could not add starting backpack/pants: Inventory container not ready.");
+        if (typeof window.addItem !== 'function') logToConsole("Could not add starting backpack/pants: addItem function not available.");
+        if (!assetManager) logToConsole("Could not add starting backpack/pants: assetManager not available.");
+    }
+
+    // Add clothing items from definitions
+    // Item constructor is now in js/inventory.js
+    // addItem is now in js/inventory.js
+    const clothingToAdd = ["basic_vest"];
+    clothingToAdd.forEach(itemId => {
+        const itemDef = assetManager.getItem(itemId); // All items (incl clothing) are in itemsById
+        if (itemDef) {
+            // Create a new Item instance if your addItem expects an Item object
+            // For simplicity, if addItem can handle raw definitions, that's fine too.
+            // Assuming Item constructor can take the definition object:
+            const newItem = new Item(itemDef);
+            window.inventoryManager.addItem(newItem);
+        } else {
+            console.warn(`Clothing item definition not found for ID: ${itemId}`);
+        }
+    });
+
+    // Add weapons and ammunition
+    const weaponsAndAmmoToAdd = [];
+
+    weaponsAndAmmoToAdd.forEach(itemEntry => {
+        const itemDef = assetManager.getItem(itemEntry.id);
+        if (itemDef) {
+            const quantity = itemEntry.quantity || 1; // Default to 1 if quantity not specified
+            for (let i = 0; i < quantity; i++) {
+                const newItem = new Item(itemDef);
+                // If it's ammunition, we might want to store its specific ammoType or quantity per item
+                if (itemDef.type === "ammunition") {
+                    newItem.ammoType = itemDef.ammoType;
+                    newItem.quantityPerBox = itemDef.quantity; // Assuming 'quantity' in JSON is per-box
+                }
+                window.inventoryManager.addItem(newItem);
+            }
+        } else {
+            console.warn(`Weapon or ammo definition not found for ID: ${itemEntry.id}`);
+        }
+    });
+
+
+    if (characterCreator) characterCreator.classList.add('hidden');
+    if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
+    // if (gameControls) gameControls.classList.remove('hidden'); // As noted, this ID isn't in use
+
+    renderCharacterInfo(); // This now calls the specific rendering function from js/character.js
+
+    // 1. Initialize base "Body Pockets" capacity from Strength
+    // This ensures the player's inherent carrying capacity is set before any items are processed.
+    if (gameState.inventory.container && gameState.stats && typeof window.inventoryManager?.calculateCumulativeCapacity === 'function') {
+        const initialPlayerStrength = gameState.stats.find(stat => stat.name === "Strength")?.points || 1;
+        gameState.inventory.container.maxSlots = Math.max(1, initialPlayerStrength); // Base capacity is Strength, min 1
+        logToConsole(`Initial 'Body Pockets' capacity set to: ${gameState.inventory.container.maxSlots} (from Strength: ${initialPlayerStrength}).`);
+    } else {
+        console.error("Critical error: Cannot set initial Strength-based capacity in startGame.");
+        logToConsole("Error: Could not set initial Strength-based carrying capacity for Body Pockets.");
+        if (gameState.inventory.container) gameState.inventory.container.maxSlots = 3; // Fallback
+    }
+
+    // 2. Define all starting items (clothes, consumables, etc.)
+    const allStartingItems = [{
+        id: "small_backpack_wearable",
+        nameForLog: "Small Backpack"
+    }, {
+        id: "cargo_pants_pockets",
+        nameForLog: "Cargo Pants"
+    }, {
+        id: "basic_vest",
+        nameForLog: "Basic Vest"
+    }, {
+        id: "large_backpack_item",
+        nameForLog: "Large Backpack"
+    }, {
+        id: "fishing_rod_simple",
+        nameForLog: "Fishing Rod"
+    }
+    // Add other items like Canned Beans, Bottled Water if they are default starting items
+    // For example:
+    // { id: "canned_beans_food", nameForLog: "Canned Beans" },
+    // { id: "bottled_water_drink", nameForLog: "Bottled Water" }
+    ];
+
+    logToConsole(`Processing ${allStartingItems.length} starting items. Player inventory capacity: ${gameState.inventory.container.maxSlots} slots.`);
+
+    // 3. Attempt to add all starting items to inventory; if full, place on floor.
+    allStartingItems.forEach(itemInfo => {
+        const itemDef = assetManager.getItem(itemInfo.id);
+        if (itemDef) {
+            const newItemInstance = new Item(itemDef);
+            if (!window.inventoryManager.addItem(newItemInstance)) { // addItem uses InventoryManager.addItemToInventory
+                logToConsole(`Inventory full (or item add failed) for: ${itemInfo.nameForLog}. Placing on floor.`);
+                if (!gameState.floorItems) gameState.floorItems = [];
+                gameState.floorItems.push({
+                    x: gameState.playerPos.x,
+                    y: gameState.playerPos.y,
+                    z: gameState.playerPos.z,
+                    item: newItemInstance
+                });
+            } else {
+                logToConsole(`Added starting item: ${itemInfo.nameForLog} to inventory.`);
+            }
+        } else {
+            logToConsole(`Warning: Starting item definition not found for ID: ${itemInfo.id} (${itemInfo.nameForLog}). Skipping.`);
+        }
+    });
+
+    // Player starts with no clothes equipped. Inventory capacity is purely Strength-based.
+    // The player will need to pick up and equip items from the floor or their inventory.
+    // If they equip a backpack, `equipClothing` in InventoryManager will call `calculateCumulativeCapacity`
+    // which will then update `gameState.inventory.container.maxSlots` to include the backpack's capacity.
+
+    if (window.mapRenderer && gameState.floorItems.length > 0) {
+        window.mapRenderer.scheduleRender(); // Ensure map re-renders if items were dropped.
+    }
+
+    gameState.gameStarted = true;
+    window.inventoryManager.updateInventoryUI(); // Update UI to reflect initial inventory state
+
+    // initializeHealth is now in js/character.js, call it with gameState
+    window.initializeHealth(gameState);
+    window.renderHealthTable(gameState); // Explicitly call to render after health is set up.
+
+    updatePlayerStatusDisplay(); // Initialize clock and needs display
+
+    if (window.mapRenderer.getCurrentMapData()) { // Only run these if a map is loaded
+        window.interaction.detectInteractableItems();
+        window.interaction.showInteractableItems();
+        if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function' && gameState.playerPos) {
+            const PLAYER_VISION_RADIUS_CONST = 10; // TODO: Centralize this constant
+            window.mapRenderer.updateFOW_BFS(gameState.playerPos.x, gameState.playerPos.y, gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+        }
+    }
+    window.turnManager.startTurn();
+    runConsumableAndNeedsTest(); // Added call to the test function
 }
 
 // Renders only the stats, skills, and worn clothing parts for the character info panel
