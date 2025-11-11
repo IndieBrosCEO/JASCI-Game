@@ -13,6 +13,14 @@
       {
         "text": "Get out of my way, meathead.",
         "goTo": "hostile_response"
+      },
+      {
+        "text": "[Strength] You want my money? Come and get it.",
+        "goTo": "strength_success",
+        "condition": {
+            "type": "statCheck",
+            "expression": "stat:Strength>6"
+        }
       }
     ]
   },
@@ -34,6 +42,15 @@
     "text": "Tough talk for someone about to get their skull cracked.",
     "actions": ["startCombat"],
     "choices": []
+  },
+  "strength_success": {
+    "text": "You're bigger than you look. I don't want any trouble.",
+    "choices": [
+        {
+            "text": "That's what I thought.",
+            "goTo": "end"
+        }
+    ]
   },
   "end": {
     "text": "...",

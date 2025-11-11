@@ -1,0 +1,15 @@
+{
+    "start": {
+        "text": "The creature growls menacingly.",
+        "options": [
+            {
+                "text": "Leave it alone.",
+                "action": "end"
+            },
+            {
+                "text": "Attack.",
+                "action": "startCombat"
+            }
+        ]
+    }
+}

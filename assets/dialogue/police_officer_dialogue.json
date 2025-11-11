@@ -13,6 +13,14 @@
       {
         "text": "I'm here to help. I have some information.",
         "goTo": "positive_response"
+      },
+      {
+        "text": "[Investigation] I found this near the crime scene. Maybe it can help.",
+        "goTo": "investigation_success",
+        "condition": {
+            "type": "skillCheck",
+            "expression": "skill:Investigation>6"
+        }
       }
     ]
   },
@@ -39,6 +47,16 @@
         }
     ]
   },
+    "investigation_success": {
+        "text": "This... this is a significant lead. Thank you, citizen. You've done a great service.",
+        "actions": ["giveItem:bottled_water,2"],
+        "choices": [
+            {
+                "text": "Glad I could help.",
+                "goTo": "end"
+            }
+        ]
+    },
   "end": {
     "text": "Stay safe out there.",
     "choices": []

@@ -13,6 +13,14 @@
       {
         "text": "Perhaps we can come to an... arrangement.",
         "goTo": "positive_response"
+      },
+      {
+        "text": "[Guns] I'm not looking for trouble, but I can handle a piece if I need to.",
+        "goTo": "guns_success",
+        "condition": {
+            "type": "skillCheck",
+            "expression": "skill:Guns>7"
+        }
       }
     ]
   },
@@ -35,6 +43,15 @@
     "choices": [
         {
             "text": "I've got a proposition for you.",
+            "goTo": "end"
+        }
+    ]
+  },
+  "guns_success": {
+    "text": "I can tell. You've got the steady hands of a gunslinger. I respect that. Be seein' you around.",
+    "choices": [
+        {
+            "text": "Likewise.",
             "goTo": "end"
         }
     ]

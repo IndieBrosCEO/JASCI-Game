@@ -13,6 +13,14 @@
       {
         "text": "I brought you something from the outside.",
         "goTo": "positive_response"
+      },
+      {
+        "text": "[Perception] You're protecting something, aren't you?",
+        "goTo": "perception_success",
+        "condition": {
+            "type": "statCheck",
+            "expression": "stat:Perception>7"
+        }
       }
     ]
   },
@@ -38,6 +46,15 @@
               "goTo": "end"
           }
       ]
+  },
+  "perception_success": {
+    "text": "Hssss... clever eyes... You see too much. Get out!",
+    "choices": [
+        {
+            "text": "I'm leaving.",
+            "goTo": "end"
+        }
+    ]
   },
   "end": {
     "text": "...",

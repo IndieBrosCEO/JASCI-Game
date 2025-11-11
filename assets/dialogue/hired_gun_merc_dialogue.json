@@ -13,6 +13,14 @@
       {
         "text": "I'd like to hire you.",
         "goTo": "positive_response"
+      },
+      {
+        "text": "[Marksmanship] I'm not looking for a fight, but I don't miss.",
+        "goTo": "marksmanship_success",
+        "condition": {
+            "type": "statCheck",
+            "expression": "stat:Marksmanship>7"
+        }
       }
     ]
   },
@@ -38,6 +46,15 @@
               "goTo": "end"
           }
       ]
+  },
+  "marksmanship_success": {
+    "text": "I can see that. You've got the look of a professional. I respect that. I'll let you pass... this time.",
+    "choices": [
+        {
+            "text": "Until we meet again.",
+            "goTo": "end"
+        }
+    ]
   },
   "end": {
     "text": "...",
