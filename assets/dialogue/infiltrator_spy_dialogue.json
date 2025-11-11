@@ -1,0 +1,46 @@
+{
+  "start": {
+    "text": "You shouldn't have seen me. Now we have a problem.",
+    "choices": [
+      {
+        "text": "I didn't see anything.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "Who are you?",
+        "goTo": "hostile_response"
+      },
+      {
+        "text": "I'm on your side. Here's a token of my trust.",
+        "goTo": "positive_response"
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "Let's keep it that way. Forget you ever saw me.",
+    "choices": [
+      {
+        "text": "Done.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "hostile_response": {
+    "text": "Curiosity is a dangerous thing. I'm afraid I can't let you leave.",
+    "actions": ["startCombat"],
+    "choices": []
+  },
+  "positive_response": {
+      "text": "Interesting. You might be useful. I'll be in touch.",
+      "choices": [
+          {
+              "text": "I'll be waiting.",
+              "goTo": "end"
+          }
+      ]
+  },
+  "end": {
+    "text": "...",
+    "choices": []
+  }
+}

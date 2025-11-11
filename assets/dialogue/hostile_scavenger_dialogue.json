@@ -1,0 +1,46 @@
+{
+  "start": {
+    "text": "What do you want? Get lost before I make you.",
+    "choices": [
+      {
+        "text": "I'm not looking for trouble.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "You don't scare me.",
+        "goTo": "hostile_response"
+      },
+      {
+        "text": "I have something for you.",
+        "goTo": "positive_response"
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "Then you're in the wrong place. Now beat it.",
+    "choices": [
+      {
+        "text": "Fine.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "hostile_response": {
+    "text": "You've got a lot of nerve. Let's see what you're made of.",
+    "actions": ["startCombat"],
+    "choices": []
+  },
+  "positive_response": {
+    "text": "Oh yeah? What is it?",
+    "choices": [
+        {
+            "text": "Here, take this.",
+            "goTo": "end"
+        }
+    ]
+  },
+  "end": {
+    "text": "...",
+    "choices": []
+  }
+}

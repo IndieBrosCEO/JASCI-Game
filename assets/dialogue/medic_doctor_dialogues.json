@@ -1,1 +1,50 @@
-{}
+{
+  "start": {
+    "text": "You look hurt. Let me see. I'm a doctor.",
+    "choices": [
+      {
+        "text": "I'm fine, thank you.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "I don't need your help.",
+        "goTo": "hostile_response"
+      },
+      {
+        "text": "Please, I need medical attention.",
+        "goTo": "positive_response"
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "Alright, but be careful out there. A small wound can become a big problem if left untreated.",
+    "choices": [
+      {
+        "text": "I will.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "hostile_response": {
+    "text": "Suit yourself. But don't come crying to me when you're bleeding out.",
+    "choices": [
+        {
+            "text": "Don't worry, I won't",
+            "goTo": "end"
+        }
+    ]
+  },
+  "positive_response": {
+    "text": "Of course. Let's get you patched up.",
+    "choices": [
+        {
+            "text": "Thank you, doctor.",
+            "goTo": "end"
+        }
+    ]
+  },
+  "end": {
+    "text": "Try to stay out of trouble.",
+    "choices": []
+  }
+}

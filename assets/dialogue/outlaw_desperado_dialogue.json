@@ -1,0 +1,46 @@
+{
+  "start": {
+    "text": "Well now, what have we here? A new face in this dusty old town. You look like you've got some coin on you.",
+    "choices": [
+      {
+        "text": "I'm just a weary traveler.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "I'd sooner die than give you a single coin.",
+        "goTo": "hostile_response"
+      },
+      {
+        "text": "Perhaps we can come to an... arrangement.",
+        "goTo": "positive_response"
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "A weary traveler with some heavy pockets, I'd wager. Don't cause trouble, and maybe you'll keep 'em.",
+    "choices": [
+      {
+        "text": "No trouble from me.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "hostile_response": {
+    "text": "Is that so? Well, I'm happy to oblige. Draw!",
+    "actions": ["startCombat"],
+    "choices": []
+  },
+  "positive_response": {
+    "text": "Ha! I like your style. What kind of arrangement are we talkin' about?",
+    "choices": [
+        {
+            "text": "I've got a proposition for you.",
+            "goTo": "end"
+        }
+    ]
+  },
+  "end": {
+    "text": "Don't cross me.",
+    "choices": []
+  }
+}

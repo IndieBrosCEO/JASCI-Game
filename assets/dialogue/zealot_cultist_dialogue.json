@@ -1,0 +1,46 @@
+{
+  "start": {
+    "text": "The unbeliever! You walk in darkness, blind to the truth! The Great One sees you!",
+    "choices": [
+      {
+        "text": "I mean no disrespect.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "Your Great One is a myth.",
+        "goTo": "hostile_response"
+      },
+      {
+        "text": "I seek enlightenment. Tell me more.",
+        "goTo": "positive_response"
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "Disrespect is the path of the ignorant. Leave this holy place before you defile it further.",
+    "choices": [
+      {
+        "text": "I'm leaving.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "hostile_response": {
+    "text": "Blasphemy! I will cleanse your soul with fire and steel!",
+    "actions": ["startCombat"],
+    "choices": []
+  },
+  "positive_response": {
+    "text": "You wish to learn? The path is long and arduous, but the rewards are eternal. First, you must make a sacrifice.",
+    "choices": [
+        {
+            "text": "What kind of sacrifice?",
+            "goTo": "end"
+        }
+    ]
+  },
+  "end": {
+    "text": "...",
+    "choices": []
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "start": {
+    "text": "Citizen. This is a restricted area. Please state your purpose for being here.",
+    "choices": [
+      {
+        "text": "Just passing through, officer.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "I go where I please.",
+        "goTo": "hostile_response"
+      },
+      {
+        "text": "I'm here to help. I have some information.",
+        "goTo": "positive_response"
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "See that you do. We're trying to maintain order here. Don't make our job harder.",
+    "choices": [
+      {
+        "text": "Understood.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "hostile_response": {
+    "text": "That's not how this works. I'm going to have to ask you to come with me.",
+    "actions": ["startCombat"],
+    "choices": []
+  },
+  "positive_response": {
+    "text": "Information? We'll take any help we can get. What have you got?",
+    "choices": [
+        {
+            "text": "I saw some suspicious activity over there.",
+            "goTo": "end"
+        }
+    ]
+  },
+  "end": {
+    "text": "Stay safe out there.",
+    "choices": []
+  }
+}

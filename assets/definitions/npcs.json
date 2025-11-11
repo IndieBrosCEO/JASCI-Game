@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "id": "training_dummy",
     "name": "Training Dummy",
@@ -8,64 +8,22 @@
     "behavior": "idle",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 5,
-        "current": 5,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 5, "current": 5, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "leftArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 3,
-      "Intelligence": 1,
-      "Dexterity": 2,
-      "Constitution": 3,
-      "Perception": 2,
-      "Willpower": 1,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
-    "skills": {
-      "Unarmed": 10,
-      "MeleeWeapons": 20,
-      "Guns": 0
-    },
+    "stats": { "Strength": 3, "Intelligence": 1, "Dexterity": 2, "Constitution": 3, "Perception": 2, "Willpower": 1, "Charisma": 1, "Marksmanship": 0 },
+    "skills": { "Unarmed": 10, "MeleeWeapons": 20, "Guns": 0 },
     "equippedWeaponId": "desert_eagle_50ae",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "dummy", "target", "hostile", "ranged" ],
     "teamId": 1,
-    "cr": 0.1
+    "cr": 0.1,
+    "dialogueFile": "training_dummy_dialogue.json"
   },
   {
     "id": "hostile_scavenger",
@@ -76,65 +34,22 @@
     "behavior": "patrol_aggressive",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 5,
-        "current": 5,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 5, "current": 5, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "leftArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 3,
-      "Intelligence": 2,
-      "Dexterity": 3,
-      "Constitution": 3,
-      "Perception": 2,
-      "Willpower": 2,
-      "Charisma": 1,
-      "Marksmanship": 1
-    },
-    "skills": {
-      "Unarmed": 10,
-      "MeleeWeapons": 15,
-      "Guns": 5,
-      "Explosives": 0
-    },
+    "stats": { "Strength": 3, "Intelligence": 2, "Dexterity": 3, "Constitution": 3, "Perception": 2, "Willpower": 2, "Charisma": 1, "Marksmanship": 1 },
+    "skills": { "Unarmed": 10, "MeleeWeapons": 15, "Guns": 5, "Explosives": 0 },
     "equippedWeaponId": "club",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "scavenger", "melee" ],
     "teamId": 2,
-    "cr": 0.5
+    "cr": 0.5,
+    "dialogueFile": "hostile_scavenger_dialogue.json"
   },
   {
     "id": "hostile_scavenger_2",
@@ -146,65 +61,22 @@
     "followTargetId": "hostile_scavenger",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 5,
-        "current": 5,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 5, "current": 5, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "leftArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 3,
-      "Intelligence": 2,
-      "Dexterity": 3,
-      "Constitution": 3,
-      "Perception": 2,
-      "Willpower": 2,
-      "Charisma": 1,
-      "Marksmanship": 1
-    },
-    "skills": {
-      "Unarmed": 10,
-      "MeleeWeapons": 15,
-      "Guns": 5,
-      "Explosives": 0
-    },
+    "stats": { "Strength": 3, "Intelligence": 2, "Dexterity": 3, "Constitution": 3, "Perception": 2, "Willpower": 2, "Charisma": 1, "Marksmanship": 1 },
+    "skills": { "Unarmed": 10, "MeleeWeapons": 15, "Guns": 5, "Explosives": 0 },
     "equippedWeaponId": "club",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "scavenger", "melee" ],
     "teamId": 2,
-    "cr": 0.5
+    "cr": 0.5,
+    "dialogueFile": "hostile_scavenger_2_dialogue.json"
   },
   {
     "id": "militia_man",
@@ -215,66 +87,22 @@
     "behavior": "guard_area",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 5,
-        "current": 5,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 5, "current": 5, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "leftArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 3,
-      "Intelligence": 3,
-      "Dexterity": 3,
-      "Constitution": 3,
-      "Perception": 3,
-      "Willpower": 3,
-      "Charisma": 3,
-      "Marksmanship": 3
-    },
-    "skills": {
-      "Unarmed": 10,
-      "MeleeWeapons": 15,
-      "Guns": 10,
-      "Explosives": 0
-    },
+    "stats": { "Strength": 3, "Intelligence": 3, "Dexterity": 3, "Constitution": 3, "Perception": 3, "Willpower": 3, "Charisma": 3, "Marksmanship": 3 },
+    "skills": { "Unarmed": 10, "MeleeWeapons": 15, "Guns": 10, "Explosives": 0 },
     "equippedWeaponId": "club",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "militia" ],
     "teamId": 3,
     "cr": 1,
-    "dialogueFile": "generic.json"
+    "dialogueFile": "militia_man_dialogue.json"
   },
   {
     "id": "civilian_militia",
@@ -285,65 +113,22 @@
     "behavior": "patrol",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 5,
-        "current": 5,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 8,
-        "current": 8,
-        "armor": 3,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 5, "current": 5, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 8, "current": 8, "armor": 3, "crisisTimer": 0 },
+      "leftArm": { "max": 7, "current": 7, "armor": 1, "crisisTimer": 0 },
+      "rightArm": { "max": 7, "current": 7, "armor": 1, "crisisTimer": 0 },
+      "leftLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 6,
-      "Intelligence": 3,
-      "Dexterity": 6,
-      "Constitution": 6,
-      "Perception": 8,
-      "Willpower": 8,
-      "Charisma": 3,
-      "Marksmanship": 6
-    },
-    "skills": {
-      "Unarmed": 20,
-      "MeleeWeapons": 20,
-      "Guns": 20,
-      "Explosives": 10
-    },
+    "stats": { "Strength": 6, "Intelligence": 3, "Dexterity": 6, "Constitution": 6, "Perception": 8, "Willpower": 8, "Charisma": 3, "Marksmanship": 6 },
+    "skills": { "Unarmed": 20, "MeleeWeapons": 20, "Guns": 20, "Explosives": 10 },
     "equippedWeaponId": "m4_carbine_556mm",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "militia" ],
     "teamId": 3,
-    "cr": 1.5
+    "cr": 1.5,
+    "dialogueFile": "civilian_militia_dialogue.json"
   },
   {
     "id": "bandit_archer",
@@ -354,64 +139,22 @@
     "behavior": "ranged_attack",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 4,
-        "current": 4,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 4, "current": 4, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "leftArm": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 2,
-      "Intelligence": 2,
-      "Dexterity": 4,
-      "Constitution": 2,
-      "Perception": 3,
-      "Willpower": 2,
-      "Charisma": 1,
-      "Marksmanship": 4
-    },
-    "skills": {
-      "Unarmed": 5,
-      "MeleeWeapons": 10,
-      "Guns": 20
-    },
+    "stats": { "Strength": 2, "Intelligence": 2, "Dexterity": 4, "Constitution": 2, "Perception": 3, "Willpower": 2, "Charisma": 1, "Marksmanship": 4 },
+    "skills": { "Unarmed": 5, "MeleeWeapons": 10, "Guns": 20 },
     "equippedWeaponId": "crossbow",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "bandit", "ranged" ],
     "teamId": 4,
-    "cr": 0.5
+    "cr": 0.5,
+    "dialogueFile": "bandit_archer_dialogue.json"
   },
   {
     "id": "bandit_thug",
@@ -422,64 +165,22 @@
     "behavior": "melee_attack",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 6,
-        "current": 6,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 9,
-        "current": 9,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 6, "current": 6, "armor": 1, "crisisTimer": 0 },
+      "torso": { "max": 9, "current": 9, "armor": 1, "crisisTimer": 0 },
+      "leftArm": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 4,
-      "Intelligence": 1,
-      "Dexterity": 3,
-      "Constitution": 4,
-      "Perception": 2,
-      "Willpower": 3,
-      "Charisma": 1,
-      "Marksmanship": 1
-    },
-    "skills": {
-      "Unarmed": 15,
-      "MeleeWeapons": 25,
-      "Guns": 5
-    },
+    "stats": { "Strength": 4, "Intelligence": 1, "Dexterity": 3, "Constitution": 4, "Perception": 2, "Willpower": 3, "Charisma": 1, "Marksmanship": 1 },
+    "skills": { "Unarmed": 15, "MeleeWeapons": 25, "Guns": 5 },
     "equippedWeaponId": "club_melee",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "hostile", "humanoid", "bandit", "melee" ],
     "teamId": 4,
-    "cr": 1
+    "cr": 1,
+    "dialogueFile": "bandit_thug_dialogue.json"
   },
   {
     "id": "cellar_dweller",
@@ -490,64 +191,22 @@
     "behavior": "ambush",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 4,
-        "current": 4,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 4, "current": 4, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "leftArm": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 3,
-      "Intelligence": 2,
-      "Dexterity": 3,
-      "Constitution": 3,
-      "Perception": 3,
-      "Willpower": 2,
-      "Charisma": 1,
-      "Marksmanship": 2
-    },
-    "skills": {
-      "Unarmed": 15,
-      "MeleeWeapons": 10,
-      "Guns": 5
-    },
+    "stats": { "Strength": 3, "Intelligence": 2, "Dexterity": 3, "Constitution": 3, "Perception": 3, "Willpower": 2, "Charisma": 1, "Marksmanship": 2 },
+    "skills": { "Unarmed": 15, "MeleeWeapons": 10, "Guns": 5 },
     "equippedWeaponId": "knife_melee",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 5,
     "tags": [ "hostile", "mutant", "melee" ],
     "teamId": 5,
-    "cr": 0.5
+    "cr": 0.5,
+    "dialogueFile": "cellar_dweller_dialogue.json"
   },
   {
     "id": "police_officer",
@@ -558,65 +217,22 @@
     "behavior": "patrol_alert",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 5,
-        "current": 5,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 8,
-        "current": 8,
-        "armor": 2,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 5, "current": 5, "armor": 1, "crisisTimer": 0 },
+      "torso": { "max": 8, "current": 8, "armor": 2, "crisisTimer": 0 },
+      "leftArm": { "max": 7, "current": 7, "armor": 1, "crisisTimer": 0 },
+      "rightArm": { "max": 7, "current": 7, "armor": 1, "crisisTimer": 0 },
+      "leftLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 5,
-      "Intelligence": 4,
-      "Dexterity": 5,
-      "Constitution": 5,
-      "Perception": 6,
-      "Willpower": 5,
-      "Charisma": 4,
-      "Marksmanship": 5
-    },
-    "skills": {
-      "Unarmed": 25,
-      "MeleeWeapons": 20,
-      "Guns": 30,
-      "Explosives": 5
-    },
+    "stats": { "Strength": 5, "Intelligence": 4, "Dexterity": 5, "Constitution": 5, "Perception": 6, "Willpower": 5, "Charisma": 4, "Marksmanship": 5 },
+    "skills": { "Unarmed": 25, "MeleeWeapons": 20, "Guns": 30, "Explosives": 5 },
     "equippedWeaponId": "glock_17_9mm",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "law_enforcement", "ranged" ],
     "teamId": 10,
-    "cr": 2
+    "cr": 2,
+    "dialogueFile": "police_officer_dialogue.json"
   },
   {
     "id": "hired_gun_merc",
@@ -627,65 +243,22 @@
     "behavior": "guard_aggressive",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 5,
-        "current": 5,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 8,
-        "current": 8,
-        "armor": 2,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 1,
-        "crisisTimer": 0
-      }
+      "head": { "max": 5, "current": 5, "armor": 1, "crisisTimer": 0 },
+      "torso": { "max": 8, "current": 8, "armor": 2, "crisisTimer": 0 },
+      "leftArm": { "max": 7, "current": 7, "armor": 1, "crisisTimer": 0 },
+      "rightArm": { "max": 7, "current": 7, "armor": 1, "crisisTimer": 0 },
+      "leftLeg": { "max": 7, "current": 7, "armor": 1, "crisisTimer": 0 },
+      "rightLeg": { "max": 7, "current": 7, "armor": 1, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 6,
-      "Intelligence": 3,
-      "Dexterity": 6,
-      "Constitution": 6,
-      "Perception": 5,
-      "Willpower": 4,
-      "Charisma": 2,
-      "Marksmanship": 6
-    },
-    "skills": {
-      "Unarmed": 20,
-      "MeleeWeapons": 25,
-      "Guns": 35,
-      "Explosives": 10
-    },
+    "stats": { "Strength": 6, "Intelligence": 3, "Dexterity": 6, "Constitution": 6, "Perception": 5, "Willpower": 4, "Charisma": 2, "Marksmanship": 6 },
+    "skills": { "Unarmed": 20, "MeleeWeapons": 25, "Guns": 35, "Explosives": 10 },
     "equippedWeaponId": "mac_ingram_m10_45",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "mercenary", "ranged", "hostile" ],
     "teamId": 11,
-    "cr": 1.5
+    "cr": 1.5,
+    "dialogueFile": "hired_gun_merc_dialogue.json"
   },
   {
     "id": "infiltrator_spy",
@@ -696,66 +269,22 @@
     "behavior": "stealth_observe",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 4,
-        "current": 4,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 7,
-        "current": 7,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 4, "current": 4, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 7, "current": 7, "armor": 1, "crisisTimer": 0 },
+      "leftArm": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 4,
-      "Intelligence": 6,
-      "Dexterity": 7,
-      "Constitution": 4,
-      "Perception": 7,
-      "Willpower": 5,
-      "Charisma": 4,
-      "Marksmanship": 4
-    },
-    "skills": {
-      "Unarmed": 25,
-      "MeleeWeapons": 30,
-      "Guns": 25,
-      "Explosives": 5,
-      "Stealth": 40
-    },
+    "stats": { "Strength": 4, "Intelligence": 6, "Dexterity": 7, "Constitution": 4, "Perception": 7, "Willpower": 5, "Charisma": 4, "Marksmanship": 4 },
+    "skills": { "Unarmed": 25, "MeleeWeapons": 30, "Guns": 25, "Explosives": 5, "Stealth": 40 },
     "equippedWeaponId": "stiletto_knife",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 7,
     "tags": [ "humanoid", "spy", "stealth", "melee" ],
     "teamId": 12,
-    "cr": 2
+    "cr": 2,
+    "dialogueFile": "infiltrator_spy_dialogue.json"
   },
   {
     "id": "soldier_grunt",
@@ -766,65 +295,22 @@
     "behavior": "patrol_aggressive",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 6,
-        "current": 6,
-        "armor": 2,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 9,
-        "current": 9,
-        "armor": 3,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 8,
-        "current": 8,
-        "armor": 2,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 8,
-        "current": 8,
-        "armor": 2,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 8,
-        "current": 8,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 8,
-        "current": 8,
-        "armor": 1,
-        "crisisTimer": 0
-      }
+      "head": { "max": 6, "current": 6, "armor": 2, "crisisTimer": 0 },
+      "torso": { "max": 9, "current": 9, "armor": 3, "crisisTimer": 0 },
+      "leftArm": { "max": 8, "current": 8, "armor": 2, "crisisTimer": 0 },
+      "rightArm": { "max": 8, "current": 8, "armor": 2, "crisisTimer": 0 },
+      "leftLeg": { "max": 8, "current": 8, "armor": 1, "crisisTimer": 0 },
+      "rightLeg": { "max": 8, "current": 8, "armor": 1, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 6,
-      "Intelligence": 4,
-      "Dexterity": 5,
-      "Constitution": 7,
-      "Perception": 5,
-      "Willpower": 6,
-      "Charisma": 3,
-      "Marksmanship": 7
-    },
-    "skills": {
-      "Unarmed": 20,
-      "MeleeWeapons": 25,
-      "Guns": 40,
-      "Explosives": 15
-    },
+    "stats": { "Strength": 6, "Intelligence": 4, "Dexterity": 5, "Constitution": 7, "Perception": 5, "Willpower": 6, "Charisma": 3, "Marksmanship": 7 },
+    "skills": { "Unarmed": 20, "MeleeWeapons": 25, "Guns": 40, "Explosives": 15 },
     "equippedWeaponId": "m4_carbine_556mm",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "military", "ranged", "hostile" ],
     "teamId": 13,
-    "cr": 2.5
+    "cr": 2.5,
+    "dialogueFile": "soldier_grunt_dialogue.json"
   },
   {
     "id": "outlaw_desperado",
@@ -835,65 +321,22 @@
     "behavior": "ranged_opportunist",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 5,
-        "current": 5,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 8,
-        "current": 8,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 5, "current": 5, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 8, "current": 8, "armor": 1, "crisisTimer": 0 },
+      "leftArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 5,
-      "Intelligence": 3,
-      "Dexterity": 5,
-      "Constitution": 5,
-      "Perception": 4,
-      "Willpower": 3,
-      "Charisma": 3,
-      "Marksmanship": 5
-    },
-    "skills": {
-      "Unarmed": 15,
-      "MeleeWeapons": 20,
-      "Guns": 30,
-      "Explosives": 5
-    },
+    "stats": { "Strength": 5, "Intelligence": 3, "Dexterity": 5, "Constitution": 5, "Perception": 4, "Willpower": 3, "Charisma": 3, "Marksmanship": 5 },
+    "skills": { "Unarmed": 15, "MeleeWeapons": 20, "Guns": 30, "Explosives": 5 },
     "equippedWeaponId": "colt_python_357",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "criminal", "ranged", "hostile" ],
     "teamId": 11,
-    "cr": 1
+    "cr": 1,
+    "dialogueFile": "outlaw_desperado_dialogue.json"
   },
   {
     "id": "medic_doctor",
@@ -904,59 +347,15 @@
     "behavior": "support_heal",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 4,
-        "current": 4,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 4, "current": 4, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "leftArm": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 3,
-      "Intelligence": 7,
-      "Dexterity": 4,
-      "Constitution": 4,
-      "Perception": 6,
-      "Willpower": 5,
-      "Charisma": 5,
-      "Marksmanship": 2
-    },
-    "skills": {
-      "Unarmed": 10,
-      "MeleeWeapons": 5,
-      "Guns": 10,
-      "FirstAid": 40
-    },
+    "stats": { "Strength": 3, "Intelligence": 7, "Dexterity": 4, "Constitution": 4, "Perception": 6, "Willpower": 5, "Charisma": 5, "Marksmanship": 2 },
+    "skills": { "Unarmed": 10, "MeleeWeapons": 5, "Guns": 10, "FirstAid": 40 },
     "equippedWeaponId": "knife_melee",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
@@ -968,10 +367,7 @@
     "isRecruitable": true,
     "recruitmentRequirements": {
       "questCompleted": "save_the_clinic",
-      "reputation": {
-        "factionId": "civilian",
-        "level": "neutral"
-      }
+      "reputation": { "factionId": "civilian", "level": "neutral" }
     },
     "companionBehaviorProfile": "healer_support",
     "dialogue_recruit_start_node": "medic_recruit_offer",
@@ -987,65 +383,22 @@
     "behavior": "melee_fanatic",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 5,
-        "current": 5,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 8,
-        "current": 8,
-        "armor": 1,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 5, "current": 5, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 8, "current": 8, "armor": 1, "crisisTimer": 0 },
+      "leftArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 5,
-      "Intelligence": 2,
-      "Dexterity": 4,
-      "Constitution": 6,
-      "Perception": 3,
-      "Willpower": 7,
-      "Charisma": 2,
-      "Marksmanship": 3
-    },
-    "skills": {
-      "Unarmed": 25,
-      "MeleeWeapons": 30,
-      "Guns": 15,
-      "Explosives": 5
-    },
+    "stats": { "Strength": 5, "Intelligence": 2, "Dexterity": 4, "Constitution": 6, "Perception": 3, "Willpower": 7, "Charisma": 2, "Marksmanship": 3 },
+    "skills": { "Unarmed": 25, "MeleeWeapons": 30, "Guns": 15, "Explosives": 5 },
     "equippedWeaponId": "club_melee",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "humanoid", "cultist", "melee", "hostile" ],
     "teamId": 14,
-    "cr": 1
+    "cr": 1,
+    "dialogueFile": "zealot_cultist_dialogue.json"
   },
   {
     "id": "zombie_basic",
@@ -1056,60 +409,22 @@
     "behavior": "hostile_seek_and_destroy",
     "patrolPoints": [],
     "health": {
-      "head": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 10,
-        "current": 10,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 10, "current": 10, "armor": 0, "crisisTimer": 0 },
+      "leftArm": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 6,
-      "Intelligence": 1,
-      "Dexterity": 2,
-      "Constitution": 8,
-      "Perception": 2,
-      "Willpower": 1,
-      "Charisma": 0,
-      "Marksmanship": 0
-    },
+    "stats": { "Strength": 6, "Intelligence": 1, "Dexterity": 2, "Constitution": 8, "Perception": 2, "Willpower": 1, "Charisma": 0, "Marksmanship": 0 },
     "skills": { "Unarmed": 30 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
     "tags": [ "undead", "zombie", "melee", "hostile" ],
     "teamId": 99,
-    "cr": 1
+    "cr": 1,
+    "dialogueFile": "zombie_basic_dialogue.json"
   },
   {
     "id": "animal_mountain_lion",
@@ -1119,24 +434,8 @@
     "factionId": "creature_hostile",
     "behavior": "hunt_aggressive",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 15,
-        "current": 15,
-        "armor": 1,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 6,
-      "Intelligence": 2,
-      "Dexterity": 7,
-      "Constitution": 5,
-      "Perception": 6,
-      "Willpower": 4,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 15, "current": 15, "armor": 1, "crisisTimer": 0 } },
+    "stats": { "Strength": 6, "Intelligence": 2, "Dexterity": 7, "Constitution": 5, "Perception": 6, "Willpower": 4, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 35 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1144,7 +443,7 @@
     "tags": [ "animal", "mammal", "predator", "hostile", "stealth" ],
     "teamId": 51,
     "cr": 3,
-    "asciiPortrait": "<span style=\"color:#F5DEB3; background-color:#8D5524;\"> </span><span style=\"color:#F5DEB3; background-color:#8D5524;\">/</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">\\</span><span style=\"color:#D2B48C; background-color:#8D5524;\">_</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">/</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">\\</span><span style=\"color:#F5DEB3; background-color:#8D5524;\"> </span><br><span style=\"color:#F5DEB3; background-color:#8D5524;\">(</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">o</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">.</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">o</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#F5DEB3; background-color:#8D5524;\">)</span><br><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#D2B48C; background-color:#8D5524;\">&gt;</span><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\">^</span><span style=\"color:#A0522D; background-color:#654321;\">)</span><span style=\"color:#D2B48C; background-color:#8D5524;\">&lt;</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><br><span style=\"color:#D2B48C; background-color:#8D5524;\">/</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">w</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#D2B48C; background-color:#8D5524;\">\\\\</span><br><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">^</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">)</span>"
+    "asciiPortrait": "<span style=\\"color:#F5DEB3; background-color:#8D5524;\\"> </span><span style=\\"color:#F5DEB3; background-color:#8D5524;\\">/</span><span style=\\"color:#F5DEB3; background-color:#8D5524;\\">\\\\</span><span style=\\"color:#D2B48C; background-color:#8D5524;\\">_</span><span style=\\"color:#F5DEB3; background-color:#8D5524;\\">/</span><span style=\\"color:#F5DEB3; background-color:#8D5524;\\">\\\\</span><span style=\\"color:#F5DEB3; background-color:#8D5524;\\"> </span><br><span style=\\"color:#F5DEB3; background-color:#8D5524;\\">(</span><span style=\\"color:#D2B48C; background-color:#8D5524;\\"> </span><span style=\\"color:#32CD32; background-color:#228B22;\\">o</span><span style=\\"color:#D2B48C; background-color:#8D5524;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\">.</span><span style=\\"color:#D2B48C; background-color:#8D5524;\\"> </span><span style=\\"color:#32CD32; background-color:#228B22;\\">o</span><span style=\\"color:#D2B48C; background-color:#8D5524;\\"> </span><span style=\\"color:#F5DEB3; background-color:#8D5524;\\">)</span><br><span style=\\"color:#D2B48C; background-color:#8D5524;\\"> </span><span style=\\"color:#D2B48C; background-color:#8D5524;\\">&gt;</span><span style=\\"color:#A0522D; background-color:#654321;\\">(</span><span style=\\"color:#A0522D; background-color:#654321;\\">^</span><span style=\\"color:#A0522D; background-color:#654321;\\">)</span><span style=\\"color:#D2B48C; background-color:#8D5524;\\">&lt;</span><span style=\\"color:#D2B48C; background-color:#8D5524;\\"> </span><br><span style=\\"color:#D2B48C; background-color:#8D5524;\\">/</span><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\">w</span><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#D2B48C; background-color:#8D5524;\\">\\\\\\\\</span><br><span style=\\"color:#A0522D; background-color:#654321;\\">(</span><span style=\\"color:#A0522D; background-color:#654321;\\">_</span><span style=\\"color:#A0522D; background-color:#654321;\\">_</span><span style=\\"color:#A0522D; background-color:#654321;\\">^</span><span style=\\"color:#A0522D; background-color:#654321;\\">_</span><span style=\\"color:#A0522D; background-color:#654321;\\">_</span><span style=\\"color:#A0522D; background-color:#654321;\\">)</span>"
   },
   {
     "id": "animal_bobcat",
@@ -1154,24 +453,8 @@
     "factionId": "creature_hostile",
     "behavior": "hunt_cautious",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 10,
-        "current": 10,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 4,
-      "Intelligence": 2,
-      "Dexterity": 6,
-      "Constitution": 4,
-      "Perception": 6,
-      "Willpower": 3,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 10, "current": 10, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 4, "Intelligence": 2, "Dexterity": 6, "Constitution": 4, "Perception": 6, "Willpower": 3, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 25 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1179,7 +462,7 @@
     "tags": [ "animal", "mammal", "predator", "hostile_if_threatened", "stealth" ],
     "teamId": 51,
     "cr": 1,
-    "asciiPortrait": "<span style=\"color:#4A4A4A; background-color:#2A2A2A;\">.</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">/</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">\\</span><span style=\"color:#D2B48C; background-color:#8D5524;\">_</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">/</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">\\</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">.</span><br><span style=\"color:#F5DEB3; background-color:#8D5524;\">(</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">o</span><span style=\"color:#A0522D; background-color:#654321;\">.</span><span style=\"color:#32CD32; background-color:#228B22;\">o</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#F5DEB3; background-color:#8D5524;\">)</span><br><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#D2B48C; background-color:#8D5524;\">&gt;</span><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\">Y</span><span style=\"color:#A0522D; background-color:#654321;\">)</span><span style=\"color:#D2B48C; background-color:#8D5524;\">&lt;</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><br><span style=\"color:#D2B48C; background-color:#8D5524;\">/</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">w</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#D2B48C; background-color:#8D5524;\">\\</span><br><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">^</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">)</span>"
+    "asciiPortrait": "<span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">.</span><span style=\\"color:#F5DEB3; background-color:#8D5524;\\">/</span><span style=\\"color:#F5DEB3; background-color:#8D5524;\\">\\\\</span><span style=\\"color:#D2B48C; background-color:#8D5524;\\">_</span><span style=\\"color:#F5DEB3; background-color:#8D5524;\\">/</span><span style=\\"color:#F5DEB3; background-color:#8D5524;\\">\\\\</span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">.</span><br><span style=\\"color:#F5DEB3; background-color:#8D5524;\\">(</span><span style=\\"color:#D2B48C; background-color:#8D5524;\\"> </span><span style=\\"color:#32CD32; background-color:#228B22;\\">o</span><span style=\\"color:#A0522D; background-color:#654321;\\">.</span><span style=\\"color:#32CD32; background-color:#228B22;\\">o</span><span style=\\"color:#D2B48C; background-color:#8D5524;\\"> </span><span style=\\"color:#F5DEB3; background-color:#8D5524;\\">)</span><br><span style=\\"color:#D2B48C; background-color:#8D5524;\\"> </span><span style=\\"color:#D2B48C; background-color:#8D5524;\\">&gt;</span><span style=\\"color:#A0522D; background-color:#654321;\\">(</span><span style=\\"color:#A0522D; background-color:#654321;\\">Y</span><span style=\\"color:#A0522D; background-color:#654321;\\">)</span><span style=\\"color:#D2B48C; background-color:#8D5524;\\">&lt;</span><span style=\\"color:#D2B48C; background-color:#8D5524;\\"> </span><br><span style=\\"color:#D2B48C; background-color:#8D5524;\\">/</span><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\">w</span><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#D2B48C; background-color:#8D5524;\\">\\\\</span><br><span style=\\"color:#A0522D; background-color:#654321;\\">(</span><span style=\\"color:#A0522D; background-color:#654321;\\">_</span><span style=\\"color:#A0522D; background-color:#654321;\\">_</span><span style=\\"color:#A0522D; background-color:#654321;\\">^</span><span style=\\"color:#A0522D; background-color:#654321;\\">_</span><span style=\\"color:#A0522D; background-color:#654321;\\">_</span><span style=\\"color:#A0522D; background-color:#654321;\\">)</span>"
   },
   {
     "id": "animal_coyote",
@@ -1189,24 +472,8 @@
     "factionId": "creature_hostile",
     "behavior": "pack_hunt",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 12,
-        "current": 12,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 4,
-      "Intelligence": 3,
-      "Dexterity": 6,
-      "Constitution": 4,
-      "Perception": 7,
-      "Willpower": 4,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 12, "current": 12, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 4, "Intelligence": 3, "Dexterity": 6, "Constitution": 4, "Perception": 7, "Willpower": 4, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 20 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1214,7 +481,7 @@
     "tags": [ "animal", "mammal", "predator", "scavenger", "pack_animal", "hostile_if_threatened" ],
     "teamId": 51,
     "cr": 0.5,
-    "asciiPortrait": "<span style=\"color:#A9A9A9; background-color:#404040;\"> </span><span style=\"color:#A9A9A9; background-color:#404040;\">.</span><span style=\"color:#A9A9A9; background-color:#404040;\">-</span><span style=\"color:#808080; background-color:#404040;\">\"</span><span style=\"color:#808080; background-color:#404040;\">\"</span><span style=\"color:#A9A9A9; background-color:#404040;\">-</span><span style=\"color:#A9A9A9; background-color:#404040;\">.</span><span style=\"color:#A9A9A9; background-color:#404040;\"> </span><br><span style=\"color:#A9A9A9; background-color:#404040;\">/</span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#A9A9A9; background-color:#404040;\">\\</span><br><span style=\"color:#808080; background-color:#404040;\">|</span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#FFD700; background-color:#B8860B;\">O</span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#FFD700; background-color:#B8860B;\">O</span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\">|</span><br><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\">\\</span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#000000; background-color:#202020;\">/</span><span style=\"color:#000000; background-color:#202020;\">\\</span><span style=\"color:#000000; background-color:#202020;\">/</span><span style=\"color:#000000; background-color:#202020;\">\\</span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\">/</span><br><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#A9A9A9; background-color:#404040;\">'</span><span style=\"color:#696969; background-color:#404040;\">.</span><span style=\"color:#000000; background-color:#202020;\">_</span><span style=\"color:#000000; background-color:#202020;\">_</span><span style=\"color:#696969; background-color:#404040;\">.</span><span style=\"color:#A9A9A9; background-color:#404040;\">'</span><br><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#FF69B4; background-color:#FF1493;\">V</span>"
+    "asciiPortrait": "<span style=\\"color:#A9A9A9; background-color:#404040;\\"> </span><span style=\\"color:#A9A9A9; background-color:#404040;\\">.</span><span style=\\"color:#A9A9A9; background-color:#404040;\\">-</span><span style=\\"color:#808080; background-color:#404040;\\">\\"</span><span style=\\"color:#808080; background-color:#404040;\\">\\"</span><span style=\\"color:#A9A9A9; background-color:#404040;\\">-</span><span style=\\"color:#A9A9A9; background-color:#404040;\\">.</span><span style=\\"color:#A9A9A9; background-color:#404040;\\"> </span><br><span style=\\"color:#A9A9A9; background-color:#404040;\\">/</span><span style=\\"color:#808080; background-color:#404040;\\"> </span><span style=\\"color:#808080; background-color:#404040;\\"> </span><span style=\\"color:#808080; background-color:#404040;\\"> </span><span style=\\"color:#808080; background-color:#404040;\\"> </span><span style=\\"color:#808080; background-color:#404040;\\"> </span><span style=\\"color:#A9A9A9; background-color:#404040;\\">\\\\</span><br><span style=\\"color:#808080; background-color:#404040;\\">|</span><span style=\\"color:#808080; background-color:#404040;\\"> </span><span style=\\"color:#FFD700; background-color:#B8860B;\\">O</span><span style=\\"color:#696969; background-color:#404040;\\"> </span><span style=\\"color:#696969; background-color:#404040;\\"> </span><span style=\\"color:#FFD700; background-color:#B8860B;\\">O</span><span style=\\"color:#808080; background-color:#404040;\\"> </span><span style=\\"color:#808080; background-color:#404040;\\">|</span><br><span style=\\"color:#808080; background-color:#404040;\\"> </span><span style=\\"color:#696969; background-color:#404040;\\">\\\\</span><span style=\\"color:#696969; background-color:#404040;\\"> </span><span style=\\"color:#000000; background-color:#202020;\\">/</span><span style=\\"color:#000000; background-color:#202020;\\">\\\\</span><span style=\\"color:#000000; background-color:#202020;\\">/</span><span style=\\"color:#000000; background-color:#202020;\\">\\\\</span><span style=\\"color:#696969; background-color:#404040;\\"> </span><span style=\\"color:#696969; background-color:#404040;\\">/</span><br><span style=\\"color:#696969; background-color:#404040;\\"> </span><span style=\\"color:#696969; background-color:#404040;\\"> </span><span style=\\"color:#A9A9A9; background-color:#404040;\\">'</span><span style=\\"color:#696969; background-color:#404040;\\">.</span><span style=\\"color:#000000; background-color:#202020;\\">_</span><span style=\\"color:#000000; background-color:#202020;\\">_</span><span style=\\"color:#696969; background-color:#404040;\\">.</span><span style=\\"color:#A9A9A9; background-color:#404040;\\">'</span><br><span style=\\"color:#696969; background-color:#404040;\\"> </span><span style=\\"color:#696969; background-color:#404040;\\"> </span><span style=\\"color:#696969; background-color:#404040;\\"> </span><span style=\\"color:#696969; background-color:#404040;\\"> </span><span style=\\"color:#FF69B4; background-color:#FF1493;\\">V</span>"
   },
   {
     "id": "animal_raccoon",
@@ -1224,24 +491,8 @@
     "factionId": "creature_neutral",
     "behavior": "wander_scavenge",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 3,
-      "Intelligence": 3,
-      "Dexterity": 5,
-      "Constitution": 3,
-      "Perception": 5,
-      "Willpower": 3,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 3, "Intelligence": 3, "Dexterity": 5, "Constitution": 3, "Perception": 5, "Willpower": 3, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 15 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1249,7 +500,7 @@
     "tags": [ "animal", "mammal", "omnivore", "scavenger", "clever", "neutral" ],
     "teamId": 50,
     "cr": 0.25,
-    "asciiPortrait": "<span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\">,</span><span style=\"color:#808080; background-color:#404040;\">_</span><span style=\"color:#808080; background-color:#404040;\">_</span><span style=\"color:#808080; background-color:#404040;\">,</span><span style=\"color:#808080; background-color:#404040;\"> </span><br><span style=\"color:#808080; background-color:#404040;\">(</span><span style=\"color:#000000; background-color:#202020;\">@</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">Y</span><span style=\"color:#000000; background-color:#202020;\">@</span><span style=\"color:#808080; background-color:#404040;\">)</span><br><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#000000; background-color:#202020;\">=</span><span style=\"color:#000000; background-color:#202020;\">(</span><span style=\"color:#000000; background-color:#202020;\">w</span><span style=\"color:#000000; background-color:#202020;\">)</span><span style=\"color:#000000; background-color:#202020;\">=</span><span style=\"color:#808080; background-color:#404040;\"> </span><br><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\">`</span><span style=\"color:#808080; background-color:#404040;\">-</span><span style=\"color:#808080; background-color:#404040;\">^</span><span style=\"color:#808080; background-color:#404040;\">-</span><span style=\"color:#808080; background-color:#404040;\">`</span>"
+    "asciiPortrait": "<span style=\\"color:#808080; background-color:#404040;\\"> </span><span style=\\"color:#808080; background-color:#404040;\\">,</span><span style=\\"color:#808080; background-color:#404040;\\">_</span><span style=\\"color:#808080; background-color:#404040;\\">_</span><span style=\\"color:#808080; background-color:#404040;\\">,</span><span style=\\"color:#808080; background-color:#404040;\\"> </span><br><span style=\\"color:#808080; background-color:#404040;\\">(</span><span style=\\"color:#000000; background-color:#202020;\\">@</span><span style=\\"color:#FFFFFF; background-color:#A9A9A9;\\">Y</span><span style=\\"color:#000000; background-color:#202020;\\">@</span><span style=\\"color:#808080; background-color:#404040;\\">)</span><br><span style=\\"color:#808080; background-color:#404040;\\"> </span><span style=\\"color:#000000; background-color:#202020;\\">=</span><span style=\\"color:#000000; background-color:#202020;\\">(</span><span style=\\"color:#000000; background-color:#202020;\\">w</span><span style=\\"color:#000000; background-color:#202020;\\">)</span><span style=\\"color:#000000; background-color:#202020;\\">=</span><span style=\\"color:#808080; background-color:#404040;\\"> </span><br><span style=\\"color:#808080; background-color:#404040;\\"> </span><span style=\\"color:#808080; background-color:#404040;\\">`</span><span style=\\"color:#808080; background-color:#404040;\\">-</span><span style=\\"color:#808080; background-color:#404040;\\">^</span><span style=\\"color:#808080; background-color:#404040;\\">-</span><span style=\\"color:#808080; background-color:#404040;\\">`</span>"
   },
   {
     "id": "animal_red_tailed_hawk",
@@ -1259,24 +510,8 @@
     "factionId": "creature_neutral",
     "behavior": "hunt_aerial",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 6,
-        "current": 6,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 3,
-      "Intelligence": 2,
-      "Dexterity": 7,
-      "Constitution": 3,
-      "Perception": 8,
-      "Willpower": 3,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 6, "current": 6, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 3, "Intelligence": 2, "Dexterity": 7, "Constitution": 3, "Perception": 8, "Willpower": 3, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 20 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1284,7 +519,7 @@
     "tags": [ "animal", "bird", "predator", "flying", "neutral" ],
     "teamId": 50,
     "cr": 0.5,
-    "asciiPortrait": "<span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">.</span><span style=\"color:#A0522D; background-color:#654321;\">-</span><span style=\"color:#A0522D; background-color:#654321;\">-</span><span style=\"color:#A0522D; background-color:#654321;\">.</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">/</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#000000; background-color:#202020;\">@</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">\\</span><br><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#FFD700; background-color:#B8860B;\">&gt;</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">)</span><br><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">`</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">-</span><span style=\"color:#A0522D; background-color:#654321;\">V</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">-</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">`</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> \"</span><span style=\"color:#A0522D; background-color:#654321;\">\"</span><span style=\"color:#A0522D; background-color:#654321;\">\"</span>"
+    "asciiPortrait": "<span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\">.</span><span style=\\"color:#A0522D; background-color:#654321;\\">-</span><span style=\\"color:#A0522D; background-color:#654321;\\">-</span><span style=\\"color:#A0522D; background-color:#654321;\\">.</span><br><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\">/</span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\"> </span><span style=\\"color:#000000; background-color:#202020;\\">@</span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\">\\\\</span><br><span style=\\"color:#A0522D; background-color:#654321;\\">(</span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\"> </span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\"> </span><span style=\\"color:#FFD700; background-color:#B8860B;\\">&gt;</span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\">)</span><br><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\"> </span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\">`</span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\">-</span><span style=\\"color:#A0522D; background-color:#654321;\\">V</span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\">-</span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\">`</span><br><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\"> \\"</span><span style=\\"color:#A0522D; background-color:#654321;\\">\\"</span><span style=\\"color:#A0522D; background-color:#654321;\\">\\"</span>"
   },
   {
     "id": "animal_turkey_vulture",
@@ -1294,24 +529,8 @@
     "factionId": "creature_neutral",
     "behavior": "wander_scavenge_aerial",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 3,
-      "Intelligence": 2,
-      "Dexterity": 5,
-      "Constitution": 4,
-      "Perception": 7,
-      "Willpower": 2,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 3, "Intelligence": 2, "Dexterity": 5, "Constitution": 4, "Perception": 7, "Willpower": 2, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 10 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1319,7 +538,7 @@
     "tags": [ "animal", "bird", "scavenger", "flying", "neutral" ],
     "teamId": 50,
     "cr": 0.25,
-    "asciiPortrait": "<span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\">.</span><span style=\"color:#FF6347; background-color:#CD5C5C;\">-</span><span style=\"color:#FF6347; background-color:#CD5C5C;\">-</span><span style=\"color:#FF6347; background-color:#CD5C5C;\">.</span><br><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\">/</span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\">\\</span><br><span style=\"color:#FF6347; background-color:#CD5C5C;\">(</span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FFFFE0; background-color:#F0E68C;\">&lt;</span><span style=\"color:#FFFFE0; background-color:#F0E68C;\">_</span><span style=\"color:#FFFFE0; background-color:#F0E68C;\">&gt;</span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\">)</span><br><span style=\"color:#2F4F4F; background-color:#000000;\"> </span><span style=\"color:#2F4F4F; background-color:#000000;\">`</span><span style=\"color:#2F4F4F; background-color:#000000;\">-</span><span style=\"color:#FF6347; background-color:#CD5C5C;\">V</span><span style=\"color:#2F4F4F; background-color:#000000;\">-</span><span style=\"color:#2F4F4F; background-color:#000000;\">`</span><br><span style=\"color:#2F4F4F; background-color:#000000;\"> </span><span style=\"color:#2F4F4F; background-color:#000000;\"> </span><span style=\"color:#2F4F4F; background-color:#000000;\"> \"</span><span style=\"color:#2F4F4F; background-color:#000000;\">\"</span><span style=\"color:#2F4F4F; background-color:#000000;\">\"</span>"
+    "asciiPortrait": "<span style=\\"color:#FF6347; background-color:#CD5C5C;\\"> </span><span style=\\"color:#FF6347; background-color:#CD5C5C;\\"> </span><span style=\\"color:#FF6347; background-color:#CD5C5C;\\">.</span><span style=\\"color:#FF6347; background-color:#CD5C5C;\\">-</span><span style=\\"color:#FF6347; background-color:#CD5C5C;\\">-</span><span style=\\"color:#FF6347; background-color:#CD5C5C;\\">.</span><br><span style=\\"color:#FF6347; background-color:#CD5C5C;\\"> </span><span style=\\"color:#FF6347; background-color:#CD5C5C;\\">/</span><span style=\\"color:#FF6347; background-color:#CD5C5C;\\"> </span><span style=\\"color:#000000; background-color:#202020;\\">o</span><span style=\\"color:#FF6347; background-color:#CD5C5C;\\"> </span><span style=\\"color:#FF6347; background-color:#CD5C5C;\\">\\\\</span><br><span style=\\"color:#FF6347; background-color:#CD5C5C;\\">(</span><span style=\\"color:#FF6347; background-color:#CD5C5C;\\"> </span><span style=\\"color:#FFFFE0; background-color:#F0E68C;\\">&lt;</span><span style=\\"color:#FFFFE0; background-color:#F0E68C;\\">_</span><span style=\\"color:#FFFFE0; background-color:#F0E68C;\\">&gt;</span><span style=\\"color:#FF6347; background-color:#CD5C5C;\\"> </span><span style=\\"color:#FF6347; background-color:#CD5C5C;\\">)</span><br><span style=\\"color:#2F4F4F; background-color:#000000;\\"> </span><span style=\\"color:#2F4F4F; background-color:#000000;\\">`</span><span style=\\"color:#2F4F4F; background-color:#000000;\\">-</span><span style=\\"color:#FF6347; background-color:#CD5C5C;\\">V</span><span style=\\"color:#2F4F4F; background-color:#000000;\\">-</span><span style=\\"color:#2F4F4F; background-color:#000000;\\">`</span><br><span style=\\"color:#2F4F4F; background-color:#000000;\\"> </span><span style=\\"color:#2F4F4F; background-color:#000000;\\"> </span><span style=\\"color:#2F4F4F; background-color:#000000;\\"> \\"</span><span style=\\"color:#2F4F4F; background-color:#000000;\\">\\"</span><span style=\\"color:#2F4F4F; background-color:#000000;\\">\\"</span>"
   },
   {
     "id": "animal_california_quail",
@@ -1329,24 +548,8 @@
     "factionId": "creature_prey",
     "behavior": "flee_group",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 3,
-        "current": 3,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 1,
-      "Intelligence": 1,
-      "Dexterity": 5,
-      "Constitution": 2,
-      "Perception": 4,
-      "Willpower": 2,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 3, "current": 3, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 1, "Intelligence": 1, "Dexterity": 5, "Constitution": 2, "Perception": 4, "Willpower": 2, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 5 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1354,7 +557,7 @@
     "tags": [ "animal", "bird", "prey", "ground_dwelling", "neutral_flees" ],
     "teamId": 52,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#000000; background-color:#202020;\"> </span><span style=\"color:#000000; background-color:#202020;\"> </span><span style=\"color:#000000; background-color:#202020;\">_</span><span style=\"color:#000000; background-color:#202020;\">,</span><span style=\"color:#000000; background-color:#202020;\">_</span><br><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#000000; background-color:#202020;\">(</span><span style=\"color:#000000; background-color:#202020;\">Q</span><span style=\"color:#696969; background-color:#404040;\">)</span><span style=\"color:#696969; background-color:#404040;\">\\</span><br><span style=\"color:#696969; background-color:#404040;\">(</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">&gt;</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\"> </span><span style=\"color:#696969; background-color:#404040;\">)</span><br><span style=\"color:#696969; background-color:#404040;\">\\</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">_</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">v</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">v</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">_</span><span style=\"color:#696969; background-color:#404040;\">/</span><br><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\">`</span><span style=\"color:#696969; background-color:#404040;\">---</span><span style=\"color:#696969; background-color:#404040;\">`</span>"
+    "asciiPortrait": "<span style=\\"color:#000000; background-color:#202020;\\"> </span><span style=\\"color:#000000; background-color:#202020;\\"> </span><span style=\\"color:#000000; background-color:#202020;\\">_</span><span style=\\"color:#000000; background-color:#202020;\\">,</span><span style=\\"color:#000000; background-color:#202020;\\">_</span><br><span style=\\"color:#696969; background-color:#404040;\\"> </span><span style=\\"color:#000000; background-color:#202020;\\">(</span><span style=\\"color:#000000; background-color:#202020;\\">Q</span><span style=\\"color:#696969; background-color:#404040;\\">)</span><span style=\\"color:#696969; background-color:#404040;\\">\\\\</span><br><span style=\\"color:#696969; background-color:#404040;\\">(</span><span style=\\"color:#FFFFFF; background-color:#A9A9A9;\\"> </span><span style=\\"color:#000000; background-color:#202020;\\">o</span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">&gt;</span><span style=\\"color:#FFFFFF; background-color:#A9A9A9;\\"> </span><span style=\\"color:#696969; background-color:#404040;\\">)</span><br><span style=\\"color:#696969; background-color:#404040;\\">\\\\</span><span style=\\"color:#FFFFFF; background-color:#A9A9A9;\\">_</span><span style=\\"color:#FFFFFF; background-color:#A9A9A9;\\">v</span><span style=\\"color:#FFFFFF; background-color:#A9A9A9;\\">v</span><span style=\\"color:#FFFFFF; background-color:#A9A9A9;\\">_</span><span style=\\"color:#696969; background-color:#404040;\\">/</span><br><span style=\\"color:#696969; background-color:#404040;\\"> </span><span style=\\"color:#696969; background-color:#404040;\\">`</span><span style=\\"color:#696969; background-color:#404040;\\">---</span><span style=\\"color:#696969; background-color:#404040;\\">`</span>"
   },
   {
     "id": "animal_mule_deer",
@@ -1364,24 +567,8 @@
     "factionId": "creature_prey",
     "behavior": "flee_graze",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 20,
-        "current": 20,
-        "armor": 1,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 5,
-      "Intelligence": 2,
-      "Dexterity": 5,
-      "Constitution": 6,
-      "Perception": 6,
-      "Willpower": 3,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 20, "current": 20, "armor": 1, "crisisTimer": 0 } },
+    "stats": { "Strength": 5, "Intelligence": 2, "Dexterity": 5, "Constitution": 6, "Perception": 6, "Willpower": 3, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 15 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1389,7 +576,7 @@
     "tags": [ "animal", "mammal", "herbivore", "prey", "neutral_flees" ],
     "teamId": 52,
     "cr": 0.5,
-    "asciiPortrait": "<span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#DEB887; background-color:#A0522D;\">\\</span><span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#DEB887; background-color:#A0522D;\">/</span><br><span style=\"color:#DEB887; background-color:#A0522D;\">  </span><span style=\"color:#DEB887; background-color:#A0522D;\">\\</span><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\"> )</span><span style=\"color:#DEB887; background-color:#A0522D;\">/</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">.-</span><span style=\"color:#A0522D; background-color:#654321;\">\"\"</span><span style=\"color:#A0522D; background-color:#654321;\">-.</span><br><span style=\"color:#A0522D; background-color:#654321;\">/</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#A0522D; background-color:#654321;\">  </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">\\</span><br><span style=\"color:#A0522D; background-color:#654321;\">|</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">  </span><span style=\"color:#000000; background-color:#202020;\">()</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">  </span><span style=\"color:#A0522D; background-color:#654321;\">|</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">\\</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">_</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">--</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">_</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">/</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> U</span>"
+    "asciiPortrait": "<span style=\\"color:#DEB887; background-color:#A0522D;\\"> </span><span style=\\"color:#DEB887; background-color:#A0522D;\\">\\\\</span><span style=\\"color:#DEB887; background-color:#A0522D;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\">_</span><span style=\\"color:#A0522D; background-color:#654321;\\">_</span><span style=\\"color:#DEB887; background-color:#A0522D;\\"> </span><span style=\\"color:#DEB887; background-color:#A0522D;\\">/</span><br><span style=\\"color:#DEB887; background-color:#A0522D;\\">  </span><span style=\\"color:#DEB887; background-color:#A0522D;\\">\\\\</span><span style=\\"color:#A0522D; background-color:#654321;\\">(</span><span style=\\"color:#A0522D; background-color:#654321;\\"> )</span><span style=\\"color:#DEB887; background-color:#A0522D;\\">/</span><br><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\">.-</span><span style=\\"color:#A0522D; background-color:#654321;\\">\\"\\"</span><span style=\\"color:#A0522D; background-color:#654321;\\">-.</span><br><span style=\\"color:#A0522D; background-color:#654321;\\">/</span><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#000000; background-color:#202020;\\">o</span><span style=\\"color:#A0522D; background-color:#654321;\\">  </span><span style=\\"color:#000000; background-color:#202020;\\">o</span><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\">\\\\</span><br><span style=\\"color:#A0522D; background-color:#654321;\\">|</span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\">  </span><span style=\\"color:#000000; background-color:#202020;\\">()</span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\">  </span><span style=\\"color:#A0522D; background-color:#654321;\\">|</span><br><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\">\\\\</span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\">_</span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\">--</span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\">_</span><span style=\\"color:#F5DEB3; background-color:#D2B48C;\\">/</span><br><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#A0522D; background-color:#654321;\\"> U</span>"
   },
   {
     "id": "animal_desert_cottontail",
@@ -1399,24 +586,8 @@
     "factionId": "creature_prey",
     "behavior": "flee_fast",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 2,
-        "current": 2,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 1,
-      "Intelligence": 1,
-      "Dexterity": 6,
-      "Constitution": 1,
-      "Perception": 5,
-      "Willpower": 2,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 2, "current": 2, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 1, "Intelligence": 1, "Dexterity": 6, "Constitution": 1, "Perception": 5, "Willpower": 2, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 5 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1424,7 +595,7 @@
     "tags": [ "animal", "mammal", "herbivore", "prey", "fast", "neutral_flees" ],
     "teamId": 52,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">(\\</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">/)</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\">(</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">.</span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">(</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#FFC0CB; background-color:#FF69B4;\">Y</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">/</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">\"</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">\"</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">\"</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">\\</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\">(</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">_</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">_</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> `</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> `</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> `</span>"
+    "asciiPortrait": "<span style=\\"color:#A0522D; background-color:#654321;\\"> </span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">(\\\\</span><span style=\\"color:#A0522D; background-color:#654321;\\">_</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">/)</span><br><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">(</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\"> </span><span style=\\"color:#000000; background-color:#202020;\\">o</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">.</span><span style=\\"color:#000000; background-color:#202020;\\">o</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\"> </span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">)</span><br><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\"> </span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">(</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\"> </span><span style=\\"color:#FFC0CB; background-color:#FF69B4;\\">Y</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\"> </span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">)</span><br><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\"> </span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">/</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">\\"</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">\\"</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">\\"</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">\\\\</span><br><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">(</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">_</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">_</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">)</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">)</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">)</span><br><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\"> </span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\"> `</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\"> `</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\"> `</span>"
   },
   {
     "id": "animal_ca_ground_squirrel",
@@ -1434,24 +605,8 @@
     "factionId": "creature_prey",
     "behavior": "flee_burrow",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 3,
-        "current": 3,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 1,
-      "Intelligence": 2,
-      "Dexterity": 5,
-      "Constitution": 2,
-      "Perception": 5,
-      "Willpower": 2,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 3, "current": 3, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 1, "Intelligence": 2, "Dexterity": 5, "Constitution": 2, "Perception": 5, "Willpower": 2, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 5 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1459,7 +614,7 @@
     "tags": [ "animal", "mammal", "rodent", "prey", "burrowing", "neutral_flees" ],
     "teamId": 52,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><br><span style=\"color:#DEB887; background-color:#A0522D;\">/</span><span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#DEB887; background-color:#A0522D;\">\\</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">)</span><br><span style=\"color:#DEB887; background-color:#A0522D;\">\\</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#000000; background-color:#202020;\">^</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">/</span><span style=\"color:#DEB887; background-color:#A0522D;\">--'</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">`</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">---</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">'</span><br><span style=\"color:#DEB887; background-color:#A0522D;\">  </span><span style=\"color:#DEB887; background-color:#A0522D;\">\"</span><span style=\"color:#DEB887; background-color:#A0522D;\">\"</span>"
+    "asciiPortrait": "<span style=\\"color:#DEB887; background-color:#A0522D;\\"> </span><span style=\\"color:#DEB887; background-color:#A0522D;\\">_</span><span style=\\"color:#DEB887; background-color:#A0522D;\\">_</span><span style=\\"color:#DEB887; background-color:#A0522D;\\">_</span><span style=\\"color:#DEB887; background-color:#A0522D;\\">_</span><br><span style=\\"color:#DEB887; background-color:#A0522D;\\">/</span><span style=\\"color:#DEB887; background-color:#A0522D;\\"> </span><span style=\\"color:#000000; background-color:#202020;\\">o</span><span style=\\"color:#DEB887; background-color:#A0522D;\\">\\\\</span><span style=\\"color:#DEB887; background-color:#A0522D;\\">_</span><span style=\\"color:#DEB887; background-color:#A0522D;\\">_</span><span style=\\"color:#DEB887; background-color:#A0522D;\\">)</span><br><span style=\\"color:#DEB887; background-color:#A0522D;\\">\\\\</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\"> </span><span style=\\"color:#000000; background-color:#202020;\\">^</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\"> </span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">/</span><span style=\\"color:#DEB887; background-color:#A0522D;\\">--'</span><br><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\"> </span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">`</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">---</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">'</span><br><span style=\\"color:#DEB887; background-color:#A0522D;\\">  </span><span style=\\"color:#DEB887; background-color:#A0522D;\\">\\"</span><span style=\\"color:#DEB887; background-color:#A0522D;\\">\\"</span>"
   },
   {
     "id": "animal_western_fence_lizard",
@@ -1469,24 +624,8 @@
     "factionId": "creature_prey",
     "behavior": "flee_quick",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 2,
-        "current": 2,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 1,
-      "Intelligence": 1,
-      "Dexterity": 6,
-      "Constitution": 1,
-      "Perception": 4,
-      "Willpower": 1,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 2, "current": 2, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 1, "Intelligence": 1, "Dexterity": 6, "Constitution": 1, "Perception": 4, "Willpower": 1, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 5 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1494,7 +633,7 @@
     "tags": [ "animal", "reptile", "insectivore", "prey", "neutral_flees" ],
     "teamId": 52,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><br><span style=\"color:#556B2F; background-color:#2E8B57;\">(</span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#556B2F; background-color:#2E8B57;\">)</span><span style=\"color:#556B2F; background-color:#2E8B57;\">&lt;</span><span style=\"color:#556B2F; background-color:#2E8B57;\">==</span><span style=\"color:#556B2F; background-color:#2E8B57;\">==</span><span style=\"color:#556B2F; background-color:#2E8B57;\">&gt;</span><br><span style=\"color:#F0E68C; background-color:#BDB76B;\"> </span><span style=\"color:#F0E68C; background-color:#BDB76B;\">`</span><span style=\"color:#F0E68C; background-color:#BDB76B;\">---</span><span style=\"color:#F0E68C; background-color:#BDB76B;\">`</span><br><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">/</span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">\\</span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">/</span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">\\</span><br><span style=\"color:#556B2F; background-color:#2E8B57;\">`</span><span style=\"color:#556B2F; background-color:#2E8B57;\">-'</span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">`-</span><span style=\"color:#556B2F; background-color:#2E8B57;\">'</span>"
+    "asciiPortrait": "<span style=\\"color:#556B2F; background-color:#2E8B57;\\"> </span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">_</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">_</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">_</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">_</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">_</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">_</span><br><span style=\\"color:#556B2F; background-color:#2E8B57;\\">(</span><span style=\\"color:#000000; background-color:#202020;\\">o</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">)</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">&lt;</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">==</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">==</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">&gt;</span><br><span style=\\"color:#F0E68C; background-color:#BDB76B;\\"> </span><span style=\\"color:#F0E68C; background-color:#BDB76B;\\">`</span><span style=\\"color:#F0E68C; background-color:#BDB76B;\\">---</span><span style=\\"color:#F0E68C; background-color:#BDB76B;\\">`</span><br><span style=\\"color:#556B2F; background-color:#2E8B57;\\"> </span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">/</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\"> </span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">\\\\</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\"> </span><span style=\\"color:#556B2F; background-color:#2E8B57;\\"> </span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">/</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\"> </span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">\\\\</span><br><span style=\\"color:#556B2F; background-color:#2E8B57;\\">`</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">-'</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\"> </span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">`-</span><span style=\\"color:#556B2F; background-color:#2E8B57;\\">'</span>"
   },
   {
     "id": "animal_western_rattlesnake",
@@ -1504,24 +643,8 @@
     "factionId": "creature_hostile",
     "behavior": "ambush_strike",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 3,
-      "Intelligence": 1,
-      "Dexterity": 5,
-      "Constitution": 3,
-      "Perception": 6,
-      "Willpower": 4,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 3, "Intelligence": 1, "Dexterity": 5, "Constitution": 3, "Perception": 6, "Willpower": 4, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 20 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1529,7 +652,7 @@
     "tags": [ "animal", "reptile", "predator", "venomous", "hostile_if_threatened" ],
     "teamId": 51,
     "cr": 1,
-    "asciiPortrait": "<span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\">_</span><span style=\"color:#CD853F; background-color:#8B4513;\">.--</span><span style=\"color:#CD853F; background-color:#8B4513;\">.</span><br><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\">/</span><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#FF0000; background-color:#8B0000;\">0</span><span style=\"color:#CD853F; background-color:#8B4513;\">\\</span><span style=\"color:#CD853F; background-color:#8B4513;\">_</span><span style=\"color:#CD853F; background-color:#8B4513;\">)&lt;</span><br><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\">\\</span><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\">_</span><span style=\"color:#CD853F; background-color:#8B4513;\">/</span><span style=\"color:#CD853F; background-color:#8B4513;\">`</span><span style=\"color:#CD853F; background-color:#8B4513;\">~</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\">  </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">`</span><span style=\"color:#000000; background-color:#202020;\">~</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">--</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">'</span><br><span style=\"color:#CD853F; background-color:#8B4513;\">  </span><span style=\"color:#CD853F; background-color:#8B4513;\"> S</span><span style=\"color:#CD853F; background-color:#8B4513;\">S</span><span style=\"color:#CD853F; background-color:#8B4513;\">S</span>"
+    "asciiPortrait": "<span style=\\"color:#CD853F; background-color:#8B4513;\\"> </span><span style=\\"color:#CD853F; background-color:#8B4513;\\"> </span><span style=\\"color:#CD853F; background-color:#8B4513;\\">_</span><span style=\\"color:#CD853F; background-color:#8B4513;\\">.--</span><span style=\\"color:#CD853F; background-color:#8B4513;\\">.</span><br><span style=\\"color:#CD853F; background-color:#8B4513;\\"> </span><span style=\\"color:#CD853F; background-color:#8B4513;\\">/</span><span style=\\"color:#CD853F; background-color:#8B4513;\\"> </span><span style=\\"color:#FF0000; background-color:#8B0000;\\">0</span><span style=\\"color:#CD853F; background-color:#8B4513;\\">\\\\</span><span style=\\"color:#CD853F; background-color:#8B4513;\\">_</span><span style=\\"color:#CD853F; background-color:#8B4513;\\">)&lt;</span><br><span style=\\"color:#CD853F; background-color:#8B4513;\\"> </span><span style=\\"color:#CD853F; background-color:#8B4513;\\">\\\\</span><span style=\\"color:#CD853F; background-color:#8B4513;\\"> </span><span style=\\"color:#CD853F; background-color:#8B4513;\\">_</span><span style=\\"color:#CD853F; background-color:#8B4513;\\">/</span><span style=\\"color:#CD853F; background-color:#8B4513;\\">`</span><span style=\\"color:#CD853F; background-color:#8B4513;\\">~</span><br><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">  </span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">`</span><span style=\\"color:#000000; background-color:#202020;\\">~</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">--</span><span style=\\"color:#F5F5DC; background-color:#D2B48C;\\">'</span><br><span style=\\"color:#CD853F; background-color:#8B4513;\\">  </span><span style=\\"color:#CD853F; background-color:#8B4513;\\"> S</span><span style=\\"color:#CD853F; background-color:#8B4513;\\">S</span><span style=\\"color:#CD853F; background-color:#8B4513;\\">S</span>"
   },
   {
     "id": "animal_pacific_tree_frog",
@@ -1539,24 +662,8 @@
     "factionId": "creature_prey",
     "behavior": "flee_hop",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 1,
-        "current": 1,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 1,
-      "Intelligence": 1,
-      "Dexterity": 4,
-      "Constitution": 1,
-      "Perception": 3,
-      "Willpower": 1,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 1, "current": 1, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 1, "Intelligence": 1, "Dexterity": 4, "Constitution": 1, "Perception": 3, "Willpower": 1, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 2 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1564,7 +671,7 @@
     "tags": [ "animal", "amphibian", "insectivore", "prey", "neutral_flees" ],
     "teamId": 52,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#32CD32; background-color:#228B22;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">_</span><span style=\"color:#32CD32; background-color:#228B22;\">_</span><span style=\"color:#32CD32; background-color:#228B22;\">_</span><br><span style=\"color:#32CD32; background-color:#228B22;\">(</span><span style=\"color:#FFD700; background-color:#B8860B;\">O</span><span style=\"color:#32CD32; background-color:#228B22;\">v</span><span style=\"color:#FFD700; background-color:#B8860B;\">O</span><span style=\"color:#32CD32; background-color:#228B22;\">)</span><br><span style=\"color:#90EE90; background-color:#3CB371;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">\\</span><span style=\"color:#32CD32; background-color:#228B22;\">-/</span><span style=\"color:#90EE90; background-color:#3CB371;\"> </span><br><span style=\"color:#90EE90; background-color:#3CB371;\">(</span><span style=\"color:#90EE90; background-color:#3CB371;\">_</span><span style=\"color:#32CD32; background-color:#228B22;\">H</span><span style=\"color:#90EE90; background-color:#3CB371;\">_</span><span style=\"color:#90EE90; background-color:#3CB371;\">)</span><br><span style=\"color:#90EE90; background-color:#3CB371;\"> </span><span style=\"color:#90EE90; background-color:#3CB371;\">\"</span><span style=\"color:#90EE90; background-color:#3CB371;\"> </span><span style=\"color:#90EE90; background-color:#3CB371;\">\"</span>"
+    "asciiPortrait": "<span style=\\"color:#32CD32; background-color:#228B22;\\"> </span><span style=\\"color:#32CD32; background-color:#228B22;\\">_</span><span style=\\"color:#32CD32; background-color:#228B22;\\">_</span><span style=\\"color:#32CD32; background-color:#228B22;\\">_</span><br><span style=\\"color:#32CD32; background-color:#228B22;\\">(</span><span style=\\"color:#FFD700; background-color:#B8860B;\\">O</span><span style=\\"color:#32CD32; background-color:#228B22;\\">v</span><span style=\\"color:#FFD700; background-color:#B8860B;\\">O</span><span style=\\"color:#32CD32; background-color:#228B22;\\">)</span><br><span style=\\"color:#90EE90; background-color:#3CB371;\\"> </span><span style=\\"color:#32CD32; background-color:#228B22;\\">\\\\</span><span style=\\"color:#32CD32; background-color:#228B22;\\">-/</span><span style=\\"color:#90EE90; background-color:#3CB371;\\"> </span><br><span style=\\"color:#90EE90; background-color:#3CB371;\\">(</span><span style=\\"color:#90EE90; background-color:#3CB371;\\">_</span><span style=\\"color:#32CD32; background-color:#228B22;\\">H</span><span style=\\"color:#90EE90; background-color:#3CB371;\\">_</span><span style=\\"color:#90EE90; background-color:#3CB371;\\">)</span><br><span style=\\"color:#90EE90; background-color:#3CB371;\\"> </span><span style=\\"color:#90EE90; background-color:#3CB371;\\">\\"</span><span style=\\"color:#90EE90; background-color:#3CB371;\\"> </span><span style=\\"color:#90EE90; background-color:#3CB371;\\">\\"</span>"
   },
   {
     "id": "animal_tarantula",
@@ -1574,24 +681,8 @@
     "factionId": "creature_hostile",
     "behavior": "defensive_strike",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 4,
-        "current": 4,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 2,
-      "Intelligence": 1,
-      "Dexterity": 3,
-      "Constitution": 2,
-      "Perception": 4,
-      "Willpower": 3,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 4, "current": 4, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 2, "Intelligence": 1, "Dexterity": 3, "Constitution": 2, "Perception": 4, "Willpower": 3, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 10 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1599,7 +690,7 @@
     "tags": [ "animal", "arachnid", "predator", "venomous_mild", "hostile_if_threatened" ],
     "teamId": 51,
     "cr": 0.25,
-    "asciiPortrait": "<span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">/</span><span style=\"color:#000000; background-color:#1C1C1C;\">-</span><span style=\"color:#FF0000; background-color:#8B0000;\">o</span><span style=\"color:#000000; background-color:#1C1C1C;\">-</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\\</span><br><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">(</span><span style=\"color:#FF0000; background-color:#8B0000;\">o</span><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#000000; background-color:#1C1C1C;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">X</span><span style=\"color:#000000; background-color:#1C1C1C;\">)</span><span style=\"color:#FF0000; background-color:#8B0000;\">o</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">)</span><br><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\\</span><span style=\"color:#000000; background-color:#1C1C1C;\">_</span><span style=\"color:#000000; background-color:#1C1C1C;\">/</span><span style=\"color:#000000; background-color:#1C1C1C;\">\\</span><span style=\"color:#000000; background-color:#1C1C1C;\">_</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">/</span><br><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">/</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\"</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\"</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\\</span><br><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">'</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\"</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\"</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">`</span>"
+    "asciiPortrait": "<span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\"> </span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">/</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">-</span><span style=\\"color:#FF0000; background-color:#8B0000;\\">o</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">-</span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">\\\\</span><br><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">(</span><span style=\\"color:#FF0000; background-color:#8B0000;\\">o</span><span style=\\"color:#000000; background-color:#1C1C1C;\\"> </span><span style=\\"color:#000000; background-color:#1C1C1C;\\">(</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">X</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">)</span><span style=\\"color:#FF0000; background-color:#8B0000;\\">o</span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">)</span><br><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\"> </span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">\\\\</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">_</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">/</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">\\\\</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">_</span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">/</span><br><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\"> </span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">/</span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\"> </span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">\\"</span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\"> </span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">\\"</span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\"> </span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">\\\\</span><br><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">'</span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\"> </span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">\\"</span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\"> </span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\"> </span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">\\"</span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\"> </span><span style=\\"color:#4A4A4A; background-color:#2A2A2A;\\">`</span>"
   },
   {
     "id": "animal_monarch_butterfly",
@@ -1609,24 +700,8 @@
     "factionId": "creature_neutral",
     "behavior": "wander_flutter",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 1,
-        "current": 1,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 1,
-      "Intelligence": 1,
-      "Dexterity": 5,
-      "Constitution": 1,
-      "Perception": 2,
-      "Willpower": 1,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 1, "current": 1, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 1, "Intelligence": 1, "Dexterity": 5, "Constitution": 1, "Perception": 2, "Willpower": 1, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 0 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1634,7 +709,7 @@
     "tags": [ "animal", "insect", "flying", "harmless", "neutral_flees" ],
     "teamId": 90,
     "cr": 0.01,
-    "asciiPortrait": "<span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#FFA500; background-color:#D2691E;\">\\</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">.</span><span style=\"color:#000000; background-color:#1C1C1C;\">^</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">.</span><span style=\"color:#FFA500; background-color:#D2691E;\">/</span><br><span style=\"color:#FFA500; background-color:#D2691E;\">--</span><span style=\"color:#000000; background-color:#1C1C1C;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">@</span><span style=\"color:#000000; background-color:#1C1C1C;\">)</span><span style=\"color:#FFA500; background-color:#D2691E;\">--</span><br><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#FFA500; background-color:#D2691E;\">/</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">'</span><span style=\"color:#000000; background-color:#1C1C1C;\">V</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">`</span><span style=\"color:#FFA500; background-color:#D2691E;\">\\</span><br><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#FFA500; background-color:#D2691E;\">\"</span><span style=\"color:#000000; background-color:#1C1C1C;\">\"</span><span style=\"color:#FFA500; background-color:#D2691E;\">\"</span>"
+    "asciiPortrait": "<span style=\\"color:#000000; background-color:#1C1C1C;\\"> </span><span style=\\"color:#FFA500; background-color:#D2691E;\\">\\\\</span><span style=\\"color:#FFFFFF; background-color:#A9A9A9;\\">.</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">^</span><span style=\\"color:#FFFFFF; background-color:#A9A9A9;\\">.</span><span style=\\"color:#FFA500; background-color:#D2691E;\\">/</span><br><span style=\\"color:#FFA500; background-color:#D2691E;\\">--</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">(</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">@</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">)</span><span style=\\"color:#FFA500; background-color:#D2691E;\\">--</span><br><span style=\\"color:#000000; background-color:#1C1C1C;\\"> </span><span style=\\"color:#FFA500; background-color:#D2691E;\\">/</span><span style=\\"color:#FFFFFF; background-color:#A9A9A9;\\">'</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">V</span><span style=\\"color:#FFFFFF; background-color:#A9A9A9;\\">`</span><span style=\\"color:#FFA500; background-color:#D2691E;\\">\\\\</span><br><span style=\\"color:#000000; background-color:#1C1C1C;\\"> </span><span style=\\"color:#000000; background-color:#1C1C1C;\\"> </span><span style=\\"color:#FFA500; background-color:#D2691E;\\">\\"</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">\\"</span><span style=\\"color:#FFA500; background-color:#D2691E;\\">\\"</span>"
   },
   {
     "id": "animal_annas_hummingbird",
@@ -1644,24 +719,8 @@
     "factionId": "creature_neutral",
     "behavior": "wander_flutter_fast",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 1,
-        "current": 1,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 1,
-      "Intelligence": 1,
-      "Dexterity": 8,
-      "Constitution": 1,
-      "Perception": 4,
-      "Willpower": 2,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 1, "current": 1, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 1, "Intelligence": 1, "Dexterity": 8, "Constitution": 1, "Perception": 4, "Willpower": 2, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 2 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1669,7 +728,7 @@
     "tags": [ "animal", "bird", "flying", "fast", "nectarivore", "neutral_flees" ],
     "teamId": 90,
     "cr": 0.01,
-    "asciiPortrait": "<span style=\"color:#006400; background-color:#004000;\"> </span><span style=\"color:#006400; background-color:#004000;\">.</span><span style=\"color:#006400; background-color:#004000;\">^</span><span style=\"color:#006400; background-color:#004000;\">.</span><span style=\"color:#000000; background-color:#202020;\">_</span><br><span style=\"color:#006400; background-color:#004000;\">(</span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#FF0000; background-color:#8B0000;\">@</span><span style=\"color:#000000; background-color:#202020;\">--)</span><br><span style=\"color:#FF0000; background-color:#8B0000;\"> </span><span style=\"color:#FF0000; background-color:#8B0000;\">\\</span><span style=\"color:#FF0000; background-color:#8B0000;\">_/</span><span style=\"color:#006400; background-color:#004000;\">/</span><br><span style=\"color:#006400; background-color:#004000;\">  </span><span style=\"color:#006400; background-color:#004000;\">v</span><br>"
+    "asciiPortrait": "<span style=\\"color:#006400; background-color:#004000;\\"> </span><span style=\\"color:#006400; background-color:#004000;\\">.</span><span style=\\"color:#006400; background-color:#004000;\\">^</span><span style=\\"color:#006400; background-color:#004000;\\">.</span><span style=\\"color:#000000; background-color:#202020;\\">_</span><br><span style=\\"color:#006400; background-color:#004000;\\">(</span><span style=\\"color:#000000; background-color:#202020;\\">o</span><span style=\\"color:#FF0000; background-color:#8B0000;\\">@</span><span style=\\"color:#000000; background-color:#202020;\\">--)</span><br><span style=\\"color:#FF0000; background-color:#8B0000;\\"> </span><span style=\\"color:#FF0000; background-color:#8B0000;\\">\\\\</span><span style=\\"color:#FF0000; background-color:#8B0000;\\">_/</span><span style=\\"color:#006400; background-color:#004000;\\">/</span><br><span style=\\"color:#006400; background-color:#004000;\\">  </span><span style=\\"color:#006400; background-color:#004000;\\">v</span><br>"
   },
   {
     "id": "animal_honey_bee",
@@ -1679,24 +738,8 @@
     "factionId": "insect_swarm",
     "behavior": "swarm_defend",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 1,
-        "current": 1,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 1,
-      "Intelligence": 1,
-      "Dexterity": 6,
-      "Constitution": 1,
-      "Perception": 3,
-      "Willpower": 2,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 1, "current": 1, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 1, "Intelligence": 1, "Dexterity": 6, "Constitution": 1, "Perception": 3, "Willpower": 2, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 5 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1704,7 +747,7 @@
     "tags": [ "animal", "insect", "flying", "stinging", "colony", "neutral_defensive" ],
     "teamId": 91,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#ADD8E6; background-color:#87CEEB;\"> </span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">,</span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">-</span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">.</span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">-</span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">,</span><br><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#FFD700; background-color:#B8860B;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">o</span><span style=\"color:#FFD700; background-color:#B8860B;\">)</span><span style=\"color:#000000; background-color:#1C1C1C;\">&gt;</span><br><span style=\"color:#FFD700; background-color:#B8860B;\"> </span><span style=\"color:#000000; background-color:#1C1C1C;\">~</span><span style=\"color:#FFD700; background-color:#B8860B;\">~</span><span style=\"color:#000000; background-color:#1C1C1C;\">~</span><span style=\"color:#FFD700; background-color:#B8860B;\">'</span>"
+    "asciiPortrait": "<span style=\\"color:#ADD8E6; background-color:#87CEEB;\\"> </span><span style=\\"color:#ADD8E6; background-color:#87CEEB;\\">,</span><span style=\\"color:#ADD8E6; background-color:#87CEEB;\\">-</span><span style=\\"color:#ADD8E6; background-color:#87CEEB;\\">.</span><span style=\\"color:#ADD8E6; background-color:#87CEEB;\\">-</span><span style=\\"color:#ADD8E6; background-color:#87CEEB;\\">,</span><br><span style=\\"color:#000000; background-color:#1C1C1C;\\"> </span><span style=\\"color:#FFD700; background-color:#B8860B;\\">(</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">o</span><span style=\\"color:#FFD700; background-color:#B8860B;\\">)</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">&gt;</span><br><span style=\\"color:#FFD700; background-color:#B8860B;\\"> </span><span style=\\"color:#000000; background-color:#1C1C1C;\\">~</span><span style=\\"color:#FFD700; background-color:#B8860B;\\">~</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">~</span><span style=\\"color:#FFD700; background-color:#B8860B;\\">'</span>"
   },
   {
     "id": "animal_western_pond_turtle",
@@ -1714,24 +757,8 @@
     "factionId": "creature_neutral",
     "behavior": "wander_slow",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 8,
-        "current": 8,
-        "armor": 3,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 2,
-      "Intelligence": 1,
-      "Dexterity": 2,
-      "Constitution": 4,
-      "Perception": 3,
-      "Willpower": 3,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 8, "current": 8, "armor": 3, "crisisTimer": 0 } },
+    "stats": { "Strength": 2, "Intelligence": 1, "Dexterity": 2, "Constitution": 4, "Perception": 3, "Willpower": 3, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 5 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1739,7 +766,7 @@
     "tags": [ "animal", "reptile", "aquatic", "shelled", "neutral_flees" ],
     "teamId": 50,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#556B2F; background-color:#006400;\"> </span><span style=\"color:#556B2F; background-color:#006400;\"> </span><span style=\"color:#556B2F; background-color:#006400;\">.--</span><span style=\"color:#556B2F; background-color:#006400;\">--.</span><br><span style=\"color:#6B8E23; background-color:#556B2F;\"> </span><span style=\"color:#6B8E23; background-color:#556B2F;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">.</span><span style=\"color:#6B8E23; background-color:#556B2F;\">_</span><span style=\"color:#000000; background-color:#1C1C1C;\">.</span><span style=\"color:#6B8E23; background-color:#556B2F;\">)</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">/</span><span style=\"color:#556B2F; background-color:#006400;\">~~</span><span style=\"color:#556B2F; background-color:#006400;\">\\</span><br><span style=\"color:#8FBC8F; background-color:#2E8B57;\"> </span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">/</span><span style=\"color:#556B2F; background-color:#006400;\">''</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">--</span><span style=\"color:#556B2F; background-color:#006400;\">''</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">\\</span><br><span style=\"color:#6B8E23; background-color:#556B2F;\"> </span><span style=\"color:#6B8E23; background-color:#556B2F;\">`</span><span style=\"color:#6B8E23; background-color:#556B2F;\">-</span><span style=\"color:#6B8E23; background-color:#556B2F;\">(</span><span style=\"color:#6B8E23; background-color:#556B2F;\"> )</span><span style=\"color:#6B8E23; background-color:#556B2F;\">-</span><span style=\"color:#6B8E23; background-color:#556B2F;\">`</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">(</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">__</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">)</span>"
+    "asciiPortrait": "<span style=\\"color:#556B2F; background-color:#006400;\\"> </span><span style=\\"color:#556B2F; background-color:#006400;\\"> </span><span style=\\"color:#556B2F; background-color:#006400;\\">.--</span><span style=\\"color:#556B2F; background-color:#006400;\\">--.</span><br><span style=\\"color:#6B8E23; background-color:#556B2F;\\"> </span><span style=\\"color:#6B8E23; background-color:#556B2F;\\">(</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">.</span><span style=\\"color:#6B8E23; background-color:#556B2F;\\">_</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">.</span><span style=\\"color:#6B8E23; background-color:#556B2F;\\">)</span><span style=\\"color:#8FBC8F; background-color:#2E8B57;\\">/</span><span style=\\"color:#556B2F; background-color:#006400;\\">~~</span><span style=\\"color:#556B2F; background-color:#006400;\\">\\\\</span><br><span style=\\"color:#8FBC8F; background-color:#2E8B57;\\"> </span><span style=\\"color:#8FBC8F; background-color:#2E8B57;\\">/</span><span style=\\"color:#556B2F; background-color:#006400;\\">''</span><span style=\\"color:#8FBC8F; background-color:#2E8B57;\\">--</span><span style=\\"color:#556B2F; background-color:#006400;\\">''</span><span style=\\"color:#8FBC8F; background-color:#2E8B57;\\">\\\\</span><br><span style=\\"color:#6B8E23; background-color:#556B2F;\\"> </span><span style=\\"color:#6B8E23; background-color:#556B2F;\\">`</span><span style=\\"color:#6B8E23; background-color:#556B2F;\\">-</span><span style=\\"color:#6B8E23; background-color:#556B2F;\\">(</span><span style=\\"color:#6B8E23; background-color:#556B2F;\\"> )</span><span style=\\"color:#6B8E23; background-color:#556B2F;\\">-</span><span style=\\"color:#6B8E23; background-color:#556B2F;\\">`</span><span style=\\"color:#8FBC8F; background-color:#2E8B57;\\">(</span><span style=\\"color:#8FBC8F; background-color:#2E8B57;\\">__</span><span style=\\"color:#8FBC8F; background-color:#2E8B57;\\">)</span>"
   },
   {
     "id": "animal_rainbow_trout",
@@ -1749,24 +776,8 @@
     "factionId": "creature_prey",
     "behavior": "flee_aquatic",
     "patrolPoints": [],
-    "health": {
-      "body": {
-        "max": 4,
-        "current": 4,
-        "armor": 0,
-        "crisisTimer": 0
-      }
-    },
-    "stats": {
-      "Strength": 2,
-      "Intelligence": 1,
-      "Dexterity": 5,
-      "Constitution": 2,
-      "Perception": 4,
-      "Willpower": 2,
-      "Charisma": 1,
-      "Marksmanship": 0
-    },
+    "health": { "body": { "max": 4, "current": 4, "armor": 0, "crisisTimer": 0 } },
+    "stats": { "Strength": 2, "Intelligence": 1, "Dexterity": 5, "Constitution": 2, "Perception": 4, "Willpower": 2, "Charisma": 1, "Marksmanship": 0 },
     "skills": { "Unarmed": 5 },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
@@ -1774,7 +785,7 @@
     "tags": [ "animal", "fish", "aquatic", "prey", "neutral_flees" ],
     "teamId": 52,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#A9A9A9; background-color:#696969;\">^</span><span style=\"color:#C0C0C0; background-color:#808080;\">..</span><span style=\"color:#C0C0C0; background-color:#808080;\">__</span><br><span style=\"color:#C0C0C0; background-color:#808080;\">&lt;</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">o</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">)</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">\\</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">_</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">_</span><span style=\"color:#C0C0C0; background-color:#808080;\">&lt;</span><br><span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#A9A9A9; background-color:#696969;\">v</span><span style=\"color:#C0C0C0; background-color:#808080;\">''</span><span style=\"color:#C0C0C0; background-color:#808080;\">\"\"</span>"
+    "asciiPortrait": "<span style=\\"color:#C0C0C0; background-color:#808080;\\"> </span><span style=\\"color:#C0C0C0; background-color:#808080;\\"> </span><span style=\\"color:#A9A9A9; background-color:#696969;\\">^</span><span style=\\"color:#C0C0C0; background-color:#808080;\\">..</span><span style=\\"color:#C0C0C0; background-color:#808080;\\">__</span><br><span style=\\"color:#C0C0C0; background-color:#808080;\\">&lt;</span><span style=\\"color:#FFB6C1; background-color:#FF69B4;\\">(</span><span style=\\"color:#000000; background-color:#1C1C1C;\\">o</span><span style=\\"color:#FFB6C1; background-color:#FF69B4;\\">)</span><span style=\\"color:#FFB6C1; background-color:#FF69B4;\\">\\\\</span><span style=\\"color:#FFB6C1; background-color:#FF69B4;\\">_</span><span style=\\"color:#FFB6C1; background-color:#FF69B4;\\">_</span><span style=\\"color:#C0C0C0; background-color:#808080;\\">&lt;</span><br><span style=\\"color:#C0C0C0; background-color:#808080;\\"> </span><span style=\\"color:#C0C0C0; background-color:#808080;\\"> </span><span style=\\"color:#A9A9A9; background-color:#696969;\\">v</span><span style=\\"color:#C0C0C0; background-color:#808080;\\">''</span><span style=\\"color:#C0C0C0; background-color:#808080;\\">\\"\\"</span>"
   },
   {
     "id": "fish_joe",
@@ -1784,59 +795,15 @@
     "factionId": "civilian",
     "behavior": "idle",
     "health": {
-      "head": {
-        "max": 5,
-        "current": 5,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 7,
-        "current": 7,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 5, "current": 5, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "leftArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 7, "current": 7, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": {
-      "Strength": 3,
-      "Dexterity": 4,
-      "Constitution": 3,
-      "Intelligence": 4,
-      "Perception": 5,
-      "Willpower": 4,
-      "Charisma": 5,
-      "Marksmanship": 2
-    },
-    "skills": {
-      "Unarmed": 15,
-      "MeleeWeapons": 15,
-      "Guns": 10,
-      "Survival": 30
-    },
+    "stats": { "Strength": 3, "Dexterity": 4, "Constitution": 3, "Intelligence": 4, "Perception": 5, "Willpower": 4, "Charisma": 5, "Marksmanship": 2 },
+    "skills": { "Unarmed": 15, "MeleeWeapons": 15, "Guns": 10, "Survival": 30 },
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
     "tags": [ "friendly", "humanoid", "merchant", "quest_giver" ],
