@@ -13,6 +13,14 @@
       {
         "text": "I've got some fish for you.",
         "goTo": "positive_response"
+      },
+      {
+        "text": "[Animal Handling] I'm better with animals than fish, but I appreciate the skill.",
+        "goTo": "animal_handling_success",
+        "condition": {
+            "type": "skillCheck",
+            "expression": "skill:Animal Handling>5"
+        }
       }
     ]
   },
@@ -39,6 +47,15 @@
     "choices": [
         {
             "text": "Here they are.",
+            "goTo": "end"
+        }
+    ]
+  },
+  "animal_handling_success": {
+    "text": "Ha! A fellow creature-lover. Fish are just water-animals, my friend. You've got to learn their ways.",
+    "choices": [
+        {
+            "text": "Maybe you can teach me sometime.",
             "goTo": "end"
         }
     ]

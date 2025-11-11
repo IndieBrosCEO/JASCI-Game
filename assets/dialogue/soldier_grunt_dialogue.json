@@ -13,6 +13,14 @@
       {
         "text": "I have supplies for the army.",
         "goTo": "positive_response"
+      },
+      {
+        "text": "[Intelligence] I have a message for your commanding officer. It's urgent.",
+        "goTo": "intelligence_success",
+        "condition": {
+            "type": "statCheck",
+            "expression": "stat:Intelligence>7"
+        }
       }
     ]
   },
@@ -32,6 +40,7 @@
   },
   "positive_response": {
     "text": "Supplies? Hand them over. We'll put them to good use. Now clear the area.",
+    "actions": ["takeItem:mre,1"],
     "choices": [
         {
             "text": "Here you go.",
@@ -39,6 +48,15 @@
         }
     ]
   },
+    "intelligence_success": {
+        "text": "A message for the CO? Alright, I'll escort you. Don't try anything funny.",
+        "choices": [
+            {
+                "text": "Of course not.",
+                "goTo": "end"
+            }
+        ]
+    },
   "end": {
     "text": "...",
     "choices": []

@@ -13,6 +13,14 @@
        {
         "text": "Maybe this will make you feel better.",
         "goTo": "positive_response"
+      },
+      {
+        "text": "[Persuasion] We don't have to do this. There's enough trouble in the world already.",
+        "goTo": "persuasion_success",
+        "condition": {
+          "type": "skillCheck",
+          "expression": "skill:Persuasion>5"
+        }
       }
     ]
   },
@@ -35,6 +43,16 @@
     "choices": [
         {
             "text": "A gift.",
+            "actions": ["takeItem:bottled_water,1"],
+            "goTo": "end"
+        }
+    ]
+  },
+  "persuasion_success": {
+    "text": "Hmph. You're right about that. Fine. Go on, get out of here.",
+    "choices": [
+        {
+            "text": "Thank you.",
             "goTo": "end"
         }
     ]

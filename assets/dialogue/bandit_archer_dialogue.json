@@ -13,6 +13,14 @@
       {
         "text": "You'll get nothing from me.",
         "goTo": "hostile_response"
+      },
+      {
+        "text": "[Sleight of Hand] While they're distracted, reach for your weapon...",
+        "goTo": "sleight_of_hand_success",
+        "condition": {
+          "type": "skillCheck",
+          "expression": "skill:Sleight of Hand>8"
+        }
       }
     ]
   },
@@ -32,6 +40,11 @@
   },
   "hostile_response": {
     "text": "Big words. Let's see if you can back them up.",
+    "actions": ["startCombat"],
+    "choices": []
+  },
+  "sleight_of_hand_success": {
+    "text": "You think you're slick? Not slick enough!",
     "actions": ["startCombat"],
     "choices": []
   },

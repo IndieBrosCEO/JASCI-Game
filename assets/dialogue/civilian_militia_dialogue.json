@@ -13,6 +13,14 @@
       {
         "text": "Glad to see the militia stepping up.",
         "goTo": "positive_response"
+      },
+      {
+        "text": "[Survival] I've noticed a weakness in the perimeter over there. You should reinforce it.",
+        "goTo": "survival_success",
+        "condition": {
+            "type": "skillCheck",
+            "expression": "skill:Survival>6"
+        }
       }
     ]
   },
@@ -41,6 +49,15 @@
         "text": "Stay safe.",
         "goTo": "end"
       }
+    ]
+  },
+  "survival_success": {
+    "text": "Hey, you're right. Good eye. Thanks for the tip, we'll get that sorted out.",
+    "choices": [
+        {
+            "text": "Happy to help.",
+            "goTo": "end"
+        }
     ]
   },
   "end": {
