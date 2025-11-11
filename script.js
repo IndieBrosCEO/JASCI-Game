@@ -2105,6 +2105,398 @@ async function initialize() { // Made async
 
         requestAnimationFrame(gameLoop); // Start the main game loop
 
+        document.addEventListener('keydown', handleKeyDown);
+
+
+        const mapContainerElement = document.getElementById('mapContainer'); // Renamed to avoid conflict
+        if (mapContainerElement) {
+            mapContainerElement.addEventListener('click', (event) => {
+                if (gameState.isConstructionModeActive && window.constructionManager && window.gameState.selectedConstructionId) {
+                    const rect = mapContainerElement.getBoundingClientRect();
+                    const scrollLeft = mapContainerElement.scrollLeft;
+                    const scrollTop = mapContainerElement.scrollTop;
+                    let tileWidth = 10; let tileHeight = 18; // Default/fallback
+                    const tempSpan = document.createElement('span');
+                    tempSpan.style.fontFamily = getComputedStyle(mapContainerElement).fontFamily;
+                    tempSpan.style.fontSize = getComputedStyle(mapContainerElement).fontSize;
+                    tempSpan.style.lineHeight = getComputedStyle(mapContainerElement).lineHeight;
+                    tempSpan.style.position = 'absolute'; tempSpan.style.visibility = 'hidden';
+                    tempSpan.textContent = 'M'; // Measure a character
+                    document.body.appendChild(tempSpan);
+                    tileWidth = tempSpan.offsetWidth;
+                    tileHeight = tempSpan.offsetHeight;
+                    document.body.removeChild(tempSpan);
+                    if (tileWidth === 0 || tileHeight === 0) { tileWidth = 10; tileHeight = 18; }
+
+
+                    const x = Math.floor((event.clientX - rect.left + scrollLeft) / tileWidth);
+                    const y = Math.floor((event.clientY - rect.top + scrollTop) / tileHeight);
+                    const z = gameState.currentViewZ; // Placement happens on the currently viewed Z-level
+
+                    const definition = window.constructionManager.constructionDefinitions[window.gameState.selectedConstructionId];
+                    if (definition) {
+                        logToConsole(`Attempting to place ${definition.name} at (${x},${y},${z})`, "info");
+                        // isValidPlacement should be called by placeConstruction internally, or here first.
+                        // For robustness, placeConstruction should re-validate.
+                        window.constructionManager.placeConstruction(window.gameState.selectedConstructionId, { x, y, z })
+                            .then(success => {
+                                if (success) {
+                                    logToConsole(`${definition.name} placed successfully.`, "event-success");
+                                } else {
+                                    logToConsole(`Failed to place ${definition.name}.`, "orange");
+                                    // uiManager could show a toast: "Cannot build here." or "Missing materials."
+                                }
+                                if (window.ConstructionUI) window.ConstructionUI.exitPlacementMode(); // Exit mode regardless
+                            });
+                    } else {
+                        logToConsole(`Error: Selected construction ID ${window.gameState.selectedConstructionId} not found.`, "error");
+                        if (window.ConstructionUI) window.ConstructionUI.exitPlacementMode();
+                    }
+
+                } else if (gameState.isRetargeting && combatManager) {
+                    const rect = mapContainerElement.getBoundingClientRect();
+                    const scrollLeft = mapContainerElement.scrollLeft;
+                    const scrollTop = mapContainerElement.scrollTop;
+                    // Determine tile size (character width and height)
+                    let tileWidth = 10; let tileHeight = 18;
+                    const tempSpan = document.createElement('span');
+                    tempSpan.style.fontFamily = getComputedStyle(mapContainerElement).fontFamily;
+                    tempSpan.style.fontSize = getComputedStyle(mapContainerElement).fontSize;
+                    tempSpan.style.lineHeight = getComputedStyle(mapContainerElement).lineHeight;
+                    tempSpan.style.position = 'absolute'; tempSpan.style.visibility = 'hidden';
+                    tempSpan.textContent = 'M';
+                    document.body.appendChild(tempSpan);
+                    tileWidth = tempSpan.offsetWidth;
+                    tileHeight = tempSpan.offsetHeight;
+                    document.body.removeChild(tempSpan);
+                    if (tileWidth === 0 || tileHeight === 0) { tileWidth = 10; tileHeight = 18; }
+
+
+                    const x = Math.floor((event.clientX - rect.left + scrollLeft) / tileWidth);
+                    const y = Math.floor((event.clientY - rect.top + scrollTop) / tileHeight);
+                    const z = gameState.currentViewZ;
+
+                    const currentMap = window.mapRenderer.getCurrentMapData();
+                    if (currentMap && x >= 0 && x < currentMap.dimensions.width && y >= 0 && y < currentMap.dimensions.height) {
+                        gameState.targetingCoords = { x, y, z };
+                        gameState.selectedTargetEntity = null;
+                        for (const npc of gameState.npcs) {
+                            if (npc.mapPos && npc.mapPos.x === x && npc.mapPos.y === y && npc.mapPos.z === z) {
+                                gameState.selectedTargetEntity = npc;
+                                break;
+                            }
+                        }
+                        const finalTargetPos = gameState.selectedTargetEntity ? gameState.selectedTargetEntity.mapPos : gameState.targetingCoords;
+                        const currentTilesetsForClickLOS = window.assetManager ? window.assetManager.tilesets : null;
+                        const currentMapDataForClickLOS = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+
+                        if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos, currentTilesetsForClickLOS, currentMapDataForClickLOS)) {
+                            logToConsole(`No line of sight to target at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). Click another target.`, "orange");
+                            window.mapRenderer.scheduleRender();
+                            return;
+                        }
+                        logToConsole(`Clicked target on map at X:${x}, Y:${y}, Z:${z}`);
+                        gameState.targetConfirmed = true;
+                        gameState.isRetargeting = false;
+                        gameState.retargetingJustHappened = true;
+                        combatManager.promptPlayerAttackDeclaration();
+                        window.mapRenderer.scheduleRender();
+                    }
+                }
+            });
+
+            // Event listener for Look Mode mouse movement
+            mapContainerElement.addEventListener('mousemove', (event) => {
+                if (gameState.isLookModeActive && typeof window.showLookTooltip === 'function') {
+                    window.showLookTooltip(event, gameState, window.mapRenderer, window.assetManager);
+                }
+            });
+            mapContainerElement.addEventListener('mouseleave', () => { // Hide tooltip when mouse leaves map
+                if (typeof window.hideLookTooltip === 'function') { // Always hide if mouse leaves, regardless of look mode status
+                    window.hideLookTooltip();
+                }
+            });
+
+        } else {
+            console.error("Map container not found for click and mousemove listeners.");
+        }
+
+        // Listen for campaign loaded event
+        document.addEventListener('campaignWasLoaded', async (event) => { // made async for handleMapSelectionChangeWrapper
+            logToConsole(`Campaign loaded: ${event.detail.campaignId}`);
+            if (event.detail.manifest && event.detail.manifest.entryMap) {
+                const entryMapId = event.detail.manifest.entryMap;
+                logToConsole(`Campaign entry map: ${entryMapId}`);
+                // Load the initial map for the campaign
+                // This replaces the previous initial map loading logic that was here.
+                await handleMapSelectionChangeWrapper(entryMapId);
+                // Ensure UI is updated after map change
+                // renderCharacterInfo(); // Potentially redundant if handleMapSelectionChangeWrapper covers it
+                // window.mapRenderer.scheduleRender(); // Covered by handleMapSelectionChangeWrapper
+                // updatePlayerStatusDisplay(); // Potentially redundant
+            } else {
+                logToConsole("Warning: Campaign loaded, but no entryMap specified in the manifest.", "warn");
+            }
+        });
+
+        /**************************************************************
+         * Player Status Display Function
+         **************************************************************/
+        function updatePlayerStatusDisplay() {
+            // Update Clock
+            const clockElement = document.getElementById('clockDisplay');
+            if (clockElement && typeof TimeManager !== 'undefined' && TimeManager.getClockDisplay) {
+                const clock = TimeManager.getClockDisplay(gameState);
+                clockElement.textContent = clock.clockString;
+                clockElement.style.color = clock.color;
+            } else if (clockElement) {
+                clockElement.textContent = "Clock N/A";
+            }
+
+            // Update Hunger Bar
+            const hungerElement = document.getElementById('hungerDisplay');
+            if (hungerElement && typeof TimeManager !== 'undefined' && TimeManager.getNeedsStatusBars) {
+                const needsBars = TimeManager.getNeedsStatusBars(gameState);
+                hungerElement.textContent = "Hunger: " + needsBars.hungerBar; // Added label
+                hungerElement.style.color = "sandybrown"; // Added light brown color
+            } else if (hungerElement) {
+                hungerElement.textContent = "Hunger N/A";
+                hungerElement.style.color = ""; // Reset color if N/A
+            }
+
+            // Update Thirst Bar
+            const thirstElement = document.getElementById('thirstDisplay');
+            if (thirstElement && typeof TimeManager !== 'undefined' && TimeManager.getNeedsStatusBars) {
+                const needsBars = TimeManager.getNeedsStatusBars(gameState); // Called again, but simple
+                thirstElement.textContent = "Thirst: " + needsBars.thirstBar; // Added label
+                thirstElement.style.color = "lightskyblue"; // Added light blue color
+            } else if (thirstElement) {
+                thirstElement.textContent = "Thirst N/A";
+                thirstElement.style.color = ""; // Reset color if N/A
+            }
+
+            // Update Z-Level Displays
+            const playerZElement = document.getElementById('playerZDisplay');
+            if (playerZElement) {
+                playerZElement.textContent = `Player Z: ${gameState.playerPos.z}`;
+            }
+            const viewZElement = document.getElementById('viewZDisplay');
+            if (viewZElement) {
+                viewZElement.textContent = `View Z: ${gameState.currentViewZ}`;
+            }
+            // Also update targeting Z info if it's active
+            if (typeof updateTargetingInfoUI === 'function') {
+                updateTargetingInfoUI();
+            }
+        }
+        window.updatePlayerStatusDisplay = updatePlayerStatusDisplay; // Make it globally accessible if needed elsewhere
+
+        // Function to update the targeting Z level display
+        function updateTargetingInfoUI() {
+            const targetingZElement = document.getElementById('targetingZDisplay');
+            if (targetingZElement) {
+                if (gameState.isTargetingMode) {
+                    targetingZElement.textContent = `Targeting Z: ${gameState.targetingCoords.z}`;
+                    targetingZElement.style.display = 'block'; // Show it
+                } else {
+                    targetingZElement.style.display = 'none'; // Hide it
+                }
+            }
+        }
+        window.updateTargetingInfoUI = updateTargetingInfoUI; // Make global if needed by other modules directly
+
+        // Map Zoom Functionality
+        const mapContainerElementForZoom = document.getElementById('mapContainer'); // Renamed to avoid conflict if 'mapContainer' is used elsewhere in this scope
+        const zoomInButton = document.getElementById('zoomInButton');
+        const zoomOutButton = document.getElementById('zoomOutButton');
+
+        if (mapContainerElementForZoom && zoomInButton && zoomOutButton) {
+            let currentMapFontSize = 16; // Default font size in pixels
+            const zoomStep = 2; // Pixels to change on each zoom step
+            const minMapFontSize = 1;
+            const maxMapFontSize = 300;
+
+            try {
+                const computedStyle = window.getComputedStyle(mapContainerElementForZoom);
+                const initialSize = parseFloat(computedStyle.fontSize);
+                if (!isNaN(initialSize) && initialSize > 0) {
+                    currentMapFontSize = initialSize;
+                }
+            } catch (e) {
+                console.warn("Could not read initial font size for map container, using default.", e);
+            }
+            mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
+
+            zoomInButton.addEventListener('click', () => {
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+                currentMapFontSize = Math.min(maxMapFontSize, currentMapFontSize + zoomStep);
+                mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
+            });
+
+            zoomOutButton.addEventListener('click', () => {
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+                currentMapFontSize = Math.max(minMapFontSize, currentMapFontSize - zoomStep);
+                mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
+            });
+            logToConsole(`Map zoom controls initialized. Current map font size: ${currentMapFontSize}px`);
+        } else {
+            console.warn("Map zoom UI elements not found. Zoom functionality will not be available.");
+            if (!mapContainerElementForZoom) console.warn("Zoom: mapContainer not found.");
+            if (!zoomInButton) console.warn("Zoom: zoomInButton not found.");
+            if (!zoomOutButton) console.warn("Zoom: zoomOutButton not found.");
+        }
+
+        const confirmButton = document.getElementById('confirmAttackButton');
+        if (confirmButton) {
+            confirmButton.addEventListener('click', () => {
+                // Sound is played before checks, as it's a button click action
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+                if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
+                    combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
+                    combatManager.gameState.combatPhase === 'playerAttackDeclare') {
+                    combatManager.handleConfirmedAttackDeclaration();
+                } else {
+                    if (!combatManager || !combatManager.gameState) {
+                        console.error("CombatManager or gameState not available.");
+                    } else if (!combatManager.gameState.isInCombat) {
+                        console.log("Confirm attack clicked, but not in combat.");
+                    } else if (combatManager.gameState.combatCurrentAttacker !== combatManager.gameState) {
+                        console.log("Confirm attack clicked, but not player's turn.");
+                    } else if (combatManager.gameState.combatPhase !== 'playerAttackDeclare') {
+                        console.log(`Confirm attack clicked, but phase is ${combatManager.gameState.combatPhase}, not playerAttackDeclare.`);
+                    }
+                }
+            });
+        } else {
+            console.error("confirmAttackButton not found in the DOM during initialization.");
+        }
+
+        const grappleButton = document.getElementById('attemptGrappleButton');
+        if (grappleButton) {
+            grappleButton.addEventListener('click', () => {
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
+                if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
+                    combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
+                    combatManager.gameState.combatPhase === 'playerAttackDeclare') {
+                    combatManager.handleGrappleAttemptDeclaration();
+                } else {
+                    if (!combatManager || !combatManager.gameState) {
+                        console.error("CombatManager or gameState not available for grapple attempt.");
+                    } else if (!combatManager.gameState.isInCombat) {
+                        console.log("Attempt Grapple clicked, but not in combat.");
+                    } else if (combatManager.gameState.combatCurrentAttacker !== combatManager.gameState) {
+                        console.log("Attempt Grapple clicked, but not player's turn.");
+                    } else if (combatManager.gameState.combatPhase !== 'playerAttackDeclare') {
+                        console.log(`Attempt Grapple clicked, but phase is ${combatManager.gameState.combatPhase}, not playerAttackDeclare.`);
+                    }
+                }
+            });
+        } else {
+            console.error("attemptGrappleButton not found in the DOM during initialization.");
+        }
+
+        const confirmDefenseBtn = document.getElementById('confirmDefenseButton');
+        if (confirmDefenseBtn) {
+            confirmDefenseBtn.addEventListener('click', () => {
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
+                if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
+                    combatManager.gameState.combatCurrentDefender === combatManager.gameState && // Player is defending
+                    combatManager.gameState.combatPhase === 'playerDefenseDeclare') {
+                    combatManager.handleConfirmedDefenseDeclaration();
+                } else {
+                    if (!combatManager || !combatManager.gameState) {
+                        console.error("CombatManager or gameState not available for defense confirmation.");
+                    } else if (!combatManager.gameState.isInCombat) {
+                        console.log("Confirm Defense clicked, but not in combat.");
+                    } else if (combatManager.gameState.combatCurrentDefender !== combatManager.gameState) {
+                        console.log("Confirm Defense clicked, but not player's turn to defend.");
+                    } else if (combatManager.gameState.combatPhase !== 'playerDefenseDeclare') {
+                        console.log(`Confirm Defense clicked, but phase is ${combatManager.gameState.combatPhase}, not playerDefenseDeclare.`);
+                    }
+                }
+            });
+        } else {
+            console.error("confirmDefenseButton not found in the DOM during initialization.");
+        }
+
+        const retargetBtn = document.getElementById('retargetButton');
+        if (retargetBtn) {
+            retargetBtn.addEventListener('click', () => {
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Neutral click for retarget
+                if (gameState.isInCombat && gameState.combatPhase === 'playerAttackDeclare' && combatManager) {
+                    combatManager.handleRetarget();
+                }
+            });
+        } else {
+            console.error("retargetButton not found in the DOM during initialization.");
+        }
+
+        // Settings Modal Listeners
+        const openSettingsButton = document.getElementById('openSettingsButton');
+        const closeSettingsButton = document.getElementById('closeSettingsButton');
+        const settingsModal = document.getElementById('settingsModal');
+        const musicVolumeSlider = document.getElementById('musicVolume');
+        const sfxVolumeSlider = document.getElementById('sfxVolume');
+
+        if (openSettingsButton && closeSettingsButton && settingsModal) {
+            openSettingsButton.addEventListener('click', () => {
+                settingsModal.classList.remove('hidden');
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            });
+
+            closeSettingsButton.addEventListener('click', () => {
+                settingsModal.classList.add('hidden');
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            });
+        }
+
+        if (musicVolumeSlider && window.audioManager) {
+            // Set initial value
+            musicVolumeSlider.value = window.audioManager.getMusicVolume();
+            musicVolumeSlider.addEventListener('input', (event) => {
+                window.audioManager.setMusicVolume(parseFloat(event.target.value));
+            });
+        }
+
+        if (sfxVolumeSlider && window.audioManager) {
+            // Set initial value
+            sfxVolumeSlider.value = window.audioManager.getSfxVolume();
+            sfxVolumeSlider.addEventListener('input', (event) => {
+                window.audioManager.setSfxVolume(parseFloat(event.target.value));
+            });
+        }
+
+        // Jukebox UI Listeners
+        const nowPlayingElement = document.getElementById('currentTrackDisplay');
+        const playPauseButton = document.getElementById('toggleMusicButton');
+        const skipButton = document.getElementById('skipTrackButton');
+
+        if (playPauseButton && window.audioManager) {
+            playPauseButton.addEventListener('click', () => {
+                window.audioManager.toggleMusic();
+                playPauseButton.textContent = window.audioManager.isMusicPlaying() ? 'Pause' : 'Play';
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            });
+        }
+
+        if (skipButton && window.audioManager) {
+            skipButton.addEventListener('click', () => {
+                window.audioManager.skipTrack();
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            });
+        }
+
+        // Listen for the custom event when the track changes
+        document.addEventListener('trackchanged', (event) => {
+            if (nowPlayingElement) {
+                nowPlayingElement.textContent = event.detail.trackName;
+            }
+            if (playPauseButton) {
+                // Ensure button text is correct when a new track starts automatically
+                playPauseButton.textContent = 'Pause';
+            }
+        });
+
     } catch (error) {
         console.error("Error during game initialization:", error);
         const errorDisplay = document.getElementById('errorMessageDisplay');
@@ -2114,398 +2506,6 @@ async function initialize() { // Made async
             alert("A critical error occurred during game initialization. Please try refreshing. Details in console.");
         }
     }
-
-    document.addEventListener('keydown', handleKeyDown);
-
-
-    const mapContainerElement = document.getElementById('mapContainer'); // Renamed to avoid conflict
-    if (mapContainerElement) {
-        mapContainerElement.addEventListener('click', (event) => {
-            if (gameState.isConstructionModeActive && window.constructionManager && window.gameState.selectedConstructionId) {
-                const rect = mapContainerElement.getBoundingClientRect();
-                const scrollLeft = mapContainerElement.scrollLeft;
-                const scrollTop = mapContainerElement.scrollTop;
-                let tileWidth = 10; let tileHeight = 18; // Default/fallback
-                const tempSpan = document.createElement('span');
-                tempSpan.style.fontFamily = getComputedStyle(mapContainerElement).fontFamily;
-                tempSpan.style.fontSize = getComputedStyle(mapContainerElement).fontSize;
-                tempSpan.style.lineHeight = getComputedStyle(mapContainerElement).lineHeight;
-                tempSpan.style.position = 'absolute'; tempSpan.style.visibility = 'hidden';
-                tempSpan.textContent = 'M'; // Measure a character
-                document.body.appendChild(tempSpan);
-                tileWidth = tempSpan.offsetWidth;
-                tileHeight = tempSpan.offsetHeight;
-                document.body.removeChild(tempSpan);
-                if (tileWidth === 0 || tileHeight === 0) { tileWidth = 10; tileHeight = 18; }
-
-
-                const x = Math.floor((event.clientX - rect.left + scrollLeft) / tileWidth);
-                const y = Math.floor((event.clientY - rect.top + scrollTop) / tileHeight);
-                const z = gameState.currentViewZ; // Placement happens on the currently viewed Z-level
-
-                const definition = window.constructionManager.constructionDefinitions[window.gameState.selectedConstructionId];
-                if (definition) {
-                    logToConsole(`Attempting to place ${definition.name} at (${x},${y},${z})`, "info");
-                    // isValidPlacement should be called by placeConstruction internally, or here first.
-                    // For robustness, placeConstruction should re-validate.
-                    window.constructionManager.placeConstruction(window.gameState.selectedConstructionId, { x, y, z })
-                        .then(success => {
-                            if (success) {
-                                logToConsole(`${definition.name} placed successfully.`, "event-success");
-                            } else {
-                                logToConsole(`Failed to place ${definition.name}.`, "orange");
-                                // uiManager could show a toast: "Cannot build here." or "Missing materials."
-                            }
-                            if (window.ConstructionUI) window.ConstructionUI.exitPlacementMode(); // Exit mode regardless
-                        });
-                } else {
-                    logToConsole(`Error: Selected construction ID ${window.gameState.selectedConstructionId} not found.`, "error");
-                    if (window.ConstructionUI) window.ConstructionUI.exitPlacementMode();
-                }
-
-            } else if (gameState.isRetargeting && combatManager) {
-                const rect = mapContainerElement.getBoundingClientRect();
-                const scrollLeft = mapContainerElement.scrollLeft;
-                const scrollTop = mapContainerElement.scrollTop;
-                // Determine tile size (character width and height)
-                let tileWidth = 10; let tileHeight = 18;
-                const tempSpan = document.createElement('span');
-                tempSpan.style.fontFamily = getComputedStyle(mapContainerElement).fontFamily;
-                tempSpan.style.fontSize = getComputedStyle(mapContainerElement).fontSize;
-                tempSpan.style.lineHeight = getComputedStyle(mapContainerElement).lineHeight;
-                tempSpan.style.position = 'absolute'; tempSpan.style.visibility = 'hidden';
-                tempSpan.textContent = 'M';
-                document.body.appendChild(tempSpan);
-                tileWidth = tempSpan.offsetWidth;
-                tileHeight = tempSpan.offsetHeight;
-                document.body.removeChild(tempSpan);
-                if (tileWidth === 0 || tileHeight === 0) { tileWidth = 10; tileHeight = 18; }
-
-
-                const x = Math.floor((event.clientX - rect.left + scrollLeft) / tileWidth);
-                const y = Math.floor((event.clientY - rect.top + scrollTop) / tileHeight);
-                const z = gameState.currentViewZ;
-
-                const currentMap = window.mapRenderer.getCurrentMapData();
-                if (currentMap && x >= 0 && x < currentMap.dimensions.width && y >= 0 && y < currentMap.dimensions.height) {
-                    gameState.targetingCoords = { x, y, z };
-                    gameState.selectedTargetEntity = null;
-                    for (const npc of gameState.npcs) {
-                        if (npc.mapPos && npc.mapPos.x === x && npc.mapPos.y === y && npc.mapPos.z === z) {
-                            gameState.selectedTargetEntity = npc;
-                            break;
-                        }
-                    }
-                    const finalTargetPos = gameState.selectedTargetEntity ? gameState.selectedTargetEntity.mapPos : gameState.targetingCoords;
-                    const currentTilesetsForClickLOS = window.assetManager ? window.assetManager.tilesets : null;
-                    const currentMapDataForClickLOS = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
-
-                    if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos, currentTilesetsForClickLOS, currentMapDataForClickLOS)) {
-                        logToConsole(`No line of sight to target at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). Click another target.`, "orange");
-                        window.mapRenderer.scheduleRender();
-                        return;
-                    }
-                    logToConsole(`Clicked target on map at X:${x}, Y:${y}, Z:${z}`);
-                    gameState.targetConfirmed = true;
-                    gameState.isRetargeting = false;
-                    gameState.retargetingJustHappened = true;
-                    combatManager.promptPlayerAttackDeclaration();
-                    window.mapRenderer.scheduleRender();
-                }
-            }
-        });
-
-        // Event listener for Look Mode mouse movement
-        mapContainerElement.addEventListener('mousemove', (event) => {
-            if (gameState.isLookModeActive && typeof window.showLookTooltip === 'function') {
-                window.showLookTooltip(event, gameState, window.mapRenderer, window.assetManager);
-            }
-        });
-        mapContainerElement.addEventListener('mouseleave', () => { // Hide tooltip when mouse leaves map
-            if (typeof window.hideLookTooltip === 'function') { // Always hide if mouse leaves, regardless of look mode status
-                window.hideLookTooltip();
-            }
-        });
-
-    } else {
-        console.error("Map container not found for click and mousemove listeners.");
-    }
-
-    // Listen for campaign loaded event
-    document.addEventListener('campaignWasLoaded', async (event) => { // made async for handleMapSelectionChangeWrapper
-        logToConsole(`Campaign loaded: ${event.detail.campaignId}`);
-        if (event.detail.manifest && event.detail.manifest.entryMap) {
-            const entryMapId = event.detail.manifest.entryMap;
-            logToConsole(`Campaign entry map: ${entryMapId}`);
-            // Load the initial map for the campaign
-            // This replaces the previous initial map loading logic that was here.
-            await handleMapSelectionChangeWrapper(entryMapId);
-            // Ensure UI is updated after map change
-            // renderCharacterInfo(); // Potentially redundant if handleMapSelectionChangeWrapper covers it
-            // window.mapRenderer.scheduleRender(); // Covered by handleMapSelectionChangeWrapper
-            // updatePlayerStatusDisplay(); // Potentially redundant
-        } else {
-            logToConsole("Warning: Campaign loaded, but no entryMap specified in the manifest.", "warn");
-        }
-    });
-
-    /**************************************************************
-     * Player Status Display Function
-     **************************************************************/
-    function updatePlayerStatusDisplay() {
-        // Update Clock
-        const clockElement = document.getElementById('clockDisplay');
-        if (clockElement && typeof TimeManager !== 'undefined' && TimeManager.getClockDisplay) {
-            const clock = TimeManager.getClockDisplay(gameState);
-            clockElement.textContent = clock.clockString;
-            clockElement.style.color = clock.color;
-        } else if (clockElement) {
-            clockElement.textContent = "Clock N/A";
-        }
-
-        // Update Hunger Bar
-        const hungerElement = document.getElementById('hungerDisplay');
-        if (hungerElement && typeof TimeManager !== 'undefined' && TimeManager.getNeedsStatusBars) {
-            const needsBars = TimeManager.getNeedsStatusBars(gameState);
-            hungerElement.textContent = "Hunger: " + needsBars.hungerBar; // Added label
-            hungerElement.style.color = "sandybrown"; // Added light brown color
-        } else if (hungerElement) {
-            hungerElement.textContent = "Hunger N/A";
-            hungerElement.style.color = ""; // Reset color if N/A
-        }
-
-        // Update Thirst Bar
-        const thirstElement = document.getElementById('thirstDisplay');
-        if (thirstElement && typeof TimeManager !== 'undefined' && TimeManager.getNeedsStatusBars) {
-            const needsBars = TimeManager.getNeedsStatusBars(gameState); // Called again, but simple
-            thirstElement.textContent = "Thirst: " + needsBars.thirstBar; // Added label
-            thirstElement.style.color = "lightskyblue"; // Added light blue color
-        } else if (thirstElement) {
-            thirstElement.textContent = "Thirst N/A";
-            thirstElement.style.color = ""; // Reset color if N/A
-        }
-
-        // Update Z-Level Displays
-        const playerZElement = document.getElementById('playerZDisplay');
-        if (playerZElement) {
-            playerZElement.textContent = `Player Z: ${gameState.playerPos.z}`;
-        }
-        const viewZElement = document.getElementById('viewZDisplay');
-        if (viewZElement) {
-            viewZElement.textContent = `View Z: ${gameState.currentViewZ}`;
-        }
-        // Also update targeting Z info if it's active
-        if (typeof updateTargetingInfoUI === 'function') {
-            updateTargetingInfoUI();
-        }
-    }
-    window.updatePlayerStatusDisplay = updatePlayerStatusDisplay; // Make it globally accessible if needed elsewhere
-
-    // Function to update the targeting Z level display
-    function updateTargetingInfoUI() {
-        const targetingZElement = document.getElementById('targetingZDisplay');
-        if (targetingZElement) {
-            if (gameState.isTargetingMode) {
-                targetingZElement.textContent = `Targeting Z: ${gameState.targetingCoords.z}`;
-                targetingZElement.style.display = 'block'; // Show it
-            } else {
-                targetingZElement.style.display = 'none'; // Hide it
-            }
-        }
-    }
-    window.updateTargetingInfoUI = updateTargetingInfoUI; // Make global if needed by other modules directly
-
-    // Map Zoom Functionality
-    const mapContainerElementForZoom = document.getElementById('mapContainer'); // Renamed to avoid conflict if 'mapContainer' is used elsewhere in this scope
-    const zoomInButton = document.getElementById('zoomInButton');
-    const zoomOutButton = document.getElementById('zoomOutButton');
-
-    if (mapContainerElementForZoom && zoomInButton && zoomOutButton) {
-        let currentMapFontSize = 16; // Default font size in pixels
-        const zoomStep = 2; // Pixels to change on each zoom step
-        const minMapFontSize = 1;
-        const maxMapFontSize = 300;
-
-        try {
-            const computedStyle = window.getComputedStyle(mapContainerElementForZoom);
-            const initialSize = parseFloat(computedStyle.fontSize);
-            if (!isNaN(initialSize) && initialSize > 0) {
-                currentMapFontSize = initialSize;
-            }
-        } catch (e) {
-            console.warn("Could not read initial font size for map container, using default.", e);
-        }
-        mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
-
-        zoomInButton.addEventListener('click', () => {
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-            currentMapFontSize = Math.min(maxMapFontSize, currentMapFontSize + zoomStep);
-            mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
-        });
-
-        zoomOutButton.addEventListener('click', () => {
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-            currentMapFontSize = Math.max(minMapFontSize, currentMapFontSize - zoomStep);
-            mapContainerElementForZoom.style.fontSize = `${currentMapFontSize}px`;
-        });
-        logToConsole(`Map zoom controls initialized. Current map font size: ${currentMapFontSize}px`);
-    } else {
-        console.warn("Map zoom UI elements not found. Zoom functionality will not be available.");
-        if (!mapContainerElementForZoom) console.warn("Zoom: mapContainer not found.");
-        if (!zoomInButton) console.warn("Zoom: zoomInButton not found.");
-        if (!zoomOutButton) console.warn("Zoom: zoomOutButton not found.");
-    }
-
-    const confirmButton = document.getElementById('confirmAttackButton');
-    if (confirmButton) {
-        confirmButton.addEventListener('click', () => {
-            // Sound is played before checks, as it's a button click action
-            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
-            if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
-                combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
-                combatManager.gameState.combatPhase === 'playerAttackDeclare') {
-                combatManager.handleConfirmedAttackDeclaration();
-            } else {
-                if (!combatManager || !combatManager.gameState) {
-                    console.error("CombatManager or gameState not available.");
-                } else if (!combatManager.gameState.isInCombat) {
-                    console.log("Confirm attack clicked, but not in combat.");
-                } else if (combatManager.gameState.combatCurrentAttacker !== combatManager.gameState) {
-                    console.log("Confirm attack clicked, but not player's turn.");
-                } else if (combatManager.gameState.combatPhase !== 'playerAttackDeclare') {
-                    console.log(`Confirm attack clicked, but phase is ${combatManager.gameState.combatPhase}, not playerAttackDeclare.`);
-                }
-            }
-        });
-    } else {
-        console.error("confirmAttackButton not found in the DOM during initialization.");
-    }
-
-    const grappleButton = document.getElementById('attemptGrappleButton');
-    if (grappleButton) {
-        grappleButton.addEventListener('click', () => {
-            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
-            if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
-                combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
-                combatManager.gameState.combatPhase === 'playerAttackDeclare') {
-                combatManager.handleGrappleAttemptDeclaration();
-            } else {
-                if (!combatManager || !combatManager.gameState) {
-                    console.error("CombatManager or gameState not available for grapple attempt.");
-                } else if (!combatManager.gameState.isInCombat) {
-                    console.log("Attempt Grapple clicked, but not in combat.");
-                } else if (combatManager.gameState.combatCurrentAttacker !== combatManager.gameState) {
-                    console.log("Attempt Grapple clicked, but not player's turn.");
-                } else if (combatManager.gameState.combatPhase !== 'playerAttackDeclare') {
-                    console.log(`Attempt Grapple clicked, but phase is ${combatManager.gameState.combatPhase}, not playerAttackDeclare.`);
-                }
-            }
-        });
-    } else {
-        console.error("attemptGrappleButton not found in the DOM during initialization.");
-    }
-
-    const confirmDefenseBtn = document.getElementById('confirmDefenseButton');
-    if (confirmDefenseBtn) {
-        confirmDefenseBtn.addEventListener('click', () => {
-            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
-            if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
-                combatManager.gameState.combatCurrentDefender === combatManager.gameState && // Player is defending
-                combatManager.gameState.combatPhase === 'playerDefenseDeclare') {
-                combatManager.handleConfirmedDefenseDeclaration();
-            } else {
-                if (!combatManager || !combatManager.gameState) {
-                    console.error("CombatManager or gameState not available for defense confirmation.");
-                } else if (!combatManager.gameState.isInCombat) {
-                    console.log("Confirm Defense clicked, but not in combat.");
-                } else if (combatManager.gameState.combatCurrentDefender !== combatManager.gameState) {
-                    console.log("Confirm Defense clicked, but not player's turn to defend.");
-                } else if (combatManager.gameState.combatPhase !== 'playerDefenseDeclare') {
-                    console.log(`Confirm Defense clicked, but phase is ${combatManager.gameState.combatPhase}, not playerDefenseDeclare.`);
-                }
-            }
-        });
-    } else {
-        console.error("confirmDefenseButton not found in the DOM during initialization.");
-    }
-
-    const retargetBtn = document.getElementById('retargetButton');
-    if (retargetBtn) {
-        retargetBtn.addEventListener('click', () => {
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Neutral click for retarget
-            if (gameState.isInCombat && gameState.combatPhase === 'playerAttackDeclare' && combatManager) {
-                combatManager.handleRetarget();
-            }
-        });
-    } else {
-        console.error("retargetButton not found in the DOM during initialization.");
-    }
-
-    // Settings Modal Listeners
-    const openSettingsButton = document.getElementById('openSettingsButton');
-    const closeSettingsButton = document.getElementById('closeSettingsButton');
-    const settingsModal = document.getElementById('settingsModal');
-    const musicVolumeSlider = document.getElementById('musicVolume');
-    const sfxVolumeSlider = document.getElementById('sfxVolume');
-
-    if (openSettingsButton && closeSettingsButton && settingsModal) {
-        openSettingsButton.addEventListener('click', () => {
-            settingsModal.classList.remove('hidden');
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-        });
-
-        closeSettingsButton.addEventListener('click', () => {
-            settingsModal.classList.add('hidden');
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-        });
-    }
-
-    if (musicVolumeSlider && window.audioManager) {
-        // Set initial value
-        musicVolumeSlider.value = window.audioManager.getMusicVolume();
-        musicVolumeSlider.addEventListener('input', (event) => {
-            window.audioManager.setMusicVolume(parseFloat(event.target.value));
-        });
-    }
-
-    if (sfxVolumeSlider && window.audioManager) {
-        // Set initial value
-        sfxVolumeSlider.value = window.audioManager.getSfxVolume();
-        sfxVolumeSlider.addEventListener('input', (event) => {
-            window.audioManager.setSfxVolume(parseFloat(event.target.value));
-        });
-    }
-
-    // Jukebox UI Listeners
-    const nowPlayingElement = document.getElementById('currentTrackDisplay');
-    const playPauseButton = document.getElementById('toggleMusicButton');
-    const skipButton = document.getElementById('skipTrackButton');
-
-    if (playPauseButton && window.audioManager) {
-        playPauseButton.addEventListener('click', () => {
-            window.audioManager.toggleMusic();
-            playPauseButton.textContent = window.audioManager.isMusicPlaying() ? 'Pause' : 'Play';
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-        });
-    }
-
-    if (skipButton && window.audioManager) {
-        skipButton.addEventListener('click', () => {
-            window.audioManager.skipTrack();
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-        });
-    }
-
-    // Listen for the custom event when the track changes
-    document.addEventListener('trackchanged', (event) => {
-        if (nowPlayingElement) {
-            nowPlayingElement.textContent = event.detail.trackName;
-        }
-        if (playPauseButton) {
-            // Ensure button text is correct when a new track starts automatically
-            playPauseButton.textContent = 'Pause';
-        }
-    });
 }
 /**************************************************************
  * Start Game
