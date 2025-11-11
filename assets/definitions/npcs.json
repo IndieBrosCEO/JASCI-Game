@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "id": "training_dummy",
     "name": "Training Dummy",
@@ -63,7 +63,12 @@
     "equippedWeaponId": "desert_eagle_50ae",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "dummy", "target", "hostile", "ranged" ],
+    "tags": [
+      "dummy",
+      "target",
+      "hostile",
+      "ranged"
+    ],
     "teamId": 1,
     "cr": 0.1
   },
@@ -132,9 +137,14 @@
     "equippedWeaponId": "club",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "hostile", "scavenger", "melee" ],
+    "tags": [
+      "hostile",
+      "scavenger",
+      "melee"
+    ],
     "teamId": 2,
-    "cr": 0.5
+    "cr": 0.5,
+    "dialogueFile": "hostile_scavenger_dialogue.json"
   },
   {
     "id": "hostile_scavenger_2",
@@ -202,9 +212,14 @@
     "equippedWeaponId": "club",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "hostile", "scavenger", "melee" ],
+    "tags": [
+      "hostile",
+      "scavenger",
+      "melee"
+    ],
     "teamId": 2,
-    "cr": 0.5
+    "cr": 0.5,
+    "dialogueFile": "hostile_scavenger_2_dialogue.json"
   },
   {
     "id": "militia_man",
@@ -271,10 +286,14 @@
     "equippedWeaponId": "club",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "hostile", "humanoid", "militia" ],
+    "tags": [
+      "hostile",
+      "humanoid",
+      "militia"
+    ],
     "teamId": 3,
     "cr": 1,
-    "dialogueFile": "generic.json"
+    "dialogueFile": "militia_man_dialogue.json"
   },
   {
     "id": "civilian_militia",
@@ -341,9 +360,14 @@
     "equippedWeaponId": "m4_carbine_556mm",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "hostile", "humanoid", "militia" ],
+    "tags": [
+      "hostile",
+      "humanoid",
+      "militia"
+    ],
     "teamId": 3,
-    "cr": 1.5
+    "cr": 1.5,
+    "dialogueFile": "civilian_militia_dialogue.json"
   },
   {
     "id": "bandit_archer",
@@ -409,9 +433,15 @@
     "equippedWeaponId": "crossbow",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "hostile", "humanoid", "bandit", "ranged" ],
+    "tags": [
+      "hostile",
+      "humanoid",
+      "bandit",
+      "ranged"
+    ],
     "teamId": 4,
-    "cr": 0.5
+    "cr": 0.5,
+    "dialogueFile": "bandit_archer_dialogue.json"
   },
   {
     "id": "bandit_thug",
@@ -477,9 +507,15 @@
     "equippedWeaponId": "club_melee",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "hostile", "humanoid", "bandit", "melee" ],
+    "tags": [
+      "hostile",
+      "humanoid",
+      "bandit",
+      "melee"
+    ],
     "teamId": 4,
-    "cr": 1
+    "cr": 1,
+    "dialogueFile": "bandit_thug_dialogue.json"
   },
   {
     "id": "cellar_dweller",
@@ -545,9 +581,14 @@
     "equippedWeaponId": "knife_melee",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 5,
-    "tags": [ "hostile", "mutant", "melee" ],
+    "tags": [
+      "hostile",
+      "mutant",
+      "melee"
+    ],
     "teamId": 5,
-    "cr": 0.5
+    "cr": 0.5,
+    "dialogueFile": "cellar_dweller_dialogue.json"
   },
   {
     "id": "police_officer",
@@ -614,9 +655,14 @@
     "equippedWeaponId": "glock_17_9mm",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "humanoid", "law_enforcement", "ranged" ],
+    "tags": [
+      "humanoid",
+      "law_enforcement",
+      "ranged"
+    ],
     "teamId": 10,
-    "cr": 2
+    "cr": 2,
+    "dialogueFile": "police_officer_dialogue.json"
   },
   {
     "id": "hired_gun_merc",
@@ -683,9 +729,15 @@
     "equippedWeaponId": "mac_ingram_m10_45",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "humanoid", "mercenary", "ranged", "hostile" ],
+    "tags": [
+      "humanoid",
+      "mercenary",
+      "ranged",
+      "hostile"
+    ],
     "teamId": 11,
-    "cr": 1.5
+    "cr": 1.5,
+    "dialogueFile": "hired_gun_merc_dialogue.json"
   },
   {
     "id": "infiltrator_spy",
@@ -753,9 +805,15 @@
     "equippedWeaponId": "stiletto_knife",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 7,
-    "tags": [ "humanoid", "spy", "stealth", "melee" ],
+    "tags": [
+      "humanoid",
+      "spy",
+      "stealth",
+      "melee"
+    ],
     "teamId": 12,
-    "cr": 2
+    "cr": 2,
+    "dialogueFile": "infiltrator_spy_dialogue.json"
   },
   {
     "id": "soldier_grunt",
@@ -822,9 +880,15 @@
     "equippedWeaponId": "m4_carbine_556mm",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "humanoid", "military", "ranged", "hostile" ],
+    "tags": [
+      "humanoid",
+      "military",
+      "ranged",
+      "hostile"
+    ],
     "teamId": 13,
-    "cr": 2.5
+    "cr": 2.5,
+    "dialogueFile": "soldier_grunt_dialogue.json"
   },
   {
     "id": "outlaw_desperado",
@@ -891,9 +955,15 @@
     "equippedWeaponId": "colt_python_357",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "humanoid", "criminal", "ranged", "hostile" ],
+    "tags": [
+      "humanoid",
+      "criminal",
+      "ranged",
+      "hostile"
+    ],
     "teamId": 11,
-    "cr": 1
+    "cr": 1,
+    "dialogueFile": "outlaw_desperado_dialogue.json"
   },
   {
     "id": "medic_doctor",
@@ -960,7 +1030,12 @@
     "equippedWeaponId": "knife_melee",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "humanoid", "support", "medical", "friendly" ],
+    "tags": [
+      "humanoid",
+      "support",
+      "medical",
+      "friendly"
+    ],
     "teamId": 0,
     "cr": 0.25,
     "portraitHeadUrl": "assets/portraits/human_medic_head.png",
@@ -1043,9 +1118,15 @@
     "equippedWeaponId": "club_melee",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "humanoid", "cultist", "melee", "hostile" ],
+    "tags": [
+      "humanoid",
+      "cultist",
+      "melee",
+      "hostile"
+    ],
     "teamId": 14,
-    "cr": 1
+    "cr": 1,
+    "dialogueFile": "zealot_cultist_dialogue.json"
   },
   {
     "id": "zombie_basic",
@@ -1103,11 +1184,18 @@
       "Charisma": 0,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 30 },
+    "skills": {
+      "Unarmed": 30
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
-    "tags": [ "undead", "zombie", "melee", "hostile" ],
+    "tags": [
+      "undead",
+      "zombie",
+      "melee",
+      "hostile"
+    ],
     "teamId": 99,
     "cr": 1
   },
@@ -1137,14 +1225,23 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 35 },
+    "skills": {
+      "Unarmed": 35
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 8,
-    "tags": [ "animal", "mammal", "predator", "hostile", "stealth" ],
+    "tags": [
+      "animal",
+      "mammal",
+      "predator",
+      "hostile",
+      "stealth"
+    ],
     "teamId": 51,
     "cr": 3,
-    "asciiPortrait": "<span style=\"color:#F5DEB3; background-color:#8D5524;\"> </span><span style=\"color:#F5DEB3; background-color:#8D5524;\">/</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">\\</span><span style=\"color:#D2B48C; background-color:#8D5524;\">_</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">/</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">\\</span><span style=\"color:#F5DEB3; background-color:#8D5524;\"> </span><br><span style=\"color:#F5DEB3; background-color:#8D5524;\">(</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">o</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">.</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">o</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#F5DEB3; background-color:#8D5524;\">)</span><br><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#D2B48C; background-color:#8D5524;\">&gt;</span><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\">^</span><span style=\"color:#A0522D; background-color:#654321;\">)</span><span style=\"color:#D2B48C; background-color:#8D5524;\">&lt;</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><br><span style=\"color:#D2B48C; background-color:#8D5524;\">/</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">w</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#D2B48C; background-color:#8D5524;\">\\\\</span><br><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">^</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">)</span>"
+    "asciiPortrait": "<span style=\"color:#F5DEB3; background-color:#8D5524;\"> </span><span style=\"color:#F5DEB3; background-color:#8D5524;\">/</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">\\</span><span style=\"color:#D2B48C; background-color:#8D5524;\">_</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">/</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">\\</span><span style=\"color:#F5DEB3; background-color:#8D5524;\"> </span><br><span style=\"color:#F5DEB3; background-color:#8D5524;\">(</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">o</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">.</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">o</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#F5DEB3; background-color:#8D5524;\">)</span><br><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#D2B48C; background-color:#8D5524;\">&gt;</span><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\">^</span><span style=\"color:#A0522D; background-color:#654321;\">)</span><span style=\"color:#D2B48C; background-color:#8D5524;\">&lt;</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><br><span style=\"color:#D2B48C; background-color:#8D5524;\">/</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">w</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#D2B48C; background-color:#8D5524;\">\\\\</span><br><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">^</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">)</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_bobcat",
@@ -1172,14 +1269,23 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 25 },
+    "skills": {
+      "Unarmed": 25
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 7,
-    "tags": [ "animal", "mammal", "predator", "hostile_if_threatened", "stealth" ],
+    "tags": [
+      "animal",
+      "mammal",
+      "predator",
+      "hostile_if_threatened",
+      "stealth"
+    ],
     "teamId": 51,
     "cr": 1,
-    "asciiPortrait": "<span style=\"color:#4A4A4A; background-color:#2A2A2A;\">.</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">/</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">\\</span><span style=\"color:#D2B48C; background-color:#8D5524;\">_</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">/</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">\\</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">.</span><br><span style=\"color:#F5DEB3; background-color:#8D5524;\">(</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">o</span><span style=\"color:#A0522D; background-color:#654321;\">.</span><span style=\"color:#32CD32; background-color:#228B22;\">o</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#F5DEB3; background-color:#8D5524;\">)</span><br><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#D2B48C; background-color:#8D5524;\">&gt;</span><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\">Y</span><span style=\"color:#A0522D; background-color:#654321;\">)</span><span style=\"color:#D2B48C; background-color:#8D5524;\">&lt;</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><br><span style=\"color:#D2B48C; background-color:#8D5524;\">/</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">w</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#D2B48C; background-color:#8D5524;\">\\</span><br><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">^</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">)</span>"
+    "asciiPortrait": "<span style=\"color:#4A4A4A; background-color:#2A2A2A;\">.</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">/</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">\\</span><span style=\"color:#D2B48C; background-color:#8D5524;\">_</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">/</span><span style=\"color:#F5DEB3; background-color:#8D5524;\">\\</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">.</span><br><span style=\"color:#F5DEB3; background-color:#8D5524;\">(</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">o</span><span style=\"color:#A0522D; background-color:#654321;\">.</span><span style=\"color:#32CD32; background-color:#228B22;\">o</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#F5DEB3; background-color:#8D5524;\">)</span><br><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><span style=\"color:#D2B48C; background-color:#8D5524;\">&gt;</span><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\">Y</span><span style=\"color:#A0522D; background-color:#654321;\">)</span><span style=\"color:#D2B48C; background-color:#8D5524;\">&lt;</span><span style=\"color:#D2B48C; background-color:#8D5524;\"> </span><br><span style=\"color:#D2B48C; background-color:#8D5524;\">/</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">w</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#D2B48C; background-color:#8D5524;\">\\</span><br><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">^</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">)</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_coyote",
@@ -1207,14 +1313,24 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 20 },
+    "skills": {
+      "Unarmed": 20
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 8,
-    "tags": [ "animal", "mammal", "predator", "scavenger", "pack_animal", "hostile_if_threatened" ],
+    "tags": [
+      "animal",
+      "mammal",
+      "predator",
+      "scavenger",
+      "pack_animal",
+      "hostile_if_threatened"
+    ],
     "teamId": 51,
     "cr": 0.5,
-    "asciiPortrait": "<span style=\"color:#A9A9A9; background-color:#404040;\"> </span><span style=\"color:#A9A9A9; background-color:#404040;\">.</span><span style=\"color:#A9A9A9; background-color:#404040;\">-</span><span style=\"color:#808080; background-color:#404040;\">\"</span><span style=\"color:#808080; background-color:#404040;\">\"</span><span style=\"color:#A9A9A9; background-color:#404040;\">-</span><span style=\"color:#A9A9A9; background-color:#404040;\">.</span><span style=\"color:#A9A9A9; background-color:#404040;\"> </span><br><span style=\"color:#A9A9A9; background-color:#404040;\">/</span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#A9A9A9; background-color:#404040;\">\\</span><br><span style=\"color:#808080; background-color:#404040;\">|</span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#FFD700; background-color:#B8860B;\">O</span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#FFD700; background-color:#B8860B;\">O</span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\">|</span><br><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\">\\</span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#000000; background-color:#202020;\">/</span><span style=\"color:#000000; background-color:#202020;\">\\</span><span style=\"color:#000000; background-color:#202020;\">/</span><span style=\"color:#000000; background-color:#202020;\">\\</span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\">/</span><br><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#A9A9A9; background-color:#404040;\">'</span><span style=\"color:#696969; background-color:#404040;\">.</span><span style=\"color:#000000; background-color:#202020;\">_</span><span style=\"color:#000000; background-color:#202020;\">_</span><span style=\"color:#696969; background-color:#404040;\">.</span><span style=\"color:#A9A9A9; background-color:#404040;\">'</span><br><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#FF69B4; background-color:#FF1493;\">V</span>"
+    "asciiPortrait": "<span style=\"color:#A9A9A9; background-color:#404040;\"> </span><span style=\"color:#A9A9A9; background-color:#404040;\">.</span><span style=\"color:#A9A9A9; background-color:#404040;\">-</span><span style=\"color:#808080; background-color:#404040;\">\"</span><span style=\"color:#808080; background-color:#404040;\">\"</span><span style=\"color:#A9A9A9; background-color:#404040;\">-</span><span style=\"color:#A9A9A9; background-color:#404040;\">.</span><span style=\"color:#A9A9A9; background-color:#404040;\"> </span><br><span style=\"color:#A9A9A9; background-color:#404040;\">/</span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#A9A9A9; background-color:#404040;\">\\</span><br><span style=\"color:#808080; background-color:#404040;\">|</span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#FFD700; background-color:#B8860B;\">O</span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#FFD700; background-color:#B8860B;\">O</span><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\">|</span><br><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\">\\</span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#000000; background-color:#202020;\">/</span><span style=\"color:#000000; background-color:#202020;\">\\</span><span style=\"color:#000000; background-color:#202020;\">/</span><span style=\"color:#000000; background-color:#202020;\">\\</span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\">/</span><br><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#A9A9A9; background-color:#404040;\">'</span><span style=\"color:#696969; background-color:#404040;\">.</span><span style=\"color:#000000; background-color:#202020;\">_</span><span style=\"color:#000000; background-color:#202020;\">_</span><span style=\"color:#696969; background-color:#404040;\">.</span><span style=\"color:#A9A9A9; background-color:#404040;\">'</span><br><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#FF69B4; background-color:#FF1493;\">V</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_raccoon",
@@ -1242,14 +1358,24 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 15 },
+    "skills": {
+      "Unarmed": 15
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "animal", "mammal", "omnivore", "scavenger", "clever", "neutral" ],
+    "tags": [
+      "animal",
+      "mammal",
+      "omnivore",
+      "scavenger",
+      "clever",
+      "neutral"
+    ],
     "teamId": 50,
     "cr": 0.25,
-    "asciiPortrait": "<span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\">,</span><span style=\"color:#808080; background-color:#404040;\">_</span><span style=\"color:#808080; background-color:#404040;\">_</span><span style=\"color:#808080; background-color:#404040;\">,</span><span style=\"color:#808080; background-color:#404040;\"> </span><br><span style=\"color:#808080; background-color:#404040;\">(</span><span style=\"color:#000000; background-color:#202020;\">@</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">Y</span><span style=\"color:#000000; background-color:#202020;\">@</span><span style=\"color:#808080; background-color:#404040;\">)</span><br><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#000000; background-color:#202020;\">=</span><span style=\"color:#000000; background-color:#202020;\">(</span><span style=\"color:#000000; background-color:#202020;\">w</span><span style=\"color:#000000; background-color:#202020;\">)</span><span style=\"color:#000000; background-color:#202020;\">=</span><span style=\"color:#808080; background-color:#404040;\"> </span><br><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\">`</span><span style=\"color:#808080; background-color:#404040;\">-</span><span style=\"color:#808080; background-color:#404040;\">^</span><span style=\"color:#808080; background-color:#404040;\">-</span><span style=\"color:#808080; background-color:#404040;\">`</span>"
+    "asciiPortrait": "<span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\">,</span><span style=\"color:#808080; background-color:#404040;\">_</span><span style=\"color:#808080; background-color:#404040;\">_</span><span style=\"color:#808080; background-color:#404040;\">,</span><span style=\"color:#808080; background-color:#404040;\"> </span><br><span style=\"color:#808080; background-color:#404040;\">(</span><span style=\"color:#000000; background-color:#202020;\">@</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">Y</span><span style=\"color:#000000; background-color:#202020;\">@</span><span style=\"color:#808080; background-color:#404040;\">)</span><br><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#000000; background-color:#202020;\">=</span><span style=\"color:#000000; background-color:#202020;\">(</span><span style=\"color:#000000; background-color:#202020;\">w</span><span style=\"color:#000000; background-color:#202020;\">)</span><span style=\"color:#000000; background-color:#202020;\">=</span><span style=\"color:#808080; background-color:#404040;\"> </span><br><span style=\"color:#808080; background-color:#404040;\"> </span><span style=\"color:#808080; background-color:#404040;\">`</span><span style=\"color:#808080; background-color:#404040;\">-</span><span style=\"color:#808080; background-color:#404040;\">^</span><span style=\"color:#808080; background-color:#404040;\">-</span><span style=\"color:#808080; background-color:#404040;\">`</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_red_tailed_hawk",
@@ -1277,14 +1403,23 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 20 },
+    "skills": {
+      "Unarmed": 20
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 9,
-    "tags": [ "animal", "bird", "predator", "flying", "neutral" ],
+    "tags": [
+      "animal",
+      "bird",
+      "predator",
+      "flying",
+      "neutral"
+    ],
     "teamId": 50,
     "cr": 0.5,
-    "asciiPortrait": "<span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">.</span><span style=\"color:#A0522D; background-color:#654321;\">-</span><span style=\"color:#A0522D; background-color:#654321;\">-</span><span style=\"color:#A0522D; background-color:#654321;\">.</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">/</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#000000; background-color:#202020;\">@</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">\\</span><br><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#FFD700; background-color:#B8860B;\">&gt;</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">)</span><br><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">`</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">-</span><span style=\"color:#A0522D; background-color:#654321;\">V</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">-</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">`</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> \"</span><span style=\"color:#A0522D; background-color:#654321;\">\"</span><span style=\"color:#A0522D; background-color:#654321;\">\"</span>"
+    "asciiPortrait": "<span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">.</span><span style=\"color:#A0522D; background-color:#654321;\">-</span><span style=\"color:#A0522D; background-color:#654321;\">-</span><span style=\"color:#A0522D; background-color:#654321;\">.</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">/</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#000000; background-color:#202020;\">@</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">\\</span><br><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#FFD700; background-color:#B8860B;\">&gt;</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">)</span><br><span style=\"color:#F5DEB3; background-color:#D2B48C;\"> </span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">`</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">-</span><span style=\"color:#A0522D; background-color:#654321;\">V</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">-</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">`</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> \"</span><span style=\"color:#A0522D; background-color:#654321;\">\"</span><span style=\"color:#A0522D; background-color:#654321;\">\"</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_turkey_vulture",
@@ -1312,14 +1447,23 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 10 },
+    "skills": {
+      "Unarmed": 10
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 8,
-    "tags": [ "animal", "bird", "scavenger", "flying", "neutral" ],
+    "tags": [
+      "animal",
+      "bird",
+      "scavenger",
+      "flying",
+      "neutral"
+    ],
     "teamId": 50,
     "cr": 0.25,
-    "asciiPortrait": "<span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\">.</span><span style=\"color:#FF6347; background-color:#CD5C5C;\">-</span><span style=\"color:#FF6347; background-color:#CD5C5C;\">-</span><span style=\"color:#FF6347; background-color:#CD5C5C;\">.</span><br><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\">/</span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\">\\</span><br><span style=\"color:#FF6347; background-color:#CD5C5C;\">(</span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FFFFE0; background-color:#F0E68C;\">&lt;</span><span style=\"color:#FFFFE0; background-color:#F0E68C;\">_</span><span style=\"color:#FFFFE0; background-color:#F0E68C;\">&gt;</span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\">)</span><br><span style=\"color:#2F4F4F; background-color:#000000;\"> </span><span style=\"color:#2F4F4F; background-color:#000000;\">`</span><span style=\"color:#2F4F4F; background-color:#000000;\">-</span><span style=\"color:#FF6347; background-color:#CD5C5C;\">V</span><span style=\"color:#2F4F4F; background-color:#000000;\">-</span><span style=\"color:#2F4F4F; background-color:#000000;\">`</span><br><span style=\"color:#2F4F4F; background-color:#000000;\"> </span><span style=\"color:#2F4F4F; background-color:#000000;\"> </span><span style=\"color:#2F4F4F; background-color:#000000;\"> \"</span><span style=\"color:#2F4F4F; background-color:#000000;\">\"</span><span style=\"color:#2F4F4F; background-color:#000000;\">\"</span>"
+    "asciiPortrait": "<span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\">.</span><span style=\"color:#FF6347; background-color:#CD5C5C;\">-</span><span style=\"color:#FF6347; background-color:#CD5C5C;\">-</span><span style=\"color:#FF6347; background-color:#CD5C5C;\">.</span><br><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\">/</span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\">\\</span><br><span style=\"color:#FF6347; background-color:#CD5C5C;\">(</span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FFFFE0; background-color:#F0E68C;\">&lt;</span><span style=\"color:#FFFFE0; background-color:#F0E68C;\">_</span><span style=\"color:#FFFFE0; background-color:#F0E68C;\">&gt;</span><span style=\"color:#FF6347; background-color:#CD5C5C;\"> </span><span style=\"color:#FF6347; background-color:#CD5C5C;\">)</span><br><span style=\"color:#2F4F4F; background-color:#000000;\"> </span><span style=\"color:#2F4F4F; background-color:#000000;\">`</span><span style=\"color:#2F4F4F; background-color:#000000;\">-</span><span style=\"color:#FF6347; background-color:#CD5C5C;\">V</span><span style=\"color:#2F4F4F; background-color:#000000;\">-</span><span style=\"color:#2F4F4F; background-color:#000000;\">`</span><br><span style=\"color:#2F4F4F; background-color:#000000;\"> </span><span style=\"color:#2F4F4F; background-color:#000000;\"> </span><span style=\"color:#2F4F4F; background-color:#000000;\"> \"</span><span style=\"color:#2F4F4F; background-color:#000000;\">\"</span><span style=\"color:#2F4F4F; background-color:#000000;\">\"</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_california_quail",
@@ -1347,14 +1491,23 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 5 },
+    "skills": {
+      "Unarmed": 5
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "animal", "bird", "prey", "ground_dwelling", "neutral_flees" ],
+    "tags": [
+      "animal",
+      "bird",
+      "prey",
+      "ground_dwelling",
+      "neutral_flees"
+    ],
     "teamId": 52,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#000000; background-color:#202020;\"> </span><span style=\"color:#000000; background-color:#202020;\"> </span><span style=\"color:#000000; background-color:#202020;\">_</span><span style=\"color:#000000; background-color:#202020;\">,</span><span style=\"color:#000000; background-color:#202020;\">_</span><br><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#000000; background-color:#202020;\">(</span><span style=\"color:#000000; background-color:#202020;\">Q</span><span style=\"color:#696969; background-color:#404040;\">)</span><span style=\"color:#696969; background-color:#404040;\">\\</span><br><span style=\"color:#696969; background-color:#404040;\">(</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">&gt;</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\"> </span><span style=\"color:#696969; background-color:#404040;\">)</span><br><span style=\"color:#696969; background-color:#404040;\">\\</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">_</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">v</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">v</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">_</span><span style=\"color:#696969; background-color:#404040;\">/</span><br><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\">`</span><span style=\"color:#696969; background-color:#404040;\">---</span><span style=\"color:#696969; background-color:#404040;\">`</span>"
+    "asciiPortrait": "<span style=\"color:#000000; background-color:#202020;\"> </span><span style=\"color:#000000; background-color:#202020;\"> </span><span style=\"color:#000000; background-color:#202020;\">_</span><span style=\"color:#000000; background-color:#202020;\">,</span><span style=\"color:#000000; background-color:#202020;\">_</span><br><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#000000; background-color:#202020;\">(</span><span style=\"color:#000000; background-color:#202020;\">Q</span><span style=\"color:#696969; background-color:#404040;\">)</span><span style=\"color:#696969; background-color:#404040;\">\\</span><br><span style=\"color:#696969; background-color:#404040;\">(</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">&gt;</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\"> </span><span style=\"color:#696969; background-color:#404040;\">)</span><br><span style=\"color:#696969; background-color:#404040;\">\\</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">_</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">v</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">v</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">_</span><span style=\"color:#696969; background-color:#404040;\">/</span><br><span style=\"color:#696969; background-color:#404040;\"> </span><span style=\"color:#696969; background-color:#404040;\">`</span><span style=\"color:#696969; background-color:#404040;\">---</span><span style=\"color:#696969; background-color:#404040;\">`</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_mule_deer",
@@ -1382,14 +1535,23 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 15 },
+    "skills": {
+      "Unarmed": 15
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 8,
-    "tags": [ "animal", "mammal", "herbivore", "prey", "neutral_flees" ],
+    "tags": [
+      "animal",
+      "mammal",
+      "herbivore",
+      "prey",
+      "neutral_flees"
+    ],
     "teamId": 52,
     "cr": 0.5,
-    "asciiPortrait": "<span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#DEB887; background-color:#A0522D;\">\\</span><span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#DEB887; background-color:#A0522D;\">/</span><br><span style=\"color:#DEB887; background-color:#A0522D;\">  </span><span style=\"color:#DEB887; background-color:#A0522D;\">\\</span><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\"> )</span><span style=\"color:#DEB887; background-color:#A0522D;\">/</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">.-</span><span style=\"color:#A0522D; background-color:#654321;\">\"\"</span><span style=\"color:#A0522D; background-color:#654321;\">-.</span><br><span style=\"color:#A0522D; background-color:#654321;\">/</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#A0522D; background-color:#654321;\">  </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">\\</span><br><span style=\"color:#A0522D; background-color:#654321;\">|</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">  </span><span style=\"color:#000000; background-color:#202020;\">()</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">  </span><span style=\"color:#A0522D; background-color:#654321;\">|</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">\\</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">_</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">--</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">_</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">/</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> U</span>"
+    "asciiPortrait": "<span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#DEB887; background-color:#A0522D;\">\\</span><span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#DEB887; background-color:#A0522D;\">/</span><br><span style=\"color:#DEB887; background-color:#A0522D;\">  </span><span style=\"color:#DEB887; background-color:#A0522D;\">\\</span><span style=\"color:#A0522D; background-color:#654321;\">(</span><span style=\"color:#A0522D; background-color:#654321;\"> )</span><span style=\"color:#DEB887; background-color:#A0522D;\">/</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">.-</span><span style=\"color:#A0522D; background-color:#654321;\">\"\"</span><span style=\"color:#A0522D; background-color:#654321;\">-.</span><br><span style=\"color:#A0522D; background-color:#654321;\">/</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#A0522D; background-color:#654321;\">  </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\">\\</span><br><span style=\"color:#A0522D; background-color:#654321;\">|</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">  </span><span style=\"color:#000000; background-color:#202020;\">()</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">  </span><span style=\"color:#A0522D; background-color:#654321;\">|</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">\\</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">_</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">--</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">_</span><span style=\"color:#F5DEB3; background-color:#D2B48C;\">/</span><br><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#A0522D; background-color:#654321;\"> U</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_desert_cottontail",
@@ -1417,14 +1579,24 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 5 },
+    "skills": {
+      "Unarmed": 5
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 7,
-    "tags": [ "animal", "mammal", "herbivore", "prey", "fast", "neutral_flees" ],
+    "tags": [
+      "animal",
+      "mammal",
+      "herbivore",
+      "prey",
+      "fast",
+      "neutral_flees"
+    ],
     "teamId": 52,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">(\\</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">/)</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\">(</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">.</span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">(</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#FFC0CB; background-color:#FF69B4;\">Y</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">/</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">\"</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">\"</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">\"</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">\\</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\">(</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">_</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">_</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> `</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> `</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> `</span>"
+    "asciiPortrait": "<span style=\"color:#A0522D; background-color:#654321;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">(\\</span><span style=\"color:#A0522D; background-color:#654321;\">_</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">/)</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\">(</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">.</span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">(</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#FFC0CB; background-color:#FF69B4;\">Y</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">/</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">\"</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">\"</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">\"</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">\\</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\">(</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">_</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">_</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">)</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> `</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> `</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> `</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_ca_ground_squirrel",
@@ -1452,14 +1624,24 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 5 },
+    "skills": {
+      "Unarmed": 5
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "animal", "mammal", "rodent", "prey", "burrowing", "neutral_flees" ],
+    "tags": [
+      "animal",
+      "mammal",
+      "rodent",
+      "prey",
+      "burrowing",
+      "neutral_flees"
+    ],
     "teamId": 52,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><br><span style=\"color:#DEB887; background-color:#A0522D;\">/</span><span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#DEB887; background-color:#A0522D;\">\\</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">)</span><br><span style=\"color:#DEB887; background-color:#A0522D;\">\\</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#000000; background-color:#202020;\">^</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">/</span><span style=\"color:#DEB887; background-color:#A0522D;\">--'</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">`</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">---</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">'</span><br><span style=\"color:#DEB887; background-color:#A0522D;\">  </span><span style=\"color:#DEB887; background-color:#A0522D;\">\"</span><span style=\"color:#DEB887; background-color:#A0522D;\">\"</span>"
+    "asciiPortrait": "<span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><br><span style=\"color:#DEB887; background-color:#A0522D;\">/</span><span style=\"color:#DEB887; background-color:#A0522D;\"> </span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#DEB887; background-color:#A0522D;\">\\</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">_</span><span style=\"color:#DEB887; background-color:#A0522D;\">)</span><br><span style=\"color:#DEB887; background-color:#A0522D;\">\\</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#000000; background-color:#202020;\">^</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">/</span><span style=\"color:#DEB887; background-color:#A0522D;\">--'</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\"> </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">`</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">---</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">'</span><br><span style=\"color:#DEB887; background-color:#A0522D;\">  </span><span style=\"color:#DEB887; background-color:#A0522D;\">\"</span><span style=\"color:#DEB887; background-color:#A0522D;\">\"</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_western_fence_lizard",
@@ -1487,14 +1669,23 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 5 },
+    "skills": {
+      "Unarmed": 5
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 5,
-    "tags": [ "animal", "reptile", "insectivore", "prey", "neutral_flees" ],
+    "tags": [
+      "animal",
+      "reptile",
+      "insectivore",
+      "prey",
+      "neutral_flees"
+    ],
     "teamId": 52,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><br><span style=\"color:#556B2F; background-color:#2E8B57;\">(</span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#556B2F; background-color:#2E8B57;\">)</span><span style=\"color:#556B2F; background-color:#2E8B57;\">&lt;</span><span style=\"color:#556B2F; background-color:#2E8B57;\">==</span><span style=\"color:#556B2F; background-color:#2E8B57;\">==</span><span style=\"color:#556B2F; background-color:#2E8B57;\">&gt;</span><br><span style=\"color:#F0E68C; background-color:#BDB76B;\"> </span><span style=\"color:#F0E68C; background-color:#BDB76B;\">`</span><span style=\"color:#F0E68C; background-color:#BDB76B;\">---</span><span style=\"color:#F0E68C; background-color:#BDB76B;\">`</span><br><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">/</span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">\\</span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">/</span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">\\</span><br><span style=\"color:#556B2F; background-color:#2E8B57;\">`</span><span style=\"color:#556B2F; background-color:#2E8B57;\">-'</span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">`-</span><span style=\"color:#556B2F; background-color:#2E8B57;\">'</span>"
+    "asciiPortrait": "<span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><span style=\"color:#556B2F; background-color:#2E8B57;\">_</span><br><span style=\"color:#556B2F; background-color:#2E8B57;\">(</span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#556B2F; background-color:#2E8B57;\">)</span><span style=\"color:#556B2F; background-color:#2E8B57;\">&lt;</span><span style=\"color:#556B2F; background-color:#2E8B57;\">==</span><span style=\"color:#556B2F; background-color:#2E8B57;\">==</span><span style=\"color:#556B2F; background-color:#2E8B57;\">&gt;</span><br><span style=\"color:#F0E68C; background-color:#BDB76B;\"> </span><span style=\"color:#F0E68C; background-color:#BDB76B;\">`</span><span style=\"color:#F0E68C; background-color:#BDB76B;\">---</span><span style=\"color:#F0E68C; background-color:#BDB76B;\">`</span><br><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">/</span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">\\</span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">/</span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">\\</span><br><span style=\"color:#556B2F; background-color:#2E8B57;\">`</span><span style=\"color:#556B2F; background-color:#2E8B57;\">-'</span><span style=\"color:#556B2F; background-color:#2E8B57;\"> </span><span style=\"color:#556B2F; background-color:#2E8B57;\">`-</span><span style=\"color:#556B2F; background-color:#2E8B57;\">'</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_western_rattlesnake",
@@ -1522,14 +1713,23 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 20 },
+    "skills": {
+      "Unarmed": 20
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 5,
-    "tags": [ "animal", "reptile", "predator", "venomous", "hostile_if_threatened" ],
+    "tags": [
+      "animal",
+      "reptile",
+      "predator",
+      "venomous",
+      "hostile_if_threatened"
+    ],
     "teamId": 51,
     "cr": 1,
-    "asciiPortrait": "<span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\">_</span><span style=\"color:#CD853F; background-color:#8B4513;\">.--</span><span style=\"color:#CD853F; background-color:#8B4513;\">.</span><br><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\">/</span><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#FF0000; background-color:#8B0000;\">0</span><span style=\"color:#CD853F; background-color:#8B4513;\">\\</span><span style=\"color:#CD853F; background-color:#8B4513;\">_</span><span style=\"color:#CD853F; background-color:#8B4513;\">)&lt;</span><br><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\">\\</span><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\">_</span><span style=\"color:#CD853F; background-color:#8B4513;\">/</span><span style=\"color:#CD853F; background-color:#8B4513;\">`</span><span style=\"color:#CD853F; background-color:#8B4513;\">~</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\">  </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">`</span><span style=\"color:#000000; background-color:#202020;\">~</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">--</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">'</span><br><span style=\"color:#CD853F; background-color:#8B4513;\">  </span><span style=\"color:#CD853F; background-color:#8B4513;\"> S</span><span style=\"color:#CD853F; background-color:#8B4513;\">S</span><span style=\"color:#CD853F; background-color:#8B4513;\">S</span>"
+    "asciiPortrait": "<span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\">_</span><span style=\"color:#CD853F; background-color:#8B4513;\">.--</span><span style=\"color:#CD853F; background-color:#8B4513;\">.</span><br><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\">/</span><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#FF0000; background-color:#8B0000;\">0</span><span style=\"color:#CD853F; background-color:#8B4513;\">\\</span><span style=\"color:#CD853F; background-color:#8B4513;\">_</span><span style=\"color:#CD853F; background-color:#8B4513;\">)&lt;</span><br><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\">\\</span><span style=\"color:#CD853F; background-color:#8B4513;\"> </span><span style=\"color:#CD853F; background-color:#8B4513;\">_</span><span style=\"color:#CD853F; background-color:#8B4513;\">/</span><span style=\"color:#CD853F; background-color:#8B4513;\">`</span><span style=\"color:#CD853F; background-color:#8B4513;\">~</span><br><span style=\"color:#F5F5DC; background-color:#D2B48C;\">  </span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">`</span><span style=\"color:#000000; background-color:#202020;\">~</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">--</span><span style=\"color:#F5F5DC; background-color:#D2B48C;\">'</span><br><span style=\"color:#CD853F; background-color:#8B4513;\">  </span><span style=\"color:#CD853F; background-color:#8B4513;\"> S</span><span style=\"color:#CD853F; background-color:#8B4513;\">S</span><span style=\"color:#CD853F; background-color:#8B4513;\">S</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_pacific_tree_frog",
@@ -1557,14 +1757,23 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 2 },
+    "skills": {
+      "Unarmed": 2
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
-    "tags": [ "animal", "amphibian", "insectivore", "prey", "neutral_flees" ],
+    "tags": [
+      "animal",
+      "amphibian",
+      "insectivore",
+      "prey",
+      "neutral_flees"
+    ],
     "teamId": 52,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#32CD32; background-color:#228B22;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">_</span><span style=\"color:#32CD32; background-color:#228B22;\">_</span><span style=\"color:#32CD32; background-color:#228B22;\">_</span><br><span style=\"color:#32CD32; background-color:#228B22;\">(</span><span style=\"color:#FFD700; background-color:#B8860B;\">O</span><span style=\"color:#32CD32; background-color:#228B22;\">v</span><span style=\"color:#FFD700; background-color:#B8860B;\">O</span><span style=\"color:#32CD32; background-color:#228B22;\">)</span><br><span style=\"color:#90EE90; background-color:#3CB371;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">\\</span><span style=\"color:#32CD32; background-color:#228B22;\">-/</span><span style=\"color:#90EE90; background-color:#3CB371;\"> </span><br><span style=\"color:#90EE90; background-color:#3CB371;\">(</span><span style=\"color:#90EE90; background-color:#3CB371;\">_</span><span style=\"color:#32CD32; background-color:#228B22;\">H</span><span style=\"color:#90EE90; background-color:#3CB371;\">_</span><span style=\"color:#90EE90; background-color:#3CB371;\">)</span><br><span style=\"color:#90EE90; background-color:#3CB371;\"> </span><span style=\"color:#90EE90; background-color:#3CB371;\">\"</span><span style=\"color:#90EE90; background-color:#3CB371;\"> </span><span style=\"color:#90EE90; background-color:#3CB371;\">\"</span>"
+    "asciiPortrait": "<span style=\"color:#32CD32; background-color:#228B22;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">_</span><span style=\"color:#32CD32; background-color:#228B22;\">_</span><span style=\"color:#32CD32; background-color:#228B22;\">_</span><br><span style=\"color:#32CD32; background-color:#228B22;\">(</span><span style=\"color:#FFD700; background-color:#B8860B;\">O</span><span style=\"color:#32CD32; background-color:#228B22;\">v</span><span style=\"color:#FFD700; background-color:#B8860B;\">O</span><span style=\"color:#32CD32; background-color:#228B22;\">)</span><br><span style=\"color:#90EE90; background-color:#3CB371;\"> </span><span style=\"color:#32CD32; background-color:#228B22;\">\\</span><span style=\"color:#32CD32; background-color:#228B22;\">-/</span><span style=\"color:#90EE90; background-color:#3CB371;\"> </span><br><span style=\"color:#90EE90; background-color:#3CB371;\">(</span><span style=\"color:#90EE90; background-color:#3CB371;\">_</span><span style=\"color:#32CD32; background-color:#228B22;\">H</span><span style=\"color:#90EE90; background-color:#3CB371;\">_</span><span style=\"color:#90EE90; background-color:#3CB371;\">)</span><br><span style=\"color:#90EE90; background-color:#3CB371;\"> </span><span style=\"color:#90EE90; background-color:#3CB371;\">\"</span><span style=\"color:#90EE90; background-color:#3CB371;\"> </span><span style=\"color:#90EE90; background-color:#3CB371;\">\"</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_tarantula",
@@ -1592,14 +1801,23 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 10 },
+    "skills": {
+      "Unarmed": 10
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
-    "tags": [ "animal", "arachnid", "predator", "venomous_mild", "hostile_if_threatened" ],
+    "tags": [
+      "animal",
+      "arachnid",
+      "predator",
+      "venomous_mild",
+      "hostile_if_threatened"
+    ],
     "teamId": 51,
     "cr": 0.25,
-    "asciiPortrait": "<span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">/</span><span style=\"color:#000000; background-color:#1C1C1C;\">-</span><span style=\"color:#FF0000; background-color:#8B0000;\">o</span><span style=\"color:#000000; background-color:#1C1C1C;\">-</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\\</span><br><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">(</span><span style=\"color:#FF0000; background-color:#8B0000;\">o</span><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#000000; background-color:#1C1C1C;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">X</span><span style=\"color:#000000; background-color:#1C1C1C;\">)</span><span style=\"color:#FF0000; background-color:#8B0000;\">o</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">)</span><br><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\\</span><span style=\"color:#000000; background-color:#1C1C1C;\">_</span><span style=\"color:#000000; background-color:#1C1C1C;\">/</span><span style=\"color:#000000; background-color:#1C1C1C;\">\\</span><span style=\"color:#000000; background-color:#1C1C1C;\">_</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">/</span><br><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">/</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\"</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\"</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\\</span><br><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">'</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\"</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\"</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">`</span>"
+    "asciiPortrait": "<span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">/</span><span style=\"color:#000000; background-color:#1C1C1C;\">-</span><span style=\"color:#FF0000; background-color:#8B0000;\">o</span><span style=\"color:#000000; background-color:#1C1C1C;\">-</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\\</span><br><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">(</span><span style=\"color:#FF0000; background-color:#8B0000;\">o</span><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#000000; background-color:#1C1C1C;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">X</span><span style=\"color:#000000; background-color:#1C1C1C;\">)</span><span style=\"color:#FF0000; background-color:#8B0000;\">o</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">)</span><br><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\\</span><span style=\"color:#000000; background-color:#1C1C1C;\">_</span><span style=\"color:#000000; background-color:#1C1C1C;\">/</span><span style=\"color:#000000; background-color:#1C1C1C;\">\\</span><span style=\"color:#000000; background-color:#1C1C1C;\">_</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">/</span><br><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">/</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\"</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\"</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\\</span><br><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">'</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\"</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">\"</span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\"> </span><span style=\"color:#4A4A4A; background-color:#2A2A2A;\">`</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_monarch_butterfly",
@@ -1627,14 +1845,23 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 0 },
+    "skills": {
+      "Unarmed": 0
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 7,
-    "tags": [ "animal", "insect", "flying", "harmless", "neutral_flees" ],
+    "tags": [
+      "animal",
+      "insect",
+      "flying",
+      "harmless",
+      "neutral_flees"
+    ],
     "teamId": 90,
     "cr": 0.01,
-    "asciiPortrait": "<span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#FFA500; background-color:#D2691E;\">\\</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">.</span><span style=\"color:#000000; background-color:#1C1C1C;\">^</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">.</span><span style=\"color:#FFA500; background-color:#D2691E;\">/</span><br><span style=\"color:#FFA500; background-color:#D2691E;\">--</span><span style=\"color:#000000; background-color:#1C1C1C;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">@</span><span style=\"color:#000000; background-color:#1C1C1C;\">)</span><span style=\"color:#FFA500; background-color:#D2691E;\">--</span><br><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#FFA500; background-color:#D2691E;\">/</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">'</span><span style=\"color:#000000; background-color:#1C1C1C;\">V</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">`</span><span style=\"color:#FFA500; background-color:#D2691E;\">\\</span><br><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#FFA500; background-color:#D2691E;\">\"</span><span style=\"color:#000000; background-color:#1C1C1C;\">\"</span><span style=\"color:#FFA500; background-color:#D2691E;\">\"</span>"
+    "asciiPortrait": "<span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#FFA500; background-color:#D2691E;\">\\</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">.</span><span style=\"color:#000000; background-color:#1C1C1C;\">^</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">.</span><span style=\"color:#FFA500; background-color:#D2691E;\">/</span><br><span style=\"color:#FFA500; background-color:#D2691E;\">--</span><span style=\"color:#000000; background-color:#1C1C1C;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">@</span><span style=\"color:#000000; background-color:#1C1C1C;\">)</span><span style=\"color:#FFA500; background-color:#D2691E;\">--</span><br><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#FFA500; background-color:#D2691E;\">/</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">'</span><span style=\"color:#000000; background-color:#1C1C1C;\">V</span><span style=\"color:#FFFFFF; background-color:#A9A9A9;\">`</span><span style=\"color:#FFA500; background-color:#D2691E;\">\\</span><br><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#FFA500; background-color:#D2691E;\">\"</span><span style=\"color:#000000; background-color:#1C1C1C;\">\"</span><span style=\"color:#FFA500; background-color:#D2691E;\">\"</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_annas_hummingbird",
@@ -1662,14 +1889,24 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 2 },
+    "skills": {
+      "Unarmed": 2
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 10,
-    "tags": [ "animal", "bird", "flying", "fast", "nectarivore", "neutral_flees" ],
+    "tags": [
+      "animal",
+      "bird",
+      "flying",
+      "fast",
+      "nectarivore",
+      "neutral_flees"
+    ],
     "teamId": 90,
     "cr": 0.01,
-    "asciiPortrait": "<span style=\"color:#006400; background-color:#004000;\"> </span><span style=\"color:#006400; background-color:#004000;\">.</span><span style=\"color:#006400; background-color:#004000;\">^</span><span style=\"color:#006400; background-color:#004000;\">.</span><span style=\"color:#000000; background-color:#202020;\">_</span><br><span style=\"color:#006400; background-color:#004000;\">(</span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#FF0000; background-color:#8B0000;\">@</span><span style=\"color:#000000; background-color:#202020;\">--)</span><br><span style=\"color:#FF0000; background-color:#8B0000;\"> </span><span style=\"color:#FF0000; background-color:#8B0000;\">\\</span><span style=\"color:#FF0000; background-color:#8B0000;\">_/</span><span style=\"color:#006400; background-color:#004000;\">/</span><br><span style=\"color:#006400; background-color:#004000;\">  </span><span style=\"color:#006400; background-color:#004000;\">v</span><br>"
+    "asciiPortrait": "<span style=\"color:#006400; background-color:#004000;\"> </span><span style=\"color:#006400; background-color:#004000;\">.</span><span style=\"color:#006400; background-color:#004000;\">^</span><span style=\"color:#006400; background-color:#004000;\">.</span><span style=\"color:#000000; background-color:#202020;\">_</span><br><span style=\"color:#006400; background-color:#004000;\">(</span><span style=\"color:#000000; background-color:#202020;\">o</span><span style=\"color:#FF0000; background-color:#8B0000;\">@</span><span style=\"color:#000000; background-color:#202020;\">--)</span><br><span style=\"color:#FF0000; background-color:#8B0000;\"> </span><span style=\"color:#FF0000; background-color:#8B0000;\">\\</span><span style=\"color:#FF0000; background-color:#8B0000;\">_/</span><span style=\"color:#006400; background-color:#004000;\">/</span><br><span style=\"color:#006400; background-color:#004000;\">  </span><span style=\"color:#006400; background-color:#004000;\">v</span><br>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_honey_bee",
@@ -1697,14 +1934,24 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 5 },
+    "skills": {
+      "Unarmed": 5
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 7,
-    "tags": [ "animal", "insect", "flying", "stinging", "colony", "neutral_defensive" ],
+    "tags": [
+      "animal",
+      "insect",
+      "flying",
+      "stinging",
+      "colony",
+      "neutral_defensive"
+    ],
     "teamId": 91,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#ADD8E6; background-color:#87CEEB;\"> </span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">,</span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">-</span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">.</span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">-</span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">,</span><br><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#FFD700; background-color:#B8860B;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">o</span><span style=\"color:#FFD700; background-color:#B8860B;\">)</span><span style=\"color:#000000; background-color:#1C1C1C;\">&gt;</span><br><span style=\"color:#FFD700; background-color:#B8860B;\"> </span><span style=\"color:#000000; background-color:#1C1C1C;\">~</span><span style=\"color:#FFD700; background-color:#B8860B;\">~</span><span style=\"color:#000000; background-color:#1C1C1C;\">~</span><span style=\"color:#FFD700; background-color:#B8860B;\">'</span>"
+    "asciiPortrait": "<span style=\"color:#ADD8E6; background-color:#87CEEB;\"> </span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">,</span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">-</span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">.</span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">-</span><span style=\"color:#ADD8E6; background-color:#87CEEB;\">,</span><br><span style=\"color:#000000; background-color:#1C1C1C;\"> </span><span style=\"color:#FFD700; background-color:#B8860B;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">o</span><span style=\"color:#FFD700; background-color:#B8860B;\">)</span><span style=\"color:#000000; background-color:#1C1C1C;\">&gt;</span><br><span style=\"color:#FFD700; background-color:#B8860B;\"> </span><span style=\"color:#000000; background-color:#1C1C1C;\">~</span><span style=\"color:#FFD700; background-color:#B8860B;\">~</span><span style=\"color:#000000; background-color:#1C1C1C;\">~</span><span style=\"color:#FFD700; background-color:#B8860B;\">'</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_western_pond_turtle",
@@ -1732,14 +1979,23 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 5 },
+    "skills": {
+      "Unarmed": 5
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 3,
-    "tags": [ "animal", "reptile", "aquatic", "shelled", "neutral_flees" ],
+    "tags": [
+      "animal",
+      "reptile",
+      "aquatic",
+      "shelled",
+      "neutral_flees"
+    ],
     "teamId": 50,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#556B2F; background-color:#006400;\"> </span><span style=\"color:#556B2F; background-color:#006400;\"> </span><span style=\"color:#556B2F; background-color:#006400;\">.--</span><span style=\"color:#556B2F; background-color:#006400;\">--.</span><br><span style=\"color:#6B8E23; background-color:#556B2F;\"> </span><span style=\"color:#6B8E23; background-color:#556B2F;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">.</span><span style=\"color:#6B8E23; background-color:#556B2F;\">_</span><span style=\"color:#000000; background-color:#1C1C1C;\">.</span><span style=\"color:#6B8E23; background-color:#556B2F;\">)</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">/</span><span style=\"color:#556B2F; background-color:#006400;\">~~</span><span style=\"color:#556B2F; background-color:#006400;\">\\</span><br><span style=\"color:#8FBC8F; background-color:#2E8B57;\"> </span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">/</span><span style=\"color:#556B2F; background-color:#006400;\">''</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">--</span><span style=\"color:#556B2F; background-color:#006400;\">''</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">\\</span><br><span style=\"color:#6B8E23; background-color:#556B2F;\"> </span><span style=\"color:#6B8E23; background-color:#556B2F;\">`</span><span style=\"color:#6B8E23; background-color:#556B2F;\">-</span><span style=\"color:#6B8E23; background-color:#556B2F;\">(</span><span style=\"color:#6B8E23; background-color:#556B2F;\"> )</span><span style=\"color:#6B8E23; background-color:#556B2F;\">-</span><span style=\"color:#6B8E23; background-color:#556B2F;\">`</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">(</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">__</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">)</span>"
+    "asciiPortrait": "<span style=\"color:#556B2F; background-color:#006400;\"> </span><span style=\"color:#556B2F; background-color:#006400;\"> </span><span style=\"color:#556B2F; background-color:#006400;\">.--</span><span style=\"color:#556B2F; background-color:#006400;\">--.</span><br><span style=\"color:#6B8E23; background-color:#556B2F;\"> </span><span style=\"color:#6B8E23; background-color:#556B2F;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">.</span><span style=\"color:#6B8E23; background-color:#556B2F;\">_</span><span style=\"color:#000000; background-color:#1C1C1C;\">.</span><span style=\"color:#6B8E23; background-color:#556B2F;\">)</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">/</span><span style=\"color:#556B2F; background-color:#006400;\">~~</span><span style=\"color:#556B2F; background-color:#006400;\">\\</span><br><span style=\"color:#8FBC8F; background-color:#2E8B57;\"> </span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">/</span><span style=\"color:#556B2F; background-color:#006400;\">''</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">--</span><span style=\"color:#556B2F; background-color:#006400;\">''</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">\\</span><br><span style=\"color:#6B8E23; background-color:#556B2F;\"> </span><span style=\"color:#6B8E23; background-color:#556B2F;\">`</span><span style=\"color:#6B8E23; background-color:#556B2F;\">-</span><span style=\"color:#6B8E23; background-color:#556B2F;\">(</span><span style=\"color:#6B8E23; background-color:#556B2F;\"> )</span><span style=\"color:#6B8E23; background-color:#556B2F;\">-</span><span style=\"color:#6B8E23; background-color:#556B2F;\">`</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">(</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">__</span><span style=\"color:#8FBC8F; background-color:#2E8B57;\">)</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "animal_rainbow_trout",
@@ -1767,14 +2023,23 @@
       "Charisma": 1,
       "Marksmanship": 0
     },
-    "skills": { "Unarmed": 5 },
+    "skills": {
+      "Unarmed": 5
+    },
     "equippedWeaponId": null,
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "animal", "fish", "aquatic", "prey", "neutral_flees" ],
+    "tags": [
+      "animal",
+      "fish",
+      "aquatic",
+      "prey",
+      "neutral_flees"
+    ],
     "teamId": 52,
     "cr": 0.1,
-    "asciiPortrait": "<span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#A9A9A9; background-color:#696969;\">^</span><span style=\"color:#C0C0C0; background-color:#808080;\">..</span><span style=\"color:#C0C0C0; background-color:#808080;\">__</span><br><span style=\"color:#C0C0C0; background-color:#808080;\">&lt;</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">o</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">)</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">\\</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">_</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">_</span><span style=\"color:#C0C0C0; background-color:#808080;\">&lt;</span><br><span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#A9A9A9; background-color:#696969;\">v</span><span style=\"color:#C0C0C0; background-color:#808080;\">''</span><span style=\"color:#C0C0C0; background-color:#808080;\">\"\"</span>"
+    "asciiPortrait": "<span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#A9A9A9; background-color:#696969;\">^</span><span style=\"color:#C0C0C0; background-color:#808080;\">..</span><span style=\"color:#C0C0C0; background-color:#808080;\">__</span><br><span style=\"color:#C0C0C0; background-color:#808080;\">&lt;</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">(</span><span style=\"color:#000000; background-color:#1C1C1C;\">o</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">)</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">\\</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">_</span><span style=\"color:#FFB6C1; background-color:#FF69B4;\">_</span><span style=\"color:#C0C0C0; background-color:#808080;\">&lt;</span><br><span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#C0C0C0; background-color:#808080;\"> </span><span style=\"color:#A9A9A9; background-color:#696969;\">v</span><span style=\"color:#C0C0C0; background-color:#808080;\">''</span><span style=\"color:#C0C0C0; background-color:#808080;\">\"\"</span>",
+    "dialogueFile": "animal_dialogue.json"
   },
   {
     "id": "fish_joe",
@@ -1839,7 +2104,12 @@
     },
     "defaultActionPoints": 1,
     "defaultMovementPoints": 6,
-    "tags": [ "friendly", "humanoid", "merchant", "quest_giver" ],
+    "tags": [
+      "friendly",
+      "humanoid",
+      "merchant",
+      "quest_giver"
+    ],
     "teamId": 0,
     "cr": 0.5,
     "dialogueFile": "fishmonger_dialogues.json",

@@ -44,8 +44,16 @@
     "choices": []
   },
   "sleight_of_hand_success": {
-    "text": "You think you're slick? Not slick enough!",
-    "actions": ["startCombat"],
+    "text": "With a swift, practiced motion, you draw your weapon. The bandit's eyes widen in surprise. 'Alright, alright! Easy there. No need for bloodshed.'",
+    "choices": [
+      {
+        "text": "Leave.",
+        "goTo": "end_peaceful"
+      }
+    ]
+  },
+  "end_peaceful": {
+    "text": "You back away slowly, weapon raised. The bandit lets you go.",
     "choices": []
   },
   "end": {
