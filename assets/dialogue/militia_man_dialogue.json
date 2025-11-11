@@ -13,6 +13,14 @@
       {
         "text": "I support the militia. Here are some supplies.",
         "goTo": "positive_response"
+      },
+      {
+        "text": "[Charisma] I'm a friend. I'm here to help the cause in any way I can.",
+        "goTo": "charisma_success",
+        "condition": {
+          "type": "skillCheck",
+          "expression": "skill:Charisma>7"
+        }
       }
     ]
   },
@@ -29,13 +37,14 @@
     "text": "Is that a threat? You're either with us or against us. Which is it?",
     "choices": [
         {
-            "text": "I am with the militia",
-            "goTo": "end"
+            "text": "Against you.",
+            "goTo": "fight"
         }
     ]
   },
   "positive_response": {
     "text": "Supplies are always welcome. We appreciate your support. Stay safe out there.",
+    "actions": ["takeItem:bandage,2"],
     "choices": [
       {
         "text": "You too.",
@@ -43,6 +52,20 @@
       }
     ]
   },
+    "charisma_success": {
+        "text": "I can see that. It's good to have another patriot on our side. Welcome.",
+        "choices": [
+            {
+                "text": "Glad to be here.",
+                "goTo": "end"
+            }
+        ]
+    },
+    "fight": {
+        "text": "Then you're a dead man.",
+        "actions": ["startCombat"],
+        "choices": []
+    },
   "end": {
     "text": "Move along.",
     "choices": []

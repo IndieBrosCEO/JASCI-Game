@@ -13,6 +13,14 @@
       {
         "text": "I'm on your side. Here's a token of my trust.",
         "goTo": "positive_response"
+      },
+      {
+        "text": "[Stealth] I move in the shadows, just like you.",
+        "goTo": "stealth_success",
+        "condition": {
+            "type": "skillCheck",
+            "expression": "skill:Stealth>8"
+        }
       }
     ]
   },
@@ -38,6 +46,15 @@
               "goTo": "end"
           }
       ]
+  },
+  "stealth_success": {
+    "text": "I can see that. A fellow shadow. Be careful who you reveal yourself to.",
+    "choices": [
+        {
+            "text": "I will.",
+            "goTo": "end"
+        }
+    ]
   },
   "end": {
     "text": "...",

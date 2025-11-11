@@ -13,6 +13,14 @@
       {
         "text": "I have something for you.",
         "goTo": "positive_response"
+      },
+      {
+        "text": "[Intimidation] You're the one who should be scared.",
+        "goTo": "intimidation_success",
+        "condition": {
+          "type": "skillCheck",
+          "expression": "skill:Intimidation>5"
+        }
       }
     ]
   },
@@ -35,6 +43,16 @@
     "choices": [
         {
             "text": "Here, take this.",
+            "actions": ["takeItem:canned_beans,1"],
+            "goTo": "end"
+        }
+    ]
+  },
+  "intimidation_success": {
+    "text": "Whoa, alright, alright. No need to get hasty. I'm going.",
+    "choices": [
+        {
+            "text": "That's right.",
             "goTo": "end"
         }
     ]

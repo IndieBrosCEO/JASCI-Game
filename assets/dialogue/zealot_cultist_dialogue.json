@@ -13,6 +13,14 @@
       {
         "text": "I seek enlightenment. Tell me more.",
         "goTo": "positive_response"
+      },
+      {
+        "text": "[Willpower] Your words have no power over me.",
+        "goTo": "willpower_success",
+        "condition": {
+            "type": "statCheck",
+            "expression": "stat:Willpower>8"
+        }
       }
     ]
   },
@@ -35,6 +43,15 @@
     "choices": [
         {
             "text": "What kind of sacrifice?",
+            "goTo": "end"
+        }
+    ]
+  },
+  "willpower_success": {
+    "text": "Your mind is strong, but the Great One's truth is stronger. You will see, in time.",
+    "choices": [
+        {
+            "text": "I doubt it.",
             "goTo": "end"
         }
     ]

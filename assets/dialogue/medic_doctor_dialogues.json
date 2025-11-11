@@ -13,6 +13,14 @@
       {
         "text": "Please, I need medical attention.",
         "goTo": "positive_response"
+      },
+      {
+        "text": "[FirstAid] I have some medical training. Maybe I can help you with your other patients.",
+        "goTo": "medicine_success",
+        "condition": {
+            "type": "skillCheck",
+            "expression": "skill:FirstAid>6"
+        }
       }
     ]
   },
@@ -36,9 +44,19 @@
   },
   "positive_response": {
     "text": "Of course. Let's get you patched up.",
+    "actions": ["giveItem:bandage,1"],
     "choices": [
         {
             "text": "Thank you, doctor.",
+            "goTo": "end"
+        }
+    ]
+  },
+  "medicine_success": {
+    "text": "You know your way around a first-aid kit, I can tell. We can always use another pair of hands. What do you say?",
+    "choices": [
+        {
+            "text": "I'd be happy to help.",
             "goTo": "end"
         }
     ]

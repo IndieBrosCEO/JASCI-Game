@@ -1,0 +1,67 @@
+{
+  "start": {
+    "text": "Greetings, traveler. You have the look of someone who has seen much of this broken world.",
+    "choices": [
+      {
+        "text": "I suppose I have.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "I'm just trying to get by.",
+        "goTo": "positive_response"
+      },
+      {
+        "text": "You don't know me.",
+        "goTo": "hostile_response"
+      },
+      {
+        "text": "[Investigation] I've found some strange relics in my travels. Perhaps you know what they are?",
+        "goTo": "investigation_success",
+        "condition": {
+            "type": "skillCheck",
+            "expression": "skill:Investigation>8"
+        }
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "Indeed. The world is full of stories. Most of them sad.",
+    "choices": [
+      {
+        "text": "That's true.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "positive_response": {
+    "text": "Aren't we all. But there is still hope, if you know where to look.",
+    "choices": [
+        {
+            "text": "Where should I look?",
+            "goTo": "end"
+        }
+    ]
+  },
+  "hostile_response": {
+    "text": "Perhaps not. But I know a troubled soul when I see one.",
+    "choices": [
+        {
+            "text": "...",
+            "goTo": "end"
+        }
+    ]
+  },
+  "investigation_success": {
+    "text": "Ah, yes. These are from the Before Times. They hold great power, and great danger. You would be wise to be careful with them.",
+    "choices": [
+        {
+            "text": "I will. Thank you for the warning.",
+            "goTo": "end"
+        }
+    ]
+  },
+  "end": {
+    "text": "Be well, traveler.",
+    "choices": []
+  }
+}
