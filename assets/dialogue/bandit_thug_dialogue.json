@@ -1,0 +1,42 @@
+{
+  "start": {
+    "text": "You. Money. Now.",
+    "choices": [
+      {
+        "text": "Just take it.",
+        "goTo": "positive_response"
+      },
+      {
+        "text": "I don't have anything.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "Get out of my way, meathead.",
+        "goTo": "hostile_response"
+      }
+    ]
+  },
+  "positive_response": {
+      "text": "Good. Now get lost.",
+      "choices": [
+          {
+              "text": "Okay.",
+              "goTo": "end"
+          }
+      ]
+  },
+  "neutral_response": {
+    "text": "Don't lie to me! I'll just beat it out of you.",
+    "actions": ["startCombat"],
+    "choices": []
+  },
+  "hostile_response": {
+    "text": "Tough talk for someone about to get their skull cracked.",
+    "actions": ["startCombat"],
+    "choices": []
+  },
+  "end": {
+    "text": "...",
+    "choices": []
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "start": {
+    "text": "Stop right there. Your valuables or your life. Make a choice.",
+    "choices": [
+      {
+        "text": "Take what you want, just don't hurt me.",
+        "goTo": "positive_response"
+      },
+      {
+        "text": "I have nothing of value.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "You'll get nothing from me.",
+        "goTo": "hostile_response"
+      }
+    ]
+  },
+    "positive_response": {
+    "text": "A wise choice indeed. Now, hand it all over, and maybe you'll walk away from this.",
+    "choices": [
+      {
+        "text": "Alright, here you go.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "Liar! Everyone has something. I'll just take it from your corpse.",
+    "actions": ["startCombat"],
+    "choices": []
+  },
+  "hostile_response": {
+    "text": "Big words. Let's see if you can back them up.",
+    "actions": ["startCombat"],
+    "choices": []
+  },
+  "end": {
+    "text": "Don't let me see you again.",
+    "choices": []
+  }
+}

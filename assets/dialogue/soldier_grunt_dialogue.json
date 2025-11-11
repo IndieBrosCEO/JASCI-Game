@@ -1,0 +1,46 @@
+{
+  "start": {
+    "text": "Civilian, this is an active military zone. You need to leave. Now.",
+    "choices": [
+      {
+        "text": "I'm on my way out.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "I'm not going anywhere.",
+        "goTo": "hostile_response"
+      },
+      {
+        "text": "I have supplies for the army.",
+        "goTo": "positive_response"
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "Good. We don't need any casualties.",
+    "choices": [
+      {
+        "text": "Take care.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "hostile_response": {
+    "text": "That's a direct order, civilian. You are now considered a hostile.",
+    "actions": ["startCombat"],
+    "choices": []
+  },
+  "positive_response": {
+    "text": "Supplies? Hand them over. We'll put them to good use. Now clear the area.",
+    "choices": [
+        {
+            "text": "Here you go.",
+            "goTo": "end"
+        }
+    ]
+  },
+  "end": {
+    "text": "...",
+    "choices": []
+  }
+}

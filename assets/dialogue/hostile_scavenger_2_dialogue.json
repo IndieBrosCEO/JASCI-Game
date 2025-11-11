@@ -1,0 +1,46 @@
+{
+  "start": {
+    "text": "My friend told you to get lost. So why are you still here?",
+    "choices": [
+      {
+        "text": "I'm just passing through.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "I'm not afraid of either of you.",
+        "goTo": "hostile_response"
+      },
+       {
+        "text": "Maybe this will make you feel better.",
+        "goTo": "positive_response"
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "Well, pass through faster.",
+    "choices": [
+      {
+        "text": "Alright, alright.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "hostile_response": {
+    "text": "Then you're a fool. Time to teach you a lesson.",
+    "actions": ["startCombat"],
+    "choices": []
+  },
+  "positive_response": {
+    "text": "What's this?",
+    "choices": [
+        {
+            "text": "A gift.",
+            "goTo": "end"
+        }
+    ]
+  },
+  "end": {
+    "text": "...",
+    "choices": []
+  }
+}

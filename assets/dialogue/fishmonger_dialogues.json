@@ -1,1 +1,50 @@
-{}
+{
+  "start": {
+    "text": "Hey there, friend! Looking for some fish? Or maybe you've got a good catch to sell?",
+    "choices": [
+      {
+        "text": "Just looking around.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "Fishing is a waste of time.",
+        "goTo": "hostile_response"
+      },
+      {
+        "text": "I've got some fish for you.",
+        "goTo": "positive_response"
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "No worries. Let me know if you change your mind. The fish are always biting.",
+    "choices": [
+      {
+        "text": "Will do.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "hostile_response": {
+    "text": "A waste of time? Hmph. Some people just don't appreciate the simple things. Good day to you.",
+    "choices": [
+        {
+            "text": "Whatever",
+            "goTo": "end"
+        }
+    ]
+  },
+  "positive_response": {
+    "text": "That's what I like to hear! Let's see what you've got.",
+    "choices": [
+        {
+            "text": "Here they are.",
+            "goTo": "end"
+        }
+    ]
+  },
+  "end": {
+    "text": "Good luck out there.",
+    "choices": []
+  }
+}

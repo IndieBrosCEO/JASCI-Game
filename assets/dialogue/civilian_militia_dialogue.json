@@ -1,0 +1,50 @@
+{
+  "start": {
+    "text": "Hey there. Be careful around here, things can get rough. We're keeping an eye out, though.",
+    "choices": [
+      {
+        "text": "Thanks for the warning.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "I can handle myself.",
+        "goTo": "hostile_response"
+      },
+      {
+        "text": "Glad to see the militia stepping up.",
+        "goTo": "positive_response"
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "Just watch your back. Take care.",
+    "choices": [
+      {
+        "text": "You too.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "hostile_response": {
+    "text": "Confidence is good, but arrogance will get you killed. Don't say I didn't warn you.",
+    "choices": [
+        {
+            "text": "I'll keep that in mind",
+            "goTo": "end"
+        }
+    ]
+  },
+  "positive_response": {
+    "text": "We're doing our best. Every little bit helps. It's good to see a friendly face.",
+    "choices": [
+      {
+        "text": "Stay safe.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "end": {
+    "text": "See you around.",
+    "choices": []
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "start": {
+    "text": "You're either the person who hired me, or you're in my way. Which is it?",
+    "choices": [
+      {
+        "text": "I'm just leaving.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "You're the one in my way.",
+        "goTo": "hostile_response"
+      },
+      {
+        "text": "I'd like to hire you.",
+        "goTo": "positive_response"
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "Good choice. Don't let me see you again.",
+    "choices": [
+      {
+        "text": "You won't.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "hostile_response": {
+    "text": "That's a mistake you won't live to regret.",
+    "actions": ["startCombat"],
+    "choices": []
+  },
+  "positive_response": {
+      "text": "I'm listening. What's the job?",
+      "choices": [
+          {
+              "text": "I need you to take care of someone.",
+              "goTo": "end"
+          }
+      ]
+  },
+  "end": {
+    "text": "...",
+    "choices": []
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "start": {
+    "text": "...",
+    "choices": [
+      {
+        "text": "(Remain silent)",
+        "goTo": "end"
+      }
+    ]
+  },
+  "end": {
+    "text": "...",
+    "choices": []
+  }
+}

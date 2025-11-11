@@ -1,0 +1,50 @@
+{
+  "start": {
+    "text": "Halt! State your business. This area is under militia protection.",
+    "choices": [
+      {
+        "text": "I'm a traveler, just passing through.",
+        "goTo": "neutral_response"
+      },
+      {
+        "text": "Your protection doesn't impress me.",
+        "goTo": "hostile_response"
+      },
+      {
+        "text": "I support the militia. Here are some supplies.",
+        "goTo": "positive_response"
+      }
+    ]
+  },
+  "neutral_response": {
+    "text": "Be on your way, then. Don't cause any trouble.",
+    "choices": [
+      {
+        "text": "I won't.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "hostile_response": {
+    "text": "Is that a threat? You're either with us or against us. Which is it?",
+    "choices": [
+        {
+            "text": "I am with the militia",
+            "goTo": "end"
+        }
+    ]
+  },
+  "positive_response": {
+    "text": "Supplies are always welcome. We appreciate your support. Stay safe out there.",
+    "choices": [
+      {
+        "text": "You too.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "end": {
+    "text": "Move along.",
+    "choices": []
+  }
+}
