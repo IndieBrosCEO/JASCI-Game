@@ -20,7 +20,8 @@
         this.sfxGainNode.gain.setValueAtTime(1.0, this.audioContext.currentTime); // Default SFX volume
         this.sfxGainNode.connect(this.masterGainNode);
 
-        this.musicTracks = ['music/Low_Key.mp3', 'music/Mudlark.mp3', 'music/numb.mp3', 'music/Cruising.mp3', 'music/Investigation.mp3', 'music/Electronics.mp3'];
+        this.musicTracks = [];
+        this.musicTracksLoadedPromise = this._loadMusicTracks();
         this.currentTrackIndex = -1;
         this.currentTrackName = "None";
         this.musicSourceNode = null; // To hold the current music source
@@ -343,7 +344,42 @@
         return this._isMusicPlaying;
     }
 
-    playMusic(delay = 0) {
+    async _loadMusicTracks() {
+        const musicDir = this.soundPath + 'music/';
+        try {
+            const response = await fetch(musicDir);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch music directory: ${response.statusText}`);
+            }
+            const text = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/html');
+            const links = Array.from(doc.querySelectorAll('a'));
+            const audioFiles = links
+                .map(link => link.getAttribute('href'))
+                .filter(href => href.match(/\.(mp3|wav|ogg)$/i))
+                .map(href => 'music/' + href.split('/').pop());
+
+            if (audioFiles.length === 0) {
+                console.warn("No music files found in assets/sounds/music/");
+                return;
+            }
+
+            this.musicTracks = audioFiles.sort();
+            console.log(`Discovered music tracks:`, this.musicTracks);
+
+        } catch (error) {
+            console.error("Could not load music playlist:", error);
+            this.musicTracks = [];
+        }
+    }
+
+    async playMusic(delay = 0) {
+        await this.musicTracksLoadedPromise;
+        if (this.musicTracks.length === 0) {
+            console.warn("No music tracks loaded, music playback disabled.");
+            return;
+        }
         if (this._isMusicPlaying) {
             console.log("Music is already playing.");
             return;
@@ -393,6 +429,12 @@
             return;
         }
 
+        if (this.musicTracks.length === 0) {
+            console.warn("No music tracks available to play.");
+            this.stopMusic();
+            return;
+        }
+
         let nextTrackIndex;
         do {
             nextTrackIndex = Math.floor(Math.random() * this.musicTracks.length);
@@ -400,7 +442,7 @@
         this.currentTrackIndex = nextTrackIndex;
 
         const trackPath = this.musicTracks[this.currentTrackIndex];
-        this.currentTrackName = trackPath.split('/').pop().replace('.mp3', '');
+        this.currentTrackName = trackPath.split('/').pop().replace(/\.[^/.]+$/, "");
         this._dispatchTrackChangedEvent();
 
         fetch(this.soundPath + trackPath)
