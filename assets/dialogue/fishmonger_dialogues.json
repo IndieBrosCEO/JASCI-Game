@@ -19,7 +19,7 @@
         "goTo": "animal_handling_success",
         "condition": {
             "type": "skillCheck",
-            "expression": "skill:Animal Handling>5"
+            "expression": "skill:AnimalHandling>5"
         }
       }
     ]

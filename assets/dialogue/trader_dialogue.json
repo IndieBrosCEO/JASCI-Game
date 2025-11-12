@@ -1,0 +1,67 @@
+{
+    "start": {
+        "text": "Greetings, traveler. Care to trade? I have goods from all over.",
+        "choices": [
+            {
+                "text": "Let's see what you have.",
+                "goTo": "trade"
+            },
+            {
+                "text": "Just passing through.",
+                "goTo": "neutral_response"
+            },
+            {
+                "text": "[Persuasion] You wouldn't happen to have anything... special, would you?",
+                "condition": {
+                    "type": "skillCheck",
+                    "expression": "skill:Persuasion>15"
+                },
+                "goTo": "special_goods"
+            },
+            {
+                "text": "Your goods are probably junk.",
+                "goTo": "hostile_response"
+            }
+        ]
+    },
+    "trade": {
+        "text": "Take a look. I assure you, my prices are fair.",
+        "choices": [
+            {
+                "text": "Let's trade.",
+                "action": "openTrade"
+            }
+        ]
+    },
+    "neutral_response": {
+        "text": "Safe travels, then. Watch out for bandits.",
+        "choices": [
+            {
+                "text": "Thanks.",
+                "goTo": "end"
+            }
+        ]
+    },
+    "special_goods": {
+        "text": "Heh, you've got a good eye. I keep the best for discerning customers. Here, take a look at my private stock.",
+        "choices": [
+            {
+                "text": "Let's trade.",
+                "action": "openTrade"
+            }
+        ]
+    },
+    "hostile_response": {
+        "text": "Junk? I'll have you know my goods are of the finest quality! Now get out of my sight!",
+        "choices": [
+            {
+                "text": "Fine.",
+                "goTo": "end"
+            }
+        ]
+    },
+    "end": {
+        "text": "Come back if you need anything.",
+        "choices": []
+    }
+}
