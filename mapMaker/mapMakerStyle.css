@@ -140,3 +140,30 @@ button {
     background-color: rgba(128, 0, 128, 0.3); /* Semi-transparent purple */
     /* outline: 1px solid purple; */ /* Alternative */
 }
+
+/* NPC and Portal markers */
+.npc-marker,
+.portal-marker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none; /* Make sure the underlying cell still receives mouse events */
+    font-weight: bold;
+}
+
+.portal-marker {
+    color: orange;
+    font-size: 20px;
+}
+
+/* Selection highlights for objects */
+.selected-npc-cell,
+.selected-portal-cell {
+    outline: 2px solid cyan;
+    outline-offset: -2px;
+}

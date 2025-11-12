@@ -164,7 +164,8 @@ export function handleNpcToolClick(x, y, z, mapData, appState, assetManager, int
             // Deep copy the base NPC definition
             const newNpcInstance = JSON.parse(JSON.stringify(baseNpcDef));
 
-            newNpcInstance.id = `${NPC_ID_PREFIX}${appState.nextNpcId++}`; // Assign a unique ID
+            const newNpcIdNum = getNextNpcIdFromData();
+            newNpcInstance.id = `${NPC_ID_PREFIX}${newNpcIdNum}`; // Assign a unique ID
             newNpcInstance.mapPos = { x, y, z };
             // Instance-specific name can be set here or default to base name, editable later
             newNpcInstance.name = newNpcInstance.name || baseNpcDef.name;
