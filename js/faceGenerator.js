@@ -126,7 +126,14 @@ function generateAsciiFace(faceParams) {
 
             const bgColor = window.darkenColor(baseBgColor, 0.4) || '#000000'; // Darken this actual color by 40%
 
-            lineHtml += `<span style="color:${fgColor}; background-color:${bgColor};">${charToDisplay}</span>`;
+            let cellHtml = `<span style="color:${fgColor}; background-color:${bgColor};">${charToDisplay}</span>`;
+
+            // If a wrapper class is specified (e.g., for eyes or mouth), wrap the cell in another span
+            if (cellData.wrapperClass) {
+                cellHtml = `<span class="${cellData.wrapperClass}">${cellHtml}</span>`;
+            }
+
+            lineHtml += cellHtml;
         }
         htmlOutputLines.push(lineHtml);
     }
@@ -224,10 +231,10 @@ function _drawEyes(canvas, faceParams, coords) {
 
     if (eyeY >= 0 && eyeY < baseHeight) {
         if (leftEyeX > headStartX && leftEyeX < headEndX && leftEyeX < baseWidth && canvas[eyeY]) { // Ensure eyes are within inner head bounds
-            canvas[eyeY][leftEyeX] = { char: eyeCharSymbol, type: 'eye', color: eyeColor };
+            canvas[eyeY][leftEyeX] = { char: eyeCharSymbol, type: 'eye', color: eyeColor, wrapperClass: 'face-eye' };
         }
         if (rightEyeX > headStartX && rightEyeX < headEndX && rightEyeX < baseWidth && canvas[eyeY] && leftEyeX !== rightEyeX) {
-            canvas[eyeY][rightEyeX] = { char: eyeCharSymbol, type: 'eye', color: eyeColor };
+            canvas[eyeY][rightEyeX] = { char: eyeCharSymbol, type: 'eye', color: eyeColor, wrapperClass: 'face-eye' };
         }
     }
 }
@@ -371,26 +378,23 @@ function _drawMouth(canvas, faceParams, coords) {
             leftCorner = ',';
             rightCorner = ',';
             break;
-        case 'open':
-            mouthCharSymbol = 'o';
-            break;
     }
 
     if (mouthY < headEndY && mouthY < baseHeight && canvas[mouthY]) {
         for (let i = 0; i < faceParams.mouthWidth; i++) {
             const currentMouthX = mouthCenterX - Math.floor(faceParams.mouthWidth / 2) + i;
             if (currentMouthX > headStartX && currentMouthX < headEndX && currentMouthX >= 0 && currentMouthX < baseWidth) { // Ensure X is within canvas bounds
-                canvas[mouthY][currentMouthX] = { char: mouthCharSymbol, type: 'lip', color: lipColor };
+                canvas[mouthY][currentMouthX] = { char: mouthCharSymbol, type: 'lip', color: lipColor, wrapperClass: 'face-mouth' };
             }
         }
         if (faceParams.mouthWidth > 2) {
             const leftLipX = mouthCenterX - Math.floor(faceParams.mouthWidth / 2);
             const rightLipX = mouthCenterX + Math.floor((faceParams.mouthWidth - 1) / 2);
             if (leftLipX - 1 > headStartX && leftLipX - 1 >= 0 && canvas[mouthY]) {
-                canvas[mouthY][leftLipX - 1] = { char: leftCorner, type: 'lipCorner', color: lipColor };
+                canvas[mouthY][leftLipX - 1] = { char: leftCorner, type: 'lipCorner', color: lipColor, wrapperClass: 'face-mouth' };
             }
             if (rightLipX + 1 < headEndX && rightLipX + 1 < baseWidth && canvas[mouthY]) {
-                canvas[mouthY][rightLipX + 1] = { char: rightCorner, type: 'lipCorner', color: lipColor };
+                canvas[mouthY][rightLipX + 1] = { char: rightCorner, type: 'lipCorner', color: lipColor, wrapperClass: 'face-mouth' };
             }
         }
     }
@@ -1512,6 +1516,47 @@ window.updateFacePreview = updateFacePreview; // For potential direct calls or d
 
 let faceAnimationInterval = null;
 
+/**
+ * Updates only the animated parts of the face (eyes, mouth) for efficiency.
+ */
+function updateAnimatedParts() {
+    const faceParams = window.gameState.player.face;
+
+    // Generate the full new face HTML in memory
+    const newFaceHtml = generateAsciiFace(faceParams);
+
+    // Create a temporary, disconnected DOM element to parse the new HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = newFaceHtml;
+
+    // Get the new eye and mouth parts from the temporary element
+    const newEyes = tempDiv.querySelectorAll('.face-eye');
+    const newMouths = tempDiv.querySelectorAll('.face-mouth');
+
+    // Get the live eye and mouth elements from both preview and in-game displays
+    const liveEyes = document.querySelectorAll('#asciiFacePreview .face-eye, #charInfoAsciiFace .face-eye');
+    const liveMouths = document.querySelectorAll('#asciiFacePreview .face-mouth, #charInfoAsciiFace .face-mouth');
+
+    // Update eyes
+    if (newEyes.length === liveEyes.length) {
+        liveEyes.forEach((eye, index) => {
+            if (newEyes[index]) {
+                eye.innerHTML = newEyes[index].innerHTML;
+            }
+        });
+    }
+
+    // Update mouth parts
+    if (newMouths.length === liveMouths.length) {
+        liveMouths.forEach((mouthPart, index) => {
+            if (newMouths[index]) {
+                mouthPart.innerHTML = newMouths[index].innerHTML;
+            }
+        });
+    }
+}
+
+
 function startFaceAnimation() {
     if (faceAnimationInterval) {
         clearInterval(faceAnimationInterval);
@@ -1519,23 +1564,23 @@ function startFaceAnimation() {
 
     faceAnimationInterval = setInterval(() => {
         const faceParams = window.gameState.player.face;
-        const expressions = ['neutral', 'smile', 'frown', 'open'];
+        const expressions = ['neutral', 'smile', 'frown'];
 
         // Blink
         if (Math.random() < 0.2) { // 20% chance to blink
             faceParams.eyesOpen = false;
+            updateAnimatedParts();
             setTimeout(() => {
                 faceParams.eyesOpen = true;
-                updateFacePreview();
+                updateAnimatedParts();
             }, 200); // Blink duration
         }
 
         // Randomly change mouth expression
         if (Math.random() < 0.3) { // 30% chance to change expression
             faceParams.mouthExpression = _getRandomElement(expressions);
+            updateAnimatedParts();
         }
-
-        updateFacePreview();
     }, 1000); // Update every second
 }
 window.startFaceAnimation = startFaceAnimation;
