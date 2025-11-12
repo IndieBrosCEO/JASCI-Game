@@ -219,7 +219,7 @@ function _drawHeadOutline(canvas, faceParams, coords) {
 
 function _drawEyes(canvas, faceParams, coords) {
     const { baseWidth, baseHeight, headStartX, headEndX, eyeY, leftEyeX, rightEyeX } = coords;
-    const eyeColor = faceParams.eyeColor;
+    let eyeColor = faceParams.eyeColor;
     let eyeCharSymbol = 'o';
 
     if (faceParams.eyesOpen) {
@@ -227,6 +227,19 @@ function _drawEyes(canvas, faceParams, coords) {
         if (faceParams.eyeSize === 3) eyeCharSymbol = 'O';
     } else {
         eyeCharSymbol = '-';
+        // When eyes are closed, the "eyelid" color should match the surrounding skin.
+        // We read the color from the canvas cell *behind* the eye.
+        // This is safe because _drawHeadOutline runs before _drawEyes.
+        const leftSkinCell = canvas[eyeY] ? canvas[eyeY][leftEyeX] : null;
+        const rightSkinCell = canvas[eyeY] ? canvas[eyeY][rightEyeX] : null;
+
+        // For simplicity, we'll just use the left eye's underlying skin color for both eyelids.
+        // This avoids issues if one eye is off-canvas or in a weird spot.
+        if (leftSkinCell && (leftSkinCell.type.startsWith('skin'))) {
+            eyeColor = leftSkinCell.color;
+        } else {
+            eyeColor = faceParams.skinColor; // Fallback to base skin color
+        }
     }
 
     if (eyeY >= 0 && eyeY < baseHeight) {
