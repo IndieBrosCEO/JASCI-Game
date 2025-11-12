@@ -1,0 +1,58 @@
+{
+    "start": {
+        "text": "What do you want? Don't waste my time.",
+        "choices": [
+            {
+                "text": "Just looking for anything useful.",
+                "goTo": "neutral_response"
+            },
+            {
+                "text": "[Survival] Found anything good out there?",
+                "condition": {
+                    "type": "skillCheck",
+                    "expression": "skill:Survival>10"
+                },
+                "goTo": "survival_success"
+            },
+            {
+                "text": "Get out of my way.",
+                "goTo": "hostile_response"
+            }
+        ]
+    },
+    "neutral_response": {
+        "text": "Right. Well, this is my spot. Find your own.",
+        "choices": [
+            {
+                "text": "Fine.",
+                "goTo": "end"
+            }
+        ]
+    },
+    "survival_success": {
+        "text": "You know the look. Yeah, found a stash of canned goods a while back. Already picked clean, though. Keep your eyes peeled, you might get lucky.",
+        "choices": [
+            {
+                "text": "Thanks for the tip.",
+                "goTo": "end"
+            }
+        ]
+    },
+    "hostile_response": {
+        "text": "You want to start something? I'm not afraid to defend myself.",
+        "choices": [
+            {
+                "text": "Attack.",
+                "action": "startCombat"
+            },
+            {
+                "text": "Back off.",
+                "goTo": "end"
+            }
+        ]
+    },
+    "end": {
+        "text": "...",
+        "choices": []
+    }
+}

@@ -19,7 +19,7 @@
         "goTo": "sleight_of_hand_success",
         "condition": {
           "type": "skillCheck",
-          "expression": "skill:Sleight of Hand>8"
+          "expression": "skill:SleightOfHand>8"
         }
       }
     ]
