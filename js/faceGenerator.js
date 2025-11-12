@@ -214,17 +214,20 @@ function _drawEyes(canvas, faceParams, coords) {
     const { baseWidth, baseHeight, headStartX, headEndX, eyeY, leftEyeX, rightEyeX } = coords;
     const eyeColor = faceParams.eyeColor;
     let eyeCharSymbol = 'o';
-    if (faceParams.eyeSize === 1) eyeCharSymbol = '.';
-    if (faceParams.eyeSize === 3) eyeCharSymbol = 'O';
 
-    const eyeOffset = faceParams.eyeOffset || 0;
+    if (faceParams.eyesOpen) {
+        if (faceParams.eyeSize === 1) eyeCharSymbol = '.';
+        if (faceParams.eyeSize === 3) eyeCharSymbol = 'O';
+    } else {
+        eyeCharSymbol = '-';
+    }
 
     if (eyeY >= 0 && eyeY < baseHeight) {
-        if (leftEyeX + eyeOffset > headStartX && leftEyeX + eyeOffset < headEndX && leftEyeX + eyeOffset < baseWidth && canvas[eyeY]) { // Ensure eyes are within inner head bounds
-            canvas[eyeY][leftEyeX + eyeOffset] = { char: eyeCharSymbol, type: 'eye', color: eyeColor };
+        if (leftEyeX > headStartX && leftEyeX < headEndX && leftEyeX < baseWidth && canvas[eyeY]) { // Ensure eyes are within inner head bounds
+            canvas[eyeY][leftEyeX] = { char: eyeCharSymbol, type: 'eye', color: eyeColor };
         }
-        if (rightEyeX + eyeOffset > headStartX && rightEyeX + eyeOffset < headEndX && rightEyeX + eyeOffset < baseWidth && canvas[eyeY] && leftEyeX !== rightEyeX) {
-            canvas[eyeY][rightEyeX + eyeOffset] = { char: eyeCharSymbol, type: 'eye', color: eyeColor };
+        if (rightEyeX > headStartX && rightEyeX < headEndX && rightEyeX < baseWidth && canvas[eyeY] && leftEyeX !== rightEyeX) {
+            canvas[eyeY][rightEyeX] = { char: eyeCharSymbol, type: 'eye', color: eyeColor };
         }
     }
 }
@@ -352,22 +355,24 @@ function _drawNose(canvas, faceParams, coords) {
 function _drawMouth(canvas, faceParams, coords) {
     const { baseWidth, baseHeight, headStartX, headEndX, headEndY, mouthY, mouthCenterX } = coords;
     const lipColor = faceParams.lipColor;
-
     let mouthCharSymbol = '-';
+    if (faceParams.mouthFullness === 2) mouthCharSymbol = '=';
+    if (faceParams.mouthFullness === 3) mouthCharSymbol = 'w';
+
+    let leftCorner = '.';
+    let rightCorner = '.';
+
     switch (faceParams.mouthExpression) {
         case 'smile':
-            mouthCharSymbol = 'v';
+            leftCorner = '`';
+            rightCorner = '`';
             break;
         case 'frown':
-            mouthCharSymbol = 'n';
+            leftCorner = ',';
+            rightCorner = ',';
             break;
         case 'open':
             mouthCharSymbol = 'o';
-            break;
-        case 'neutral':
-        default:
-            if (faceParams.mouthFullness === 2) mouthCharSymbol = '=';
-            if (faceParams.mouthFullness === 3) mouthCharSymbol = 'w';
             break;
     }
 
@@ -382,10 +387,10 @@ function _drawMouth(canvas, faceParams, coords) {
             const leftLipX = mouthCenterX - Math.floor(faceParams.mouthWidth / 2);
             const rightLipX = mouthCenterX + Math.floor((faceParams.mouthWidth - 1) / 2);
             if (leftLipX - 1 > headStartX && leftLipX - 1 >= 0 && canvas[mouthY]) {
-                canvas[mouthY][leftLipX - 1] = { char: '.', type: 'lipCorner', color: lipColor };
+                canvas[mouthY][leftLipX - 1] = { char: leftCorner, type: 'lipCorner', color: lipColor };
             }
             if (rightLipX + 1 < headEndX && rightLipX + 1 < baseWidth && canvas[mouthY]) {
-                canvas[mouthY][rightLipX + 1] = { char: '.', type: 'lipCorner', color: lipColor };
+                canvas[mouthY][rightLipX + 1] = { char: rightCorner, type: 'lipCorner', color: lipColor };
             }
         }
     }
@@ -1416,6 +1421,12 @@ function updateFacePreview() {
     if (previewElement) {
         previewElement.innerHTML = asciiFace; // Changed from textContent to innerHTML
     }
+
+    // Update in-game face display if it exists
+    const inGameFaceElement = document.getElementById('charInfoAsciiFace');
+    if (inGameFaceElement) {
+        inGameFaceElement.innerHTML = asciiFace;
+    }
 }
 
 /**
@@ -1510,14 +1521,22 @@ function startFaceAnimation() {
         const faceParams = window.gameState.player.face;
         const expressions = ['neutral', 'smile', 'frown', 'open'];
 
-        // Randomly change eye offset
-        faceParams.eyeOffset = _getRandomValue(-1, 1);
+        // Blink
+        if (Math.random() < 0.2) { // 20% chance to blink
+            faceParams.eyesOpen = false;
+            setTimeout(() => {
+                faceParams.eyesOpen = true;
+                updateFacePreview();
+            }, 200); // Blink duration
+        }
 
         // Randomly change mouth expression
-        faceParams.mouthExpression = _getRandomElement(expressions);
+        if (Math.random() < 0.3) { // 30% chance to change expression
+            faceParams.mouthExpression = _getRandomElement(expressions);
+        }
 
         updateFacePreview();
-    }, 1000); // Change expression every second
+    }, 1000); // Update every second
 }
 window.startFaceAnimation = startFaceAnimation;
 
@@ -1664,7 +1683,7 @@ function generateRandomFaceParams(faceParamsObject) {
     faceParamsObject.eyeColor = _getRandomElement(PRESET_COLORS.eyes);
     faceParamsObject.lipColor = _getRandomElement(PRESET_COLORS.lips);
 
-    faceParamsObject.eyeOffset = 0; // -1 for left, 0 for center, 1 for right
+    faceParamsObject.eyesOpen = true; // true for open, false for closed
     faceParamsObject.mouthExpression = 'neutral'; // 'neutral', 'smile', 'frown', 'open'
 
     faceParamsObject.asciiFace = ""; // Initialize, will be generated by generateAsciiFace
