@@ -1,6 +1,7 @@
-﻿[
+[
   {
     "id": "scrap_metal",
+    "family": "metal_scrap",
     "name": "Scrap Metal",
     "description": "Pieces of rusted or bent metal, useful for crafting.",
     "type": "crafting_material",
@@ -13,10 +14,16 @@
     "maxStack": 50,
     "sprite": "%",
     "color": "silver",
-    "tags": [ "material", "crafting", "metal", "modern" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "modern"
+    ]
   },
   {
     "id": "wood_planks",
+    "family": "wood_plank",
     "name": "Wood Planks",
     "description": "Usable planks of wood, suitable for construction or crafting.",
     "type": "crafting_material",
@@ -29,7 +36,12 @@
     "maxStack": 20,
     "sprite": "=",
     "color": "peru",
-    "tags": [ "material", "crafting", "wood", "modern" ],
+    "tags": [
+      "material",
+      "crafting",
+      "wood",
+      "modern"
+    ],
     "recipe": {
       "description": "Saw a log into usable planks.",
       "components": [
@@ -44,7 +56,9 @@
           "level": 1
         }
       ],
-      "tools_required": [ "hand_saw_wood" ],
+      "tools_required": [
+        "hand_saw_wood"
+      ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 15,
       "batch_size": 3
@@ -52,6 +66,7 @@
   },
   {
     "id": "cloth_scrap",
+    "family": "fabric_scrap",
     "name": "Cloth Scrap",
     "description": "Torn pieces of fabric, can be used for bandages or other crafts.",
     "type": "crafting_material",
@@ -64,10 +79,16 @@
     "maxStack": 100,
     "sprite": "~",
     "color": "lightgray",
-    "tags": [ "material", "crafting", "cloth", "modern" ]
+    "tags": [
+      "material",
+      "crafting",
+      "cloth",
+      "modern"
+    ]
   },
   {
     "id": "duct_tape",
+    "family": "adhesive",
     "name": "Duct Tape",
     "description": "A roll of strong adhesive tape, incredibly versatile.",
     "type": "crafting_material",
@@ -80,10 +101,16 @@
     "maxStack": 10,
     "sprite": "&",
     "color": "darkgray",
-    "tags": [ "material", "crafting", "adhesive", "modern" ]
+    "tags": [
+      "material",
+      "crafting",
+      "adhesive",
+      "modern"
+    ]
   },
   {
     "id": "nails",
+    "family": "nail",
     "name": "Nails",
     "description": "A handful of metal nails, for construction and crafting.",
     "type": "crafting_material",
@@ -96,10 +123,16 @@
     "maxStack": 100,
     "sprite": "¡",
     "color": "silver",
-    "tags": [ "material", "crafting", "metal", "modern" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "modern"
+    ]
   },
   {
     "id": "sharp_glass",
+    "family": "glass_shards",
     "name": "Sharp Glass Shard",
     "description": "Jagged pieces of broken glass. Handle with care. Can be used as a crude cutting tool or component.",
     "type": "crafting_material",
@@ -112,7 +145,12 @@
     "maxStack": 20,
     "sprite": "'",
     "color": "lightblue",
-    "tags": [ "material", "sharp", "glass", "crafting" ]
+    "tags": [
+      "material",
+      "sharp",
+      "glass",
+      "crafting"
+    ]
   },
   {
     "id": "splintered_wood",
@@ -128,21 +166,33 @@
     "maxStack": 50,
     "sprite": "/",
     "color": "sandybrown",
-    "tags": [ "debris", "sharp", "wood", "modern" ]
+    "tags": [
+      "debris",
+      "sharp",
+      "wood",
+      "modern"
+    ],
+    "family": "splintered_wood"
   },
   {
     "id": "metal_ingot",
+    "family": "metal_ingot",
     "name": "Metal Ingot",
     "description": "A refined bar of generic metal, ready for more complex crafting.",
     "type": "crafting_material",
-    "weightLbs": 1.0,
+    "weightLbs": 1,
     "size": 1,
     "value": 5,
     "stackable": true,
     "maxStack": 20,
     "sprite": "=",
     "color": "slategray",
-    "tags": [ "material", "crafting", "metal", "refined" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "refined"
+    ],
     "recipe": {
       "description": "Melt down scrap metal into a usable ingot.",
       "components": [
@@ -157,7 +207,10 @@
           "level": 4
         }
       ],
-      "tools_required": [ "tongs_blacksmith", "crucible_basic" ],
+      "tools_required": [
+        "tongs_blacksmith",
+        "crucible_basic"
+      ],
       "station_required": "forge_simple_tile",
       "time_to_craft": 40,
       "batch_size": 1
@@ -165,6 +218,7 @@
   },
   {
     "id": "leather_strips",
+    "family": "leather_strips",
     "name": "Leather Strips",
     "description": "Tough strips of cured animal hide.",
     "type": "crafting_material",
@@ -175,7 +229,11 @@
     "maxStack": 20,
     "sprite": ";",
     "color": "saddlebrown",
-    "tags": [ "material", "crafting", "leather" ]
+    "tags": [
+      "material",
+      "crafting",
+      "leather"
+    ]
   },
   {
     "id": "glass_bottle_empty",
@@ -189,20 +247,33 @@
     "maxStack": 10,
     "sprite": "ü",
     "color": "white",
-    "tags": [ "material", "crafting", "container", "glass" ]
+    "tags": [
+      "material",
+      "crafting",
+      "container",
+      "glass"
+    ],
+    "family": "glass_bottle_empty"
   },
   {
     "id": "gasoline_canister_partial",
     "name": "Gasoline (Partial Canister)",
     "description": "A canister containing some flammable gasoline.",
     "type": "crafting_material",
-    "weightLbs": 1.0,
+    "weightLbs": 1,
     "size": 2,
     "value": 10,
     "stackable": false,
     "sprite": "g",
     "color": "orange",
-    "tags": [ "material", "crafting", "fuel", "flammable", "explosive_ingredient" ]
+    "tags": [
+      "material",
+      "crafting",
+      "fuel",
+      "flammable",
+      "explosive_ingredient"
+    ],
+    "family": "gasoline_canister_partial"
   },
   {
     "id": "armor_plate_makeshift",
@@ -216,7 +287,13 @@
     "maxStack": 5,
     "sprite": "#",
     "color": "darkgray",
-    "tags": [ "material", "crafting", "armor_component", "metal" ]
+    "tags": [
+      "material",
+      "crafting",
+      "armor_component",
+      "metal"
+    ],
+    "family": "armor_plate_makeshift"
   },
   {
     "id": "tomato_seeds",
@@ -241,7 +318,8 @@
     "plantable": true,
     "effects": {
       "growsInto": "tomato_plant"
-    }
+    },
+    "family": "tomato_seeds"
   },
   {
     "id": "corn_seeds",
@@ -266,7 +344,8 @@
     "plantable": true,
     "effects": {
       "growsInto": "corn_stalk"
-    }
+    },
+    "family": "corn_seeds"
   },
   {
     "id": "carrot_seeds",
@@ -291,10 +370,12 @@
     "plantable": true,
     "effects": {
       "growsInto": "carrot_plant"
-    }
+    },
+    "family": "carrot_seeds"
   },
   {
     "id": "iron_ingot",
+    "family": "iron_ingot",
     "name": "Iron Ingot",
     "description": "A bar of refined iron, ready for forging or further processing.",
     "type": "crafting_material",
@@ -307,10 +388,19 @@
     "maxStack": 10,
     "sprite": "=",
     "color": "darkgray",
-    "tags": [ "material", "crafting", "metal", "refined", "blacksmith", "armorer", "weaponsmith" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "refined",
+      "blacksmith",
+      "armorer",
+      "weaponsmith"
+    ]
   },
   {
     "id": "steel_ingot",
+    "family": "steel_ingot",
     "name": "Steel Ingot",
     "description": "A bar of steel, stronger and more versatile than iron.",
     "type": "crafting_material",
@@ -323,7 +413,16 @@
     "maxStack": 10,
     "sprite": "=",
     "color": "lightsteelblue",
-    "tags": [ "material", "crafting", "metal", "refined", "blacksmith", "armorer", "weaponsmith", "machinist" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "refined",
+      "blacksmith",
+      "armorer",
+      "weaponsmith",
+      "machinist"
+    ]
   },
   {
     "id": "rawhide_leather",
@@ -339,7 +438,15 @@
     "maxStack": 5,
     "sprite": "#",
     "color": "sienna",
-    "tags": [ "material", "crafting", "leather", "raw", "tanner", "cobbler" ]
+    "tags": [
+      "material",
+      "crafting",
+      "leather",
+      "raw",
+      "tanner",
+      "cobbler"
+    ],
+    "family": "rawhide_leather"
   },
   {
     "id": "tanned_leather_roll",
@@ -355,42 +462,166 @@
     "maxStack": 5,
     "sprite": "&",
     "color": "saddlebrown",
-    "tags": [ "material", "crafting", "leather", "refined", "tanner", "cobbler", "armorer", "seamstress" ]
+    "tags": [
+      "material",
+      "crafting",
+      "leather",
+      "refined",
+      "tanner",
+      "cobbler",
+      "armorer",
+      "seamstress"
+    ],
+    "family": "tanned_leather_roll"
   },
   {
-    "id": "bolt_of_cloth_cotton",
-    "name": "Bolt of Cotton Cloth",
-    "description": "A standard roll of woven cotton fabric.",
+    "id": "fabric_sheet_cotton",
+    "family": "fabric_sheet",
+    "displayName": "Fabric Sheet",
+    "variantName": "Cotton",
+    "description": "A sheet of woven cotton fabric.",
     "type": "crafting_material",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 2,
-    "weightLbs": 3,
-    "value": 10,
+    "size": 1,
+    "weightLbs": 0.3,
+    "value": 5,
     "stackable": true,
-    "maxStack": 10,
+    "maxStack": 20,
     "sprite": "%",
-    "color": "ivory",
-    "tags": [ "material", "crafting", "cloth", "fabric", "weaver", "seamstress", "tailor" ]
+    "color": "white",
+    "tags": [
+      "textile",
+      "plant_fiber"
+    ],
+    "properties": {
+      "material": "cotton",
+      "grade": 1,
+      "weight": "light"
+    }
   },
   {
-    "id": "bolt_of_cloth_wool",
-    "name": "Bolt of Wool Cloth",
-    "description": "A standard roll of woven wool fabric, warm and durable.",
+    "id": "fabric_sheet_wool",
+    "family": "fabric_sheet",
+    "displayName": "Fabric Sheet",
+    "variantName": "Wool",
+    "description": "A sheet of woven wool fabric.",
     "type": "crafting_material",
-    "canEquip": false,
-    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.4,
+    "value": 7,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": "%",
+    "color": "lightgray",
+    "tags": [
+      "textile",
+      "animal_fiber"
+    ],
+    "properties": {
+      "material": "wool",
+      "grade": 1,
+      "weight": "medium"
+    }
+  },
+  {
+    "id": "fabric_sheet_canvas",
+    "family": "fabric_sheet",
+    "displayName": "Fabric Sheet",
+    "variantName": "Canvas",
+    "description": "A sheet of durable, heavy-duty canvas fabric.",
+    "type": "crafting_material",
     "size": 2,
-    "weightLbs": 4,
-    "value": 15,
+    "weightLbs": 0.5,
+    "value": 6,
+    "stackable": true,
+    "maxStack": 15,
+    "sprite": "#",
+    "color": "beige",
+    "tags": [
+      "textile",
+      "plant_fiber"
+    ],
+    "properties": {
+      "material": "canvas",
+      "grade": 2,
+      "weight": "heavy"
+    }
+  },
+  {
+    "id": "fabric_sheet_nylon",
+    "family": "fabric_sheet",
+    "displayName": "Fabric Sheet",
+    "variantName": "Nylon",
+    "description": "A sheet of resilient nylon fabric, resistant to tearing and water.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 0.4,
+    "value": 8,
+    "stackable": true,
+    "maxStack": 15,
+    "sprite": "%",
+    "color": "darkslateblue",
+    "tags": [
+      "textile",
+      "synthetic"
+    ],
+    "properties": {
+      "material": "nylon",
+      "grade": 2,
+      "weight": "medium"
+    }
+  },
+  {
+    "id": "fabric_sheet_kevlar",
+    "family": "fabric_sheet",
+    "displayName": "Fabric Sheet",
+    "variantName": "Kevlar",
+    "description": "A sheet of woven Kevlar, offering excellent protection against projectiles and shrapnel.",
+    "type": "crafting_material",
+    "size": 2,
+    "weightLbs": 1,
+    "value": 50,
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "#",
+    "color": "gold",
+    "tags": [
+      "textile",
+      "ballistic",
+      "armor_component"
+    ],
+    "properties": {
+      "material": "kevlar",
+      "grade": 5,
+      "weight": "heavy"
+    }
+  },
+  {
+    "id": "fabric_sheet_burlap",
+    "family": "fabric_sheet",
+    "displayName": "Fabric Sheet",
+    "variantName": "Burlap",
+    "description": "A sheet of coarse burlap fabric, good for sacks or very rustic items.",
+    "type": "crafting_material",
+    "size": 2,
+    "weightLbs": 0.6,
+    "value": 2,
     "stackable": true,
     "maxStack": 10,
-    "sprite": "%",
-    "color": "lightgrey",
-    "tags": [ "material", "crafting", "cloth", "fabric", "wool", "weaver", "seamstress", "tailor" ]
+    "sprite": "#",
+    "color": "peru",
+    "tags": [
+      "textile",
+      "plant_fiber"
+    ],
+    "properties": {
+      "material": "burlap",
+      "grade": 0,
+      "weight": "heavy"
+    }
   },
   {
     "id": "beeswax_chunk",
+    "family": "beeswax",
     "name": "Chunk of Beeswax",
     "description": "A lump of natural beeswax, useful for candle making, waterproofing, and polishing.",
     "type": "crafting_material",
@@ -403,7 +634,16 @@
     "maxStack": 20,
     "sprite": "*",
     "color": "khaki",
-    "tags": [ "material", "crafting", "wax", "candle_maker", "artisan" ]
+    "tags": [
+      "material",
+      "crafting",
+      "wax",
+      "candle_maker",
+      "artisan"
+    ],
+    "properties": {
+      "form": "chunk"
+    }
   },
   {
     "id": "lye_powder",
@@ -419,11 +659,19 @@
     "maxStack": 20,
     "sprite": ":",
     "color": "whitesmoke",
-    "tags": [ "material", "crafting", "chemical", "soap_maker", "tanner" ],
-    "warning": "Caustic"
+    "tags": [
+      "material",
+      "crafting",
+      "chemical",
+      "soap_maker",
+      "tanner"
+    ],
+    "warning": "Caustic",
+    "family": "lye_powder"
   },
   {
     "id": "animal_fat_rendered",
+    "family": "animal_fat",
     "name": "Rendered Animal Fat (Tallow/Lard)",
     "description": "Purified animal fat, used in cooking, soap making, and candle making.",
     "type": "crafting_material",
@@ -436,7 +684,18 @@
     "maxStack": 10,
     "sprite": "o",
     "color": "ivory",
-    "tags": [ "material", "crafting", "fat", "soap_maker", "candle_maker", "cook", "butcher" ]
+    "tags": [
+      "material",
+      "crafting",
+      "fat",
+      "soap_maker",
+      "candle_maker",
+      "cook",
+      "butcher"
+    ],
+    "properties": {
+      "processing": "rendered"
+    }
   },
   {
     "id": "gemstone_uncut_small",
@@ -452,7 +711,15 @@
     "maxStack": 10,
     "sprite": "♦",
     "color": "cyan",
-    "tags": [ "material", "crafting", "gemstone", "raw", "jeweler", "artisan" ]
+    "tags": [
+      "material",
+      "crafting",
+      "gemstone",
+      "raw",
+      "jeweler",
+      "artisan"
+    ],
+    "family": "gemstone_uncut_small"
   },
   {
     "id": "gold_dust_pouch",
@@ -468,7 +735,16 @@
     "maxStack": 5,
     "sprite": "$",
     "color": "gold",
-    "tags": [ "material", "crafting", "metal", "precious_metal", "gold", "jeweler", "artisan" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "precious_metal",
+      "gold",
+      "jeweler",
+      "artisan"
+    ],
+    "family": "gold_dust_pouch"
   },
   {
     "id": "silver_nugget",
@@ -484,10 +760,20 @@
     "maxStack": 10,
     "sprite": "*",
     "color": "silver",
-    "tags": [ "material", "crafting", "metal", "precious_metal", "silver", "jeweler", "artisan" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "precious_metal",
+      "silver",
+      "jeweler",
+      "artisan"
+    ],
+    "family": "silver_nugget"
   },
   {
     "id": "copper_wire_spool",
+    "family": "copper_wire",
     "name": "Spool of Copper Wire",
     "description": "A spool of insulated copper wire, essential for electrical work and electronics.",
     "type": "crafting_material",
@@ -500,7 +786,20 @@
     "maxStack": 5,
     "sprite": "&",
     "color": "coral",
-    "tags": [ "material", "crafting", "metal", "electrical", "electronics", "electrician", "engineer", "technician", "robot_programmer" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "electrical",
+      "electronics",
+      "electrician",
+      "engineer",
+      "technician",
+      "robot_programmer"
+    ],
+    "properties": {
+      "form": "spool"
+    }
   },
   {
     "id": "rubber_hose_section",
@@ -516,7 +815,17 @@
     "maxStack": 10,
     "sprite": "~",
     "color": "darkslategray",
-    "tags": [ "material", "crafting", "rubber", "plumbing", "mechanical", "plumber", "mechanic", "engineer" ]
+    "tags": [
+      "material",
+      "crafting",
+      "rubber",
+      "plumbing",
+      "mechanical",
+      "plumber",
+      "mechanic",
+      "engineer"
+    ],
+    "family": "rubber_hose_section"
   },
   {
     "id": "gears_assorted",
@@ -532,7 +841,17 @@
     "maxStack": 10,
     "sprite": "*",
     "color": "dimgray",
-    "tags": [ "material", "crafting", "metal", "mechanical", "machinist", "engineer", "mechanic", "robot_programmer" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "mechanical",
+      "machinist",
+      "engineer",
+      "mechanic",
+      "robot_programmer"
+    ],
+    "family": "gears_assorted"
   },
   {
     "id": "circuit_board_blank",
@@ -548,10 +867,20 @@
     "maxStack": 10,
     "sprite": "#",
     "color": "green",
-    "tags": [ "material", "crafting", "electronics", "technician", "engineer", "electrician", "robot_programmer" ]
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "technician",
+      "engineer",
+      "electrician",
+      "robot_programmer"
+    ],
+    "family": "circuit_board_blank"
   },
   {
     "id": "concrete_mix_bag",
+    "family": "concrete_mix",
     "name": "Bag of Concrete Mix",
     "description": "A bag of dry concrete mix, requires water to activate. For construction and repairs.",
     "type": "crafting_material",
@@ -563,7 +892,18 @@
     "stackable": false,
     "sprite": "C",
     "color": "gray",
-    "tags": [ "material", "crafting", "construction", "civil_engineer", "architect", "laborer", "barricade_builder" ]
+    "tags": [
+      "material",
+      "crafting",
+      "construction",
+      "civil_engineer",
+      "architect",
+      "laborer",
+      "barricade_builder"
+    ],
+    "properties": {
+      "form": "bag"
+    }
   },
   {
     "id": "rivets_box",
@@ -579,7 +919,17 @@
     "maxStack": 50,
     "sprite": "+",
     "color": "silver",
-    "tags": [ "material", "crafting", "metal", "fastener", "shipwright", "armorer", "machinist", "engineer" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "fastener",
+      "shipwright",
+      "armorer",
+      "machinist",
+      "engineer"
+    ],
+    "family": "rivets_box"
   },
   {
     "id": "fiberglass_resin_can",
@@ -594,8 +944,19 @@
     "stackable": false,
     "sprite": "R",
     "color": "beige",
-    "tags": [ "material", "crafting", "chemical", "composite", "shipwright", "engineer", "artisan" ],
-    "requires": [ "fiberglass_cloth" ]
+    "tags": [
+      "material",
+      "crafting",
+      "chemical",
+      "composite",
+      "shipwright",
+      "engineer",
+      "artisan"
+    ],
+    "requires": [
+      "fiberglass_cloth"
+    ],
+    "family": "fiberglass_resin_can"
   },
   {
     "id": "fiberglass_cloth_roll",
@@ -611,10 +972,20 @@
     "maxStack": 5,
     "sprite": "%",
     "color": "white",
-    "tags": [ "material", "crafting", "fabric", "composite", "shipwright", "engineer", "artisan" ]
+    "tags": [
+      "material",
+      "crafting",
+      "fabric",
+      "composite",
+      "shipwright",
+      "engineer",
+      "artisan"
+    ],
+    "family": "fiberglass_cloth_roll"
   },
   {
     "id": "wood_stick",
+    "family": "wood_stick",
     "name": "Wood Stick",
     "description": "A sturdy stick, thicker than a twig, thinner than a log. Useful for basic tools or fuel.",
     "type": "crafting_material",
@@ -627,10 +998,17 @@
     "maxStack": 30,
     "sprite": "/",
     "color": "sienna",
-    "tags": [ "material", "crafting", "wood", "natural", "fuel" ]
+    "tags": [
+      "material",
+      "crafting",
+      "wood",
+      "natural",
+      "fuel"
+    ]
   },
   {
     "id": "wood_log",
+    "family": "wood_log",
     "name": "Wood Log",
     "description": "A sizeable section of a tree trunk or large branch. Primary source for planks or heavy wood objects.",
     "type": "crafting_material",
@@ -643,7 +1021,13 @@
     "maxStack": 5,
     "sprite": "L",
     "color": "saddlebrown",
-    "tags": [ "material", "crafting", "wood", "natural", "construction" ]
+    "tags": [
+      "material",
+      "crafting",
+      "wood",
+      "natural",
+      "construction"
+    ]
   },
   {
     "id": "plant_fibers_strong",
@@ -659,7 +1043,14 @@
     "maxStack": 50,
     "sprite": "}",
     "color": "darkkhaki",
-    "tags": [ "material", "crafting", "organic", "natural", "textile" ]
+    "tags": [
+      "material",
+      "crafting",
+      "organic",
+      "natural",
+      "textile"
+    ],
+    "family": "plant_fibers_strong"
   },
   {
     "id": "stone_sharp_fragment",
@@ -675,7 +1066,14 @@
     "maxStack": 20,
     "sprite": ">",
     "color": "dimgray",
-    "tags": [ "material", "crafting", "stone", "sharp", "natural" ]
+    "tags": [
+      "material",
+      "crafting",
+      "stone",
+      "sharp",
+      "natural"
+    ],
+    "family": "stone_sharp_fragment"
   },
   {
     "id": "animal_hide_raw_small",
@@ -691,7 +1089,13 @@
     "maxStack": 10,
     "sprite": "h",
     "color": "rosybrown",
-    "tags": [ "material", "crafting", "organic", "raw_leather" ]
+    "tags": [
+      "material",
+      "crafting",
+      "organic",
+      "raw_leather"
+    ],
+    "family": "animal_hide_raw_small"
   },
   {
     "id": "sinew_animal",
@@ -707,7 +1111,13 @@
     "maxStack": 20,
     "sprite": "~",
     "color": "ivory",
-    "tags": [ "material", "crafting", "organic", "cordage" ]
+    "tags": [
+      "material",
+      "crafting",
+      "organic",
+      "cordage"
+    ],
+    "family": "sinew_animal"
   },
   {
     "id": "feather",
@@ -723,10 +1133,17 @@
     "maxStack": 100,
     "sprite": "^",
     "color": "lightgrey",
-    "tags": [ "material", "crafting", "organic", "fletching" ]
+    "tags": [
+      "material",
+      "crafting",
+      "organic",
+      "fletching"
+    ],
+    "family": "feather"
   },
   {
     "id": "clay_lump",
+    "family": "clay_lump",
     "name": "Lump of Clay",
     "description": "Moist clay, suitable for pottery or making molds.",
     "type": "crafting_material",
@@ -739,7 +1156,12 @@
     "maxStack": 20,
     "sprite": "c",
     "color": "tan",
-    "tags": [ "material", "crafting", "ceramic", "natural" ]
+    "tags": [
+      "material",
+      "crafting",
+      "ceramic",
+      "natural"
+    ]
   },
   {
     "id": "sand_pile",
@@ -755,10 +1177,17 @@
     "maxStack": 50,
     "sprite": ":",
     "color": "khaki",
-    "tags": [ "material", "crafting", "inorganic", "construction_component" ]
+    "tags": [
+      "material",
+      "crafting",
+      "inorganic",
+      "construction_component"
+    ],
+    "family": "sand_pile"
   },
   {
     "id": "charcoal_bits",
+    "family": "charcoal",
     "name": "Charcoal Bits",
     "description": "Small pieces of charred wood. Useful as fuel, for drawing, or as a component in black powder.",
     "type": "crafting_material",
@@ -771,7 +1200,16 @@
     "maxStack": 50,
     "sprite": "c",
     "color": "black",
-    "tags": [ "material", "crafting", "fuel", "drawing", "explosive_ingredient" ],
+    "tags": [
+      "material",
+      "crafting",
+      "fuel",
+      "drawing",
+      "explosive_ingredient"
+    ],
+    "properties": {
+        "form": "bits"
+    },
     "recipe": {
       "description": "Slowly burn wood in a low-oxygen environment to create charcoal.",
       "components": [
@@ -792,55 +1230,8 @@
     }
   },
   {
-    "id": "gunpowder_basic",
-    "name": "Basic Gunpowder",
-    "description": "A crude mixture of sulfur, charcoal, and saltpeter. The fundamental component for many early firearms and explosives.",
-    "type": "crafting_material",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.2,
-    "value": 5,
-    "stackable": true,
-    "maxStack": 100,
-    "sprite": "*",
-    "color": "darkgray",
-    "tags": [ "material", "crafting", "explosive", "ammunition_component" ],
-    "warning": "Flammable, Explosive",
-    "recipe": {
-      "description": "Mix base chemicals to create gunpowder.",
-      "components": [
-        {
-          "itemId": "charcoal_bits",
-          "quantity": 2
-        },
-        {
-          "itemId": "chemical_reagent_sulfur",
-          "quantity": 1
-        },
-        {
-          "itemId": "chemical_reagent_saltpeter",
-          "quantity": 1
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Explosives",
-          "level": 2
-        },
-        {
-          "skill": "Electronics",
-          "level": 1
-        }
-      ],
-      "tools_required": [ "mortar_pestle" ],
-      "station_required": "chemistry_set_tile",
-      "time_to_craft": 20,
-      "batch_size": 5
-    }
-  },
-  {
     "id": "metal_bits_small",
+    "family": "metal_bits",
     "name": "Small Metal Bits",
     "description": "Tiny fragments of metal, smaller than general scrap. Good for shrapnel or very fine work.",
     "type": "crafting_material",
@@ -853,315 +1244,15 @@
     "maxStack": 200,
     "sprite": ",",
     "color": "silver",
-    "tags": [ "material", "crafting", "metal", "shrapnel" ]
-  },
-  {
-    "id": "casing_brass_pistol_small",
-    "name": "Small Pistol Brass Casing",
-    "description": "An empty brass casing for small caliber pistol ammunition (e.g., 9mm, .38 Spl).",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.02,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 200,
-    "sprite": "o",
-    "color": "gold",
-    "tags": [ "material", "crafting", "ammunition_component", "brass", "casing" ]
-  },
-  {
-    "id": "casing_brass_pistol_large",
-    "name": "Large Pistol Brass Casing",
-    "description": "An empty brass casing for large caliber pistol ammunition (e.g., .45 ACP, .44 Mag).",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.03,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 200,
-    "sprite": "O",
-    "color": "gold",
-    "tags": [ "material", "crafting", "ammunition_component", "brass", "casing" ]
-  },
-  {
-    "id": "casing_brass_rifle_small",
-    "name": "Small Rifle Brass Casing",
-    "description": "An empty brass casing for small caliber rifle ammunition (e.g., 5.56mm).",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.04,
-    "value": 2,
-    "stackable": true,
-    "maxStack": 100,
-    "sprite": "i",
-    "color": "goldenrod",
-    "tags": [ "material", "crafting", "ammunition_component", "brass", "casing" ]
-  },
-  {
-    "id": "casing_brass_rifle_medium",
-    "name": "Medium Rifle Brass Casing",
-    "description": "An empty brass casing for medium caliber rifle ammunition (e.g., 7.62mm).",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.05,
-    "value": 2,
-    "stackable": true,
-    "maxStack": 100,
-    "sprite": "I",
-    "color": "goldenrod",
-    "tags": [ "material", "crafting", "ammunition_component", "brass", "casing" ]
-  },
-  {
-    "id": "casing_brass_rifle_large",
-    "name": "Large Rifle Brass Casing",
-    "description": "An empty brass casing for large caliber rifle ammunition (e.g., .50 BMG).",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.1,
-    "value": 3,
-    "stackable": true,
-    "maxStack": 50,
-    "sprite": "U",
-    "color": "goldenrod",
-    "tags": [ "material", "crafting", "ammunition_component", "brass", "casing" ]
-  },
-  {
-    "id": "shotshell_hull_12ga",
-    "name": "12-Gauge Shotshell Hull",
-    "description": "An empty plastic or paper hull for a 12-gauge shotgun shell.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.02,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 100,
-    "sprite": "u",
-    "color": "red",
-    "tags": [ "material", "crafting", "ammunition_component", "shotshell_hull" ]
-  },
-  {
-    "id": "shotshell_hull_10ga",
-    "name": "10-Gauge Shotshell Hull",
-    "description": "An empty plastic or paper hull for a 10-gauge shotgun shell.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.03,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 100,
-    "sprite": "u",
-    "color": "darkred",
-    "tags": [ "material", "crafting", "ammunition_component", "shotshell_hull" ]
-  },
-  {
-    "id": "primer_pistol_small",
-    "name": "Small Pistol Primer",
-    "description": "A small primer for pistol ammunition.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.001,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 500,
-    "sprite": ".",
-    "color": "silver",
-    "tags": [ "material", "crafting", "ammunition_component", "primer" ]
-  },
-  {
-    "id": "primer_pistol_large",
-    "name": "Large Pistol Primer",
-    "description": "A large primer for pistol ammunition.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.002,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 500,
-    "sprite": ".",
-    "color": "gray",
-    "tags": [ "material", "crafting", "ammunition_component", "primer" ]
-  },
-  {
-    "id": "primer_rifle_small",
-    "name": "Small Rifle Primer",
-    "description": "A small primer for rifle ammunition.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.001,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 500,
-    "sprite": ",",
-    "color": "silver",
-    "tags": [ "material", "crafting", "ammunition_component", "primer" ]
-  },
-  {
-    "id": "primer_rifle_large",
-    "name": "Large Rifle Primer",
-    "description": "A large primer for rifle ammunition.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.002,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 500,
-    "sprite": ",",
-    "color": "gray",
-    "tags": [ "material", "crafting", "ammunition_component", "primer" ]
-  },
-  {
-    "id": "primer_shotgun",
-    "name": "Shotgun Primer",
-    "description": "A primer for shotgun shells.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.002,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 500,
-    "sprite": ":",
-    "color": "silver",
-    "tags": [ "material", "crafting", "ammunition_component", "primer" ]
-  },
-  {
-    "id": "bullet_projectile_9mm",
-    "name": "9mm Bullet Projectile",
-    "description": "A lead projectile for 9mm ammunition.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.01,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 200,
-    "sprite": "*",
-    "color": "gray",
-    "tags": [ "material", "crafting", "ammunition_component", "projectile", "lead" ]
-  },
-  {
-    "id": "bullet_projectile_10mm",
-    "name": "10mm Bullet Projectile",
-    "description": "A lead projectile for 10mm ammunition.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.012,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 200,
-    "sprite": "*",
-    "color": "darkgray",
-    "tags": [ "material", "crafting", "ammunition_component", "projectile", "lead" ]
-  },
-  {
-    "id": "bullet_projectile_45cal",
-    "name": ".45 Caliber Bullet Projectile",
-    "description": "A lead projectile for .45 caliber ammunition.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.015,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 200,
-    "sprite": "o",
-    "color": "gray",
-    "tags": [ "material", "crafting", "ammunition_component", "projectile", "lead" ]
-  },
-  {
-    "id": "bullet_projectile_50cal_pistol",
-    "name": ".50 Caliber Pistol Bullet Projectile",
-    "description": "A large lead projectile for .50 caliber pistol ammunition (e.g., .50AE).",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.02,
-    "value": 2,
-    "stackable": true,
-    "maxStack": 100,
-    "sprite": "O",
-    "color": "darkgray",
-    "tags": [ "material", "crafting", "ammunition_component", "projectile", "lead" ]
-  },
-  {
-    "id": "bullet_projectile_22cal",
-    "name": ".22 Caliber Bullet Projectile",
-    "description": "A small lead projectile for .22 caliber ammunition.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.005,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 500,
-    "sprite": ".",
-    "color": "gray",
-    "tags": [ "material", "crafting", "ammunition_component", "projectile", "lead" ]
-  },
-  {
-    "id": "bullet_projectile_5_56mm",
-    "name": "5.56mm Bullet Projectile",
-    "description": "A lead and copper projectile for 5.56mm rifle ammunition.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.008,
-    "value": 2,
-    "stackable": true,
-    "maxStack": 200,
-    "sprite": "^",
-    "color": "peru",
-    "tags": [ "material", "crafting", "ammunition_component", "projectile", "lead", "copper" ]
-  },
-  {
-    "id": "bullet_projectile_7_62mm",
-    "name": "7.62mm Bullet Projectile",
-    "description": "A lead and copper projectile for 7.62mm rifle ammunition.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.01,
-    "value": 2,
-    "stackable": true,
-    "maxStack": 200,
-    "sprite": "^",
-    "color": "saddlebrown",
-    "tags": [ "material", "crafting", "ammunition_component", "projectile", "lead", "copper" ]
-  },
-  {
-    "id": "bullet_projectile_50bmg",
-    "name": ".50 BMG Bullet Projectile",
-    "description": "A very large lead and copper projectile for .50 BMG ammunition.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.05,
-    "value": 5,
-    "stackable": true,
-    "maxStack": 50,
-    "sprite": "A",
-    "color": "darkgoldenrod",
-    "tags": [ "material", "crafting", "ammunition_component", "projectile", "lead", "copper", "steel_core_optional" ]
-  },
-  {
-    "id": "shot_lead_pellets_buckshot",
-    "name": "Lead Buckshot Pellets",
-    "description": "A measure of lead pellets for crafting buckshot shells.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.05,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 100,
-    "sprite": ":",
-    "color": "darkgray",
-    "tags": [ "material", "crafting", "ammunition_component", "projectile", "lead" ]
-  },
-  {
-    "id": "wad_shotgun",
-    "name": "Shotgun Wad",
-    "description": "A plastic or fiber wad used in shotgun shells to separate the powder from the shot.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.005,
-    "value": 1,
-    "stackable": true,
-    "maxStack": 200,
-    "sprite": "-",
-    "color": "lightgray",
-    "tags": [ "material", "crafting", "ammunition_component" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "shrapnel"
+    ],
+    "properties": {
+      "size": "small"
+    }
   },
   {
     "id": "arrow_shaft_wood",
@@ -1175,7 +1266,13 @@
     "maxStack": 50,
     "sprite": "|",
     "color": "burlywood",
-    "tags": [ "material", "crafting", "ammunition_component", "wood" ]
+    "tags": [
+      "material",
+      "crafting",
+      "ammunition_component",
+      "wood"
+    ],
+    "family": "arrow_shaft_wood"
   },
   {
     "id": "arrow_shaft_sturdy_wood",
@@ -1189,7 +1286,13 @@
     "maxStack": 50,
     "sprite": "|",
     "color": "sienna",
-    "tags": [ "material", "crafting", "ammunition_component", "wood" ]
+    "tags": [
+      "material",
+      "crafting",
+      "ammunition_component",
+      "wood"
+    ],
+    "family": "arrow_shaft_sturdy_wood"
   },
   {
     "id": "arrowhead_stone_crude",
@@ -1203,7 +1306,14 @@
     "maxStack": 50,
     "sprite": ">",
     "color": "gray",
-    "tags": [ "material", "crafting", "ammunition_component", "stone", "sharp" ]
+    "tags": [
+      "material",
+      "crafting",
+      "ammunition_component",
+      "stone",
+      "sharp"
+    ],
+    "family": "arrowhead_stone_crude"
   },
   {
     "id": "arrowhead_metal_basic",
@@ -1217,7 +1327,14 @@
     "maxStack": 50,
     "sprite": ">",
     "color": "silver",
-    "tags": [ "material", "crafting", "ammunition_component", "metal", "sharp" ]
+    "tags": [
+      "material",
+      "crafting",
+      "ammunition_component",
+      "metal",
+      "sharp"
+    ],
+    "family": "arrowhead_metal_basic"
   },
   {
     "id": "bolthead_metal_basic",
@@ -1231,10 +1348,18 @@
     "maxStack": 50,
     "sprite": "}",
     "color": "silver",
-    "tags": [ "material", "crafting", "ammunition_component", "metal", "sharp" ]
+    "tags": [
+      "material",
+      "crafting",
+      "ammunition_component",
+      "metal",
+      "sharp"
+    ],
+    "family": "bolthead_metal_basic"
   },
   {
     "id": "explosive_compound_generic_b",
+    "family": "explosive_compound",
     "name": "Generic Explosive Compound (Type B)",
     "description": "A moderately powerful explosive compound, more refined than basic gunpowder. For grenades or specialized charges.",
     "type": "crafting_material",
@@ -1245,8 +1370,15 @@
     "maxStack": 20,
     "sprite": "%",
     "color": "orangered",
-    "tags": [ "material", "crafting", "explosive" ],
-    "warning": "Highly Explosive"
+    "tags": [
+      "material",
+      "crafting",
+      "explosive"
+    ],
+    "warning": "Highly Explosive",
+    "properties": {
+      "type": "plastic_b"
+    }
   },
   {
     "id": "casing_grenade_40mm_metal",
@@ -1260,7 +1392,14 @@
     "maxStack": 20,
     "sprite": "G",
     "color": "olive",
-    "tags": [ "material", "crafting", "ammunition_component", "casing", "metal" ]
+    "tags": [
+      "material",
+      "crafting",
+      "ammunition_component",
+      "casing",
+      "metal"
+    ],
+    "family": "casing_grenade_40mm_metal"
   },
   {
     "id": "fuze_timed_impact_grenade",
@@ -1274,10 +1413,18 @@
     "maxStack": 30,
     "sprite": "f",
     "color": "darkgray",
-    "tags": [ "material", "crafting", "ammunition_component", "explosive_component", "mechanical" ]
+    "tags": [
+      "material",
+      "crafting",
+      "ammunition_component",
+      "explosive_component",
+      "mechanical"
+    ],
+    "family": "fuze_timed_impact_grenade"
   },
   {
     "id": "thread_simple_plant_fiber",
+    "family": "thread",
     "name": "Simple Plant Fiber Thread",
     "description": "Thread spun from strong plant fibers. Suitable for basic sewing.",
     "type": "crafting_material",
@@ -1288,7 +1435,15 @@
     "maxStack": 100,
     "sprite": "'",
     "color": "khaki",
-    "tags": [ "material", "crafting", "textile", "cordage" ],
+    "tags": [
+      "material",
+      "crafting",
+      "textile",
+      "cordage"
+    ],
+    "properties": {
+      "material": "plant_fiber"
+    },
     "recipe": {
       "description": "Spin strong plant fibers into usable thread.",
       "components": [
@@ -1309,6 +1464,7 @@
   },
   {
     "id": "cordage_basic_plant_fiber",
+    "family": "cordage",
     "name": "Basic Plant Fiber Cordage",
     "description": "Strong cordage made from twisted plant fibers. Useful for binding or simple constructions.",
     "type": "crafting_material",
@@ -1319,7 +1475,16 @@
     "maxStack": 50,
     "sprite": ";",
     "color": "darkkhaki",
-    "tags": [ "material", "crafting", "cordage", "natural" ],
+    "tags": [
+      "material",
+      "crafting",
+      "cordage",
+      "natural"
+    ],
+    "properties": {
+      "type": "basic",
+      "material": "plant_fiber"
+    },
     "recipe": {
       "description": "Twist plant fibers or simple thread into stronger cordage.",
       "components": [
@@ -1340,6 +1505,7 @@
   },
   {
     "id": "cloth_sheet_rough_fiber",
+    "family": "fabric_sheet",
     "name": "Rough Fiber Cloth Sheet",
     "description": "A coarsely woven sheet of cloth made from plant fibers. Not very comfortable, but functional.",
     "type": "crafting_material",
@@ -1350,7 +1516,15 @@
     "maxStack": 20,
     "sprite": "#",
     "color": "tan",
-    "tags": [ "material", "crafting", "textile", "fabric" ],
+    "tags": [
+      "material",
+      "crafting",
+      "textile",
+      "fabric"
+    ],
+    "properties": {
+        "material": "rough_fiber"
+    },
     "recipe": {
       "description": "Weave plant fibers or thread into a rough sheet of cloth.",
       "components": [
@@ -1382,7 +1556,12 @@
     "maxStack": 10,
     "sprite": "s",
     "color": "peru",
-    "tags": [ "material", "crafting", "leather", "processed" ],
+    "tags": [
+      "material",
+      "crafting",
+      "leather",
+      "processed"
+    ],
     "recipe": {
       "description": "Cure a small raw hide using simple tannins or smoke.",
       "components": [
@@ -1404,10 +1583,12 @@
       "station_required": "tanning_rack_simple",
       "time_to_craft": 120,
       "batch_size": 1
-    }
+    },
+    "family": "leather_cured_small"
   },
   {
     "id": "metal_rod_thin",
+    "family": "metal_rod",
     "name": "Thin Metal Rod",
     "description": "A thin rod of metal, useful for various small fabrications.",
     "type": "crafting_material",
@@ -1418,7 +1599,15 @@
     "maxStack": 30,
     "sprite": "-",
     "color": "silver",
-    "tags": [ "material", "crafting", "metal", "component" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "component"
+    ],
+    "properties": {
+      "thickness": "thin"
+    },
     "recipe": {
       "description": "Fashion thin rods from scrap metal.",
       "components": [
@@ -1433,7 +1622,11 @@
           "level": 2
         }
       ],
-      "tools_required": [ "hammer_peen", "tongs_blacksmith", "file_small_metal" ],
+      "tools_required": [
+        "hammer_peen",
+        "tongs_blacksmith",
+        "file_small_metal"
+      ],
       "station_required": "forge_simple_tile",
       "time_to_craft": 15,
       "batch_size": 2
@@ -1441,6 +1634,7 @@
   },
   {
     "id": "metal_sheet_thin",
+    "family": "metal_sheet",
     "name": "Thin Metal Sheet",
     "description": "A thin sheet of pliable metal. Can be cut or shaped.",
     "type": "crafting_material",
@@ -1451,7 +1645,15 @@
     "maxStack": 10,
     "sprite": "_",
     "color": "lightgray",
-    "tags": [ "material", "crafting", "metal", "component" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "component"
+    ],
+    "properties": {
+      "type": "thin"
+    },
     "recipe": {
       "description": "Hammer scrap metal or an ingot into a thin sheet.",
       "components": [
@@ -1466,7 +1668,10 @@
           "level": 3
         }
       ],
-      "tools_required": [ "hammer_peen", "tongs_blacksmith" ],
+      "tools_required": [
+        "hammer_peen",
+        "tongs_blacksmith"
+      ],
       "station_required": "forge_simple_tile",
       "time_to_craft": 25,
       "batch_size": 1
@@ -1474,6 +1679,7 @@
   },
   {
     "id": "metal_wire_stiff",
+    "family": "metal_wire",
     "name": "Stiff Metal Wire",
     "description": "A length of stiff metal wire, good for lockpicks or structural elements.",
     "type": "crafting_material",
@@ -1484,7 +1690,16 @@
     "maxStack": 50,
     "sprite": "~",
     "color": "darkgray",
-    "tags": [ "material", "crafting", "metal", "component", "electrical_conductive_bare" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "component",
+      "electrical_conductive_bare"
+    ],
+    "properties": {
+      "type": "stiff"
+    },
     "recipe": {
       "description": "Draw out scrap metal into stiff wire.",
       "components": [
@@ -1499,7 +1714,10 @@
           "level": 2
         }
       ],
-      "tools_required": [ "tongs_blacksmith", "pliers_set" ],
+      "tools_required": [
+        "tongs_blacksmith",
+        "pliers_set"
+      ],
       "station_required": "forge_simple_tile",
       "time_to_craft": 10,
       "batch_size": 3
@@ -1517,7 +1735,12 @@
     "maxStack": 50,
     "sprite": "p",
     "color": "lightblue",
-    "tags": [ "material", "crafting", "plastic", "component" ],
+    "tags": [
+      "material",
+      "crafting",
+      "plastic",
+      "component"
+    ],
     "recipe": {
       "description": "Clean and process raw plastic junk into usable scrap.",
       "components": [
@@ -1532,13 +1755,17 @@
           "level": 1
         }
       ],
-      "tools_required": [ "heat_gun_tool" ],
+      "tools_required": [
+        "heat_gun_tool"
+      ],
       "time_to_craft": 10,
       "batch_size": 2
-    }
+    },
+    "family": "plastic_scrap_processed"
   },
   {
     "id": "led_basic",
+    "family": "led",
     "name": "Basic LED",
     "description": "A simple Light Emitting Diode. Needs power to light up.",
     "type": "crafting_material",
@@ -1549,10 +1776,20 @@
     "maxStack": 100,
     "sprite": "*",
     "color": "red",
-    "tags": [ "material", "crafting", "electronics", "component", "light_source_component" ]
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "component",
+      "light_source_component"
+    ],
+    "properties": {
+      "type": "basic"
+    }
   },
   {
     "id": "wire_insulated_thin",
+    "family": "wire",
     "name": "Thin Insulated Wire",
     "description": "A short length of thin, insulated copper wire for electronics.",
     "type": "crafting_material",
@@ -1563,10 +1800,21 @@
     "maxStack": 100,
     "sprite": "~",
     "color": "blue",
-    "tags": [ "material", "crafting", "electronics", "component", "electrical_conductive" ]
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "component",
+      "electrical_conductive"
+    ],
+    "properties": {
+      "insulation": "insulated",
+      "thickness": "thin"
+    }
   },
   {
     "id": "battery_cell_small",
+    "family": "battery_cell",
     "name": "Small Battery Cell",
     "description": "A common small battery cell (e.g., AA, AAA). Provides power for small devices.",
     "type": "crafting_material",
@@ -1577,10 +1825,20 @@
     "maxStack": 20,
     "sprite": "b",
     "color": "silver",
-    "tags": [ "material", "crafting", "electronics", "component", "power_source" ]
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "component",
+      "power_source"
+    ],
+    "properties": {
+      "size": "small"
+    }
   },
   {
     "id": "spring_small_metal",
+    "family": "spring",
     "name": "Small Metal Spring",
     "description": "A small coiled metal spring, for mechanisms.",
     "type": "crafting_material",
@@ -1591,10 +1849,21 @@
     "maxStack": 50,
     "sprite": "{",
     "color": "gray",
-    "tags": [ "material", "crafting", "metal", "component", "mechanical" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "component",
+      "mechanical"
+    ],
+    "properties": {
+      "size": "small",
+      "material": "metal"
+    }
   },
   {
     "id": "rivet_small_metal",
+    "family": "rivet",
     "name": "Small Metal Rivet",
     "description": "A small metal rivet for fastening light materials.",
     "type": "crafting_material",
@@ -1605,10 +1874,21 @@
     "maxStack": 100,
     "sprite": ".",
     "color": "darkgray",
-    "tags": [ "material", "crafting", "metal", "component", "fastener" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "component",
+      "fastener"
+    ],
+    "properties": {
+      "size": "small",
+      "material": "metal"
+    }
   },
   {
     "id": "buckle_small_metal_plastic",
+    "family": "buckle",
     "name": "Small Buckle (Metal/Plastic)",
     "description": "A small buckle for straps, could be metal or sturdy plastic.",
     "type": "crafting_material",
@@ -1619,10 +1899,21 @@
     "maxStack": 30,
     "sprite": "&",
     "color": "gray",
-    "tags": [ "material", "crafting", "component", "fastener", "clothing_accessory" ]
+    "tags": [
+      "material",
+      "crafting",
+      "component",
+      "fastener",
+      "clothing_accessory"
+    ],
+    "properties": {
+      "size": "small",
+      "material": "composite"
+    }
   },
   {
     "id": "lens_crude_glass",
+    "family": "lens",
     "name": "Crude Glass Lens",
     "description": "A roughly shaped piece of glass that can magnify or focus light, albeit poorly.",
     "type": "crafting_material",
@@ -1633,10 +1924,21 @@
     "maxStack": 10,
     "sprite": "o",
     "color": "lightblue",
-    "tags": [ "material", "crafting", "glass", "component", "optical" ]
+    "tags": [
+      "material",
+      "crafting",
+      "glass",
+      "component",
+      "optical"
+    ],
+    "properties": {
+      "quality": "crude",
+      "material": "glass"
+    }
   },
   {
     "id": "chemical_reagent_sulfur",
+    "family": "chemical_reagent",
     "name": "Sulfur Powder",
     "description": "Yellow sulfur powder, a key chemical reagent.",
     "type": "crafting_material",
@@ -1647,10 +1949,16 @@
     "maxStack": 50,
     "sprite": "s",
     "color": "yellow",
-    "tags": [ "material", "crafting", "chemical", "explosive_ingredient" ]
+    "tags": [
+      "material",
+      "crafting",
+      "chemical",
+      "explosive_ingredient"
+    ]
   },
   {
     "id": "chemical_reagent_saltpeter",
+    "family": "chemical_reagent",
     "name": "Saltpeter (Potassium Nitrate)",
     "description": "Potassium nitrate powder, an oxidizer used in gunpowder and fertilizers.",
     "type": "crafting_material",
@@ -1661,7 +1969,16 @@
     "maxStack": 50,
     "sprite": "s",
     "color": "white",
-    "tags": [ "material", "crafting", "chemical", "explosive_ingredient", "fertilizer_component" ]
+    "tags": [
+      "material",
+      "crafting",
+      "chemical",
+      "explosive_ingredient",
+      "fertilizer_component"
+    ],
+    "properties": {
+      "type": "saltpeter"
+    }
   },
   {
     "id": "tannin_simple_bark",
@@ -1675,10 +1992,18 @@
     "maxStack": 20,
     "sprite": "t",
     "color": "saddlebrown",
-    "tags": [ "material", "crafting", "chemical", "organic", "leather_tanning" ]
+    "tags": [
+      "material",
+      "crafting",
+      "chemical",
+      "organic",
+      "leather_tanning"
+    ],
+    "family": "tannin_simple_bark"
   },
   {
     "id": "wick_basic_cloth_or_fiber",
+    "family": "wick",
     "name": "Basic Wick",
     "description": "A short length of twisted cloth or fiber that can serve as a wick for a candle or simple lamp.",
     "type": "crafting_material",
@@ -1689,10 +2014,19 @@
     "maxStack": 100,
     "sprite": "'",
     "color": "whitesmoke",
-    "tags": [ "material", "crafting", "component", "light_source_component" ]
+    "tags": [
+      "material",
+      "crafting",
+      "component",
+      "light_source_component"
+    ],
+    "properties": {
+      "type": "basic"
+    }
   },
   {
     "id": "antiseptic_herbal_pulp",
+    "family": "antiseptic",
     "name": "Herbal Antiseptic Pulp",
     "description": "A pulp made from specific medicinal herbs, possessing mild antiseptic qualities.",
     "type": "crafting_material",
@@ -1703,10 +2037,19 @@
     "maxStack": 20,
     "sprite": "p",
     "color": "green",
-    "tags": [ "material", "crafting", "medical_component", "herbal" ]
+    "tags": [
+      "material",
+      "crafting",
+      "medical_component",
+      "herbal"
+    ],
+    "properties": {
+      "type": "herbal_pulp"
+    }
   },
   {
     "id": "adhesive_paste_basic",
+    "family": "adhesive",
     "name": "Basic Adhesive Paste",
     "description": "A sticky paste made from natural ingredients, for light adhesion.",
     "type": "crafting_material",
@@ -1717,10 +2060,19 @@
     "maxStack": 30,
     "sprite": "*",
     "color": "burlywood",
-    "tags": [ "material", "crafting", "adhesive", "organic" ]
+    "tags": [
+      "material",
+      "crafting",
+      "adhesive",
+      "organic"
+    ],
+    "properties": {
+      "type": "paste_basic"
+    }
   },
   {
     "id": "mechanical_parts_simple",
+    "family": "mechanical_parts",
     "name": "Simple Mechanical Parts",
     "description": "A small collection of basic gears, levers, and linkages made from scrap.",
     "type": "crafting_material",
@@ -1731,7 +2083,16 @@
     "maxStack": 10,
     "sprite": "m",
     "color": "darkgray",
-    "tags": [ "material", "crafting", "metal", "component", "mechanical" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "component",
+      "mechanical"
+    ],
+    "properties": {
+      "type": "simple"
+    },
     "recipe": {
       "description": "Assemble simple mechanical components from scrap metal and small bits.",
       "components": [
@@ -1750,7 +2111,10 @@
           "level": 3
         }
       ],
-      "tools_required": [ "screwdriver_set_multi", "pliers_set" ],
+      "tools_required": [
+        "screwdriver_set_multi",
+        "pliers_set"
+      ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 20,
       "batch_size": 1
@@ -1758,6 +2122,7 @@
   },
   {
     "id": "rubber_strips_or_chunks",
+    "family": "rubber_strips",
     "name": "Rubber Strips/Chunks",
     "description": "Pieces of rubber salvaged from tires or other sources. Useful for padding or creating elastic parts.",
     "type": "crafting_material",
@@ -1768,7 +2133,12 @@
     "maxStack": 20,
     "sprite": "=",
     "color": "black",
-    "tags": [ "material", "crafting", "rubber", "component" ],
+    "tags": [
+      "material",
+      "crafting",
+      "rubber",
+      "component"
+    ],
     "recipe": {
       "description": "Cut an old tire into usable rubber strips or chunks.",
       "components": [
@@ -1783,7 +2153,9 @@
           "level": 1
         }
       ],
-      "tools_required": [ "knife_heavy_duty" ],
+      "tools_required": [
+        "knife_heavy_duty"
+      ],
       "time_to_craft": 15,
       "batch_size": 3
     }
@@ -1800,10 +2172,17 @@
     "maxStack": 2,
     "sprite": "O",
     "color": "black",
-    "tags": [ "material", "salvage", "rubber_source", "vehicle_component_raw" ]
+    "tags": [
+      "material",
+      "salvage",
+      "rubber_source",
+      "vehicle_component_raw"
+    ],
+    "family": "old_tire"
   },
   {
     "id": "steel_ingot_small_tool_grade",
+    "family": "steel_ingot",
     "name": "Small Tool-Grade Steel Ingot",
     "description": "A small ingot of steel, suitable for forging basic tool heads.",
     "type": "crafting_material",
@@ -1814,10 +2193,163 @@
     "maxStack": 10,
     "sprite": "=",
     "color": "slategray",
-    "tags": [ "material", "crafting", "metal", "refined", "steel", "tool_component" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "refined",
+      "steel",
+      "tool_component"
+    ],
+    "properties": {
+      "grade": "tool"
+    }
+  },
+  {
+    "id": "plastic_scrap",
+    "family": "plastic_scrap",
+    "name": "Plastic Scrap",
+    "description": "Miscellaneous broken or discarded plastic items.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 0.5,
+    "value": 0,
+    "stackable": true,
+    "maxStack": 50,
+    "sprite": "j",
+    "color": "gray",
+    "tags": [
+      "material",
+      "junk",
+      "plastic_source"
+    ]
+  },
+  {
+    "id": "stone_block",
+    "family": "stone_block",
+    "name": "Stone Block",
+    "description": "A roughly shaped block of stone, suitable for construction.",
+    "type": "crafting_material",
+    "size": 2,
+    "weightLbs": 15,
+    "value": 2,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "S",
+    "color": "gray",
+    "tags": [
+      "material",
+      "crafting",
+      "stone",
+      "construction"
+    ]
+  },
+  {
+    "id": "bolts",
+    "family": "bolts",
+    "name": "Bolts",
+    "description": "A set of metal bolts and matching nuts for fastening.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 0.5,
+    "value": 3,
+    "stackable": true,
+    "maxStack": 50,
+    "sprite": "+",
+    "color": "silver",
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "fastener"
+    ]
+  },
+  {
+    "id": "metal_rod",
+    "family": "metal_rod",
+    "name": "Metal Rod",
+    "description": "A thin rod of metal, useful for various small fabrications.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 0.4,
+    "value": 2,
+    "stackable": true,
+    "maxStack": 30,
+    "sprite": "-",
+    "color": "silver",
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "component"
+    ]
+  },
+  {
+    "id": "steel_sheet_sturdy",
+    "family": "metal_sheet",
+    "name": "Sturdy Steel Sheet",
+    "description": "A relatively thick and sturdy sheet of steel, suitable for construction or armor.",
+    "type": "crafting_material",
+    "size": 3,
+    "weightLbs": 8,
+    "value": 10,
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "=",
+    "color": "darkgray",
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "construction",
+      "armor_component"
+    ]
+  },
+  {
+    "id": "switch_basic_toggle",
+    "family": "switch",
+    "name": "Basic Toggle Switch",
+    "description": "A simple switch for controlling power to a device.",
+    "type": "crafting_material",
+    "size": 0,
+    "weightLbs": 0.02,
+    "value": 3,
+    "stackable": true,
+    "maxStack": 50,
+    "sprite": "s",
+    "color": "gray",
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "component"
+    ],
+    "properties": {
+      "type": "toggle"
+    }
+  },
+  {
+    "id": "electronics_scrap",
+    "family": "electronics_scrap",
+    "name": "Electronics Scrap",
+    "description": "Salvaged electronic components.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 0.5,
+    "value": 2,
+    "stackable": true,
+    "maxStack": 50,
+    "sprite": "e",
+    "color": "green",
+    "tags": [
+      "material",
+      "junk",
+      "electronics"
+    ]
   },
   {
     "id": "wood_handle_simple_tool",
+    "family": "wood_handle",
     "name": "Simple Wooden Tool Handle",
     "description": "A roughly shaped wooden handle for basic tools.",
     "type": "crafting_material",
@@ -1828,7 +2360,16 @@
     "maxStack": 20,
     "sprite": "\\",
     "color": "peru",
-    "tags": [ "material", "crafting", "wood", "component", "tool_component" ],
+    "tags": [
+      "material",
+      "crafting",
+      "wood",
+      "component",
+      "tool_component"
+    ],
+    "properties": {
+      "type": "simple"
+    },
     "recipe": {
       "description": "Carve a simple tool handle from a piece of wood.",
       "components": [
@@ -1843,126 +2384,109 @@
           "level": 0
         }
       ],
-      "tools_required": [ "knife_melee" ],
+      "tools_required": [
+        "knife_melee"
+      ],
       "time_to_craft": 10,
       "batch_size": 1
     }
   },
   {
-    "id": "fabric_sheet_cotton_fine",
-    "name": "Fine Cotton Fabric Sheet",
-    "description": "A sheet of soft, finely woven cotton fabric.",
-    "type": "crafting_material",
-    "size": 1,
-    "weightLbs": 0.2,
-    "value": 5,
-    "stackable": true,
-    "maxStack": 20,
-    "sprite": "%",
-    "color": "white",
-    "tags": [ "material", "crafting", "textile", "fabric", "cotton" ]
-  },
-  {
-    "id": "fabric_sheet_wool_fine",
-    "name": "Fine Wool Fabric Sheet",
-    "description": "A sheet of soft, warm, finely woven wool fabric.",
-    "type": "crafting_material",
-    "size": 1,
-    "weightLbs": 0.3,
-    "value": 7,
-    "stackable": true,
-    "maxStack": 20,
-    "sprite": "%",
-    "color": "lightgray",
-    "tags": [ "material", "crafting", "textile", "fabric", "wool" ]
-  },
-  {
-    "id": "fabric_sheet_canvas_sturdy",
-    "name": "Sturdy Canvas Fabric Sheet",
-    "description": "A sheet of durable, heavy-duty canvas fabric.",
-    "type": "crafting_material",
-    "size": 2,
-    "weightLbs": 0.5,
-    "value": 6,
-    "stackable": true,
-    "maxStack": 15,
-    "sprite": "#",
-    "color": "beige",
-    "tags": [ "material", "crafting", "textile", "fabric", "canvas" ]
-  },
-  {
-    "id": "fabric_sheet_nylon_tough",
-    "name": "Tough Nylon Fabric Sheet",
-    "description": "A sheet of resilient nylon fabric, resistant to tearing and water.",
-    "type": "crafting_material",
-    "size": 1,
-    "weightLbs": 0.4,
-    "value": 8,
-    "stackable": true,
-    "maxStack": 15,
-    "sprite": "%",
-    "color": "darkslateblue",
-    "tags": [ "material", "crafting", "textile", "fabric", "synthetic", "nylon" ]
-  },
-  {
-    "id": "fabric_sheet_kevlar_ballistic",
-    "name": "Kevlar Ballistic Fabric Sheet",
-    "description": "A sheet of woven Kevlar, offering excellent protection against projectiles and shrapnel.",
-    "type": "crafting_material",
-    "size": 2,
-    "weightLbs": 1.0,
-    "value": 50,
-    "stackable": true,
-    "maxStack": 5,
-    "sprite": "#",
-    "color": "gold",
-    "tags": [ "material", "crafting", "textile", "fabric", "ballistic", "kevlar", "armor_component" ],
-    "warning": "Specialized Material"
-  },
-  {
-    "id": "fabric_sheet_burlap_rough",
-    "name": "Rough Burlap Fabric Sheet",
-    "description": "A sheet of coarse burlap fabric, good for sacks or very rustic items.",
-    "type": "crafting_material",
-    "size": 2,
-    "weightLbs": 0.6,
-    "value": 2,
-    "stackable": true,
-    "maxStack": 10,
-    "sprite": "#",
-    "color": "peru",
-    "tags": [ "material", "crafting", "textile", "fabric", "burlap" ]
-  },
-  {
-    "id": "leather_hide_thick_cured",
-    "name": "Thick Cured Leather Hide",
-    "description": "A large, thick piece of animal hide that has been cured. Sturdy and suitable for armor or heavy goods.",
-    "type": "crafting_material",
-    "size": 3,
-    "weightLbs": 3.0,
-    "value": 15,
-    "stackable": true,
-    "maxStack": 5,
-    "sprite": "H",
-    "color": "saddlebrown",
-    "tags": [ "material", "crafting", "leather", "processed", "armor_component" ]
-  },
-  {
     "id": "leather_hide_medium_tanned",
-    "name": "Medium Tanned Leather Hide",
+    "family": "leather_hide",
+    "displayName": "Leather Hide",
+    "variantName": "Medium Tanned",
     "description": "A versatile piece of tanned leather, suitable for clothing, bags, and lighter armor.",
     "type": "crafting_material",
     "size": 2,
-    "weightLbs": 2.0,
+    "weightLbs": 2,
     "value": 12,
     "stackable": true,
     "maxStack": 8,
     "sprite": "h",
     "color": "sienna",
-    "tags": [ "material", "crafting", "leather", "refined", "clothing_material" ]
+    "tags": [
+      "leather",
+      "clothing_material"
+    ],
+    "properties": {
+      "tanning": "medium",
+      "thickness": "medium"
+    }
+  },
+  {
+    "id": "leather_hide_thick_cured",
+    "family": "leather_hide",
+    "displayName": "Leather Hide",
+    "variantName": "Thick Cured",
+    "description": "A large, thick piece of animal hide that has been cured. Sturdy and suitable for armor or heavy goods.",
+    "type": "crafting_material",
+    "size": 3,
+    "weightLbs": 3,
+    "value": 15,
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "H",
+    "color": "saddlebrown",
+    "tags": [
+      "leather",
+      "processed",
+      "armor_component"
+    ],
+    "properties": {
+      "tanning": "cured",
+      "thickness": "thick"
+    }
+  },
+  {
+    "id": "device_casing_plastic_medium",
+    "family": "device_casing",
+    "displayName": "Device Casing",
+    "variantName": "Plastic (Medium)",
+    "description": "A molded plastic casing for medium-sized electronics or equipment.",
+    "type": "crafting_material",
+    "size": 2,
+    "weightLbs": 0.6,
+    "value": 8,
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "[",
+    "color": "darkgray",
+    "tags": [
+      "component",
+      "casing"
+    ],
+    "properties": {
+      "material": "plastic",
+      "size": "medium"
+    }
+  },
+  {
+    "id": "device_casing_plastic_large",
+    "family": "device_casing",
+    "displayName": "Device Casing",
+    "variantName": "Plastic (Large)",
+    "description": "A molded plastic casing for large-sized electronics or equipment.",
+    "type": "crafting_material",
+    "size": 3,
+    "weightLbs": 1,
+    "value": 12,
+    "stackable": true,
+    "maxStack": 3,
+    "sprite": "[",
+    "color": "black",
+    "tags": [
+      "component",
+      "casing"
+    ],
+    "properties": {
+      "material": "plastic",
+      "size": "large"
+    }
   },
   {
     "id": "padding_foam_sheet",
+    "family": "padding",
     "name": "Foam Padding Sheet",
     "description": "A sheet of soft foam, useful for padding armor or creating comfortable items.",
     "type": "crafting_material",
@@ -1973,11 +2497,22 @@
     "maxStack": 10,
     "sprite": "~",
     "color": "lightsteelblue",
-    "tags": [ "material", "crafting", "synthetic", "padding", "comfort_component" ]
+    "tags": [
+      "material",
+      "crafting",
+      "synthetic",
+      "padding",
+      "comfort_component"
+    ],
+    "properties": {
+      "material": "foam"
+    }
   },
   {
-    "id": "plastic_casing_small_device",
-    "name": "Small Device Plastic Casing",
+    "id": "device_casing_plastic_small",
+    "family": "device_casing",
+    "displayName": "Device Casing",
+    "variantName": "Plastic (Small)",
     "description": "A molded plastic casing suitable for small electronic devices or tools.",
     "type": "crafting_material",
     "size": 1,
@@ -1987,49 +2522,16 @@
     "maxStack": 10,
     "sprite": "[",
     "color": "gray",
-    "tags": [ "material", "crafting", "plastic", "component", "casing" ]
-  },
-  {
-    "id": "plastic_casing_medium_device",
-    "name": "Medium Device Plastic Casing",
-    "description": "A molded plastic casing for medium-sized electronics or equipment.",
-    "type": "crafting_material",
-    "size": 2,
-    "weightLbs": 0.6,
-    "value": 8,
-    "stackable": true,
-    "maxStack": 5,
-    "sprite": "[",
-    "color": "darkgray",
-    "tags": [ "material", "crafting", "plastic", "component", "casing" ]
-  },
-  {
-    "id": "metal_casing_small_device",
-    "name": "Small Device Metal Casing",
-    "description": "A sturdy metal casing for small, rugged devices.",
-    "type": "crafting_material",
-    "size": 1,
-    "weightLbs": 0.8,
-    "value": 10,
-    "stackable": true,
-    "maxStack": 8,
-    "sprite": "{",
-    "color": "silver",
-    "tags": [ "material", "crafting", "metal", "component", "casing" ]
-  },
-  {
-    "id": "metal_casing_medium_device",
-    "name": "Medium Device Metal Casing",
-    "description": "A robust metal casing for medium-sized equipment requiring durability.",
-    "type": "crafting_material",
-    "size": 2,
-    "weightLbs": 1.5,
-    "value": 15,
-    "stackable": true,
-    "maxStack": 4,
-    "sprite": "{",
-    "color": "slategray",
-    "tags": [ "material", "crafting", "metal", "component", "casing" ]
+    "tags": [
+      "material",
+      "crafting",
+      "component",
+      "casing"
+    ],
+    "properties": {
+      "material": "plastic",
+      "size": "small"
+    }
   },
   {
     "id": "electronics_board_populated_simple",
@@ -2043,10 +2545,18 @@
     "maxStack": 10,
     "sprite": "#",
     "color": "darkgreen",
-    "tags": [ "material", "crafting", "electronics", "component", "circuitry" ]
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "component",
+      "circuitry"
+    ],
+    "family": "electronics_board_populated_simple"
   },
   {
     "id": "heating_element_nichrome_wire",
+    "family": "heating_element",
     "name": "Nichrome Heating Element Wire",
     "description": "A length of nichrome wire, designed to heat up when electricity passes through it.",
     "type": "crafting_material",
@@ -2057,10 +2567,20 @@
     "maxStack": 20,
     "sprite": "~",
     "color": "orangered",
-    "tags": [ "material", "crafting", "electronics", "component", "heating_element" ]
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "component",
+      "heating_element"
+    ],
+    "properties": {
+      "type": "nichrome_wire"
+    }
   },
   {
     "id": "motor_small_electric",
+    "family": "motor",
     "name": "Small Electric Motor",
     "description": "A compact electric motor for powering small mechanical devices.",
     "type": "crafting_material",
@@ -2071,7 +2591,17 @@
     "maxStack": 5,
     "sprite": "m",
     "color": "blue",
-    "tags": [ "material", "crafting", "electronics", "mechanical", "component" ]
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "mechanical",
+      "component"
+    ],
+    "properties": {
+      "size": "small",
+      "type": "electric"
+    }
   },
   {
     "id": "antenna_basic_radio",
@@ -2085,7 +2615,14 @@
     "maxStack": 10,
     "sprite": "Y",
     "color": "silver",
-    "tags": [ "material", "crafting", "electronics", "component", "communication" ]
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "component",
+      "communication"
+    ],
+    "family": "antenna_basic_radio"
   },
   {
     "id": "fuze_mechanism_advanced",
@@ -2099,21 +2636,38 @@
     "maxStack": 5,
     "sprite": "F",
     "color": "red",
-    "tags": [ "material", "crafting", "explosive_component", "mechanical", "electronics_optional" ]
+    "tags": [
+      "material",
+      "crafting",
+      "explosive_component",
+      "mechanical",
+      "electronics_optional"
+    ],
+    "family": "fuze_mechanism_advanced"
   },
   {
     "id": "steel_plate_vehicle_grade",
+    "family": "steel_plate",
     "name": "Vehicle Grade Steel Plate",
     "description": "A thick, heavy steel plate specifically manufactured for vehicle armor.",
     "type": "crafting_material",
     "size": 3,
-    "weightLbs": 20.0,
+    "weightLbs": 20,
     "value": 40,
     "stackable": true,
     "maxStack": 2,
     "sprite": "S",
     "color": "darkslategray",
-    "tags": [ "material", "crafting", "metal", "armor_component", "vehicle_part_raw" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "armor_component",
+      "vehicle_part_raw"
+    ],
+    "properties": {
+      "grade": "vehicle"
+    }
   },
   {
     "id": "engine_block_small_cast",
@@ -2121,13 +2675,20 @@
     "description": "The main structure of a small engine, cast from metal.",
     "type": "crafting_material",
     "size": 2,
-    "weightLbs": 15.0,
+    "weightLbs": 15,
     "value": 30,
     "stackable": true,
     "maxStack": 1,
     "sprite": "E",
     "color": "gray",
-    "tags": [ "material", "crafting", "metal", "vehicle_part_raw", "engine_component" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "vehicle_part_raw",
+      "engine_component"
+    ],
+    "family": "engine_block_small_cast"
   },
   {
     "id": "piston_set_small_engine",
@@ -2135,13 +2696,20 @@
     "description": "A set of pistons and connecting rods for a small internal combustion engine.",
     "type": "crafting_material",
     "size": 1,
-    "weightLbs": 2.0,
+    "weightLbs": 2,
     "value": 25,
     "stackable": true,
     "maxStack": 4,
     "sprite": "p",
     "color": "silver",
-    "tags": [ "material", "crafting", "metal", "vehicle_part_raw", "engine_component" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "vehicle_part_raw",
+      "engine_component"
+    ],
+    "family": "piston_set_small_engine"
   },
   {
     "id": "crankshaft_small_engine",
@@ -2149,13 +2717,20 @@
     "description": "A forged or cast crankshaft for a small engine.",
     "type": "crafting_material",
     "size": 2,
-    "weightLbs": 5.0,
+    "weightLbs": 5,
     "value": 20,
     "stackable": true,
     "maxStack": 2,
     "sprite": "c",
     "color": "slategray",
-    "tags": [ "material", "crafting", "metal", "vehicle_part_raw", "engine_component" ]
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "vehicle_part_raw",
+      "engine_component"
+    ],
+    "family": "crankshaft_small_engine"
   },
   {
     "id": "rubber_sheet_tire_tread",
@@ -2163,13 +2738,19 @@
     "description": "A thick sheet of rubber, often with tread patterns, salvaged from tires. Good for durable surfaces or patches.",
     "type": "crafting_material",
     "size": 2,
-    "weightLbs": 3.0,
+    "weightLbs": 3,
     "value": 5,
     "stackable": true,
     "maxStack": 5,
     "sprite": "=",
     "color": "black",
-    "tags": [ "material", "crafting", "rubber", "vehicle_part_raw_processed" ]
+    "tags": [
+      "material",
+      "crafting",
+      "rubber",
+      "vehicle_part_raw_processed"
+    ],
+    "family": "rubber_sheet_tire_tread"
   },
   {
     "id": "glass_lens_optical_grade_small",
@@ -2183,7 +2764,15 @@
     "maxStack": 5,
     "sprite": "o",
     "color": "aliceblue",
-    "tags": [ "material", "crafting", "glass", "component", "optical", "precision" ]
+    "tags": [
+      "material",
+      "crafting",
+      "glass",
+      "component",
+      "optical",
+      "precision"
+    ],
+    "family": "glass_lens_optical_grade_small"
   },
   {
     "id": "memory_chip_basic",
@@ -2197,7 +2786,14 @@
     "maxStack": 10,
     "sprite": "m",
     "color": "darkgreen",
-    "tags": [ "material", "crafting", "electronics", "component", "circuitry" ]
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "component",
+      "circuitry"
+    ],
+    "family": "memory_chip_basic"
   },
   {
     "id": "sensor_module_basic",
@@ -2211,7 +2807,14 @@
     "maxStack": 8,
     "sprite": "s",
     "color": "blue",
-    "tags": [ "material", "crafting", "electronics", "component", "sensor" ]
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "component",
+      "sensor"
+    ],
+    "family": "sensor_module_basic"
   },
   {
     "id": "plastic_junk_item",
@@ -2227,12 +2830,18 @@
     "maxStack": 50,
     "sprite": "j",
     "color": "gray",
-    "tags": [ "material", "junk", "plastic_source", "unprocessed" ]
+    "tags": [
+      "material",
+      "junk",
+      "plastic_source",
+      "unprocessed"
+    ],
+    "family": "plastic_junk_item"
   },
   {
-    "id": "needle_steel",
-    "name": "Steel Needle",
-    "description": "A small, sharp steel needle for sewing.",
+    "id": "needle",
+    "name": "Needle",
+    "description": "A sharp steel needle for sewing.",
     "type": "crafting_material",
     "size": 0,
     "weightLbs": 0.005,
@@ -2241,61 +2850,20 @@
     "maxStack": 50,
     "sprite": "'",
     "color": "silver",
-    "tags": [ "material", "crafting", "tool_component", "sewing_component" ],
-    "recipe": {
-      "description": "Fashion a steel needle from stiff wire.",
-      "components": [
-        {
-          "itemId": "metal_wire_stiff",
-          "quantity": 1
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 1
-        }
-      ],
-      "tools_required": [ "file_small_metal" ],
-      "time_to_craft": 3,
-      "batch_size": 5
-    }
-  },
-  {
-    "id": "needle_steel_heavy",
-    "name": "Heavy Steel Needle",
-    "description": "A larger, stronger steel needle for sewing tough materials like canvas or leather.",
-    "type": "crafting_material",
-    "size": 0,
-    "weightLbs": 0.01,
-    "value": 2,
-    "stackable": true,
-    "maxStack": 30,
-    "sprite": "!",
-    "color": "silver",
-    "tags": [ "material", "crafting", "tool_component", "sewing_component", "leatherworking_component" ],
-    "recipe": {
-      "description": "Fashion a heavy-duty steel needle.",
-      "components": [
-        {
-          "itemId": "metal_rod_thin",
-          "quantity": 1
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 2
-        }
-      ],
-      "tools_required": [ "file_small_metal" ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 5,
-      "batch_size": 3
-    }
+    "tags": [
+      "material",
+      "crafting",
+      "tool_component",
+      "sewing_component"
+    ],
+    "properties": {
+      "size": "small"
+    },
+    "family": "needle"
   },
   {
     "id": "thread_strong_synthetic",
+    "family": "thread",
     "name": "Strong Synthetic Thread",
     "description": "Durable thread made from synthetic fibers, suitable for heavy-duty sewing (e.g., nylon, polyester).",
     "type": "crafting_material",
@@ -2306,7 +2874,17 @@
     "maxStack": 50,
     "sprite": "'",
     "color": "lightcyan",
-    "tags": [ "material", "crafting", "textile", "cordage", "synthetic" ],
+    "tags": [
+      "material",
+      "crafting",
+      "textile",
+      "cordage",
+      "synthetic"
+    ],
+    "properties": {
+      "strength": "strong",
+      "material": "synthetic"
+    },
     "recipe": {
       "description": "Process plastic scrap into strong synthetic thread.",
       "components": [
@@ -2325,7 +2903,10 @@
           "level": 1
         }
       ],
-      "tools_required": [ "heat_gun_tool", "spindle_simple" ],
+      "tools_required": [
+        "heat_gun_tool",
+        "spindle_simple"
+      ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 15,
       "batch_size": 3
@@ -2343,7 +2924,13 @@
     "maxStack": 50,
     "sprite": "l",
     "color": "green",
-    "tags": [ "material", "organic", "dye_source", "natural" ]
+    "tags": [
+      "material",
+      "organic",
+      "dye_source",
+      "natural"
+    ],
+    "family": "plant_leaves_green_pigment"
   },
   {
     "id": "tree_bark_brown_pigment",
@@ -2357,10 +2944,17 @@
     "maxStack": 30,
     "sprite": "b",
     "color": "sienna",
-    "tags": [ "material", "organic", "dye_source", "natural" ]
+    "tags": [
+      "material",
+      "organic",
+      "dye_source",
+      "natural"
+    ],
+    "family": "tree_bark_brown_pigment"
   },
   {
     "id": "dye_green_natural",
+    "family": "dye",
     "name": "Natural Green Dye",
     "description": "A green dye extracted from plant matter.",
     "type": "crafting_material",
@@ -2371,7 +2965,16 @@
     "maxStack": 10,
     "sprite": "d",
     "color": "darkgreen",
-    "tags": [ "material", "crafting", "dye", "coloring_agent" ],
+    "tags": [
+      "material",
+      "crafting",
+      "dye",
+      "coloring_agent"
+    ],
+    "properties": {
+      "color": "green",
+      "type": "natural"
+    },
     "recipe": {
       "description": "Extract green dye from leaves.",
       "components": [
@@ -2390,7 +2993,9 @@
           "level": 1
         }
       ],
-      "tools_required": [ "mortar_pestle" ],
+      "tools_required": [
+        "mortar_pestle"
+      ],
       "station_required": "chemistry_set_tile",
       "time_to_craft": 15,
       "batch_size": 1
@@ -2398,6 +3003,7 @@
   },
   {
     "id": "dye_brown_natural",
+    "family": "dye",
     "name": "Natural Brown Dye",
     "description": "A brown dye extracted from tree bark.",
     "type": "crafting_material",
@@ -2408,7 +3014,16 @@
     "maxStack": 10,
     "sprite": "d",
     "color": "saddlebrown",
-    "tags": [ "material", "crafting", "dye", "coloring_agent" ],
+    "tags": [
+      "material",
+      "crafting",
+      "dye",
+      "coloring_agent"
+    ],
+    "properties": {
+      "color": "brown",
+      "type": "natural"
+    },
     "recipe": {
       "description": "Extract brown dye from tree bark.",
       "components": [
@@ -2427,7 +3042,9 @@
           "level": 1
         }
       ],
-      "tools_required": [ "mortar_pestle" ],
+      "tools_required": [
+        "mortar_pestle"
+      ],
       "station_required": "chemistry_set_tile",
       "time_to_craft": 15,
       "batch_size": 1
@@ -2435,6 +3052,7 @@
   },
   {
     "id": "netting_strong",
+    "family": "netting",
     "name": "Strong Netting",
     "description": "A durable netting woven from strong cordage.",
     "type": "crafting_material",
@@ -2445,7 +3063,15 @@
     "maxStack": 5,
     "sprite": "#",
     "color": "gray",
-    "tags": [ "material", "crafting", "textile", "component" ],
+    "tags": [
+      "material",
+      "crafting",
+      "textile",
+      "component"
+    ],
+    "properties": {
+      "strength": "strong"
+    },
     "recipe": {
       "description": "Weave strong cordage into a durable net.",
       "components": [
@@ -2466,6 +3092,7 @@
   },
   {
     "id": "water_clean_item",
+    "family": "water",
     "name": "Clean Water (Unit)",
     "description": "A generic unit of clean, potable water for crafting or drinking.",
     "type": "crafting_material",
@@ -2478,7 +3105,15 @@
     "maxStack": 20,
     "sprite": "w",
     "color": "blue",
-    "tags": [ "material", "crafting", "liquid", "consumable_ingredient" ]
+    "tags": [
+      "material",
+      "crafting",
+      "liquid",
+      "consumable_ingredient"
+    ],
+    "properties": {
+      "purification": "clean"
+    }
   },
   {
     "id": "rock_large_suitable",
@@ -2492,7 +3127,12 @@
     "maxStack": 2,
     "sprite": "R",
     "color": "darkgray",
-    "tags": [ "material", "natural", "stone_source" ]
+    "tags": [
+      "material",
+      "natural",
+      "stone_source"
+    ],
+    "family": "rock_large_suitable"
   },
   {
     "id": "stone_block_hewn",
@@ -2506,7 +3146,12 @@
     "maxStack": 10,
     "sprite": "S",
     "color": "gray",
-    "tags": [ "material", "crafting", "stone", "construction" ],
+    "tags": [
+      "material",
+      "crafting",
+      "stone",
+      "construction"
+    ],
     "recipe": {
       "description": "Shape a large rock into a usable stone block.",
       "components": [
@@ -2521,10 +3166,14 @@
           "level": 2
         }
       ],
-      "tools_required": [ "chisel_stone", "hammer_peen" ],
+      "tools_required": [
+        "chisel_stone",
+        "hammer_peen"
+      ],
       "time_to_craft": 25,
       "batch_size": 1
-    }
+    },
+    "family": "stone_block_hewn"
   },
   {
     "id": "metal_sheet_sturdy",
@@ -2538,7 +3187,16 @@
     "maxStack": 5,
     "sprite": "=",
     "color": "darkgray",
-    "tags": [ "material", "crafting", "metal", "construction", "armor_component" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "construction",
+      "armor_component"
+    ],
+    "properties": {
+      "type": "sturdy"
+    },
     "recipe": {
       "description": "Forge and flatten metal ingots into sturdy sheets.",
       "components": [
@@ -2553,11 +3211,15 @@
           "level": 5
         }
       ],
-      "tools_required": [ "blacksmith_hammer", "tongs_blacksmith" ],
+      "tools_required": [
+        "blacksmith_hammer",
+        "tongs_blacksmith"
+      ],
       "station_required": "forge_simple_tile",
       "time_to_craft": 50,
       "batch_size": 1
-    }
+    },
+    "family": "metal_sheet"
   },
   {
     "id": "bolts_and_nuts_set",
@@ -2571,7 +3233,12 @@
     "maxStack": 50,
     "sprite": "+",
     "color": "silver",
-    "tags": [ "material", "crafting", "metal", "fastener" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "fastener"
+    ],
     "recipe": {
       "description": "Manufacture bolts and nuts from metal rods.",
       "components": [
@@ -2586,14 +3253,19 @@
           "level": 4
         }
       ],
-      "tools_required": [ "tap_and_die_set", "file_small_metal" ],
+      "tools_required": [
+        "tap_and_die_set",
+        "file_small_metal"
+      ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 20,
       "batch_size": 10
-    }
+    },
+    "family": "bolts_and_nuts_set"
   },
   {
     "id": "tarp_basic",
+    "family": "tarp",
     "name": "Basic Tarp",
     "description": "A sheet of moderately waterproof material, useful for shelter or collecting water.",
     "type": "crafting_material",
@@ -2604,16 +3276,24 @@
     "maxStack": 3,
     "sprite": "~",
     "color": "blue",
-    "tags": [ "material", "crafting", "shelter_component", "waterproof_light" ],
+    "tags": [
+      "material",
+      "crafting",
+      "shelter_component",
+      "waterproof_light"
+    ],
+    "properties": {
+      "type": "basic"
+    },
     "recipe": {
       "description": "Fashion a basic tarp from processed plastic or heavy fabric treated for water resistance.",
       "components": [
         {
-          "itemId": "fabric_sheet_canvas_sturdy",
+          "family": "fabric_sheet",
           "quantity": 2
         },
         {
-          "itemId": "beeswax_chunk",
+          "family": "beeswax",
           "quantity": 1
         }
       ],
@@ -2623,13 +3303,16 @@
           "level": 3
         }
       ],
-      "tools_required": [ "heat_gun_tool" ],
+      "tools_required": [
+        "heat_gun_tool"
+      ],
       "time_to_craft": 40,
       "batch_size": 1
     }
   },
   {
     "id": "splint_wood_simple",
+    "family": "splint",
     "name": "Simple Wooden Splint",
     "description": "Two flat pieces of wood and some cloth strips, for immobilizing a limb.",
     "type": "crafting_material",
@@ -2640,7 +3323,16 @@
     "maxStack": 5,
     "sprite": "|",
     "color": "peru",
-    "tags": [ "material", "crafting", "medical_component", "wood" ],
+    "tags": [
+      "material",
+      "crafting",
+      "medical_component",
+      "wood"
+    ],
+    "properties": {
+      "material": "wood",
+      "type": "simple"
+    },
     "recipe": {
       "description": "Fashion a simple splint from wood sticks and cloth.",
       "components": [
@@ -2665,6 +3357,7 @@
   },
   {
     "id": "iodine_crystals",
+    "family": "chemical_reagent",
     "name": "Iodine Crystals",
     "description": "Purified iodine crystals, a potent antiseptic and water purification agent. Handle with care.",
     "type": "crafting_material",
@@ -2675,11 +3368,21 @@
     "maxStack": 20,
     "sprite": "*",
     "color": "purple",
-    "tags": [ "material", "crafting", "chemical", "medical_component", "water_treatment" ],
-    "warning": "Toxic if ingested directly in quantity"
+    "tags": [
+      "material",
+      "crafting",
+      "chemical",
+      "medical_component",
+      "water_treatment"
+    ],
+    "warning": "Toxic if ingested directly in quantity",
+    "properties": {
+      "type": "iodine_crystals"
+    }
   },
   {
     "id": "medicinal_herb_comfrey",
+    "family": "medicinal_herb",
     "name": "Comfrey Leaves",
     "description": "The leaves of the comfrey plant, known for their healing properties.",
     "type": "crafting_material",
@@ -2690,24 +3393,42 @@
     "maxStack": 30,
     "sprite": "l",
     "color": "mediumseagreen",
-    "tags": [ "material", "organic", "herbal", "medical_ingredient" ]
+    "tags": [
+      "material",
+      "organic",
+      "herbal",
+      "medical_ingredient"
+    ],
+    "properties": {
+      "type": "comfrey"
+    }
   },
   {
     "id": "animal_hide_fine",
+    "family": "animal_hide",
     "name": "Fine Animal Hide",
     "description": "A thin, carefully prepared animal hide, suitable for making parchment or fine leather items.",
     "type": "crafting_material",
     "size": 2,
-    "weightLbs": 1.0,
+    "weightLbs": 1,
     "value": 4,
     "stackable": true,
     "maxStack": 10,
     "sprite": "h",
     "color": "beige",
-    "tags": [ "material", "organic", "raw_leather", "parchment_source" ]
+    "tags": [
+      "material",
+      "organic",
+      "raw_leather",
+      "parchment_source"
+    ],
+    "properties": {
+      "quality": "fine"
+    }
   },
   {
     "id": "lime_solution_basic",
+    "family": "chemical_reagent",
     "name": "Basic Lime Solution",
     "description": "A caustic solution made from lye or crushed lime, used for dehairing hides.",
     "type": "crafting_material",
@@ -2718,7 +3439,15 @@
     "maxStack": 10,
     "sprite": "s",
     "color": "lightyellow",
-    "tags": [ "material", "crafting", "chemical", "leather_processing" ],
+    "tags": [
+      "material",
+      "crafting",
+      "chemical",
+      "leather_processing"
+    ],
+    "properties": {
+      "type": "lime_solution"
+    },
     "recipe": {
       "description": "Create a basic lime solution for hide processing.",
       "components": [
@@ -2754,7 +3483,13 @@
     "maxStack": 20,
     "sprite": "j",
     "color": "silver",
-    "tags": [ "material", "crafting", "metal", "fishing_component", "sharp" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "fishing_component",
+      "sharp"
+    ],
     "recipe": {
       "description": "Fashion a small metal hook from stiff wire.",
       "components": [
@@ -2769,13 +3504,18 @@
           "level": 1
         }
       ],
-      "tools_required": [ "pliers_set", "file_small_metal" ],
+      "tools_required": [
+        "pliers_set",
+        "file_small_metal"
+      ],
       "time_to_craft": 5,
       "batch_size": 3
-    }
+    },
+    "family": "hook_metal_small"
   },
   {
     "id": "plexiglass_sheet_thick",
+    "family": "plexiglass_sheet",
     "name": "Thick Plexiglass Sheet",
     "description": "A thick, transparent sheet of acrylic (plexiglass), offering some impact resistance.",
     "type": "crafting_material",
@@ -2786,10 +3526,20 @@
     "maxStack": 2,
     "sprite": "#",
     "color": "cyan",
-    "tags": [ "material", "crafting", "plastic", "transparent", "impact_resistant" ]
+    "tags": [
+      "material",
+      "crafting",
+      "plastic",
+      "transparent",
+      "impact_resistant"
+    ],
+    "properties": {
+      "thickness": "thick"
+    }
   },
   {
     "id": "mechanical_parts_vehicle_grade",
+    "family": "mechanical_parts",
     "name": "Vehicle Grade Mechanical Parts",
     "description": "Robust mechanical components like axles, bearings, and linkages, suitable for vehicle construction.",
     "type": "crafting_material",
@@ -2800,7 +3550,17 @@
     "maxStack": 5,
     "sprite": "M",
     "color": "darkgray",
-    "tags": [ "material", "crafting", "metal", "component", "mechanical", "vehicle_part_raw" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "component",
+      "mechanical",
+      "vehicle_part_raw"
+    ],
+    "properties": {
+      "type": "vehicle_grade"
+    },
     "recipe": {
       "description": "Manufacture heavy-duty mechanical parts for vehicles.",
       "components": [
@@ -2823,7 +3583,11 @@
           "level": 8
         }
       ],
-      "tools_required": [ "blacksmith_hammer", "wrench_set", "tap_and_die_set" ],
+      "tools_required": [
+        "blacksmith_hammer",
+        "wrench_set",
+        "tap_and_die_set"
+      ],
       "station_required": "machine_shop_lathe",
       "time_to_craft": 120,
       "batch_size": 1
@@ -2838,7 +3602,14 @@
     "weightLbs": 60,
     "value": 200,
     "stackable": false,
-    "tags": [ "material", "crafting", "metal", "component", "engine_component", "vehicle_part_kit" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "component",
+      "engine_component",
+      "vehicle_part_kit"
+    ],
     "recipe": {
       "description": "Manufacture a kit of V4 engine components.",
       "components": [
@@ -2869,11 +3640,16 @@
           "level": 12
         }
       ],
-      "tools_required": [ "blacksmith_hammer", "wrench_set", "tap_and_die_set" ],
+      "tools_required": [
+        "blacksmith_hammer",
+        "wrench_set",
+        "tap_and_die_set"
+      ],
       "station_required": "machine_shop_lathe",
       "time_to_craft": 600,
       "batch_size": 1
-    }
+    },
+    "family": "engine_parts_kit_v4"
   },
   {
     "id": "long_wooden_shaft",
@@ -2881,13 +3657,19 @@
     "description": "A long, straight, and sturdy wooden shaft, suitable for spears or javelins.",
     "type": "crafting_material",
     "size": 3,
-    "weightLbs": 1.0,
+    "weightLbs": 1,
     "value": 2,
     "stackable": true,
     "maxStack": 10,
     "sprite": "/",
     "color": "peru",
-    "tags": [ "material", "crafting", "wood", "weapon_component", "pole" ],
+    "tags": [
+      "material",
+      "crafting",
+      "wood",
+      "weapon_component",
+      "pole"
+    ],
     "recipe": {
       "description": "Shape a sturdy branch or young sapling into a long shaft.",
       "components": [
@@ -2902,10 +3684,14 @@
           "level": 1
         }
       ],
-      "tools_required": [ "knife_melee", "hand_saw_wood" ],
+      "tools_required": [
+        "knife_melee",
+        "hand_saw_wood"
+      ],
       "time_to_craft": 20,
       "batch_size": 1
-    }
+    },
+    "family": "long_wooden_shaft"
   },
   {
     "id": "metal_casing_grenade_hand",
@@ -2919,7 +3705,13 @@
     "maxStack": 10,
     "sprite": "g",
     "color": "darkolivegreen",
-    "tags": [ "material", "crafting", "metal", "explosive_component", "casing" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "explosive_component",
+      "casing"
+    ],
     "recipe": {
       "description": "Form a metal casing for a hand grenade.",
       "components": [
@@ -2934,11 +3726,15 @@
           "level": 3
         }
       ],
-      "tools_required": [ "tin_snips", "hammer_peen" ],
+      "tools_required": [
+        "tin_snips",
+        "hammer_peen"
+      ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 15,
       "batch_size": 1
-    }
+    },
+    "family": "metal_casing_grenade_hand"
   },
   {
     "id": "safety_pin_pull_ring",
@@ -2952,7 +3748,13 @@
     "maxStack": 50,
     "sprite": "p",
     "color": "silver",
-    "tags": [ "material", "crafting", "metal", "explosive_component", "mechanical" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "explosive_component",
+      "mechanical"
+    ],
     "recipe": {
       "description": "Fashion a safety pin and pull ring.",
       "components": [
@@ -2967,10 +3769,13 @@
           "level": 1
         }
       ],
-      "tools_required": [ "pliers_set" ],
+      "tools_required": [
+        "pliers_set"
+      ],
       "time_to_craft": 5,
       "batch_size": 2
-    }
+    },
+    "family": "safety_pin_pull_ring"
   },
   {
     "id": "metal_blade_blank_small",
@@ -2984,7 +3789,13 @@
     "maxStack": 10,
     "sprite": "/",
     "color": "silver",
-    "tags": [ "material", "crafting", "metal", "weapon_component", "blade_blank" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "weapon_component",
+      "blade_blank"
+    ],
     "recipe": {
       "description": "Forge a small blade blank from an ingot or quality scrap.",
       "components": [
@@ -2999,11 +3810,15 @@
           "level": 3
         }
       ],
-      "tools_required": [ "blacksmith_hammer", "tongs_blacksmith" ],
+      "tools_required": [
+        "blacksmith_hammer",
+        "tongs_blacksmith"
+      ],
       "station_required": "forge_simple_tile",
       "time_to_craft": 30,
       "batch_size": 1
-    }
+    },
+    "family": "metal_blade_blank_small"
   },
   {
     "id": "wood_handle_scales_pair",
@@ -3017,7 +3832,13 @@
     "maxStack": 20,
     "sprite": "=",
     "color": "peru",
-    "tags": [ "material", "crafting", "wood", "weapon_component", "handle_component" ],
+    "tags": [
+      "material",
+      "crafting",
+      "wood",
+      "weapon_component",
+      "handle_component"
+    ],
     "recipe": {
       "description": "Cut and shape a pair of wooden scales for a handle.",
       "components": [
@@ -3032,13 +3853,18 @@
           "level": 1
         }
       ],
-      "tools_required": [ "hand_saw_wood", "file_small_metal" ],
+      "tools_required": [
+        "hand_saw_wood",
+        "file_small_metal"
+      ],
       "time_to_craft": 10,
       "batch_size": 2
-    }
+    },
+    "family": "wood_handle_scales_pair"
   },
   {
     "id": "motor_large_electric",
+    "family": "motor",
     "name": "Large Electric Motor",
     "description": "A powerful electric motor suitable for heavy machinery.",
     "type": "crafting_material",
@@ -3047,7 +3873,18 @@
     "value": 150,
     "stackable": true,
     "maxStack": 1,
-    "tags": [ "material", "crafting", "electronics", "mechanical", "component", "motor" ],
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "mechanical",
+      "component",
+      "motor"
+    ],
+    "properties": {
+      "size": "large",
+      "type": "electric"
+    },
     "recipe": {
       "description": "Assemble a large electric motor from industrial components.",
       "components": [
@@ -3091,7 +3928,13 @@
     "maxStack": 5,
     "sprite": "/",
     "color": "darkgray",
-    "tags": [ "material", "crafting", "metal", "weapon_component", "blade_blank" ],
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "weapon_component",
+      "blade_blank"
+    ],
     "recipe": {
       "description": "Forge a large blade blank from steel.",
       "components": [
@@ -3106,10 +3949,14 @@
           "level": 4
         }
       ],
-      "tools_required": [ "blacksmith_hammer", "tongs_blacksmith" ],
+      "tools_required": [
+        "blacksmith_hammer",
+        "tongs_blacksmith"
+      ],
       "station_required": "forge_simple_tile",
       "time_to_craft": 45,
       "batch_size": 1
-    }
+    },
+    "family": "metal_blade_blank_large"
   }
 ]

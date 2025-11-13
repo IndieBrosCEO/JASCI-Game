@@ -71,43 +71,109 @@ class InventoryManager {
         logToConsole(`${this.logPrefix} Initialized. Player inventory container is:`, 'blue', 'dev');
     }
 
-    countItems(itemId, inventoryItems) {
-        let count = 0;
-        if (!inventoryItems || !Array.isArray(inventoryItems)) {
-            return 0;
+    _matchesProperties(item, constraints) {
+        if (!constraints) {
+            return true;
         }
-        for (const item of inventoryItems) {
-            if (item && item.id === itemId) {
-                count += (item.quantity || 1);
+
+        const itemProps = item.properties || {};
+
+        if (constraints.require) {
+            for (const key in constraints.require) {
+                if (itemProps[key] !== constraints.require[key]) {
+                    return false;
+                }
+            }
+        }
+
+        if (constraints.exclude) {
+            for (const key in constraints.exclude) {
+                if (itemProps[key] === constraints.exclude[key]) {
+                    return false;
+                }
+            }
+        }
+
+        if (constraints.min) {
+            for (const key in constraints.min) {
+                if (itemProps[key] < constraints.min[key]) {
+                    return false;
+                }
+            }
+        }
+
+        if (constraints.max) {
+            for (const key in constraints.max) {
+                if (itemProps[key] > constraints.max[key]) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    _getMatchingItemIds(component) {
+        if (component.family) {
+            const familyItems = this.assetManager.familyItems.get(component.family) || [];
+            return familyItems.filter(itemId => {
+                const itemDef = this.assetManager.getItem(itemId);
+                return this._matchesProperties(itemDef, { require: component.require, exclude: component.exclude, min: component.min, max: component.max });
+            });
+        }
+        return [component.itemId];
+    }
+
+    countItems(component, inventoryItems) {
+        const matchingItemIds = this._getMatchingItemIds(component);
+        let count = 0;
+        for (const itemId of matchingItemIds) {
+            for (const item of inventoryItems) {
+                if (item && item.id === itemId) {
+                    count += (item.quantity || 1);
+                }
             }
         }
         return count;
     }
 
-    removeItems(itemId, quantityToRemove, inventoryItems) {
+    removeItems(component, quantityToRemove, inventoryItems) {
         if (!inventoryItems || !Array.isArray(inventoryItems) || quantityToRemove <= 0) {
             return false;
         }
-        let totalAvailable = this.countItems(itemId, inventoryItems);
+
+        const matchingItemIds = this._getMatchingItemIds(component);
+        let totalAvailable = 0;
+        for (const itemId of matchingItemIds) {
+            for (const item of inventoryItems) {
+                if (item && item.id === itemId) {
+                    totalAvailable += (item.quantity || 1);
+                }
+            }
+        }
+
         if (totalAvailable < quantityToRemove) {
             return false;
         }
+
         let remainingToRemove = quantityToRemove;
-        for (let i = inventoryItems.length - 1; i >= 0; i--) {
-            if (remainingToRemove <= 0) break;
-            const item = inventoryItems[i];
-            if (item && item.id === itemId) {
-                if (item.stackable && item.quantity > 0) {
-                    if (item.quantity > remainingToRemove) {
-                        item.quantity -= remainingToRemove;
-                        remainingToRemove = 0;
+        for (const itemId of matchingItemIds) {
+            for (let i = inventoryItems.length - 1; i >= 0; i--) {
+                if (remainingToRemove <= 0) break;
+                const item = inventoryItems[i];
+                if (item && item.id === itemId) {
+                    if (item.stackable && item.quantity > 0) {
+                        if (item.quantity > remainingToRemove) {
+                            item.quantity -= remainingToRemove;
+                            remainingToRemove = 0;
+                        } else {
+                            remainingToRemove -= item.quantity;
+                            inventoryItems.splice(i, 1);
+                        }
                     } else {
-                        remainingToRemove -= item.quantity;
                         inventoryItems.splice(i, 1);
+                        remainingToRemove--;
                     }
-                } else {
-                    inventoryItems.splice(i, 1);
-                    remainingToRemove--;
                 }
             }
         }

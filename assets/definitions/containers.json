@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "id": "cb_container_item",
     "name": "Cabinet",
@@ -151,20 +151,28 @@
       "description": "Sew a small, durable backpack from canvas and leather straps.",
       "components": [
         {
-          "itemId": "fabric_sheet_canvas_sturdy",
+          "family": "fabric_sheet",
           "quantity": 2
         },
         {
-          "itemId": "leather_strips",
+          "family": "leather_strips",
           "quantity": 2
         },
         {
-          "itemId": "thread_strong_synthetic",
-          "quantity": 2
+          "family": "thread",
+          "quantity": 2,
+          "require": {
+            "strength": "strong",
+            "material": "synthetic"
+          }
         },
         {
-          "itemId": "buckle_small_metal_plastic",
-          "quantity": 2
+          "family": "buckle",
+          "quantity": 2,
+          "require": {
+            "size": "small",
+            "material": "composite"
+          }
         }
       ],
       "skills_required": [
