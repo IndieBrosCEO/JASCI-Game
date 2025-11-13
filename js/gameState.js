@@ -248,6 +248,8 @@ gameState.player.face = {
     eyebrowColor: "#000000",
     lipColor: "#FFC0CB", // Default pink
     skinColor: "#F5DEB3", // Default wheat
+    eyesOpen: true, // Default to open for unanimated previews
+    mouthExpression: 'neutral', // Default expression
     asciiFace: "" // To store the generated ASCII face string
 };
 

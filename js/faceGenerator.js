@@ -381,15 +381,16 @@ function _drawMouth(canvas, faceParams, coords) {
 
     let leftCorner = '.';
     let rightCorner = '.';
+    let drawCorners = true;
 
     switch (faceParams.mouthExpression) {
         case 'smile':
-            leftCorner = '`';
-            rightCorner = '`';
+            mouthCharSymbol = '_';
+            drawCorners = false;
             break;
         case 'frown':
-            leftCorner = ',';
-            rightCorner = ',';
+            mouthCharSymbol = '¯';
+            drawCorners = false;
             break;
     }
 
@@ -400,7 +401,7 @@ function _drawMouth(canvas, faceParams, coords) {
                 canvas[mouthY][currentMouthX] = { char: mouthCharSymbol, type: 'lip', color: lipColor, wrapperClass: 'face-mouth' };
             }
         }
-        if (faceParams.mouthWidth > 2) {
+        if (faceParams.mouthWidth > 2 && drawCorners) {
             const leftLipX = mouthCenterX - Math.floor(faceParams.mouthWidth / 2);
             const rightLipX = mouthCenterX + Math.floor((faceParams.mouthWidth - 1) / 2);
             if (leftLipX - 1 > headStartX && leftLipX - 1 >= 0 && canvas[mouthY]) {
