@@ -386,6 +386,11 @@ function startGame() {
     }
     window.turnManager.startTurn();
     runConsumableAndNeedsTest(); // Added call to the test function
+
+    // Switch the animation target to the in-game face display
+    if (typeof window.setAnimatedFaceTarget === 'function') {
+        window.setAnimatedFaceTarget('charInfoAsciiFace');
+    }
 }
 
 // Renders only the stats, skills, and worn clothing parts for the character info panel
