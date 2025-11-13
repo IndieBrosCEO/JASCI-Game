@@ -2214,5 +2214,21 @@
             window.mapRenderer.scheduleRender();
         }
     }
+
+    handleExplosion(x, y, radius, damage, damageType) {
+        logToConsole(`Creating a custom explosion at (${x},${y}) with radius ${radius}, damage ${damage}, and type ${damageType}.`, 'orange');
+
+        const impactTile = { x: x, y: y, z: this.gameState.playerPos.z }; // Assume player's z-level for now
+        const characters = this.getCharactersInBlastRadius(impactTile, radius);
+
+        characters.forEach(char => {
+            const totalDamage = rollDiceNotation(parseDiceNotation(damage));
+            this.distributeExplosionDamage({ name: "Console" }, char, totalDamage, damageType, { name: "Explosion" });
+        });
+
+        if (window.animationManager) {
+            window.animationManager.playAnimation('explosion', { centerPos: impactTile, radius: radius, duration: 1000 });
+        }
+    }
 }
 window.CombatManager = CombatManager;
