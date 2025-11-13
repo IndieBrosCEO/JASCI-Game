@@ -1376,10 +1376,13 @@ function _drawGlasses(canvas, faceParams, coords) {
 }
 
 
+let animatedFaceTargetId = 'asciiFacePreview'; // Default to the creator preview
+
 /**
  * Reads face parameters from UI, updates gameState, and refreshes the ASCII face preview.
+ * @param {string} [targetId=null] - The ID of the element to update. If null, uses the current animatedFaceTargetId.
  */
-function updateFacePreview() {
+function updateFacePreview(targetId = null) {
     if (!window.gameState || !window.gameState.player || !window.gameState.player.face) {
         console.error("Face generator: gameState.player.face is not initialized!");
         return;
@@ -1387,64 +1390,63 @@ function updateFacePreview() {
 
     const faceParams = window.gameState.player.face;
 
-    // Read values from UI elements and update faceParams
-    faceParams.headWidth = parseInt(document.getElementById('headWidthRange').value);
-    document.getElementById('headWidthValue').textContent = faceParams.headWidth;
+    // Read values from UI elements and update faceParams (only if we are in character creator)
+    if (document.getElementById('character-creator') && !document.getElementById('character-creator').classList.contains('hidden')) {
+        faceParams.headWidth = parseInt(document.getElementById('headWidthRange').value);
+        document.getElementById('headWidthValue').textContent = faceParams.headWidth;
 
-    faceParams.headHeight = parseInt(document.getElementById('headHeightRange').value);
-    document.getElementById('headHeightValue').textContent = faceParams.headHeight;
+        faceParams.headHeight = parseInt(document.getElementById('headHeightRange').value);
+        document.getElementById('headHeightValue').textContent = faceParams.headHeight;
 
-    faceParams.eyeSize = parseInt(document.getElementById('eyeSizeRange').value);
-    document.getElementById('eyeSizeValue').textContent = faceParams.eyeSize;
+        faceParams.eyeSize = parseInt(document.getElementById('eyeSizeRange').value);
+        document.getElementById('eyeSizeValue').textContent = faceParams.eyeSize;
 
-    faceParams.browHeight = parseInt(document.getElementById('browHeightRange').value);
-    document.getElementById('browHeightValue').textContent = faceParams.browHeight;
+        faceParams.browHeight = parseInt(document.getElementById('browHeightRange').value);
+        document.getElementById('browHeightValue').textContent = faceParams.browHeight;
 
-    faceParams.browAngle = parseInt(document.getElementById('browAngleRange').value);
-    document.getElementById('browAngleValue').textContent = faceParams.browAngle;
+        faceParams.browAngle = parseInt(document.getElementById('browAngleRange').value);
+        document.getElementById('browAngleValue').textContent = faceParams.browAngle;
 
-    faceParams.browWidth = parseInt(document.getElementById('browWidthRange').value); // New
-    document.getElementById('browWidthValue').textContent = faceParams.browWidth; // New
+        faceParams.browWidth = parseInt(document.getElementById('browWidthRange').value);
+        document.getElementById('browWidthValue').textContent = faceParams.browWidth;
 
-    faceParams.noseWidth = parseInt(document.getElementById('noseWidthRange').value);
-    document.getElementById('noseWidthValue').textContent = faceParams.noseWidth;
+        faceParams.noseWidth = parseInt(document.getElementById('noseWidthRange').value);
+        document.getElementById('noseWidthValue').textContent = faceParams.noseWidth;
 
-    faceParams.noseHeight = parseInt(document.getElementById('noseHeightRange').value);
-    document.getElementById('noseHeightValue').textContent = faceParams.noseHeight;
+        faceParams.noseHeight = parseInt(document.getElementById('noseHeightRange').value);
+        document.getElementById('noseHeightValue').textContent = faceParams.noseHeight;
 
-    faceParams.mouthWidth = parseInt(document.getElementById('mouthWidthRange').value);
-    document.getElementById('mouthWidthValue').textContent = faceParams.mouthWidth;
+        faceParams.mouthWidth = parseInt(document.getElementById('mouthWidthRange').value);
+        document.getElementById('mouthWidthValue').textContent = faceParams.mouthWidth;
 
-    faceParams.mouthFullness = parseInt(document.getElementById('mouthFullnessRange').value);
-    document.getElementById('mouthFullnessValue').textContent = faceParams.mouthFullness;
+        faceParams.mouthFullness = parseInt(document.getElementById('mouthFullnessRange').value);
+        document.getElementById('mouthFullnessValue').textContent = faceParams.mouthFullness;
 
-    faceParams.hairstyle = document.getElementById('hairstyleSelect').value;
-    faceParams.facialHair = document.getElementById('facialHairSelect').value;
-    faceParams.glasses = document.getElementById('glassesSelect').value;
-    faceParams.glassesColor = document.getElementById('glassesColorPicker').value;
+        faceParams.hairstyle = document.getElementById('hairstyleSelect').value;
+        faceParams.facialHair = document.getElementById('facialHairSelect').value;
+        faceParams.glasses = document.getElementById('glassesSelect').value;
+        faceParams.glassesColor = document.getElementById('glassesColorPicker').value;
 
-    faceParams.eyeColor = document.getElementById('eyeColorPicker').value;
-    faceParams.hairColor = document.getElementById('hairColorPicker').value;
-    faceParams.eyebrowColor = document.getElementById('eyebrowColorPicker').value;
-    faceParams.lipColor = document.getElementById('lipColorPicker').value;
-    faceParams.skinColor = document.getElementById('skinColorPicker').value;
+        faceParams.eyeColor = document.getElementById('eyeColorPicker').value;
+        faceParams.hairColor = document.getElementById('hairColorPicker').value;
+        faceParams.eyebrowColor = document.getElementById('eyebrowColorPicker').value;
+        faceParams.lipColor = document.getElementById('lipColorPicker').value;
+        faceParams.skinColor = document.getElementById('skinColorPicker').value;
+    }
+
 
     // Generate ASCII face
     const asciiFace = generateAsciiFace(faceParams);
     faceParams.asciiFace = asciiFace; // Store it in gameState as well
 
-    // Update preview
-    const previewElement = document.getElementById('asciiFacePreview');
-    if (previewElement) {
-        previewElement.innerHTML = asciiFace; // Changed from textContent to innerHTML
-    }
+    const finalTargetId = targetId || animatedFaceTargetId;
+    const targetElement = document.getElementById(finalTargetId);
 
-    // Update in-game face display if it exists
-    const inGameFaceElement = document.getElementById('charInfoAsciiFace');
-    if (inGameFaceElement) {
-        inGameFaceElement.innerHTML = asciiFace;
+    if (targetElement) {
+        targetElement.innerHTML = asciiFace;
     }
 }
+
 
 /**
  * Initializes the face creator by setting up event listeners.
@@ -1454,7 +1456,7 @@ async function initFaceCreator() {
 
     const controls = [
         'headWidthRange', 'headHeightRange', 'eyeSizeRange', 'browHeightRange',
-        'browAngleRange', 'browWidthRange', 'noseWidthRange', 'noseHeightRange', // Added browWidthRange
+        'browAngleRange', 'browWidthRange', 'noseWidthRange', 'noseHeightRange',
         'mouthWidthRange', 'mouthFullnessRange', 'hairstyleSelect',
         'facialHairSelect', 'glassesSelect', 'glassesColorPicker', 'eyeColorPicker',
         'hairColorPicker', 'eyebrowColorPicker', 'lipColorPicker', 'skinColorPicker'
@@ -1463,18 +1465,12 @@ async function initFaceCreator() {
     controls.forEach(controlId => {
         const element = document.getElementById(controlId);
         if (element) {
-            element.addEventListener('input', updateFacePreview); // 'input' for ranges/colors, 'change' for select
-            if (element.type === 'select-one') { // For select elements, 'change' is more standard
-                element.removeEventListener('input', updateFacePreview);
-                element.addEventListener('change', updateFacePreview);
-            }
+            const eventType = (element.type === 'select-one') ? 'change' : 'input';
+            element.addEventListener(eventType, () => updateFacePreview()); // Use an anonymous function to call without arguments
         } else {
             console.warn(`Face creator control not found: ${controlId}`);
         }
     });
-
-    // Initial population of the preview - MOVED to be after initial randomization
-    // updateFacePreview(); 
 
     // --- Setup Preset Color Swatches ---
     const colorPickerToPresetMap = {
@@ -1497,10 +1493,9 @@ async function initFaceCreator() {
                 swatch.type = 'button';
                 swatch.classList.add('preset-swatch');
                 swatch.style.backgroundColor = hexColor;
-                swatch.dataset.color = hexColor; // Store color in data attribute
+                swatch.dataset.color = hexColor;
                 swatch.addEventListener('click', function () {
                     mainColorPickerElement.value = this.dataset.color;
-                    // Manually trigger input event on the color picker to ensure updateFacePreview runs
                     mainColorPickerElement.dispatchEvent(new Event('input', { bubbles: true }));
                 });
                 containerElement.appendChild(swatch);
@@ -1517,22 +1512,36 @@ async function initFaceCreator() {
     }
 
     // --- Initial Randomization and Preview ---
-    applyRandomFaceParams(); // Randomize parameters first
-    // updateFacePreview() is called at the end of applyRandomFaceParams, so UI and preview are set.
+    applyRandomFaceParams(); // This will call updateFacePreview itself
     startFaceAnimation();
 }
 
-// Expose functions to global scope if necessary, or handle through module system later
+// Expose functions to global scope
 window.initFaceCreator = initFaceCreator;
-window.generateAsciiFace = generateAsciiFace; // For potential direct calls or debugging
-window.updateFacePreview = updateFacePreview; // For potential direct calls or debugging
+window.generateAsciiFace = generateAsciiFace;
+window.updateFacePreview = updateFacePreview;
 
 let faceAnimationInterval = null;
+
+
+/**
+ * Sets the target element for the face animation.
+ * @param {string} targetId The ID of the HTML element to animate.
+ */
+function setAnimatedFaceTarget(targetId) {
+    animatedFaceTargetId = targetId;
+    // Ensure the new target has the correct initial animated structure.
+    updateFacePreview(targetId);
+}
+window.setAnimatedFaceTarget = setAnimatedFaceTarget;
+
 
 /**
  * Updates only the animated parts of the face (eyes, mouth) for efficiency.
  */
 function updateAnimatedParts() {
+    if (!animatedFaceTargetId) return;
+
     const faceParams = window.gameState.player.face;
 
     // Generate the full new face HTML in memory
@@ -1546,9 +1555,18 @@ function updateAnimatedParts() {
     const newEyes = tempDiv.querySelectorAll('.face-eye');
     const newMouths = tempDiv.querySelectorAll('.face-mouth');
 
-    // Get the live eye and mouth elements from both preview and in-game displays
-    const liveEyes = document.querySelectorAll('#asciiFacePreview .face-eye, #charInfoAsciiFace .face-eye');
-    const liveMouths = document.querySelectorAll('#asciiFacePreview .face-mouth, #charInfoAsciiFace .face-mouth');
+    // Get the live elements from the CURRENT target display
+    const targetElement = document.getElementById(animatedFaceTargetId);
+    if (!targetElement) return; // Target might be hidden/gone
+
+    const liveEyes = targetElement.querySelectorAll('.face-eye');
+    const liveMouths = targetElement.querySelectorAll('.face-mouth');
+
+    // If the target doesn't have the animated structure, redraw it completely once.
+    if (liveEyes.length === 0 && liveMouths.length === 0) {
+        targetElement.innerHTML = newFaceHtml;
+        return;
+    }
 
     // Update eyes
     if (newEyes.length === liveEyes.length) {
@@ -1576,6 +1594,7 @@ function startFaceAnimation() {
     }
 
     faceAnimationInterval = setInterval(() => {
+        if (!window.gameState || !window.gameState.player || !window.gameState.player.face) return;
         const faceParams = window.gameState.player.face;
         const expressions = ['neutral', 'smile', 'frown'];
 
@@ -1584,6 +1603,7 @@ function startFaceAnimation() {
             faceParams.eyesOpen = false;
             updateAnimatedParts();
             setTimeout(() => {
+                if (!window.gameState || !window.gameState.player || !window.gameState.player.face) return;
                 faceParams.eyesOpen = true;
                 updateAnimatedParts();
             }, 200); // Blink duration
