@@ -613,10 +613,14 @@ function renderCharacterInfo() {
         }
     }
     const charInfoAsciiFaceElement = document.getElementById('charInfoAsciiFace');
-    if (charInfoAsciiFaceElement && gameState.player && gameState.player.face && gameState.player.face.asciiFace) {
-        charInfoAsciiFaceElement.innerHTML = gameState.player.face.asciiFace; // Changed from textContent to innerHTML
+    if (charInfoAsciiFaceElement && typeof window.updateFacePreview === 'function') {
+        // This ensures the face is rendered with the necessary <span> tags for animation.
+        window.updateFacePreview('charInfoAsciiFace');
     } else if (charInfoAsciiFaceElement) {
-        charInfoAsciiFaceElement.innerHTML = "No face data available."; // Changed from textContent to innerHTML
+        // Fallback for when updateFacePreview isn't available
+        charInfoAsciiFaceElement.innerHTML = (gameState.player && gameState.player.face && gameState.player.face.asciiFace)
+            ? gameState.player.face.asciiFace
+            : "No face data available.";
     }
 
     // Companion List
