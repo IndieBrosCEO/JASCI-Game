@@ -1,0 +1,268 @@
+{
+    "fabric_sheet": {
+        "material": { "type": "enum", "values": ["cotton", "wool", "canvas", "nylon", "kevlar", "burlap", "rough_fiber"] },
+        "grade": { "type": "number" },
+        "weight": { "type": "enum", "values": ["light", "medium", "heavy"] }
+    },
+    "fabric_scrap": {
+        "material": { "type": "enum", "values": ["cotton", "wool", "canvas", "nylon", "kevlar", "burlap"] }
+    },
+    "leather_hide": {
+        "tanning": { "type": "enum", "values": ["cured", "medium", "raw"] },
+        "thickness": { "type": "enum", "values": ["thin", "medium", "thick"] },
+        "quality": { "type": "enum", "values": ["standard", "fine"] }
+    },
+    "leather_strips": {},
+    "device_casing": {
+        "material": { "type": "enum", "values": ["plastic", "metal"] },
+        "size": { "type": "enum", "values": ["small", "medium", "large"] }
+    },
+    "powder_propellant": {
+        "chemistry": { "type": "enum", "values": ["black", "smokeless"] },
+        "grade": { "type": "number" }
+    },
+    "metal_ingot": {
+        "material": { "type": "enum", "values": ["steel", "iron", "copper", "brass", "aluminum"] },
+        "grade": { "type": "enum", "values": ["standard", "tool"] }
+    },
+    "steel_ingot": {
+        "grade": { "type": "enum", "values": ["standard", "tool"] }
+    },
+    "wood_plank": {},
+    "wood_log": {},
+    "wood_stick": {},
+    "wood_handle": {
+        "type": { "type": "enum", "values": ["simple"] }
+    },
+    "adhesive": {
+        "type": { "type": "enum", "values": ["tape", "paste_basic"] }
+    },
+    "fastener_nail": {},
+    "nail": {},
+    "fastener_bolt": {},
+    "bolts": {},
+    "rivet": {
+        "size": { "type": "enum", "values": ["small", "large"] },
+        "material": { "type": "enum", "values": ["metal"] }
+    },
+    "buckle": {
+        "size": { "type": "enum", "values": ["small", "large"] },
+        "material": { "type": "enum", "values": ["metal", "plastic", "composite"] }
+    },
+    "battery_cell": {
+        "size": { "type": "enum", "values": ["small", "medium", "large"] }
+    },
+    "metal_scrap": {},
+    "plastic_scrap": {},
+    "glass_shards": {},
+    "stone_block": {},
+    "metal_rod": {
+        "thickness": { "type": "enum", "values": ["thin", "standard"] },
+        "material": { "type": "enum", "values": ["steel", "iron"] }
+    },
+    "metal_sheet": {
+        "type": { "type": "enum", "values": ["thin", "sturdy"] }
+    },
+    "metal_wire": {
+        "type": { "type": "enum", "values": ["stiff", "standard"] }
+    },
+    "metal_bits": {
+        "size": { "type": "enum", "values": ["small"] }
+    },
+    "thread": {
+        "material": { "type": "enum", "values": ["plant_fiber", "synthetic"] },
+        "strength": { "type": "enum", "values": ["standard", "strong"] }
+    },
+    "cordage": {
+        "type": { "type": "enum", "values": ["basic"] },
+        "material": { "type": "enum", "values": ["plant_fiber"] }
+    },
+    "needle": {
+        "size": { "type": "enum", "values": ["small"] }
+    },
+    "casing": {
+        "caliber": { "type": "enum", "values": ["small_pistol", "large_pistol", "small_rifle", "medium_rifle", "large_rifle"] }
+    },
+    "primer": {
+        "size": { "type": "enum", "values": ["small", "large"] },
+        "type": { "type": "enum", "values": ["shotgun"] }
+    },
+    "projectile": {
+        "caliber": { "type": "enum", "values": ["small_pistol", "large_pistol", "small_rifle", "medium_rifle", "large_rifle"] }
+    },
+    "shotshell_hull": {
+        "gauge": { "type": "number" }
+    },
+    "shot_pellets": {
+        "material": { "type": "enum", "values": ["lead", "steel"] }
+    },
+    "gunpowder": {},
+    "explosive_compound": {
+        "type": { "type": "enum", "values": ["plastic_b"] }
+    },
+    "chemical_reagent": {
+        "type": { "type": "enum", "values": ["saltpeter", "iodine_crystals", "sulfur", "lime_solution"] }
+    },
+    "antiseptic": {
+        "type": { "type": "enum", "values": ["herbal_pulp"] }
+    },
+    "splint": {
+        "material": { "type": "enum", "values": ["wood"] },
+        "type": { "type": "enum", "values": ["simple"] }
+    },
+    "charcoal": {
+        "form": { "type": "enum", "values": ["bits"] }
+    },
+    "water": {
+        "purification": { "type": "enum", "values": ["clean"] }
+    },
+    "medicinal_herb": {
+        "type": { "type": "enum", "values": ["comfrey"] }
+    },
+    "animal_fat": {
+        "processing": { "type": "enum", "values": ["rendered"] }
+    },
+    "animal_hide": {
+        "quality": { "type": "enum", "values": ["fine"] }
+    },
+    "steel_plate": {
+        "grade": { "type": "enum", "values": ["vehicle"] }
+    },
+    "padding": {
+        "material": { "type": "enum", "values": ["foam"] }
+    },
+    "netting": {
+        "strength": { "type": "enum", "values": ["strong"] }
+    },
+    "dye": {
+        "color": { "type": "enum", "values": ["green", "brown"] },
+        "type": { "type": "enum", "values": ["natural"] }
+    },
+    "tarp": {
+        "type": { "type": "enum", "values": ["basic"] }
+    },
+    "mechanical_parts": {
+        "type": { "type": "enum", "values": ["simple", "vehicle_grade"] }
+    },
+    "plexiglass_sheet": {
+        "thickness": { "type": "enum", "values": ["thick"] }
+    },
+    "motor": {
+        "size": { "type": "enum", "values": ["small", "large"] },
+        "type": { "type": "enum", "values": ["electric"] }
+    },
+    "copper_wire": {
+        "form": { "type": "enum", "values": ["spool"] }
+    },
+    "concrete_mix": {
+        "form": { "type": "enum", "values": ["bag"] }
+    },
+    "led": {
+        "type": { "type": "enum", "values": ["basic"] }
+    },
+    "wire": {
+        "insulation": { "type": "enum", "values": ["insulated"] },
+        "thickness": { "type": "enum", "values": ["thin"] }
+    },
+    "lens": {
+        "quality": { "type": "enum", "values": ["crude"] },
+        "material": { "type": "enum", "values": ["glass"] }
+    },
+    "beeswax": {
+        "form": { "type": "enum", "values": ["chunk"] }
+    },
+    "wick": {
+        "type": { "type": "enum", "values": ["basic"] }
+    },
+    "heating_element": {
+        "type": { "type": "enum", "values": ["nichrome_wire"] }
+    },
+    "switch": {
+        "type": { "type": "enum", "values": ["toggle"] }
+    },
+    "clay_lump": {},
+    "spring": {
+        "size": { "type": "enum", "values": ["small"] },
+        "material": { "type": "enum", "values": ["metal"] }
+    },
+    "rubber_strips": {},
+    "splintered_wood": {},
+    "glass_bottle_empty": {},
+    "gasoline_canister_partial": {},
+    "armor_plate_makeshift": {},
+    "tomato_seeds": {},
+    "corn_seeds": {},
+    "carrot_seeds": {},
+    "iron_ingot": {},
+    "rawhide_leather": {},
+    "tanned_leather_roll": {},
+    "lye_powder": {},
+    "gemstone_uncut_small": {},
+    "gold_dust_pouch": {},
+    "silver_nugget": {},
+    "rubber_hose_section": {},
+    "gears_assorted": {},
+    "circuit_board_blank": {},
+    "rivets_box": {},
+    "fiberglass_resin_can": {},
+    "fiberglass_cloth_roll": {},
+    "plant_fibers_strong": {},
+    "stone_sharp_fragment": {},
+    "animal_hide_raw_small": {},
+    "sinew_animal": {},
+    "feather": {},
+    "sand_pile": {},
+    "arrow_shaft_wood": {},
+    "arrow_shaft_sturdy_wood": {},
+    "arrowhead_stone_crude": {},
+    "arrowhead_metal_basic": {},
+    "bolthead_metal_basic": {},
+    "explosive_compound_generic_b": {},
+    "casing_grenade_40mm_metal": {},
+    "fuze_timed_impact_grenade": {},
+    "cloth_sheet_rough_fiber": {},
+    "leather_cured_small": {},
+    "plastic_scrap_processed": {},
+    "tannin_simple_bark": {},
+    "old_tire": {},
+    "bolts_and_nuts_set": {},
+    "electronics_board_populated_simple": {},
+    "antenna_basic_radio": {},
+    "fuze_mechanism_advanced": {},
+    "engine_block_small_cast": {},
+    "piston_set_small_engine": {},
+    "crankshaft_small_engine": {},
+    "rubber_sheet_tire_tread": {},
+    "glass_lens_optical_grade_small": {},
+    "memory_chip_basic": {},
+    "sensor_module_basic": {},
+    "plastic_junk_item": {},
+    "thread_strong_synthetic": {},
+    "plant_leaves_green_pigment": {},
+    "tree_bark_brown_pigment": {},
+    "dye_green_natural": {},
+    "dye_brown_natural": {},
+    "netting_strong": {},
+    "water_clean_item": {},
+    "rock_large_suitable": {},
+    "stone_block_hewn": {},
+    "splint_wood_simple": {},
+    "iodine_crystals": {},
+    "medicinal_herb_comfrey": {},
+    "animal_hide_fine": {},
+    "lime_solution_basic": {},
+    "hook_metal_small": {},
+    "plexiglass_sheet_thick": {},
+    "mechanical_parts_vehicle_grade": {},
+    "engine_parts_kit_v4": {},
+    "long_wooden_shaft": {},
+    "metal_casing_grenade_hand": {},
+    "safety_pin_pull_ring": {},
+    "metal_blade_blank_small": {},
+    "wood_handle_scales_pair": {},
+    "metal_blade_blank_large": {},
+    "wad": {
+        "gauge": { "type": "number" }
+    },
+    "electronics_scrap": {}
+}

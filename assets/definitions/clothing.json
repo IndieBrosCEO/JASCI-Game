@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "id": "simple_shirt",
     "name": "Simple Shirt",
@@ -25,12 +25,18 @@
       "description": "Sew a basic, everyday shirt from simple fabric.",
       "components": [
         {
-          "itemId": "fabric_sheet_cotton_fine",
-          "quantity": 1
+          "family": "fabric_sheet",
+          "quantity": 1,
+          "require": {
+            "material": "cotton"
+          }
         },
         {
-          "itemId": "thread_simple_plant_fiber",
-          "quantity": 3
+          "family": "thread",
+          "quantity": 3,
+          "require": {
+            "material": "plant_fiber"
+          }
         }
       ],
       "skills_required": [
@@ -68,15 +74,21 @@
       "description": "Craft a baseball cap.",
       "components": [
         {
-          "itemId": "cloth_scrap",
-          "quantity": 2
+          "family": "fabric_sheet",
+          "quantity": 2,
+          "require": {
+            "material": "cotton"
+          }
         },
         {
-          "itemId": "thread_simple_plant_fiber",
-          "quantity": 1
+          "family": "thread",
+          "quantity": 1,
+          "require": {
+            "material": "plant_fiber"
+          }
         },
         {
-          "itemId": "plastic_scrap_processed",
+          "family": "plastic_scrap",
           "quantity": 1
         }
       ],
@@ -115,11 +127,14 @@
       "description": "Sew a basic vest from rough cloth or simple leather.",
       "components": [
         {
-          "itemId": "cloth_sheet_rough_fiber",
-          "quantity": 3
+          "family": "fabric_sheet",
+          "quantity": 3,
+          "require": {
+            "material": "rough_fiber"
+          }
         },
         {
-          "itemId": "thread_simple_plant_fiber",
+          "family": "thread",
           "quantity": 4
         }
       ],
@@ -159,16 +174,23 @@
       "description": "Craft a pair of durable pants from sturdy canvas.",
       "components": [
         {
-          "itemId": "fabric_sheet_canvas_sturdy",
-          "quantity": 2
+          "family": "fabric_sheet",
+          "quantity": 2,
+          "require": {
+            "material": "canvas"
+          }
         },
         {
-          "itemId": "thread_simple_plant_fiber",
+          "family": "thread",
           "quantity": 5
         },
         {
-          "itemId": "rivet_small_metal",
-          "quantity": 4
+          "family": "rivet",
+          "quantity": 4,
+          "require": {
+            "size": "small",
+            "material": "metal"
+          }
         }
       ],
       "skills_required": [
@@ -290,23 +312,37 @@
       "description": "Assemble a head-mounted light source.",
       "components": [
         {
-          "itemId": "plastic_casing_small_device",
-          "quantity": 1
+          "family": "device_casing",
+          "quantity": 1,
+          "require": {
+            "material": "plastic",
+            "size": "small"
+          }
         },
         {
-          "itemId": "led_basic",
-          "quantity": 3
+          "family": "led",
+          "quantity": 3,
+          "require": {
+            "type": "basic"
+          }
         },
         {
-          "itemId": "wire_insulated_thin",
-          "quantity": 2
+          "family": "wire",
+          "quantity": 2,
+          "require": {
+            "insulation": "insulated",
+            "thickness": "thin"
+          }
         },
         {
-          "itemId": "battery_cell_small",
-          "quantity": 1
+          "family": "battery_cell",
+          "quantity": 1,
+          "require": {
+            "size": "small"
+          }
         },
         {
-          "itemId": "cloth_scrap",
+          "family": "fabric_sheet",
           "quantity": 2
         }
       ],
@@ -344,20 +380,35 @@
       "description": "Sew a pair of classic blue jeans from sturdy denim-like fabric.",
       "components": [
         {
-          "itemId": "fabric_sheet_canvas_sturdy",
-          "quantity": 2
+          "family": "fabric_sheet",
+          "quantity": 2,
+          "require": {
+            "material": "canvas"
+          }
         },
         {
-          "itemId": "thread_strong_synthetic",
-          "quantity": 1
+          "family": "thread",
+          "quantity": 1,
+          "require": {
+            "strength": "strong",
+            "material": "synthetic"
+          }
         },
         {
-          "itemId": "rivet_small_metal",
-          "quantity": 6
+          "family": "rivet",
+          "quantity": 6,
+          "require": {
+            "size": "small",
+            "material": "metal"
+          }
         },
         {
-          "itemId": "buckle_small_metal_plastic",
-          "quantity": 1
+          "family": "buckle",
+          "quantity": 1,
+          "require": {
+            "size": "small",
+            "material": "composite"
+          }
         }
       ],
       "skills_required": [
@@ -389,12 +440,18 @@
       "description": "Sew a comfortable cotton t-shirt.",
       "components": [
         {
-          "itemId": "fabric_sheet_cotton_fine",
-          "quantity": 1
+          "family": "fabric_sheet",
+          "quantity": 1,
+          "require": {
+            "material": "cotton"
+          }
         },
         {
-          "itemId": "thread_simple_plant_fiber",
-          "quantity": 2
+          "family": "thread",
+          "quantity": 2,
+          "require": {
+            "material": "plant_fiber"
+          }
         }
       ],
       "skills_required": [
@@ -426,16 +483,26 @@
       "description": "Sew a warm hooded sweatshirt.",
       "components": [
         {
-          "itemId": "fabric_sheet_cotton_fine",
-          "quantity": 2
+          "family": "fabric_sheet",
+          "quantity": 2,
+          "require": {
+            "material": "cotton"
+          }
         },
         {
-          "itemId": "thread_simple_plant_fiber",
-          "quantity": 4
+          "family": "thread",
+          "quantity": 4,
+          "require": {
+            "material": "plant_fiber"
+          }
         },
         {
-          "itemId": "cordage_basic_plant_fiber",
-          "quantity": 1
+          "family": "cordage",
+          "quantity": 1,
+          "require": {
+            "type": "basic",
+            "material": "plant_fiber"
+          }
         }
       ],
       "skills_required": [
@@ -467,20 +534,31 @@
       "description": "Craft a pair of sturdy work boots from thick leather and rubber soles.",
       "components": [
         {
-          "itemId": "leather_hide_thick_cured",
-          "quantity": 2
+          "family": "leather_hide",
+          "quantity": 2,
+          "require": {
+            "thickness": "thick"
+          }
         },
         {
-          "itemId": "rubber_strips_or_chunks",
+          "family": "rubber_strips",
           "quantity": 1
         },
         {
-          "itemId": "thread_strong_synthetic",
-          "quantity": 2
+          "family": "thread",
+          "quantity": 2,
+          "require": {
+            "strength": "strong",
+            "material": "synthetic"
+          }
         },
         {
-          "itemId": "rivet_small_metal",
-          "quantity": 8
+          "family": "rivet",
+          "quantity": 8,
+          "require": {
+            "size": "small",
+            "material": "metal"
+          }
         }
       ],
       "skills_required": [
@@ -517,12 +595,18 @@
       "description": "Sew a pair of leather gloves.",
       "components": [
         {
-          "itemId": "leather_cured_small",
-          "quantity": 2
+          "family": "leather_hide",
+          "quantity": 2,
+          "require": {
+            "tanning": "cured"
+          }
         },
         {
-          "itemId": "thread_simple_plant_fiber",
-          "quantity": 2
+          "family": "thread",
+          "quantity": 2,
+          "require": {
+            "material": "plant_fiber"
+          }
         }
       ],
       "skills_required": [
@@ -554,12 +638,18 @@
       "description": "Knit a warm wool beanie.",
       "components": [
         {
-          "itemId": "fabric_sheet_wool_fine",
-          "quantity": 1
+          "family": "fabric_sheet",
+          "quantity": 1,
+          "require": {
+            "material": "wool"
+          }
         },
         {
-          "itemId": "thread_simple_plant_fiber",
-          "quantity": 1
+          "family": "thread",
+          "quantity": 1,
+          "require": {
+            "material": "plant_fiber"
+          }
         }
       ],
       "skills_required": [
@@ -592,12 +682,19 @@
       "description": "Sew a simple rain poncho from water-resistant fabric.",
       "components": [
         {
-          "itemId": "fabric_sheet_nylon_tough",
-          "quantity": 2
+          "family": "fabric_sheet",
+          "quantity": 2,
+          "require": {
+            "material": "nylon"
+          }
         },
         {
-          "itemId": "thread_strong_synthetic",
-          "quantity": 1
+          "family": "thread",
+          "quantity": 1,
+          "require": {
+            "strength": "strong",
+            "material": "synthetic"
+          }
         }
       ],
       "skills_required": [
@@ -631,16 +728,26 @@
       "description": "Craft a light ballistic vest from Kevlar and nylon.",
       "components": [
         {
-          "itemId": "fabric_sheet_kevlar_ballistic",
-          "quantity": 2
+          "family": "fabric_sheet",
+          "quantity": 2,
+          "require": {
+            "material": "kevlar"
+          }
         },
         {
-          "itemId": "fabric_sheet_nylon_tough",
-          "quantity": 1
+          "family": "fabric_sheet",
+          "quantity": 1,
+          "require": {
+            "material": "nylon"
+          }
         },
         {
-          "itemId": "thread_strong_synthetic",
-          "quantity": 2
+          "family": "thread",
+          "quantity": 2,
+          "require": {
+            "strength": "strong",
+            "material": "synthetic"
+          }
         }
       ],
       "skills_required": [
@@ -680,16 +787,27 @@
       "description": "Sew a tactical load-bearing vest from sturdy canvas with multiple pouches.",
       "components": [
         {
-          "itemId": "fabric_sheet_canvas_sturdy",
-          "quantity": 3
+          "family": "fabric_sheet",
+          "quantity": 3,
+          "require": {
+            "material": "canvas"
+          }
         },
         {
-          "itemId": "thread_strong_synthetic",
-          "quantity": 3
+          "family": "thread",
+          "quantity": 3,
+          "require": {
+            "strength": "strong",
+            "material": "synthetic"
+          }
         },
         {
-          "itemId": "buckle_small_metal_plastic",
-          "quantity": 4
+          "family": "buckle",
+          "quantity": 4,
+          "require": {
+            "size": "small",
+            "material": "composite"
+          }
         }
       ],
       "skills_required": [
@@ -723,15 +841,21 @@
       "description": "Forge and assemble a basic combat helmet.",
       "components": [
         {
-          "itemId": "steel_plate_vehicle_grade",
-          "quantity": 1
+          "family": "steel_plate",
+          "quantity": 1,
+          "require": {
+            "grade": "vehicle"
+          }
         },
         {
-          "itemId": "padding_foam_sheet",
-          "quantity": 1
+          "family": "padding",
+          "quantity": 1,
+          "require": {
+            "material": "foam"
+          }
         },
         {
-          "itemId": "leather_strips",
+          "family": "leather_strips",
           "quantity": 2
         }
       ],
@@ -767,24 +891,41 @@
       "description": "Craft a ghillie suit for camouflage by attaching burlap strips and natural elements to netting.",
       "components": [
         {
-          "itemId": "fabric_sheet_burlap_rough",
-          "quantity": 4
+          "family": "fabric_sheet",
+          "quantity": 4,
+          "require": {
+            "material": "burlap"
+          }
         },
         {
-          "itemId": "netting_strong",
-          "quantity": 2
+          "family": "netting",
+          "quantity": 2,
+          "require": {
+            "strength": "strong"
+          }
         },
         {
-          "itemId": "dye_green_natural",
-          "quantity": 1
+          "family": "dye",
+          "quantity": 1,
+          "require": {
+            "color": "green",
+            "type": "natural"
+          }
         },
         {
-          "itemId": "dye_brown_natural",
-          "quantity": 1
+          "family": "dye",
+          "quantity": 1,
+          "require": {
+            "color": "brown",
+            "type": "natural"
+          }
         },
         {
-          "itemId": "thread_simple_plant_fiber",
-          "quantity": 5
+          "family": "thread",
+          "quantity": 5,
+          "require": {
+            "material": "plant_fiber"
+          }
         }
       ],
       "skills_required": [
@@ -822,16 +963,23 @@
       "description": "Sew a thick, padded gambeson for protection and warmth.",
       "components": [
         {
-          "itemId": "fabric_sheet_canvas_sturdy",
-          "quantity": 3
+          "family": "fabric_sheet",
+          "quantity": 3,
+          "require": {
+            "material": "canvas"
+          }
         },
         {
-          "itemId": "cloth_scrap",
+          "family": "fabric_sheet",
           "quantity": 10
         },
         {
-          "itemId": "thread_strong_synthetic",
-          "quantity": 3
+          "family": "thread",
+          "quantity": 3,
+          "require": {
+            "strength": "strong",
+            "material": "synthetic"
+          }
         }
       ],
       "skills_required": [
@@ -865,15 +1013,22 @@
       "description": "Craft studded leather armor by reinforcing cured leather with metal rivets.",
       "components": [
         {
-          "itemId": "leather_hide_thick_cured",
-          "quantity": 2
+          "family": "leather_hide",
+          "quantity": 2,
+          "require": {
+            "thickness": "thick"
+          }
         },
         {
-          "itemId": "rivet_small_metal",
-          "quantity": 20
+          "family": "rivet",
+          "quantity": 20,
+          "require": {
+            "size": "small",
+            "material": "metal"
+          }
         },
         {
-          "itemId": "leather_strips",
+          "family": "leather_strips",
           "quantity": 4
         }
       ],
