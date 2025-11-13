@@ -191,6 +191,7 @@ const gameState = {
     },
     isDialogueActive: false, // Flag to indicate if dialogue UI is active
     oocGlobalTick: 0, // Counter for OOC turn staggering
+    npcMovementInterval: 5,
     currentMapTraps: [], // Holds instances of traps on the current map {trapId, x, y, z, state}
     currentWeather: { // Weather system state
         type: "clear",    // e.g., "clear", "rain_light", "snow_heavy", "windy"
