@@ -1882,7 +1882,9 @@ function toggleKeybindsDisplay() {
 // Initial setup on DOM content load
 async function initialize() { // Made async
     try {
+        console.log("Initializing game...");
         populateKeybinds(); // Populate the keybinds list on init
+        console.log("Keybinds populated.");
         await assetManager.loadDefinitions();
         console.log("Asset definitions loaded.");
         window.interaction.initInteraction(assetManager);
@@ -2485,7 +2487,8 @@ async function initialize() { // Made async
                 playPauseButton.textContent = 'Pause';
             }
         });
-
+        window.gameInitialized = true;
+        console.log("Game initialized successfully.");
     } catch (error) {
         console.error("Error during game initialization:", error);
         const errorDisplay = document.getElementById('errorMessageDisplay');
