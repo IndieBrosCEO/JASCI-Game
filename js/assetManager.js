@@ -68,11 +68,13 @@
         this.fishDefinitions = {};
         this.vehiclePartDefinitions = {};
         this.vehicleTemplateDefinitions = {};
-        this.dynamicEventTemplates = {}; // New property for dynamic event templates
-        this.proceduralQuestTemplates = {}; // New property for procedural quest templates
-        this.trapDefinitionsData = {}; // New property for trap definitions
-        this.constructionDefinitions = {}; // New property for construction definitions
-        let tempItemsById = {};
+        this.dynamicEventTemplates = {};
+        this.proceduralQuestTemplates = {};
+        this.trapDefinitionsData = {};
+        this.constructionDefinitions = {};
+        this.families = {};
+        this.familyItems = new Map();
+        this.legacyAliases = {};
 
         // Updated to load from new categorized item files
         const definitionFiles = [

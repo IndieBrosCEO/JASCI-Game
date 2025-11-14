@@ -588,37 +588,19 @@ class InventoryManager {
         this.gameState.worldContainers = [];
 
         // Detect nearby containers from the map and add them to gameState.worldContainers
-        if (this.gameState.playerPos) {
+        if (this.gameState.playerPos && this.gameState.containers) {
             const R = 1; // Interaction radius
             const { x: px, y: py, z: pz } = this.gameState.playerPos;
-            const currentMap = window.mapRenderer.getCurrentMapData();
 
-            if (currentMap && currentMap.levels) {
-                const zStr = pz.toString();
-                const levelData = currentMap.levels[zStr];
-
-                if (levelData) {
-                    for (let y_scan = Math.max(0, py - R); y_scan <= Math.min(currentMap.dimensions.height - 1, py + R); y_scan++) {
-                        for (let x_scan = Math.max(0, px - R); x_scan <= Math.min(currentMap.dimensions.width - 1, px + R); x_scan++) {
-                            const tileIdFromMap = levelData.middle?.[y_scan]?.[x_scan] || levelData.bottom?.[y_scan]?.[x_scan];
-                            const baseTileId = (typeof tileIdFromMap === 'object' && tileIdFromMap !== null && tileIdFromMap.tileId !== undefined)
-                                ? tileIdFromMap.tileId
-                                : tileIdFromMap;
-
-                            if (baseTileId) {
-                                const tileDef = this.assetManager.getTileset(baseTileId);
-                                if (tileDef && tileDef.tags && tileDef.tags.includes('container')) {
-                                    // Found a container tile, now find the corresponding container instance in gameState.containers
-                                    const containerInstance = this.gameState.containers.find(c => c.x === x_scan && c.y === y_scan && c.z === pz);
-                                    if (containerInstance && !this.gameState.worldContainers.some(wc => wc.id === containerInstance.id)) {
-                                        this.gameState.worldContainers.push(containerInstance);
-                                    }
-                                }
-                            }
-                        }
+            this.gameState.containers.forEach(container => {
+                if (container.x >= px - R && container.x <= px + R &&
+                    container.y >= py - R && container.y <= py + R &&
+                    container.z === pz) {
+                    if (!this.gameState.worldContainers.some(wc => wc.id === container.id)) {
+                        this.gameState.worldContainers.push(container);
                     }
                 }
-            }
+            });
         }
 
         // Now, display items from the detected world containers
@@ -642,7 +624,7 @@ class InventoryManager {
                             source: 'worldContainer',
                             containerRef: container,
                             originalItemIndex: itemIdx,
-                            displayName: `[${container.name}] ${item.name}` // Prepend container name
+                            displayName: `[${container.name.toUpperCase()}] ${item.name}` // Prepend container name
                         });
                     });
                 }
@@ -716,15 +698,13 @@ class InventoryManager {
         if (window.audioManager) {
             window.audioManager.playUiSound(this.gameState.inventory.open ? 'ui_click_01.wav' : 'ui_click_01.wav', { volume: this.gameState.inventory.open ? 0.6 : 0.5 });
         }
-        const inventoryListDiv = document.getElementById("inventoryList");
-        if (!inventoryListDiv) return;
+        const inventoryMenuDiv = document.getElementById("inventoryMenu");
+        if (!inventoryMenuDiv) return;
         if (this.gameState.inventory.open) {
-            inventoryListDiv.classList.remove("hidden");
-            inventoryListDiv.style.display = 'block';
+            inventoryMenuDiv.classList.remove("hidden");
             this.renderInventoryMenu();
         } else {
-            inventoryListDiv.classList.add("hidden");
-            inventoryListDiv.style.display = 'none';
+            inventoryMenuDiv.classList.add("hidden");
             this.clearInventoryHighlight();
             this.gameState.inventory.currentlyDisplayedItems = [];
             if (this.gameState.isInCombat && this.gameState.combatPhase === 'playerAttackDeclare' && window.combatManager) {
