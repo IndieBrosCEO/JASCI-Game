@@ -38,13 +38,19 @@
     }
 
     async loadDefinitions() {
-        // Initialize properties
-        Object.assign(this, {
-            tilesets: {}, itemsById: {}, npcDefinitions: {}, fishDefinitions: {},
-            vehiclePartDefinitions: {}, vehicleTemplateDefinitions: {}, dynamicEventTemplates: {},
-            proceduralQuestTemplates: {}, trapDefinitionsData: {}, constructionDefinitions: {},
-            families: {}, familyItems: new Map(), legacyAliases: {}
-        });
+        this.tilesets = {};
+        this.itemsById = {};
+        this.npcDefinitions = {};
+        this.fishDefinitions = {};
+        this.vehiclePartDefinitions = {};
+        this.vehicleTemplateDefinitions = {};
+        this.dynamicEventTemplates = {};
+        this.proceduralQuestTemplates = {};
+        this.trapDefinitionsData = {};
+        this.constructionDefinitions = {};
+        this.families = {};
+        this.familyItems = new Map();
+        this.legacyAliases = {};
 
         // Load families and aliases first
         try {
