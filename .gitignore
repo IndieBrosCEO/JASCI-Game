@@ -1,11 +1,15 @@
-node_modules/
-/.vs/JASCI-Game/FileContentIndex/a7053dad-74cb-47b8-aa23-72cf9c148e57.vsidx
-/.vs/JASCI-Game/FileContentIndex/02679c93-a587-4750-98cc-fb0fd79c3fd2.vsidx
-/.vs/JASCI-Game/FileContentIndex/67b99a55-8f97-4e6e-b888-54a9afb1aa0a.vsidx
-/.vs/JASCI-Game/FileContentIndex/82e385e8-d797-4d93-8c84-95b86e8d9a20.vsidx
-/.vs/JASCI-Game/FileContentIndex/b8758f3d-556e-4d32-91ec-cceca402c2ae.vsidx
-/.vs/JASCI-Game/FileContentIndex/cd46a9bf-3cf8-48d9-bfcc-fb306f9aee3d.vsidx
-/.vs/JASCI-Game/FileContentIndex/e8ae815b-995e-453f-9792-17fc579c24d2.vsidx
-/.vs/JASCI-Game/FileContentIndex/8ce0b235-9067-4e69-9c7c-d8d59ffdee4b.vsidx
-/.vs/JASCI-Game/FileContentIndex/f6a58a56-204f-484f-88cf-ac602dd1950b.vsidx
-/.vs/JASCI-Game/FileContentIndex/30b651da-33c4-4961-a251-bdebca294f2b.vsidx
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/JASCI-Game.slnx/FileContentIndex/11eddd3b-5641-4ace-9a82-54acf45fe308.vsidx
+/.vs/JASCI-Game.slnx/FileContentIndex/17f1a02a-b9ae-40cc-b805-833bfa4019cf.vsidx
+/.vs/JASCI-Game.slnx/FileContentIndex/1a80f378-e8eb-43ad-b27f-fbcdd6207992.vsidx
+/.vs/JASCI-Game.slnx/FileContentIndex/2450fc2a-8b0c-4e02-a44f-a26ec731ba59.vsidx
+/.vs/JASCI-Game.slnx/FileContentIndex/332b3a77-7065-4096-b228-2c8e33adadc0.vsidx
+/.vs/JASCI-Game.slnx/FileContentIndex/40546956-0fd7-4b15-944c-e92fb2c26725.vsidx
+/.vs/JASCI-Game.slnx/FileContentIndex/5ecb86f6-c2f5-49ab-aa9a-ba7fc51da80f.vsidx
+/.vs/JASCI-Game.slnx/FileContentIndex/74f8cf3a-8c71-4050-93cd-02a01066cdd1.vsidx
+/.vs/JASCI-Game.slnx/FileContentIndex/a9b723ff-3980-4699-b6cb-7c74d62dd389.vsidx
+/.vs/JASCI-Game.slnx/FileContentIndex/ce4edf5b-833b-4143-9a40-01daacd9af84.vsidx
+/.vs/slnx.sqlite
