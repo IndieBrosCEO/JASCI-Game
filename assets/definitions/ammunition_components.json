@@ -191,7 +191,6 @@
   },
   {
     "id": "shotshell_hull",
-    "family": "shotshell_hull",
     "name": "Shotshell Hull",
     "description": "An empty plastic or paper hull for a shotgun shell.",
     "type": "ammunition_component",

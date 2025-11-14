@@ -171,12 +171,10 @@
       "sharp",
       "wood",
       "modern"
-    ],
-    "family": "splintered_wood"
+    ]
   },
   {
     "id": "metal_ingot",
-    "family": "metal_ingot",
     "name": "Metal Ingot",
     "description": "A refined bar of generic metal, ready for more complex crafting.",
     "type": "crafting_material",
@@ -218,7 +216,6 @@
   },
   {
     "id": "leather_strips",
-    "family": "leather_strips",
     "name": "Leather Strips",
     "description": "Tough strips of cured animal hide.",
     "type": "crafting_material",
@@ -252,8 +249,7 @@
       "crafting",
       "container",
       "glass"
-    ],
-    "family": "glass_bottle_empty"
+    ]
   },
   {
     "id": "gasoline_canister_partial",
@@ -272,8 +268,7 @@
       "fuel",
       "flammable",
       "explosive_ingredient"
-    ],
-    "family": "gasoline_canister_partial"
+    ]
   },
   {
     "id": "armor_plate_makeshift",
@@ -292,8 +287,7 @@
       "crafting",
       "armor_component",
       "metal"
-    ],
-    "family": "armor_plate_makeshift"
+    ]
   },
   {
     "id": "tomato_seeds",
@@ -318,8 +312,7 @@
     "plantable": true,
     "effects": {
       "growsInto": "tomato_plant"
-    },
-    "family": "tomato_seeds"
+    }
   },
   {
     "id": "corn_seeds",
@@ -344,8 +337,7 @@
     "plantable": true,
     "effects": {
       "growsInto": "corn_stalk"
-    },
-    "family": "corn_seeds"
+    }
   },
   {
     "id": "carrot_seeds",
@@ -370,12 +362,10 @@
     "plantable": true,
     "effects": {
       "growsInto": "carrot_plant"
-    },
-    "family": "carrot_seeds"
+    }
   },
   {
     "id": "iron_ingot",
-    "family": "iron_ingot",
     "name": "Iron Ingot",
     "description": "A bar of refined iron, ready for forging or further processing.",
     "type": "crafting_material",
@@ -445,8 +435,7 @@
       "raw",
       "tanner",
       "cobbler"
-    ],
-    "family": "rawhide_leather"
+    ]
   },
   {
     "id": "tanned_leather_roll",
@@ -471,8 +460,7 @@
       "cobbler",
       "armorer",
       "seamstress"
-    ],
-    "family": "tanned_leather_roll"
+    ]
   },
   {
     "id": "fabric_sheet_cotton",
@@ -666,8 +654,7 @@
       "soap_maker",
       "tanner"
     ],
-    "warning": "Caustic",
-    "family": "lye_powder"
+    "warning": "Caustic"
   },
   {
     "id": "animal_fat_rendered",
@@ -718,8 +705,7 @@
       "raw",
       "jeweler",
       "artisan"
-    ],
-    "family": "gemstone_uncut_small"
+    ]
   },
   {
     "id": "gold_dust_pouch",
@@ -743,8 +729,7 @@
       "gold",
       "jeweler",
       "artisan"
-    ],
-    "family": "gold_dust_pouch"
+    ]
   },
   {
     "id": "silver_nugget",
@@ -768,8 +753,7 @@
       "silver",
       "jeweler",
       "artisan"
-    ],
-    "family": "silver_nugget"
+    ]
   },
   {
     "id": "copper_wire_spool",
@@ -824,8 +808,7 @@
       "plumber",
       "mechanic",
       "engineer"
-    ],
-    "family": "rubber_hose_section"
+    ]
   },
   {
     "id": "gears_assorted",
@@ -850,8 +833,7 @@
       "engineer",
       "mechanic",
       "robot_programmer"
-    ],
-    "family": "gears_assorted"
+    ]
   },
   {
     "id": "circuit_board_blank",
@@ -875,8 +857,7 @@
       "engineer",
       "electrician",
       "robot_programmer"
-    ],
-    "family": "circuit_board_blank"
+    ]
   },
   {
     "id": "concrete_mix_bag",
@@ -928,8 +909,7 @@
       "armorer",
       "machinist",
       "engineer"
-    ],
-    "family": "rivets_box"
+    ]
   },
   {
     "id": "fiberglass_resin_can",
@@ -955,8 +935,7 @@
     ],
     "requires": [
       "fiberglass_cloth"
-    ],
-    "family": "fiberglass_resin_can"
+    ]
   },
   {
     "id": "fiberglass_cloth_roll",
@@ -980,8 +959,7 @@
       "shipwright",
       "engineer",
       "artisan"
-    ],
-    "family": "fiberglass_cloth_roll"
+    ]
   },
   {
     "id": "wood_stick",
@@ -1938,7 +1916,6 @@
   },
   {
     "id": "chemical_reagent_sulfur",
-    "family": "chemical_reagent",
     "name": "Sulfur Powder",
     "description": "Yellow sulfur powder, a key chemical reagent.",
     "type": "crafting_material",

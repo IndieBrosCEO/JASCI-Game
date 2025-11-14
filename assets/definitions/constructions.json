@@ -528,10 +528,6 @@
       "description": "Construct a reinforced bench for munitions work, building upon a reloading bench.",
       "components": [
         {
-          "itemId": "reloading_bench",
-          "quantity": 1
-        },
-        {
           "family": "metal_sheet",
           "quantity": 4,
           "require": {
@@ -571,7 +567,8 @@
     },
     "allowedTileTags": [ "floor", "indoors", "reinforced_area_optional" ],
     "stationType": "munitions_assembly",
-    "tags": [ "interactive", "crafting_station", "explosives_work", "advanced_gunsmithing" ]
+    "tags": [ "interactive", "crafting_station", "explosives_work", "advanced_gunsmithing" ],
+    "buildRequiresAdjacent": "reloading_bench"
   },
   {
     "id": "placeable_dart_trap",
@@ -668,10 +665,6 @@
       "description": "Construct an armor crafting jig.",
       "components": [
         {
-          "itemId": "workbench_basic_built",
-          "quantity": 1
-        },
-        {
           "family": "steel_ingot",
           "quantity": 3
         },
@@ -704,7 +697,8 @@
     },
     "allowedTileTags": [ "floor", "indoors" ],
     "stationType": "armor_station",
-    "tags": [ "interactive", "crafting_station", "armor_crafting" ]
+    "tags": [ "interactive", "crafting_station", "armor_crafting" ],
+    "buildRequiresAdjacent": "workbench_basic"
   },
   {
     "id": "machine_shop_lathe",
@@ -900,10 +894,6 @@
     "recipe": {
       "description": "Construct an engine assembly jig.",
       "components": [
-        {
-          "itemId": "workbench_basic_built",
-          "quantity": 1
-        },
         {
           "family": "steel_ingot",
           "quantity": 5

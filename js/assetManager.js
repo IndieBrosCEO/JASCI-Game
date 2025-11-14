@@ -64,7 +64,7 @@
             'tileset.json', 'npcs.json', 'weapons.json', 'ammunition.json', 'consumables.json',
             'clothing.json', 'fish.json', 'tools.json', 'crafting_materials.json', 'containers.json',
             'vehicle_parts.json', 'vehicle_templates.json', 'dynamic_event_templates.json',
-            'procedural_quest_templates.json', 'traps.json', 'constructions.json'
+            'procedural_quest_templates.json', 'traps.json', 'constructions.json', 'ammunition_components.json'
         ];
 
         for (const filename of definitionFiles) {

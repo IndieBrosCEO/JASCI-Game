@@ -124,7 +124,11 @@ class InventoryManager {
         return [component.itemId];
     }
 
-    countItems(component, inventoryItems) {
+    countItems(componentOrItemId, inventoryItems) {
+        const component = typeof componentOrItemId === 'string'
+            ? { itemId: componentOrItemId }
+            : componentOrItemId;
+
         const matchingItemIds = this._getMatchingItemIds(component);
         let count = 0;
         for (const itemId of matchingItemIds) {
@@ -137,10 +141,14 @@ class InventoryManager {
         return count;
     }
 
-    removeItems(component, quantityToRemove, inventoryItems) {
+    removeItems(componentOrItemId, quantityToRemove, inventoryItems) {
         if (!inventoryItems || !Array.isArray(inventoryItems) || quantityToRemove <= 0) {
             return false;
         }
+
+        const component = typeof componentOrItemId === 'string'
+            ? { itemId: componentOrItemId }
+            : componentOrItemId;
 
         const matchingItemIds = this._getMatchingItemIds(component);
         let totalAvailable = 0;
@@ -157,27 +165,45 @@ class InventoryManager {
         }
 
         let remainingToRemove = quantityToRemove;
+        const removedItems = [];
+
         for (const itemId of matchingItemIds) {
+            if (remainingToRemove <= 0) break;
             for (let i = inventoryItems.length - 1; i >= 0; i--) {
                 if (remainingToRemove <= 0) break;
                 const item = inventoryItems[i];
                 if (item && item.id === itemId) {
                     if (item.stackable && item.quantity > 0) {
-                        if (item.quantity > remainingToRemove) {
-                            item.quantity -= remainingToRemove;
-                            remainingToRemove = 0;
-                        } else {
-                            remainingToRemove -= item.quantity;
+                        const amountToRemoveFromStack = Math.min(remainingToRemove, item.quantity);
+
+                        const removedPortion = { ...item, quantity: amountToRemoveFromStack };
+                        removedItems.push(removedPortion);
+
+                        item.quantity -= amountToRemoveFromStack;
+                        remainingToRemove -= amountToRemoveFromStack;
+
+                        if (item.quantity <= 0) {
                             inventoryItems.splice(i, 1);
                         }
                     } else {
+                        removedItems.push({ ...item }); // Push a copy
                         inventoryItems.splice(i, 1);
                         remainingToRemove--;
                     }
                 }
             }
         }
-        return remainingToRemove === 0;
+
+        if (remainingToRemove === 0) {
+            return removedItems;
+        }
+
+        // If we failed to remove everything, we must roll back the changes.
+        // Add the prematurely removed items back to the inventory.
+        for (const item of removedItems) {
+            this.addItemToInventory(item, item.quantity, inventoryItems, 999); // Use high capacity to ensure rollback fits
+        }
+        return false; // Indicate failure
     }
 
     addItemToInventory(itemToAddInstance, quantity, inventoryItems, maxSlots) {
@@ -413,15 +439,16 @@ class InventoryManager {
             logToConsole(`Item '${itemIdOrName}' not found in inventory.`, "warn");
             return null;
         }
-        if (this.removeItems(actualItemId, quantity, inv)) {
+        const removed = this.removeItems(actualItemId, quantity, inv);
+        if (removed) {
             logToConsole(`Removed ${quantity}x ${itemToRemoveInstance.name}.`);
             if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
             if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
             return this.assetManager.getItem(actualItemId); // Return definition
-        } else {
-            logToConsole(`Failed to remove ${quantity}x ${itemToRemoveInstance.name}.`, "warn");
-            return null;
         }
+
+        logToConsole(`Failed to remove ${quantity}x ${itemToRemoveInstance.name}.`, "warn");
+        return null;
     }
 
     dropItem(itemName) {
@@ -474,7 +501,8 @@ class InventoryManager {
             logToConsole(`Hand slot ${handIndex + 1} is occupied by ${this.gameState.inventory.handSlots[handIndex].name}.`, "info");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
         }
-        if (this.removeItems(item.id, 1, inv)) {
+        const removed = this.removeItems(item.id, 1, inv);
+        if (removed) {
             item.equipped = true;
             this.gameState.inventory.handSlots[handIndex] = item;
             logToConsole(`Equipped ${item.name} to hand slot ${handIndex + 1}.`);
@@ -483,8 +511,6 @@ class InventoryManager {
             if (this.gameState.isInCombat && this.gameState.combatPhase === 'playerAttackDeclare' && window.combatManager) {
                 window.combatManager.populateWeaponSelect();
             }
-        } else {
-            logToConsole(`Failed to remove ${item.name} from inventory during equip.`, "error", "dev");
         }
     }
 
@@ -536,7 +562,8 @@ class InventoryManager {
             logToConsole(`Layer ${targetLayer} is already occupied by ${this.gameState.player.wornClothing[targetLayer].name}.`, "info");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
         }
-        if (this.removeItems(item.id, 1, inv)) {
+        const removed = this.removeItems(item.id, 1, inv);
+        if (removed) {
             this.gameState.player.wornClothing[targetLayer] = item;
             item.equipped = true;
             this.gameState.inventory.container.maxSlots = this.calculateCumulativeCapacity();
@@ -544,8 +571,6 @@ class InventoryManager {
             if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 });
             if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
             if (window.renderCharacterInfo) window.renderCharacterInfo();
-        } else {
-            logToConsole(`Failed to remove ${item.name} from inventory during equip.`, "error", "dev");
         }
     }
 

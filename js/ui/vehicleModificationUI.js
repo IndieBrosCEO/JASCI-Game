@@ -337,12 +337,26 @@ class VehicleModificationUIManager {
                             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
                             return;
                         }
-                        if (!this.inventoryManager.removeItemsFromInventory(partDefinitionIdFromInventory, 1, this.gameState.inventory.container.items)) {
+                        const removed = this.inventoryManager.removeItems(partDefinitionIdFromInventory, 1, this.gameState.inventory.container.items);
+                        if (removed) {
+                            if (this.vehicleManager.addPartToVehicle(this.currentVehicleId, vehiclePartIdToInstall, slotType, i)) {
+                                logToConsole(`Installed ${partDefToInstall.name} into ${slotType} ${i + 1}.`, "info");
+                                this.gameState.actionPointsRemaining -= apCostInstall;
+                                if (window.turnManager) window.turnManager.updateTurnUI();
+                                this.renderVehicleSlots(vehicle);
+                                this.renderPlayerInventory(vehicle);
+                                this.clearPartDetail();
+                                installed = true;
+                                break;
+                            } else {
+                                // If adding the part failed, return the item to inventory
+                                this.inventoryManager.addItemToInventory(removed[0], removed[0].quantity || 1, this.gameState.inventory.container.items, 999);
+                            }
+                        } else {
                             logToConsole(`Failed to remove item ${partDefinitionIdFromInventory} from inventory for install.`, "error");
-                            // if (window.uiManager) window.uiManager.showToastNotification("Could not find part in inventory to install.", "error");
                             return;
                         }
-                        if (this.vehicleManager.addPartToVehicle(this.currentVehicleId, vehiclePartIdToInstall, slotType, i)) {
+                        if (installed) {
                             logToConsole(`Installed ${partDefToInstall.name} into ${slotType} ${i + 1}.`, "info");
                             this.gameState.actionPointsRemaining -= apCostInstall;
                             if (window.turnManager) window.turnManager.updateTurnUI();
