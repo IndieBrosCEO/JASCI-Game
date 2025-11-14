@@ -1,0 +1,33 @@
+{
+  "fabric_sheet": {
+    "properties": {
+      "material": { "type": "string", "enum": ["cotton", "wool", "canvas", "nylon", "kevlar", "burlap"] },
+      "weight": { "type": "string", "enum": ["light", "medium", "heavy"] },
+      "grade": { "type": "number" },
+      "treated": { "type": "boolean" }
+    }
+  },
+  "metal_plate": {
+    "properties": {
+      "material": { "type": "string", "enum": ["steel", "iron", "aluminum"] },
+      "grade": { "type": "number" }
+    }
+  },
+  "adhesive": {
+    "properties": {
+      "type": { "type": "string", "enum": ["epoxy", "tape", "paste"] }
+    }
+  },
+  "fastener": {
+    "properties": {
+      "type": { "type": "string", "enum": ["nails", "screws", "bolts", "rivets"] },
+      "size": { "type": "string", "enum": ["small", "medium", "large"] }
+    }
+  },
+  "wood": {
+    "properties": {
+      "type": { "type": "string", "enum": ["plank", "log", "stick"] },
+      "treatment": { "type": "string", "enum": ["none", "pressure_treated"] }
+    }
+  }
+}

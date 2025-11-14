@@ -76,7 +76,6 @@
         this.familyItems = new Map();
         this.legacyAliases = {};
 
-        // Updated to load from new categorized item files
         const definitionFiles = [
             'tileset.json',
             'npcs.json',
@@ -92,8 +91,10 @@
             'vehicle_templates.json',
             'dynamic_event_templates.json',
             'procedural_quest_templates.json',
-            'traps.json', // Added traps.json
-            'constructions.json' // Added constructions.json
+            'traps.json',
+            'constructions.json',
+            'families.json',
+            'legacy_aliases.json'
         ];
 
         for (const filename of definitionFiles) {
@@ -107,7 +108,10 @@
 
                 if (filename === 'tileset.json') {
                     this.tilesets = parsedJson;
-                    console.log("AssetManager: Base tilesets loaded:", this.tilesets);
+                } else if (filename === 'families.json') {
+                    this.families = parsedJson;
+                } else if (filename === 'legacy_aliases.json') {
+                    this.legacyAliases = parsedJson;
                 } else if (filename === 'npcs.json') {
                     this.npcDefinitions = Object.fromEntries(parsedJson.map(npc => [npc.id, npc]));
                 } else if (filename === 'fish.json') {
@@ -115,72 +119,56 @@
                 } else if (filename === 'vehicle_parts.json') {
                     if (Array.isArray(parsedJson)) {
                         this.vehiclePartDefinitions = Object.fromEntries(parsedJson.map(part => [part.id, part]));
-                        console.log(`AssetManager: Loaded ${Object.keys(this.vehiclePartDefinitions).length} vehicle parts.`);
-                    } else {
-                        console.warn(`AssetManager: Expected array from vehicle_parts.json, but got ${typeof parsedJson}. Skipping file.`);
                     }
                 } else if (filename === 'vehicle_templates.json') {
                     if (Array.isArray(parsedJson)) {
                         this.vehicleTemplateDefinitions = Object.fromEntries(parsedJson.map(template => [template.id, template]));
-                        console.log(`AssetManager: Loaded ${Object.keys(this.vehicleTemplateDefinitions).length} vehicle templates.`);
-                    } else {
-                        console.warn(`AssetManager: Expected array from vehicle_templates.json, but got ${typeof parsedJson}. Skipping file.`);
                     }
                 } else if (filename === 'dynamic_event_templates.json') {
                     if (Array.isArray(parsedJson)) {
                         this.dynamicEventTemplates = Object.fromEntries(parsedJson.map(template => [template.id, template]));
-                        console.log(`AssetManager: Loaded ${Object.keys(this.dynamicEventTemplates).length} dynamic event templates.`);
-                    } else {
-                        console.warn(`AssetManager: Expected array from dynamic_event_templates.json, but got ${typeof parsedJson}. Skipping file.`);
                     }
                 } else if (filename === 'procedural_quest_templates.json') {
                     if (Array.isArray(parsedJson)) {
                         this.proceduralQuestTemplates = Object.fromEntries(parsedJson.map(template => [template.id, template]));
-                        console.log(`AssetManager: Loaded ${Object.keys(this.proceduralQuestTemplates).length} procedural quest templates.`);
-                    } else {
-                        console.warn(`AssetManager: Expected array from procedural_quest_templates.json, but got ${typeof parsedJson}. Skipping file.`);
                     }
                 } else if (filename === 'traps.json') {
-                    if (typeof parsedJson === 'object' && !Array.isArray(parsedJson)) {
-                        this.trapDefinitionsData = parsedJson; // Directly assign the object
-                        // Optionally, validate that each trap has an 'id' matching its key, or add it if missing.
-                        // For now, direct assignment is simplest if the structure is { "trap_id_1": { ... }, "trap_id_2": { ... } }
-                        // And downstream code expects this.trapDefinitionsData["trap_id_1"]
-                        logToConsole(`AssetManager: Loaded ${Object.keys(this.trapDefinitionsData).length} trap definitions from object.`);
-                    } else if (Array.isArray(parsedJson)) { // Keep handling for array format if it might still occur
+                    if (Array.isArray(parsedJson)) {
                         this.trapDefinitionsData = Object.fromEntries(parsedJson.map(trap => [trap.id, trap]));
-                        logToConsole(`AssetManager: Loaded ${Object.keys(this.trapDefinitionsData).length} trap definitions from array.`);
-                    } else {
-                        console.warn(`AssetManager: Expected object or array from traps.json, but got ${typeof parsedJson}. Skipping file.`);
                     }
                 } else if (filename === 'constructions.json') {
                     if (Array.isArray(parsedJson)) {
                         this.constructionDefinitions = Object.fromEntries(parsedJson.map(def => [def.id, def]));
-                        console.log(`AssetManager: Loaded ${Object.keys(this.constructionDefinitions).length} construction definitions.`);
-                    } else {
-                        console.warn(`AssetManager: Expected array from constructions.json, but got ${typeof parsedJson}. Skipping file.`);
-                        this.constructionDefinitions = {}; // Ensure it's an empty object on failure
                     }
                 } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json'].includes(filename)) {
-                    // All new item files are arrays of items
                     if (Array.isArray(parsedJson)) {
                         parsedJson.forEach(item => {
-                            if (tempItemsById[item.id]) {
+                            if (this.itemsById[item.id]) {
                                 console.warn(`AssetManager: Duplicate item ID '${item.id}' found while loading ${filename}. Overwriting previous entry.`);
                             }
-                            tempItemsById[item.id] = item;
+                            this.itemsById[item.id] = item;
                         });
-                    } else {
-                        console.warn(`AssetManager: Expected array from ${filename}, but got ${typeof parsedJson}. Skipping file.`);
                     }
                 }
             } catch (error) {
                 console.error(`Failed to load base definition file ${filename}:`, error);
             }
         }
+
+        for (const item of Object.values(this.itemsById)) {
+            if (item.family) {
+                if (!this.familyItems.has(item.family)) {
+                    this.familyItems.set(item.family, []);
+                }
+                this.familyItems.get(item.family).push(item);
+            }
+        }
+
+        this.familyItems.forEach((items, family) => {
+            items.sort((a, b) => a.id.localeCompare(b.id));
+        });
+
         console.log("Base asset definitions loaded.");
-        this.itemsById = tempItemsById; // All items are now consolidated into itemsById
-        console.log("AssetManager: All items loaded:", this.itemsById);
 
         // After loading NPCs, load their dialogue files
         const dialogueFilesToLoad = new Set();
@@ -229,23 +217,16 @@
         return this.proceduralQuestTemplates; // Returns the object
     }
 
-    getTileset(tilesetId) { // tilesetId is optional, will return all tilesets if not provided
+    getTileset(tilesetId) {
         if (tilesetId) {
-            // If the structure of tilesets.json is an object with multiple named tilesets
-            // return this.tilesets[tilesetId];
-            // For now, assuming tileset.json is the default tileset itself or an object with an id
-            if (this.tilesets && this.tilesets.id === tilesetId) {
-                return this.tilesets;
-            }
-            // If tilesets.json is an array of tilesets, you might search by id:
-            // return this.tilesets.find(ts => ts.id === tilesetId);
-            return this.tilesets[tilesetId]; // Simple lookup if this.tilesets is a map of tilesets
+            return this.tilesets[tilesetId];
         }
-        return this.tilesets; // Returns the whole tilesets object (likely the default one)
+        return this.tilesets;
     }
 
     getItem(itemId) {
-        return this.itemsById[itemId] || null;
+        const canonicalId = this.legacyAliases[itemId] || itemId;
+        return this.itemsById[canonicalId] || null;
     }
 
     getNpc(npcId) {
