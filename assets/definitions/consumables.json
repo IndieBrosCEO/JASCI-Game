@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "c4_semtex_explosive",
     "name": "C4/Semtex",
@@ -22,23 +22,16 @@
       "description": "Synthesize and form a block of C4/Semtex plastic explosive. Extremely dangerous.",
       "components": [
         {
-          "family": "explosive_compound",
-          "quantity": 3,
-          "require": {
-            "type": "plastic_b"
-          }
+          "itemId": "explosive_compound_generic_b",
+          "quantity": 3
         },
         {
-          "family": "plastic_scrap",
+          "itemId": "plastic_scrap_processed",
           "quantity": 1
         },
         {
-          "family": "wire",
-          "quantity": 1,
-          "require": {
-            "insulation": "insulated",
-            "thickness": "thin"
-          }
+          "itemId": "wire_insulated_thin",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -98,26 +91,20 @@
       "description": "Craft sticks of dynamite.",
       "components": [
         {
-          "family": "gunpowder",
+          "itemId": "gunpowder_basic",
           "quantity": 5
         },
         {
-          "family": "chemical_reagent",
-          "quantity": 2,
-          "require": {
-            "type": "saltpeter"
-          }
+          "itemId": "chemical_reagent_saltpeter",
+          "quantity": 2
         },
         {
-          "family": "fabric_sheet",
+          "itemId": "cloth_sheet_rough_fiber",
           "quantity": 1
         },
         {
-          "family": "thread",
-          "quantity": 1,
-          "require": {
-            "material": "plant_fiber"
-          }
+          "itemId": "thread_simple_plant_fiber",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -154,15 +141,12 @@
       "description": "Craft a more effective bandage with some antiseptic properties.",
       "components": [
         {
-          "family": "fabric_sheet",
+          "itemId": "cloth_scrap",
           "quantity": 3
         },
         {
-          "family": "antiseptic",
-          "quantity": 1,
-          "require": {
-            "type": "herbal_pulp"
-          }
+          "itemId": "antiseptic_herbal_pulp",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -202,22 +186,15 @@
           "quantity": 2
         },
         {
-          "family": "antiseptic",
-          "quantity": 2,
-          "require": {
-            "type": "herbal_pulp"
-          }
+          "itemId": "antiseptic_herbal_pulp",
+          "quantity": 2
         },
         {
-          "family": "splint",
-          "quantity": 1,
-          "require": {
-            "material": "wood",
-            "type": "simple"
-          }
+          "itemId": "splint_wood_simple",
+          "quantity": 1
         },
         {
-          "family": "fabric_sheet",
+          "itemId": "cloth_scrap",
           "quantity": 3
         }
       ],
@@ -348,18 +325,12 @@
       "description": "Create water purification tablets from iodine and a filler.",
       "components": [
         {
-          "family": "chemical_reagent",
-          "quantity": 1,
-          "require": {
-            "type": "iodine_crystals"
-          }
+          "itemId": "iodine_crystals",
+          "quantity": 1
         },
         {
-          "family": "charcoal",
-          "quantity": 1,
-          "require": {
-            "form": "bits"
-          }
+          "itemId": "charcoal_bits",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -497,21 +468,15 @@
       "description": "Create a healing salve from medicinal herbs and a base.",
       "components": [
         {
-          "family": "medicinal_herb",
-          "quantity": 3,
-          "require": {
-            "type": "comfrey"
-          }
+          "itemId": "medicinal_herb_comfrey",
+          "quantity": 3
         },
         {
-          "family": "animal_fat",
-          "quantity": 1,
-          "require": {
-            "processing": "rendered"
-          }
+          "itemId": "animal_fat_rendered",
+          "quantity": 1
         },
         {
-          "family": "fabric_sheet",
+          "itemId": "cloth_scrap",
           "quantity": 1
         }
       ],
@@ -578,25 +543,16 @@
       "description": "Mix soot and a binder to create black ink.",
       "components": [
         {
-          "family": "charcoal",
-          "quantity": 5,
-          "require": {
-            "form": "bits"
-          }
+          "itemId": "charcoal_bits",
+          "quantity": 5
         },
         {
-          "family": "water",
-          "quantity": 1,
-          "require": {
-            "purification": "clean"
-          }
+          "itemId": "water_clean_item",
+          "quantity": 1
         },
         {
-          "family": "adhesive",
-          "quantity": 1,
-          "require": {
-            "type": "paste_basic"
-          }
+          "itemId": "adhesive_paste_basic",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -626,25 +582,16 @@
       "description": "Prepare animal hides to create a roll of parchment.",
       "components": [
         {
-          "family": "animal_hide",
-          "quantity": 2,
-          "require": {
-            "quality": "fine"
-          }
+          "itemId": "animal_hide_fine",
+          "quantity": 2
         },
         {
-          "family": "chemical_reagent",
-          "quantity": 1,
-          "require": {
-            "type": "lime_solution"
-          }
+          "itemId": "lime_solution_basic",
+          "quantity": 1
         },
         {
-          "family": "water",
-          "quantity": 2,
-          "require": {
-            "purification": "clean"
-          }
+          "itemId": "water_clean_item",
+          "quantity": 2
         }
       ],
       "skills_required": [
@@ -716,7 +663,7 @@
       "description": "Craft a simple bandage from cloth scraps.",
       "components": [
         {
-          "family": "fabric_sheet",
+          "itemId": "cloth_scrap",
           "quantity": 2
         }
       ],

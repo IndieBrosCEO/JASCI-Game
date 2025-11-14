@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "ammo_556mm",
     "name": "5.56mm Rounds",
@@ -20,29 +20,20 @@
       "description": "Reload 5.56mm rifle cartridges.",
       "components": [
         {
-          "family": "casing",
-          "quantity": 10,
-          "require": {
-            "caliber": "small_rifle"
-          }
+          "itemId": "casing_brass_rifle_small",
+          "quantity": 10
         },
         {
-          "family": "primer",
-          "quantity": 10,
-          "require": {
-            "size": "small"
-          }
+          "itemId": "primer_rifle_small",
+          "quantity": 10
         },
         {
-          "family": "powder_propellant",
+          "itemId": "gunpowder_basic",
           "quantity": 3
         },
         {
-          "family": "projectile",
-          "quantity": 10,
-          "require": {
-            "caliber": "small_rifle"
-          }
+          "itemId": "bullet_projectile_5_56mm",
+          "quantity": 10
         }
       ],
       "skills_required": [
@@ -148,29 +139,20 @@
       "description": "Reload 9mm pistol cartridges.",
       "components": [
         {
-          "family": "casing",
-          "quantity": 10,
-          "require": {
-            "caliber": "small_pistol"
-          }
+          "itemId": "casing_brass_pistol_small",
+          "quantity": 10
         },
         {
-          "family": "primer",
-          "quantity": 10,
-          "require": {
-            "size": "small"
-          }
+          "itemId": "primer_pistol_small",
+          "quantity": 10
         },
         {
-          "family": "powder_propellant",
+          "itemId": "gunpowder_basic",
           "quantity": 2
         },
         {
-          "family": "projectile",
-          "quantity": 10,
-          "require": {
-            "caliber": "small_pistol"
-          }
+          "itemId": "bullet_projectile_9mm",
+          "quantity": 10
         }
       ],
       "skills_required": [
@@ -360,33 +342,24 @@
       "description": "Reload 12-gauge buckshot shells.",
       "components": [
         {
-          "family": "shotshell_hull",
-          "quantity": 5,
-          "require": {
-            "gauge": 12
-          }
-        },
-        {
-          "family": "primer",
-          "quantity": 5,
-          "require": {
-            "type": "shotgun"
-          }
-        },
-        {
-          "family": "powder_propellant",
-          "quantity": 2
-        },
-        {
-          "family": "shot_pellets",
+          "itemId": "shotshell_hull_12ga",
           "quantity": 5
         },
         {
-          "family": "wad",
-          "quantity": 5,
-          "require": {
-            "gauge": 12
-          }
+          "itemId": "primer_shotgun",
+          "quantity": 5
+        },
+        {
+          "itemId": "gunpowder_basic",
+          "quantity": 2
+        },
+        {
+          "itemId": "shot_lead_pellets_buckshot",
+          "quantity": 5
+        },
+        {
+          "itemId": "wad_shotgun",
+          "quantity": 5
         }
       ],
       "skills_required": [
@@ -422,15 +395,15 @@
       "description": "Craft basic arrows from wood, feathers, and crude stone heads.",
       "components": [
         {
-          "family": "arrow_shaft_wood",
+          "itemId": "arrow_shaft_wood",
           "quantity": 3
         },
         {
-          "family": "feather",
+          "itemId": "feather",
           "quantity": 6
         },
         {
-          "family": "arrowhead_stone_crude",
+          "itemId": "arrowhead_stone_crude",
           "quantity": 3
         }
       ],
@@ -465,15 +438,15 @@
       "description": "Craft sturdy crossbow bolts with metal heads.",
       "components": [
         {
-          "family": "arrow_shaft_sturdy_wood",
+          "itemId": "arrow_shaft_sturdy_wood",
           "quantity": 3
         },
         {
-          "family": "feather",
+          "itemId": "feather",
           "quantity": 6
         },
         {
-          "family": "bolthead_metal_basic",
+          "itemId": "bolthead_metal_basic",
           "quantity": 3
         }
       ],
@@ -513,26 +486,20 @@
       "description": "Assemble a 40mm fragmentation grenade.",
       "components": [
         {
-          "family": "casing_grenade_40mm_metal",
+          "itemId": "casing_grenade_40mm_metal",
           "quantity": 1
         },
         {
-          "family": "fuze_timed_impact_grenade",
+          "itemId": "fuze_timed_impact_grenade",
           "quantity": 1
         },
         {
-          "family": "explosive_compound",
-          "quantity": 2,
-          "require": {
-            "type": "plastic_b"
-          }
+          "itemId": "explosive_compound_generic_b",
+          "quantity": 2
         },
         {
-          "family": "metal_bits",
-          "quantity": 10,
-          "require": {
-            "size": "small"
-          }
+          "itemId": "metal_bits_small",
+          "quantity": 10
         }
       ],
       "skills_required": [

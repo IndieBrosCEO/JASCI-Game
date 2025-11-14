@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "chassis_small_buggy",
     "name": "Small Buggy Chassis",
@@ -222,28 +222,20 @@
       "description": "Assemble a pair of basic vehicle headlights.",
       "components": [
         {
-          "family": "electronics_scrap",
+          "itemId": "electronics_scrap",
           "quantity": 5
         },
         {
-          "family": "lens",
-          "quantity": 2,
-          "require": {
-            "quality": "crude",
-            "material": "glass"
-          }
-        },
-        {
-          "family": "device_casing",
+          "itemId": "lens_crude_glass",
           "quantity": 2
         },
         {
-          "family": "wire",
-          "quantity": 4,
-          "require": {
-            "insulation": "insulated",
-            "thickness": "thin"
-          }
+          "itemId": "plastic_casing_small_device",
+          "quantity": 2
+        },
+        {
+          "itemId": "wire_insulated_thin",
+          "quantity": 4
         }
       ],
       "skills_required": [

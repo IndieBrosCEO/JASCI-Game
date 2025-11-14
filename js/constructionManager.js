@@ -93,14 +93,16 @@ class ConstructionManager {
         const player = this.gameState;
         if (definition.skillRequired && definition.skillLevelRequired) {
             if (getSkillValue(definition.skillRequired, player) < definition.skillLevelRequired) {
+                // logToConsole(`${this.logPrefix} Cannot build '${definition.name}'. Skill ${definition.skillRequired} too low. Need ${definition.skillLevelRequired}, have ${getSkillValue(definition.skillRequired, player)}.`, 'orange');
                 return false;
             }
         }
 
         // Check components
         for (const component of definition.components) {
-            const count = this.inventoryManager.countItems(component, this.gameState.inventory.container.items);
+            const count = this.inventoryManager.countItems(component.itemId, this.gameState.inventory.container.items);
             if (count < component.quantity) {
+                // logToConsole(`${this.logPrefix} Cannot build '${definition.name}'. Missing ${component.quantity - count} of ${component.itemId}.`, 'orange');
                 return false;
             }
         }
@@ -241,8 +243,8 @@ class ConstructionManager {
 
         // Consume components
         for (const component of definition.components) {
-            if (!this.inventoryManager.removeItems(component, component.quantity, this.gameState.inventory.container.items)) {
-                logToConsole(`${this.logPrefix} CRITICAL ERROR: Failed to remove component ${component.itemId || component.family} during construction of '${definition.name}'.`, 'red');
+            if (!this.inventoryManager.removeItems(component.itemId, component.quantity, this.gameState.inventory.container.items)) {
+                logToConsole(`${this.logPrefix} CRITICAL ERROR: Failed to remove component ${component.itemId} during construction of '${definition.name}'.`, 'red');
                 if (window.uiManager) window.uiManager.showToastNotification("Construction failed: component error.", "error");
                 if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Sound for failure
                 return false;
@@ -276,13 +278,9 @@ class ConstructionManager {
                         levelData.building[currentY][currentX] = definition.tileIdPlaced;
                     } else {
                         logToConsole(`${this.logPrefix} CRITICAL ERROR: Cannot place tile for '${definition.name}' at (${currentX},${currentY},${z}). mapManager or map data invalid. Rolling back components.`, "red");
-                        // ATTEMPT ROLLBACK - This is imperfect as we don't know the exact items removed.
-                        // We cannot simply add back by component object. Logging a critical data loss instead.
-                        logToConsole(`${this.logPrefix} CRITICAL DATA LOSS: Failed to roll back components for failed construction '${definition.name}'. The components have been consumed but the construction was not placed.`, 'red');
-                        // In a more robust system, removeItems would be part of a transaction that could be properly rolled back.
-                        // For now, we alert the user that the items were lost.
-                        if (window.uiManager) {
-                            window.uiManager.showToastNotification(`Map Error! Construction failed and components were lost.`, "error");
+                        // Rollback consumed components
+                        for (const component of definition.components) {
+                            this.inventoryManager.addItemToInventoryById(component.itemId, component.quantity); // Assuming addItemToInventoryById exists and handles stacking
                         }
                         if (window.updateInventoryUI) window.updateInventoryUI();
                         if (window.uiManager) window.uiManager.showToastNotification("Construction failed: map error (components restored).", "error");

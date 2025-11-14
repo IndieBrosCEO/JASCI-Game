@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "wall_wood_simple",
     "name": "Simple Wooden Wall Section",
@@ -18,11 +18,11 @@
       "description": "Construct a simple defensive wall section from wood planks and nails.",
       "components": [
         {
-          "family": "wood_plank",
+          "itemId": "wood_planks",
           "quantity": 4
         },
         {
-          "family": "nail",
+          "itemId": "nails",
           "quantity": 8
         }
       ],
@@ -64,15 +64,15 @@
       "description": "Construct a simple wooden door.",
       "components": [
         {
-          "family": "wood_plank",
+          "itemId": "wood_planks",
           "quantity": 3
         },
         {
-          "family": "nail",
+          "itemId": "nails",
           "quantity": 4
         },
         {
-          "family": "metal_scrap",
+          "itemId": "scrap_metal",
           "quantity": 1
         }
       ],
@@ -110,11 +110,11 @@
       "description": "Dig a pit and line it with sharpened stakes made from wood and metal.",
       "components": [
         {
-          "family": "wood_plank",
+          "itemId": "wood_planks",
           "quantity": 2
         },
         {
-          "family": "metal_scrap",
+          "itemId": "scrap_metal",
           "quantity": 3
         }
       ],
@@ -151,11 +151,11 @@
       "description": "Construct a sturdy workbench for basic crafting and repairs.",
       "components": [
         {
-          "family": "wood_plank",
+          "itemId": "wood_planks",
           "quantity": 5
         },
         {
-          "family": "nail",
+          "itemId": "nails",
           "quantity": 10
         }
       ],
@@ -201,15 +201,15 @@
       "description": "Construct a rudimentary forge for working with metals.",
       "components": [
         {
-          "family": "stone_block",
+          "itemId": "stone_block_hewn",
           "quantity": 10
         },
         {
-          "family": "metal_scrap",
+          "itemId": "scrap_metal",
           "quantity": 5
         },
         {
-          "family": "wood_log",
+          "itemId": "wood_log",
           "quantity": 5
         }
       ],
@@ -255,15 +255,15 @@
       "description": "Assemble a basic chemistry set for chemical reactions.",
       "components": [
         {
-          "family": "metal_scrap",
+          "itemId": "scrap_metal",
           "quantity": 3
         },
         {
-          "family": "glass_shards",
+          "itemId": "sharp_glass",
           "quantity": 5
         },
         {
-          "family": "plastic_scrap",
+          "itemId": "plastic_scrap_processed",
           "quantity": 2
         }
       ],
@@ -305,14 +305,11 @@
       "description": "Construct a sturdy metal barricade from metal sheets and bolts.",
       "components": [
         {
-          "family": "metal_sheet",
-          "quantity": 3,
-          "require": {
-            "type": "sturdy"
-          }
+          "itemId": "metal_sheet_sturdy",
+          "quantity": 3
         },
         {
-          "family": "bolts",
+          "itemId": "bolts_and_nuts_set",
           "quantity": 1
         }
       ],
@@ -355,15 +352,12 @@
       "description": "Construct a small rain collector from processed plastic and a tarp.",
       "components": [
         {
-          "family": "plastic_scrap",
+          "itemId": "plastic_scrap_processed",
           "quantity": 5
         },
         {
-          "family": "tarp",
-          "quantity": 1,
-          "require": {
-            "type": "basic"
-          }
+          "itemId": "tarp_basic",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -406,11 +400,11 @@
       "description": "Construct a small storage locker from wood and metal components.",
       "components": [
         {
-          "family": "wood_plank",
+          "itemId": "wood_planks",
           "quantity": 3
         },
         {
-          "family": "metal_scrap",
+          "itemId": "scrap_metal",
           "quantity": 2
         }
       ],
@@ -459,26 +453,23 @@
       "description": "Construct a dedicated bench for reloading ammunition.",
       "components": [
         {
-          "family": "wood_plank",
+          "itemId": "wood_planks",
           "quantity": 8
         },
         {
-          "family": "steel_ingot",
+          "itemId": "steel_ingot",
           "quantity": 2
         },
         {
-          "family": "mechanical_parts",
-          "quantity": 5,
-          "require": {
-            "type": "simple"
-          }
+          "itemId": "mechanical_parts_simple",
+          "quantity": 5
         },
         {
-          "family": "bolts",
+          "itemId": "bolts_and_nuts_set",
           "quantity": 1
         },
         {
-          "family": "nail",
+          "itemId": "nails",
           "quantity": 20
         }
       ],
@@ -528,25 +519,19 @@
       "description": "Construct a reinforced bench for munitions work, building upon a reloading bench.",
       "components": [
         {
-          "itemId": "reloading_bench",
+          "itemId": "reloading_bench_tile",
           "quantity": 1
         },
         {
-          "family": "metal_sheet",
-          "quantity": 4,
-          "require": {
-            "type": "sturdy"
-          }
+          "itemId": "metal_sheet_sturdy",
+          "quantity": 4
         },
         {
-          "family": "plexiglass_sheet",
-          "quantity": 1,
-          "require": {
-            "thickness": "thick"
-          }
+          "itemId": "plexiglass_sheet_thick",
+          "quantity": 1
         },
         {
-          "family": "bolts",
+          "itemId": "bolts_and_nuts_set",
           "quantity": 2
         }
       ],
@@ -668,22 +653,19 @@
       "description": "Construct an armor crafting jig.",
       "components": [
         {
-          "itemId": "workbench_basic_built",
+          "itemId": "workbench_basic_tile",
           "quantity": 1
         },
         {
-          "family": "steel_ingot",
+          "itemId": "steel_ingot",
           "quantity": 3
         },
         {
-          "family": "mechanical_parts",
-          "quantity": 4,
-          "require": {
-            "type": "simple"
-          }
+          "itemId": "mechanical_parts_simple",
+          "quantity": 4
         },
         {
-          "family": "bolts",
+          "itemId": "bolts_and_nuts_set",
           "quantity": 2
         }
       ],
@@ -737,33 +719,23 @@
       "description": "Assemble a heavy-duty machine shop lathe.",
       "components": [
         {
-          "family": "steel_ingot",
+          "itemId": "steel_ingot",
           "quantity": 10
         },
         {
-          "family": "mechanical_parts",
-          "quantity": 5,
-          "require": {
-            "type": "vehicle_grade"
-          }
+          "itemId": "mechanical_parts_vehicle_grade",
+          "quantity": 5
         },
         {
-          "family": "motor",
-          "quantity": 1,
-          "require": {
-            "size": "large",
-            "type": "electric"
-          }
+          "itemId": "motor_large_electric",
+          "quantity": 1
         },
         {
-          "family": "copper_wire",
-          "quantity": 3,
-          "require": {
-            "form": "spool"
-          }
+          "itemId": "copper_wire_spool",
+          "quantity": 3
         },
         {
-          "family": "bolts",
+          "itemId": "bolts_and_nuts_set",
           "quantity": 4
         }
       ],
@@ -821,33 +793,23 @@
       "description": "Construct a vehicle assembly station.",
       "components": [
         {
-          "family": "steel_ingot",
+          "itemId": "steel_ingot",
           "quantity": 20
         },
         {
-          "family": "concrete_mix",
-          "quantity": 4,
-          "require": {
-            "form": "bag"
-          }
+          "itemId": "concrete_mix_bag",
+          "quantity": 4
         },
         {
-          "family": "mechanical_parts",
-          "quantity": 8,
-          "require": {
-            "type": "vehicle_grade"
-          }
+          "itemId": "mechanical_parts_vehicle_grade",
+          "quantity": 8
         },
         {
-          "family": "motor",
-          "quantity": 1,
-          "require": {
-            "size": "large",
-            "type": "electric"
-          }
+          "itemId": "motor_large_electric",
+          "quantity": 1
         },
         {
-          "family": "bolts",
+          "itemId": "bolts_and_nuts_set",
           "quantity": 10
         }
       ],
@@ -901,22 +863,19 @@
       "description": "Construct an engine assembly jig.",
       "components": [
         {
-          "itemId": "workbench_basic_built",
+          "itemId": "workbench_basic_tile",
           "quantity": 1
         },
         {
-          "family": "steel_ingot",
+          "itemId": "steel_ingot",
           "quantity": 5
         },
         {
-          "family": "mechanical_parts",
-          "quantity": 6,
-          "require": {
-            "type": "simple"
-          }
+          "itemId": "mechanical_parts_simple",
+          "quantity": 6
         },
         {
-          "family": "bolts",
+          "itemId": "bolts_and_nuts_set",
           "quantity": 3
         }
       ],
@@ -962,20 +921,16 @@
       "description": "Construct a simple wooden loom.",
       "components": [
         {
-          "family": "wood_plank",
+          "itemId": "wood_planks",
           "quantity": 6
         },
         {
-          "family": "wood_stick",
+          "itemId": "wood_stick",
           "quantity": 4
         },
         {
-          "family": "cordage",
-          "quantity": 5,
-          "require": {
-            "type": "basic",
-            "material": "plant_fiber"
-          }
+          "itemId": "cordage_basic_plant_fiber",
+          "quantity": 5
         }
       ],
       "skills_required": [
@@ -1020,20 +975,16 @@
       "description": "Construct a simple wooden tanning rack.",
       "components": [
         {
-          "family": "wood_log",
+          "itemId": "wood_log",
           "quantity": 2
         },
         {
-          "family": "wood_stick",
+          "itemId": "wood_stick",
           "quantity": 4
         },
         {
-          "family": "cordage",
-          "quantity": 3,
-          "require": {
-            "type": "basic",
-            "material": "plant_fiber"
-          }
+          "itemId": "cordage_basic_plant_fiber",
+          "quantity": 3
         }
       ],
       "skills_required": [
