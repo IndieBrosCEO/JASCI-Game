@@ -297,6 +297,10 @@ function startGame() {
     if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
     // if (gameControls) gameControls.classList.remove('hidden'); // As noted, this ID isn't in use
 
+    // Switch the animation target to the in-game face display
+    if (typeof window.setAnimatedFaceTarget === 'function') {
+        window.setAnimatedFaceTarget('charInfoAsciiFace');
+    }
     renderCharacterInfo(); // This now calls the specific rendering function from js/character.js
 
     // 1. Initialize base "Body Pockets" capacity from Strength
@@ -1214,6 +1218,7 @@ function initializeNpcFace(npc) {
     if (generateNewFace && typeof window.generateRandomFaceParams === 'function') {
         window.generateRandomFaceParams(npc.faceData); // Populates npc.faceData with random parameters
     }
+    npc.faceData.eyesOpen = true;
 
     // Always try to generate asciiFace if the function is available and faceData exists
     if (npc.faceData && typeof window.generateAsciiFace === 'function') {
