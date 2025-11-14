@@ -191,6 +191,7 @@ const gameState = {
     },
     isDialogueActive: false, // Flag to indicate if dialogue UI is active
     oocGlobalTick: 0, // Counter for OOC turn staggering
+    npcMovementInterval: 5,
     currentMapTraps: [], // Holds instances of traps on the current map {trapId, x, y, z, state}
     currentWeather: { // Weather system state
         type: "clear",    // e.g., "clear", "rain_light", "snow_heavy", "windy"
@@ -248,6 +249,8 @@ gameState.player.face = {
     eyebrowColor: "#000000",
     lipColor: "#FFC0CB", // Default pink
     skinColor: "#F5DEB3", // Default wheat
+    eyesOpen: true, // Default to open for unanimated previews
+    mouthExpression: 'neutral', // Default expression
     asciiFace: "" // To store the generated ASCII face string
 };
 

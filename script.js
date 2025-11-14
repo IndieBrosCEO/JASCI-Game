@@ -613,10 +613,14 @@ function renderCharacterInfo() {
         }
     }
     const charInfoAsciiFaceElement = document.getElementById('charInfoAsciiFace');
-    if (charInfoAsciiFaceElement && gameState.player && gameState.player.face && gameState.player.face.asciiFace) {
-        charInfoAsciiFaceElement.innerHTML = gameState.player.face.asciiFace; // Changed from textContent to innerHTML
+    if (charInfoAsciiFaceElement && typeof window.updateFacePreview === 'function') {
+        // This ensures the face is rendered with the necessary <span> tags for animation.
+        window.updateFacePreview('charInfoAsciiFace');
     } else if (charInfoAsciiFaceElement) {
-        charInfoAsciiFaceElement.innerHTML = "No face data available."; // Changed from textContent to innerHTML
+        // Fallback for when updateFacePreview isn't available
+        charInfoAsciiFaceElement.innerHTML = (gameState.player && gameState.player.face && gameState.player.face.asciiFace)
+            ? gameState.player.face.asciiFace
+            : "No face data available.";
     }
 
     // Companion List
@@ -669,7 +673,13 @@ function handleUpdateSkill(name, value) {
  * Event Handlers & Initialization
  **************************************************************/
 // Keydown event handler for movement and actions
-function handleKeyDown(event) {
+async function handleKeyDown(event) {
+    if (gameState.isWaiting) {
+        gameState.isWaiting = false;
+        logToConsole("Wait interrupted by user.", "warning");
+        return;
+    }
+
     if (gameState.awaitingPortalConfirmation || gameState.portalPromptActive) {
         // Allow only specific keys if needed (e.g., Enter/Escape for a custom modal)
         // For window.confirm, it blocks anyway, but this prevents other game logic.
@@ -851,15 +861,16 @@ function handleKeyDown(event) {
             return;
         }
 
-        // Click for initiating the action
-        if (audioManager) audioManager.playUiSound('ui_click_01.wav');
-        // TODO: Ideally, a ui_menu_open_01.wav when the prompt appears, but native prompt is hard to hook.
+        if (gameState.isWaiting) {
+            logToConsole("Already waiting.", "orange");
+            return;
+        }
 
+        if (audioManager) audioManager.playUiSound('ui_click_01.wav');
         const hoursToWaitStr = prompt("How many hours to wait? (1-24)", "1");
 
-        if (hoursToWaitStr === null) { // User pressed cancel
+        if (hoursToWaitStr === null) {
             logToConsole("Wait cancelled.", "info");
-            // TODO: Play ui_menu_close_01.wav or a general cancel sound
             if (audioManager) audioManager.playUiSound('ui_click_01.wav');
             return;
         }
@@ -868,34 +879,24 @@ function handleKeyDown(event) {
 
         if (isNaN(hoursToWait) || hoursToWait < 1 || hoursToWait > 24) {
             logToConsole("Invalid number of hours. Please enter a number between 1 and 24.", "error");
-            if (audioManager) audioManager.playUiSound('ui_error_01.wav'); // Error sound
+            if (audioManager) audioManager.playUiSound('ui_error_01.wav');
             return;
         }
 
-        if (audioManager) audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
-        // TODO: Also play move_wait_01.wav here when available, if distinct from general confirm.
-        logToConsole(`Waiting for ${hoursToWait} hour(s)...`, "info");
-        const ticksToWait = hoursToWait * 30; // 1 hour = 60 minutes / 2 minutes/tick = 30 ticks
+        if (audioManager) audioManager.playUiSound('ui_confirm_01.wav');
+        logToConsole(`Waiting for ${hoursToWait} hour(s)... Press any key to interrupt.`, "info");
+        const ticksToWait = hoursToWait * 30;
 
+        gameState.isWaiting = true;
         for (let i = 0; i < ticksToWait; i++) {
-            // Advance time
-            TimeManager.advanceTime(gameState); // Corrected to use TimeManager
-
-            // Update UI (clock, needs)
-            // updatePlayerStatusDisplay is defined in script.js and should be callable
-            if (typeof updatePlayerStatusDisplay === 'function') {
-                updatePlayerStatusDisplay();
-            } else {
-                console.error("updatePlayerStatusDisplay function not found during wait loop.");
+            if (!gameState.isWaiting) {
+                break;
             }
-
-            // Optional: Small delay or a way to interrupt long waits could be added here in a future enhancement.
-            // For now, it will run all ticks sequentially.
+            await window.turnManager.endTurn();
+            await new Promise(resolve => setTimeout(resolve, 50));
         }
+        gameState.isWaiting = false;
         logToConsole(`Finished waiting for ${hoursToWait} hour(s).`, "info");
-        // It's important that player stats (hunger/thirst) are updated by Time.advanceTime
-        // and health effects from hunger/thirst are also handled there or by a function called within it.
-        // The current Time.advanceTime already includes hunger/thirst decrement and damage checks.
         return;
     }
 
@@ -1428,24 +1429,12 @@ function handleKeyDown(event) {
             event.preventDefault(); return;
         }
         if (event.key === 't' || event.key === 'T') {
-            // Determine ticks to advance. Old Time.advanceTime() was 2 minutes.
-            // If TimeManager.TICKS_PER_MINUTE = 1, then 2 minutes = 2 ticks.
-            // This action represents "passing some time" or "ending turn".
-            // A standard turn might consume a certain number of ticks.
-            const ticksForTurnOrWait = TimeManager.TICKS_PER_MINUTE * 2; // Default to 2 minutes worth of ticks
-
-            TimeManager.advanceTime(gameState, ticksForTurnOrWait);
-            // TimeManager.advanceTime now calls processHourlyNeeds and processDailyNeeds internally.
-            // It also calls updatePlayerStatusDisplay if available.
-
-            // The old updateHourlyNeeds and applyDailyNeeds calls are now redundant here if handled by TimeManager.
-            // updatePlayerStatusDisplay is also called by TimeManager.
-
             if (gameState.isInCombat && combatManager.initiativeTracker[combatManager.currentTurnIndex]?.entity === gameState) {
                 combatManager.endPlayerTurn();
             } else if (gameState.isInCombat) {
                 logToConsole("Not your turn to end.");
             } else {
+                // This is the standard out-of-combat "pass turn" action
                 window.turnManager.endTurn();
             }
             event.preventDefault(); return;
@@ -1893,7 +1882,9 @@ function toggleKeybindsDisplay() {
 // Initial setup on DOM content load
 async function initialize() { // Made async
     try {
+        console.log("Initializing game...");
         populateKeybinds(); // Populate the keybinds list on init
+        console.log("Keybinds populated.");
         await assetManager.loadDefinitions();
         console.log("Asset definitions loaded.");
         window.interaction.initInteraction(assetManager);
@@ -2496,7 +2487,8 @@ async function initialize() { // Made async
                 playPauseButton.textContent = 'Pause';
             }
         });
-
+        window.gameInitialized = true;
+        console.log("Game initialized successfully.");
     } catch (error) {
         console.error("Error during game initialization:", error);
         const errorDisplay = document.getElementById('errorMessageDisplay');

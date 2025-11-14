@@ -1,5 +1,9 @@
 ﻿[
   {
+    "id": "npcTestMap",
+    "name": "npcTestMap"
+  },
+  {
     "id": "fishingIsland",
     "name": "Fishing Island"
   },

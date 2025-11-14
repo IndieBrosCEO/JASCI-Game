@@ -161,6 +161,10 @@ const commandHelpInfo = {
     'spawnvehicle': {
         syntax: 'spawnvehicle <templateId> [x y z]',
         description: 'Spawns a vehicle with the given template ID. Optionally spawns at x y z coordinates, otherwise spawns at player location.'
+    },
+    'explosion': {
+        syntax: 'explosion <x> <y> <radius> <damage> [damageType]',
+        description: 'Creates an explosion at x,y with a radius, damage (e.g., "3d6"), and optional damage type.'
     }
 };
 
@@ -1222,6 +1226,28 @@ function processConsoleCommand(commandText) {
             break;
 
         // ... (other command cases) ...
+        case 'explosion':
+            if (args.length < 4) {
+                logToConsoleUI("Usage: explosion <x> <y> <radius> <damage> [damageType]", 'error');
+                break;
+            }
+            const ex = parseInt(args[0], 10);
+            const ey = parseInt(args[1], 10);
+            const radius = parseInt(args[2], 10);
+            const damage = args[3];
+            const damageType = args[4] || 'Explosive';
+
+            if (isNaN(ex) || isNaN(ey) || isNaN(radius)) {
+                logToConsoleUI("Error: X, Y, and Radius must be numbers.", 'error');
+                break;
+            }
+
+            if (typeof combatManager !== 'undefined' && typeof combatManager.handleExplosion === 'function') {
+                combatManager.handleExplosion(ex, ey, radius, damage, damageType);
+            } else {
+                logToConsoleUI("Error: combatManager.handleExplosion function not available.", 'error');
+            }
+            break;
         default:
             logToConsoleUI(`Unknown command: ${command}. Type 'help' for list of commands.`, 'error'); // Direct call
             break;

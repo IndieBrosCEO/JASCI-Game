@@ -5,10 +5,12 @@
     "\\assets\\definitions",
     "\\assets\\dialogue",
     "\\assets\\maps",
+    "\\js",
     "\\jules-scratch",
     "\\jules-scratch\\verification",
+    "\\mapMaker",
     "\\Maps"
   ],
-  "SelectedNode": "\\assets\\definitions\\procedural_quest_templates.json",
+  "SelectedNode": "\\js\\assetManager.js",
   "PreviewInSolutionExplorer": false
 }

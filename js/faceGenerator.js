@@ -126,7 +126,14 @@ function generateAsciiFace(faceParams) {
 
             const bgColor = window.darkenColor(baseBgColor, 0.4) || '#000000'; // Darken this actual color by 40%
 
-            lineHtml += `<span style="color:${fgColor}; background-color:${bgColor};">${charToDisplay}</span>`;
+            let cellHtml = `<span style="color:${fgColor}; background-color:${bgColor};">${charToDisplay}</span>`;
+
+            // If a wrapper class is specified (e.g., for eyes or mouth), wrap the cell in another span
+            if (cellData.wrapperClass) {
+                cellHtml = `<span class="${cellData.wrapperClass}">${cellHtml}</span>`;
+            }
+
+            lineHtml += cellHtml;
         }
         htmlOutputLines.push(lineHtml);
     }
@@ -212,17 +219,35 @@ function _drawHeadOutline(canvas, faceParams, coords) {
 
 function _drawEyes(canvas, faceParams, coords) {
     const { baseWidth, baseHeight, headStartX, headEndX, eyeY, leftEyeX, rightEyeX } = coords;
-    const eyeColor = faceParams.eyeColor;
+    let eyeColor = faceParams.eyeColor;
     let eyeCharSymbol = 'o';
-    if (faceParams.eyeSize === 1) eyeCharSymbol = '.';
-    if (faceParams.eyeSize === 3) eyeCharSymbol = 'O';
+
+    if (faceParams.eyesOpen) {
+        if (faceParams.eyeSize === 1) eyeCharSymbol = '.';
+        if (faceParams.eyeSize === 3) eyeCharSymbol = 'O';
+    } else {
+        eyeCharSymbol = '-';
+        // When eyes are closed, the "eyelid" color should match the surrounding skin.
+        // We read the color from the canvas cell *behind* the eye.
+        // This is safe because _drawHeadOutline runs before _drawEyes.
+        const leftSkinCell = canvas[eyeY] ? canvas[eyeY][leftEyeX] : null;
+        const rightSkinCell = canvas[eyeY] ? canvas[eyeY][rightEyeX] : null;
+
+        // For simplicity, we'll just use the left eye's underlying skin color for both eyelids.
+        // This avoids issues if one eye is off-canvas or in a weird spot.
+        if (leftSkinCell && (leftSkinCell.type.startsWith('skin'))) {
+            eyeColor = leftSkinCell.color;
+        } else {
+            eyeColor = faceParams.skinColor; // Fallback to base skin color
+        }
+    }
 
     if (eyeY >= 0 && eyeY < baseHeight) {
         if (leftEyeX > headStartX && leftEyeX < headEndX && leftEyeX < baseWidth && canvas[eyeY]) { // Ensure eyes are within inner head bounds
-            canvas[eyeY][leftEyeX] = { char: eyeCharSymbol, type: 'eye', color: eyeColor };
+            canvas[eyeY][leftEyeX] = { char: eyeCharSymbol, type: 'eye', color: eyeColor, wrapperClass: 'face-eye' };
         }
         if (rightEyeX > headStartX && rightEyeX < headEndX && rightEyeX < baseWidth && canvas[eyeY] && leftEyeX !== rightEyeX) {
-            canvas[eyeY][rightEyeX] = { char: eyeCharSymbol, type: 'eye', color: eyeColor };
+            canvas[eyeY][rightEyeX] = { char: eyeCharSymbol, type: 'eye', color: eyeColor, wrapperClass: 'face-eye' };
         }
     }
 }
@@ -350,26 +375,40 @@ function _drawNose(canvas, faceParams, coords) {
 function _drawMouth(canvas, faceParams, coords) {
     const { baseWidth, baseHeight, headStartX, headEndX, headEndY, mouthY, mouthCenterX } = coords;
     const lipColor = faceParams.lipColor;
-
     let mouthCharSymbol = '-';
     if (faceParams.mouthFullness === 2) mouthCharSymbol = '=';
     if (faceParams.mouthFullness === 3) mouthCharSymbol = 'w';
+
+    let leftCorner = '.';
+    let rightCorner = '.';
+    let drawCorners = true;
+
+    switch (faceParams.mouthExpression) {
+        case 'smile':
+            mouthCharSymbol = '_';
+            drawCorners = false;
+            break;
+        case 'frown':
+            mouthCharSymbol = '¯';
+            drawCorners = false;
+            break;
+    }
 
     if (mouthY < headEndY && mouthY < baseHeight && canvas[mouthY]) {
         for (let i = 0; i < faceParams.mouthWidth; i++) {
             const currentMouthX = mouthCenterX - Math.floor(faceParams.mouthWidth / 2) + i;
             if (currentMouthX > headStartX && currentMouthX < headEndX && currentMouthX >= 0 && currentMouthX < baseWidth) { // Ensure X is within canvas bounds
-                canvas[mouthY][currentMouthX] = { char: mouthCharSymbol, type: 'lip', color: lipColor };
+                canvas[mouthY][currentMouthX] = { char: mouthCharSymbol, type: 'lip', color: lipColor, wrapperClass: 'face-mouth' };
             }
         }
-        if (faceParams.mouthWidth > 2) {
+        if (faceParams.mouthWidth > 2 && drawCorners) {
             const leftLipX = mouthCenterX - Math.floor(faceParams.mouthWidth / 2);
             const rightLipX = mouthCenterX + Math.floor((faceParams.mouthWidth - 1) / 2);
             if (leftLipX - 1 > headStartX && leftLipX - 1 >= 0 && canvas[mouthY]) {
-                canvas[mouthY][leftLipX - 1] = { char: '.', type: 'lipCorner', color: lipColor };
+                canvas[mouthY][leftLipX - 1] = { char: leftCorner, type: 'lipCorner', color: lipColor, wrapperClass: 'face-mouth' };
             }
             if (rightLipX + 1 < headEndX && rightLipX + 1 < baseWidth && canvas[mouthY]) {
-                canvas[mouthY][rightLipX + 1] = { char: '.', type: 'lipCorner', color: lipColor };
+                canvas[mouthY][rightLipX + 1] = { char: rightCorner, type: 'lipCorner', color: lipColor, wrapperClass: 'face-mouth' };
             }
         }
     }
@@ -1338,10 +1377,13 @@ function _drawGlasses(canvas, faceParams, coords) {
 }
 
 
+let animatedFaceTargetId = 'asciiFacePreview'; // Default to the creator preview
+
 /**
  * Reads face parameters from UI, updates gameState, and refreshes the ASCII face preview.
+ * @param {string} [targetId=null] - The ID of the element to update. If null, uses the current animatedFaceTargetId.
  */
-function updateFacePreview() {
+function updateFacePreview(targetId = null) {
     if (!window.gameState || !window.gameState.player || !window.gameState.player.face) {
         console.error("Face generator: gameState.player.face is not initialized!");
         return;
@@ -1349,58 +1391,63 @@ function updateFacePreview() {
 
     const faceParams = window.gameState.player.face;
 
-    // Read values from UI elements and update faceParams
-    faceParams.headWidth = parseInt(document.getElementById('headWidthRange').value);
-    document.getElementById('headWidthValue').textContent = faceParams.headWidth;
+    // Read values from UI elements and update faceParams (only if we are in character creator)
+    if (document.getElementById('character-creator') && !document.getElementById('character-creator').classList.contains('hidden')) {
+        faceParams.headWidth = parseInt(document.getElementById('headWidthRange').value);
+        document.getElementById('headWidthValue').textContent = faceParams.headWidth;
 
-    faceParams.headHeight = parseInt(document.getElementById('headHeightRange').value);
-    document.getElementById('headHeightValue').textContent = faceParams.headHeight;
+        faceParams.headHeight = parseInt(document.getElementById('headHeightRange').value);
+        document.getElementById('headHeightValue').textContent = faceParams.headHeight;
 
-    faceParams.eyeSize = parseInt(document.getElementById('eyeSizeRange').value);
-    document.getElementById('eyeSizeValue').textContent = faceParams.eyeSize;
+        faceParams.eyeSize = parseInt(document.getElementById('eyeSizeRange').value);
+        document.getElementById('eyeSizeValue').textContent = faceParams.eyeSize;
 
-    faceParams.browHeight = parseInt(document.getElementById('browHeightRange').value);
-    document.getElementById('browHeightValue').textContent = faceParams.browHeight;
+        faceParams.browHeight = parseInt(document.getElementById('browHeightRange').value);
+        document.getElementById('browHeightValue').textContent = faceParams.browHeight;
 
-    faceParams.browAngle = parseInt(document.getElementById('browAngleRange').value);
-    document.getElementById('browAngleValue').textContent = faceParams.browAngle;
+        faceParams.browAngle = parseInt(document.getElementById('browAngleRange').value);
+        document.getElementById('browAngleValue').textContent = faceParams.browAngle;
 
-    faceParams.browWidth = parseInt(document.getElementById('browWidthRange').value); // New
-    document.getElementById('browWidthValue').textContent = faceParams.browWidth; // New
+        faceParams.browWidth = parseInt(document.getElementById('browWidthRange').value);
+        document.getElementById('browWidthValue').textContent = faceParams.browWidth;
 
-    faceParams.noseWidth = parseInt(document.getElementById('noseWidthRange').value);
-    document.getElementById('noseWidthValue').textContent = faceParams.noseWidth;
+        faceParams.noseWidth = parseInt(document.getElementById('noseWidthRange').value);
+        document.getElementById('noseWidthValue').textContent = faceParams.noseWidth;
 
-    faceParams.noseHeight = parseInt(document.getElementById('noseHeightRange').value);
-    document.getElementById('noseHeightValue').textContent = faceParams.noseHeight;
+        faceParams.noseHeight = parseInt(document.getElementById('noseHeightRange').value);
+        document.getElementById('noseHeightValue').textContent = faceParams.noseHeight;
 
-    faceParams.mouthWidth = parseInt(document.getElementById('mouthWidthRange').value);
-    document.getElementById('mouthWidthValue').textContent = faceParams.mouthWidth;
+        faceParams.mouthWidth = parseInt(document.getElementById('mouthWidthRange').value);
+        document.getElementById('mouthWidthValue').textContent = faceParams.mouthWidth;
 
-    faceParams.mouthFullness = parseInt(document.getElementById('mouthFullnessRange').value);
-    document.getElementById('mouthFullnessValue').textContent = faceParams.mouthFullness;
+        faceParams.mouthFullness = parseInt(document.getElementById('mouthFullnessRange').value);
+        document.getElementById('mouthFullnessValue').textContent = faceParams.mouthFullness;
 
-    faceParams.hairstyle = document.getElementById('hairstyleSelect').value;
-    faceParams.facialHair = document.getElementById('facialHairSelect').value;
-    faceParams.glasses = document.getElementById('glassesSelect').value;
-    faceParams.glassesColor = document.getElementById('glassesColorPicker').value;
+        faceParams.hairstyle = document.getElementById('hairstyleSelect').value;
+        faceParams.facialHair = document.getElementById('facialHairSelect').value;
+        faceParams.glasses = document.getElementById('glassesSelect').value;
+        faceParams.glassesColor = document.getElementById('glassesColorPicker').value;
 
-    faceParams.eyeColor = document.getElementById('eyeColorPicker').value;
-    faceParams.hairColor = document.getElementById('hairColorPicker').value;
-    faceParams.eyebrowColor = document.getElementById('eyebrowColorPicker').value;
-    faceParams.lipColor = document.getElementById('lipColorPicker').value;
-    faceParams.skinColor = document.getElementById('skinColorPicker').value;
+        faceParams.eyeColor = document.getElementById('eyeColorPicker').value;
+        faceParams.hairColor = document.getElementById('hairColorPicker').value;
+        faceParams.eyebrowColor = document.getElementById('eyebrowColorPicker').value;
+        faceParams.lipColor = document.getElementById('lipColorPicker').value;
+        faceParams.skinColor = document.getElementById('skinColorPicker').value;
+    }
+
 
     // Generate ASCII face
     const asciiFace = generateAsciiFace(faceParams);
     faceParams.asciiFace = asciiFace; // Store it in gameState as well
 
-    // Update preview
-    const previewElement = document.getElementById('asciiFacePreview');
-    if (previewElement) {
-        previewElement.innerHTML = asciiFace; // Changed from textContent to innerHTML
+    const finalTargetId = targetId || animatedFaceTargetId;
+    const targetElement = document.getElementById(finalTargetId);
+
+    if (targetElement) {
+        targetElement.innerHTML = asciiFace;
     }
 }
+
 
 /**
  * Initializes the face creator by setting up event listeners.
@@ -1410,7 +1457,7 @@ async function initFaceCreator() {
 
     const controls = [
         'headWidthRange', 'headHeightRange', 'eyeSizeRange', 'browHeightRange',
-        'browAngleRange', 'browWidthRange', 'noseWidthRange', 'noseHeightRange', // Added browWidthRange
+        'browAngleRange', 'browWidthRange', 'noseWidthRange', 'noseHeightRange',
         'mouthWidthRange', 'mouthFullnessRange', 'hairstyleSelect',
         'facialHairSelect', 'glassesSelect', 'glassesColorPicker', 'eyeColorPicker',
         'hairColorPicker', 'eyebrowColorPicker', 'lipColorPicker', 'skinColorPicker'
@@ -1419,18 +1466,12 @@ async function initFaceCreator() {
     controls.forEach(controlId => {
         const element = document.getElementById(controlId);
         if (element) {
-            element.addEventListener('input', updateFacePreview); // 'input' for ranges/colors, 'change' for select
-            if (element.type === 'select-one') { // For select elements, 'change' is more standard
-                element.removeEventListener('input', updateFacePreview);
-                element.addEventListener('change', updateFacePreview);
-            }
+            const eventType = (element.type === 'select-one') ? 'change' : 'input';
+            element.addEventListener(eventType, () => updateFacePreview()); // Use an anonymous function to call without arguments
         } else {
             console.warn(`Face creator control not found: ${controlId}`);
         }
     });
-
-    // Initial population of the preview - MOVED to be after initial randomization
-    // updateFacePreview(); 
 
     // --- Setup Preset Color Swatches ---
     const colorPickerToPresetMap = {
@@ -1453,10 +1494,9 @@ async function initFaceCreator() {
                 swatch.type = 'button';
                 swatch.classList.add('preset-swatch');
                 swatch.style.backgroundColor = hexColor;
-                swatch.dataset.color = hexColor; // Store color in data attribute
+                swatch.dataset.color = hexColor;
                 swatch.addEventListener('click', function () {
                     mainColorPickerElement.value = this.dataset.color;
-                    // Manually trigger input event on the color picker to ensure updateFacePreview runs
                     mainColorPickerElement.dispatchEvent(new Event('input', { bubbles: true }));
                 });
                 containerElement.appendChild(swatch);
@@ -1473,14 +1513,111 @@ async function initFaceCreator() {
     }
 
     // --- Initial Randomization and Preview ---
-    applyRandomFaceParams(); // Randomize parameters first
-    // updateFacePreview() is called at the end of applyRandomFaceParams, so UI and preview are set.
+    applyRandomFaceParams(); // This will call updateFacePreview itself
+    startFaceAnimation();
 }
 
-// Expose functions to global scope if necessary, or handle through module system later
+// Expose functions to global scope
 window.initFaceCreator = initFaceCreator;
-window.generateAsciiFace = generateAsciiFace; // For potential direct calls or debugging
-window.updateFacePreview = updateFacePreview; // For potential direct calls or debugging
+window.generateAsciiFace = generateAsciiFace;
+window.updateFacePreview = updateFacePreview;
+
+let faceAnimationInterval = null;
+
+
+/**
+ * Sets the target element for the face animation.
+ * @param {string} targetId The ID of the HTML element to animate.
+ */
+function setAnimatedFaceTarget(targetId) {
+    animatedFaceTargetId = targetId;
+    // Ensure the new target has the correct initial animated structure.
+    updateFacePreview(targetId);
+}
+window.setAnimatedFaceTarget = setAnimatedFaceTarget;
+
+
+/**
+ * Updates only the animated parts of the face (eyes, mouth) for efficiency.
+ */
+function updateAnimatedParts() {
+    if (!animatedFaceTargetId) return;
+
+    const faceParams = window.gameState.player.face;
+
+    // Generate the full new face HTML in memory
+    const newFaceHtml = generateAsciiFace(faceParams);
+
+    // Create a temporary, disconnected DOM element to parse the new HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = newFaceHtml;
+
+    // Get the new eye and mouth parts from the temporary element
+    const newEyes = tempDiv.querySelectorAll('.face-eye');
+    const newMouths = tempDiv.querySelectorAll('.face-mouth');
+
+    // Get the live elements from the CURRENT target display
+    const targetElement = document.getElementById(animatedFaceTargetId);
+    if (!targetElement) return; // Target might be hidden/gone
+
+    const liveEyes = targetElement.querySelectorAll('.face-eye');
+    const liveMouths = targetElement.querySelectorAll('.face-mouth');
+
+    // If the target doesn't have the animated structure, redraw it completely once.
+    if (liveEyes.length === 0 && liveMouths.length === 0) {
+        targetElement.innerHTML = newFaceHtml;
+        return;
+    }
+
+    // Update eyes
+    if (newEyes.length === liveEyes.length) {
+        liveEyes.forEach((eye, index) => {
+            if (newEyes[index]) {
+                eye.innerHTML = newEyes[index].innerHTML;
+            }
+        });
+    }
+
+    // Update mouth parts
+    if (newMouths.length === liveMouths.length) {
+        liveMouths.forEach((mouthPart, index) => {
+            if (newMouths[index]) {
+                mouthPart.innerHTML = newMouths[index].innerHTML;
+            }
+        });
+    }
+}
+
+
+function startFaceAnimation() {
+    if (faceAnimationInterval) {
+        clearInterval(faceAnimationInterval);
+    }
+
+    faceAnimationInterval = setInterval(() => {
+        if (!window.gameState || !window.gameState.player || !window.gameState.player.face) return;
+        const faceParams = window.gameState.player.face;
+        const expressions = ['neutral', 'smile', 'frown'];
+
+        // Blink
+        if (Math.random() < 0.2) { // 20% chance to blink
+            faceParams.eyesOpen = false;
+            updateAnimatedParts();
+            setTimeout(() => {
+                if (!window.gameState || !window.gameState.player || !window.gameState.player.face) return;
+                faceParams.eyesOpen = true;
+                updateAnimatedParts();
+            }, 200); // Blink duration
+        }
+
+        // Randomly change mouth expression
+        if (Math.random() < 0.3) { // 30% chance to change expression
+            faceParams.mouthExpression = _getRandomElement(expressions);
+            updateAnimatedParts();
+        }
+    }, 1000); // Update every second
+}
+window.startFaceAnimation = startFaceAnimation;
 
 
 // --- Randomization Logic ---
@@ -1624,6 +1761,9 @@ function generateRandomFaceParams(faceParamsObject) {
     faceParamsObject.eyebrowColor = _getRandomElement(PRESET_COLORS.eyebrows);
     faceParamsObject.eyeColor = _getRandomElement(PRESET_COLORS.eyes);
     faceParamsObject.lipColor = _getRandomElement(PRESET_COLORS.lips);
+
+    faceParamsObject.eyesOpen = true; // true for open, false for closed
+    faceParamsObject.mouthExpression = 'neutral'; // 'neutral', 'smile', 'frown', 'open'
 
     faceParamsObject.asciiFace = ""; // Initialize, will be generated by generateAsciiFace
 

@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "flashlight",
     "name": "Flashlight",
@@ -18,38 +18,24 @@
       "description": "Assemble a basic flashlight.",
       "components": [
         {
-          "family": "device_casing",
+          "itemId": "plastic_casing_small_device",
           "quantity": 1
         },
         {
-          "family": "led",
-          "quantity": 1,
-          "require": {
-            "type": "basic"
-          }
+          "itemId": "led_basic",
+          "quantity": 1
         },
         {
-          "family": "wire",
-          "quantity": 1,
-          "require": {
-            "insulation": "insulated",
-            "thickness": "thin"
-          }
+          "itemId": "wire_insulated_thin",
+          "quantity": 1
         },
         {
-          "family": "battery_cell",
-          "quantity": 1,
-          "require": {
-            "size": "small"
-          }
+          "itemId": "battery_cell_small",
+          "quantity": 1
         },
         {
-          "family": "lens",
-          "quantity": 1,
-          "require": {
-            "quality": "crude",
-            "material": "glass"
-          }
+          "itemId": "lens_crude_glass",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -97,18 +83,12 @@
       "description": "Make simple wax candles.",
       "components": [
         {
-          "family": "beeswax",
-          "quantity": 1,
-          "require": {
-            "form": "chunk"
-          }
+          "itemId": "beeswax_chunk",
+          "quantity": 1
         },
         {
-          "family": "wick",
-          "quantity": 3,
-          "require": {
-            "type": "basic"
-          }
+          "itemId": "wick_basic_cloth_or_fiber",
+          "quantity": 3
         }
       ],
       "skills_required": [
@@ -162,18 +142,12 @@
       "description": "Fashion a basic set of lockpicks and a tension wrench.",
       "components": [
         {
-          "family": "metal_wire",
-          "quantity": 2,
-          "require": {
-            "type": "stiff"
-          }
+          "itemId": "metal_wire_stiff",
+          "quantity": 2
         },
         {
-          "family": "metal_rod",
-          "quantity": 1,
-          "require": {
-            "thickness": "thin"
-          }
+          "itemId": "metal_rod_thin",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -233,14 +207,11 @@
       "description": "Create a signal mirror by polishing a thin sheet of metal.",
       "components": [
         {
-          "family": "metal_sheet",
-          "quantity": 1,
-          "require": {
-            "type": "thin"
-          }
+          "itemId": "metal_sheet_thin",
+          "quantity": 1
         },
         {
-          "family": "fabric_sheet",
+          "itemId": "cloth_scrap",
           "quantity": 1
         }
       ],
@@ -271,11 +242,11 @@
       "description": "Forge a heavy blacksmith's hammer.",
       "components": [
         {
-          "family": "steel_ingot",
+          "itemId": "steel_ingot",
           "quantity": 1
         },
         {
-          "family": "wood_log",
+          "itemId": "wood_log",
           "quantity": 1
         }
       ],
@@ -306,11 +277,8 @@
       "description": "Forge a pair of blacksmith's tongs.",
       "components": [
         {
-          "family": "steel_ingot",
-          "quantity": 2,
-          "require": {
-            "grade": "tool"
-          }
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 2
         }
       ],
       "skills_required": [
@@ -353,14 +321,11 @@
       "description": "Craft a basic hand saw.",
       "components": [
         {
-          "family": "metal_sheet",
-          "quantity": 1,
-          "require": {
-            "type": "sturdy"
-          }
+          "itemId": "metal_sheet_sturdy",
+          "quantity": 1
         },
         {
-          "family": "wood_plank",
+          "itemId": "wood_planks",
           "quantity": 1
         }
       ],
@@ -392,11 +357,11 @@
       "description": "Fashion a cobbler's awl for punching holes.",
       "components": [
         {
-          "family": "needle",
+          "itemId": "needle_steel_heavy",
           "quantity": 1
         },
         {
-          "family": "wood_stick",
+          "itemId": "wood_stick",
           "quantity": 1
         }
       ],
@@ -1248,38 +1213,24 @@
       "description": "Assemble a basic electric heat gun.",
       "components": [
         {
-          "family": "device_casing",
+          "itemId": "plastic_casing_medium_device",
           "quantity": 1
         },
         {
-          "family": "heating_element",
-          "quantity": 2,
-          "require": {
-            "type": "nichrome_wire"
-          }
+          "itemId": "heating_element_nichrome_wire",
+          "quantity": 2
         },
         {
-          "family": "motor",
-          "quantity": 1,
-          "require": {
-            "size": "small",
-            "type": "electric"
-          }
+          "itemId": "motor_small_electric",
+          "quantity": 1
         },
         {
-          "family": "wire",
-          "quantity": 3,
-          "require": {
-            "insulation": "insulated",
-            "thickness": "thin"
-          }
+          "itemId": "wire_insulated_thin",
+          "quantity": 3
         },
         {
-          "family": "switch",
-          "quantity": 1,
-          "require": {
-            "type": "toggle"
-          }
+          "itemId": "switch_basic_toggle",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -1312,7 +1263,7 @@
       "description": "Carve a mortar and pestle from stone or hard wood.",
       "components": [
         {
-          "family": "stone_block",
+          "itemId": "rock_hard_suitable",
           "quantity": 2
         }
       ],
@@ -1341,7 +1292,7 @@
       "description": "Form a crucible from heat-resistant clay.",
       "components": [
         {
-          "family": "clay_lump",
+          "itemId": "clay_lump_refractory",
           "quantity": 3
         }
       ],
@@ -1372,7 +1323,7 @@
       "description": "Fashion a small file from a piece of hardened steel.",
       "components": [
         {
-          "family": "metal_rod",
+          "itemId": "steel_rod_thin_hardened",
           "quantity": 1
         }
       ],
@@ -1402,19 +1353,12 @@
       "description": "Forge and assemble a basic set of pliers.",
       "components": [
         {
-          "family": "steel_ingot",
-          "quantity": 2,
-          "require": {
-            "grade": "tool"
-          }
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 2
         },
         {
-          "family": "rivet",
-          "quantity": 1,
-          "require": {
-            "size": "small",
-            "material": "metal"
-          }
+          "itemId": "rivet_small_metal",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -1446,26 +1390,16 @@
       "description": "Forge a sturdy, heavy-bladed knife.",
       "components": [
         {
-          "family": "steel_ingot",
-          "quantity": 1,
-          "require": {
-            "grade": "tool"
-          }
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 1
         },
         {
-          "family": "wood_handle",
-          "quantity": 1,
-          "require": {
-            "type": "simple"
-          }
+          "itemId": "wood_handle_simple_tool",
+          "quantity": 1
         },
         {
-          "family": "rivet",
-          "quantity": 2,
-          "require": {
-            "size": "small",
-            "material": "metal"
-          }
+          "itemId": "rivet_small_metal",
+          "quantity": 2
         }
       ],
       "skills_required": [
@@ -1495,11 +1429,11 @@
       "description": "Fashion a simple spindle from a stick and a small weight.",
       "components": [
         {
-          "family": "wood_stick",
+          "itemId": "wood_stick",
           "quantity": 1
         },
         {
-          "family": "clay_lump",
+          "itemId": "clay_lump",
           "quantity": 1
         }
       ],
@@ -1528,18 +1462,15 @@
       "description": "Assemble a basic sewing kit.",
       "components": [
         {
-          "family": "needle",
+          "itemId": "needle_steel",
           "quantity": 3
         },
         {
-          "family": "thread",
-          "quantity": 10,
-          "require": {
-            "material": "plant_fiber"
-          }
+          "itemId": "thread_simple_plant_fiber",
+          "quantity": 10
         },
         {
-          "family": "fabric_sheet",
+          "itemId": "cloth_scrap",
           "quantity": 1
         }
       ],
@@ -1568,16 +1499,12 @@
       "description": "Assemble a heavy-duty sewing kit.",
       "components": [
         {
-          "family": "needle",
+          "itemId": "needle_steel_heavy",
           "quantity": 3
         },
         {
-          "family": "thread",
-          "quantity": 5,
-          "require": {
-            "strength": "strong",
-            "material": "synthetic"
-          }
+          "itemId": "thread_strong_synthetic",
+          "quantity": 5
         },
         {
           "itemId": "cobblers_awl",
@@ -1614,18 +1541,12 @@
       "description": "Forge a stone chisel.",
       "components": [
         {
-          "family": "steel_ingot",
-          "quantity": 1,
-          "require": {
-            "grade": "tool"
-          }
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 1
         },
         {
-          "family": "wood_handle",
-          "quantity": 1,
-          "require": {
-            "type": "simple"
-          }
+          "itemId": "wood_handle_simple_tool",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -1654,7 +1575,7 @@
       "description": "Forge a basic tap and die set from high-quality steel.",
       "components": [
         {
-          "family": "steel_ingot",
+          "itemId": "steel_ingot",
           "quantity": 2
         }
       ],
@@ -1686,18 +1607,12 @@
       "description": "Fashion a blunt scraper from metal or hard wood.",
       "components": [
         {
-          "family": "metal_sheet",
-          "quantity": 1,
-          "require": {
-            "type": "thin"
-          }
+          "itemId": "metal_sheet_thin",
+          "quantity": 1
         },
         {
-          "family": "wood_handle",
-          "quantity": 1,
-          "require": {
-            "type": "simple"
-          }
+          "itemId": "wood_handle_simple_tool",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -1724,25 +1639,16 @@
       "description": "Assemble a hand-operated reloading tool.",
       "components": [
         {
-          "family": "steel_ingot",
-          "quantity": 1,
-          "require": {
-            "grade": "tool"
-          }
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 1
         },
         {
-          "family": "mechanical_parts",
-          "quantity": 2,
-          "require": {
-            "type": "simple"
-          }
+          "itemId": "mechanical_parts_simple",
+          "quantity": 2
         },
         {
-          "family": "wood_handle",
-          "quantity": 1,
-          "require": {
-            "type": "simple"
-          }
+          "itemId": "wood_handle_simple_tool",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -1769,18 +1675,15 @@
       "description": "Assemble a basic press for reloading shotgun shells.",
       "components": [
         {
-          "family": "steel_ingot",
+          "itemId": "steel_ingot",
           "quantity": 1
         },
         {
-          "family": "mechanical_parts",
-          "quantity": 3,
-          "require": {
-            "type": "simple"
-          }
+          "itemId": "mechanical_parts_simple",
+          "quantity": 3
         },
         {
-          "family": "wood_plank",
+          "itemId": "wood_planks",
           "quantity": 1
         }
       ],
@@ -1808,26 +1711,16 @@
       "description": "Assemble a manual rivet gun.",
       "components": [
         {
-          "family": "steel_ingot",
-          "quantity": 2,
-          "require": {
-            "grade": "tool"
-          }
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 2
         },
         {
-          "family": "mechanical_parts",
-          "quantity": 2,
-          "require": {
-            "type": "simple"
-          }
+          "itemId": "mechanical_parts_simple",
+          "quantity": 2
         },
         {
-          "family": "spring",
-          "quantity": 1,
-          "require": {
-            "size": "small",
-            "material": "metal"
-          }
+          "itemId": "spring_small_metal",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -1856,29 +1749,19 @@
       "description": "Assemble components for a pressure plate dart trap.",
       "components": [
         {
-          "family": "mechanical_parts",
-          "quantity": 3,
-          "require": {
-            "type": "simple"
-          }
+          "itemId": "mechanical_parts_simple",
+          "quantity": 3
         },
         {
-          "family": "metal_rod",
-          "quantity": 5,
-          "require": {
-            "thickness": "thin"
-          }
+          "itemId": "metal_rod_thin",
+          "quantity": 5
         },
         {
-          "family": "spring",
-          "quantity": 2,
-          "require": {
-            "size": "small",
-            "material": "metal"
-          }
+          "itemId": "spring_small_metal",
+          "quantity": 2
         },
         {
-          "family": "wood_plank",
+          "itemId": "wood_planks",
           "quantity": 1
         }
       ],
@@ -1912,21 +1795,15 @@
       "description": "Assemble components for a tripwire alarm.",
       "components": [
         {
-          "family": "metal_wire",
-          "quantity": 3,
-          "require": {
-            "type": "stiff"
-          }
+          "itemId": "metal_wire_stiff",
+          "quantity": 3
         },
         {
-          "family": "metal_bits",
-          "quantity": 5,
-          "require": {
-            "size": "small"
-          }
+          "itemId": "metal_bits_small",
+          "quantity": 5
         },
         {
-          "family": "wood_stick",
+          "itemId": "wood_stick",
           "quantity": 2
         }
       ],
@@ -1953,11 +1830,8 @@
       "description": "Forge a sturdy tire iron.",
       "components": [
         {
-          "family": "steel_ingot",
-          "quantity": 1,
-          "require": {
-            "grade": "tool"
-          }
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -1984,19 +1858,12 @@
       "description": "Forge a pair of tin snips.",
       "components": [
         {
-          "family": "steel_ingot",
-          "quantity": 2,
-          "require": {
-            "grade": "tool"
-          }
+          "itemId": "steel_ingot_small_tool_grade",
+          "quantity": 2
         },
         {
-          "family": "rivet",
-          "quantity": 1,
-          "require": {
-            "size": "small",
-            "material": "metal"
-          }
+          "itemId": "rivet_small_metal",
+          "quantity": 1
         }
       ],
       "skills_required": [
@@ -2023,29 +1890,19 @@
       "description": "Assemble a small concrete mixer.",
       "components": [
         {
-          "family": "metal_sheet",
-          "quantity": 3,
-          "require": {
-            "type": "sturdy"
-          }
+          "itemId": "steel_sheet_sturdy",
+          "quantity": 3
         },
         {
-          "family": "motor",
-          "quantity": 1,
-          "require": {
-            "size": "small",
-            "type": "electric"
-          }
+          "itemId": "motor_small_electric",
+          "quantity": 1
         },
         {
-          "family": "mechanical_parts",
-          "quantity": 4,
-          "require": {
-            "type": "simple"
-          }
+          "itemId": "mechanical_parts_simple",
+          "quantity": 4
         },
         {
-          "family": "rubber_strips",
+          "itemId": "rubber_strips_or_chunks",
           "quantity": 2
         }
       ],
