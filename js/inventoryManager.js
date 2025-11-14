@@ -71,47 +71,139 @@ class InventoryManager {
         logToConsole(`${this.logPrefix} Initialized. Player inventory container is:`, 'blue', 'dev');
     }
 
-    countItems(itemId, inventoryItems) {
-        let count = 0;
-        if (!inventoryItems || !Array.isArray(inventoryItems)) {
-            return 0;
+    _matchesProperties(item, constraints) {
+        if (!constraints) {
+            return true;
         }
-        for (const item of inventoryItems) {
-            if (item && item.id === itemId) {
-                count += (item.quantity || 1);
+
+        const itemProps = item.properties || {};
+
+        if (constraints.require) {
+            for (const key in constraints.require) {
+                if (itemProps[key] !== constraints.require[key]) {
+                    return false;
+                }
+            }
+        }
+
+        if (constraints.exclude) {
+            for (const key in constraints.exclude) {
+                if (itemProps[key] === constraints.exclude[key]) {
+                    return false;
+                }
+            }
+        }
+
+        if (constraints.min) {
+            for (const key in constraints.min) {
+                if (itemProps[key] < constraints.min[key]) {
+                    return false;
+                }
+            }
+        }
+
+        if (constraints.max) {
+            for (const key in constraints.max) {
+                if (itemProps[key] > constraints.max[key]) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    _getMatchingItemIds(component) {
+        if (component.family) {
+            const familyItems = this.assetManager.familyItems.get(component.family) || [];
+            return familyItems.filter(itemId => {
+                const itemDef = this.assetManager.getItem(itemId);
+                return this._matchesProperties(itemDef, { require: component.require, exclude: component.exclude, min: component.min, max: component.max });
+            });
+        }
+        return [component.itemId];
+    }
+
+    countItems(componentOrItemId, inventoryItems) {
+        const component = typeof componentOrItemId === 'string'
+            ? { itemId: componentOrItemId }
+            : componentOrItemId;
+
+        const matchingItemIds = this._getMatchingItemIds(component);
+        let count = 0;
+        for (const itemId of matchingItemIds) {
+            for (const item of inventoryItems) {
+                if (item && item.id === itemId) {
+                    count += (item.quantity || 1);
+                }
             }
         }
         return count;
     }
 
-    removeItems(itemId, quantityToRemove, inventoryItems) {
+    removeItems(componentOrItemId, quantityToRemove, inventoryItems) {
         if (!inventoryItems || !Array.isArray(inventoryItems) || quantityToRemove <= 0) {
             return false;
         }
-        let totalAvailable = this.countItems(itemId, inventoryItems);
-        if (totalAvailable < quantityToRemove) {
-            return false;
-        }
-        let remainingToRemove = quantityToRemove;
-        for (let i = inventoryItems.length - 1; i >= 0; i--) {
-            if (remainingToRemove <= 0) break;
-            const item = inventoryItems[i];
-            if (item && item.id === itemId) {
-                if (item.stackable && item.quantity > 0) {
-                    if (item.quantity > remainingToRemove) {
-                        item.quantity -= remainingToRemove;
-                        remainingToRemove = 0;
-                    } else {
-                        remainingToRemove -= item.quantity;
-                        inventoryItems.splice(i, 1);
-                    }
-                } else {
-                    inventoryItems.splice(i, 1);
-                    remainingToRemove--;
+
+        const component = typeof componentOrItemId === 'string'
+            ? { itemId: componentOrItemId }
+            : componentOrItemId;
+
+        const matchingItemIds = this._getMatchingItemIds(component);
+        let totalAvailable = 0;
+        for (const itemId of matchingItemIds) {
+            for (const item of inventoryItems) {
+                if (item && item.id === itemId) {
+                    totalAvailable += (item.quantity || 1);
                 }
             }
         }
-        return remainingToRemove === 0;
+
+        if (totalAvailable < quantityToRemove) {
+            return false;
+        }
+
+        let remainingToRemove = quantityToRemove;
+        const removedItems = [];
+
+        for (const itemId of matchingItemIds) {
+            if (remainingToRemove <= 0) break;
+            for (let i = inventoryItems.length - 1; i >= 0; i--) {
+                if (remainingToRemove <= 0) break;
+                const item = inventoryItems[i];
+                if (item && item.id === itemId) {
+                    if (item.stackable && item.quantity > 0) {
+                        const amountToRemoveFromStack = Math.min(remainingToRemove, item.quantity);
+
+                        const removedPortion = { ...item, quantity: amountToRemoveFromStack };
+                        removedItems.push(removedPortion);
+
+                        item.quantity -= amountToRemoveFromStack;
+                        remainingToRemove -= amountToRemoveFromStack;
+
+                        if (item.quantity <= 0) {
+                            inventoryItems.splice(i, 1);
+                        }
+                    } else {
+                        removedItems.push({ ...item }); // Push a copy
+                        inventoryItems.splice(i, 1);
+                        remainingToRemove--;
+                    }
+                }
+            }
+        }
+
+        if (remainingToRemove === 0) {
+            return removedItems;
+        }
+
+        // If we failed to remove everything, we must roll back the changes.
+        // Add the prematurely removed items back to the inventory.
+        for (const item of removedItems) {
+            this.addItemToInventory(item, item.quantity, inventoryItems, 999); // Use high capacity to ensure rollback fits
+        }
+        return false; // Indicate failure
     }
 
     addItemToInventory(itemToAddInstance, quantity, inventoryItems, maxSlots) {
@@ -347,15 +439,16 @@ class InventoryManager {
             logToConsole(`Item '${itemIdOrName}' not found in inventory.`, "warn");
             return null;
         }
-        if (this.removeItems(actualItemId, quantity, inv)) {
+        const removed = this.removeItems(actualItemId, quantity, inv);
+        if (removed) {
             logToConsole(`Removed ${quantity}x ${itemToRemoveInstance.name}.`);
             if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
             if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
             return this.assetManager.getItem(actualItemId); // Return definition
-        } else {
-            logToConsole(`Failed to remove ${quantity}x ${itemToRemoveInstance.name}.`, "warn");
-            return null;
         }
+
+        logToConsole(`Failed to remove ${quantity}x ${itemToRemoveInstance.name}.`, "warn");
+        return null;
     }
 
     dropItem(itemName) {
@@ -408,7 +501,8 @@ class InventoryManager {
             logToConsole(`Hand slot ${handIndex + 1} is occupied by ${this.gameState.inventory.handSlots[handIndex].name}.`, "info");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
         }
-        if (this.removeItems(item.id, 1, inv)) {
+        const removed = this.removeItems(item.id, 1, inv);
+        if (removed) {
             item.equipped = true;
             this.gameState.inventory.handSlots[handIndex] = item;
             logToConsole(`Equipped ${item.name} to hand slot ${handIndex + 1}.`);
@@ -417,8 +511,6 @@ class InventoryManager {
             if (this.gameState.isInCombat && this.gameState.combatPhase === 'playerAttackDeclare' && window.combatManager) {
                 window.combatManager.populateWeaponSelect();
             }
-        } else {
-            logToConsole(`Failed to remove ${item.name} from inventory during equip.`, "error", "dev");
         }
     }
 
@@ -470,7 +562,8 @@ class InventoryManager {
             logToConsole(`Layer ${targetLayer} is already occupied by ${this.gameState.player.wornClothing[targetLayer].name}.`, "info");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
         }
-        if (this.removeItems(item.id, 1, inv)) {
+        const removed = this.removeItems(item.id, 1, inv);
+        if (removed) {
             this.gameState.player.wornClothing[targetLayer] = item;
             item.equipped = true;
             this.gameState.inventory.container.maxSlots = this.calculateCumulativeCapacity();
@@ -478,8 +571,6 @@ class InventoryManager {
             if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 });
             if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
             if (window.renderCharacterInfo) window.renderCharacterInfo();
-        } else {
-            logToConsole(`Failed to remove ${item.name} from inventory during equip.`, "error", "dev");
         }
     }
 
@@ -588,19 +679,37 @@ class InventoryManager {
         this.gameState.worldContainers = [];
 
         // Detect nearby containers from the map and add them to gameState.worldContainers
-        if (this.gameState.playerPos && this.gameState.containers) {
+        if (this.gameState.playerPos) {
             const R = 1; // Interaction radius
             const { x: px, y: py, z: pz } = this.gameState.playerPos;
+            const currentMap = window.mapRenderer.getCurrentMapData();
 
-            this.gameState.containers.forEach(container => {
-                if (container.x >= px - R && container.x <= px + R &&
-                    container.y >= py - R && container.y <= py + R &&
-                    container.z === pz) {
-                    if (!this.gameState.worldContainers.some(wc => wc.id === container.id)) {
-                        this.gameState.worldContainers.push(container);
+            if (currentMap && currentMap.levels) {
+                const zStr = pz.toString();
+                const levelData = currentMap.levels[zStr];
+
+                if (levelData) {
+                    for (let y_scan = Math.max(0, py - R); y_scan <= Math.min(currentMap.dimensions.height - 1, py + R); y_scan++) {
+                        for (let x_scan = Math.max(0, px - R); x_scan <= Math.min(currentMap.dimensions.width - 1, px + R); x_scan++) {
+                            const tileIdFromMap = levelData.middle?.[y_scan]?.[x_scan] || levelData.bottom?.[y_scan]?.[x_scan];
+                            const baseTileId = (typeof tileIdFromMap === 'object' && tileIdFromMap !== null && tileIdFromMap.tileId !== undefined)
+                                ? tileIdFromMap.tileId
+                                : tileIdFromMap;
+
+                            if (baseTileId) {
+                                const tileDef = this.assetManager.getTileset(baseTileId);
+                                if (tileDef && tileDef.tags && tileDef.tags.includes('container')) {
+                                    // Found a container tile, now find the corresponding container instance in gameState.containers
+                                    const containerInstance = this.gameState.containers.find(c => c.x === x_scan && c.y === y_scan && c.z === pz);
+                                    if (containerInstance && !this.gameState.worldContainers.some(wc => wc.id === containerInstance.id)) {
+                                        this.gameState.worldContainers.push(containerInstance);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-            });
+            }
         }
 
         // Now, display items from the detected world containers
@@ -624,7 +733,7 @@ class InventoryManager {
                             source: 'worldContainer',
                             containerRef: container,
                             originalItemIndex: itemIdx,
-                            displayName: `[${container.name.toUpperCase()}] ${item.name}` // Prepend container name
+                            displayName: `[${container.name}] ${item.name}` // Prepend container name
                         });
                     });
                 }
@@ -698,13 +807,15 @@ class InventoryManager {
         if (window.audioManager) {
             window.audioManager.playUiSound(this.gameState.inventory.open ? 'ui_click_01.wav' : 'ui_click_01.wav', { volume: this.gameState.inventory.open ? 0.6 : 0.5 });
         }
-        const inventoryMenuDiv = document.getElementById("inventoryMenu");
-        if (!inventoryMenuDiv) return;
+        const inventoryListDiv = document.getElementById("inventoryList");
+        if (!inventoryListDiv) return;
         if (this.gameState.inventory.open) {
-            inventoryMenuDiv.classList.remove("hidden");
+            inventoryListDiv.classList.remove("hidden");
+            inventoryListDiv.style.display = 'block';
             this.renderInventoryMenu();
         } else {
-            inventoryMenuDiv.classList.add("hidden");
+            inventoryListDiv.classList.add("hidden");
+            inventoryListDiv.style.display = 'none';
             this.clearInventoryHighlight();
             this.gameState.inventory.currentlyDisplayedItems = [];
             if (this.gameState.isInCombat && this.gameState.combatPhase === 'playerAttackDeclare' && window.combatManager) {

@@ -319,7 +319,8 @@
 
         // TODO: Consume materials from player inventory
         // Example: materials = [{itemId: "metal_scraps", quantity: 2}]
-        // if (!window.inventoryManager.removeItems(materials)) { logToConsole("Not enough materials for repair."); return false; }
+        // const removed = window.inventoryManager.removeItems({ family: 'metal_scrap' }, 2);
+        // if (!removed) { logToConsole("Not enough materials for repair."); return false; }
 
         const maxDurability = partDef.durability;
         const amountToHeal = Math.floor(maxDurability * (repairAmountPercentage / 100));

@@ -93,16 +93,14 @@ class ConstructionManager {
         const player = this.gameState;
         if (definition.skillRequired && definition.skillLevelRequired) {
             if (getSkillValue(definition.skillRequired, player) < definition.skillLevelRequired) {
-                // logToConsole(`${this.logPrefix} Cannot build '${definition.name}'. Skill ${definition.skillRequired} too low. Need ${definition.skillLevelRequired}, have ${getSkillValue(definition.skillRequired, player)}.`, 'orange');
                 return false;
             }
         }
 
         // Check components
         for (const component of definition.components) {
-            const count = this.inventoryManager.countItems(component.itemId, this.gameState.inventory.container.items);
+            const count = this.inventoryManager.countItems(component, this.gameState.inventory.container.items);
             if (count < component.quantity) {
-                // logToConsole(`${this.logPrefix} Cannot build '${definition.name}'. Missing ${component.quantity - count} of ${component.itemId}.`, 'orange');
                 return false;
             }
         }
@@ -241,54 +239,67 @@ class ConstructionManager {
             return false;
         }
 
-        // Consume components
+        const allConsumedItems = [];
+        let consumptionSuccess = true;
+
         for (const component of definition.components) {
-            if (!this.inventoryManager.removeItems(component.itemId, component.quantity, this.gameState.inventory.container.items)) {
-                logToConsole(`${this.logPrefix} CRITICAL ERROR: Failed to remove component ${component.itemId} during construction of '${definition.name}'.`, 'red');
-                if (window.uiManager) window.uiManager.showToastNotification("Construction failed: component error.", "error");
-                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Sound for failure
-                return false;
+            const removedPortion = this.inventoryManager.removeItems(component, component.quantity, this.gameState.inventory.container.items);
+            if (removedPortion) {
+                allConsumedItems.push(...removedPortion);
+            } else {
+                logToConsole(`${this.logPrefix} Failed to remove component ${component.itemId || component.family} for '${definition.name}'. Rolling back consumed items.`, 'orange');
+                for (const itemToRestore of allConsumedItems) {
+                    this.inventoryManager.addItemToInventory(itemToRestore, itemToRestore.quantity || 1, this.gameState.inventory.container.items, 999);
+                }
+                consumptionSuccess = false;
+                break;
             }
+        }
+
+        if (!consumptionSuccess) {
+            if (window.uiManager) window.uiManager.showToastNotification("Construction failed: missing components.", "error");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            return false;
         }
 
         // Place the tile(s) on the map
         const size = definition.size || { width: 1, height: 1 };
         const { x: startX, y: startY, z } = targetTilePos;
+        let placementSuccess = true;
 
         for (let dy = 0; dy < size.height; dy++) {
+            if (!placementSuccess) break;
             for (let dx = 0; dx < size.width; dx++) {
                 const currentX = startX + dx;
                 const currentY = startY + dy;
-                // For multi-tile objects, the primary tileIdPlaced might only go on the origin (dx=0,dy=0)
-                // or a more complex system for multi-tile sprites is needed.
-                // For now, place the main tileId at the origin, potentially other parts or empty markers elsewhere.
-                // Simplified: place the same tileId on all occupied cells if it's a simple block.
-                // More realistically, a multi-tile object would have one main entry in mapStructures
-                // and occupy multiple visual tiles. The mapManager.updateTileOnLayer should handle this.
 
-                // For now, this simplified logic will place the *same* tile ID on all cells the structure occupies.
-                // This is okay for simple things like a 2x1 workbench if both tiles look the same.
-                // For complex multi-tile sprites, this needs a more advanced tile placement system.
                 if (this.mapManager && typeof this.mapManager.updateTileOnLayer === 'function') {
                     this.mapManager.updateTileOnLayer(currentX, currentY, z, 'building', definition.tileIdPlaced);
                 } else {
+                    // Fallback for when mapManager is not available (e.g., legacy setup)
                     const mapData = window.mapRenderer.getCurrentMapData();
                     const levelData = mapData.levels[z.toString()];
                     if (levelData && levelData.building) {
                         levelData.building[currentY][currentX] = definition.tileIdPlaced;
                     } else {
-                        logToConsole(`${this.logPrefix} CRITICAL ERROR: Cannot place tile for '${definition.name}' at (${currentX},${currentY},${z}). mapManager or map data invalid. Rolling back components.`, "red");
-                        // Rollback consumed components
-                        for (const component of definition.components) {
-                            this.inventoryManager.addItemToInventoryById(component.itemId, component.quantity); // Assuming addItemToInventoryById exists and handles stacking
-                        }
-                        if (window.updateInventoryUI) window.updateInventoryUI();
-                        if (window.uiManager) window.uiManager.showToastNotification("Construction failed: map error (components restored).", "error");
-                        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Sound for failure
-                        return false;
+                        logToConsole(`${this.logPrefix} CRITICAL ERROR: Cannot place tile for '${definition.name}'. mapManager or map data invalid.`, "red");
+                        placementSuccess = false;
+                        break;
                     }
                 }
             }
+        }
+
+        if (!placementSuccess) {
+            logToConsole(`${this.logPrefix} Rolling back components for failed placement of '${definition.name}'.`, 'red');
+            for (const itemToRestore of allConsumedItems) {
+                this.inventoryManager.addItemToInventory(itemToRestore, itemToRestore.quantity || 1, this.gameState.inventory.container.items, 999);
+            }
+            if (window.updateInventoryUI) window.updateInventoryUI();
+            if (window.uiManager) window.uiManager.showToastNotification("Construction failed: map error (components restored).", "error");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            // TODO: Also roll back any tiles that were successfully placed before the failure.
+            return false;
         }
         if (size.width > 1 || size.height > 1) {
             logToConsole(`${this.logPrefix} Fallback: Directly updated map data for multi-tile '${definition.name}'.`, "grey");

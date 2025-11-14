@@ -97,19 +97,16 @@ class CraftingManager {
         }
 
         // Check requiredStationType against gameState.activeCraftingStationType
-        // This check is important for determining if crafting is possible *at the current station*
         if (recipe.requiredStationType) {
             if (!this.gameState.activeCraftingStationType || this.gameState.activeCraftingStationType !== recipe.requiredStationType) {
                 return false;
             }
         }
-        // Old workbenchRequired check is removed as it's replaced by requiredStationType
 
         // Check components
         for (const component of recipe.components) {
-            const count = this.inventoryManager.countItems(component.itemId, playerInventory);
+            const count = this.inventoryManager.countItems(component, playerInventory);
             if (count < component.quantity) {
-                // logToConsole(`${this.logPrefix} Cannot craft '${recipe.name}'. Missing ${component.quantity - count} of ${component.itemId}.`, 'orange');
                 return false;
             }
         }
@@ -132,15 +129,26 @@ class CraftingManager {
 
         const recipe = this.recipes[recipeId];
 
-        // Consume components
+        const allConsumedItems = [];
+        let consumptionSuccess = true;
+
         for (const component of recipe.components) {
-            if (!this.inventoryManager.removeItems(component.itemId, component.quantity, playerInventoryItems)) {
-                // This should not happen if canCraft passed, but as a safeguard:
-                logToConsole(`${this.logPrefix} CRITICAL ERROR: Failed to remove component ${component.itemId} during crafting of '${recipe.name}', though canCraft was true.`, 'red');
-                if (window.uiManager) window.uiManager.showToastNotification("Crafting failed: component inconsistency.", "error");
-                // Potentially roll back any previously removed components if implementing transactions
-                return false;
+            const removedPortion = this.inventoryManager.removeItems(component, component.quantity, playerInventoryItems);
+            if (removedPortion) {
+                allConsumedItems.push(...removedPortion);
+            } else {
+                logToConsole(`${this.logPrefix} Failed to consume component ${component.itemId || component.family} for '${recipe.name}'. Rolling back.`, 'orange');
+                for (const itemToRestore of allConsumedItems) {
+                    this.inventoryManager.addItemToInventory(itemToRestore, itemToRestore.quantity || 1, playerInventoryItems, 999);
+                }
+                consumptionSuccess = false;
+                break;
             }
+        }
+
+        if (!consumptionSuccess) {
+            if (window.uiManager) window.uiManager.showToastNotification("Crafting failed: could not gather all components.", "error");
+            return false;
         }
 
         // Add result item(s)

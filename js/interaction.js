@@ -215,11 +215,14 @@ function _performAction(action, it) {
             // For now, simulate attempting to use a generic "gas_can" if player has one.
             logToConsole(`Attempting to refuel ${vehicle.name}...`, "info");
             if (window.inventoryManager && window.inventoryManager.hasItem("gas_can_fuel", 1)) { // Assuming "gas_can_fuel" item ID
-                if (window.vehicleManager && window.vehicleManager.refuelVehicle(vehicle.id, 20, "gas_can_fuel")) { // Assuming gas can gives 20 fuel
-                    window.inventoryManager.removeItems("gas_can_fuel", 1, window.gameState.inventory.container.items);
+                const removed = window.inventoryManager.removeItems("gas_can_fuel", 1, window.gameState.inventory.container.items);
+                if (removed && window.vehicleManager && window.vehicleManager.refuelVehicle(vehicle.id, 20, "gas_can_fuel")) {
                     logToConsole("Refueled with a gas can.", "event-success");
                     if (window.updateInventoryUI) window.updateInventoryUI();
                 } else {
+                    if (removed) { // If item was removed but refueling failed, return it
+                        window.inventoryManager.addItemToInventory(removed[0], removed[0].quantity || 1, window.gameState.inventory.container.items, 999);
+                    }
                     logToConsole("Refuel failed (e.g., tank full or vehicleManager error).", "warn");
                 }
             } else {

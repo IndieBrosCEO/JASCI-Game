@@ -241,10 +241,12 @@ class TrapManager {
             }
 
             if (consumeTool && window.inventoryManager) {
-                window.inventoryManager.removeItemsFromInventory(toolUsed, 1, entity.inventory.container.items);
-                const toolName = window.assetManager ? (window.assetManager.getItem(toolUsed)?.name || toolUsed) : toolUsed;
-                logToConsole(`${this.logPrefix} Tool ${toolName} consumed.`, "grey");
-                if (window.uiManager && entity === this.gameState.player) window.uiManager.showToastNotification(`${toolName} consumed.`, "info_minor");
+                const removed = window.inventoryManager.removeItems(toolUsed, 1, entity.inventory.container.items);
+                if (removed) {
+                    const toolName = window.assetManager ? (window.assetManager.getItem(toolUsed)?.name || toolUsed) : toolUsed;
+                    logToConsole(`${this.logPrefix} Tool ${toolName} consumed.`, "grey");
+                    if (window.uiManager && entity === this.gameState.player) window.uiManager.showToastNotification(`${toolName} consumed.`, "info_minor");
+                }
             }
         }
 
@@ -452,15 +454,16 @@ class TrapManager {
             if (window.uiManager && placerEntity === this.gameState.player) window.uiManager.showToastNotification(`Failed to place ${trapDef.name} (skill check).`, "warning");
             // Optional: Consume item even on failure? Or only on critical failure?
             if (rollDie(4) === 1) { // 25% chance to consume item on placement failure
-                window.inventoryManager.removeItemsFromInventory(trapItemId, 1, placerEntity.inventory.container.items);
-                if (window.uiManager && placerEntity === this.gameState.player) window.uiManager.showToastNotification(`${trapItemDef.name} was wasted!`, "error");
+                if (window.inventoryManager.removeItems(trapItemId, 1, placerEntity.inventory.container.items)) {
+                    if (window.uiManager && placerEntity === this.gameState.player) window.uiManager.showToastNotification(`${trapItemDef.name} was wasted!`, "error");
+                }
             }
             if (window.audioManager) window.audioManager.playSoundAtLocation('trap_place_fail_01.wav', { x, y, z }, {}, { falloff: 'linear', maxDistance: 10 });
             return false;
         }
 
         // 3. Consume the trap item.
-        if (!window.inventoryManager.removeItemsFromInventory(trapItemId, 1, placerEntity.inventory.container.items)) {
+        if (!window.inventoryManager.removeItems(trapItemId, 1, placerEntity.inventory.container.items)) {
             logToConsole(`${this.logPrefix} Failed to place trap: Could not remove ${trapItemId} from inventory (should not happen if hasItem was checked prior).`, 'red');
             return false; // Should have been checked before calling this
         }
