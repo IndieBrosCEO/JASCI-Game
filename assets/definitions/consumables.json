@@ -22,16 +22,27 @@
       "description": "Synthesize and form a block of C4/Semtex plastic explosive. Extremely dangerous.",
       "components": [
         {
-          "itemId": "explosive_compound_generic_b",
-          "quantity": 3
+          "quantity": 3,
+          "family": "explosive",
+          "require": {
+            "type": "generic_b"
+          }
         },
         {
-          "itemId": "plastic_scrap_processed",
-          "quantity": 1
+          "quantity": 1,
+          "family": "plastic",
+          "require": {
+            "type": "scrap",
+            "processed": true
+          }
         },
         {
-          "itemId": "wire_insulated_thin",
-          "quantity": 1
+          "quantity": 1,
+          "family": "wire",
+          "require": {
+            "insulated": true,
+            "size": "thin"
+          }
         }
       ],
       "skills_required": [
@@ -47,6 +58,11 @@
       "station_required": "munitions_bench",
       "time_to_craft": 60,
       "batch_size": 1
+    },
+    "family": "explosive",
+    "properties": {
+      "type": "plastic",
+      "grade": 3
     }
   },
   {
@@ -66,7 +82,11 @@
     ],
     "damage": "2d6",
     "damageType": "Fire",
-    "burstRadiusFt": 1
+    "burstRadiusFt": 1,
+    "family": "explosive",
+    "properties": {
+      "type": "det_cord"
+    }
   },
   {
     "id": "dynamite_explosive",
@@ -91,20 +111,34 @@
       "description": "Craft sticks of dynamite.",
       "components": [
         {
-          "itemId": "gunpowder_basic",
-          "quantity": 5
+          "quantity": 5,
+          "family": "explosive",
+          "require": {
+            "type": "gunpowder",
+            "grade": 1
+          }
         },
         {
-          "itemId": "chemical_reagent_saltpeter",
-          "quantity": 2
+          "quantity": 2,
+          "family": "chemical",
+          "require": {
+            "type": "saltpeter"
+          }
         },
         {
-          "itemId": "cloth_sheet_rough_fiber",
-          "quantity": 1
+          "quantity": 1,
+          "family": "fabric",
+          "require": {
+            "material": "plant_fiber",
+            "grade": 1
+          }
         },
         {
-          "itemId": "thread_simple_plant_fiber",
-          "quantity": 1
+          "quantity": 1,
+          "family": "thread",
+          "require": {
+            "material": "plant_fiber"
+          }
         }
       ],
       "skills_required": [
@@ -116,6 +150,10 @@
       "station_required": "munitions_bench",
       "time_to_craft": 30,
       "batch_size": 1
+    },
+    "family": "explosive",
+    "properties": {
+      "type": "dynamite"
     }
   },
   {
@@ -141,12 +179,18 @@
       "description": "Craft a more effective bandage with some antiseptic properties.",
       "components": [
         {
-          "itemId": "cloth_scrap",
-          "quantity": 3
+          "quantity": 3,
+          "family": "fabric",
+          "require": {
+            "type": "scrap"
+          }
         },
         {
-          "itemId": "antiseptic_herbal_pulp",
-          "quantity": 1
+          "quantity": 1,
+          "family": "medicinal",
+          "require": {
+            "type": "antiseptic_pulp"
+          }
         }
       ],
       "skills_required": [
@@ -157,6 +201,11 @@
       ],
       "time_to_craft": 8,
       "batch_size": 1
+    },
+    "family": "medical",
+    "properties": {
+      "type": "bandage",
+      "grade": 2
     }
   },
   {
@@ -182,20 +231,33 @@
       "description": "Assemble a first-aid kit with various medical supplies.",
       "components": [
         {
-          "itemId": "bandage",
-          "quantity": 2
+          "quantity": 2,
+          "family": "medical",
+          "require": {
+            "type": "bandage",
+            "grade": 2
+          }
         },
         {
-          "itemId": "antiseptic_herbal_pulp",
-          "quantity": 2
+          "quantity": 2,
+          "family": "medicinal",
+          "require": {
+            "type": "antiseptic_pulp"
+          }
         },
         {
-          "itemId": "splint_wood_simple",
-          "quantity": 1
+          "quantity": 1,
+          "family": "medical",
+          "require": {
+            "type": "splint"
+          }
         },
         {
-          "itemId": "cloth_scrap",
-          "quantity": 3
+          "quantity": 3,
+          "family": "fabric",
+          "require": {
+            "type": "scrap"
+          }
         }
       ],
       "skills_required": [
@@ -204,9 +266,16 @@
           "level": 4
         }
       ],
-      "tools_required": [ "sewing_kit_basic" ],
+      "tools_required": [
+        "sewing_kit_basic"
+      ],
       "time_to_craft": 40,
       "batch_size": 1
+    },
+    "family": "medical",
+    "properties": {
+      "type": "kit",
+      "grade": 1
     }
   },
   {
@@ -225,6 +294,11 @@
     ],
     "effects": {
       "hunger": -12
+    },
+    "family": "food",
+    "properties": {
+      "type": "canned",
+      "content": "beans"
     }
   },
   {
@@ -244,6 +318,11 @@
     "effects": {
       "hunger": -8,
       "stamina": 20
+    },
+    "family": "food",
+    "properties": {
+      "type": "bar",
+      "effect": "energy"
     }
   },
   {
@@ -264,6 +343,10 @@
     "effects": {
       "hunger": -24,
       "thirst": -10
+    },
+    "family": "food",
+    "properties": {
+      "type": "mre"
     }
   },
   {
@@ -282,6 +365,11 @@
     ],
     "effects": {
       "thirst": -15
+    },
+    "family": "drink",
+    "properties": {
+      "type": "water",
+      "container": "bottle"
     }
   },
   {
@@ -301,6 +389,11 @@
     ],
     "effects": {
       "thirst": -24
+    },
+    "family": "drink",
+    "properties": {
+      "type": "water",
+      "container": "canteen"
     }
   },
   {
@@ -325,12 +418,18 @@
       "description": "Create water purification tablets from iodine and a filler.",
       "components": [
         {
-          "itemId": "iodine_crystals",
-          "quantity": 1
+          "quantity": 1,
+          "family": "chemical",
+          "require": {
+            "type": "iodine"
+          }
         },
         {
-          "itemId": "charcoal_bits",
-          "quantity": 1
+          "quantity": 1,
+          "family": "fuel",
+          "require": {
+            "type": "charcoal"
+          }
         }
       ],
       "skills_required": [
@@ -339,10 +438,16 @@
           "level": 4
         }
       ],
-      "tools_required": [ "mortar_pestle" ],
+      "tools_required": [
+        "mortar_pestle"
+      ],
       "station_required": "chemistry_set_tile",
       "time_to_craft": 15,
       "batch_size": 10
+    },
+    "family": "medical",
+    "properties": {
+      "type": "purification_tablets"
     }
   },
   {
@@ -360,7 +465,16 @@
     "canEquip": false,
     "isClothing": false,
     "weightLbs": 0.5,
-    "tags": [ "consumable", "food", "modern" ]
+    "tags": [
+      "consumable",
+      "food",
+      "modern"
+    ],
+    "family": "food",
+    "properties": {
+      "type": "canned",
+      "content": "beans"
+    }
   },
   {
     "id": "bottled_water_drink",
@@ -377,7 +491,16 @@
     "canEquip": false,
     "isClothing": false,
     "weightLbs": 0.5,
-    "tags": [ "consumable", "drink", "modern" ]
+    "tags": [
+      "consumable",
+      "drink",
+      "modern"
+    ],
+    "family": "drink",
+    "properties": {
+      "type": "water",
+      "container": "bottle"
+    }
   },
   {
     "id": "antibiotics_course",
@@ -388,12 +511,24 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.2,
-    "tags": [ "consumable", "medical", "pharmaceutical", "doctor", "nurse", "pharmacist" ],
+    "tags": [
+      "consumable",
+      "medical",
+      "pharmaceutical",
+      "doctor",
+      "nurse",
+      "pharmacist"
+    ],
     "effects": {
       "cureInfection_bacterial": true,
       "durationDays": 7
     },
-    "doses": 14
+    "doses": 14,
+    "family": "medical",
+    "properties": {
+      "type": "pharmaceutical",
+      "effect": "antibiotic"
+    }
   },
   {
     "id": "painkillers_strong",
@@ -404,13 +539,26 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.1,
-    "tags": [ "consumable", "medical", "pharmaceutical", "doctor", "paramedic", "surgeon" ],
+    "tags": [
+      "consumable",
+      "medical",
+      "pharmaceutical",
+      "doctor",
+      "paramedic",
+      "surgeon"
+    ],
     "effects": {
       "painRelief": 80,
       "durationHours": 4,
       "drowsiness": 25
     },
-    "doses": 10
+    "doses": 10,
+    "family": "medical",
+    "properties": {
+      "type": "pharmaceutical",
+      "effect": "painkiller",
+      "strength": "strong"
+    }
   },
   {
     "id": "stimulant_combat",
@@ -421,7 +569,14 @@
     "isClothing": false,
     "size": 0,
     "weightLbs": 0.1,
-    "tags": [ "consumable", "medical", "military", "stimulant", "soldier", "mercenary" ],
+    "tags": [
+      "consumable",
+      "medical",
+      "military",
+      "stimulant",
+      "soldier",
+      "mercenary"
+    ],
     "effects": {
       "stamina": 50,
       "alertness": 30,
@@ -430,7 +585,12 @@
       "sideEffect_jittery": 15
     },
     "doses": 1,
-    "administration": "injector"
+    "administration": "injector",
+    "family": "medical",
+    "properties": {
+      "type": "stimulant",
+      "grade": "combat"
+    }
   },
   {
     "id": "antidote_universal_basic",
@@ -441,11 +601,24 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.2,
-    "tags": [ "consumable", "medical", "antidote", "doctor", "paramedic", "chemist", "alchemist" ],
+    "tags": [
+      "consumable",
+      "medical",
+      "antidote",
+      "doctor",
+      "paramedic",
+      "chemist",
+      "alchemist"
+    ],
     "effects": {
       "curePoison_common": true
     },
-    "doses": 1
+    "doses": 1,
+    "family": "medical",
+    "properties": {
+      "type": "antidote",
+      "grade": "basic"
+    }
   },
   {
     "id": "herbal_salve_healing",
@@ -456,7 +629,15 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.3,
-    "tags": [ "consumable", "medical", "herbal", "apothecary", "herbalist", "shaman", "healer" ],
+    "tags": [
+      "consumable",
+      "medical",
+      "herbal",
+      "apothecary",
+      "herbalist",
+      "shaman",
+      "healer"
+    ],
     "effects": {
       "health_regen_slow": 5,
       "durationHours": 2,
@@ -468,16 +649,25 @@
       "description": "Create a healing salve from medicinal herbs and a base.",
       "components": [
         {
-          "itemId": "medicinal_herb_comfrey",
-          "quantity": 3
+          "quantity": 3,
+          "family": "medicinal",
+          "require": {
+            "name": "comfrey"
+          }
         },
         {
-          "itemId": "animal_fat_rendered",
-          "quantity": 1
+          "quantity": 1,
+          "family": "organic",
+          "require": {
+            "type": "fat"
+          }
         },
         {
-          "itemId": "cloth_scrap",
-          "quantity": 1
+          "quantity": 1,
+          "family": "fabric",
+          "require": {
+            "type": "scrap"
+          }
         }
       ],
       "skills_required": [
@@ -490,10 +680,18 @@
           "level": 2
         }
       ],
-      "tools_required": [ "mortar_pestle" ],
+      "tools_required": [
+        "mortar_pestle"
+      ],
       "station_required": "campfire_basic_tile",
       "time_to_craft": 20,
       "batch_size": 1
+    },
+    "family": "medical",
+    "properties": {
+      "type": "salve",
+      "source": "herbal",
+      "effect": "healing"
     }
   },
   {
@@ -505,11 +703,24 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.5,
-    "tags": [ "consumable", "science", "laboratory", "chemical", "chemist", "alchemist", "biochemist" ],
+    "tags": [
+      "consumable",
+      "science",
+      "laboratory",
+      "chemical",
+      "chemist",
+      "alchemist",
+      "biochemist"
+    ],
     "effects": {
       "lab_component": true
     },
-    "substanceName": "e.g., Sulfuric Acid (dilute)"
+    "substanceName": "e.g., Sulfuric Acid (dilute)",
+    "family": "chemical",
+    "properties": {
+      "type": "reagent",
+      "grade": "generic"
+    }
   },
   {
     "id": "nutrient_paste_tube",
@@ -520,10 +731,23 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.3,
-    "tags": [ "consumable", "food", "medical", "emergency", "doctor", "paramedic", "survivor" ],
+    "tags": [
+      "consumable",
+      "food",
+      "medical",
+      "emergency",
+      "doctor",
+      "paramedic",
+      "survivor"
+    ],
     "effects": {
       "hunger": -24,
       "thirst": -20
+    },
+    "family": "food",
+    "properties": {
+      "type": "paste",
+      "container": "tube"
     }
   },
   {
@@ -535,24 +759,45 @@
     "isClothing": false,
     "size": 0,
     "weightLbs": 0.3,
-    "tags": [ "consumable", "crafting", "ink", "scribe", "archivist", "cartographer", "writer" ],
-    "effects": { "resource_ink": 100 },
+    "tags": [
+      "consumable",
+      "crafting",
+      "ink",
+      "scribe",
+      "archivist",
+      "cartographer",
+      "writer"
+    ],
+    "effects": {
+      "resource_ink": 100
+    },
     "color": "black",
     "recipe": {
       "id": "ink_pot_black",
       "description": "Mix soot and a binder to create black ink.",
       "components": [
         {
-          "itemId": "charcoal_bits",
-          "quantity": 5
+          "quantity": 5,
+          "family": "fuel",
+          "require": {
+            "type": "charcoal"
+          }
         },
         {
-          "itemId": "water_clean_item",
-          "quantity": 1
+          "quantity": 1,
+          "family": "liquid",
+          "require": {
+            "type": "water",
+            "quality": "clean"
+          }
         },
         {
-          "itemId": "adhesive_paste_basic",
-          "quantity": 1
+          "quantity": 1,
+          "family": "adhesive",
+          "require": {
+            "type": "paste",
+            "grade": 1
+          }
         }
       ],
       "skills_required": [
@@ -561,9 +806,15 @@
           "level": 1
         }
       ],
-      "tools_required": [ "mortar_pestle" ],
+      "tools_required": [
+        "mortar_pestle"
+      ],
       "time_to_craft": 10,
       "batch_size": 1
+    },
+    "family": "ink",
+    "properties": {
+      "color": "black"
     }
   },
   {
@@ -575,23 +826,44 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.5,
-    "tags": [ "consumable", "crafting", "paper", "scribe", "archivist", "cartographer", "historian" ],
-    "effects": { "resource_writing_surface": 50 },
+    "tags": [
+      "consumable",
+      "crafting",
+      "paper",
+      "scribe",
+      "archivist",
+      "cartographer",
+      "historian"
+    ],
+    "effects": {
+      "resource_writing_surface": 50
+    },
     "recipe": {
       "id": "parchment_roll_blank",
       "description": "Prepare animal hides to create a roll of parchment.",
       "components": [
         {
-          "itemId": "animal_hide_fine",
-          "quantity": 2
+          "quantity": 2,
+          "family": "leather",
+          "require": {
+            "type": "raw",
+            "size": "fine"
+          }
         },
         {
-          "itemId": "lime_solution_basic",
-          "quantity": 1
+          "quantity": 1,
+          "family": "chemical",
+          "require": {
+            "type": "lime_solution"
+          }
         },
         {
-          "itemId": "water_clean_item",
-          "quantity": 2
+          "quantity": 2,
+          "family": "liquid",
+          "require": {
+            "type": "water",
+            "quality": "clean"
+          }
         }
       ],
       "skills_required": [
@@ -600,10 +872,17 @@
           "level": 4
         }
       ],
-      "tools_required": [ "tanning_knife", "scraper_tool_blunt" ],
+      "tools_required": [
+        "tanning_knife",
+        "scraper_tool_blunt"
+      ],
       "station_required": "tanning_rack_simple",
       "time_to_craft": 240,
       "batch_size": 1
+    },
+    "family": "writing_surface",
+    "properties": {
+      "type": "parchment"
     }
   },
   {
@@ -615,12 +894,25 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.2,
-    "tags": [ "consumable", "ritual", "fragrance", "priest", "shaman", "medium", "cultist" ],
+    "tags": [
+      "consumable",
+      "ritual",
+      "fragrance",
+      "priest",
+      "shaman",
+      "medium",
+      "cultist"
+    ],
     "effects": {
       "ritual_component_air": true,
       "durationMinutes": 60
     },
-    "quantity": 20
+    "quantity": 20,
+    "family": "ritual",
+    "properties": {
+      "type": "incense",
+      "scent": "sandalwood"
+    }
   },
   {
     "id": "sacred_herbs_bundle",
@@ -631,10 +923,23 @@
     "isClothing": false,
     "size": 1,
     "weightLbs": 0.3,
-    "tags": [ "consumable", "ritual", "herbal", "shaman", "priest", "cultist", "healer" ],
+    "tags": [
+      "consumable",
+      "ritual",
+      "herbal",
+      "shaman",
+      "priest",
+      "cultist",
+      "healer"
+    ],
     "effects": {
       "ritual_component_earth": true,
       "spiritual_focus": 10
+    },
+    "family": "ritual",
+    "properties": {
+      "type": "herbs",
+      "grade": "sacred"
     }
   },
   {
@@ -657,14 +962,22 @@
     "maxStack": 10,
     "sprite": "+",
     "color": "white",
-    "tags": [ "medical", "healing", "consumable", "first_aid" ],
+    "tags": [
+      "medical",
+      "healing",
+      "consumable",
+      "first_aid"
+    ],
     "recipe": {
       "id": "bandage_simple",
       "description": "Craft a simple bandage from cloth scraps.",
       "components": [
         {
-          "itemId": "cloth_scrap",
-          "quantity": 2
+          "quantity": 2,
+          "family": "fabric",
+          "require": {
+            "type": "scrap"
+          }
         }
       ],
       "skills_required": [
@@ -675,6 +988,11 @@
       ],
       "time_to_craft": 5,
       "batch_size": 1
+    },
+    "family": "medical",
+    "properties": {
+      "type": "bandage",
+      "grade": 1
     }
   }
 ]
