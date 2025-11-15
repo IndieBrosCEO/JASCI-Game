@@ -62,6 +62,7 @@
     }
 
     async loadDefinitions() {
+        let tempItemsById = {};
         this.tilesets = {};
         this.itemsById = {};
         this.npcDefinitions = {};
