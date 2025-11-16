@@ -127,6 +127,10 @@ class ConstructionManager {
             return false;
         }
 
+        if (!definition) {
+            logToConsole(`${this.logPrefix} Invalid definition provided to isValidPlacement.`, "error");
+            return false;
+        }
         const size = definition.size || { width: 1, height: 1 };
         const { x: startX, y: startY, z } = targetTilePos;
 
@@ -159,22 +163,48 @@ class ConstructionManager {
                     return false;
                 }
 
-                // 3. Check allowedTileTags against the underlying 'bottom' (landscape/floor) tile
+                // 3. Check for valid ground to build on.
+                let canPlace = false;
+
+                // First, check original condition: 'bottom' layer of the CURRENT z-level must have one of the allowedTileTags.
                 if (definition.allowedTileTags && definition.allowedTileTags.length > 0) {
                     const bottomTileRaw = levelData.bottom?.[currentY]?.[currentX];
                     const bottomTileId = typeof bottomTileRaw === 'object' ? bottomTileRaw?.tileId : bottomTileRaw;
                     const bottomTileDef = bottomTileId ? this.assetManager.tilesets[bottomTileId] : null;
 
-                    if (!bottomTileDef || !bottomTileDef.tags) {
-                        logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}' at (${currentX},${currentY},${z}): Underlying tile has no definition or tags.`, "orange");
-                        return false;
+                    if (bottomTileDef && bottomTileDef.tags) {
+                        if (definition.allowedTileTags.some(reqTag => bottomTileDef.tags.includes(reqTag))) {
+                            canPlace = true;
+                        }
                     }
-                    const underlyingTileTags = bottomTileDef.tags;
-                    const canPlace = definition.allowedTileTags.some(reqTag => underlyingTileTags.includes(reqTag));
-                    if (!canPlace) {
-                        logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}' at (${currentX},${currentY},${z}): Underlying tile tags [${underlyingTileTags.join(', ')}] do not meet requirements [${definition.allowedTileTags.join(', ')}].`, "orange");
-                        return false;
+                } else {
+                    // If a construction requires no specific tags, any ground is valid, as long as there IS a ground tile.
+                    const bottomTileRaw = levelData.bottom?.[currentY]?.[currentX];
+                    if (bottomTileRaw && bottomTileRaw !== "") { // Check for existence of a bottom tile
+                        canPlace = true;
                     }
+                }
+
+                // If not placeable yet, check new condition: z-level below must have a tile with 'solid_terrain_top'.
+                if (!canPlace && z > 0) {
+                    const levelBelow = mapData.levels[(z - 1).toString()];
+                    if (levelBelow) {
+                        const layersToCheck = ['middle', 'bottom'];
+                        for (const layer of layersToCheck) {
+                            const tileBelowRaw = levelBelow[layer]?.[currentY]?.[currentX];
+                            const tileBelowId = typeof tileBelowRaw === 'object' ? tileBelowRaw?.tileId : tileBelowRaw;
+                            const tileBelowDef = tileBelowId ? this.assetManager.tilesets[tileBelowId] : null;
+                            if (tileBelowDef && tileBelowDef.tags && tileBelowDef.tags.includes('solid_terrain_top')) {
+                                canPlace = true;
+                                break; // Found a valid tile below, so we can stop checking layers
+                            }
+                        }
+                    }
+                }
+
+                if (!canPlace) {
+                    logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}' at (${currentX},${currentY},${z}): No valid ground on current z-level and no solid top on z-level below.`, "orange");
+                    return false;
                 }
             }
         }

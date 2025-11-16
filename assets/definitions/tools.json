@@ -118,5 +118,48 @@
       "tools_required": [ "file_small_metal" ], "station_required": "workbench",
       "time_to_craft": 45, "batch_size": 1
     }
+  },
+  {
+    "id": "matches",
+    "name": "Matches",
+    "family": "tool",
+    "properties": { "type": "fire_starter" },
+    "type": "tool",
+    "description": "A box of matches.",
+    "weight": 0.1,
+    "volume": 0.1,
+    "tags": [ "flame", "consumable" ],
+    "recipe": {
+      "description": "Craft a box of matches.",
+      "components": [
+        { "family": "wood", "quantity": 1, "require": { "type": "stick" } },
+        { "family": "chemical", "quantity": 1, "require": { "type": "phosphorus" } }
+      ],
+      "skills_required": [ { "skill": "Survival", "level": 2 } ],
+      "time_to_craft": 10,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "lighter",
+    "name": "Lighter",
+    "family": "tool",
+    "properties": { "type": "fire_starter" },
+    "type": "tool",
+    "description": "A reusable lighter.",
+    "weight": 0.2,
+    "volume": 0.2,
+    "tags": [ "flame" ],
+    "recipe": {
+      "description": "Craft a simple lighter.",
+      "components": [
+        { "family": "casing", "quantity": 1, "require": { "size": "small", "material": "plastic" } },
+        { "family": "component", "quantity": 1, "require": { "type": "flint" } },
+        { "family": "fuel", "quantity": 1, "require": { "type": "lighter_fluid" } }
+      ],
+      "skills_required": [ { "skill": "Electronics", "level": 3 } ],
+      "time_to_craft": 20,
+      "batch_size": 1
+    }
   }
 ]

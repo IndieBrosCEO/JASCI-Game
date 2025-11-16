@@ -1605,6 +1605,24 @@
                         this.distributeExplosionDamage(attacker, char, damageToDistribute, explosiveProps.damageType, explosiveProps);
                     }
                 });
+
+                // Chain reaction for barrels
+                const { x: centerX, y: centerY, z: centerZ } = determinedImpactTile;
+                for (let dx = -burstRadiusTiles; dx <= burstRadiusTiles; dx++) {
+                    for (let dy = -burstRadiusTiles; dy <= burstRadiusTiles; dy++) {
+                        if (Math.sqrt(dx * dx + dy * dy) <= burstRadiusTiles) {
+                            const tileX = centerX + dx;
+                            const tileY = centerY + dy;
+                            const tileId = window.mapRenderer.getCollisionTileAt(tileX, tileY, centerZ);
+                            if (tileId) {
+                                const tileDef = this.assetManager.tilesets[tileId];
+                                if (tileDef && tileDef.tags && tileDef.tags.includes("explosive_barrel")) {
+                                    this.handleBarrelExplosion(tileX, tileY, centerZ);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         if (hit && !explosionProcessed && defender) {
@@ -2228,6 +2246,63 @@
 
         if (window.animationManager) {
             window.animationManager.playAnimation('explosion', { centerPos: impactTile, radius: radius, duration: 1000 });
+        }
+    }
+
+    handleBarrelExplosion(x, y, z) {
+        logToConsole(`An explosive barrel detonates at (${x},${y})!`, 'red');
+
+        const impactTile = { x: x, y: y, z: z };
+        const tileId = window.mapRenderer.getCollisionTileAt(x, y, z);
+        const tileDef = this.assetManager.tilesets[tileId];
+
+        if (!tileDef || !tileDef.explosion) {
+            logToConsole(`Error: Barrel at (${x},${y}) has no explosion properties defined.`, 'red');
+            return;
+        }
+
+        // Remove the barrel from the map to prevent infinite loops
+        const currentMap = window.mapRenderer.getCurrentMapData();
+        const zStr = z.toString();
+        if (currentMap && currentMap.levels[zStr] && currentMap.levels[zStr].middle[y][x]) {
+            currentMap.levels[zStr].middle[y][x] = null;
+            window.mapRenderer.scheduleRender();
+        }
+
+        // Main explosion
+        const mainExplosion = tileDef.explosion.main;
+        const mainCharacters = this.getCharactersInBlastRadius(impactTile, mainExplosion.radius);
+        mainCharacters.forEach(char => {
+            const totalDamage = rollDiceNotation(parseDiceNotation(mainExplosion.damage));
+            this.distributeExplosionDamage({ name: "Explosive Barrel" }, char, totalDamage, mainExplosion.damageType, { name: "Explosive Barrel" });
+        });
+
+        // Fire explosion
+        const fireExplosion = tileDef.explosion.fire;
+        const fireCharacters = this.getCharactersInBlastRadius(impactTile, fireExplosion.radius);
+        fireCharacters.forEach(char => {
+            const totalDamage = rollDiceNotation(parseDiceNotation(fireExplosion.damage));
+            this.distributeExplosionDamage({ name: "Explosive Barrel" }, char, totalDamage, fireExplosion.damageType, { name: "Explosive Barrel" });
+        });
+
+        if (window.animationManager) {
+            window.animationManager.playAnimation('explosion', { centerPos: impactTile, radius: fireExplosion.radius, duration: 1000 });
+        }
+
+        // Chain reaction
+        for (let i = -fireExplosion.radius; i <= fireExplosion.radius; i++) {
+            for (let j = -fireExplosion.radius; j <= fireExplosion.radius; j++) {
+                if (i === 0 && j === 0) continue;
+                const newX = x + i;
+                const newY = y + j;
+                const otherTileId = window.mapRenderer.getCollisionTileAt(newX, newY, z);
+                if (otherTileId) {
+                    const otherTileDef = this.assetManager.tilesets[otherTileId];
+                    if (otherTileDef && otherTileDef.tags && otherTileDef.tags.includes("explosive_barrel")) {
+                        this.handleBarrelExplosion(newX, newY, z);
+                    }
+                }
+            }
         }
     }
 }
