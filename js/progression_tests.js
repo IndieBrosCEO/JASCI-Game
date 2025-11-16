@@ -87,13 +87,11 @@ async function testSaveMigration() {
         passed = false;
     }
 
-    // Check HP based on Constitution 12 (+1 modifier).
-    // Base HP: Head: 10, Torso: 20, Arms: 12, Legs: 14.
-    // Gains for Con Mod +1 are Head: +1, Torso: +2, Limbs: +2.
-    const expectedHeadHp = 11;
-    const expectedTorsoHp = 22;
-    const expectedArmHp = 14;
-    const expectedLegHp = 16;
+    // Check HP for a level 1 character. Should be base values only.
+    const expectedHeadHp = 5;
+    const expectedTorsoHp = 8;
+    const expectedArmHp = 7;
+    const expectedLegHp = 7;
 
     if (migratedState.player.health.head.max !== expectedHeadHp) {
         console.error(`FAIL: Expected head max HP to be ${expectedHeadHp}, but got ${migratedState.player.health.head.max}`);

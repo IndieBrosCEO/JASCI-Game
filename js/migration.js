@@ -14,30 +14,15 @@ function calculateBaselineMaxHp(characterState) {
         return { head: 10, torso: 20, leftArm: 12, rightArm: 12, leftLeg: 14, rightLeg: 14 };
     }
 
-    const constitutionStat = characterState.stats.find(s => s.name === "Constitution");
-    const constitution = constitutionStat ? constitutionStat.points : 10; // Default to 10 if not found
-    const conModifier = Math.floor((constitution - 10) / 2);
-
-    let conTier;
-    if (conModifier <= -1) conTier = 0;
-    else if (conModifier === 0) conTier = 1;
-    else if (conModifier >= 1 && conModifier <= 2) conTier = 2;
-    else if (conModifier === 3) conTier = 3;
-    else conTier = 4;
-
-    const headGains = [1, 1, 1, 1, 2];
-    const limbGains = [1, 1, 2, 2, 3];
-    const torsoGains = [1, 2, 2, 3, 3];
-
-    const baseHp = { head: 10, torso: 20, leftArm: 12, rightArm: 12, leftLeg: 14, rightLeg: 14 };
+    const baseHp = { head: 5, torso: 8, leftArm: 7, rightArm: 7, leftLeg: 7, rightLeg: 7 };
 
     const maxHpMap = {
-        [BodyParts.HEAD]: baseHp.head + headGains[conTier],
-        [BodyParts.TORSO]: baseHp.torso + torsoGains[conTier],
-        [BodyParts.LEFT_ARM]: baseHp.leftArm + limbGains[conTier],
-        [BodyParts.RIGHT_ARM]: baseHp.rightArm + limbGains[conTier],
-        [BodyParts.LEFT_LEG]: baseHp.leftLeg + limbGains[conTier],
-        [BodyParts.RIGHT_LEG]: baseHp.rightLeg + limbGains[conTier]
+        [BodyParts.HEAD]: baseHp.head,
+        [BodyParts.TORSO]: baseHp.torso,
+        [BodyParts.LEFT_ARM]: baseHp.leftArm,
+        [BodyParts.RIGHT_ARM]: baseHp.rightArm,
+        [BodyParts.LEFT_LEG]: baseHp.leftLeg,
+        [BodyParts.RIGHT_LEG]: baseHp.rightLeg
     };
 
     return maxHpMap;
