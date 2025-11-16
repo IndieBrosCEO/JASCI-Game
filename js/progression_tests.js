@@ -141,6 +141,9 @@ async function testSaveMigration() {
     return passed;
 }
 
+// Expose the test runner to the global scope so it can be called from the console.
+window.runProgressionSystemTests = runProgressionSystemTests;
+
 /**
  * Test 2: Verifies the integrity of the loaded level curve data.
  */
