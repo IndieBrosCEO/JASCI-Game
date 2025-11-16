@@ -8,7 +8,7 @@
     "type": "clothing", "size": 1, "weightLbs": 0.5, "tags": [ "clothing", "torso_top" ],
     "layer": "torso_top", "coverage": [ "torso", "leftArm", "rightArm" ],
     "insulation": 5, "armorValue": 0,
-    "canEquip": true,
+    "isClothing": true,
     "recipe": {
       "description": "Sew a basic, everyday shirt from simple fabric.",
       "components": [
@@ -27,7 +27,7 @@
     "properties": { "type": "hat", "style": "baseball_cap" },
     "type": "clothing", "size": 1, "weightLbs": 0.2, "tags": [ "clothing", "head_top" ],
     "layer": "head_top", "coverage": [ "head" ], "insulation": 2, "armorValue": 0,
-    "canEquip": true,
+    "isClothing": true,
     "recipe": {
       "description": "Craft a baseball cap.",
       "components": [
@@ -47,7 +47,7 @@
     "properties": { "type": "vest" },
     "type": "clothing", "size": 1, "weightLbs": 1, "tags": [ "clothing", "torso_top" ],
     "layer": "torso_top", "coverage": [ "torso" ], "insulation": 3, "armorValue": 1,
-    "canEquip": true,
+    "isClothing": true,
     "recipe": {
       "description": "Sew a basic vest from rough cloth or simple leather.",
       "components": [
@@ -66,7 +66,7 @@
     "properties": { "type": "pants", "material": "canvas" },
     "type": "clothing", "size": 2, "weightLbs": 1.5, "tags": [ "clothing", "legs_bottom" ],
     "layer": "legs_bottom", "coverage": [ "leftLeg", "rightLeg" ], "insulation": 8, "armorValue": 1,
-    "canEquip": true,
+    "isClothing": true,
     "recipe": {
       "description": "Craft a pair of durable pants from sturdy canvas.",
       "components": [
