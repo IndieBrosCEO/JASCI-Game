@@ -165,6 +165,10 @@ const commandHelpInfo = {
     'explosion': {
         syntax: 'explosion <x> <y> <radius> <damage> [damageType]',
         description: 'Creates an explosion at x,y with a radius, damage (e.g., "3d6"), and optional damage type.'
+    },
+    'runtests': {
+        syntax: 'runtests [suite_name]',
+        description: 'Runs automated tests. Currently available: "progression".'
     }
 };
 
@@ -1248,6 +1252,21 @@ function processConsoleCommand(commandText) {
                 logToConsoleUI("Error: combatManager.handleExplosion function not available.", 'error');
             }
             break;
+
+        case 'runtests':
+            const suiteName = args.length > 0 ? args[0].toLowerCase() : 'all';
+            if (suiteName === 'progression') {
+                if (typeof runProgressionSystemTests === 'function') {
+                    logToConsoleUI("Running progression system tests...", 'info');
+                    runProgressionSystemTests();
+                } else {
+                    logToConsoleUI("Error: 'runProgressionSystemTests' function not found.", 'error');
+                }
+            } else {
+                logToConsoleUI(`Unknown test suite: '${suiteName}'. Available suites: 'progression'.`, 'error');
+            }
+            break;
+
         default:
             logToConsoleUI(`Unknown command: ${command}. Type 'help' for list of commands.`, 'error'); // Direct call
             break;

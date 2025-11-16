@@ -21,6 +21,19 @@ const InventorySizes = {
 };
 // window.InventorySizes = InventorySizes; // No longer needed
 
+const BodyParts = {
+    HEAD: "head",
+    TORSO: "torso",
+    LEFT_ARM: "leftArm",
+    RIGHT_ARM: "rightArm",
+    LEFT_LEG: "leftLeg",
+    RIGHT_LEG: "rightLeg"
+};
+
+const BodyPartGroups = {
+    LIMBS: [BodyParts.LEFT_ARM, BodyParts.RIGHT_ARM, BodyParts.LEFT_LEG, BodyParts.RIGHT_LEG]
+};
+
 const gameState = {
     // mapLevels will store the tile data for all Z-levels of the current map.
     // It's a dictionary where keys are Z-indices (e.g., "0", "1", "-1")
@@ -106,15 +119,14 @@ const gameState = {
     onionSkinLevelsAbove: 3,
     onionSkinLevelsBelow: 1,
 
-    // Stat/skill limits
-    MAX_SKILL_POINTS: 30, // Initial skill points at character creation
-    MAX_STAT_VALUE: 10, // Max value for core attributes
-    MIN_STAT_VALUE: 1, // Min value for core attributes
-    XP: 0, // Player's current experience points
-    level: 1, // Player's current level
-    skillPointsPerLevel: 16, // Points gained per level for skills
-    attributePointsPer3Levels: 1, // Attribute points gained every 3 levels
-    statPointsPer5Levels: 2, // Stat points (details TBD) gained every 5 levels
+    // --- Player Progression ---
+    saveVersion: 1,
+    totalXp: 0,
+    level: 1,
+    unspentSkillPoints: 0,
+    unspentStatPoints: 0,
+    unspentPerkPicks: 0,
+    perkRanks: {}, // e.g., { "perkId1": 1, "perkId2": 2 }
 
 
     //Inventory
@@ -254,6 +266,16 @@ gameState.player.face = {
     asciiFace: "" // To store the generated ASCII face string
 };
 
+// Add health to player, defining max HP for each body part
+gameState.player.health = {
+    [BodyParts.HEAD]: { current: 10, max: 10 },
+    [BodyParts.TORSO]: { current: 20, max: 20 },
+    [BodyParts.LEFT_ARM]: { current: 12, max: 12 },
+    [BodyParts.RIGHT_ARM]: { current: 12, max: 12 },
+    [BodyParts.LEFT_LEG]: { current: 14, max: 14 },
+    [BodyParts.RIGHT_LEG]: { current: 14, max: 14 }
+};
+
 // Add wieldedWeapon to player
 gameState.player.wieldedWeapon = "";
 
@@ -262,3 +284,5 @@ gameState.player.wieldedWeapon = "";
 window.gameState = gameState;
 window.ClothingLayers = ClothingLayers;
 window.InventorySizes = InventorySizes;
+window.BodyParts = BodyParts;
+window.BodyPartGroups = BodyPartGroups;
