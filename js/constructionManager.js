@@ -189,7 +189,7 @@ class ConstructionManager {
                 if (!canPlace && z > 0) {
                     const levelBelow = mapData.levels[(z - 1).toString()];
                     if (levelBelow) {
-                        const layersToCheck = ['building', 'middle', 'bottom'];
+                        const layersToCheck = ['middle', 'bottom'];
                         for (const layer of layersToCheck) {
                             const tileBelowRaw = levelBelow[layer]?.[currentY]?.[currentX];
                             const tileBelowId = typeof tileBelowRaw === 'object' ? tileBelowRaw?.tileId : tileBelowRaw;
