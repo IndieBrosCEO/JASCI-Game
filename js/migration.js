@@ -11,7 +11,7 @@ function calculateBaselineMaxHp(characterState) {
     if (typeof BodyParts === 'undefined') {
         console.error("Migration Error: BodyParts global constant not found.");
         // Return a default map to prevent crashing, though this indicates a larger issue.
-        return { head: 10, torso: 20, leftArm: 12, rightArm: 12, leftLeg: 14, rightLeg: 14 };
+        return { head: 5, torso: 8, leftArm: 7, rightArm: 7, leftLeg: 7, rightLeg: 7 };
     }
 
     const constitutionStat = characterState.stats.find(s => s.name === "Constitution");
@@ -29,7 +29,7 @@ function calculateBaselineMaxHp(characterState) {
     const limbGains = [1, 1, 2, 2, 3];
     const torsoGains = [1, 2, 2, 3, 3];
 
-    const baseHp = { head: 10, torso: 20, leftArm: 12, rightArm: 12, leftLeg: 14, rightLeg: 14 };
+    const baseHp = { head: 5, torso: 8, leftArm: 7, rightArm: 7, leftLeg: 7, rightLeg: 7 };
 
     const maxHpMap = {
         [BodyParts.HEAD]: baseHp.head + headGains[conTier],
