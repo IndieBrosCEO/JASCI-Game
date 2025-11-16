@@ -32,12 +32,12 @@ function calculateBaselineMaxHp(characterState) {
     const baseHp = { head: 5, torso: 8, leftArm: 7, rightArm: 7, leftLeg: 7, rightLeg: 7 };
 
     const maxHpMap = {
-        [BodyParts.HEAD]: baseHp.head + headGains[conTier],
-        [BodyParts.TORSO]: baseHp.torso + torsoGains[conTier],
-        [BodyParts.LEFT_ARM]: baseHp.leftArm + limbGains[conTier],
-        [BodyParts.RIGHT_ARM]: baseHp.rightArm + limbGains[conTier],
-        [BodyParts.LEFT_LEG]: baseHp.leftLeg + limbGains[conTier],
-        [BodyParts.RIGHT_LEG]: baseHp.rightLeg + limbGains[conTier]
+        [BodyParts.HEAD]: baseHp.head,
+        [BodyParts.TORSO]: baseHp.torso,
+        [BodyParts.LEFT_ARM]: baseHp.leftArm,
+        [BodyParts.RIGHT_ARM]: baseHp.rightArm,
+        [BodyParts.LEFT_LEG]: baseHp.leftLeg,
+        [BodyParts.RIGHT_LEG]: baseHp.rightLeg
     };
 
     return maxHpMap;
