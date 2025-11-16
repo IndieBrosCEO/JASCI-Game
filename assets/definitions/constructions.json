@@ -1448,5 +1448,71 @@
       "type": "tanning_rack",
       "grade": 1
     }
+  },
+  {
+    "id": "explosive_barrel_built",
+    "name": "Explosive Barrel",
+    "description": "A barrel filled with explosive material. Handle with care.",
+    "category": "defensive_trap",
+    "recipe": {
+      "description": "Craft an explosive barrel.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "container",
+          "require": {
+            "type": "barrel"
+          }
+        },
+        {
+          "quantity": 10,
+          "family": "explosive",
+          "require": {
+            "type": "gunpowder"
+          }
+        },
+        {
+          "quantity": 5,
+          "family": "chemical",
+          "require": {
+            "type": "fertilizer"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Explosives",
+          "level": 15
+        }
+      ],
+      "tools_required": [
+        "funnel"
+      ],
+      "time_to_craft": 120,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "explosive_barrel_tile",
+    "health": 20,
+    "tags": [
+      "explosive_barrel",
+      "interactive",
+      "impassable"
+    ],
+    "family": "trap_construction",
+    "properties": {
+      "type": "explosive_barrel"
+    },
+    "explosion": {
+      "main": {
+        "radius": 3,
+        "damage": "4d6",
+        "damageType": "Explosive"
+      },
+      "fire": {
+        "radius": 4,
+        "damage": "1d6",
+        "damageType": "Fire"
+      }
+    }
   }
 ]
