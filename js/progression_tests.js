@@ -146,9 +146,9 @@ async function testSaveMigration() {
  */
 function testLevelCurve() {
     console.log("Running Level Curve Test...");
-    const levelCurve = assetManager.getDefinition('level_curve');
+    const levelCurve = assetManager.getLevelCurve();
 
-    if (!levelCurve) {
+    if (!levelCurve || levelCurve.length === 0) {
         console.error("FAIL: Level curve data not found via assetManager.");
         return false;
     }

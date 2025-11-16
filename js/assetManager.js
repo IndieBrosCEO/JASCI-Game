@@ -73,12 +73,14 @@
         this.proceduralQuestTemplates = {};
         this.trapDefinitionsData = {};
         this.constructionDefinitions = {};
+        this.levelCurve = [];
         this.families = {};
         this.familyItems = new Map();
         this.legacyAliases = {};
 
         // Updated to load from new categorized item files
         const definitionFiles = [
+            'level_curve.json',
             'tileset.json',
             'npcs.json',
             'weapons.json',
@@ -107,7 +109,14 @@
                 }
                 const parsedJson = await response.json();
 
-                if (filename === 'tileset.json') {
+                if (filename === 'level_curve.json') {
+                    if (Array.isArray(parsedJson)) {
+                        this.levelCurve = parsedJson;
+                        console.log(`AssetManager: Loaded ${this.levelCurve.length} level curve entries.`);
+                    } else {
+                        console.warn(`AssetManager: Expected array from level_curve.json, but got ${typeof parsedJson}. Skipping file.`);
+                    }
+                } else if (filename === 'tileset.json') {
                     this.tilesets = parsedJson;
                     console.log("AssetManager: Base tilesets loaded:", this.tilesets);
                 } else if (filename === 'npcs.json') {
@@ -260,6 +269,10 @@
             return null;
         }
         return this.dialogues[dialogueId];
+    }
+
+    getLevelCurve() {
+        return this.levelCurve || [];
     }
 
     async loadData(url) {

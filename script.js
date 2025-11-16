@@ -1882,8 +1882,8 @@ function runValidationChecks() {
     console.log("Running validation checks...");
 
     // 1. Validate Level Curve
-    const levelCurve = assetManager.getDefinition('level_curve');
-    if (levelCurve) {
+    const levelCurve = assetManager.getLevelCurve();
+    if (levelCurve && levelCurve.length > 0) {
         let lastXp = -1;
         for (const levelData of levelCurve) {
             if (levelData.total <= lastXp) {
