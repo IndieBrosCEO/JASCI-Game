@@ -7,7 +7,8 @@
     "description": "A powerful semi-automatic handgun known for its .50AE chambering.",
     "type": "weapon_firearm", "size": 3, "weightLbs": 4,
     "tags": [ "weapon", "firearm", "pistol", "modern", "handgun" ],
-    "damage": "1d7", "damageType": "Ballistic", "rateOfFire": "S", "magazineSize": 8, "ammoType": ".50AE"
+    "damage": "1d7", "damageType": "Ballistic", "rateOfFire": "S", "magazineSize": 8, "ammoType": ".50AE",
+    "canEquip": true
   },
     {
     "id": "sw_m29_44",
@@ -17,7 +18,8 @@
     "description": "A powerful .44 magnum revolver.",
     "type": "weapon_firearm", "size": 3, "weightLbs": 3,
     "tags": [ "weapon", "firearm", "pistol", "modern", "revolver", "handgun" ],
-    "damage": "1d6", "damageType": "Ballistic", "rateOfFire": "S", "magazineSize": 6, "ammoType": ".44mag"
+    "damage": "1d6", "damageType": "Ballistic", "rateOfFire": "S", "magazineSize": 6, "ammoType": ".44mag",
+    "canEquip": true
   },
   {
     "id": "knife_melee",
@@ -27,7 +29,8 @@
     "properties": { "type": "blade", "size": "small" },
     "type": "weapon_melee", "size": 1, "weightLbs": 1,
     "tags": [ "weapon", "melee", "piercing", "slashing", "knife", "tool" ],
-    "damage": "1d4", "damageType": "Piercing"
+    "damage": "1d4", "damageType": "Piercing",
+    "canEquip": true
   },
   {
     "id": "club_melee",
@@ -38,6 +41,7 @@
     "type": "weapon_melee", "size": 3, "weightLbs": 3,
     "tags": [ "weapon", "melee", "bludgeoning", "improvised" ],
     "damage": "1d6", "damageType": "Bludgeoning",
+    "canEquip": true,
     "recipe": {
       "description": "Fashion a crude club from a stick and some cloth for grip.",
       "components": [
@@ -56,6 +60,7 @@
     "properties": { "type": "blade", "size": "small", "quality": "makeshift" },
     "type": "weapon_melee_blade_small", "damage": "1d4-1", "damageType": "Piercing",
     "range": 1, "hands": 1, "weightLbs": 0.5, "size": 1, "value": 5,
-    "sprite": "¡", "color": "lightgray", "tags": [ "melee", "blade", "makeshift", "stealthy" ]
+    "sprite": "¡", "color": "lightgray", "tags": [ "melee", "blade", "makeshift", "stealthy" ],
+    "canEquip": true
   }
 ]

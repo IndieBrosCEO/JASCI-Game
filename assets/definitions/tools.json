@@ -10,6 +10,7 @@
     "volume": 0.5,
     "tags": [ "light_source_item", "hand_held", "requires_power_cell" ],
     "equipSlots": [ "hand" ],
+    "canEquip": true,
     "light_properties": {
       "color": "#FFFFFF",
       "radius": 8,
@@ -43,6 +44,7 @@
     "volume": 0.1,
     "tags": [ "light_source_item", "hand_held", "consumable_light" ],
     "equipSlots": [ "hand" ],
+    "canEquip": true,
     "light_properties": {
       "color": "#FFFFE0",
       "radius": 3,
@@ -69,6 +71,7 @@
     "size": 1,
     "weightLbs": 0.5,
     "tags": [ "tool", "stealth" ],
+    "canEquip": true,
     "recipe": {
       "description": "Fashion a basic set of lockpicks and a tension wrench.",
       "components": [
@@ -90,6 +93,7 @@
     "description": "A heavy hammer with a flat face and a peen, used for shaping metal.",
     "type": "tool", "size": 2, "weightLbs": 4, "tags": [ "tool", "crafting", "blacksmithing" ],
     "equipSlots": [ "hand" ], "action": "shapeMetal",
+    "canEquip": true,
     "recipe": {
       "description": "Forge a heavy blacksmith's hammer.",
       "components": [
@@ -108,6 +112,7 @@
     "description": "A basic saw for cutting wood.",
     "type": "tool", "size": 3, "weightLbs": 2.5, "tags": [ "tool", "crafting", "woodworking" ],
     "equipSlots": [ "hand" ], "action": "sawWood",
+    "canEquip": true,
     "recipe": {
       "description": "Craft a basic hand saw.",
       "components": [
@@ -129,6 +134,7 @@
     "weight": 0.1,
     "volume": 0.1,
     "tags": [ "flame", "consumable" ],
+    "canEquip": true,
     "recipe": {
       "description": "Craft a box of matches.",
       "components": [
@@ -150,6 +156,7 @@
     "weight": 0.2,
     "volume": 0.2,
     "tags": [ "flame" ],
+    "canEquip": true,
     "recipe": {
       "description": "Craft a simple lighter.",
       "components": [
