@@ -1255,12 +1255,12 @@ function processConsoleCommand(commandText) {
 
         case 'runtests':
             const suiteName = args.length > 0 ? args[0].toLowerCase() : 'all';
-            if (suiteName === 'progression') {
-                if (typeof runProgressionSystemTests === 'function') {
+            if (suiteName === 'progression' || suiteName === 'all') {
+                if (typeof window.runProgressionSystemTests === 'function') {
                     logToConsoleUI("Running progression system tests...", 'info');
-                    runProgressionSystemTests();
+                    window.runProgressionSystemTests();
                 } else {
-                    logToConsoleUI("Error: 'runProgressionSystemTests' function not found.", 'error');
+                    logToConsoleUI("Error: 'runProgressionSystemTests' function not found. Ensure progression_tests.js is loaded.", 'error');
                 }
             } else {
                 logToConsoleUI(`Unknown test suite: '${suiteName}'. Available suites: 'progression'.`, 'error');
