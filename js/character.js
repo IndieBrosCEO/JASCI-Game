@@ -385,7 +385,7 @@ function startGame() {
             crisisTimer: 0
         };
     }
-    window.renderHealthTable(gameState); // Render health table with the new values.
+    window.renderHealthTable(gameState.player); // Render health table with the new values.
 
     updatePlayerStatusDisplay(); // Initialize clock and needs display
 
@@ -486,7 +486,7 @@ function applyHungerThirstDamage(gameState, damageAmount) {
     // Update health UI
     if (typeof window.renderHealthTable === 'function') {
         logToConsole("DEBUG: Calling renderHealthTable to update UI.");
-        window.renderHealthTable(gameState); // Pass gameState as the character object
+        window.renderHealthTable(gameState.player); // Pass gameState.player as the character object
     } else {
         logToConsole("Error: renderHealthTable function not found. UI may not update.");
     }
@@ -566,7 +566,9 @@ function updateHealthCrisis(character) {
     }
     // Re-render health table to show updated crisis timers or destroyed states
     if (window.renderHealthTable) {
-        window.renderHealthTable(character);
+        // If the character is the player, we need to pass gameState.player
+        const characterToRender = (character === window.gameState) ? window.gameState.player : character;
+        window.renderHealthTable(characterToRender);
     }
 }
 
@@ -616,7 +618,8 @@ function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, charac
     }
 
     if (window.renderHealthTable) {
-        window.renderHealthTable(character);
+        const characterToRender = (character === window.gameState) ? window.gameState.player : character;
+        window.renderHealthTable(characterToRender);
     }
 }
 
@@ -673,7 +676,8 @@ function applyRestHealing(character, restType) {
     }
 
     if (window.renderHealthTable) {
-        window.renderHealthTable(character);
+        const characterToRender = (character === window.gameState) ? window.gameState.player : character;
+        window.renderHealthTable(characterToRender);
     }
 }
 
