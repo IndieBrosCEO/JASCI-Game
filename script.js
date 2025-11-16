@@ -2550,100 +2550,18 @@ function saveGame() {
     }
 }
 
-function calculateBaselineMaxHp(characterState) {
-    // Find the Constitution stat from the character's stats array. Default to 3 if not found.
-    const constitutionStat = characterState.stats.find(s => s.name === "Constitution");
-    const constitution = constitutionStat ? constitutionStat.points : 3;
-
-    // Calculate the Constitution modifier.
-    const conModifier = Math.floor((constitution - 10) / 2);
-
-    // Determine the Constitution modifier tier.
-    let conTier;
-    if (conModifier <= -1) {
-        conTier = 0;
-    } else if (conModifier === 0) {
-        conTier = 1;
-    } else if (conModifier >= 1 && conModifier <= 2) {
-        conTier = 2;
-    } else if (conModifier === 3) {
-        conTier = 3;
-    } else { // >= 4
-        conTier = 4;
-    }
-
-    // Define HP gains per tier for each body part, as specified.
-    const headGains = [1, 1, 1, 1, 2];
-    const limbGains = [1, 1, 2, 2, 3];
-    const torsoGains = [1, 2, 2, 3, 3];
-
-    const tierBonus = {
-        head: headGains[conTier],
-        torso: torsoGains[conTier],
-        limbs: limbGains[conTier]
-    };
-
-    // Define the base HP constants for a level 1 character.
-    const baseHpConstants = {
-        head: 10,
-        torso: 20,
-        leftArm: 12,
-        rightArm: 12,
-        leftLeg: 14,
-        rightLeg: 14
-    };
-
-    // Calculate the final max HP for each part by adding the base value and the tier bonus.
-    const maxHpMap = {
-        [BodyParts.HEAD]: baseHpConstants.head + tierBonus.head,
-        [BodyParts.TORSO]: baseHpConstants.torso + tierBonus.torso,
-        [BodyParts.LEFT_ARM]: baseHpConstants.leftArm + tierBonus.limbs,
-        [BodyParts.RIGHT_ARM]: baseHpConstants.rightArm + tierBonus.limbs,
-        [BodyParts.LEFT_LEG]: baseHpConstants.leftLeg + tierBonus.limbs,
-        [BodyParts.RIGHT_LEG]: baseHpConstants.rightLeg + tierBonus.limbs
-    };
-
-    return maxHpMap;
-}
-
 function loadGame() {
     try {
         const savedGameStateString = localStorage.getItem('jasciGameSave');
         if (savedGameStateString) {
-            const loadedState = JSON.parse(savedGameStateString);
+            let loadedState = JSON.parse(savedGameStateString);
 
             // --- Save File Migration ---
-            if (loadedState.saveVersion === undefined) {
-                logToConsole("Old save format detected. Migrating to new version...", "info");
-
-                // Initialize new progression fields with safe defaults.
-                loadedState.totalXp = loadedState.XP || 0; // Carry over old XP if it exists.
-                loadedState.level = loadedState.level || 1;
-                loadedState.unspentSkillPoints = 0;
-                loadedState.unspentStatPoints = 0;
-                loadedState.unspentPerkPicks = 0;
-                loadedState.perkRanks = {};
-
-                // Initialize the health object if it doesn't exist.
-                if (!loadedState.player.health) {
-                    loadedState.player.health = {};
-                }
-
-                // Calculate and set baseline max HP for all body parts.
-                const baselineMaxHp = calculateBaselineMaxHp(loadedState);
-                for (const part in BodyParts) {
-                    const partKey = BodyParts[part];
-                    if (!loadedState.player.health[partKey]) {
-                        loadedState.player.health[partKey] = {
-                            max: baselineMaxHp[partKey],
-                            current: baselineMaxHp[partKey]
-                        };
-                    }
-                }
-
-                // Update the save version to prevent future migrations.
-                loadedState.saveVersion = 1;
-                logToConsole("Save file migration complete.", "info");
+            // Call the centralized migration function.
+            if (typeof window.migrateSaveData === 'function') {
+                loadedState = window.migrateSaveData(loadedState);
+            } else {
+                console.error("Migration function 'migrateSaveData' not found. Old saves may not load correctly.");
             }
 
             // Deep merge or careful assignment is needed here.
