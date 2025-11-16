@@ -266,15 +266,10 @@ gameState.player.face = {
     asciiFace: "" // To store the generated ASCII face string
 };
 
-// Add health to player, defining max HP for each body part
-gameState.player.health = {
-    [BodyParts.HEAD]: { current: 10, max: 10 },
-    [BodyParts.TORSO]: { current: 20, max: 20 },
-    [BodyParts.LEFT_ARM]: { current: 12, max: 12 },
-    [BodyParts.RIGHT_ARM]: { current: 12, max: 12 },
-    [BodyParts.LEFT_LEG]: { current: 14, max: 14 },
-    [BodyParts.RIGHT_LEG]: { current: 14, max: 14 }
-};
+// Player health will be initialized by the migration script for old saves
+// or by the character creation process for new characters.
+// We just ensure the object exists.
+gameState.player.health = {};
 
 // Add wieldedWeapon to player
 gameState.player.wieldedWeapon = "";

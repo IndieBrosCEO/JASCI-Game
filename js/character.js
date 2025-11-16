@@ -374,9 +374,18 @@ function startGame() {
     gameState.gameStarted = true;
     window.inventoryManager.updateInventoryUI(); // Update UI to reflect initial inventory state
 
-    // initializeHealth is now in js/character.js, call it with gameState
-    window.initializeHealth(gameState);
-    window.renderHealthTable(gameState); // Explicitly call to render after health is set up.
+    // --- Standardized HP Initialization ---
+    // Calculate and set baseline max HP using the centralized function.
+    const baselineMaxHp = window.calculateBaselineMaxHp(gameState);
+    for (const partKey of Object.values(BodyParts)) {
+        gameState.player.health[partKey] = {
+            max: baselineMaxHp[partKey],
+            current: baselineMaxHp[partKey],
+            armor: 0,
+            crisisTimer: 0
+        };
+    }
+    window.renderHealthTable(gameState); // Render health table with the new values.
 
     updatePlayerStatusDisplay(); // Initialize clock and needs display
 
