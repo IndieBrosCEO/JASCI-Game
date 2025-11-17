@@ -1887,6 +1887,41 @@ async function initialize() { // Made async
         console.log("Keybinds populated.");
         await assetManager.loadDefinitions();
         console.log("Asset definitions loaded.");
+
+        // Instantiate and Initialize Managers that depend on loaded assets
+        // This is the CORRECT place, after assets are loaded.
+
+        // XpManager (dependent on level_curve.json)
+        if (window.XpManager) {
+            window.xpManager = new XpManager(window.gameState, window.assetManager); // Pass assetManager
+            logToConsole("XpManager instance created and assigned to window.", "info");
+        } else {
+            console.error("SCRIPT.JS: XpManager class not available. XP and crafting will be broken.");
+        }
+
+        // CraftingManager (dependent on item definitions)
+        console.log("SCRIPT.JS: Checking CraftingManager dependencies...");
+        if (window.CraftingManager && window.assetManager && window.inventoryManager && window.xpManager && window.TimeManager) {
+            window.craftingManager = new CraftingManager(window.gameState, window.assetManager, window.inventoryManager, window.xpManager, window.TimeManager);
+            await window.craftingManager.initialize();
+            logToConsole("CraftingManager instance created, assigned to window, and initialized.", "info");
+        } else {
+            console.error("SCRIPT.JS: CraftingManager class or its core dependencies not available for initialization. Crafting will be broken.");
+            window.craftingManager = null;
+        }
+
+        // ConstructionManager (dependent on construction definitions)
+        console.log("SCRIPT.JS: Checking ConstructionManager dependencies...");
+        if (window.ConstructionManager && window.assetManager && window.inventoryManager && window.mapRenderer && window.TimeManager) {
+            window.constructionManager = new ConstructionManager(window.gameState, window.assetManager, window.inventoryManager, window.mapRenderer, window.TimeManager);
+            await window.constructionManager.initialize();
+            logToConsole("ConstructionManager instance created, assigned to window, and initialized.", "info");
+        } else {
+            console.error("SCRIPT.JS: ConstructionManager class or its core dependencies not available for initialization. Construction will be broken.");
+            window.constructionManager = null;
+        }
+
+
         window.interaction.initInteraction(assetManager);
         window.mapRenderer.initMapRenderer(assetManager); // Initialize mapRenderer with assetManager.
         window.mapManager = window.mapRenderer; // Assign mapRenderer to mapManager
@@ -1977,13 +2012,6 @@ async function initialize() { // Made async
             logToConsole("InventoryManager initialized (or re-confirmed).", "info");
         }
 
-        // XpManager
-        if (window.XpManager) {
-            window.xpManager = new XpManager(window.gameState);
-            logToConsole("XpManager instance created and assigned to window.", "info");
-        } else {
-            console.error("SCRIPT.JS: XpManager class not available. XP and crafting will be broken.");
-        }
         // CraftingManager
         console.log("SCRIPT.JS: Checking CraftingManager dependencies...");
         if (window.CraftingManager && window.assetManager && window.inventoryManager && window.xpManager && window.TimeManager) {

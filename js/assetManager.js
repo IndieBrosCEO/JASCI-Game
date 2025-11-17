@@ -1,4 +1,6 @@
-﻿class AssetManager {
+// js/assetManager.js
+
+class AssetManager {
     constructor() {
         this.tilesets = {};
         this.itemsById = {};
@@ -157,10 +159,10 @@
                         // Optionally, validate that each trap has an 'id' matching its key, or add it if missing.
                         // For now, direct assignment is simplest if the structure is { "trap_id_1": { ... }, "trap_id_2": { ... } }
                         // And downstream code expects this.trapDefinitionsData["trap_id_1"]
-                        logToConsole(`AssetManager: Loaded ${Object.keys(this.trapDefinitionsData).length} trap definitions from object.`);
+                        console.log(`AssetManager: Loaded ${Object.keys(this.trapDefinitionsData).length} trap definitions from object.`);
                     } else if (Array.isArray(parsedJson)) { // Keep handling for array format if it might still occur
                         this.trapDefinitionsData = Object.fromEntries(parsedJson.map(trap => [trap.id, trap]));
-                        logToConsole(`AssetManager: Loaded ${Object.keys(this.trapDefinitionsData).length} trap definitions from array.`);
+                        console.log(`AssetManager: Loaded ${Object.keys(this.trapDefinitionsData).length} trap definitions from array.`);
                     } else {
                         console.warn(`AssetManager: Expected object or array from traps.json, but got ${typeof parsedJson}. Skipping file.`);
                     }
@@ -176,8 +178,8 @@
                     // All new item files are arrays of items
                     if (Array.isArray(parsedJson)) {
                         parsedJson.forEach(item => {
-                            if (this.itemsById[item.id]) {
-                                console.warn(`AssetManager: Duplicate item ID '${item.id}' found while loading ${filename}. Overwriting previous entry.`);
+                            if (tempItemsById[item.id]) { // Fixed the check to use tempItemsById
+                                console.warn(`AssetManager: Duplicate item ID '${item.id}' found while loading ${filename}. Overwriting previous entry from another file.`);
                             }
                             tempItemsById[item.id] = item;
                         });

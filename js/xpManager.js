@@ -1,8 +1,23 @@
 // js/xpManager.js
 
 class XpManager {
-    constructor(gameState) {
+    constructor(gameState, assetManager) {
         this.gameState = gameState;
+        this.assetManager = assetManager; // Store the assetManager
+        this.levelCurve = []; // Initialize levelCurve
+        this.initialize();
+    }
+
+    initialize() {
+        // Get the level curve from the assetManager
+        if (this.assetManager && typeof this.assetManager.getLevelCurve === 'function') {
+            this.levelCurve = this.assetManager.getLevelCurve();
+            if (this.levelCurve.length === 0) {
+                console.warn("XpManager: Level curve is empty or not loaded by AssetManager.");
+            }
+        } else {
+            console.error("XpManager: AssetManager not provided or getLevelCurve method is missing.");
+        }
     }
 
     /**
