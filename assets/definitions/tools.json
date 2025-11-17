@@ -10,6 +10,7 @@
     "volume": 0.5,
     "tags": [ "light_source_item", "hand_held", "requires_power_cell" ],
     "equipSlots": [ "hand" ],
+    "canEquip": true,
     "light_properties": {
       "color": "#FFFFFF",
       "radius": 8,
@@ -43,6 +44,7 @@
     "volume": 0.1,
     "tags": [ "light_source_item", "hand_held", "consumable_light" ],
     "equipSlots": [ "hand" ],
+    "canEquip": true,
     "light_properties": {
       "color": "#FFFFE0",
       "radius": 3,
@@ -69,6 +71,7 @@
     "size": 1,
     "weightLbs": 0.5,
     "tags": [ "tool", "stealth" ],
+    "canEquip": true,
     "recipe": {
       "description": "Fashion a basic set of lockpicks and a tension wrench.",
       "components": [
@@ -90,6 +93,7 @@
     "description": "A heavy hammer with a flat face and a peen, used for shaping metal.",
     "type": "tool", "size": 2, "weightLbs": 4, "tags": [ "tool", "crafting", "blacksmithing" ],
     "equipSlots": [ "hand" ], "action": "shapeMetal",
+    "canEquip": true,
     "recipe": {
       "description": "Forge a heavy blacksmith's hammer.",
       "components": [
@@ -108,6 +112,7 @@
     "description": "A basic saw for cutting wood.",
     "type": "tool", "size": 3, "weightLbs": 2.5, "tags": [ "tool", "crafting", "woodworking" ],
     "equipSlots": [ "hand" ], "action": "sawWood",
+    "canEquip": true,
     "recipe": {
       "description": "Craft a basic hand saw.",
       "components": [
@@ -117,6 +122,51 @@
       "skills_required": [ { "skill": "Repair", "level": 3 } ],
       "tools_required": [ "file_small_metal" ], "station_required": "workbench",
       "time_to_craft": 45, "batch_size": 1
+    }
+  },
+  {
+    "id": "matches",
+    "name": "Matches",
+    "family": "tool",
+    "properties": { "type": "fire_starter" },
+    "type": "tool",
+    "description": "A box of matches.",
+    "weight": 0.1,
+    "volume": 0.1,
+    "tags": [ "flame", "consumable" ],
+    "canEquip": true,
+    "recipe": {
+      "description": "Craft a box of matches.",
+      "components": [
+        { "family": "wood", "quantity": 1, "require": { "type": "stick" } },
+        { "family": "chemical", "quantity": 1, "require": { "type": "phosphorus" } }
+      ],
+      "skills_required": [ { "skill": "Survival", "level": 2 } ],
+      "time_to_craft": 10,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "lighter",
+    "name": "Lighter",
+    "family": "tool",
+    "properties": { "type": "fire_starter" },
+    "type": "tool",
+    "description": "A reusable lighter.",
+    "weight": 0.2,
+    "volume": 0.2,
+    "tags": [ "flame" ],
+    "canEquip": true,
+    "recipe": {
+      "description": "Craft a simple lighter.",
+      "components": [
+        { "family": "casing", "quantity": 1, "require": { "size": "small", "material": "plastic" } },
+        { "family": "component", "quantity": 1, "require": { "type": "flint" } },
+        { "family": "fuel", "quantity": 1, "require": { "type": "lighter_fluid" } }
+      ],
+      "skills_required": [ { "skill": "Electronics", "level": 3 } ],
+      "time_to_craft": 20,
+      "batch_size": 1
     }
   }
 ]
