@@ -1,62 +1,69 @@
-﻿// js/xpManager.js
+// js/xpManager.js
 
-const XPManager = {
-    config: {
-        baseXpForCR1: 50, // Base XP for a Challenge Rating 1 creature
-        minXpAward: 5      // Minimum XP to award, even for CR < 1
-    },
-
-    /**
-     * Calculates the XP award for defeating an entity with a given Challenge Rating (CR).
-     * @param {number} cr - The Challenge Rating of the defeated entity.
-     * @returns {number} The calculated XP amount.
-     */
-    calculateXpForKill: function (cr) {
-        if (typeof cr !== 'number' || cr <= 0) {
-            return this.config.minXpAward; // Award minimum XP for undefined or very low CR
-        }
-        // Simple linear scaling for now. Can be made more complex (e.g., exponential, table-based).
-        const calculatedXp = Math.round(this.config.baseXpForCR1 * cr);
-        return Math.max(this.config.minXpAward, calculatedXp);
-    },
+class XpManager {
+    constructor(gameState) {
+        this.gameState = gameState;
+    }
 
     /**
-     * Awards XP to the player and handles level-up checks.
+     * Awards XP to the player.
+     * @param {string} sourceId - The source of the XP (e.g., 'kill', 'quest_complete').
      * @param {number} amount - The amount of XP to award.
-     * @param {object} gameState - The global game state.
+     * @param {object} [metadata={}] - Optional metadata about the XP award.
      */
-    awardXp: function (amount, gameState) {
+    awardXp(sourceId, amount, metadata = {}) {
         if (typeof amount !== 'number' || amount <= 0) {
             return;
         }
 
-        gameState.playerXP = (gameState.playerXP || 0) + amount;
-        logToConsole(`Player awarded ${amount} XP. Total XP: ${gameState.playerXP}.`, 'lime');
-
-        // Check for level up - assumes characterManager.js and checkForLevelUp exist
-        if (window.characterManager && typeof window.characterManager.checkForLevelUp === 'function') {
-            // Primary mechanism: characterManager handles the actual level up logic.
-            window.characterManager.checkForLevelUp(gameState);
-        } else {
-            // Fallback logging if characterManager or its checkForLevelUp is missing.
-            // The actual leveling logic resides in characterManager.js (or Character class instance).
-            // This block is just a redundant check and log, not performing the level up itself.
-            const xpForNextLevel = (typeof window.characterManager?.getXPForLevel === 'function'
-                ? window.characterManager.getXPForLevel(gameState.level + 1)
-                : (300 * Math.pow(gameState.level, 1.5))); // Simplified fallback for XP threshold
-            if (gameState.playerXP >= xpForNextLevel) {
-                logToConsole("XPManager: Level up condition potentially met based on fallback check. Ensure characterManager.checkForLevelUp() is functioning.", "yellow");
+        if (metadata.idempotencyKey) {
+            if (this.gameState.processedIdempotencyKeys.has(metadata.idempotencyKey)) {
+                return; // Idempotency key already processed, do not award XP again.
             }
+            this.gameState.processedIdempotencyKeys.add(metadata.idempotencyKey);
         }
 
-        // Update UI if renderCharacterInfo is available
-        if (typeof window.renderCharacterInfo === 'function') {
-            window.renderCharacterInfo();
+        const beforeXp = this.gameState.totalXp;
+        this.gameState.totalXp += amount;
+        const afterXp = this.gameState.totalXp;
+
+        if (window.EventManager) {
+            window.EventManager.dispatch('xp:awarded', {
+                sourceId,
+                amount,
+                before: beforeXp,
+                after: afterXp,
+                metadata
+            });
         }
     }
-};
+}
 
-// Make it globally accessible
-window.xpManager = XPManager;
+    /**
+     * Sets the player's total XP to a specific amount.
+     * @param {number} amount - The amount to set the total XP to.
+     */
+    setXp(amount) {
+        if (typeof amount !== 'number' || amount < 0) {
+            return;
+        }
 
-logToConsole("XPManager initialized.", "blue");
+        const beforeXp = this.gameState.totalXp;
+        this.gameState.totalXp = amount;
+        const afterXp = this.gameState.totalXp;
+
+        if (window.EventManager) {
+            const changeAmount = afterXp - beforeXp;
+            window.EventManager.dispatch('xp:awarded', {
+                sourceId: 'setxp_command',
+                amount: changeAmount,
+                before: beforeXp,
+                after: afterXp,
+                metadata: {}
+            });
+        }
+    }
+}
+
+// Expose the class to the global scope
+window.XpManager = XpManager;

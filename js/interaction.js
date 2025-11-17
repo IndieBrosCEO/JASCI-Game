@@ -101,24 +101,11 @@ function _getActionsForItem(it) {
             actions.push("Dismantle"); // Placeholder
         }
     }
-
-    if (tags.includes("explosive_barrel")) {
-        const equippedItem = window.gameState.inventory.handSlots[0];
-        if (equippedItem && equippedItem.tags && equippedItem.tags.includes("flame")) {
-            actions.push("Ignite");
-        }
-    }
-
     return actions;
 }
 
 function _performAction(action, it) {
     const { x, y, z, id, itemType } = it; // 'it' now contains x, y, z, id, name, itemType
-
-    if (action === "Ignite") {
-        window.combatManager.handleBarrelExplosion(x, y, z);
-        return;
-    }
     // tileDef is primarily for map tiles. For NPCs/Vehicles/Constructions, 'id' is their instance ID.
     const tileDef = (itemType === "tile" || itemType === "door" || itemType === "container" || itemType === "trap")
         ? assetManagerInstance.tilesets[id]

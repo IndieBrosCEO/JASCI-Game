@@ -1528,24 +1528,5 @@
     "tags": [ "interactive", "crafting_station", "electronics_advanced", "building", "furniture", "middle", "impassable", "requires_power_grid" ],
     "description": "A bench with specialized tools for complex electronics work.",
     "stationType": "electronics_advanced"
-  },
-  "explosive_barrel_tile": {
-    "sprite": "Ø",
-    "name": "Explosive Barrel",
-    "color": "#FF0000",
-    "tags": [ "interactive", "explosive_barrel", "impassable", "middle" ],
-    "description": "A barrel full of explosive material. Handle with care.",
-    "explosion": {
-      "main": {
-        "radius": 3,
-        "damage": "4d6",
-        "damageType": "Explosive"
-      },
-      "fire": {
-        "radius": 4,
-        "damage": "1d6",
-        "damageType": "Fire"
-      }
-    }
   }
 }

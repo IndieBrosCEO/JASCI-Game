@@ -595,7 +595,7 @@ function renderCharacterInfo() {
     // Call the function from character.js to render stats, skills, and worn clothing
     // gameState is passed as the 'character' object for the player.
     renderCharacterStatsSkillsAndWornClothing(gameState, characterInfoElement);
-    renderHealthTable(gameState.player); // Ensure health table (armor) updates
+    renderHealthTable(gameState); // Ensure health table (armor) updates
     updatePlayerStatusDisplay(); // Update clock and needs display
 
     // Display the ASCII face
@@ -1878,35 +1878,6 @@ function toggleKeybindsDisplay() {
     }
 }
 
-function runValidationChecks() {
-    console.log("Running validation checks...");
-
-    // 1. Validate Level Curve
-    const levelCurve = assetManager.getLevelCurve();
-    if (levelCurve && levelCurve.length > 0) {
-        let lastXp = -1;
-        for (const levelData of levelCurve) {
-            if (levelData.total <= lastXp) {
-                console.error(`Validation Error: Level curve is not strictly increasing. Level ${levelData.level} has total XP ${levelData.total}, which is not greater than the previous level's XP of ${lastXp}.`);
-                // You might want to throw an error here to halt execution if this is critical
-            }
-            lastXp = levelData.total;
-        }
-        console.log("Level curve validation passed.");
-    } else {
-        console.error("Validation Error: Level curve data not found.");
-    }
-
-    // 2. Validate Non-Negative Counters in gameState
-    const counters = ['totalXp', 'level', 'unspentSkillPoints', 'unspentStatPoints', 'unspentPerkPicks'];
-    for (const counter of counters) {
-        if (gameState[counter] < 0 || !Number.isInteger(gameState[counter])) {
-            console.error(`Validation Error: gameState counter '${counter}' is invalid. Value: ${gameState[counter]}. Must be a non-negative integer.`);
-        }
-    }
-    console.log("Game state counter validation passed.");
-    console.log("All validation checks complete.");
-}
 
 // Initial setup on DOM content load
 async function initialize() { // Made async
@@ -1915,7 +1886,6 @@ async function initialize() { // Made async
         populateKeybinds(); // Populate the keybinds list on init
         console.log("Keybinds populated.");
         await assetManager.loadDefinitions();
-        runValidationChecks(); // Run validation checks after assets are loaded
         console.log("Asset definitions loaded.");
         window.interaction.initInteraction(assetManager);
         window.mapRenderer.initMapRenderer(assetManager); // Initialize mapRenderer with assetManager.
@@ -2554,15 +2524,7 @@ function loadGame() {
     try {
         const savedGameStateString = localStorage.getItem('jasciGameSave');
         if (savedGameStateString) {
-            let loadedState = JSON.parse(savedGameStateString);
-
-            // --- Save File Migration ---
-            // Call the centralized migration function.
-            if (typeof window.migrateSaveData === 'function') {
-                loadedState = window.migrateSaveData(loadedState);
-            } else {
-                console.error("Migration function 'migrateSaveData' not found. Old saves may not load correctly.");
-            }
+            const loadedState = JSON.parse(savedGameStateString);
 
             // Deep merge or careful assignment is needed here.
             // For a simple overwrite of the entire gameState:
@@ -2583,7 +2545,7 @@ function loadGame() {
 
                 renderCharacterInfo(); // Update character display
                 window.updateInventoryUI(); // Update inventory display
-                window.renderHealthTable(gameState.player); // Update health display
+                window.renderHealthTable(gameState); // Update health display
                 updatePlayerStatusDisplay(); // Update clock, needs, Z-levels
                 window.turnManager.updateTurnUI(); // Update turn info
 

@@ -1,0 +1,26 @@
+{
+    "kills": {
+        "description": "XP awarded for defeating enemies."
+    },
+    "quest_step": {
+        "description": "XP awarded for completing a step in a quest."
+    },
+    "quest_complete": {
+        "description": "XP awarded for completing a quest."
+    },
+    "trap_disarm": {
+        "description": "XP awarded for disarming a trap."
+    },
+    "lockpick": {
+        "description": "XP awarded for picking a lock."
+    },
+    "hack": {
+        "description": "XP awarded for hacking a terminal or computer."
+    },
+    "challenge_milestone": {
+        "description": "XP awarded for reaching a milestone in a challenge."
+    },
+    "scripted": {
+        "description": "XP awarded from a scripted event."
+    }
+}

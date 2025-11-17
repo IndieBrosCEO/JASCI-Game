@@ -3,10 +3,14 @@
     "",
     "\\assets",
     "\\assets\\definitions",
+    "\\assets\\dialogue",
+    "\\assets\\maps",
     "\\js",
+    "\\jules-scratch",
+    "\\jules-scratch\\verification",
     "\\mapMaker",
     "\\Maps"
   ],
-  "SelectedNode": "\\assets\\definitions\\clothing.json",
+  "SelectedNode": "\\js\\assetManager.js",
   "PreviewInSolutionExplorer": false
 }
