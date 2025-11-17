@@ -37,7 +37,6 @@ class XpManager {
             });
         }
     }
-}
 
     /**
      * Sets the player's total XP to a specific amount.

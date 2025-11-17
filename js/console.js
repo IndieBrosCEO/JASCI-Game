@@ -177,6 +177,10 @@ const commandHelpInfo = {
     'setxp': {
         syntax: 'setxp <amount>',
         description: 'Sets the player\'s total XP to the specified amount.'
+    },
+    'runxptests': {
+        syntax: 'runxptests',
+        description: 'Run the XP Manager test suite.'
     }
 };
 
@@ -447,17 +451,6 @@ function processConsoleCommand(commandText) {
                     }
                 }
             }
-        'runxptests': {
-            description: "Run the XP Manager test suite.",
-            execute: (args) => {
-                if (typeof runXpManagerTests === 'function') {
-                    runXpManagerTests();
-                } else {
-                    logToConsole("XP Manager test suite not found.", "error");
-                }
-            }
-        },
-
             if (totalHealed > 0) {
                 logToConsoleUI(`Player healed for a total of ${totalHealed} health points across body parts.`, 'success'); // Direct call
             } else if (healAmount !== -1) {
@@ -1305,6 +1298,14 @@ function processConsoleCommand(commandText) {
             }
             window.xpManager.setXp(xpToSet);
             logToConsoleUI(`Total XP set to ${gameState.totalXp}.`, 'success');
+            break;
+
+        case 'runxptests':
+            if (typeof runXpManagerTests === 'function') {
+                runXpManagerTests();
+            } else {
+                logToConsole("XP Manager test suite not found.", "error");
+            }
             break;
 
         default:
