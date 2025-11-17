@@ -201,19 +201,6 @@ function applyHungerThirstDamage(gameState, damageAmount) {
  * Health System Functions
  **************************************************************/
 
-// Initialize health for various body parts on a character object
-function initializeHealth(character) {
-    character.health = {
-        head: { name: "Head", max: 10, current: 10, armor: 0, crisisTimer: 0, crisisDescription: "" },
-        torso: { name: "Torso", max: 20, current: 20, armor: 0, crisisTimer: 0, crisisDescription: "" },
-        leftArm: { name: "Left Arm", max: 12, current: 12, armor: 0, crisisTimer: 0, crisisDescription: "" },
-        rightArm: { name: "Right Arm", max: 12, current: 12, armor: 0, crisisTimer: 0, crisisDescription: "" },
-        leftLeg: { name: "Left Leg", max: 14, current: 14, armor: 0, crisisTimer: 0, crisisDescription: "" },
-        rightLeg: { name: "Right Leg", max: 14, current: 14, armor: 0, crisisTimer: 0, crisisDescription: "" }
-    };
-    // renderHealthTable(character) will be called from script.js
-}
-
 
 // Helper function to get total armor for a body part from a character's worn clothing
 function getArmorForBodyPart(bodyPartName, character) {

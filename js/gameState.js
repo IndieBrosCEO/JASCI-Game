@@ -127,6 +127,7 @@ const gameState = {
     unspentStatPoints: 0,
     unspentPerkPicks: 0,
     perkRanks: {}, // e.g., { "perkId1": 1, "perkId2": 2 }
+    processedIdempotencyKeys: new Set(),
 
 
     //Inventory

@@ -11,7 +11,8 @@ async function runProgressionSystemTests() {
     const results = {
         testSaveMigration: await testSaveMigration(),
         testLevelCurve: testLevelCurve(),
-        testEventBus: testEventBus()
+        testEventBus: testEventBus(),
+        xpManagerTests: runXpManagerTests()
     };
 
     // Summary
@@ -123,6 +124,105 @@ async function testSaveMigration() {
 
 // Expose the test runner to the global scope so it can be called from the console.
 window.runProgressionSystemTests = runProgressionSystemTests;
+
+function runXpManagerTests() {
+    console.log("Running XpManager tests...");
+
+    if (!window.xpManager) {
+        console.error("xpManager is not available on the window object. Tests cannot be run.");
+        return false;
+    }
+
+    // Save original state
+    const originalXp = window.gameState.totalXp;
+    const originalLevel = window.gameState.level;
+    const originalIdempotencyKeys = new Set(window.gameState.processedIdempotencyKeys);
+
+    let allTestsPassed = true;
+
+    // --- Test 1: Grant several sources, totals add up. ---
+    try {
+        // Setup
+        window.gameState.totalXp = 100;
+        window.gameState.processedIdempotencyKeys.clear();
+
+        const initialXp = window.gameState.totalXp;
+        window.xpManager.awardXp('kill', 10);
+        window.xpManager.awardXp('quest_complete', 50);
+        const finalXp = window.gameState.totalXp;
+
+        if (finalXp === initialXp + 60) {
+            console.log("Test 1 PASSED: Grant several sources, totals add up.");
+        } else {
+            console.error(`Test 1 FAILED: Expected ${initialXp + 60} XP, but got ${finalXp}.`);
+            allTestsPassed = false;
+        }
+    } catch (error) {
+        console.error("Test 1 FAILED with an error:", error);
+        allTestsPassed = false;
+    }
+
+    // --- Test 2: Duplicate grant with same source id ignored when expected. ---
+    try {
+        // Setup
+        window.gameState.totalXp = 100;
+        window.gameState.processedIdempotencyKeys.clear();
+
+        const initialXp = window.gameState.totalXp;
+        window.xpManager.awardXp('quest_step', 25, { idempotencyKey: 'quest1_step1' });
+        window.xpManager.awardXp('quest_step', 25, { idempotencyKey: 'quest1_step1' }); // This one should be ignored
+        const finalXp = window.gameState.totalXp;
+
+        if (finalXp === initialXp + 25) {
+            console.log("Test 2 PASSED: Duplicate grant with same source id ignored when expected.");
+        } else {
+            console.error(`Test 2 FAILED: Expected ${initialXp + 25} XP, but got ${finalXp}.`);
+            allTestsPassed = false;
+        }
+    } catch (error) {
+        console.error("Test 2 FAILED with an error:", error);
+        allTestsPassed = false;
+    }
+
+    // --- Test 3: XP bar reflects totals. ---
+    try {
+        // Setup
+        window.gameState.totalXp = 0;
+        window.gameState.level = 1;
+        window.xpManager.setXp(150); // Use setXp to trigger the update event for the UI.
+
+        const xpBar = document.getElementById('xpBar');
+        const currentXp = window.gameState.totalXp;
+        const levelCurve = window.assetManager.getLevelCurve();
+        const currentLevelData = levelCurve.find(levelData => levelData.level === window.gameState.level);
+        const nextLevelData = levelCurve.find(levelData => levelData.level === window.gameState.level + 1);
+        const xpForNextLevel = nextLevelData.total - currentLevelData.total;
+        const xpProgress = currentXp - currentLevelData.total;
+
+        if (xpBar.value == xpProgress && xpBar.max == xpForNextLevel) {
+            console.log("Test 3 PASSED: XP bar reflects totals.");
+        } else {
+            console.error(`Test 3 FAILED: XP bar does not reflect totals. Expected ${xpProgress}/${xpForNextLevel}, but got ${xpBar.value}/${xpBar.max}.`);
+            allTestsPassed = false;
+        }
+    } catch (error) {
+        console.error("Test 3 FAILED with an error:", error);
+        allTestsPassed = false;
+    }
+
+    // Restore original state
+    window.gameState.totalXp = originalXp;
+    window.gameState.level = originalLevel;
+    window.gameState.processedIdempotencyKeys = originalIdempotencyKeys;
+    // Manually trigger an update to the XP bar to reflect the restored state.
+    if (window.updateXpBar) {
+        window.updateXpBar();
+    }
+
+
+    console.log("XpManager tests complete.");
+    return allTestsPassed;
+}
 
 /**
  * Test 2: Verifies the integrity of the loaded level curve data.

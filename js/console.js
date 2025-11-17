@@ -169,6 +169,14 @@ const commandHelpInfo = {
     'runtests': {
         syntax: 'runtests [suite_name]',
         description: 'Runs automated tests. Currently available: "progression".'
+    },
+    'addxp': {
+        syntax: 'addxp <amount>',
+        description: 'Adds the specified amount of XP to the player.'
+    },
+    'setxp': {
+        syntax: 'setxp <amount>',
+        description: 'Sets the player\'s total XP to the specified amount.'
     }
 };
 
@@ -439,6 +447,16 @@ function processConsoleCommand(commandText) {
                     }
                 }
             }
+        'runxptests': {
+            description: "Run the XP Manager test suite.",
+            execute: (args) => {
+                if (typeof runXpManagerTests === 'function') {
+                    runXpManagerTests();
+                } else {
+                    logToConsole("XP Manager test suite not found.", "error");
+                }
+            }
+        },
 
             if (totalHealed > 0) {
                 logToConsoleUI(`Player healed for a total of ${totalHealed} health points across body parts.`, 'success'); // Direct call
@@ -1254,17 +1272,39 @@ function processConsoleCommand(commandText) {
             break;
 
         case 'runtests':
-            const suiteName = args.length > 0 ? args[0].toLowerCase() : 'all';
-            if (suiteName === 'progression' || suiteName === 'all') {
-                if (typeof window.runProgressionSystemTests === 'function') {
-                    logToConsoleUI("Running progression system tests...", 'info');
-                    window.runProgressionSystemTests();
-                } else {
-                    logToConsoleUI("Error: 'runProgressionSystemTests' function not found. Ensure progression_tests.js is loaded.", 'error');
-                }
+            if (typeof runProgressionSystemTests === 'function') {
+                runProgressionSystemTests();
             } else {
-                logToConsoleUI(`Unknown test suite: '${suiteName}'. Available suites: 'progression'.`, 'error');
+                logToConsole("Progression test suite not found.", "error");
             }
+            break;
+
+        case 'addxp':
+            if (args.length < 1) {
+                logToConsoleUI("Usage: addxp <amount>", 'error');
+                break;
+            }
+            const xpToAdd = parseInt(args[0], 10);
+            if (isNaN(xpToAdd)) {
+                logToConsoleUI("Error: Amount must be a number.", 'error');
+                break;
+            }
+            window.xpManager.awardXp('addxp_command', xpToAdd);
+            logToConsoleUI(`Added ${xpToAdd} XP. Total XP is now ${gameState.totalXp}.`, 'success');
+            break;
+
+        case 'setxp':
+            if (args.length < 1) {
+                logToConsoleUI("Usage: setxp <amount>", 'error');
+                break;
+            }
+            const xpToSet = parseInt(args[0], 10);
+            if (isNaN(xpToSet) || xpToSet < 0) {
+                logToConsoleUI("Error: Amount must be a non-negative number.", 'error');
+                break;
+            }
+            window.xpManager.setXp(xpToSet);
+            logToConsoleUI(`Total XP set to ${gameState.totalXp}.`, 'success');
             break;
 
         default:

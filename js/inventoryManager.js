@@ -807,41 +807,6 @@ class InventoryManager {
         document.querySelectorAll("#inventoryList .selected")
             .forEach(el => el.classList.remove("selected"));
     }
-
-    findItemsByFamily(inventory, family, requirements) {
-        return inventory.filter(item => {
-            const itemDef = this.assetManager.getItem(item.id);
-            if (!itemDef || itemDef.family !== family) {
-                return false;
-            }
-            if (requirements) {
-                for (const key in requirements) {
-                    if (!itemDef.properties || itemDef.properties[key] !== requirements[key]) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        });
-    }
-
-    removeItemsByFamily(itemsToRemove, quantity, inventory) {
-        let remainingToRemove = quantity;
-        for (const item of itemsToRemove) {
-            if (remainingToRemove <= 0) break;
-            const itemInInventory = inventory.find(i => i.id === item.id);
-            if (!itemInInventory) continue;
-
-            if (itemInInventory.quantity > remainingToRemove) {
-                itemInInventory.quantity -= remainingToRemove;
-                remainingToRemove = 0;
-            } else {
-                remainingToRemove -= itemInInventory.quantity;
-                inventory.splice(inventory.indexOf(itemInInventory), 1);
-            }
-        }
-        return remainingToRemove === 0;
-    }
 }
 
 // Remove old global assignments of individual functions from InventoryManager object literal
