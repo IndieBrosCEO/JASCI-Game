@@ -1977,6 +1977,13 @@ async function initialize() { // Made async
             logToConsole("InventoryManager initialized (or re-confirmed).", "info");
         }
 
+        // XpManager
+        if (window.XpManager) {
+            window.xpManager = new XpManager(window.gameState);
+            logToConsole("XpManager instance created and assigned to window.", "info");
+        } else {
+            console.error("SCRIPT.JS: XpManager class not available. XP and crafting will be broken.");
+        }
         // CraftingManager
         console.log("SCRIPT.JS: Checking CraftingManager dependencies...");
         if (window.CraftingManager && window.assetManager && window.inventoryManager && window.xpManager && window.TimeManager) {
