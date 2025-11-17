@@ -447,16 +447,6 @@ function processConsoleCommand(commandText) {
                     }
                 }
             }
-        'runxptests': {
-            description: "Run the XP Manager test suite.",
-            execute: (args) => {
-                if (typeof runXpManagerTests === 'function') {
-                    runXpManagerTests();
-                } else {
-                    logToConsole("XP Manager test suite not found.", "error");
-                }
-            }
-        },
 
             if (totalHealed > 0) {
                 logToConsoleUI(`Player healed for a total of ${totalHealed} health points across body parts.`, 'success'); // Direct call

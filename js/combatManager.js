@@ -4,6 +4,7 @@
         this.assetManager = assetManager;
         this.initiativeTracker = [];
         this.currentTurnIndex = 0;
+        this.isProcessingTurn = false;
         this.defenseTypeChangeListener = null;
     }
 
@@ -344,6 +345,13 @@
     }
 
     async nextTurn(previousAttackerEntity = null) {
+        if (this.isProcessingTurn) {
+            logToConsole(`[nextTurn SKIPPED] Already processing a turn. Called by: ${previousAttackerEntity ? (previousAttackerEntity.name || 'player') : 'System'}.`, 'purple');
+            return;
+        }
+        this.isProcessingTurn = true;
+        logToConsole(`[nextTurn START] Lock acquired. Called by: ${previousAttackerEntity ? (previousAttackerEntity.name || 'player') : 'System'}.`, 'purple');
+
         const callSource = previousAttackerEntity ? (previousAttackerEntity === this.gameState ? 'PlayerEndTurn/OutOfAP' : previousAttackerEntity.name) : 'System';
         logToConsole(`[nextTurn CALL] Source: ${callSource}. Current isWaitingForPlayerCombatInput: ${this.gameState.isWaitingForPlayerCombatInput}`, 'magenta');
 
@@ -351,9 +359,14 @@
 
         if (this.gameState.isWaitingForPlayerCombatInput) {
             logToConsole(`[nextTurn DEFERRED] Waiting for player input. Source: ${callSource}.`, 'magenta');
+            this.isProcessingTurn = false;
             return;
         }
-        if (!this.gameState.isInCombat || this.initiativeTracker.length === 0) { this.endCombat(); return; }
+        if (!this.gameState.isInCombat || this.initiativeTracker.length === 0) {
+            this.endCombat();
+            this.isProcessingTurn = false;
+            return;
+        }
 
         let attempts = 0;
         let nextAttackerFound = false;
@@ -398,6 +411,7 @@
         if (!nextAttackerFound) {
             logToConsole("Error: No live attackers found in initiative after checking all. Ending combat.", 'red');
             this.endCombat();
+            this.isProcessingTurn = false;
             return;
         }
 
@@ -425,18 +439,26 @@
                         logToConsole(`${attackerName} takes ${DPT} ${effect.damageType} from ${effect.displayName}. torso: ${partToDamage.current}/${partToDamage.max}`, 'red');
                         if (partToDamage.current <= 0) {
                             logToConsole(`DEFEATED: ${attackerName} by ${effect.displayName}!`, 'darkred');
-                            if (currentEntry.isPlayer) { this.endCombat(); window.gameOver(this.gameState); return; }
+                            if (currentEntry.isPlayer) {
+                                this.endCombat();
+                                window.gameOver(this.gameState);
+                                this.isProcessingTurn = false;
+                                return;
+                            }
                             else {
                                 // NPC death is handled in applyDamage; if they die from status here,
                                 // they should be removed from initiativeTracker and npcs list.
                                 this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== attacker);
                                 this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== attacker);
                                 if (!this.initiativeTracker.some(e => !e.isPlayer && e.entity.health?.torso?.current > 0 && e.entity.health?.head?.current > 0)) {
-                                    this.endCombat(); return;
+                                    this.endCombat();
+                                    this.isProcessingTurn = false;
+                                    return;
                                 }
                                 // Since the current attacker died from status, immediately try to go to the next turn.
                                 // The loop at the start of nextTurn will find the next valid attacker.
                                 await this.nextTurn(attacker);
+                                this.isProcessingTurn = false;
                                 return;
                             }
                         }
@@ -584,6 +606,8 @@
                 await this.nextTurn(attacker); // Skip turn if logic is missing
             }
         }
+        this.isProcessingTurn = false;
+        logToConsole(`[nextTurn END] Lock released.`, 'purple');
     }
 
     endCombat() {
@@ -593,9 +617,11 @@
         this.gameState.attackerMapPos = null;
         this.gameState.defenderMapPos = null;
         this.gameState.combatCurrentDefender = null;
-        this.gameState.combatCurrentAttacker = null; // Ensure attacker is cleared
-        this.gameState.isWaitingForPlayerCombatInput = false; // Ensure this flag is reset
-        this.gameState.rangedAttackData = null; // Clear ranged attack line data
+        this.gameState.combatCurrentAttacker = null;
+        this.gameState.isWaitingForPlayerCombatInput = false;
+        this.gameState.rangedAttackData = null;
+        this.isProcessingTurn = false;
+        this.gameState.pendingCombatAction = null;
 
         this.initiativeTracker.forEach(e => { if (e.entity?.statusEffects) { e.entity.statusEffects.isGrappled = false; e.entity.statusEffects.grappledBy = null; } });
         if (this.gameState.statusEffects) { this.gameState.statusEffects.isGrappled = false; this.gameState.statusEffects.grappledBy = null; }
@@ -659,8 +685,18 @@
             }
         }
 
-        this.gameState.pendingCombatAction = { target: this.gameState.combatCurrentDefender, weapon: weaponObj, attackType, bodyPart, fireMode, actionType: "attack", entity: this.gameState, skillToUse: null, targetTile: null, actionDescription: `${weaponObj ? weaponObj.name : "Unarmed"} attack on ${currentTargetName}'s ${bodyPart}` };
-        logToConsole(`Player declares: ${attackType} attack on ${currentTargetName}'s ${bodyPart} with ${weaponObj ? weaponObj.name : 'Unarmed'} (Mode: ${fireMode}).`, 'lightgreen');
+        this.gameState.pendingCombatAction = {
+            target: this.gameState.combatCurrentDefender,
+            weapon: weaponObj,
+            attackType,
+            bodyPart,
+            fireMode,
+            actionType: "attack",
+            entity: this.gameState,
+            skillToUse: null,
+            targetTile: null,
+            actionDescription: `${weaponObj ? weaponObj.name : "Unarmed"} attack on ${currentTargetName}'s ${bodyPart}`
+        };
 
         // Clear previous ranged attack line display data
         this.gameState.rangedAttackData = null;

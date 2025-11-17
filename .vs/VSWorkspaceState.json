@@ -3,14 +3,10 @@
     "",
     "\\assets",
     "\\assets\\definitions",
-    "\\assets\\dialogue",
-    "\\assets\\maps",
     "\\js",
-    "\\jules-scratch",
-    "\\jules-scratch\\verification",
     "\\mapMaker",
     "\\Maps"
   ],
-  "SelectedNode": "\\js\\assetManager.js",
+  "SelectedNode": "\\js\\constructionManager.js",
   "PreviewInSolutionExplorer": false
 }
