@@ -526,3 +526,45 @@ button.preset-swatch { /* More specific selector */
 .suggestion-item.selected, .suggestion-item:hover {
     background-color: #444;
 }
+
+#nearbyEntitiesPanel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 250px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid #888;
+    color: white;
+    z-index: 10;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#nearbyEntitiesPanel h4 {
+    margin: 0;
+    padding: 5px;
+    background-color: #222;
+    text-align: center;
+}
+
+#nearbyEntitiesList div {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #444;
+}
+
+#nearbyEntitiesList div:hover {
+    background-color: #555;
+}
+
+#nearbyEntitiesList .hostile {
+    color: #ff6666; /* Light red */
+}
+
+#nearbyEntitiesList .neutral {
+    color: #ffff99; /* Light yellow */
+}
+
+#nearbyEntitiesList .friendly {
+    color: #66ff66; /* Light green */
+}

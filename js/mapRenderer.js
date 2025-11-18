@@ -1287,6 +1287,21 @@ window.mapRenderer = {
             }
         }
 
+        // Highlight for hovered entity
+        if (gameState.highlightedEntityId && tileCacheData) {
+            const highlightedNpc = gameState.npcs.find(npc => npc.id === gameState.highlightedEntityId);
+            if (highlightedNpc && highlightedNpc.mapPos && highlightedNpc.mapPos.z === currentZ) {
+                const hx = highlightedNpc.mapPos.x;
+                const hy = highlightedNpc.mapPos.y;
+                if (hx >= startCol && hx <= endCol && hy >= startRow && hy <= endRow) {
+                    const cell = tileCacheData[hy]?.[hx];
+                    if (cell && cell.span) {
+                        cell.span.style.backgroundColor = 'rgba(255, 255, 0, 0.5)'; // Yellow highlight
+                    }
+                }
+            }
+        }
+
         // --- START: Render Environmental Effects (Smoke, Tear Gas) on current Z-level (Viewport Aware) ---
         const environmentalEffectsToRender = [];
         // ... (filtering effects for currentZ remains same) ...
