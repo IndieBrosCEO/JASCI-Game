@@ -1621,7 +1621,7 @@ async function handleKeyDown(event) {
                             }
                         });
                     }
-                    combatManager.startCombat(allParticipants);
+                    combatManager.startCombat(allParticipants, gameState.selectedTargetEntity);
                 } else {
                     if (combatManager.gameState.combatCurrentAttacker === combatManager.gameState &&
                         (combatManager.gameState.combatPhase === 'playerAttackDeclare' || combatManager.gameState.retargetingJustHappened)) {
@@ -1640,21 +1640,27 @@ async function handleKeyDown(event) {
             }
             // If none of the above, let the event propagate or do nothing.
             break;
-        case 'r': case 'R':
-            // 'R' opens the nearby entity selection panel.
-            // Shift+R will be reserved for the future manual targeting system for structures and tiles.
-            if (event.shiftKey) {
-                logToConsole("Shift+R is reserved for future targeting functionality.", "info");
-                // Future manual targeting code would go here.
-                event.preventDefault();
-                return;
-            }
+        case 'r': case 'R': // Changed to include R
+            if (gameState.inventory.open || gameState.isInCombat) return; // Prevent if inventory open or in combat
 
-            if (!isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) {
-                toggleNearbyEntitiesPanel();
-                event.preventDefault();
+            if (gameState.isTargetingMode && gameState.targetingType === 'ranged') {
+                gameState.isTargetingMode = false;
+                gameState.targetingType = null;
+                updateTargetingInfoUI(); // Hide UI
+                logToConsole("Exited ranged targeting mode.");
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav (toggled off)
+                window.mapRenderer.scheduleRender(); // Re-render
+            } else {
+                gameState.isTargetingMode = true;
+                gameState.targetingType = 'ranged';
+                gameState.targetingCoords = { ...gameState.playerPos }; // Initialize to player's position (includes Z)
+                updateTargetingInfoUI(); // Show UI
+                logToConsole("Entering ranged targeting mode.");
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav (toggled on)
+                logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}, Z=${gameState.targetingCoords.z}`);
+                window.mapRenderer.scheduleRender(); // Re-render
             }
-            break;
+            event.preventDefault(); break;
         // Case 'c' for melee targeting removed to prioritize 'C' for Crafting menu.
         // Melee targeting can be re-assigned if needed.
         // The following block for 'c' (melee) is now fully commented out as 'c' is used for Crafting.

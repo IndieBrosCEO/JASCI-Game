@@ -293,7 +293,7 @@
         defenseUI.classList.remove('hidden'); this.gameState.combatPhase = 'playerDefenseDeclare';
     }
 
-    startCombat(participants) {
+    startCombat(participants, initialTarget = null) {
         const combatUIDiv = document.getElementById('combatUIDiv');
         if (combatUIDiv) {
             logToConsole(`[CombatManager.startCombat] Found #combatUIDiv. Current classes: ${combatUIDiv.className}`, 'debug');
@@ -318,6 +318,11 @@
         } else {
             console.error("CombatManager: combatUIDiv not found in DOM, cannot make it visible.");
             logToConsole("[CombatManager.startCombat] ERROR: #combatUIDiv not found in DOM.", "error");
+        }
+
+        if (initialTarget) {
+            this.gameState.combatCurrentDefender = initialTarget;
+            logToConsole(`Initial target set to: ${initialTarget.name || initialTarget.id}`, 'lightblue');
         }
 
         this.initiativeTracker = []; this.gameState.playerMovedThisTurn = false;
@@ -387,8 +392,8 @@
 
             attacker = currentEntry.entity;
             const isPlayer = currentEntry.isPlayer;
-            const headHealth = isPlayer ? this.gameState.health?.head?.current : attacker.health?.head?.current;
-            const torsoHealth = isPlayer ? this.gameState.health?.torso?.current : attacker.health?.torso?.current;
+            const headHealth = isPlayer ? this.gameState.player.health?.head?.current : attacker.health?.head?.current;
+            const torsoHealth = isPlayer ? this.gameState.player.health?.torso?.current : attacker.health?.torso?.current;
 
             if ((typeof headHealth === 'number' && headHealth > 0) && (typeof torsoHealth === 'number' && torsoHealth > 0)) {
                 nextAttackerFound = true;
@@ -2229,6 +2234,7 @@
     }
 
     updateCombatUI() {
+        console.log(`[Debug] updateCombatUI called. Attacker: ${this.gameState.combatCurrentAttacker?.name || 'None'}, Defender: ${this.gameState.combatCurrentDefender?.name || 'None'}`);
         const updateElement = (id, prefix, entity) => {
             const el = document.getElementById(id);
             if (el) {
