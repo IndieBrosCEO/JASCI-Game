@@ -568,7 +568,14 @@
 
             window.turnManager.updateTurnUI(); // Update UI with refreshed AP/MP
 
-            if (!this.gameState.retargetingJustHappened) {
+            if (this.gameState.selectedTargetEntity) {
+                this.gameState.combatCurrentDefender = this.gameState.selectedTargetEntity;
+                this.gameState.defenderMapPos = this.gameState.selectedTargetEntity.mapPos ? { ...this.gameState.selectedTargetEntity.mapPos } : null;
+                logToConsole(`[nextTurn] Player's turn starts with pre-selected target: ${this.gameState.combatCurrentDefender.name}.`, 'lightblue');
+                // Consume the pre-selected target state so it's not reused on subsequent turns.
+                this.gameState.selectedTargetEntity = null;
+                this.gameState.targetConfirmed = false;
+            } else if (!this.gameState.retargetingJustHappened) {
                 this.gameState.combatCurrentDefender = null; this.gameState.defenderMapPos = null;
                 const aggroTarget = this.gameState.player?.aggroList?.find(a => a.entityRef && a.entityRef !== this.gameState && a.entityRef.health?.torso?.current > 0 && a.entityRef.health?.head?.current > 0 && a.entityRef.teamId !== this.gameState.player.teamId && this.initiativeTracker.find(e => e.entity === a.entityRef));
                 if (aggroTarget) { this.gameState.combatCurrentDefender = aggroTarget.entityRef; this.gameState.defenderMapPos = { ...aggroTarget.entityRef.mapPos }; logToConsole(`Player auto-targets ${aggroTarget.entityRef.name} from aggro.`, 'lightblue'); }
