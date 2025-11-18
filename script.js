@@ -670,6 +670,65 @@ function handleUpdateSkill(name, value) {
 }
 
 /**************************************************************
+ * Nearby Entities Panel
+ **************************************************************/
+function populateNearbyEntitiesPanel() {
+    const panel = document.getElementById('nearbyEntitiesPanel');
+    const list = document.getElementById('nearbyEntitiesList');
+    if (!panel || !list) return;
+
+    list.innerHTML = '';
+    const radius = 10; // Same as range of view
+    let count = 0;
+
+    gameState.npcs.forEach(npc => {
+        if (!npc.mapPos || !npc.factionId) return;
+
+        const distance = getDistance3D(gameState.playerPos, npc.mapPos);
+        const relationship = factionManager.getFactionRelationship('player', npc.factionId, gameState.playerReputation);
+
+        if (distance <= radius && (relationship === 'hostile' || relationship === 'neutral')) {
+            count++;
+            const el = document.createElement('div');
+            el.textContent = npc.name;
+            el.classList.add(relationship); // hostile or neutral
+
+            el.addEventListener('mouseover', () => {
+                gameState.highlightedEntityId = npc.id;
+                mapRenderer.scheduleRender();
+            });
+            el.addEventListener('mouseout', () => {
+                gameState.highlightedEntityId = null;
+                mapRenderer.scheduleRender();
+            });
+            el.addEventListener('click', () => {
+                gameState.selectedTargetEntity = npc;
+                combatManager.startCombat([gameState, npc]);
+                panel.classList.add('hidden');
+            });
+            list.appendChild(el);
+        }
+    });
+
+    if (count > 0) {
+        panel.classList.remove('hidden');
+    } else {
+        logToConsole("No entities nearby.");
+        panel.classList.add('hidden');
+    }
+}
+
+function toggleNearbyEntitiesPanel() {
+    const panel = document.getElementById('nearbyEntitiesPanel');
+    if (!panel) return;
+    if (panel.classList.contains('hidden')) {
+        populateNearbyEntitiesPanel();
+    } else {
+        panel.classList.add('hidden');
+    }
+}
+
+/**************************************************************
  * Event Handlers & Initialization
  **************************************************************/
 // Keydown event handler for movement and actions
@@ -2311,61 +2370,6 @@ async function initialize() { // Made async
         }
         window.updatePlayerStatusDisplay = updatePlayerStatusDisplay; // Make it globally accessible if needed elsewhere
 
-        function populateNearbyEntitiesPanel() {
-            const panel = document.getElementById('nearbyEntitiesPanel');
-            const list = document.getElementById('nearbyEntitiesList');
-            if (!panel || !list) return;
-
-            list.innerHTML = '';
-            const radius = 5; // Example radius
-            let count = 0;
-
-            gameState.npcs.forEach(npc => {
-                if (!npc.mapPos || !npc.factionId) return;
-
-                const distance = getDistance3D(gameState.playerPos, npc.mapPos);
-                const relationship = factionManager.getFactionRelationship('player', npc.factionId, gameState.playerReputation);
-
-                if (distance <= radius && (relationship === 'hostile' || relationship === 'neutral')) {
-                    count++;
-                    const el = document.createElement('div');
-                    el.textContent = npc.name;
-                    el.classList.add(relationship); // hostile or neutral
-
-                    el.addEventListener('mouseover', () => {
-                        gameState.highlightedEntityId = npc.id;
-                        mapRenderer.scheduleRender();
-                    });
-                    el.addEventListener('mouseout', () => {
-                        gameState.highlightedEntityId = null;
-                        mapRenderer.scheduleRender();
-                    });
-                    el.addEventListener('click', () => {
-                        gameState.selectedTargetEntity = npc;
-                        combatManager.startCombat([gameState, npc]);
-                        panel.classList.add('hidden');
-                    });
-                    list.appendChild(el);
-                }
-            });
-
-            if (count > 0) {
-                panel.classList.remove('hidden');
-            } else {
-                logToConsole("No entities nearby.");
-                panel.classList.add('hidden');
-            }
-        }
-
-        function toggleNearbyEntitiesPanel() {
-            const panel = document.getElementById('nearbyEntitiesPanel');
-            if (!panel) return;
-            if (panel.classList.contains('hidden')) {
-                populateNearbyEntitiesPanel();
-            } else {
-                panel.classList.add('hidden');
-            }
-        }
         // Function to update the targeting Z level display
         function updateTargetingInfoUI() {
             const targetingZElement = document.getElementById('targetingZDisplay');

@@ -2258,10 +2258,10 @@
         }
     }
 
-    handleExplosion(x, y, radius, damage, damageType) {
-        logToConsole(`Creating a custom explosion at (${x},${y}) with radius ${radius}, damage ${damage}, and type ${damageType}.`, 'orange');
+    handleExplosion(x, y, z, radius, damage, damageType) {
+        logToConsole(`Creating a custom explosion at (${x},${y},${z}) with radius ${radius}, damage ${damage}, and type ${damageType}.`, 'orange');
 
-        const impactTile = { x: x, y: y, z: this.gameState.playerPos.z }; // Assume player's z-level for now
+        const impactTile = { x: x, y: y, z: z };
         const characters = this.getCharactersInBlastRadius(impactTile, radius);
 
         characters.forEach(char => {
