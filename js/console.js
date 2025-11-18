@@ -163,8 +163,8 @@ const commandHelpInfo = {
         description: 'Spawns a vehicle with the given template ID. Optionally spawns at x y z coordinates, otherwise spawns at player location.'
     },
     'explosion': {
-        syntax: 'explosion <x> <y> <radius> <damage> [damageType]',
-        description: 'Creates an explosion at x,y with a radius, damage (e.g., "3d6"), and optional damage type.'
+        syntax: 'explosion <x> <y> <z> <radius> <damage> [damageType]',
+        description: 'Creates an explosion at x,y,z with a radius, damage (e.g., "3d6"), and optional damage type.'
     }
 };
 
@@ -1227,23 +1227,24 @@ function processConsoleCommand(commandText) {
 
         // ... (other command cases) ...
         case 'explosion':
-            if (args.length < 4) {
-                logToConsoleUI("Usage: explosion <x> <y> <radius> <damage> [damageType]", 'error');
+            if (args.length < 5) {
+                logToConsoleUI("Usage: explosion <x> <y> <z> <radius> <damage> [damageType]", 'error');
                 break;
             }
             const ex = parseInt(args[0], 10);
             const ey = parseInt(args[1], 10);
-            const radius = parseInt(args[2], 10);
-            const damage = args[3];
-            const damageType = args[4] || 'Explosive';
+            const ez = parseInt(args[2], 10);
+            const radius = parseInt(args[3], 10);
+            const damage = args[4];
+            const damageType = args[5] || 'Explosive';
 
-            if (isNaN(ex) || isNaN(ey) || isNaN(radius)) {
-                logToConsoleUI("Error: X, Y, and Radius must be numbers.", 'error');
+            if (isNaN(ex) || isNaN(ey) || isNaN(ez) || isNaN(radius)) {
+                logToConsoleUI("Error: X, Y, Z, and Radius must be numbers.", 'error');
                 break;
             }
 
             if (typeof combatManager !== 'undefined' && typeof combatManager.handleExplosion === 'function') {
-                combatManager.handleExplosion(ex, ey, radius, damage, damageType);
+                combatManager.handleExplosion(ex, ey, ez, radius, damage, damageType);
             } else {
                 logToConsoleUI("Error: combatManager.handleExplosion function not available.", 'error');
             }
