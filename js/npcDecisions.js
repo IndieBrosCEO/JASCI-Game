@@ -532,9 +532,13 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
     if (npc.aggroList?.length > 0) {
         for (const aggroEntry of npc.aggroList) {
             const target = aggroEntry.entityRef;
-            const targetPos = target === gameState ? gameState.playerPos : target.mapPos;
-            if (target && target !== npc && target.health?.torso?.current > 0 && target.health?.head?.current > 0 &&
-                target.teamId !== npc.teamId && targetPos && initiativeTracker.find(e => e.entity === target)) {
+            const isPlayer = target === gameState;
+            const targetPos = isPlayer ? gameState.playerPos : target.mapPos;
+            const targetHealth = isPlayer ? gameState.health : target.health;
+            const targetTeamId = isPlayer ? gameState.player.teamId : target.teamId;
+
+            if (target && target !== npc && targetHealth?.torso?.current > 0 && targetHealth?.head?.current > 0 &&
+                targetTeamId !== npc.teamId && targetPos && initiativeTracker.find(e => e.entity === target)) {
                 if (window.hasLineOfSight3D(npc.mapPos, targetPos, currentTilesets, currentMapData)) {
                     potentialTargets.push({ entity: target, pos: targetPos, threat: aggroEntry.threat, type: 'aggro' });
                 }
@@ -545,9 +549,13 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
     // 2. Consider all enemies in initiative with LOS
     initiativeTracker.forEach(entry => {
         const candidate = entry.entity;
-        const candPos = candidate === gameState ? gameState.playerPos : candidate.mapPos;
-        if (candidate !== npc && candidate.health?.torso?.current > 0 && candidate.health?.head?.current > 0 &&
-            candidate.teamId !== npc.teamId && npc.mapPos && candPos) {
+        const isPlayer = candidate === gameState;
+        const candPos = isPlayer ? gameState.playerPos : candidate.mapPos;
+        const candHealth = isPlayer ? gameState.health : candidate.health;
+        const candTeamId = isPlayer ? gameState.player.teamId : candidate.teamId;
+
+        if (candidate !== npc && candHealth?.torso?.current > 0 && candHealth?.head?.current > 0 &&
+            candTeamId !== npc.teamId && npc.mapPos && candPos) {
             if (window.hasLineOfSight3D(npc.mapPos, candPos, currentTilesets, currentMapData)) {
                 const dist = getDistance3D(npc.mapPos, candPos);
                 // Add if not already in potentialTargets from aggro list

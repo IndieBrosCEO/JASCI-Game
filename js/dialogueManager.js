@@ -233,7 +233,7 @@ class DialogueManager {
                     console.log("startCombat action triggered");
                     if (this.currentNpc && window.combatManager) {
                         this.endDialogue(); // End dialogue before starting combat
-                        window.combatManager.startCombat(this.gameState.player, [this.currentNpc]);
+                        window.combatManager.startCombat([this.gameState, this.currentNpc]);
                     } else {
                         console.warn("Cannot start combat: currentNpc or combatManager is missing.");
                     }
