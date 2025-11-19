@@ -522,18 +522,17 @@ function processConsoleCommand(commandText) {
             }
             break;
 
-        case 'spawnnpc': // Syntax: spawnNpc <npcId> <x> <y> [z]
+        case 'spawnnpc': // Syntax: spawnNpc <npcId> <x> <y>
             if (args.length < 3) {
-                logToConsoleUI("Usage: spawnNpc <npcId> <x> <y> [z]", 'error'); // Direct call
+                logToConsoleUI("Usage: spawnNpc <npcId> <x> <y>", 'error'); // Direct call
                 break;
             }
             const npcIdToSpawn = args[0];
             const spawnX = parseInt(args[1], 10);
             const spawnY = parseInt(args[2], 10);
-            const spawnZ = args[3] ? parseInt(args[3], 10) : 0;
 
-            if (isNaN(spawnX) || isNaN(spawnY) || isNaN(spawnZ)) {
-                logToConsoleUI("Error: X, Y and Z coordinates must be numbers.", 'error'); // Direct call
+            if (isNaN(spawnX) || isNaN(spawnY)) {
+                logToConsoleUI("Error: X and Y coordinates must be numbers.", 'error'); // Direct call
                 break;
             }
 
@@ -549,7 +548,7 @@ function processConsoleCommand(commandText) {
             }
 
             const newNpc = JSON.parse(JSON.stringify(npcDef));
-            newNpc.mapPos = { x: spawnX, y: spawnY, z: spawnZ };
+            newNpc.mapPos = { x: spawnX, y: spawnY };
 
             if (typeof window.initializeHealth === 'function') {
                 window.initializeHealth(newNpc);

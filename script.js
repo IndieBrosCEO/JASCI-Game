@@ -213,11 +213,11 @@ async function handleMapSelectionChangeWrapper(mapId) { // Made async to handle 
         if (loadedMapData) {
             // Sync gameState with the new Z-level structure
             gameState.mapLevels = loadedMapData.levels;
-            gameState.playerPos = loadedMapData.startPos || { x: 2, y: 2, z: 0 }; // Ensure Z is part of playerPos
-            gameState.currentViewZ = gameState.playerPos.z; // Default view to player's Z
+            gameState.player.pos = loadedMapData.startPos || { x: 2, y: 2, z: 0 }; // Ensure Z is part of player.pos
+            gameState.currentViewZ = gameState.player.pos.z; // Default view to player's Z
 
             // Ensure fowData for the new player Z-level is initialized if not already by initializeCurrentMap
-            const playerZStr = gameState.playerPos.z.toString();
+            const playerZStr = gameState.player.pos.z.toString();
             if (loadedMapData.dimensions && loadedMapData.dimensions.height > 0 && loadedMapData.dimensions.width > 0) {
                 if (!gameState.fowData[playerZStr]) {
                     gameState.fowData[playerZStr] =
@@ -412,15 +412,15 @@ function spawnNpcGroupInArea(groupIdOrTag, areaKey, count, targetFactionIdForHos
     // Simplified area resolution: Assume areaKey is player's current position for testing
     let centerX, centerY, centerZ;
     if (areaKey === "player_vicinity_event") { // Example specific key
-        centerX = gameState.playerPos.x;
-        centerY = gameState.playerPos.y;
-        centerZ = gameState.playerPos.z;
+        centerX = gameState.player.pos.x;
+        centerY = gameState.player.pos.y;
+        centerZ = gameState.player.pos.z;
     } else { // Fallback or other areaKey logic needed (e.g. find a named map location "random_friendly_outpost")
         // For now, default to a fixed point or player pos if areaKey is not specifically handled
         logToConsole(`spawnNpcGroupInArea: areaKey "${areaKey}" not specifically handled, defaulting to player vicinity.`, "warn");
-        centerX = gameState.playerPos.x;
-        centerY = gameState.playerPos.y;
-        centerZ = gameState.playerPos.z;
+        centerX = gameState.player.pos.x;
+        centerY = gameState.player.pos.y;
+        centerZ = gameState.player.pos.z;
     }
 
     const spawnRadius = 10; // Tiles around the center to attempt spawning
@@ -1188,7 +1188,7 @@ async function handleKeyDown(event) {
             logToConsole(`View Z changed to: ${gameState.currentViewZ}. View no longer follows player.`);
             viewChanged = true;
         } else if (event.key === '/') {
-            gameState.currentViewZ = gameState.playerPos.z;
+            gameState.currentViewZ = gameState.player.pos.z;
             gameState.viewFollowsPlayerZ = true; // View now follows player
             logToConsole(`View Z reset to player Z: ${gameState.currentViewZ}. View now follows player.`);
             viewChanged = true;
@@ -1229,13 +1229,13 @@ async function handleKeyDown(event) {
     }
 
     // Logic for player Z change following
-    // This should be triggered when playerPos.z changes, typically after a move action that involves Z-transition.
+    // This should be triggered when player.pos.z changes, typically after a move action that involves Z-transition.
     // For now, we'll just ensure that if viewFollowsPlayerZ is true, currentViewZ is synced.
-    // The actual sync point after playerPos.z changes will be handled when Z-transition moves are implemented.
-    if (gameState.viewFollowsPlayerZ && gameState.currentViewZ !== gameState.playerPos.z) {
-        gameState.currentViewZ = gameState.playerPos.z;
+    // The actual sync point after player.pos.z changes will be handled when Z-transition moves are implemented.
+    if (gameState.viewFollowsPlayerZ && gameState.currentViewZ !== gameState.player.pos.z) {
+        gameState.currentViewZ = gameState.player.pos.z;
         // Ensure FOW for this new Z is also initialized if needed (though player movement should handle its own Z's FOW)
-        const playerZStr = gameState.playerPos.z.toString();
+        const playerZStr = gameState.player.pos.z.toString();
         const currentMap = window.mapRenderer.getCurrentMapData();
         const H = currentMap ? currentMap.dimensions.height : 0;
         const W = currentMap ? currentMap.dimensions.width : 0;
@@ -1266,7 +1266,7 @@ async function handleKeyDown(event) {
             case 'ArrowRight': case 'd': case 'D':
                 window.turnManager.move(event.key);
                 // Check for portal after movement
-                checkAndHandlePortal(gameState.playerPos.x, gameState.playerPos.y);
+                checkAndHandlePortal(gameState.player.pos.x, gameState.player.pos.y);
                 event.preventDefault(); return;
             default:
                 if (event.key >= '1' && event.key <= '9') {
@@ -1276,7 +1276,7 @@ async function handleKeyDown(event) {
         }
         if (event.key === 'x' || event.key === 'X') {
             window.turnManager.dash();
-            checkAndHandlePortal(gameState.playerPos.x, gameState.playerPos.y);
+            checkAndHandlePortal(gameState.player.pos.x, gameState.player.pos.y);
             event.preventDefault(); return;
         }
         if (event.key.toLowerCase() === 'p') { // Prone
@@ -1526,141 +1526,104 @@ async function handleKeyDown(event) {
             }
             event.preventDefault(); return;
         case 'f': case 'F':
-            if (gameState.isTargetingMode) {
-                // Sound for confirming target is complex because of LOS check below.
-                // It should play *after* LOS success.
-                gameState.targetConfirmed = true; // This flag might be premature before LOS
+            if (gameState.isTargetingMode) { // This block now ONLY confirms the target and exits targeting mode.
+                gameState.targetConfirmed = true;
                 logToConsole(`Target confirmed at: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}`);
-                logToConsole(`Targeting type: ${gameState.targetingType}`);
-
                 gameState.selectedTargetEntity = null; // Reset before checking
-                // Find entity at target x, y, AND z
                 for (const npc of gameState.npcs) {
-                    if (npc.mapPos && npc.mapPos.x === gameState.targetingCoords.x &&
-                        npc.mapPos.y === gameState.targetingCoords.y &&
-                        npc.mapPos.z === gameState.targetingCoords.z) {
+                    if (npc.mapPos && npc.mapPos.x === gameState.targetingCoords.x && npc.mapPos.y === gameState.targetingCoords.y && npc.mapPos.z === gameState.targetingCoords.z) {
                         gameState.selectedTargetEntity = npc;
                         break;
                     }
                 }
-
-                // Determine the actual target position (either entity's or tile's)
                 const finalTargetPos = gameState.selectedTargetEntity ? gameState.selectedTargetEntity.mapPos : gameState.targetingCoords;
-
-                // Perform Line of Sight Check
                 const currentTilesets = window.assetManager ? window.assetManager.tilesets : null;
                 const currentMapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
-
-                logToConsole(`[DEBUG_LOS_CONTEXT] About to call hasLineOfSight3D.
-                  window.assetManager: ${window.assetManager ? 'Exists' : 'MISSING'}
-                  Passed tilesets: ${currentTilesets ? 'Exists, Keys: ' + Object.keys(currentTilesets).length : 'MISSING or empty'}
-                  Passed mapData: ${currentMapData ? 'Exists' : 'MISSING'}
-                  Player Pos: ${JSON.stringify(gameState.playerPos)}
-                  Target Pos: ${JSON.stringify(finalTargetPos)}`);
-
-                if (!window.hasLineOfSight3D(gameState.playerPos, finalTargetPos, currentTilesets, currentMapData)) {
+                if (!window.hasLineOfSight3D(gameState.player.pos, finalTargetPos, currentTilesets, currentMapData)) {
                     logToConsole(`No line of sight to target at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). Select another target.`, "orange");
-                    if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Error sound for LOS fail
+                    if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
                     event.preventDefault();
                     return;
                 }
-
-                // LOS is clear, proceed with target confirmation
-                gameState.targetConfirmed = true; // This confirms the target for combat logic
-                logToConsole(`Target confirmed with LOS at: X=${finalTargetPos.x}, Y=${finalTargetPos.y}, Z=${finalTargetPos.z}`);
-                logToConsole(`Targeting type: ${gameState.targetingType}`);
-                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound for LOS success
-
-
-                if (gameState.selectedTargetEntity) {
-                    logToConsole(`Combat would be initiated with ${gameState.selectedTargetEntity.name || gameState.selectedTargetEntity.id} at (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}).`);
-                } else {
-                    logToConsole(`Targeting tile (${finalTargetPos.x}, ${finalTargetPos.y}, Z:${finalTargetPos.z}). No entity selected. Combat would not be initiated in this manner.`);
-                }
-
-                gameState.isTargetingMode = false; // Exit targeting mode
-                window.mapRenderer.scheduleRender(); // Re-render to remove 'X'
-
-                // Integration with CombatManager
-                if (!gameState.isInCombat) {
-                    let allParticipants = [];
-                    allParticipants.push(gameState); // Add player
-
-                    if (gameState.selectedTargetEntity) {
-                        if (!allParticipants.includes(gameState.selectedTargetEntity)) {
-                            allParticipants.push(gameState.selectedTargetEntity);
-                        }
-                        logToConsole(`Combat initiated by player targeting ${gameState.selectedTargetEntity.name || gameState.selectedTargetEntity.id}.`);
-                    } else {
-                        logToConsole("Combat initiated by player targeting a tile.");
-                        // If targeting a tile, still check for nearby NPCs to pull into combat
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+                logToConsole(`Target confirmed with LOS: ${gameState.selectedTargetEntity ? gameState.selectedTargetEntity.name : 'tile'}.`);
+                gameState.isTargetingMode = false;
+                window.mapRenderer.scheduleRender();
+            }
+            // New block to ensure target selection from targetingCoords before combat check
+            if (!gameState.selectedTargetEntity) {
+                for (const npc of gameState.npcs) {
+                    if (npc.mapPos && npc.mapPos.x === gameState.targetingCoords.x && npc.mapPos.y === gameState.targetingCoords.y && npc.mapPos.z === gameState.targetingCoords.z) {
+                        gameState.selectedTargetEntity = npc;
+                        logToConsole(`Target auto-selected from targeting cursor: ${npc.name}`);
+                        break;
                     }
-
-                    const playerPos = gameState.playerPos;
-                    if (playerPos) {
-                        gameState.npcs.forEach(npc => {
-                            if (allParticipants.includes(npc)) return;
-                            if (!npc.health || npc.health.torso.current <= 0 || npc.health.head.current <= 0) return;
-
-                            if (npc.mapPos) {
-                                // Use 3D distance for combat alert radius, or a more complex check
-                                const distance3D = getDistance3D(playerPos, npc.mapPos);
-                                if (distance3D <= COMBAT_ALERT_RADIUS) {
-                                    // Also check LOS to these nearby NPCs before pulling them in
-                                    // currentTilesets and currentMapData are defined in the outer scope of this 'f' key handler
-                                    if (window.hasLineOfSight3D(playerPos, npc.mapPos, currentTilesets, currentMapData) ||
-                                        (gameState.selectedTargetEntity && window.hasLineOfSight3D(gameState.selectedTargetEntity.mapPos, npc.mapPos, currentTilesets, currentMapData))) {
-                                        if (!allParticipants.includes(npc)) {
-                                            allParticipants.push(npc);
-                                            logToConsole(`${npc.name || npc.id} (Team: ${npc.teamId}) is nearby (Dist3D: ${distance3D.toFixed(1)}) with LOS and added to combat.`);
-                                        }
-                                    } else {
-                                        logToConsole(`${npc.name || npc.id} is nearby but no LOS, not added to combat.`);
-                                    }
+                }
+            }
+            if (!gameState.isInCombat && gameState.selectedTargetEntity) { // After targeting (or if not targeting), check for combat initiation.
+                let allParticipants = [gameState.player];
+                if (!allParticipants.includes(gameState.selectedTargetEntity)) {
+                    allParticipants.push(gameState.selectedTargetEntity);
+                }
+                logToConsole(`Combat initiated by player targeting ${gameState.selectedTargetEntity.name || gameState.selectedTargetEntity.id}.`);
+                const playerPos = gameState.player.pos;
+                const currentTilesets = window.assetManager ? window.assetManager.tilesets : null;
+                const currentMapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+                if (playerPos && currentMapData) {
+                    gameState.npcs.forEach(npc => {
+                        if (allParticipants.includes(npc) || !npc.health || npc.health.torso.current <= 0) return;
+                        if (npc.mapPos) {
+                            const distance3D = getDistance3D(playerPos, npc.mapPos);
+                            if (distance3D <= COMBAT_ALERT_RADIUS) {
+                                if (window.hasLineOfSight3D(playerPos, npc.mapPos, currentTilesets, currentMapData) || (gameState.selectedTargetEntity && window.hasLineOfSight3D(gameState.selectedTargetEntity.mapPos, npc.mapPos, currentTilesets, currentMapData))) {
+                                    allParticipants.push(npc);
+                                    logToConsole(`${npc.name || npc.id} is nearby with LOS and added to combat.`);
                                 }
                             }
-                        });
-                    }
-                    combatManager.startCombat(allParticipants, gameState.selectedTargetEntity);
-                } else {
-                    if (combatManager.gameState.combatCurrentAttacker === combatManager.gameState &&
-                        (combatManager.gameState.combatPhase === 'playerAttackDeclare' || combatManager.gameState.retargetingJustHappened)) {
-                        logToConsole("Targeting confirmed mid-combat. Prompting player attack declaration.");
-                        combatManager.promptPlayerAttackDeclaration();
-                    }
+                        }
+                    });
                 }
+                combatManager.startCombat(allParticipants, gameState.selectedTargetEntity);
                 event.preventDefault();
-
             } else if (gameState.isActionMenuActive) {
-                performSelectedAction(); // Sound for confirm is in performSelectedAction or called by it
+                performSelectedAction();
                 event.preventDefault();
             } else if (gameState.selectedItemIndex !== -1) {
-                window.interaction.interact(); // Sound for opening action list is in interact() or called by it
+                window.interaction.interact();
                 event.preventDefault();
             }
-            // If none of the above, let the event propagate or do nothing.
             break;
-        case 'r': case 'R': // Changed to include R
-            if (gameState.inventory.open || gameState.isInCombat) return; // Prevent if inventory open or in combat
+        case 'r': case 'R':
+            const nearbyEntitiesPanel = document.getElementById('nearbyEntitiesPanel');
+            const isPanelOpen = nearbyEntitiesPanel && !nearbyEntitiesPanel.classList.contains('hidden');
 
-            if (gameState.isTargetingMode && gameState.targetingType === 'ranged') {
-                gameState.isTargetingMode = false;
-                gameState.targetingType = null;
-                updateTargetingInfoUI(); // Hide UI
-                logToConsole("Exited ranged targeting mode.");
-                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav (toggled off)
-                window.mapRenderer.scheduleRender(); // Re-render
+            // Condition to toggle the panel: EITHER it's already open,
+            // OR we are in a neutral state (not in combat, not targeting, etc.)
+            if (isPanelOpen || (!gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive)) {
+                if (window.interaction && typeof window.interaction.toggleNearbyEntitiesPanel === 'function') {
+                    window.interaction.toggleNearbyEntitiesPanel();
+                }
             } else {
-                gameState.isTargetingMode = true;
-                gameState.targetingType = 'ranged';
-                gameState.targetingCoords = { ...gameState.playerPos }; // Initialize to player's position (includes Z)
-                updateTargetingInfoUI(); // Show UI
-                logToConsole("Entering ranged targeting mode.");
-                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav (toggled on)
-                logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}, Z=${gameState.targetingCoords.z}`);
-                window.mapRenderer.scheduleRender(); // Re-render
+                // Otherwise, handle ranged targeting
+                if (gameState.isTargetingMode && gameState.targetingType === 'ranged') {
+                    gameState.isTargetingMode = false;
+                    gameState.targetingType = null;
+                    updateTargetingInfoUI(); // Hide UI
+                    logToConsole("Exited ranged targeting mode.");
+                    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+                    window.mapRenderer.scheduleRender();
+                } else {
+                    gameState.isTargetingMode = true;
+                    gameState.targetingType = 'ranged';
+                gameState.targetingCoords = { ...gameState.player.pos }; // Initialize to player's position (includes Z)
+                    updateTargetingInfoUI(); // Show UI
+                    logToConsole("Entering ranged targeting mode.");
+                    if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+                    window.mapRenderer.scheduleRender();
+                }
             }
-            event.preventDefault(); break;
+            event.preventDefault();
+            break;
         // Case 'c' for melee targeting removed to prioritize 'C' for Crafting menu.
         // Melee targeting can be re-assigned if needed.
         // The following block for 'c' (melee) is now fully commented out as 'c' is used for Crafting.
@@ -1808,7 +1771,7 @@ async function initiateMapTransition(targetMapId, targetX, targetY) {
         } else {
             logToConsole(`New map ${cleanMapId} has no dimension data. Placing player at raw target coords.`, "warn");
         }
-        gameState.playerPos = { x: finalX, y: finalY };
+        gameState.player.pos = { x: finalX, y: finalY };
 
         // Spawn NPCs for the new map
         spawnNpcsFromMapData(newMapData); // This clears old NPCs and spawns new ones
@@ -1985,6 +1948,7 @@ async function initialize() { // Made async
         window.mapRenderer.initMapRenderer(assetManager); // Initialize mapRenderer with assetManager.
         window.mapManager = window.mapRenderer; // Assign mapRenderer to mapManager
         logToConsole("SCRIPT.JS: window.mapManager assigned to window.mapRenderer.", "info");
+        window.turnManager = new TurnManager(window.gameState, window.assetManager, window.mapRenderer, window.interaction, window.combatManager);
         window.turnManager.init(assetManager); // Initialize turnManager with assetManager
 
         gameState.inventory.container = new InventoryContainer("Body Pockets", "S"); // Capacity will be updated in startGame based on Strength
@@ -2013,12 +1977,12 @@ async function initialize() { // Made async
             if (loadedMapData) {
                 window.mapRenderer.initializeCurrentMap(loadedMapData);
                 gameState.mapLevels = loadedMapData.levels;
-                gameState.playerPos = loadedMapData.startPos || { x: 2, y: 2, z: 0 }; // Ensure Z
-                gameState.currentViewZ = gameState.playerPos.z; // Set initial view Z
+                gameState.player.pos = loadedMapData.startPos || { x: 2, y: 2, z: 0 }; // Ensure Z
+                gameState.currentViewZ = gameState.player.pos.z; // Set initial view Z
                 gameState.currentMapId = loadedMapData.id || initialMapId;
 
                 // Ensure fowData for the initial player Z-level is initialized
-                const playerZStr = gameState.playerPos.z.toString();
+                const playerZStr = gameState.player.pos.z.toString();
                 if (loadedMapData.dimensions && loadedMapData.dimensions.height > 0 && loadedMapData.dimensions.width > 0) {
                     if (!gameState.fowData[playerZStr]) {
                         gameState.fowData[playerZStr] =
@@ -2027,7 +1991,7 @@ async function initialize() { // Made async
                         logToConsole(`FOW data initialized for Z-level ${playerZStr} in initialize().`);
                     }
                 }
-                console.log("Initial map loaded:", loadedMapData.name, "ID:", gameState.currentMapId, "Player Z:", gameState.playerPos.z);
+                console.log("Initial map loaded:", loadedMapData.name, "ID:", gameState.currentMapId, "Player Z:", gameState.player.pos.z);
                 spawnNpcsFromMapData(loadedMapData);
                 spawnVehiclesFromMapData(loadedMapData); // NEW: Spawn vehicles
                 // FOW calculation moved to startGame
@@ -2363,7 +2327,7 @@ async function initialize() { // Made async
             // Update Z-Level Displays
             const playerZElement = document.getElementById('playerZDisplay');
             if (playerZElement) {
-                playerZElement.textContent = `Player Z: ${gameState.playerPos.z}`;
+                playerZElement.textContent = `Player Z: ${gameState.player.pos.z}`;
             }
             const viewZElement = document.getElementById('viewZDisplay');
             if (viewZElement) {
