@@ -392,8 +392,9 @@
 
             attacker = currentEntry.entity;
             const isPlayer = currentEntry.isPlayer;
-            const headHealth = isPlayer ? this.gameState.player.health?.head?.current : attacker.health?.head?.current;
-            const torsoHealth = isPlayer ? this.gameState.player.health?.torso?.current : attacker.health?.torso?.current;
+            const healthObj = isPlayer ? this.gameState.health : attacker.health;
+            const headHealth = healthObj?.head?.current;
+            const torsoHealth = healthObj?.torso?.current;
 
             if ((typeof headHealth === 'number' && headHealth > 0) && (typeof torsoHealth === 'number' && torsoHealth > 0)) {
                 nextAttackerFound = true;
