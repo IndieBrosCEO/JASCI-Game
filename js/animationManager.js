@@ -105,9 +105,6 @@ class AnimationManager {
             case 'chainsawAttack': // Added by Jules
                 animationInstance = new ChainsawAttackAnimation(animationType, data, this.gameState);
                 break;
-            case 'fall': // Added for falling animation
-                animationInstance = new FallAnimation(animationType, data, this.gameState);
-                break;
             case 'diceRoll': // Added for combat sequence
                 animationInstance = new DiceRollAnimation(animationType, data, this.gameState);
                 break;
