@@ -40,7 +40,7 @@ function _getActionsForItem(it) {
     if (tags.includes("climbable")) {
         actions.push("Climb Up", "Climb Down");
     }
-    if (window.fishingManager && window.fishingManager.isAdjacentToWater(window.gameState.player.pos) && window.fishingManager.getEquippedFishingPole(window.gameState)) {
+    if (window.fishingManager && window.fishingManager.isAdjacentToWater(window.gameState.playerPos) && window.fishingManager.getEquippedFishingPole(window.gameState)) {
         actions.push("Fish");
     }
     // Added for traps
@@ -391,10 +391,10 @@ function _performAction(action, it) {
             // Player's current position is gameState.playerPos.x, gameState.playerPos.y, gameState.playerPos.z
             // The tile to check is (playerX, playerY, playerZ + 1)
             // Note: 'z' here is the Z-level of the interactable tile (e.g., the ladder base).
-            // The player is standing at (gameState.player.pos.x, gameState.player.pos.y, z) to interact with it.
-            const spaceAbovePlayerX = gameState.player.pos.x;
-            const spaceAbovePlayerY = gameState.player.pos.y;
-            const spaceAbovePlayerZ = gameState.player.pos.z + 1;
+            // The player is standing at (gameState.playerPos.x, gameState.playerPos.y, z) to interact with it.
+            const spaceAbovePlayerX = gameState.playerPos.x;
+            const spaceAbovePlayerY = gameState.playerPos.y;
+            const spaceAbovePlayerZ = gameState.playerPos.z + 1;
 
             let isSpaceAbovePlayerObstructed = true; // Assume obstructed initially
 
@@ -514,7 +514,7 @@ window.interaction = {
 
     detectInteractableItems: function () {
         const R = 1; // Interaction radius
-        const playerPos = window.gameState.player.pos; // Ensure using window.gameState
+        const playerPos = window.gameState.playerPos; // Ensure using window.gameState
 
         if (!playerPos || typeof playerPos.x !== 'number' || typeof playerPos.y !== 'number' || typeof playerPos.z !== 'number') {
             window.gameState.interactableItems = [];
@@ -816,91 +816,4 @@ window.interaction = {
         window.mapRenderer.updateMapHighlight(); // Assumes mapRenderer is global
     },
 
-    toggleNearbyEntitiesPanel: function() {
-        const panel = document.getElementById('nearbyEntitiesPanel');
-        if (!panel) return;
-
-        const isHidden = panel.classList.contains('hidden');
-        if (isHidden) {
-            this.populateNearbyEntitiesList();
-            panel.classList.remove('hidden');
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-        } else {
-            panel.classList.add('hidden');
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-        }
-    },
-
-    populateNearbyEntitiesList: function() {
-        const listElement = document.getElementById('nearbyEntitiesList');
-        if (!listElement) return;
-        listElement.innerHTML = ''; // Clear existing list
-
-        const nearbyNpcs = [];
-        const playerPos = window.gameState.player.pos;
-        const visionRadius = window.PLAYER_VISION_RADIUS_CONST || 10;
-
-        if (!playerPos) return;
-
-        // Use the same LOS-checking assets as combat
-        const currentTilesets = window.assetManager ? window.assetManager.tilesets : null;
-        const currentMapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
-
-        if (!currentTilesets || !currentMapData) {
-            listElement.innerHTML = '<li>Error: Map/tile data not ready.</li>';
-            return;
-        }
-
-        window.gameState.npcs.forEach(npc => {
-            if (npc.mapPos && npc.health && npc.health.torso.current > 0) {
-                const distance = getDistance3D(playerPos, npc.mapPos);
-                if (distance <= visionRadius) {
-                    if (window.hasLineOfSight3D(playerPos, npc.mapPos, currentTilesets, currentMapData)) {
-                        nearbyNpcs.push(npc);
-                    }
-                }
-            }
-        });
-
-        if (nearbyNpcs.length === 0) {
-            listElement.innerHTML = '<li>No entities nearby.</li>';
-            return;
-        }
-
-        nearbyNpcs.forEach(npc => {
-            const li = document.createElement('li');
-            li.textContent = `${npc.name} (Dist: ${getDistance3D(playerPos, npc.mapPos).toFixed(1)})`;
-            li.style.cursor = 'pointer';
-            li.addEventListener('click', () => {
-                // Set this NPC as the current target
-                window.gameState.selectedTargetEntity = npc;
-                window.gameState.targetingCoords = { ...npc.mapPos };
-                window.gameState.isTargetingMode = true; // This makes the 'X' appear
-                window.gameState.targetingType = 'ranged'; // Set a type for consistency
-                logToConsole(`Target set to ${npc.name} via Nearby Entities panel.`);
-
-                // Close the panel
-                this.toggleNearbyEntitiesPanel();
-
-                // Update the map to show the new target
-                if (window.mapRenderer) {
-                    window.mapRenderer.scheduleRender();
-                }
-            });
-
-            // Add hover listeners for highlighting
-            li.addEventListener('mouseover', () => {
-                if (window.mapRenderer && typeof window.mapRenderer.highlightTile === 'function') {
-                    window.mapRenderer.highlightTile(npc.mapPos.x, npc.mapPos.y, npc.mapPos.z, 'rgba(255, 255, 0, 0.5)');
-                }
-            });
-            li.addEventListener('mouseout', () => {
-                if (window.mapRenderer && typeof window.mapRenderer.clearHighlight === 'function') {
-                    window.mapRenderer.clearHighlight();
-                }
-            });
-
-            listElement.appendChild(li);
-        });
-    },
 };

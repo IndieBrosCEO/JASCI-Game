@@ -128,20 +128,21 @@ function rollDiceNotation(parsedNotation) {
 }
 
 // Gets the skill value for a given entity (player or NPC).
-// entity: The character object (gameState.player for player, or specific NPC object)
+// entity: The character object (gameState for player, or specific NPC object)
+// Depends on global `gameState`.
 function getSkillValue(skillName, entity) {
     if (!entity) return 0;
 
     let skillsSource;
-    if (entity === gameState.player) { // Check if the entity is the player
-        skillsSource = entity.skills; // Array of objects { name: "SkillName", points: X }
+    if (entity === gameState) { // Check if the entity is the player (gameState)
+        skillsSource = gameState.skills; // Array of objects { name: "SkillName", points: X }
     } else if (entity.skills) { // Check if the entity is an NPC with a skills object
         skillsSource = entity.skills; // Expected to be an object like { "SkillName": X } or array
     } else {
         return 0; // No skills definition found for the entity
     }
 
-    if (Array.isArray(skillsSource)) { // For player (gameState.player.skills)
+    if (Array.isArray(skillsSource)) { // For player (gameState.skills)
         const skill = skillsSource.find(s => s.name === skillName);
         return skill ? skill.points : 0;
     } else if (typeof skillsSource === 'object' && skillsSource !== null) { // For NPCs (entity.skills)
@@ -151,20 +152,21 @@ function getSkillValue(skillName, entity) {
 }
 
 // Gets the stat value for a given entity (player or NPC).
-// entity: The character object (gameState.player for player, or specific NPC object)
+// entity: The character object (gameState for player, or specific NPC object)
+// Depends on global `gameState`.
 function getStatValue(statName, entity) {
     if (!entity) return 1; // Default to 1 if entity is undefined
 
     let statsSource;
-    if (entity === gameState.player) { // Player
-        statsSource = entity.stats; // Array of objects { name: "StatName", points: X }
+    if (entity === gameState) { // Player
+        statsSource = gameState.stats; // Array of objects { name: "StatName", points: X }
     } else if (entity.stats) { // NPC
         statsSource = entity.stats; // Expected to be an object like { "StatName": X } or array
     } else {
         return 1; // No stats definition, return default
     }
 
-    if (Array.isArray(statsSource)) { // For player (gameState.player.stats)
+    if (Array.isArray(statsSource)) { // For player (gameState.stats)
         const stat = statsSource.find(s => s.name === statName);
         return stat ? stat.points : 1;
     } else if (typeof statsSource === 'object' && statsSource !== null) { // For NPCs (entity.stats)

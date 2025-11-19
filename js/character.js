@@ -404,8 +404,6 @@ function startGame() {
     if (typeof window.setAnimatedFaceTarget === 'function') {
         window.setAnimatedFaceTarget('charInfoAsciiFace');
     }
-
-    gameState.player.name = document.getElementById('charName').value;
 }
 
 // Renders only the stats, skills, and worn clothing parts for the character info panel
@@ -421,7 +419,7 @@ function renderCharacterStatsSkillsAndWornClothing(character, characterInfoEleme
     // JASCI XP Table: 0 -> 300 -> 900 -> 2700 -> 6500 -> 14000 ...
     const xpLevels = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000]; // Up to level 20
     const xpToNextLevel = (character.level < xpLevels.length) ? xpLevels[character.level] : "Max Level";
-    const characterName = character === window.gameState.player ? "Player" : (character.name || "NPC"); // Distinguish player from NPC
+    const characterName = character === window.gameState ? "Player" : (character.name || "NPC"); // Distinguish player from NPC
 
     let basicInfoHtml = `
         <h3>${characterName}</h3>
@@ -521,8 +519,8 @@ function getArmorForBodyPart(bodyPartName, character) {
     // gameState.js initializes gameState.player.wornClothing
     // So if 'character' is gameState, then character.player.wornClothing is the path.
     let wornClothingSource = null;
-    if (character === gameState.player) {
-        wornClothingSource = character.wornClothing;
+    if (character === gameState && character.player) {
+        wornClothingSource = character.player.wornClothing;
     } else if (character && character.wornClothing) {
         wornClothingSource = character.wornClothing;
     }

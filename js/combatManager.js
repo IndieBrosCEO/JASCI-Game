@@ -222,7 +222,7 @@
                 this.gameState.defenderMapPos = null;
             }
             this.gameState.targetConfirmed = false;
-        } else if (!this.gameState.combatCurrentDefender && !this.gameState.selectedTargetEntity && this.gameState.isInCombat) {
+        } else if (!this.gameState.combatCurrentDefender && this.gameState.isInCombat) {
             // Auto-target logic needs to be 3D LOS aware for the player as well.
             // For now, this auto-targets the first live NPC, which might not have LOS.
             // This part is less critical for "player targeting" feature but good to note.
@@ -293,68 +293,50 @@
         defenseUI.classList.remove('hidden'); this.gameState.combatPhase = 'playerDefenseDeclare';
     }
 
-startCombat(participants, initialTarget = null) {
-  logToConsole("--- CACHE BUST 3 ---", 'red');
-  const combatUIDiv = document.getElementById('combatUIDiv');
-  if (combatUIDiv) {
-    combatUIDiv.classList.remove('hidden');
-    setTimeout(() => {
-      const el = document.getElementById('combatUIDiv');
-      if (el) window.getComputedStyle(el).display; // force reflow for logging only
-    }, 0);
-  } else {
-    console.error("CombatManager: combatUIDiv not found in DOM, cannot make it visible.");
-    logToConsole("[CombatManager.startCombat] ERROR: #combatUIDiv not found in DOM.", "error");
-  }
+    startCombat(participants, initialTarget = null) {
+        const combatUIDiv = document.getElementById('combatUIDiv');
+        if (combatUIDiv) {
+            logToConsole(`[CombatManager.startCombat] Found #combatUIDiv. Current classes: ${combatUIDiv.className}`, 'debug');
+            logToConsole(`[CombatManager.startCombat] Computed display before change: ${window.getComputedStyle(combatUIDiv).display}`, 'debug');
+            combatUIDiv.classList.remove('hidden');
+            logToConsole(`[CombatManager.startCombat] #combatUIDiv classes after remove 'hidden': ${combatUIDiv.className}`, 'debug');
+            // Force a reflow before checking computed style again, though it might not be necessary for simple class changes.
+            // void combatUIDiv.offsetWidth; 
+            setTimeout(() => { // Use setTimeout to allow browser to repaint/reflow
+                if (document.getElementById('combatUIDiv')) { // Re-check existence in case of async issues
+                    logToConsole(`[CombatManager.startCombat] Computed display AFTER remove 'hidden' (async check): ${window.getComputedStyle(document.getElementById('combatUIDiv')).display}`, 'debug');
+                    const mapContainer = document.getElementById('mapContainer');
+                    if (mapContainer) {
+                        logToConsole(`[CombatManager.startCombat] Parent #mapContainer display: ${window.getComputedStyle(mapContainer).display}`, 'debug');
+                        const middlePanel = document.getElementById('middle-panel');
+                        if (middlePanel) {
+                            logToConsole(`[CombatManager.startCombat] Grandparent #middle-panel display: ${window.getComputedStyle(middlePanel).display}`, 'debug');
+                        }
+                    }
+                }
+            }, 0);
+        } else {
+            console.error("CombatManager: combatUIDiv not found in DOM, cannot make it visible.");
+            logToConsole("[CombatManager.startCombat] ERROR: #combatUIDiv not found in DOM.", "error");
+        }
 
-  // NEW: promote the initial target immediately
-  if (initialTarget) {
-    this.gameState.selectedTargetEntity = initialTarget;       // keep for player turn
-    this.gameState.targetConfirmed = true;                     // drive the 'confirmed' branch in prompt
-    this.gameState.combatCurrentDefender = initialTarget;      // visible immediately
-    this.gameState.defenderMapPos = initialTarget.mapPos
-      ? { ...initialTarget.mapPos }
-      : (this.gameState.targetingCoords ? { ...this.gameState.targetingCoords } : null);
-    this.gameState.initialTargetSet = true;
+        if (initialTarget) {
+            this.gameState.combatCurrentDefender = initialTarget;
+            logToConsole(`Initial target set to: ${initialTarget.name || initialTarget.id}`, 'lightblue');
+        }
 
-    logToConsole(
-      `Initial defender set: ${initialTarget.name || initialTarget.id} ` +
-      (this.gameState.defenderMapPos ? `(Z:${this.gameState.defenderMapPos.z})` : `(no mapPos)`),
-      'lightblue'
-    );
-  }
-
-  this.initiativeTracker = [];
-  this.gameState.playerMovedThisTurn = false;
-
-  participants.forEach(p => {
-    if (!p) return;
-    const isPlayer = p === this.gameState.player;
-    this.initiativeTracker.push({
-      entity: p,
-      initiative: rollDie(20) + getStatModifier("Dexterity", p),
-      isPlayer
-    });
-    if (!isPlayer) p.movedThisTurn = false;
-  });
-
-  this.initiativeTracker.sort((a, b) => b.initiative - a.initiative || (a.isPlayer ? -1 : (b.isPlayer ? 1 : 0)));
-  this.currentTurnIndex = -1;
-  this.gameState.isInCombat = true;
-
-  // Optional: show the LOS line right away if you have both ends
-  if (this.gameState.combatCurrentDefender) {
-    this.updateCombatLOSLine(
-      this.gameState.player, // attacker for preview
-      this.gameState.combatCurrentDefender,
-      null                   // or the currently selected weapon if you have it
-    );
-  }
-
-  logToConsole("Combat Started!", 'red');
-  this.updateInitiativeDisplay();
-  this.nextTurn();
-}
+        this.initiativeTracker = []; this.gameState.playerMovedThisTurn = false;
+        participants.forEach(p => {
+            if (!p) return;
+            const isPlayer = p === this.gameState;
+            this.initiativeTracker.push({ entity: p, initiative: rollDie(20) + getStatModifier("Dexterity", isPlayer ? this.gameState : p), isPlayer });
+            if (!isPlayer) p.movedThisTurn = false;
+        });
+        this.initiativeTracker.sort((a, b) => b.initiative - a.initiative || (a.isPlayer ? -1 : (b.isPlayer ? 1 : 0)));
+        this.currentTurnIndex = -1; this.gameState.isInCombat = true;
+        logToConsole("Combat Started!", 'red');
+        this.updateInitiativeDisplay(); this.nextTurn();
+    }
 
     updateInitiativeDisplay() {
         const display = document.getElementById('initiativeDisplay'); if (!display) return;
@@ -410,8 +392,8 @@ startCombat(participants, initialTarget = null) {
 
             attacker = currentEntry.entity;
             const isPlayer = currentEntry.isPlayer;
-            const headHealth = isPlayer ? this.gameState.health?.head?.current : attacker.health?.head?.current;
-            const torsoHealth = isPlayer ? this.gameState.health?.torso?.current : attacker.health?.torso?.current;
+            const headHealth = isPlayer ? this.gameState.player.health?.head?.current : attacker.health?.head?.current;
+            const torsoHealth = isPlayer ? this.gameState.player.health?.torso?.current : attacker.health?.torso?.current;
 
             if ((typeof headHealth === 'number' && headHealth > 0) && (typeof torsoHealth === 'number' && torsoHealth > 0)) {
                 nextAttackerFound = true;
@@ -591,17 +573,14 @@ startCombat(participants, initialTarget = null) {
 
             window.turnManager.updateTurnUI(); // Update UI with refreshed AP/MP
 
-            if (this.gameState.initialTargetSet) {
-                this.gameState.initialTargetSet = false;
-                logToConsole(`[nextTurn] Preserving initial target: ${this.gameState.combatCurrentDefender?.name}.`, 'lightblue');
-            } else if (this.gameState.selectedTargetEntity) {
+            if (this.gameState.selectedTargetEntity) {
                 this.gameState.combatCurrentDefender = this.gameState.selectedTargetEntity;
                 this.gameState.defenderMapPos = this.gameState.selectedTargetEntity.mapPos ? { ...this.gameState.selectedTargetEntity.mapPos } : null;
                 logToConsole(`[nextTurn] Player's turn starts with pre-selected target: ${this.gameState.combatCurrentDefender.name}.`, 'lightblue');
                 // Consume the pre-selected target state so it's not reused on subsequent turns.
                 this.gameState.selectedTargetEntity = null;
                 this.gameState.targetConfirmed = false;
-            } else if (!this.gameState.retargetingJustHappened && !this.gameState.combatCurrentDefender) {
+            } else if (!this.gameState.retargetingJustHappened) {
                 this.gameState.combatCurrentDefender = null; this.gameState.defenderMapPos = null;
                 const aggroTarget = this.gameState.player?.aggroList?.find(a => a.entityRef && a.entityRef !== this.gameState && a.entityRef.health?.torso?.current > 0 && a.entityRef.health?.head?.current > 0 && a.entityRef.teamId !== this.gameState.player.teamId && this.initiativeTracker.find(e => e.entity === a.entityRef));
                 if (aggroTarget) { this.gameState.combatCurrentDefender = aggroTarget.entityRef; this.gameState.defenderMapPos = { ...aggroTarget.entityRef.mapPos }; logToConsole(`Player auto-targets ${aggroTarget.entityRef.name} from aggro.`, 'lightblue'); }
@@ -2255,6 +2234,7 @@ startCombat(participants, initialTarget = null) {
     }
 
     updateCombatUI() {
+        console.log(`[Debug] updateCombatUI called. Attacker: ${this.gameState.combatCurrentAttacker?.name || 'None'}, Defender: ${this.gameState.combatCurrentDefender?.name || 'None'}`);
         const updateElement = (id, prefix, entity) => {
             const el = document.getElementById(id);
             if (el) {
