@@ -267,6 +267,7 @@
     }
 
     promptPlayerDefenseDeclaration(attackData) {
+        this.updateCombatUI();
         this.gameState.isWaitingForPlayerCombatInput = true;
         logToConsole(`[promptPlayerDefenseDeclaration] Set isWaitingForPlayerCombatInput to TRUE. Phase: ${this.gameState.combatPhase}`, 'magenta');
         const defenseTypeSelect = document.getElementById('combatDefenseTypeSelect');
@@ -773,7 +774,7 @@
         this.gameState.combatPhase = 'defenderDeclare'; this.handleDefenderActionPrompt();
     }
 
-    handleConfirmedDefenseDeclaration() {
+    async handleConfirmedDefenseDeclaration() {
         logToConsole(`[handleConfirmedDefenseDeclaration] Setting isWaitingForPlayerCombatInput to FALSE. Current phase: ${this.gameState.combatPhase}`, 'magenta');
         this.gameState.isWaitingForPlayerCombatInput = false;
         const defenseType = document.getElementById('combatDefenseTypeSelect').value;
@@ -781,7 +782,8 @@
         this.gameState.playerDefenseChoice = { type: defenseType, blockingLimb, description: defenseType + (blockingLimb ? ` with ${blockingLimb}` : "") };
         logToConsole(`Player defends: ${this.gameState.playerDefenseChoice.description}.`, 'lightgreen');
         document.getElementById('defenseDeclarationUI').classList.add('hidden');
-        this.gameState.combatPhase = 'resolveRolls'; this.processAttack();
+        this.gameState.combatPhase = 'resolveRolls';
+        await this.processAttack();
     }
 
     decideNpcDefense() {
@@ -2175,7 +2177,7 @@
                 }
             }
         }
-        if (isPlayerVictim && window.renderHealthTable) window.renderHealthTable(entity);
+        if (isPlayerVictim && window.renderHealthTable) window.renderHealthTable(window.gameState);
         if (entity.xpAwardedThisDamageEvent) delete entity.xpAwardedThisDamageEvent; // Clean up temp flag
     }
 
