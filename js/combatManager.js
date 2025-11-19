@@ -1674,7 +1674,7 @@
             }
             this.gameState.combatPhase = 'applyDamage';
             if (attackType === 'melee') {
-                this.calculateAndApplyMeleeDamage(attacker, defender, weapon, hit, attackResult.naturalRoll, defenseResult.naturalRoll, actualTargetBodyPart);
+                await this.calculateAndApplyMeleeDamage(attacker, defender, weapon, hit, attackResult.naturalRoll, defenseResult.naturalRoll, actualTargetBodyPart);
             } else if (attackType === 'ranged' && !isImpactLauncher) {
                 // Damage roll animation for ranged
                 if (weapon && weapon.damage) {
@@ -1696,7 +1696,7 @@
                     await Promise.all(animationPromises);
                     animationPromises.length = 0;
                 }
-                this.calculateAndApplyRangedDamage(attacker, defender, weapon, actualTargetBodyPart, hit, attackResult, numHitsCalc);
+                await this.calculateAndApplyRangedDamage(attacker, defender, weapon, actualTargetBodyPart, hit, attackResult, numHitsCalc);
             }
         }
 
@@ -2177,7 +2177,7 @@
                 }
             }
         }
-        if (isPlayerVictim && window.renderHealthTable) window.renderHealthTable(window.gameState);
+        if (isPlayerVictim && window.renderHealthTable) window.renderHealthTable(window.gameState.player);
         if (entity.xpAwardedThisDamageEvent) delete entity.xpAwardedThisDamageEvent; // Clean up temp flag
     }
 
