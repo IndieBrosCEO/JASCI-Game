@@ -22,7 +22,7 @@
  * @param {number} [animationDurationOverride] - Optional duration for the movement animation.
  * @returns {boolean} True if a move (including starting a fall) was made, false otherwise.
  */
-async function attemptCharacterMove(character, direction, assetManagerInstance, moveCostOverride = null, animationDurationOverride = null) {
+function attemptCharacterMove(character, direction, assetManagerInstance, moveCostOverride = null, animationDurationOverride = null) {
     const isPlayer = (character === window.gameState);
     const logPrefix = isPlayer ? "[PlayerMovement]" : `[NPCMovement ${character.id || 'UnknownNPC'}]`;
 
