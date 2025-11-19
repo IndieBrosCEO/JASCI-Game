@@ -325,6 +325,7 @@
             logToConsole(`Initial target set to: ${initialTarget.name || initialTarget.id}`, 'lightblue');
         }
 
+        this.updateCombatUI();
         this.initiativeTracker = []; this.gameState.playerMovedThisTurn = false;
         participants.forEach(p => {
             if (!p) return;
@@ -423,6 +424,7 @@
 
         // At this point, 'attacker' and 'currentEntry' refer to a live entity.
         this.gameState.combatCurrentAttacker = attacker;
+        this.updateCombatUI();
         attackerName = currentEntry.isPlayer ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id || "Unknown");
         this.gameState.attackerMapPos = currentEntry.isPlayer ? { ...this.gameState.playerPos } : (attacker.mapPos ? { ...attacker.mapPos } : null);
         logToConsole(`--- ${attackerName}'s Turn --- (${this.gameState.isWaitingForPlayerCombatInput ? "WAITING FLAG TRUE" : "WAITING FLAG FALSE"})`, 'lightblue');
@@ -2056,8 +2058,8 @@
         const isPlayerVictim = (entity === this.gameState);
 
         let part = null;
-        if (isPlayerVictim && this.gameState.health && this.gameState.health[accessKey]) {
-            part = this.gameState.health[accessKey];
+        if (isPlayerVictim && this.gameState.player.health && this.gameState.player.health[accessKey]) {
+            part = this.gameState.player.health[accessKey];
         } else if (!isPlayerVictim && entity.health && entity.health[accessKey]) {
             part = entity.health[accessKey];
         }
@@ -2208,7 +2210,7 @@
         const npcName = npc.name || npc.id || "NPC";
         if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) {
             logToConsole(`INFO: ${npcName} incapacitated. Skipping turn.`, 'orange');
-            await this.nextTurn(npc);
+            setTimeout(() => this.nextTurn(npc), 0);
             return;
         }
         if (!npc.memory) {
@@ -2222,15 +2224,14 @@
         const attackInitiated = await window.handleNpcCombatTurn(npc, this.gameState, this, this.assetManager);
 
         if (attackInitiated) {
-            // If handleNpcCombatTurn decided on an attack, it would have set pendingCombatAction.
-            // CombatManager now proceeds to defender declaration and attack resolution.
+            // If an attack is initiated, the logic flows through processAttack, which will call nextTurn.
             this.gameState.combatPhase = 'defenderDeclare';
             this.handleDefenderActionPrompt();
         } else {
-            // If handleNpcCombatTurn returned false, it means the NPC took a non-attack action (e.g., move, special ability)
-            // or decided to do nothing. The turn should end.
-            logToConsole(`CombatManager: NPC ${npcName} did not initiate an attack (or completed non-attack actions). Ending turn.`, 'grey');
-            await this.nextTurn(npc);
+            // If no attack was made (e.g., moved, no target), the turn is over.
+            // We must call nextTurn to proceed, but defer it to prevent re-entrant lock issues.
+            logToConsole(`CombatManager: NPC ${npcName} did not initiate an attack. Deferring nextTurn call.`, 'grey');
+            setTimeout(() => this.nextTurn(npc), 0);
         }
     }
 
