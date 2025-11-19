@@ -534,7 +534,7 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
             const target = aggroEntry.entityRef;
             const isPlayer = target === gameState;
             const targetPos = isPlayer ? gameState.playerPos : target.mapPos;
-            const targetHealth = isPlayer ? gameState.health : target.health;
+            const targetHealth = isPlayer ? gameState.player.health : target.health;
             const targetTeamId = isPlayer ? gameState.player.teamId : target.teamId;
 
             if (target && target !== npc && targetHealth?.torso?.current > 0 && targetHealth?.head?.current > 0 &&
@@ -551,7 +551,7 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
         const candidate = entry.entity;
         const isPlayer = candidate === gameState;
         const candPos = isPlayer ? gameState.playerPos : candidate.mapPos;
-        const candHealth = isPlayer ? gameState.health : candidate.health;
+        const candHealth = isPlayer ? gameState.player.health : candidate.health;
         const candTeamId = isPlayer ? gameState.player.teamId : candidate.teamId;
 
         if (candidate !== npc && candHealth?.torso?.current > 0 && candHealth?.head?.current > 0 &&

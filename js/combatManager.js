@@ -392,7 +392,7 @@
 
             attacker = currentEntry.entity;
             const isPlayer = currentEntry.isPlayer;
-            const healthObj = isPlayer ? this.gameState.health : attacker.health;
+            const healthObj = isPlayer ? this.gameState.player.health : attacker.health;
             const headHealth = healthObj?.head?.current;
             const torsoHealth = healthObj?.torso?.current;
 
@@ -2208,7 +2208,7 @@
         const npcName = npc.name || npc.id || "NPC";
         if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) {
             logToConsole(`INFO: ${npcName} incapacitated. Skipping turn.`, 'orange');
-            setTimeout(() => this.nextTurn(npc), 0);
+            await this.nextTurn(npc);
             return;
         }
         if (!npc.memory) {
@@ -2222,14 +2222,15 @@
         const attackInitiated = await window.handleNpcCombatTurn(npc, this.gameState, this, this.assetManager);
 
         if (attackInitiated) {
-            // If an attack is initiated, the logic flows through processAttack, which will call nextTurn.
+            // If handleNpcCombatTurn decided on an attack, it would have set pendingCombatAction.
+            // CombatManager now proceeds to defender declaration and attack resolution.
             this.gameState.combatPhase = 'defenderDeclare';
             this.handleDefenderActionPrompt();
         } else {
-            // If no attack was made (e.g., moved, no target), the turn is over.
-            // We must call nextTurn to proceed, but defer it to prevent re-entrant lock issues.
-            logToConsole(`CombatManager: NPC ${npcName} did not initiate an attack. Deferring nextTurn call.`, 'grey');
-            setTimeout(() => this.nextTurn(npc), 0);
+            // If handleNpcCombatTurn returned false, it means the NPC took a non-attack action (e.g., move, special ability)
+            // or decided to do nothing. The turn should end.
+            logToConsole(`CombatManager: NPC ${npcName} did not initiate an attack (or completed non-attack actions). Ending turn.`, 'grey');
+            await this.nextTurn(npc);
         }
     }
 
