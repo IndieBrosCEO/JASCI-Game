@@ -2482,12 +2482,12 @@ async function initialize() { // Made async
 
         const confirmDefenseBtn = document.getElementById('confirmDefenseButton');
         if (confirmDefenseBtn) {
-            confirmDefenseBtn.addEventListener('click', () => {
+            confirmDefenseBtn.addEventListener('click', async () => {
                 if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
                 if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
                     combatManager.gameState.combatCurrentDefender === combatManager.gameState && // Player is defending
                     combatManager.gameState.combatPhase === 'playerDefenseDeclare') {
-                    combatManager.handleConfirmedDefenseDeclaration();
+                    await combatManager.handleConfirmedDefenseDeclaration();
                 } else {
                     if (!combatManager || !combatManager.gameState) {
                         console.error("CombatManager or gameState not available for defense confirmation.");
