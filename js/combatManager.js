@@ -2208,7 +2208,7 @@
         const npcName = npc.name || npc.id || "NPC";
         if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) {
             logToConsole(`INFO: ${npcName} incapacitated. Skipping turn.`, 'orange');
-            await this.nextTurn(npc);
+            setTimeout(() => this.nextTurn(npc), 0);
             return;
         }
         if (!npc.memory) {
@@ -2222,15 +2222,14 @@
         const attackInitiated = await window.handleNpcCombatTurn(npc, this.gameState, this, this.assetManager);
 
         if (attackInitiated) {
-            // If handleNpcCombatTurn decided on an attack, it would have set pendingCombatAction.
-            // CombatManager now proceeds to defender declaration and attack resolution.
+            // If an attack is initiated, the logic flows through processAttack, which will call nextTurn.
             this.gameState.combatPhase = 'defenderDeclare';
             this.handleDefenderActionPrompt();
         } else {
-            // If handleNpcCombatTurn returned false, it means the NPC took a non-attack action (e.g., move, special ability)
-            // or decided to do nothing. The turn should end.
-            logToConsole(`CombatManager: NPC ${npcName} did not initiate an attack (or completed non-attack actions). Ending turn.`, 'grey');
-            await this.nextTurn(npc);
+            // If no attack was made (e.g., moved, no target), the turn is over.
+            // We must call nextTurn to proceed, but defer it to prevent re-entrant lock issues.
+            logToConsole(`CombatManager: NPC ${npcName} did not initiate an attack. Deferring nextTurn call.`, 'grey');
+            setTimeout(() => this.nextTurn(npc), 0);
         }
     }
 
