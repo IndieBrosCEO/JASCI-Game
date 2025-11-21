@@ -2446,8 +2446,12 @@ async function initialize() { // Made async
             confirmButton.addEventListener('click', () => {
                 // Sound is played before checks, as it's a button click action
                 if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+                const attacker = combatManager?.gameState?.combatCurrentAttacker;
+                const player = combatManager?.gameState?.player;
+                const isPlayerAttacking = attacker && (attacker === combatManager.gameState || attacker === player);
+
                 if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
-                    combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
+                    isPlayerAttacking && // gameState or player object is the attacker
                     combatManager.gameState.combatPhase === 'playerAttackDeclare') {
                     combatManager.handleConfirmedAttackDeclaration();
                 } else {
@@ -2455,7 +2459,7 @@ async function initialize() { // Made async
                         console.error("CombatManager or gameState not available.");
                     } else if (!combatManager.gameState.isInCombat) {
                         console.log("Confirm attack clicked, but not in combat.");
-                    } else if (combatManager.gameState.combatCurrentAttacker !== combatManager.gameState) {
+                    } else if (!isPlayerAttacking) {
                         console.log("Confirm attack clicked, but not player's turn.");
                     } else if (combatManager.gameState.combatPhase !== 'playerAttackDeclare') {
                         console.log(`Confirm attack clicked, but phase is ${combatManager.gameState.combatPhase}, not playerAttackDeclare.`);
@@ -2470,8 +2474,12 @@ async function initialize() { // Made async
         if (grappleButton) {
             grappleButton.addEventListener('click', () => {
                 if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
+                const attacker = combatManager?.gameState?.combatCurrentAttacker;
+                const player = combatManager?.gameState?.player;
+                const isPlayerAttacking = attacker && (attacker === combatManager.gameState || attacker === player);
+
                 if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
-                    combatManager.gameState.combatCurrentAttacker === combatManager.gameState && // gameState is the player object
+                    isPlayerAttacking && // gameState or player object is the attacker
                     combatManager.gameState.combatPhase === 'playerAttackDeclare') {
                     combatManager.handleGrappleAttemptDeclaration();
                 } else {
@@ -2479,7 +2487,7 @@ async function initialize() { // Made async
                         console.error("CombatManager or gameState not available for grapple attempt.");
                     } else if (!combatManager.gameState.isInCombat) {
                         console.log("Attempt Grapple clicked, but not in combat.");
-                    } else if (combatManager.gameState.combatCurrentAttacker !== combatManager.gameState) {
+                    } else if (!isPlayerAttacking) {
                         console.log("Attempt Grapple clicked, but not player's turn.");
                     } else if (combatManager.gameState.combatPhase !== 'playerAttackDeclare') {
                         console.log(`Attempt Grapple clicked, but phase is ${combatManager.gameState.combatPhase}, not playerAttackDeclare.`);
@@ -2494,8 +2502,12 @@ async function initialize() { // Made async
         if (confirmDefenseBtn) {
             confirmDefenseBtn.addEventListener('click', async () => {
                 if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Confirm sound
+                const defender = combatManager?.gameState?.combatCurrentDefender;
+                const player = combatManager?.gameState?.player;
+                const isPlayerDefending = defender && (defender === combatManager.gameState || defender === player);
+
                 if (combatManager && combatManager.gameState && combatManager.gameState.isInCombat &&
-                    combatManager.gameState.combatCurrentDefender === combatManager.gameState && // Player is defending
+                    isPlayerDefending && // Player is defending
                     combatManager.gameState.combatPhase === 'playerDefenseDeclare') {
                     await combatManager.handleConfirmedDefenseDeclaration();
                 } else {
@@ -2503,7 +2515,7 @@ async function initialize() { // Made async
                         console.error("CombatManager or gameState not available for defense confirmation.");
                     } else if (!combatManager.gameState.isInCombat) {
                         console.log("Confirm Defense clicked, but not in combat.");
-                    } else if (combatManager.gameState.combatCurrentDefender !== combatManager.gameState) {
+                    } else if (!isPlayerDefending) {
                         console.log("Confirm Defense clicked, but not player's turn to defend.");
                     } else if (combatManager.gameState.combatPhase !== 'playerDefenseDeclare') {
                         console.log(`Confirm Defense clicked, but phase is ${combatManager.gameState.combatPhase}, not playerDefenseDeclare.`);
