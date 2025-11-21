@@ -994,5 +994,55 @@
       "type": "bandage",
       "grade": 1
     }
+  },
+  {
+    "id": "molotov_cocktail",
+    "name": "Molotov Cocktail",
+    "description": "A bottle filled with flammable liquid and a rag fuse. Incendiary.",
+    "type": "weapon_thrown_explosive",
+    "canEquip": true,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 1,
+    "tags": [
+      "weapon",
+      "thrown",
+      "incendiary",
+      "fire_source"
+    ],
+    "damage": "2d6",
+    "damageType": "Fire",
+    "burstRadiusFt": 5,
+    "range": 5,
+    "family": "explosive",
+    "properties": {
+      "type": "incendiary"
+    }
+  },
+  {
+    "id": "water_bucket",
+    "name": "Bucket of Water",
+    "description": "A bucket filled with water. Good for extinguishing fires.",
+    "type": "weapon_thrown_utility",
+    "canEquip": true,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 8,
+    "tags": [
+      "tool",
+      "water_source",
+      "extinguish_source",
+      "thrown"
+    ],
+    "effects": {
+      "extinguish": true
+    },
+    "family": "tool",
+    "properties": {
+      "type": "bucket"
+    },
+    "range": 5,
+    "damage": "0",
+    "damageType": "Physical"
   }
 ]

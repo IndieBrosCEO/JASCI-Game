@@ -1592,6 +1592,28 @@
             this.applySpecialEffect(attacker, weapon, (defender && hit ? defender : null), this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || this.gameState.defenderMapPos || attacker?.mapPos || this.gameState.playerPos);
         }
 
+        // Fire Source Logic (Ignition)
+        if (weapon?.tags?.includes("fire_source")) {
+            const targetTile = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || this.gameState.defenderMapPos;
+            if (targetTile && window.fireManager) {
+                // Ignite center
+                window.fireManager.igniteTile(targetTile.x, targetTile.y, targetTile.z);
+                // Ignite neighbors (Area Effect on Impact)
+                const neighbors = [{dx:0, dy:-1}, {dx:0, dy:1}, {dx:-1, dy:0}, {dx:1, dy:0}];
+                neighbors.forEach(n => {
+                    window.fireManager.igniteTile(targetTile.x + n.dx, targetTile.y + n.dy, targetTile.z);
+                });
+            }
+        }
+
+        // Extinguish Logic
+        if (weapon?.tags?.includes("extinguish_source")) {
+            const targetTile = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || this.gameState.defenderMapPos;
+            if (targetTile && window.fireManager) {
+                window.fireManager.extinguishTile(targetTile.x, targetTile.y, targetTile.z);
+            }
+        }
+
         const isThrownExplosive = weapon?.type === "weapon_thrown_explosive";
         const isImpactLauncher = weapon?.explodesOnImpact && !isThrownExplosive; // e.g. Rocket Launcher, Grenade Launcher
         // For thrown explosives, the explosiveProps come from the weapon itself (e.g. frag_grenade_thrown)

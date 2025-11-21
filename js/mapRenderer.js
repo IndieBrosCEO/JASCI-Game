@@ -1133,6 +1133,10 @@ window.mapRenderer = {
                     finalSpriteForTile = 'X';
                     finalColorForTile = 'red';
                     finalDisplayIdForTile = 'TARGET_CURSOR';
+                } else if (gameState.activeFires && gameState.activeFires.some(f => f.x === x && f.y === y && f.z === currentZ)) {
+                    finalSpriteForTile = '^'; // Fire sprite
+                    finalColorForTile = 'orange'; // Fire color
+                    finalDisplayIdForTile = 'FIRE';
                 } else if (window.trapManager && typeof window.trapManager.getTrapAt === 'function') {
                     const trapInstance = window.trapManager.getTrapAt(x, y, currentZ);
                     if (trapInstance && trapInstance.state !== "hidden") {

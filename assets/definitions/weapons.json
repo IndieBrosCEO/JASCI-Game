@@ -3,22 +3,55 @@
     "id": "desert_eagle_50ae",
     "name": "Desert Eagle (.50AE autoloader)",
     "family": "firearm",
-    "properties": { "type": "pistol", "caliber": "50AE", "action": "semi-auto" },
+    "properties": {
+      "type": "pistol",
+      "caliber": "50AE",
+      "action": "semi-auto"
+    },
     "description": "A powerful semi-automatic handgun known for its .50AE chambering.",
-    "type": "weapon_firearm", "size": 3, "weightLbs": 4,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "handgun" ],
-    "damage": "1d7", "damageType": "Ballistic", "rateOfFire": "S", "magazineSize": 8, "ammoType": ".50AE",
+    "type": "weapon_firearm",
+    "size": 3,
+    "weightLbs": 4,
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "handgun"
+    ],
+    "damage": "1d7",
+    "damageType": "Ballistic",
+    "rateOfFire": "S",
+    "magazineSize": 8,
+    "ammoType": ".50AE",
     "canEquip": true
   },
-    {
+  {
     "id": "sw_m29_44",
     "name": "S&W M29 (.44 magnum revolver)",
     "family": "firearm",
-    "properties": { "type": "pistol", "caliber": ".44mag", "action": "revolver" },
+    "properties": {
+      "type": "pistol",
+      "caliber": ".44mag",
+      "action": "revolver"
+    },
     "description": "A powerful .44 magnum revolver.",
-    "type": "weapon_firearm", "size": 3, "weightLbs": 3,
-    "tags": [ "weapon", "firearm", "pistol", "modern", "revolver", "handgun" ],
-    "damage": "1d6", "damageType": "Ballistic", "rateOfFire": "S", "magazineSize": 6, "ammoType": ".44mag",
+    "type": "weapon_firearm",
+    "size": 3,
+    "weightLbs": 3,
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol",
+      "modern",
+      "revolver",
+      "handgun"
+    ],
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "rateOfFire": "S",
+    "magazineSize": 6,
+    "ammoType": ".44mag",
     "canEquip": true
   },
   {
@@ -26,10 +59,23 @@
     "name": "Knife",
     "description": "A general-purpose knife, suitable for combat or utility.",
     "family": "melee_weapon",
-    "properties": { "type": "blade", "size": "small" },
-    "type": "weapon_melee", "size": 1, "weightLbs": 1,
-    "tags": [ "weapon", "melee", "piercing", "slashing", "knife", "tool" ],
-    "damage": "1d4", "damageType": "Piercing",
+    "properties": {
+      "type": "blade",
+      "size": "small"
+    },
+    "type": "weapon_melee",
+    "size": 1,
+    "weightLbs": 1,
+    "tags": [
+      "weapon",
+      "melee",
+      "piercing",
+      "slashing",
+      "knife",
+      "tool"
+    ],
+    "damage": "1d4",
+    "damageType": "Piercing",
     "canEquip": true
   },
   {
@@ -37,30 +83,97 @@
     "name": "Club",
     "description": "A simple bludgeoning weapon, such as a heavy stick or cudgel.",
     "family": "melee_weapon",
-    "properties": { "type": "bludgeon", "size": "medium" },
-    "type": "weapon_melee", "size": 3, "weightLbs": 3,
-    "tags": [ "weapon", "melee", "bludgeoning", "improvised" ],
-    "damage": "1d6", "damageType": "Bludgeoning",
+    "properties": {
+      "type": "bludgeon",
+      "size": "medium"
+    },
+    "type": "weapon_melee",
+    "size": 3,
+    "weightLbs": 3,
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning",
+      "improvised"
+    ],
+    "damage": "1d6",
+    "damageType": "Bludgeoning",
     "canEquip": true,
     "recipe": {
       "description": "Fashion a crude club from a stick and some cloth for grip.",
       "components": [
-        { "family": "wood", "quantity": 1, "require": { "type": "stick" } },
-        { "family": "fabric", "quantity": 1, "require": { "grade": "rough" } }
+        {
+          "family": "wood",
+          "quantity": 1,
+          "require": {
+            "type": "stick"
+          }
+        },
+        {
+          "family": "fabric",
+          "quantity": 1,
+          "require": {
+            "grade": "rough"
+          }
+        }
       ],
-      "skills_required": [ { "skill": "Survival", "level": 0 } ],
-      "time_to_craft": 10, "batch_s-ize": 1
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 0
+        }
+      ],
+      "time_to_craft": 10,
+      "batch_s-ize": 1
     }
   },
-    {
+  {
     "id": "shiv_melee",
     "name": "Makeshift Shiv",
     "description": "A crudely sharpened piece of metal. Better than nothing.",
     "family": "melee_weapon",
-    "properties": { "type": "blade", "size": "small", "quality": "makeshift" },
-    "type": "weapon_melee_blade_small", "damage": "1d4-1", "damageType": "Piercing",
-    "range": 1, "hands": 1, "weightLbs": 0.5, "size": 1, "value": 5,
-    "sprite": "¡", "color": "lightgray", "tags": [ "melee", "blade", "makeshift", "stealthy" ],
+    "properties": {
+      "type": "blade",
+      "size": "small",
+      "quality": "makeshift"
+    },
+    "type": "weapon_melee_blade_small",
+    "damage": "1d4-1",
+    "damageType": "Piercing",
+    "range": 1,
+    "hands": 1,
+    "weightLbs": 0.5,
+    "size": 1,
+    "value": 5,
+    "sprite": "¡",
+    "color": "lightgray",
+    "tags": [
+      "melee",
+      "blade",
+      "makeshift",
+      "stealthy"
+    ],
+    "canEquip": true
+  },
+  {
+    "id": "torch_melee",
+    "name": "Torch",
+    "description": "A wooden torch. Provides light and can ignite flammable objects.",
+    "type": "weapon_melee",
+    "size": 2,
+    "weightLbs": 1,
+    "tags": [
+      "weapon",
+      "melee",
+      "light_source",
+      "fire_source",
+      "bludgeoning"
+    ],
+    "damage": "1d4",
+    "damageType": "Fire",
+    "emitsLight": true,
+    "lightRadius": 5,
+    "lightColor": "#FFA500",
     "canEquip": true
   }
 ]
