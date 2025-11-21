@@ -22,16 +22,27 @@
       "description": "Assemble a crude scope from basic lenses and a tube.",
       "components": [
         {
-          "itemId": "metal_rod_thin",
-          "quantity": 1
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "type": "rod",
+            "size": "thin"
+          }
         },
         {
-          "itemId": "lens_crude_glass",
-          "quantity": 2
+          "quantity": 2,
+          "family": "lens",
+          "require": {
+            "material": "glass",
+            "grade": 1
+          }
         },
         {
-          "itemId": "duct_tape",
-          "quantity": 1
+          "quantity": 1,
+          "family": "adhesive",
+          "require": {
+            "type": "tape"
+          }
         }
       ],
       "skills_required": [
@@ -69,8 +80,12 @@
       "description": "Machine a simple pistol compensator.",
       "components": [
         {
-          "itemId": "metal_rod_thin",
-          "quantity": 1
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "type": "rod",
+            "size": "thin"
+          }
         }
       ],
       "skills_required": [
@@ -106,12 +121,19 @@
       "description": "Fabricate a simple extended magazine for 9mm pistols.",
       "components": [
         {
-          "itemId": "metal_sheet_thin",
-          "quantity": 1
+          "quantity": 1,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "thin"
+          }
         },
         {
-          "itemId": "spring_small_metal",
-          "quantity": 1
+          "quantity": 1,
+          "family": "component",
+          "require": {
+            "type": "spring",
+            "size": "small"
+          }
         }
       ],
       "skills_required": [
