@@ -1795,7 +1795,8 @@
                 // logToConsole("Ranged attack data cleared after attack processing.", 'grey');
             }
 
-            if (defender && ((defender === this.gameState && (this.gameState.health.head.current <= 0 || this.gameState.health.torso.current <= 0)) || (defender !== this.gameState && (defender.health?.head?.current <= 0 || defender.health?.torso?.current <= 0)))) {
+            const defenderHealth = (defender === this.gameState) ? this.gameState.player.health : defender.health;
+            if (defender && defenderHealth && (defenderHealth.head?.current <= 0 || defenderHealth.torso?.current <= 0)) {
                 // Check if the entity is already marked as defeated or removed to avoid double processing
                 const stillInInitiative = this.initiativeTracker.find(e => e.entity === defender);
                 if (stillInInitiative) { // Only process if they haven't been removed by, say, an explosion already
