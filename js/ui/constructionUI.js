@@ -247,38 +247,10 @@ class ConstructionUIManager {
                 const resolver = this.constructionManager.recipeResolver || (window.RecipeResolver ? new window.RecipeResolver(this.assetManager) : null);
 
                 if (resolver && this.gameState.inventory) {
-                    const resolved = resolver.resolveComponent(comp, this.gameState.inventory.container.items);
-                    if (resolved) {
-                        currentCount = resolved.found;
-                        hasEnough = true;
-                    } else {
-                        // Even if not enough, we want to know how many we found
-                        // But resolveComponent returns null if not enough.
-                        // We need a way to just count.
-                        // Let's manually count for display.
-
-                        // Re-use logic from RecipeResolver but without the threshold check?
-                        // Or just modify resolveComponent to return what it found?
-                        // Since we can't modify RecipeResolver easily from here without checking its code again,
-                        // let's assume if it returns null, we might have 0 or some partial amount.
-
-                        // Fallback: manual check for display
-                        const inventoryItems = this.gameState.inventory.container.items;
-                        if (comp.family) {
-                             const validItems = inventoryItems.filter(invItem => {
-                                const itemDef = this.assetManager.getItem(invItem.id);
-                                if (!itemDef || itemDef.family !== comp.family) return false;
-                                return resolver.matchesRequirements(itemDef, comp.require);
-                            });
-                            currentCount = validItems.reduce((sum, i) => sum + (i.quantity || 1), 0);
-                        } else if (comp.itemId) {
-                             const foundItems = inventoryItems.filter(i => i.id === comp.itemId);
-                             currentCount = foundItems.reduce((sum, i) => sum + (i.quantity || 1), 0);
-                        }
-                    }
+                    const result = resolver.resolveComponent(comp, this.gameState.inventory.container.items);
+                    currentCount = result.found;
+                    hasEnough = result.satisfied;
                 }
-
-                if (currentCount >= comp.quantity) hasEnough = true;
 
                 if (comp.family) {
                     displayName = `Family: ${comp.family}`;
