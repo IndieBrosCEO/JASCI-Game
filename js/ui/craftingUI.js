@@ -219,13 +219,40 @@ class CraftingUIManager {
         this.recipeDetailWorkbench.textContent = recipe.workbenchRequired || "None";
 
         this.recipeDetailComponents.innerHTML = '';
-        if (recipe.components && recipe.components.length > 0) {
-            recipe.components.forEach(comp => {
-                const compItemDef = this.assetManager ? this.assetManager.getItem(comp.itemId) : { name: comp.itemId };
-                const playerHas = this.inventoryManager ? this.inventoryManager.countItems(comp.itemId, this.gameState.inventory.container.items) : 0;
+
+        // Component Requirements Display
+        const recipeToUse = recipe.recipe || recipe; // Fallback if recipe is just flat
+        if (recipeToUse.components && recipeToUse.components.length > 0) {
+            recipeToUse.components.forEach(comp => {
+                let displayName = "";
+                let hasEnough = false;
+                let currentCount = 0;
+
+                // Logic similar to constructionUI.js to resolve counts
+                const resolver = this.craftingManager.recipeResolver || (window.RecipeResolver ? new window.RecipeResolver(this.assetManager) : null);
+
+                if (resolver && this.gameState.inventory) {
+                    const result = resolver.resolveComponent(comp, this.gameState.inventory.container.items);
+                    currentCount = result.found;
+                    hasEnough = result.satisfied;
+                }
+
+                if (comp.family) {
+                    displayName = `Family: ${comp.family}`;
+                    if (comp.require) {
+                        const reqs = Object.entries(comp.require).map(([k, v]) => `${k}: ${v}`).join(', ');
+                        if (reqs) displayName += ` (${reqs})`;
+                    }
+                } else if (comp.itemId) {
+                    const itemDef = this.assetManager ? this.assetManager.getItem(comp.itemId) : null;
+                    displayName = itemDef ? itemDef.name : comp.itemId;
+                } else {
+                    displayName = "Unknown Component";
+                }
+
                 const listItem = document.createElement('li');
-                listItem.textContent = `${compItemDef?.name || comp.itemId}: ${playerHas} / ${comp.quantity}`;
-                listItem.style.color = playerHas >= comp.quantity ? "lightgreen" : "lightcoral";
+                listItem.textContent = `${displayName}: ${currentCount} / ${comp.quantity}`;
+                listItem.style.color = hasEnough ? "lightgreen" : "lightcoral";
                 this.recipeDetailComponents.appendChild(listItem);
             });
         } else {

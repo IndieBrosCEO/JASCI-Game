@@ -77,7 +77,7 @@ class AssetManager {
         this.constructionDefinitions = {};
         this.levelCurve = [];
         this.families = {};
-        this.familyItems = new Map();
+        this.familyItems = new Map(); // Initialize here to prevent crash before loadDefinitions
         this.legacyAliases = {};
 
         // Updated to load from new categorized item files

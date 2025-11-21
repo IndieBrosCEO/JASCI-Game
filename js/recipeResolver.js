@@ -8,7 +8,7 @@ class RecipeResolver {
      *
      * @param {Object} componentRequirement - The component definition from the recipe (e.g., { family: "wood", quantity: 2, require: { type: "log" } }).
      * @param {Array} inventoryItems - Array of item instances in the inventory.
-     * @returns {Object|null} - Returns an object { found: totalFound, items: [{ item: itemInstance, count: countToUse }] } if satisfied, or null if not satisfied.
+     * @returns {Object} - Returns { found: totalFound, items: [{ item: itemInstance, count: countToUse }], satisfied: boolean }.
      */
     resolveComponent(componentRequirement, inventoryItems) {
         if (!componentRequirement.family) {
@@ -16,20 +16,26 @@ class RecipeResolver {
             if (componentRequirement.itemId) {
                 const foundItems = inventoryItems.filter(i => i.id === componentRequirement.itemId);
                 const totalCount = foundItems.reduce((sum, i) => sum + (i.quantity || 1), 0);
-                if (totalCount >= componentRequirement.quantity) {
-                    // Simplified return for legacy support: just list items to consume until quantity is met
+
+                const result = {
+                    found: totalCount,
+                    items: [],
+                    satisfied: totalCount >= componentRequirement.quantity
+                };
+
+                if (result.satisfied) {
                     let remaining = componentRequirement.quantity;
-                    const toConsume = [];
                     for (const item of foundItems) {
                         if (remaining <= 0) break;
                         const take = Math.min(item.quantity || 1, remaining);
-                        toConsume.push({ item: item, count: take });
+                        result.items.push({ item: item, count: take });
                         remaining -= take;
                     }
-                    return { found: totalCount, items: toConsume };
                 }
+                return result;
             }
-            return null;
+            // If neither family nor itemId, return empty unsatisfied result
+            return { found: 0, items: [], satisfied: false };
         }
 
         // Family-based resolution
@@ -49,19 +55,23 @@ class RecipeResolver {
 
         const totalAvailable = validInventoryItems.reduce((sum, i) => sum + (i.quantity || 1), 0);
 
-        if (totalAvailable >= componentRequirement.quantity) {
+        const result = {
+            found: totalAvailable,
+            items: [],
+            satisfied: totalAvailable >= componentRequirement.quantity
+        };
+
+        if (result.satisfied) {
             let remaining = componentRequirement.quantity;
-            const toConsume = [];
             for (const item of validInventoryItems) {
                 if (remaining <= 0) break;
                 const take = Math.min(item.quantity || 1, remaining);
-                toConsume.push({ item: item, count: take });
+                result.items.push({ item: item, count: take });
                 remaining -= take;
             }
-            return { found: totalAvailable, items: toConsume };
         }
 
-        return null; // Not enough items
+        return result;
     }
 
     /**

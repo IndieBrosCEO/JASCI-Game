@@ -301,7 +301,7 @@
           "family": "plastic",
           "require": {
             "type": "scrap",
-            "processed": true
+            "processed": true"
           }
         }
       ],
