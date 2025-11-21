@@ -9,12 +9,19 @@
       "description": "Weld and bolt together a small buggy chassis.",
       "components": [
         {
-          "itemId": "scrap_metal",
-          "quantity": 50
+          "quantity": 50,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
         },
         {
-          "itemId": "mechanical_parts_vehicle_grade",
-          "quantity": 10
+          "quantity": 10,
+          "family": "component",
+          "require": {
+            "type": "mechanical_parts",
+            "grade": "vehicle"
+          }
         }
       ],
       "skills_required": [
@@ -47,12 +54,18 @@
       "description": "Assemble a basic V4 engine from a parts kit.",
       "components": [
         {
-          "itemId": "engine_parts_kit_v4",
-          "quantity": 1
+          "quantity": 1,
+          "family": "engine_kit",
+          "require": {
+            "type": "v4"
+          }
         },
         {
-          "itemId": "scrap_metal",
-          "quantity": 10
+          "quantity": 10,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
         }
       ],
       "skills_required": [
@@ -86,12 +99,18 @@
       "description": "Assemble a standard wheel from rubber and a metal rim.",
       "components": [
         {
-          "itemId": "rubber_strips_or_chunks",
-          "quantity": 5
+          "quantity": 5,
+          "family": "rubber",
+          "require": {
+            "form": "strips_chunks"
+          }
         },
         {
-          "itemId": "scrap_metal",
-          "quantity": 2
+          "quantity": 2,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
         }
       ],
       "skills_required": [
@@ -119,8 +138,12 @@
       "description": "Forge and shape heavy steel armor plates for vehicles.",
       "components": [
         {
-          "itemId": "steel_plate_vehicle_grade",
-          "quantity": 5
+          "quantity": 5,
+          "family": "armor_plate",
+          "require": {
+            "grade": "vehicle",
+            "material": "steel"
+          }
         }
       ],
       "skills_required": [
@@ -148,16 +171,25 @@
       "description": "Construct a small wooden storage box, reinforced with metal.",
       "components": [
         {
-          "itemId": "wood_planks",
-          "quantity": 10
+          "quantity": 10,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
         },
         {
-          "itemId": "scrap_metal",
-          "quantity": 2
+          "quantity": 2,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
         },
         {
-          "itemId": "nails",
-          "quantity": 20
+          "quantity": 20,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
         }
       ],
       "skills_required": [
@@ -185,16 +217,27 @@
       "description": "Fabricate a light turret mount for vehicles.",
       "components": [
         {
-          "itemId": "steel_ingot",
-          "quantity": 3
+          "quantity": 3,
+          "family": "metal",
+          "require": {
+            "type": "ingot",
+            "material": "steel"
+          }
         },
         {
-          "itemId": "mechanical_parts_vehicle_grade",
-          "quantity": 3
+          "quantity": 3,
+          "family": "component",
+          "require": {
+            "type": "mechanical_parts",
+            "grade": "vehicle"
+          }
         },
         {
-          "itemId": "gears_assorted",
-          "quantity": 5
+          "quantity": 5,
+          "family": "component",
+          "require": {
+            "type": "gears"
+          }
         }
       ],
       "skills_required": [
@@ -222,20 +265,35 @@
       "description": "Assemble a pair of basic vehicle headlights.",
       "components": [
         {
-          "itemId": "electronics_scrap",
-          "quantity": 5
+          "quantity": 5,
+          "family": "component",
+          "require": {
+            "type": "circuit_board"
+          }
         },
         {
-          "itemId": "lens_crude_glass",
-          "quantity": 2
+          "quantity": 2,
+          "family": "lens",
+          "require": {
+            "material": "glass",
+            "grade": 1
+          }
         },
         {
-          "itemId": "plastic_casing_small_device",
-          "quantity": 2
+          "quantity": 2,
+          "family": "casing",
+          "require": {
+            "material": "plastic",
+            "size": "small"
+          }
         },
         {
-          "itemId": "wire_insulated_thin",
-          "quantity": 4
+          "quantity": 4,
+          "family": "wire",
+          "require": {
+            "size": "thin",
+            "insulated": true
+          }
         }
       ],
       "skills_required": [
