@@ -182,7 +182,7 @@
                 npc.aggroList.sort((a, b) => b.threat - a.threat);
             }
         });
-        if (this.gameState.player.teamId === teamId && attacker !== this.gameState && damagedEntity !== this.gameState) {
+        if (this.gameState.player.teamId === teamId && attacker !== this.gameState.player && damagedEntity !== this.gameState.player) {
             if (!this.gameState.player.aggroList) this.gameState.player.aggroList = [];
             let entry = this.gameState.player.aggroList.find(e => e.entityRef === attacker);
             if (entry) entry.threat += threatAmount;
@@ -610,16 +610,24 @@
             attacker.currentMovementPoints = attacker.defaultMovementPoints || 6; // Standard MP for NPCs
             logToConsole(`[nextTurn] NPC (${attackerName}) AP/MP RESET. AP: ${attacker.currentActionPoints}, MP: ${attacker.currentMovementPoints}`, 'yellow');
 
-            this.gameState.combatCurrentDefender = this.gameState; // Default target for NPC
+            // Defender must be the player ENTITY, not the global gameState object
+            this.gameState.combatCurrentDefender = this.gameState.player;
             this.gameState.defenderMapPos = this.gameState.playerPos ? { ...this.gameState.playerPos } : null;
 
             this.gameState.combatPhase = 'attackerDeclare';
+            // IMPORTANT: release the lock BEFORE giving control to the AI, because the AI/resolve path
+            // will call processAttack() -> nextTurn() again. If we keep the lock, that nextTurn() gets skipped.
+            this.isProcessingTurn = false;
+
             // Call the main NPC turn execution function from npcDecisions.js
             if (window.executeNpcTurn) {
                 await window.executeNpcTurn(attacker, this.gameState, this, this.assetManager);
+                return; // Let the resolve path advance the turn; don't fall through and re-acquire the lock
             } else {
                 logToConsole(`ERROR: window.executeNpcTurn is not defined. NPC ${attackerName} cannot take a turn.`, "red");
-                await this.nextTurn(attacker); // Skip turn if logic is missing
+                // Failsafe so combat doesn't stall
+                await this.nextTurn(attacker);
+                return;
             }
         }
         this.isProcessingTurn = false;
@@ -804,7 +812,7 @@
             logToConsole(`Error: Defender not set & not valid area effect. Attacker: ${attacker?.name}.`, 'red');
             if (attacker === this.gameState) this.promptPlayerAttackDeclaration(); else this.nextTurn(attacker); return;
         }
-        if (defender === this.gameState) {
+        if (defender === this.gameState.player) {
             if (!this.gameState.pendingCombatAction || Object.keys(this.gameState.pendingCombatAction).length === 0) {
                 this.gameState.playerDefenseChoice = { type: "Dodge", blockingLimb: null, description: "Error - No attack data" };
                 this.gameState.combatPhase = 'resolveRolls'; this.processAttack(); return;
@@ -1470,7 +1478,7 @@
 
             if (attackerMapPos && targetMapPos) {
                 const distance = getDistance3D(attackerMapPos, targetMapPos);
-                actionContext.isGrappling = attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === (defender === this.gameState ? 'player' : defender?.id);
+                actionContext.isGrappling = attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === (defender === this.gameState.player ? 'player' : defender?.id);
                 if (distance <= 1.8) actionContext.rangeModifier = (weapon.tags?.includes("requires_grapple_for_point_blank") && defender && actionContext.isGrappling) ? 15 : (weapon.tags?.includes("requires_grapple_for_point_blank") ? 0 : 15);
                 else if (distance <= weapon.optimalRange || 10) actionContext.rangeModifier = 5;
                 else if (distance <= weapon.effectiveRange || 30) actionContext.rangeModifier = 0;
@@ -2078,8 +2086,8 @@
         const accessKey = bodyPartName;
         logToConsole(`[applyDamage Debug] Received bodyPartName: "${bodyPartName}", Access Key: "${accessKey}" for ${entity.name || entity.id || 'Player'}`, 'purple'); // DIAGNOSTIC LOG
 
-        const entityName = (entity === this.gameState) ? "Player" : (entity.name || entity.id);
-        const isPlayerVictim = (entity === this.gameState);
+        const entityName = (entity === this.gameState || entity === this.gameState.player) ? "Player" : (entity.name || entity.id);
+        const isPlayerVictim = (entity === this.gameState || entity === this.gameState.player);
 
         let part = null;
         if (isPlayerVictim && this.gameState.player.health && this.gameState.player.health[accessKey]) {
@@ -2089,7 +2097,8 @@
         }
 
         if (!part) {
-            logToConsole(`Error: Invalid body part '${accessKey}' (from original "${bodyPartName}") for ${entityName}. Health object keys: ${JSON.stringify(isPlayerVictim ? Object.keys(this.gameState.health || {}) : Object.keys(entity.health || {}))}`, 'red');
+            const keys = isPlayerVictim ? Object.keys(this.gameState.player?.health || {}) : Object.keys(entity.health || {});
+            logToConsole(`Error: Invalid body part '${accessKey}' (from original "${bodyPartName}") for ${entityName}. Health object keys: ${JSON.stringify(keys)}`, 'red');
             return;
         }
 
@@ -2199,7 +2208,10 @@
                 }
             }
         }
-        if (isPlayerVictim && window.renderHealthTable) window.renderHealthTable(window.gameState.player);
+        if (isPlayerVictim) {
+            if (window.renderHealthTable) window.renderHealthTable(this.gameState.player);
+            if (window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
+        }
         if (entity.xpAwardedThisDamageEvent) delete entity.xpAwardedThisDamageEvent; // Clean up temp flag
     }
 
@@ -2252,10 +2264,8 @@
             this.gameState.combatPhase = 'defenderDeclare';
             this.handleDefenderActionPrompt();
         } else {
-            // If no attack was made (e.g., moved, no target), the turn is over.
-            // We must call nextTurn to proceed, but defer it to prevent re-entrant lock issues.
-            logToConsole(`CombatManager: NPC ${npcName} did not initiate an attack. Deferring nextTurn call.`, 'grey');
-            setTimeout(() => this.nextTurn(npc), 0);
+            logToConsole(`CombatManager: NPC ${npcName} did not initiate an attack (or completed non-attack actions). Ending turn.`, 'grey');
+            await this.nextTurn(npc);
         }
     }
 
