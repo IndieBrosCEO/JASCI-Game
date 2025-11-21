@@ -4,16 +4,6 @@
     "name": "Simple Wooden Wall Section",
     "description": "A basic defensive wall made of wood planks.",
     "category": "defensive",
-    "components": [
-      {
-        "itemId": "wood_planks",
-        "quantity": 4
-      },
-      {
-        "itemId": "nails",
-        "quantity": 8
-      }
-    ],
     "recipe": {
       "description": "Construct a simple defensive wall section from wood planks and nails.",
       "components": [
@@ -64,20 +54,6 @@
     "name": "Simple Wooden Door",
     "description": "A simple wooden door that can be opened and closed.",
     "category": "defensive",
-    "components": [
-      {
-        "itemId": "wood_planks",
-        "quantity": 3
-      },
-      {
-        "itemId": "nails",
-        "quantity": 4
-      },
-      {
-        "itemId": "scrap_metal",
-        "quantity": 1
-      }
-    ],
     "recipe": {
       "description": "Construct a simple wooden door.",
       "components": [
@@ -135,16 +111,6 @@
     "name": "Spike Pit (Built)",
     "description": "Dig a pit and line it with sharpened stakes.",
     "category": "defensive_trap",
-    "components": [
-      {
-        "itemId": "wood_planks",
-        "quantity": 2
-      },
-      {
-        "itemId": "scrap_metal",
-        "quantity": 3
-      }
-    ],
     "recipe": {
       "description": "Dig a pit and line it with sharpened stakes made from wood and metal.",
       "components": [
@@ -191,16 +157,6 @@
     "name": "Basic Workbench",
     "description": "A sturdy table for basic crafting and repairs.",
     "category": "crafting_station",
-    "components": [
-      {
-        "itemId": "wood_planks",
-        "quantity": 5
-      },
-      {
-        "itemId": "nails",
-        "quantity": 10
-      }
-    ],
     "recipe": {
       "description": "Construct a sturdy workbench for basic crafting and repairs.",
       "components": [
@@ -257,20 +213,6 @@
     "name": "Simple Forge",
     "description": "A rudimentary forge for working with metals.",
     "category": "crafting_station",
-    "components": [
-      {
-        "itemId": "stone_block",
-        "quantity": 10
-      },
-      {
-        "itemId": "metal_scraps",
-        "quantity": 5
-      },
-      {
-        "itemId": "wood_logs",
-        "quantity": 5
-      }
-    ],
     "recipe": {
       "description": "Construct a rudimentary forge for working with metals.",
       "components": [
@@ -336,20 +278,6 @@
     "name": "Chemistry Set",
     "description": "Allows for basic chemical reactions and crafting.",
     "category": "crafting_station",
-    "components": [
-      {
-        "itemId": "scrap_metal",
-        "quantity": 3
-      },
-      {
-        "itemId": "glass_shards",
-        "quantity": 5
-      },
-      {
-        "itemId": "plastic_scrap",
-        "quantity": 2
-      }
-    ],
     "recipe": {
       "description": "Assemble a basic chemistry set for chemical reactions.",
       "components": [
@@ -416,16 +344,6 @@
     "name": "Metal Barricade",
     "description": "A sturdy metal barricade offering good cover.",
     "category": "defensive",
-    "components": [
-      {
-        "itemId": "metal_sheets",
-        "quantity": 3
-      },
-      {
-        "itemId": "bolts",
-        "quantity": 6
-      }
-    ],
     "recipe": {
       "description": "Construct a sturdy metal barricade from metal sheets and bolts.",
       "components": [
@@ -484,16 +402,6 @@
     "name": "Small Rain Collector",
     "description": "Collects rainwater over time.",
     "category": "resource_production",
-    "components": [
-      {
-        "itemId": "plastic_scrap",
-        "quantity": 5
-      },
-      {
-        "itemId": "tarp",
-        "quantity": 1
-      }
-    ],
     "recipe": {
       "description": "Construct a small rain collector from processed plastic and a tarp.",
       "components": [
@@ -553,16 +461,6 @@
     "name": "Small Storage Locker",
     "description": "A small, lockable container for storing items.",
     "category": "storage",
-    "components": [
-      {
-        "itemId": "wood_planks",
-        "quantity": 3
-      },
-      {
-        "itemId": "scrap_metal",
-        "quantity": 2
-      }
-    ],
     "recipe": {
       "description": "Construct a small storage locker from wood and metal components.",
       "components": [
@@ -613,28 +511,6 @@
     "name": "Reloading Bench",
     "description": "A sturdy bench equipped with presses and measures for reloading ammunition.",
     "category": "crafting_station",
-    "components": [
-      {
-        "itemId": "wood_planks",
-        "quantity": 8
-      },
-      {
-        "itemId": "steel_ingot",
-        "quantity": 2
-      },
-      {
-        "itemId": "mechanical_parts_simple",
-        "quantity": 5
-      },
-      {
-        "itemId": "bolts_and_nuts_set",
-        "quantity": 1
-      },
-      {
-        "itemId": "nails",
-        "quantity": 20
-      }
-    ],
     "recipe": {
       "description": "Construct a dedicated bench for reloading ammunition.",
       "components": [
@@ -717,24 +593,6 @@
     "name": "Munitions Crafting Bench",
     "description": "A specialized workbench for safely assembling explosives and advanced ammunition.",
     "category": "crafting_station",
-    "components": [
-      {
-        "itemId": "reloading_bench_tile",
-        "quantity": 1
-      },
-      {
-        "itemId": "metal_sheet_sturdy",
-        "quantity": 4
-      },
-      {
-        "itemId": "plexiglass_sheet_thick",
-        "quantity": 1
-      },
-      {
-        "itemId": "bolts_and_nuts_set",
-        "quantity": 2
-      }
-    ],
     "recipe": {
       "description": "Construct a reinforced bench for munitions work, building upon a reloading bench.",
       "components": [
@@ -814,12 +672,6 @@
     "name": "Set Pressure Plate Dart Trap",
     "description": "Set up a previously crafted dart trap kit.",
     "category": "defensive_trap",
-    "components": [
-      {
-        "itemId": "pressure_plate_dart_trap_kit",
-        "quantity": 1
-      }
-    ],
     "recipe": {
       "description": "Carefully place and arm a dart trap kit.",
       "components": [
@@ -856,12 +708,6 @@
     "name": "Set Tripwire Alarm",
     "description": "Set up a previously crafted tripwire alarm kit.",
     "category": "defensive_trap",
-    "components": [
-      {
-        "itemId": "tripwire_alarm_kit",
-        "quantity": 1
-      }
-    ],
     "recipe": {
       "description": "Carefully place and arm a tripwire alarm kit.",
       "components": [
@@ -894,24 +740,6 @@
     "name": "Armor Crafting Jig",
     "description": "A specialized jig and setup for working with heavy armor components and ballistic materials.",
     "category": "crafting_station",
-    "components": [
-      {
-        "itemId": "workbench_basic_tile",
-        "quantity": 1
-      },
-      {
-        "itemId": "steel_ingot",
-        "quantity": 3
-      },
-      {
-        "itemId": "mechanical_parts_simple",
-        "quantity": 4
-      },
-      {
-        "itemId": "bolts_and_nuts_set",
-        "quantity": 2
-      }
-    ],
     "recipe": {
       "description": "Construct an armor crafting jig.",
       "components": [
@@ -985,28 +813,6 @@
     "name": "Machine Shop Lathe",
     "description": "A machine tool for shaping metal or wood by rotating the workpiece against a cutting tool.",
     "category": "crafting_station_advanced",
-    "components": [
-      {
-        "itemId": "steel_ingot",
-        "quantity": 10
-      },
-      {
-        "itemId": "mechanical_parts_vehicle_grade",
-        "quantity": 5
-      },
-      {
-        "itemId": "motor_large_electric",
-        "quantity": 1
-      },
-      {
-        "itemId": "copper_wire_spool",
-        "quantity": 3
-      },
-      {
-        "itemId": "bolts_and_nuts_set",
-        "quantity": 4
-      }
-    ],
     "recipe": {
       "description": "Assemble a heavy-duty machine shop lathe.",
       "components": [
@@ -1096,28 +902,6 @@
     "name": "Vehicle Assembly Station",
     "description": "A large, reinforced bay with hoists and tools for constructing and heavily modifying vehicles.",
     "category": "crafting_station_advanced",
-    "components": [
-      {
-        "itemId": "steel_ingot",
-        "quantity": 20
-      },
-      {
-        "itemId": "concrete_mix_bag",
-        "quantity": 4
-      },
-      {
-        "itemId": "mechanical_parts_vehicle_grade",
-        "quantity": 8
-      },
-      {
-        "itemId": "motor_large_electric",
-        "quantity": 1
-      },
-      {
-        "itemId": "bolts_and_nuts_set",
-        "quantity": 10
-      }
-    ],
     "recipe": {
       "description": "Construct a vehicle assembly station.",
       "components": [
@@ -1206,24 +990,6 @@
     "name": "Engine Assembly Jig",
     "description": "A specialized jig for assembling and fine-tuning engines.",
     "category": "crafting_station_advanced",
-    "components": [
-      {
-        "itemId": "workbench_basic_tile",
-        "quantity": 1
-      },
-      {
-        "itemId": "steel_ingot",
-        "quantity": 5
-      },
-      {
-        "itemId": "mechanical_parts_simple",
-        "quantity": 6
-      },
-      {
-        "itemId": "bolts_and_nuts_set",
-        "quantity": 3
-      }
-    ],
     "recipe": {
       "description": "Construct an engine assembly jig.",
       "components": [
@@ -1298,20 +1064,6 @@
     "name": "Simple Loom",
     "description": "A basic loom for weaving cloth from thread or fibers.",
     "category": "crafting_station",
-    "components": [
-      {
-        "itemId": "wood_planks",
-        "quantity": 6
-      },
-      {
-        "itemId": "wood_stick",
-        "quantity": 4
-      },
-      {
-        "itemId": "cordage_basic_plant_fiber",
-        "quantity": 5
-      }
-    ],
     "recipe": {
       "description": "Construct a simple wooden loom.",
       "components": [
@@ -1376,20 +1128,6 @@
     "name": "Simple Tanning Rack",
     "description": "A wooden frame for stretching hides during the tanning process.",
     "category": "crafting_station",
-    "components": [
-      {
-        "itemId": "wood_log",
-        "quantity": 2
-      },
-      {
-        "itemId": "wood_stick",
-        "quantity": 4
-      },
-      {
-        "itemId": "cordage_basic_plant_fiber",
-        "quantity": 3
-      }
-    ],
     "recipe": {
       "description": "Construct a simple wooden tanning rack.",
       "components": [

@@ -99,7 +99,8 @@ class AssetManager {
             'dynamic_event_templates.json',
             'procedural_quest_templates.json',
             'traps.json', // Added traps.json
-            'constructions.json' // Added constructions.json
+            'constructions.json', // Added constructions.json
+            'families.json' // Added families.json
         ];
 
         for (const filename of definitionFiles) {
@@ -174,6 +175,9 @@ class AssetManager {
                         console.warn(`AssetManager: Expected array from constructions.json, but got ${typeof parsedJson}. Skipping file.`);
                         this.constructionDefinitions = {}; // Ensure it's an empty object on failure
                     }
+                } else if (filename === 'families.json') {
+                    this.families = parsedJson;
+                    console.log(`AssetManager: Loaded families definition.`);
                 } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json', 'trap_kits.json'].includes(filename)) {
                     // All new item files are arrays of items
                     if (Array.isArray(parsedJson)) {
@@ -194,6 +198,18 @@ class AssetManager {
         console.log("Base asset definitions loaded.");
         this.itemsById = tempItemsById; // All items are now consolidated into itemsById
         console.log("AssetManager: All items loaded:", this.itemsById);
+
+        // Populate familyItems map
+        for (const itemId in this.itemsById) {
+            const item = this.itemsById[itemId];
+            if (item.family) {
+                if (!this.familyItems.has(item.family)) {
+                    this.familyItems.set(item.family, []);
+                }
+                this.familyItems.get(item.family).push(item);
+            }
+        }
+        console.log(`AssetManager: Populated familyItems map with ${this.familyItems.size} families.`);
 
         // After loading NPCs, load their dialogue files
         const dialogueFilesToLoad = new Set();
@@ -465,6 +481,11 @@ class AssetManager {
             }
         }
         return foundItems;
+    }
+
+    findItemsByFamily(family) {
+        if (!family || typeof family !== 'string') return [];
+        return this.familyItems.get(family) || [];
     }
 
     findNpcsByTag(tag) {

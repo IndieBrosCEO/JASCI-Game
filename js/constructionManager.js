@@ -15,6 +15,7 @@ class ConstructionManager {
         if (!this.gameState.mapStructures) {
             this.gameState.mapStructures = []; // Initialize if not present
         }
+        this.recipeResolver = new RecipeResolver(assetManager);
     }
 
     async initialize() {
@@ -98,15 +99,12 @@ class ConstructionManager {
             }
         }
 
-        // Check components
-        for (const component of definition.components) {
-            const count = this.inventoryManager.countItems(component.itemId, this.gameState.inventory.container.items);
-            if (count < component.quantity) {
-                // logToConsole(`${this.logPrefix} Cannot build '${definition.name}'. Missing ${component.quantity - count} of ${component.itemId}.`, 'orange');
-                return false;
-            }
-        }
-        return true;
+        // Check components using RecipeResolver
+        // construction definitions use 'recipe.components' if using new format, or top-level 'components' if legacy/converted
+        // The AssetManager loads 'components' from 'recipe.components' into the top level object if standardized,
+        // but let's check where they are.
+        const recipeToUse = definition.recipe || definition;
+        return this.recipeResolver.canCraft(recipeToUse, this.gameState.inventory.container.items);
     }
 
     /**
@@ -242,12 +240,19 @@ class ConstructionManager {
         }
 
         // Consume components
-        for (const component of definition.components) {
-            if (!this.inventoryManager.removeItems(component.itemId, component.quantity, this.gameState.inventory.container.items)) {
-                logToConsole(`${this.logPrefix} CRITICAL ERROR: Failed to remove component ${component.itemId} during construction of '${definition.name}'.`, 'red');
-                if (window.uiManager) window.uiManager.showToastNotification("Construction failed: component error.", "error");
-                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Sound for failure
+        const recipeToUse = definition.recipe || definition;
+        for (const component of recipeToUse.components) {
+            const resolved = this.recipeResolver.resolveComponent(component, this.gameState.inventory.container.items);
+            if (!resolved) {
+                logToConsole(`${this.logPrefix} CRITICAL ERROR: Failed to resolve component during construction of '${definition.name}'.`, 'red');
                 return false;
+            }
+
+            for (const itemToConsume of resolved.items) {
+                if (!this.inventoryManager.removeItems(itemToConsume.item.id, itemToConsume.count, this.gameState.inventory.container.items)) {
+                    logToConsole(`${this.logPrefix} CRITICAL ERROR: Failed to remove component ${itemToConsume.item.id} during construction of '${definition.name}'.`, 'red');
+                    return false;
+                }
             }
         }
 

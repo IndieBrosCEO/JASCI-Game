@@ -230,17 +230,75 @@ class ConstructionUIManager {
         }
 
         // Component Requirements Display
-        if (definition.components && definition.components.length > 0) {
-            definition.components.forEach(comp => {
-                const itemDef = this.assetManager ? this.assetManager.getItem(comp.itemId) : null;
-                const compName = itemDef ? itemDef.name : comp.itemId;
-                const playerHas = this.inventoryManager ? this.inventoryManager.countItems(comp.itemId, this.gameState.inventory.container.items) : 0;
+        const recipeToUse = definition.recipe || definition;
+        if (recipeToUse.components && recipeToUse.components.length > 0) {
+            recipeToUse.components.forEach(comp => {
+                let displayName = "";
+                let hasEnough = false;
+                let currentCount = 0;
+
+                // We need to check if constructionManager has recipeResolver
+                // If UI doesn't have direct access, we might need to duplicate some logic or expose a helper
+                // Ideally, we use RecipeResolver if available on window or through manager
+
+                // For display purposes, resolving complex requirements perfectly to a "count" is hard
+                // because multiple items might match. We'll try to show a summary.
+
+                const resolver = this.constructionManager.recipeResolver || (window.RecipeResolver ? new window.RecipeResolver(this.assetManager) : null);
+
+                if (resolver && this.gameState.inventory) {
+                    const resolved = resolver.resolveComponent(comp, this.gameState.inventory.container.items);
+                    if (resolved) {
+                        currentCount = resolved.found;
+                        hasEnough = true;
+                    } else {
+                        // Even if not enough, we want to know how many we found
+                        // But resolveComponent returns null if not enough.
+                        // We need a way to just count.
+                        // Let's manually count for display.
+
+                        // Re-use logic from RecipeResolver but without the threshold check?
+                        // Or just modify resolveComponent to return what it found?
+                        // Since we can't modify RecipeResolver easily from here without checking its code again,
+                        // let's assume if it returns null, we might have 0 or some partial amount.
+
+                        // Fallback: manual check for display
+                        const inventoryItems = this.gameState.inventory.container.items;
+                        if (comp.family) {
+                             const validItems = inventoryItems.filter(invItem => {
+                                const itemDef = this.assetManager.getItem(invItem.id);
+                                if (!itemDef || itemDef.family !== comp.family) return false;
+                                return resolver.matchesRequirements(itemDef, comp.require);
+                            });
+                            currentCount = validItems.reduce((sum, i) => sum + (i.quantity || 1), 0);
+                        } else if (comp.itemId) {
+                             const foundItems = inventoryItems.filter(i => i.id === comp.itemId);
+                             currentCount = foundItems.reduce((sum, i) => sum + (i.quantity || 1), 0);
+                        }
+                    }
+                }
+
+                if (currentCount >= comp.quantity) hasEnough = true;
+
+                if (comp.family) {
+                    displayName = `Family: ${comp.family}`;
+                    if (comp.require) {
+                        // Add details like " (type: log)"
+                        const reqs = Object.entries(comp.require).map(([k, v]) => `${k}: ${v}`).join(', ');
+                        if (reqs) displayName += ` (${reqs})`;
+                    }
+                } else if (comp.itemId) {
+                    const itemDef = this.assetManager ? this.assetManager.getItem(comp.itemId) : null;
+                    displayName = itemDef ? itemDef.name : comp.itemId;
+                } else {
+                    displayName = "Unknown Component";
+                }
 
                 const compLi = document.createElement('li');
                 const compSpan = document.createElement('span');
-                compSpan.textContent = `${compName}: ${playerHas}/${comp.quantity}`;
+                compSpan.textContent = `${displayName}: ${currentCount}/${comp.quantity}`;
 
-                if (playerHas >= comp.quantity) {
+                if (hasEnough) {
                     compSpan.classList.add('req-met');
                 } else {
                     compSpan.classList.add('req-not-met');
