@@ -125,6 +125,10 @@ async function endTurn_internal() { // Make async
         window.constructionManager.updateResourceProduction(gameState.currentTurn);
     }
 
+    // Process Fire Spread and Burn-out
+    if (window.fireManager && typeof window.fireManager.processTurn === 'function') {
+        window.fireManager.processTurn();
+    }
 
     gameState.currentTurn++;
     startTurn_internal(); // Call internal startTurn

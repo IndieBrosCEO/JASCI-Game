@@ -59,6 +59,7 @@ const VehicleModificationUI = new VehicleModificationUIManager(vehicleManager, i
 window.assetManager = assetManager;
 window.animationManager = animationManager;
 window.audioManager = audioManager;
+window.fireManager = null; // Initialized in initialize()
 window.combatManager = combatManager;
 window.inventoryManager = inventoryManager;
 // window.interaction = interaction; // js/interaction.js directly assigns to window.interaction
@@ -1980,6 +1981,15 @@ async function initialize() { // Made async
             window.constructionManager = null;
         }
 
+        // FireManager (dependent on map and definitions)
+        if (window.FireManager) {
+            window.fireManager = new window.FireManager();
+            window.fireManager.init(window.gameState);
+            logToConsole("FireManager instance created and initialized.", "info");
+        } else {
+            console.error("SCRIPT.JS: FireManager class not available.");
+            window.fireManager = null;
+        }
 
         window.interaction.initInteraction(assetManager);
         window.mapRenderer.initMapRenderer(assetManager); // Initialize mapRenderer with assetManager.
