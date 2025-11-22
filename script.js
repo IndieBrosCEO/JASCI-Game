@@ -759,45 +759,6 @@ async function handleKeyDown(event) {
         return;
     }
 
-    // Toggle Look Mode ('L' key)
-    if (event.key === 'l' || event.key === 'L') {
-        if (!isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isTargetingMode) {
-            gameState.isLookModeActive = !gameState.isLookModeActive;
-            logToConsole(`Look Mode ${gameState.isLookModeActive ? 'activated' : 'deactivated'}.`);
-            if (audioManager) audioManager.playUiSound('ui_click_01.wav'); // Generic UI click
-            if (!gameState.isLookModeActive && typeof hideLookTooltip === 'function') {
-                hideLookTooltip(); // Hide tooltip when exiting look mode
-            }
-            event.preventDefault();
-            return;
-        }
-        if (event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
-            if (gameState.isActionMenuActive) {
-                gameState.selectedActionIndex = Math.max(0, gameState.selectedActionIndex - 1);
-                interaction.selectAction(gameState.selectedActionIndex);
-            } else if (gameState.interactableItems.length > 0) {
-                gameState.selectedItemIndex = Math.max(0, gameState.selectedItemIndex - 1);
-                interaction.selectItem(gameState.selectedItemIndex);
-            }
-            event.preventDefault();
-            return;
-        }
-        if (event.key === 'ArrowDown' || event.key.toLowerCase() === 's') {
-            if (gameState.isActionMenuActive) {
-                const actionList = document.getElementById('actionList');
-                if (actionList) {
-                    gameState.selectedActionIndex = Math.min(actionList.children.length - 1, gameState.selectedActionIndex + 1);
-                    interaction.selectAction(gameState.selectedActionIndex);
-                }
-            } else if (gameState.interactableItems.length > 0) {
-                gameState.selectedItemIndex = Math.min(gameState.interactableItems.length - 1, gameState.selectedItemIndex + 1);
-                interaction.selectItem(gameState.selectedItemIndex);
-            }
-            event.preventDefault();
-            return;
-        }
-    }
-
     // Console Toggle (Backquote key, often with Shift for tilde '~')
     if (event.code === 'Backquote') {
         event.preventDefault();
@@ -915,6 +876,51 @@ async function handleKeyDown(event) {
             event.preventDefault();
         }
         return; // Crucial: stop further game key processing if console is open
+    }
+
+    // If the event target is an input field, textarea, or select, do not process the general game actions below.
+    // This is placed after specific UI handlers (like the console) to allow them to function.
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT') {
+        return;
+    }
+
+    // Toggle Look Mode ('L' key)
+    if (event.key === 'l' || event.key === 'L') {
+        if (!isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isTargetingMode) {
+            gameState.isLookModeActive = !gameState.isLookModeActive;
+            logToConsole(`Look Mode ${gameState.isLookModeActive ? 'activated' : 'deactivated'}.`);
+            if (audioManager) audioManager.playUiSound('ui_click_01.wav'); // Generic UI click
+            if (!gameState.isLookModeActive && typeof hideLookTooltip === 'function') {
+                hideLookTooltip(); // Hide tooltip when exiting look mode
+            }
+            event.preventDefault();
+            return;
+        }
+        if (event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
+            if (gameState.isActionMenuActive) {
+                gameState.selectedActionIndex = Math.max(0, gameState.selectedActionIndex - 1);
+                interaction.selectAction(gameState.selectedActionIndex);
+            } else if (gameState.interactableItems.length > 0) {
+                gameState.selectedItemIndex = Math.max(0, gameState.selectedItemIndex - 1);
+                interaction.selectItem(gameState.selectedItemIndex);
+            }
+            event.preventDefault();
+            return;
+        }
+        if (event.key === 'ArrowDown' || event.key.toLowerCase() === 's') {
+            if (gameState.isActionMenuActive) {
+                const actionList = document.getElementById('actionList');
+                if (actionList) {
+                    gameState.selectedActionIndex = Math.min(actionList.children.length - 1, gameState.selectedActionIndex + 1);
+                    interaction.selectAction(gameState.selectedActionIndex);
+                }
+            } else if (gameState.interactableItems.length > 0) {
+                gameState.selectedItemIndex = Math.min(gameState.interactableItems.length - 1, gameState.selectedItemIndex + 1);
+                interaction.selectItem(gameState.selectedItemIndex);
+            }
+            event.preventDefault();
+            return;
+        }
     }
 
     // Toggle Keybinds Display
