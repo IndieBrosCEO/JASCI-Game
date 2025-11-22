@@ -616,8 +616,7 @@
 
             // Reset Player AP/MP at the start of their turn in combat
             const derivedStats = window.calculateDerivedStats ? window.calculateDerivedStats(this.gameState) : {};
-            // Use default AP (1) or a player property if it exists, avoiding drastic balance changes for now.
-            const maxAP = this.gameState.player.defaultActionPoints || 1;
+            const maxAP = derivedStats["Action Points"] || this.gameState.player.defaultActionPoints || 1;
             const maxSpeedFeet = derivedStats["Movement Speed"] || 30;
             const maxMP = Math.floor(maxSpeedFeet / 5);
 
@@ -2070,7 +2069,7 @@
 
             // Set AP/MP to their expected next-turn values immediately for visual feedback
             const derivedStats = window.calculateDerivedStats ? window.calculateDerivedStats(this.gameState) : {};
-            const maxAP = this.gameState.player.defaultActionPoints || 1;
+            const maxAP = derivedStats["Action Points"] || this.gameState.player.defaultActionPoints || 1;
             const maxSpeedFeet = derivedStats["Movement Speed"] || 30;
             const maxMP = Math.floor(maxSpeedFeet / 5);
             const currentDebt = this.gameState.player.movementDebt || 0;
