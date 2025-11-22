@@ -218,7 +218,7 @@ function _performAction(action, it) {
                 if (window.vehicleManager && window.vehicleManager.refuelVehicle(vehicle.id, 20, "gas_can_fuel")) { // Assuming gas can gives 20 fuel
                     window.inventoryManager.removeItems("gas_can_fuel", 1, window.gameState.inventory.container.items);
                     logToConsole("Refueled with a gas can.", "event-success");
-                    if (window.updateInventoryUI) window.updateInventoryUI();
+                    if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
                 } else {
                     logToConsole("Refuel failed (e.g., tank full or vehicleManager error).", "warn");
                 }

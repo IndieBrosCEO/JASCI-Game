@@ -1241,7 +1241,7 @@
                             }
                             ammoFoundInInventory = true;
                             logToConsole(`${weapon.name} reloaded. Ammo: ${weapon.currentAmmo}/${weapon.magazineSize}`, 'lightgreen');
-                            if (window.updateInventoryUI) window.updateInventoryUI(); // Refresh inventory display
+                            if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI(); // Refresh inventory display
                             break;
                         }
                     }
@@ -1816,7 +1816,8 @@
                 }
                 if (handIdx !== -1) {
                     logToConsole(`Player threw ${this.gameState.inventory.handSlots[handIdx].name}. Removing from hand.`, 'grey');
-                    this.gameState.inventory.handSlots[handIdx] = null; window.updateInventoryUI();
+                    this.gameState.inventory.handSlots[handIdx] = null;
+                    if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
                     if (this.gameState.combatPhase === 'playerAttackDeclare') this.populateWeaponSelect();
                 } else logToConsole(`WARN: Thrown item ${itemUsed?.name} not found in player hands to remove.`, 'orange');
             }
