@@ -2526,6 +2526,19 @@ async function initialize() { // Made async
             console.error("retargetButton not found in the DOM during initialization.");
         }
 
+        const aimButton = document.getElementById('aimButton');
+        if (aimButton) {
+            aimButton.addEventListener('click', () => {
+                if (gameState.isInCombat && gameState.combatPhase === 'playerAttackDeclare' && combatManager) {
+                    combatManager.handleAimAction();
+                } else {
+                    console.log("Aim clicked but not in correct phase.");
+                }
+            });
+        } else {
+            console.error("aimButton not found in the DOM during initialization.");
+        }
+
         // Settings Modal Listeners
         const openSettingsButton = document.getElementById('openSettingsButton');
         const closeSettingsButton = document.getElementById('closeSettingsButton');
