@@ -347,8 +347,8 @@ function processConsoleCommand(commandText) {
             } else {
                 logToConsoleUI("Error: inventoryManager.addItemToInventoryById function not available.", 'error');
             }
-            if (typeof window.updateInventoryUI === 'function') {
-                window.updateInventoryUI();
+            if (window.inventoryManager && typeof window.inventoryManager.updateInventoryUI === 'function') {
+                window.inventoryManager.updateInventoryUI();
             }
             break;
 
@@ -514,8 +514,8 @@ function processConsoleCommand(commandText) {
                     gameState.inventory.handSlots = [null, null]; // Direct use
                 }
                 logToConsoleUI("Inventory cleared.", 'success'); // Direct call
-                if (typeof window.updateInventoryUI === 'function') {
-                    window.updateInventoryUI();
+                if (window.inventoryManager && typeof window.inventoryManager.updateInventoryUI === 'function') {
+                    window.inventoryManager.updateInventoryUI();
                 }
             } else {
                 logToConsoleUI("Error: Inventory data not found.", 'error'); // Direct call

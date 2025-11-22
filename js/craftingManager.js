@@ -180,7 +180,7 @@ class CraftingManager {
         if (window.uiManager) window.uiManager.showToastNotification(`Crafted ${resultItemDef.name}!`, "success");
         if (window.audioManager) window.audioManager.playUiSound('ui_craft_success_01.wav'); // Placeholder
 
-        if (window.updateInventoryUI) window.updateInventoryUI();
+        if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
         if (window.renderCharacterInfo) window.renderCharacterInfo(); // If XP or skills affect display
 
         return true;

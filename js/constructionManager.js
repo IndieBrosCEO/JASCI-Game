@@ -287,7 +287,7 @@ class ConstructionManager {
                         for (const component of definition.components) {
                             this.inventoryManager.addItemToInventoryById(component.itemId, component.quantity); // Assuming addItemToInventoryById exists and handles stacking
                         }
-                        if (window.updateInventoryUI) window.updateInventoryUI();
+                        if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
                         if (window.uiManager) window.uiManager.showToastNotification("Construction failed: map error (components restored).", "error");
                         if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Sound for failure
                         return false;
@@ -360,7 +360,7 @@ class ConstructionManager {
         if (window.uiManager) window.uiManager.showToastNotification(`Built ${definition.name}!`, "success");
         if (window.audioManager) window.audioManager.playUiSound('ui_construction_complete_01.wav'); // Placeholder
 
-        if (window.updateInventoryUI) window.updateInventoryUI();
+        if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
         if (window.mapRenderer) window.mapRenderer.scheduleRender();
 
         return true;
@@ -451,7 +451,7 @@ class ConstructionManager {
                 // Potentially break or only collect what fits
             }
         }
-        if (collectedAnything && window.updateInventoryUI) window.updateInventoryUI();
+        if (collectedAnything && window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
         return collectedAnything;
     }
 

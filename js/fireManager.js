@@ -159,11 +159,17 @@ class FireManager {
         });
 
         if (gameState.activeFires.length > 0 && window.audioManager) {
-             window.audioManager.playSoundEffect('fire_loop_01.wav', { loop: true, volume: 0.5, id: 'fire_loop' });
-             // Managing the loop requires tracking if it's already playing.
-             // Simple logic: play if not playing. Stop if no fires.
+             // Check if already playing by some id logic or just rely on playSound handling (it handles duplicates for loading but not necessarily playback loop if we call it every turn)
+             // For a simple fix, we use playSound which initiates it.
+             // However, playSound returns a sourceNode. We need to store it to stop it.
+             if (!this.fireLoopSource) {
+                 this.fireLoopSource = window.audioManager.playSound('fire_loop_01.wav', { loop: true, volume: 0.5 });
+             }
         } else if (window.audioManager) {
-             window.audioManager.stopSoundEffect('fire_loop');
+             if (this.fireLoopSource) {
+                 window.audioManager.stopSound(this.fireLoopSource);
+                 this.fireLoopSource = null;
+             }
         }
 
         window.mapRenderer.scheduleRender();
@@ -209,7 +215,7 @@ class FireManager {
             // "returning it to its original base tile" - If it was burning, it hasn't changed tile ID yet (visuals handled by renderer overlay).
             // So we just remove it from activeFires.
              if (window.logToConsole) window.logToConsole(`Fire extinguished at ${x}, ${y}, ${z}.`, 'blue');
-             if (window.audioManager) window.audioManager.playSoundEffect('extinguish_01.wav');
+             if (window.audioManager) window.audioManager.playSound('extinguish_01.wav');
         }
         window.mapRenderer.scheduleRender();
     }

@@ -93,7 +93,7 @@ class FishingManager {
             if (window.xpManager) {
                 window.xpManager.awardXp(10, player);
             }
-            if (window.updateInventoryUI) window.updateInventoryUI();
+            if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
         } else {
             logToConsole("The fish got away...", "event-failure");
         }
