@@ -2666,7 +2666,7 @@ function loadGame() {
                 if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
 
                 renderCharacterInfo(); // Update character display
-                window.updateInventoryUI(); // Update inventory display
+                if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI(); // Update inventory display
                 window.renderHealthTable(gameState); // Update health display
                 updatePlayerStatusDisplay(); // Update clock, needs, Z-levels
                 window.turnManager.updateTurnUI(); // Update turn info
