@@ -272,11 +272,10 @@
         logToConsole(`[promptPlayerDefenseDeclaration] Set isWaitingForPlayerCombatInput to TRUE. Phase: ${this.gameState.combatPhase}`, 'magenta');
         const defenseTypeSelect = document.getElementById('combatDefenseTypeSelect');
         const blockingLimbSelect = document.getElementById('combatBlockingLimbSelect');
-        const dodgeDescriptionInput = document.getElementById('dodgeDescriptionInput');
         const dodgeDebtWarning = document.getElementById('dodgeDebtWarning');
         const defenseUI = document.getElementById('defenseDeclarationUI');
 
-        if (!defenseTypeSelect || !blockingLimbSelect || !defenseUI || !dodgeDescriptionInput || !dodgeDebtWarning) {
+        if (!defenseTypeSelect || !blockingLimbSelect || !defenseUI || !dodgeDebtWarning) {
             logToConsole("Defense UI elements not found! Defaulting to Dodge.", 'red');
             this.gameState.playerDefenseChoice = { type: "Dodge", blockingLimb: null, description: "UI Error - Defaulted" };
             this.gameState.combatPhase = 'resolveRolls'; this.processAttack(); return;
@@ -284,12 +283,7 @@
         document.getElementById('defenderPrompt').innerHTML = '';
 
         // Determine if player can dodge
-        const currentSpeed = this.gameState.movementPointsRemaining || 6; // Use remaining for now or derived stat if available
-        // User requested: "You cannot declare a Dodge if the new debt would exceed your current Speed."
-        // But speed usually refers to Max Speed, not remaining moves.
         // Derived stat "Movement Speed" is in feet. 30ft = 6 tiles.
-        // Let's assume standard D&D-ish speed: 30ft (6 tiles).
-        // Or better, use the 'Movement Speed' derived stat if available, else 30.
         const derivedStats = window.calculateDerivedStats ? window.calculateDerivedStats(this.gameState) : {};
         const maxSpeedFeet = derivedStats["Movement Speed"] || 30;
         const maxSpeedTiles = Math.floor(maxSpeedFeet / 5);
@@ -319,7 +313,6 @@
         // Initial UI State based on current selection
         const updateUIForSelection = (val) => {
             blockingLimbSelect.classList.toggle('hidden', val !== 'BlockUnarmed');
-            dodgeDescriptionInput.classList.toggle('hidden', val !== 'Dodge');
             dodgeDebtWarning.classList.toggle('hidden', val !== 'Dodge');
             if (val === 'BlockUnarmed') blockingLimbSelect.value = "leftArm";
         };
@@ -622,10 +615,21 @@
             this.gameState.playerMovedThisTurn = false;
 
             // Reset Player AP/MP at the start of their turn in combat
-            this.gameState.actionPointsRemaining = 1; // Default, adjust if player has different base AP
-            this.gameState.movementPointsRemaining = 6; // Default, adjust if player has different base MP
+            const derivedStats = window.calculateDerivedStats ? window.calculateDerivedStats(this.gameState) : {};
+            // Use default AP (1) or a player property if it exists, avoiding drastic balance changes for now.
+            const maxAP = this.gameState.player.defaultActionPoints || 1;
+            const maxSpeedFeet = derivedStats["Movement Speed"] || 30;
+            const maxMP = Math.floor(maxSpeedFeet / 5);
+
+            const currentDebt = this.gameState.player.movementDebt || 0;
+            const debtTiles = Math.floor(currentDebt / 5);
+
+            this.gameState.actionPointsRemaining = maxAP;
+            this.gameState.movementPointsRemaining = Math.max(0, maxMP - debtTiles);
+            this.gameState.player.movementDebt = 0; // Reset debt after applying it
             this.gameState.hasDashed = false;
-            logToConsole(`[nextTurn] Player AP/MP RESET. AP: ${this.gameState.actionPointsRemaining}, MP: ${this.gameState.movementPointsRemaining}`, 'yellow');
+
+            logToConsole(`[nextTurn] Player AP/MP RESET. AP: ${this.gameState.actionPointsRemaining}, MP: ${this.gameState.movementPointsRemaining} (Max: ${maxMP}, Debt: ${debtTiles})`, 'yellow');
 
             window.turnManager.updateTurnUI(); // Update UI with refreshed AP/MP
 
@@ -842,9 +846,7 @@
         let description = defenseType;
 
         if (defenseType === 'Dodge') {
-            const descInput = document.getElementById('dodgeDescriptionInput');
-            const userDesc = descInput ? descInput.value.trim() : "";
-            description = `Dodges${userDesc ? ": " + userDesc : ""}`;
+            description = "Dodges";
 
             // Apply Movement Debt
             if (!this.gameState.player.movementDebt) this.gameState.player.movementDebt = 0;
@@ -2065,7 +2067,19 @@
         this.gameState.isWaitingForPlayerCombatInput = false;
         if (this.gameState.isInCombat && this.gameState.combatCurrentAttacker === this.gameState) {
             logToConsole("Player manually ends turn.", 'lightblue');
-            this.gameState.actionPointsRemaining = 0; this.gameState.movementPointsRemaining = 0;
+
+            // Set AP/MP to their expected next-turn values immediately for visual feedback
+            const derivedStats = window.calculateDerivedStats ? window.calculateDerivedStats(this.gameState) : {};
+            const maxAP = this.gameState.player.defaultActionPoints || 1;
+            const maxSpeedFeet = derivedStats["Movement Speed"] || 30;
+            const maxMP = Math.floor(maxSpeedFeet / 5);
+            const currentDebt = this.gameState.player.movementDebt || 0;
+            const debtTiles = Math.floor(currentDebt / 5);
+
+            this.gameState.actionPointsRemaining = maxAP;
+            this.gameState.movementPointsRemaining = Math.max(0, maxMP - debtTiles);
+            // Do NOT reset movementDebt here; it must persist until nextTurn actually processes it.
+
             window.turnManager.updateTurnUI();
             this.nextTurn(this.gameState);
         } else logToConsole("Cannot end player turn: Not in combat or not player's turn.", 'orange');
