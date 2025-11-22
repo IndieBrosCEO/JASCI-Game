@@ -908,18 +908,63 @@
             actionContext.detailedModifiers.push({ text: "Adv/Dis Cancel", value: 0, type: 'neutral' });
         }
 
+        // Perk: Battle Focus (Wil) - +1 Aim bonus
+        if (attacker.aimingEffect && window.perkManager && window.perkManager.hasPerk("Battle Focus")) {
+            actionContext.detailedModifiers.push({ text: "Perk (Battle Focus): +1", value: 1, type: 'positive' });
+            // Battle Focus adds +1 to the roll on top of advantage
+            skillBasedModifier += 1; // Add to static mods
+        }
+
+        // Perk: True Call (Per) - Reduce called shot penalties by 1
+        let calledShotReducer = 0;
+        if (window.perkManager && window.perkManager.hasPerk("True Call")) {
+            calledShotReducer = 1;
+        }
+
+        // Perk: Controlled Burst (Dex) - Reduce Burst/Auto penalties by 2
+        let burstReducer = 0;
+        if (window.perkManager && window.perkManager.hasPerk("Controlled Burst") && (actionContext.isBurst || actionContext.isAutomatic)) {
+            burstReducer = 2;
+            actionContext.detailedModifiers.push({ text: "Perk (Controlled Burst): +2", value: 2, type: 'positive' });
+        }
+
+        // Perk: Rangefinder (Per) - Reduce range penalties by 1 (Long/Very Long/Extremely Long)
+        let rangePenaltyReducer = 0;
+        if (window.perkManager && window.perkManager.hasPerk("Rangefinder") && rangeModifier < 0) {
+            rangePenaltyReducer = 1;
+            actionContext.detailedModifiers.push({ text: "Perk (Rangefinder): +1", value: 1, type: 'positive' });
+        }
+
         actionContext.bodyPartModifier = 0;
         if (this.gameState.combatCurrentDefender && targetBodyPartArg) {
             if (targetBodyPartArg.toLowerCase() === "head") actionContext.bodyPartModifier = -4;
             else if (["leftArm", "rightArm", "leftLeg", "rightLeg"].includes(targetBodyPartArg)) actionContext.bodyPartModifier = -1;
+
+            // Apply True Call reduction
+            if (actionContext.bodyPartModifier < 0) {
+                const reduction = Math.min(Math.abs(actionContext.bodyPartModifier), calledShotReducer);
+                if (reduction > 0) {
+                    actionContext.bodyPartModifier += reduction;
+                    actionContext.detailedModifiers.push({ text: "Perk (True Call)", value: reduction, type: 'positive' });
+                }
+            }
         }
         if (actionContext.bodyPartModifier !== 0) actionContext.detailedModifiers.push({ text: `Target: ${actionContext.bodyPartModifier}`, value: actionContext.bodyPartModifier, type: 'negative' });
-        if (rangeModifier !== 0) actionContext.detailedModifiers.push({ text: `Range: ${rangeModifier > 0 ? '+' : ''}${rangeModifier}`, value: rangeModifier, type: rangeModifier > 0 ? 'positive' : 'negative' });
-        if (attackModifierForFireMode !== 0) actionContext.detailedModifiers.push({ text: `Mode: ${attackModifierForFireMode}`, value: attackModifierForFireMode, type: 'negative' });
+
+        // Apply Rangefinder
+        const effectiveRangeMod = Math.min(0, rangeModifier + rangePenaltyReducer);
+        const finalRangeMod = rangeModifier > 0 ? rangeModifier : effectiveRangeMod;
+
+        if (finalRangeMod !== 0) actionContext.detailedModifiers.push({ text: `Range: ${finalRangeMod > 0 ? '+' : ''}${finalRangeMod}`, value: finalRangeMod, type: finalRangeMod > 0 ? 'positive' : 'negative' });
+
+        // Apply Controlled Burst
+        const effectiveFireModeMod = Math.min(0, attackModifierForFireMode + burstReducer);
+        if (effectiveFireModeMod !== 0) actionContext.detailedModifiers.push({ text: `Mode: ${effectiveFireModeMod}`, value: effectiveFireModeMod, type: 'negative' });
+
         if (actionContext.attackerMovementPenalty !== 0) actionContext.detailedModifiers.push({ text: `Movement: ${actionContext.attackerMovementPenalty}`, value: actionContext.attackerMovementPenalty, type: 'negative' });
 
 
-        const totalAttackRoll = baseRoll + skillBasedModifier + actionContext.bodyPartModifier + rangeModifier + attackModifierForFireMode + actionContext.attackerMovementPenalty + lightingPenalty + statusEffectAttackPenalty;
+        const totalAttackRoll = baseRoll + skillBasedModifier + actionContext.bodyPartModifier + finalRangeMod + effectiveFireModeMod + actionContext.attackerMovementPenalty + lightingPenalty + statusEffectAttackPenalty;
         actionContext.statusEffectAttackPenalty = statusEffectAttackPenalty; // Keep for logging
         actionContext.lightingPenaltyApplied = lightingPenalty; // Keep for logging
 
@@ -934,6 +979,41 @@
         let statusEffectDefensePenalty = 0; // Example, implement actual status effect checks here
         // if (statusEffectDefensePenalty !== 0) actionContext.detailedModifiers.push({ text: `Status: ${statusEffectDefensePenalty}`, value: statusEffectDefensePenalty, type: 'negative' });
 
+        // Perk: Catfoot (Dex) - +1 defense if ending turn in cover
+        let catfootBonus = 0;
+        if (window.perkManager && window.perkManager.hasPerk("Catfoot") && coverBonus > 0) {
+            catfootBonus = 1;
+            actionContext.detailedModifiers.push({ text: "Perk (Catfoot): +1", value: 1, type: 'positive' });
+        }
+
+        // Perk: Unshakable (Wil) - +1 defense if HP <= 50%
+        let unshakableBonus = 0;
+        if (window.perkManager && window.perkManager.hasPerk("Unshakable")) {
+            const health = defender === this.gameState ? this.gameState.player.health : defender.health;
+            if (health) {
+                const maxTotal = Object.values(health).reduce((sum, part) => sum + part.max, 0);
+                const currentTotal = Object.values(health).reduce((sum, part) => sum + part.current, 0);
+                if (currentTotal <= maxTotal / 2) {
+                    unshakableBonus = 1;
+                    actionContext.detailedModifiers.push({ text: "Perk (Unshakable): +1", value: 1, type: 'positive' });
+                }
+            }
+        }
+
+        // Perk: Clinch Fighter (Str) - +2 Block (Unarmed) while grappling
+        let clinchFighterBonus = 0;
+        if (window.perkManager && window.perkManager.hasPerk("Clinch Fighter") && defenseType === "BlockUnarmed" && defender.statusEffects?.isGrappling) {
+            clinchFighterBonus = 2;
+            actionContext.detailedModifiers.push({ text: "Perk (Clinch Fighter): +2", value: 2, type: 'positive' });
+        }
+
+        // Perk: Evasive Footwork (Dex) - +1 Dodge
+        let evasiveFootworkBonus = 0;
+        if (window.perkManager && window.perkManager.hasPerk("Evasive Footwork") && defenseType === "Dodge") {
+            evasiveFootworkBonus = 1;
+            actionContext.detailedModifiers.push({ text: "Perk (Evasive Footwork): +1", value: 1, type: 'positive' });
+        }
+
         let defenderMovementBonus = (defender === this.gameState && this.gameState.playerMovedThisTurn) || (defender !== this.gameState && defender.movedThisTurn) ? 2 : 0;
         if (defenderMovementBonus !== 0) actionContext.detailedModifiers.push({ text: `Movement: +${defenderMovementBonus}`, value: defenderMovementBonus, type: 'positive' });
         if (coverBonus !== 0) actionContext.detailedModifiers.push({ text: `Cover: +${coverBonus}`, value: coverBonus, type: 'positive' });
@@ -941,7 +1021,7 @@
 
         if (defenseType === "None") {
             const baseRoll = actionContext.naturalRollOverride !== undefined ? actionContext.naturalRollOverride : rollDie(20);
-            const totalDefenseRoll = baseRoll + coverBonus + defenderMovementBonus + statusEffectDefensePenalty;
+            const totalDefenseRoll = baseRoll + coverBonus + defenderMovementBonus + statusEffectDefensePenalty + catfootBonus + unshakableBonus;
             return { roll: totalDefenseRoll, naturalRoll: baseRoll, isCriticalSuccess: baseRoll === 20, isCriticalFailure: baseRoll === 1, coverBonusApplied: coverBonus, movementBonusApplied: defenderMovementBonus, defenseSkillValue: 0, defenseSkillName: "Passive", statusEffectDefensePenalty, detailedModifiers: actionContext.detailedModifiers };
         }
 
@@ -954,7 +1034,7 @@
         }
         if (baseDefenseValue !== 0) actionContext.detailedModifiers.push({ text: `Skill (${defenseSkillName}): ${baseDefenseValue > 0 ? '+' : ''}${baseDefenseValue}`, value: baseDefenseValue, type: baseDefenseValue > 0 ? 'positive' : 'negative' });
 
-        const totalDefenseRoll = baseRoll + baseDefenseValue + coverBonus + defenderMovementBonus + statusEffectDefensePenalty;
+        const totalDefenseRoll = baseRoll + baseDefenseValue + coverBonus + defenderMovementBonus + statusEffectDefensePenalty + catfootBonus + unshakableBonus + clinchFighterBonus + evasiveFootworkBonus;
         return { roll: totalDefenseRoll, naturalRoll: baseRoll, isCriticalSuccess: baseRoll === 20, isCriticalFailure: baseRoll === 1, coverBonusApplied: coverBonus, movementBonusApplied: defenderMovementBonus, defenseSkillValue: baseDefenseValue, defenseSkillName, statusEffectDefensePenalty, detailedModifiers: actionContext.detailedModifiers };
     }
 
@@ -1461,6 +1541,8 @@
             const attackerMapPos = attacker.mapPos || this.gameState.playerPos;
             const defenderMapPos = defender.mapPos;
             if (attackerMapPos && defenderMapPos) {
+                // Perk: Eagle Eye (for melee? no, range usually. Wait, Eagle Eye is vision)
+                // Perk: Grapple Specialist handled in grapple logic.
                 const dx = Math.abs(attackerMapPos.x - defenderMapPos.x);
                 const dy = Math.abs(attackerMapPos.y - defenderMapPos.y);
                 const dz = Math.abs(attackerMapPos.z - defenderMapPos.z);
@@ -1497,6 +1579,15 @@
             const attackerPosition = (attacker === this.gameState) ? this.gameState.playerPos : attacker.mapPos;
             if (attackerPosition) { // Ensure attackerPosition is valid
                 coverBonus = this.getDefenderCoverBonus(attackerPosition, defender); // Pass attacker's actual position
+
+                // Perk: Squad Leader (Cha) - Allies within 5 tiles increase cover bonus by +1
+                if (defender !== this.gameState && defender.teamId === this.gameState.player.teamId && window.perkManager && window.perkManager.hasPerk("Squad Leader")) {
+                    const distToLeader = getDistance3D(this.gameState.playerPos, defender.mapPos);
+                    if (distToLeader <= 5 && coverBonus > 0) {
+                        coverBonus += 1;
+                        logToConsole("Squad Leader bonus applied to cover.", "cyan");
+                    }
+                }
             }
         }
 
@@ -2166,7 +2257,19 @@
         }
 
         const effectiveArmor = isPlayerVictim ? window.getArmorForBodyPart(accessKey, entity) : (entity.armor?.[accessKey] || 0);
-        const reducedDamage = Math.max(0, damageAmount - effectiveArmor);
+
+        // Perk: Breaker (Str) - Melee attacks ignore 1 point of armor
+        if (attacker === this.gameState && weapon?.type?.includes("melee") && window.perkManager && window.perkManager.hasPerk("Breaker")) {
+            effectiveArmor = Math.max(0, effectiveArmor - 1);
+        }
+
+        // Perk: Thick-Skinned (Con) - Reduce incoming Fire, Explosive, and Acid damage by 1
+        let damageReduction = 0;
+        if (isPlayerVictim && window.perkManager && window.perkManager.hasPerk("Thick-Skinned") && ["Fire", "Explosive", "Acid"].includes(damageType)) {
+            damageReduction = 1;
+        }
+
+        const reducedDamage = Math.max(0, damageAmount - effectiveArmor - damageReduction);
         const soundPosition = isPlayerVictim ? this.gameState.playerPos : entity.mapPos;
 
 
