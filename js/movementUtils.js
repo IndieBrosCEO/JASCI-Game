@@ -22,7 +22,7 @@
  * @param {number} [animationDurationOverride] - Optional duration for the movement animation.
  * @returns {boolean} True if a move (including starting a fall) was made, false otherwise.
  */
-function attemptCharacterMove(character, direction, assetManagerInstance, moveCostOverride = null, animationDurationOverride = null) {
+async function attemptCharacterMove(character, direction, assetManagerInstance, moveCostOverride = null, animationDurationOverride = null) {
     const isPlayer = (character === window.gameState);
     const logPrefix = isPlayer ? "[PlayerMovement]" : `[NPCMovement ${character.id || 'UnknownNPC'}]`;
 
@@ -541,7 +541,7 @@ function attemptCharacterMove(character, direction, assetManagerInstance, moveCo
 
         if (proceedWithFall) {
             if (typeof window.initiateFallCheck === 'function') {
-                const fallHandled = window.initiateFallCheck(character, targetX, targetY, originalPos.z); // originalPos.z is the Z of the air tile stepped into
+                const fallHandled = await window.initiateFallCheck(character, targetX, targetY, originalPos.z); // originalPos.z is the Z of the air tile stepped into
                 if (fallHandled) {
                     const fallMoveCost = 1;
                     let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
