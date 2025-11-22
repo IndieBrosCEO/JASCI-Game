@@ -85,14 +85,16 @@ function updateStat(name, value, character) {
     }, 0);
     const updatedTotal = currentTotalWithoutThisStat + newValue;
 
-    // Warn if over 35, but maybe don't block strictly if it's just a recommendation?
-    // "Point-buy recommendation: 35 total".
-    // Usually point buy implies a limit. I will enforce it for now to ensure "mechanics are working".
-    if (updatedTotal > maxTotalPoints) {
-         console.warn(`updateStat: Total points ${updatedTotal} exceeds max ${maxTotalPoints}`);
-         if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
-        alert(`Total stat points cannot exceed ${maxTotalPoints}.`);
-        return;
+    // If game has started, we assume it's a level up or reward, so strict total cap check
+    // for character creation (35) might be bypassed or increased.
+    // For now, if gameState.gameStarted is true, we skip the 35 cap check.
+    if (!window.gameState || !window.gameState.gameStarted) {
+        if (updatedTotal > maxTotalPoints) {
+             console.warn(`updateStat: Total points ${updatedTotal} exceeds max ${maxTotalPoints}`);
+             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            alert(`Total stat points cannot exceed ${maxTotalPoints}.`);
+            return;
+        }
     }
 
     character.stats[index].points = newValue;

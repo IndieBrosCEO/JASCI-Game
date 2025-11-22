@@ -75,6 +75,7 @@ window.vehicleManager = vehicleManager;
 window.trapManager = trapManager;
 window.weatherManager = weatherManager;
 // window.xpManager = xpManager; // js/xpManager.js directly assigns to window.xpManager
+window.perkManager = new PerkManager(window.gameState, window.assetManager);
 window.mapUtils = mapUtils; // Assign mapUtils instance to window
 window.companionManager = companionManager;
 window.npcManager = npcManager;
@@ -1466,6 +1467,14 @@ async function handleKeyDown(event) {
             }
             event.preventDefault(); return;
         }
+        if (event.key.toLowerCase() === 'u' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'U' for Level Up/Upgrade
+            if (window.levelUpUI) {
+                window.levelUpUI.toggle();
+            } else {
+                logToConsole("LevelUpUI not available.", "error");
+            }
+            event.preventDefault(); return;
+        }
         if (event.key.toLowerCase() === 'b' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'B' for Build/Construction
             if (window.ConstructionUI) {
                 if (gameState.isConstructionModeActive) { // If already in placement mode, 'B' can also cancel it.
@@ -1888,6 +1897,7 @@ function populateKeybinds() {
         "Open/Close Console: ` (Backquote/Tilde)",
         "Open/Close Crafting Menu: C",
         "Open/Close Construction Menu: B",
+        "Open/Close Level Up Menu: U",
         "Change View Z-Level Down: < / , (Comma)",
         "Change View Z-Level Up: > / . (Period)",
         "Reset View to Player Z-Level: / (Forward Slash)",
@@ -1962,6 +1972,18 @@ async function initialize() { // Made async
             logToConsole("XpManager instance created and assigned to window.", "info");
         } else {
             console.error("SCRIPT.JS: XpManager class not available. XP and crafting will be broken.");
+        }
+
+        // PerkManager
+        if (window.PerkManager) {
+            window.perkManager = new PerkManager(window.gameState, window.assetManager);
+            logToConsole("PerkManager instance created and assigned to window.", "info");
+        }
+
+        // LevelUpUI (dependent on XpManager and PerkManager)
+        if (window.LevelUpUI && window.xpManager && window.perkManager) {
+            window.levelUpUI = new window.LevelUpUI(window.gameState, window.xpManager, window.perkManager);
+            logToConsole("LevelUpUI instance created and assigned to window.", "info");
         }
 
         // CraftingManager (dependent on item definitions)

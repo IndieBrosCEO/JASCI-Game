@@ -100,7 +100,8 @@ class AssetManager {
             'procedural_quest_templates.json',
             'traps.json', // Added traps.json
             'constructions.json', // Added constructions.json
-            'families.json' // Added families.json
+            'families.json', // Added families.json
+            'perks.json' // Added perks.json
         ];
 
         for (const filename of definitionFiles) {
@@ -178,6 +179,9 @@ class AssetManager {
                 } else if (filename === 'families.json') {
                     this.families = parsedJson;
                     console.log(`AssetManager: Loaded families definition.`);
+                } else if (filename === 'perks.json') {
+                    this.perks = parsedJson;
+                    console.log(`AssetManager: Loaded perks definition.`);
                 } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json', 'trap_kits.json'].includes(filename)) {
                     // All new item files are arrays of items
                     if (Array.isArray(parsedJson)) {
