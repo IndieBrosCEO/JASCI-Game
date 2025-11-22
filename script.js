@@ -1269,7 +1269,8 @@ async function handleKeyDown(event) {
             case 'ArrowDown': case 's': case 'S':
             case 'ArrowLeft': case 'a': case 'A':
             case 'ArrowRight': case 'd': case 'D':
-                window.turnManager.move(event.key);
+                // await logic for move handled inside move, but we can await here if needed for sequence
+                await window.turnManager.move(event.key);
                 // Check for portal after movement
                 checkAndHandlePortal(gameState.playerPos.x, gameState.playerPos.y);
                 event.preventDefault(); return;

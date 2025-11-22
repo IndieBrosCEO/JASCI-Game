@@ -244,7 +244,8 @@
         // TODO: Check skill requirements (e.g., Mechanics from gameState.player)
         // Example: partDef.skillRequirements = { "Mechanics": 15 }
         if (partDef.skillRequirements && partDef.skillRequirements.Mechanics) { // Assuming "Mechanics" skill
-            const playerMechanics = window.characterManager?.getSkillValue(this.gameState.player, "Mechanics") || 0;
+            // Access global getSkillValue directly or via window
+            const playerMechanics = (typeof window.getSkillValue === 'function') ? window.getSkillValue("Mechanics", this.gameState.player) : 0;
             if (playerMechanics < partDef.skillRequirements.Mechanics) {
                 logToConsole(`VehicleManager: Failed to add part "${partDef.name}". Player Mechanics skill ${playerMechanics} too low. Requires ${partDef.skillRequirements.Mechanics}.`, "warn");
                 if (window.uiManager) window.uiManager.showToastNotification(`Mechanics skill too low (need ${partDef.skillRequirements.Mechanics})!`, "error");
