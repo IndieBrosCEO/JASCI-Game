@@ -90,8 +90,8 @@ const gameState = {
     skills: [
         { name: "Animal Handling", points: 0, bgColor: "darkred", textColor: "white" },
         { name: "Electronics", points: 0, bgColor: "yellow", textColor: "black" },
-        { name: "Explosives", points: 0, bgColor: "magenta", textColor: "black" },
-        { name: "Guns", points: 0, bgColor: "magenta", textColor: "black" },
+        { name: "Explosives", points: 0, bgColor: "yellow", textColor: "black" },
+        { name: "Guns", points: 0, bgColor: "cyan", textColor: "black" },
         { name: "Intimidation", points: 0, bgColor: "darkred", textColor: "white" },
         { name: "Investigation", points: 0, bgColor: "cyan", textColor: "black" },
         { name: "Lockpick", points: 0, bgColor: "orange", textColor: "black" },
