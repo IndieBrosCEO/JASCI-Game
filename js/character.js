@@ -34,11 +34,14 @@ function updateSkill(name, value, character) {
     }, 0);
     const updatedTotal = currentTotalWithoutThisSkill + newValue;
 
-    if (updatedTotal > maxPoints) {
-        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
-        alert(`Not enough skill points remaining! Max total is ${maxPoints}.`);
-        // Potentially revert input field to oldPoints here
-        return;
+    // Bypass max points check if game has started (leveling up)
+    if (!window.gameState || !window.gameState.gameStarted) {
+        if (updatedTotal > maxPoints) {
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            alert(`Not enough skill points remaining! Max total is ${maxPoints}.`);
+            // Potentially revert input field to oldPoints here
+            return;
+        }
     }
 
     skills[index].points = newValue;
