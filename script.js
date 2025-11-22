@@ -660,15 +660,19 @@ function renderCharacterInfo() {
 
 // Wrapper functions for HTML onchange events
 function handleUpdateStat(name, value) {
+    console.log(`handleUpdateStat called for ${name} with value ${value}`);
     updateStat(name, value, gameState); // from js/character.js
     renderCharacterInfo(); // Re-render the relevant parts of character info
 }
+window.handleUpdateStat = handleUpdateStat;
 
 function handleUpdateSkill(name, value) {
+    console.log(`handleUpdateSkill called for ${name} with value ${value}`);
     updateSkill(name, value, gameState); // from js/character.js
     // No direct need to call renderCharacterInfo unless total skill points display needs update
     // The skill point display is updated directly by updateSkill.
 }
+window.handleUpdateSkill = handleUpdateSkill;
 
 /**************************************************************
  * Nearby Entities Panel
