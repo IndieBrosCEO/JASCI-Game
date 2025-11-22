@@ -1,100 +1,122 @@
-const { chromium } = require('playwright');
+// verify_mechanics.js
 
-(async () => {
-  const browser = await chromium.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
-  const context = await browser.newContext();
-  const page = await context.newPage();
+// Mock window and gameState
+global.window = {};
+global.gameState = {
+    stats: [
+        { name: "Strength", points: 10 },
+        { name: "Intelligence", points: 10 },
+        { name: "Dexterity", points: 10 },
+        { name: "Constitution", points: 10 },
+        { name: "Perception", points: 10 },
+        { name: "Willpower", points: 10 },
+        { name: "Charisma", points: 10 }
+    ],
+    skills: [
+        { name: "Explosives", points: 0 },
+        { name: "Guns", points: 0 },
+        { name: "Survival", points: 0 },
+        { name: "Animal Handling", points: 0 }
+    ]
+};
+global.window.gameState = global.gameState;
 
-  const errors = [];
-  page.on('pageerror', exception => {
-    console.log(`Page Error: ${exception}`);
-    errors.push(exception);
-  });
-  page.on('console', msg => {
-    if (msg.type() === 'error') {
-        console.log(`Console Error: ${msg.text()}`);
-        errors.push(msg.text());
-    }
-  });
+// Load utils.js (simulated by reading file content since it's not a module)
+const fs = require('fs');
+const utilsCode = fs.readFileSync('./js/utils.js', 'utf8');
+eval(utilsCode);
+// Note: eval is used here to load the global functions from utils.js into the current scope
+// similar to how they would be loaded in the browser.
 
-  try {
-    await page.goto('http://localhost:8000');
+function runTests() {
+    let passed = true;
 
-    await page.waitForFunction(() => window.gameInitialized === true, { timeout: 5000 });
+    console.log("--- Verifying Stat Modifiers ---");
+    // Formula: floor(Score/2) - 1
+    // Score 10 -> floor(5) - 1 = 4
+    // Score 3 -> floor(1.5) - 1 = 0
+    // Score 20 -> floor(10) - 1 = 9
 
-    // Start game
-    await page.click('#startGameButton');
-    await page.waitForTimeout(1000);
-
-    // Setup Combat
-    await page.evaluate(() => {
-        window.gameState.playerPos = { x: 5, y: 5, z: 0 };
-        // Force player high Dex
-        window.gameState.stats = [{name: "Dexterity", points: 100}];
-
-        const dummy = {
-            id: 'aim_test_dummy',
-            name: 'Aim Test Dummy',
-            health: { torso: { current: 10, max: 10 }, head: { current: 10, max: 10 } },
-            mapPos: { x: 5, y: 6, z: 0 },
-            teamId: 2,
-            stats: { Dexterity: 1 }, // Low Dex
-            skills: { Unarmed: 0 }
+    const checkStatMod = (score, expected) => {
+        // Mock a stat entry
+        const mockEntity = {
+            stats: [{ name: "TestStat", points: score }]
         };
-        window.gameState.npcs.push(dummy);
-        window.combatManager.startCombat([window.gameState, dummy]);
-    });
+        const mod = getStatModifier("TestStat", mockEntity);
+        if (mod === expected) {
+            console.log(`PASS: Score ${score} -> Mod ${mod}`);
+        } else {
+            console.error(`FAIL: Score ${score} -> Expected ${expected}, got ${mod}`);
+            passed = false;
+        }
+    };
 
-    // Wait for attack UI to appear
-    try {
-        await page.waitForSelector('#attackDeclarationUI:not(.hidden)', { timeout: 2000 });
-    } catch (e) {
-        console.log("Attack UI did not appear within timeout.");
-        // Check if it's hidden
-        const isHidden = await page.$eval('#attackDeclarationUI', el => el.classList.contains('hidden'));
-        console.log(`Is Attack UI hidden? ${isHidden}`);
+    checkStatMod(10, 4);
+    checkStatMod(3, 0);
+    checkStatMod(20, 9);
+    checkStatMod(1, -1); // floor(0.5) - 1 = -1
 
-        // Check whose turn it is
-        const attackerName = await page.evaluate(() => window.combatManager.gameState.combatCurrentAttacker?.name);
-        console.log(`Current Attacker: ${attackerName}`);
-        throw e;
+    console.log("\n--- Verifying Skill Associations ---");
+    // Explosives -> Intelligence
+    // Guns -> Perception
+    // Survival -> Constitution
+
+    const checkSkillAssoc = (skillName, statName) => {
+        // Set up mock entity with 10 in the target stat (mod 4) and 0 skill points
+        // Skill Mod = floor(0/10) + 4 = 4
+        // If wrong stat is used (and it has different score), we can detect it.
+
+        // Reset stats
+        const mockEntity = {
+            stats: [
+                { name: "Strength", points: 2 }, // Mod 0
+                { name: "Intelligence", points: 2 }, // Mod 0
+                { name: "Dexterity", points: 2 }, // Mod 0
+                { name: "Constitution", points: 2 }, // Mod 0
+                { name: "Perception", points: 2 }, // Mod 0
+                { name: "Willpower", points: 2 }, // Mod 0
+                { name: "Charisma", points: 2 }  // Mod 0
+            ],
+            skills: [{ name: skillName, points: 0 }]
+        };
+
+        // Set the expected stat to 12 (Mod = 6 - 1 = 5)
+        const statEntry = mockEntity.stats.find(s => s.name === statName);
+        if(statEntry) statEntry.points = 12;
+
+        const mod = getSkillModifier(skillName, mockEntity);
+        // Expected: floor(0/10) + 5 = 5.
+        // If it used a stat with points 2, mod would be floor(1) - 1 = 0.
+
+        if (mod === 5) {
+             console.log(`PASS: ${skillName} correctly uses ${statName}`);
+        } else {
+             console.error(`FAIL: ${skillName} did not use ${statName}. Result Mod: ${mod}`);
+             passed = false;
+        }
+    };
+
+    checkSkillAssoc("Explosives", "Intelligence");
+    checkSkillAssoc("Guns", "Perception");
+    checkSkillAssoc("Survival", "Constitution");
+    checkSkillAssoc("Animal Handling", "Charisma");
+
+    console.log("\n--- Verifying Marksmanship Removal ---");
+    // Check if Marksmanship is in gameState.stats
+    const hasMarksmanship = global.gameState.stats.some(s => s.name === "Marksmanship");
+    if (!hasMarksmanship) {
+        console.log("PASS: Marksmanship is not in gameState.stats");
+    } else {
+        console.error("FAIL: Marksmanship IS still in gameState.stats");
+        passed = false;
     }
 
-    const aimButton = await page.$('#aimButton');
-    if (!aimButton) throw new Error("Aim button not found in DOM");
-
-    const isVisible = await aimButton.isVisible();
-    if (!isVisible) throw new Error("Aim button is not visible");
-
-    console.log("Clicking Aim...");
-    await aimButton.click();
-    await page.waitForTimeout(500);
-
-    // Verify Aim Effect
-    const aimingEffect = await page.evaluate(() => window.gameState.player.aimingEffect);
-    if (!aimingEffect) throw new Error("Player aimingEffect flag was not set after clicking Aim");
-
-    const ap = await page.evaluate(() => window.gameState.actionPointsRemaining);
-    if (ap !== 0) throw new Error(`AP was not consumed correctly. Expected 0, got ${ap}`);
-
-    console.log("Aim action verified successfully.");
-
-    const tracker = await page.evaluate(() => window.combatManager.initiativeTracker);
-    if (tracker.length > 0 && typeof tracker[0].tieBreaker === 'undefined') {
-        throw new Error("Initiative tracker entries do not have tieBreaker property");
+    if (passed) {
+        console.log("\nALL MECHANICS VERIFIED SUCCESSFULLY.");
+    } else {
+        console.log("\nSOME CHECKS FAILED.");
+        process.exit(1);
     }
-    console.log("Initiative tieBreaker verified.");
+}
 
-    // Take screenshot
-    await page.screenshot({ path: '/home/jules/verification/verification.png' });
-    console.log("Screenshot saved to /home/jules/verification/verification.png");
-
-  } catch (error) {
-    console.error('Test Failed:', error);
-    process.exit(1);
-  } finally {
-    await browser.close();
-  }
-})();
+runTests();

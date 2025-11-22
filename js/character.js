@@ -1,4 +1,4 @@
-﻿/**************************************************************
+/**************************************************************
 * Character Creation & Stats Functions
 **************************************************************/
 
@@ -7,6 +7,14 @@
 function updateSkill(name, value, character) {
     const index = character.skills.findIndex(skill => skill.name === name);
     if (index === -1) return;
+
+    // character.MAX_SKILL_POINTS is often not set on the character object directly if using global constant logic.
+    // However, we can default it to 30 if missing, or use gameState.unspentSkillPoints logic differently.
+    // For character creation, we often want a total pool cap.
+    // Let's assume a hard cap of 30 total points spent across all skills if not defined,
+    // or use a "points remaining" logic.
+    // If character.MAX_SKILL_POINTS is undefined, we'll assume the intended total is 30.
+    const maxPoints = character.MAX_SKILL_POINTS || 30;
 
     const oldPoints = character.skills[index].points; // Get old points BEFORE parsing new value
     const newValue = parseInt(value) || 0;
@@ -26,9 +34,9 @@ function updateSkill(name, value, character) {
     }, 0);
     const updatedTotal = currentTotalWithoutThisSkill + newValue;
 
-    if (updatedTotal > character.MAX_SKILL_POINTS) {
+    if (updatedTotal > maxPoints) {
         if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
-        alert('Not enough skill points remaining!');
+        alert(`Not enough skill points remaining! Max total is ${maxPoints}.`);
         // Potentially revert input field to oldPoints here
         return;
     }
@@ -40,7 +48,7 @@ function updateSkill(name, value, character) {
 
     const skillPointsElement = document.getElementById('skillPoints');
     if (skillPointsElement) {
-        skillPointsElement.textContent = character.MAX_SKILL_POINTS - updatedTotal;
+        skillPointsElement.textContent = maxPoints - updatedTotal;
     }
 }
 
@@ -50,29 +58,49 @@ function updateStat(name, value, character) {
     const index = character.stats.findIndex(stat => stat.name === name);
     if (index === -1) return;
 
-    const oldPoints = character.stats[index].points; // Get old points BEFORE parsing new value
-    const newValue = parseInt(value) || character.MIN_STAT_VALUE;
+    // Use default min/max if not defined on character
+    const minVal = character.MIN_STAT_VALUE || 1;
+    const maxVal = character.MAX_STAT_VALUE || 20;
+    const maxTotalPoints = 35; // Recommended total
 
-    if (newValue < character.MIN_STAT_VALUE || newValue > character.MAX_STAT_VALUE) {
+    const oldPoints = character.stats[index].points; // Get old points BEFORE parsing new value
+    const newValue = parseInt(value) || minVal;
+
+    if (newValue < minVal || newValue > maxVal) {
         if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
-        alert(`Stat points must be between ${character.MIN_STAT_VALUE} and ${character.MAX_STAT_VALUE}!`);
+        alert(`Stat points must be between ${minVal} and ${maxVal}!`);
         // Potentially revert input field to oldPoints here
         return;
     }
 
+    // Check total points
+    const currentTotalWithoutThisStat = character.stats.reduce((sum, stat, i) => {
+        if (i === index) return sum;
+        return sum + stat.points;
+    }, 0);
+    const updatedTotal = currentTotalWithoutThisStat + newValue;
+
+    // Warn if over 35, but maybe don't block strictly if it's just a recommendation?
+    // "Point-buy recommendation: 35 total".
+    // Usually point buy implies a limit. I will enforce it for now to ensure "mechanics are working".
+    if (updatedTotal > maxTotalPoints) {
+         if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+        alert(`Total stat points cannot exceed ${maxTotalPoints}.`);
+        return;
+    }
+
     character.stats[index].points = newValue;
+
+    // Update display of remaining points if element exists
+    const statPointsElement = document.getElementById('statPointsRemaining');
+    if (statPointsElement) {
+        statPointsElement.textContent = maxTotalPoints - updatedTotal;
+    }
+
     if (window.audioManager && newValue !== oldPoints) { // Play confirm only if value changed
         window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.6 }); // Placeholder for specific stat add/sub
     }
     renderDerivedStats(character);
-    // Original renderCharacterInfo() was called here.
-    // This might need to call a more specific update function later,
-    // or the main game loop handles re-rendering.
-    // For now, if renderCharacterInfo is also moved or refactored,
-    // that call will be updated in script.js.
-    // If this function is called from an onchange event in HTML, that HTML needs to be updated too.
-    // The prompt mentions refactoring calls in script.js, so we'll handle it there.
-    // Let's assume renderCharacterInfo will be called from script.js after this.
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -96,9 +124,9 @@ function renderTables(character) {
         "Constitution": "Toughness and health.",
         "Perception": "Awareness and ability to spot hidden things.",
         "Willpower": "Resistance to mental effects.",
-        "Charisma": "Force of personality, persuasiveness, and social influence",
-        "Marksmanship": "Affects accuracy with firearms."
+        "Charisma": "Force of personality, persuasiveness, and social influence"
     };
+    // Removed Marksmanship description
 
     const skillDescriptions = {
         "Animal Handling": "Governs the ability to interact with and control animals.",
@@ -118,15 +146,9 @@ function renderTables(character) {
         "Unarmed": "Proficiency in hand-to-hand combat."
     };
 
-    // The onchange handlers will need to be updated to pass the character object (gameState for player)
-    // This is tricky because the HTML is static.
-    // A common solution is to have these functions globally accessible and refer to a global player object,
-    // or to have a central UI update mechanism.
-    // For now, I will assume `gameState` is globally accessible and these functions will work as intended
-    // when called with `gameState`. The HTML onchange attributes will call wrapper functions in script.js
-    // that then call these functions with `gameState`.
-    // Example: onchange="handleUpdateStat('${stat.name}', this.value)" in HTML
-    // script.js: function handleUpdateStat(name, value) { updateStat(name, value, gameState); renderCharacterInfo(gameState); }
+    // Ensure character has min/max values set for the inputs
+    character.MIN_STAT_VALUE = character.MIN_STAT_VALUE || 1;
+    character.MAX_STAT_VALUE = character.MAX_STAT_VALUE || 20;
 
     const statsHtml = character.stats.map(stat => `
         <div class="stat" style="background-color: ${stat.bgColor}; color: ${stat.textColor};" title="${statDescriptions[stat.name] || ''}">

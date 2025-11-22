@@ -1,4 +1,4 @@
-﻿// Palette for distinct faction/team colors
+// Palette for distinct faction/team colors
 const FACTION_COLORS = [
     'orange',        // A common, distinct color
     'purple',        // Another distinct one
@@ -188,10 +188,10 @@ function getSkillModifier(skillName, entity) {
     const skillToStatMap = {
         "Animal Handling": "Charisma",
         "Electronics": "Intelligence",
-        "Explosives": "Marksmanship", // Corrected
-        "Guns": "Marksmanship",
-        "Intimidation": "Charisma",   // Corrected
-        "Investigation": "Perception",
+        "Explosives": "Intelligence",
+        "Guns": "Perception",
+        "Intimidation": "Charisma",
+        "Investigation": "Intelligence",
         "Lockpick": "Dexterity",
         "Medicine": "Intelligence",
         "Melee Weapons": "Strength",
@@ -199,7 +199,7 @@ function getSkillModifier(skillName, entity) {
         "Repair": "Intelligence",
         "Sleight of Hand": "Dexterity",
         "Stealth": "Dexterity",
-        "Survival": "Constitution",  // Corrected
+        "Survival": "Constitution",
         "Unarmed": "Strength"
     };
 
@@ -570,220 +570,25 @@ function findPath3D(startPos, endPos, entity, mapData, tileset) {
 }
 window.findPath3D = findPath3D;
 
-
-/**
-    }
-    if (!mapData || !mapData.levels || !mapData.dimensions) {
-        logToConsole("findPath3D: Missing mapData, levels, or dimensions.", "error");
-        return null;
-    }
-    if (!tileset) {
-        logToConsole("findPath3D: Tileset data not provided.", "error");
-        return null;
-    }
-
-    // const openSet = []; // Old array-based open set
-    const openSet = new PriorityQueue((a, b) => a.f < b.f); 
-    const closedSet = new Set();
-    const openSetMap = new Map(); // To keep track of nodes in openSet and their gCosts for efficient updates
-
-    const startNode = {
-        x: startPos.x, y: startPos.y, z: startPos.z,
-        g: 0,
-        h: heuristic(startPos, endPos),
-        f: heuristic(startPos, endPos),
-        parent: null
-    };
-    openSet.push(startNode);
-    openSetMap.set(getNodeKey(startNode), startNode);
-
-    function heuristic(posA, posB) {
-        return Math.abs(posA.x - posB.x) + Math.abs(posA.y - posB.y) + Math.abs(posA.z - posB.z);
-    }
-
-    function getNodeKey(node) {
-        return `${node.x},${node.y},${node.z}`;
-    }
-
-    // Helper to get tile definition from any relevant layer at a position.
-    // Order of layer checking might be important (e.g., 'building' for doors over 'item').
-    function getTileDefFromMapDataLayers(x, y, z, currentMapData, currentTileset) {
-        const zStr = z.toString();
-        if (!currentMapData.levels[zStr]) return null;
-
-        let tileIdRaw = currentMapData.levels[zStr].building?.[y]?.[x];
-        if (!tileIdRaw) tileIdRaw = currentMapData.levels[zStr].item?.[y]?.[x];
-        // For z-transitions, they are often on middle or bottom, check if not found yet
-        if (!tileIdRaw) tileIdRaw = currentMapData.levels[zStr].middle?.[y]?.[x];
-        if (!tileIdRaw) tileIdRaw = currentMapData.levels[zStr].bottom?.[y]?.[x];
-
-        if (tileIdRaw) {
-            const baseId = (typeof tileIdRaw === 'object' && tileIdRaw.tileId) ? tileIdRaw.tileId : tileIdRaw;
-            if (currentTileset && currentTileset[baseId]) return currentTileset[baseId];
-        }
-        return null;
-    }
-
-    while (openSet.length > 0) {
-        openSet.sort((a, b) => a.f - b.f);
-        const currentNode = openSet.shift();
-        const currentKey = getNodeKey(currentNode);
-
-        if (currentNode.x === endPos.x && currentNode.y === endPos.y && currentNode.z === endPos.z) {
-            const path = [];
-            let temp = currentNode;
-            while (temp) {
-                path.push({ x: temp.x, y: temp.y, z: temp.z });
-                temp = temp.parent;
-            }
-            return path.reverse();
-        }
-
-        closedSet.add(currentKey);
-        const neighbors = [];
-        const cardinalMoves = [
-            { dx: 0, dy: -1, dz: 0 }, { dx: 0, dy: 1, dz: 0 },
-            { dx: -1, dy: 0, dz: 0 }, { dx: 1, dy: 0, dz: 0 }
-        ];
-
-        // Horizontal Neighbors (including door logic)
-        for (const move of cardinalMoves) {
-            const nextX = currentNode.x + move.dx;
-            const nextY = currentNode.y + move.dy;
-            const currentZ = currentNode.z; // Neighbor is on the same Z level for this horizontal check
-
-            let cost = 1; // Base cost for cardinal move
-            // TODO: Add support for diagonal movement and adjust cost (e.g., ~1.41 or alternating 1-2)
-            // TODO: Incorporate difficult terrain cost:
-            //       If tileDefAtNext has a 'moveCostMultiplier' or 'additionalMoveCost' tag, adjust 'cost'.
-            //       e.g., cost *= tileDefAtNext.moveCostMultiplier;
-            // TODO: AP costs are typically for actions, not per-tile movement. MP is handled by caller (attemptCharacterMove).
-            let isPassable = window.mapRenderer.isWalkable(nextX, nextY, currentZ); // Initial walkability check
-            const tileDefAtNext = getTileDefFromMapDataLayers(nextX, nextY, currentZ, mapData, tileset);
-
-            if (tileDefAtNext && tileDefAtNext.tags && tileDefAtNext.tags.includes("door")) {
-                if (tileDefAtNext.tags.includes("closed")) {
-                    if (tileDefAtNext.isLocked === true) {
-                        isPassable = false;
-                    } else {
-                        isPassable = true; // Can path through, even if isWalkable was false due to "impassable" tag
-                        cost = 1 + (tileDefAtNext.openCost || 1); // Cost to move + cost to open door
-                    }
-                } else if (tileDefAtNext.tags.includes("open")) {
-                    // If it's an open door, isWalkable should be true. Cost is normal.
-                    isPassable = true;
-                    cost = 1; // Standard move cost through open door
-                }
-                // If 'broken' door, its own 'impassable' tag (or lack thereof) via isWalkable handles it.
-            }
-
-            if (isPassable) {
-                neighbors.push({ x: nextX, y: nextY, z: currentZ, cost: cost });
-
-                // Check if this horizontally-reached tile is ALSO an explicit Z-transition point
-                if (tileDefAtNext && tileDefAtNext.tags?.includes('z_transition') && tileDefAtNext.target_dz !== undefined) {
-                    const finalDestZ = currentZ + tileDefAtNext.target_dz;
-                    if (window.mapRenderer.isWalkable(nextX, nextY, finalDestZ)) {
-                        const zCost = tileDefAtNext.z_cost || 1;
-                        neighbors.push({ x: nextX, y: nextY, z: finalDestZ, cost: cost + zCost });
-                    }
-                }
-            }
-        }
-
-        // Z-Transitions from CURRENT node (ladders, holes directly underfoot, using a specific tile at current node)
-        const currentTileDef = getTileDefFromMapDataLayers(currentNode.x, currentNode.y, currentNode.z, mapData, tileset);
-        if (currentTileDef && currentTileDef.tags?.includes('z_transition') && currentTileDef.target_dz !== undefined) {
-            const targetZ = currentNode.z + currentTileDef.target_dz;
-            if (window.mapRenderer.isWalkable(currentNode.x, currentNode.y, targetZ)) {
-                neighbors.push({
-                    x: currentNode.x, y: currentNode.y, z: targetZ,
-                    cost: currentTileDef.z_cost || 1
-                });
-            }
-        }
-
-        // Implicit Z-moves (climbing up onto an adjacent block, or falling down from an edge)
-        for (const move of cardinalMoves) {
-            const stepNextX = currentNode.x + move.dx;
-            const stepNextY = currentNode.y + move.dy;
-            const stepCurrentZ = currentNode.z;
-
-            const targetUpZ = stepCurrentZ + 1;
-            const isTargetImpassableAtCurrentZ = !window.mapRenderer.isWalkable(stepNextX, stepNextY, stepCurrentZ) &&
-                window.mapRenderer.getCollisionTileAt(stepNextX, stepNextY, stepCurrentZ) !== "";
-
-            if (isTargetImpassableAtCurrentZ &&
-                window.mapRenderer.isTileEmpty(currentNode.x, currentNode.y, targetUpZ) &&
-                window.mapRenderer.isWalkable(stepNextX, stepNextY, targetUpZ)) {
-                neighbors.push({ x: stepNextX, y: stepNextY, z: targetUpZ, cost: 2 });
-            }
-
-            const targetDownZ = stepCurrentZ - 1;
-            if (window.mapRenderer.isTileEmpty(stepNextX, stepNextY, stepCurrentZ) &&
-                !window.mapRenderer.isWalkable(stepNextX, stepNextY, stepCurrentZ) &&
-                window.mapRenderer.isWalkable(stepNextX, stepNextY, targetDownZ)) {
-                neighbors.push({ x: stepNextX, y: stepNextY, z: targetDownZ, cost: 1 });
-            }
-        }
-
-        for (const neighborPos of neighbors) {
-            const neighborKey = getNodeKey(neighborPos);
-            if (closedSet.has(neighborKey)) continue;
-
-            const gCost = currentNode.g + neighborPos.cost;
-            let existingNeighbor = openSet.find(node => node.x === neighborPos.x && node.y === neighborPos.y && node.z === neighborPos.z);
-
-            if (!existingNeighbor) {
-                openSet.push({
-                    x: neighborPos.x, y: neighborPos.y, z: neighborPos.z,
-                    g: gCost, h: heuristic(neighborPos, endPos),
-                    f: gCost + heuristic(neighborPos, endPos), parent: currentNode
-                });
-            } else if (gCost < existingNeighbor.g) {
-                existingNeighbor.g = gCost;
-                existingNeighbor.f = gCost + existingNeighbor.h;
-                existingNeighbor.parent = currentNode;
-            }
-        }
-    }
-    logToConsole(`findPath3D: No path found from (${startPos.x},${startPos.y},${startPos.z}) to (${endPos.x},${endPos.y},${endPos.z}).`, "orange");
-    return null;
-}
-window.findPath3D = findPath3D;
-
-
-/**
- * Checks for a clear line of sight between two 3D points.
- * Uses getLine3D and isTileBlockingVision from mapRenderer.js.
- * @param {object} startPos - The starting position {x, y, z}.
- * @param {object} endPos - The target position {x, y, z}.
- * @returns {boolean} True if there is a clear line of sight, false otherwise.
- */
-// function hasLineOfSight3D(startPos, endPos, tilesetsData, mapDataFromCaller) { // Parameters added // Original
-//     // ... original function body
-// }
-// window.hasLineOfSight3D = hasLineOfSight3D; // Original
-
 // Wrapped version for profiling
 function hasLineOfSight3D(startPos, endPos, tilesetsData, mapDataFromCaller) {
     return profileFunction("hasLineOfSight3D", (_startPos, _endPos, _tilesetsData, _mapDataFromCaller) => {
         // Original function body starts here
-        logToConsole(`[hasLineOfSight3D Entry] Received tilesetsData is valid: ${!!_tilesetsData} (Keys: ${_tilesetsData ? Object.keys(_tilesetsData).length : 'N/A'}), mapDataFromCaller is valid: ${!!_mapDataFromCaller} (Levels: ${_mapDataFromCaller ? !!_mapDataFromCaller.levels : 'N/A'})`, 'magenta');
+        // logToConsole(`[hasLineOfSight3D Entry] Received tilesetsData is valid: ${!!_tilesetsData} (Keys: ${_tilesetsData ? Object.keys(_tilesetsData).length : 'N/A'}), mapDataFromCaller is valid: ${!!_mapDataFromCaller} (Levels: ${_mapDataFromCaller ? !!_mapDataFromCaller.levels : 'N/A'})`, 'magenta');
 
         let tilesets = _tilesetsData;
         let mapData = _mapDataFromCaller;
         let usingFallbackData = false;
 
         if (!tilesets || !mapData || (typeof mapData === 'object' && mapData !== null && !mapData.levels)) { // Check mapData.levels more carefully
-            logToConsole(`[hasLineOfSight3D] Passed parameters appear invalid or incomplete. Attempting fallback to global fetch. Passed tilesets: ${!!_tilesetsData}, mapData: ${!!_mapDataFromCaller}, mapData.levels: ${_mapDataFromCaller && typeof _mapDataFromCaller === 'object' ? !!_mapDataFromCaller.levels : 'N/A'}`, 'orange');
+            // logToConsole(`[hasLineOfSight3D] Passed parameters appear invalid or incomplete. Attempting fallback to global fetch. Passed tilesets: ${!!_tilesetsData}, mapData: ${!!_mapDataFromCaller}, mapData.levels: ${_mapDataFromCaller && typeof _mapDataFromCaller === 'object' ? !!_mapDataFromCaller.levels : 'N/A'}`, 'orange');
             tilesets = window.assetManager ? window.assetManager.tilesets : null;
             mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
             usingFallbackData = true;
             if (tilesets && Object.keys(tilesets).length > 0 && mapData && mapData.levels) {
-                logToConsole(`[hasLineOfSight3D] Fallback successful. Tilesets keys: ${Object.keys(tilesets).length}, MapData levels present: ${!!mapData.levels}`, 'green');
+                // logToConsole(`[hasLineOfSight3D] Fallback successful. Tilesets keys: ${Object.keys(tilesets).length}, MapData levels present: ${!!mapData.levels}`, 'green');
             } else {
-                logToConsole(`[hasLineOfSight3D] Fallback FAILED. Global tilesets: ${!!tilesets} (Keys: ${tilesets ? Object.keys(tilesets).length : 'N/A'}), Global mapData: ${!!mapData}, Global mapData.levels: ${mapData && typeof mapData === 'object' ? !!mapData.levels : 'N/A'}`, 'red');
+                // logToConsole(`[hasLineOfSight3D] Fallback FAILED. Global tilesets: ${!!tilesets} (Keys: ${tilesets ? Object.keys(tilesets).length : 'N/A'}), Global mapData: ${!!mapData}, Global mapData.levels: ${mapData && typeof mapData === 'object' ? !!mapData.levels : 'N/A'}`, 'red');
             }
         }
 
@@ -804,7 +609,7 @@ function hasLineOfSight3D(startPos, endPos, tilesetsData, mapDataFromCaller) {
         }
 
         if (!tilesets || Object.keys(tilesets).length === 0 || !mapData || (typeof mapData === 'object' && mapData !== null && !mapData.levels)) {
-            logToConsole(`hasLineOfSight3D: Critical data STILL missing ${usingFallbackData ? '(after fallback attempt)' : '(with passed params)'}. Tilesets: ${!!tilesets} (Keys: ${tilesets ? Object.keys(tilesets).length : 'N/A'}), MapData: ${!!mapData}, MapData.levels: ${mapData && typeof mapData === 'object' ? !!mapData.levels : 'N/A'}. Assuming no LOS.`, "red");
+            // logToConsole(`hasLineOfSight3D: Critical data STILL missing ${usingFallbackData ? '(after fallback attempt)' : '(with passed params)'}. Tilesets: ${!!tilesets} (Keys: ${tilesets ? Object.keys(tilesets).length : 'N/A'}), MapData: ${!!mapData}, MapData.levels: ${mapData && typeof mapData === 'object' ? !!mapData.levels : 'N/A'}. Assuming no LOS.`, "red");
             return false;
         }
 
@@ -828,68 +633,6 @@ function hasLineOfSight3D(startPos, endPos, tilesetsData, mapDataFromCaller) {
 }
 window.hasLineOfSight3D = hasLineOfSight3D;
 
-/**
-    let mapData = mapDataFromCaller;
-    let usingFallbackData = false;
-
-    if (!tilesets || !mapData || (typeof mapData === 'object' && mapData !== null && !mapData.levels)) { // Check mapData.levels more carefully
-        logToConsole(`[hasLineOfSight3D] Passed parameters appear invalid or incomplete. Attempting fallback to global fetch. Passed tilesets: ${!!tilesetsData}, mapData: ${!!mapDataFromCaller}, mapData.levels: ${mapDataFromCaller && typeof mapDataFromCaller === 'object' ? !!mapDataFromCaller.levels : 'N/A'}`, 'orange');
-        tilesets = window.assetManager ? window.assetManager.tilesets : null;
-        mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
-        usingFallbackData = true;
-        if (tilesets && Object.keys(tilesets).length > 0 && mapData && mapData.levels) {
-            logToConsole(`[hasLineOfSight3D] Fallback successful. Tilesets keys: ${Object.keys(tilesets).length}, MapData levels present: ${!!mapData.levels}`, 'green');
-        } else {
-            logToConsole(`[hasLineOfSight3D] Fallback FAILED. Global tilesets: ${!!tilesets} (Keys: ${tilesets ? Object.keys(tilesets).length : 'N/A'}), Global mapData: ${!!mapData}, Global mapData.levels: ${mapData && typeof mapData === 'object' ? !!mapData.levels : 'N/A'}`, 'red');
-        }
-    }
-
-    if (!startPos || !endPos ||
-        startPos.x === undefined || startPos.y === undefined || startPos.z === undefined ||
-        endPos.x === undefined || endPos.y === undefined || endPos.z === undefined) {
-        logToConsole("hasLineOfSight3D: Invalid input positions (start/end).", "error");
-        return false;
-    }
-
-    if (typeof getLine3D !== 'function') {
-        logToConsole("hasLineOfSight3D: getLine3D function is not available.", "error");
-        return false;
-    }
-    if (typeof window.mapRenderer?.isTileBlockingVision !== 'function') {
-        logToConsole("hasLineOfSight3D: mapRenderer.isTileBlockingVision function is not available.", "error");
-        return false;
-    }
-
-    // Crucial check after potential fallback
-    if (!tilesets || Object.keys(tilesets).length === 0 || !mapData || (typeof mapData === 'object' && mapData !== null && !mapData.levels)) {
-        logToConsole(`hasLineOfSight3D: Critical data STILL missing ${usingFallbackData ? '(after fallback attempt)' : '(with passed params)'}. Tilesets: ${!!tilesets} (Keys: ${tilesets ? Object.keys(tilesets).length : 'N/A'}), MapData: ${!!mapData}, MapData.levels: ${mapData && typeof mapData === 'object' ? !!mapData.levels : 'N/A'}. Assuming no LOS.`, "red");
-        return false;
-    }
-
-    const line = getLine3D(startPos.x, startPos.y, startPos.z, endPos.x, endPos.y, endPos.z);
-
-    if (!line || line.length === 0) {
-        //logToConsole("hasLineOfSight3D: Line generation failed or line is empty.", "orange");
-        return false;
-    }
-    if (line.length === 1) {
-        return true;
-    }
-
-    // Iterate through each point in the line, starting from the second point (index 1).
-    // The first point (index 0) is the startPos itself.
-    // The loop will include the endPos.
-    for (const point of line.slice(1)) {
-        if (window.mapRenderer.isTileBlockingVision(point.x, point.y, point.z, startPos.z)) {
-            // logToConsole(`LOS blocked at:(${point.x},${point.y},${point.z}) by tile, viewer at Z=${startPos.z}`);
-            return false;
-        }
-    }
-
-    // If the loop completes, no obstructions were found.
-    return true;
-}
-window.hasLineOfSight3D = hasLineOfSight3D;
 
 /**
  * Darkens a HEX color by a given percentage.
