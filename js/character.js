@@ -55,8 +55,12 @@ function updateSkill(name, value, character) {
 // Update stat values for the character
 // Assumes 'character' has 'stats' array, 'MIN_STAT_VALUE', 'MAX_STAT_VALUE'
 function updateStat(name, value, character) {
+    console.log(`updateStat called: ${name} -> ${value}`);
     const index = character.stats.findIndex(stat => stat.name === name);
-    if (index === -1) return;
+    if (index === -1) {
+        console.warn(`updateStat: Stat ${name} not found.`);
+        return;
+    }
 
     // Use default min/max if not defined on character
     const minVal = character.MIN_STAT_VALUE || 1;
@@ -67,6 +71,7 @@ function updateStat(name, value, character) {
     const newValue = parseInt(value) || minVal;
 
     if (newValue < minVal || newValue > maxVal) {
+        console.warn(`updateStat: Value ${newValue} out of bounds (${minVal}-${maxVal})`);
         if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         alert(`Stat points must be between ${minVal} and ${maxVal}!`);
         // Potentially revert input field to oldPoints here
@@ -84,12 +89,14 @@ function updateStat(name, value, character) {
     // "Point-buy recommendation: 35 total".
     // Usually point buy implies a limit. I will enforce it for now to ensure "mechanics are working".
     if (updatedTotal > maxTotalPoints) {
+         console.warn(`updateStat: Total points ${updatedTotal} exceeds max ${maxTotalPoints}`);
          if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         alert(`Total stat points cannot exceed ${maxTotalPoints}.`);
         return;
     }
 
     character.stats[index].points = newValue;
+    console.log(`updateStat: Updated ${name} to ${newValue}. Remaining points: ${maxTotalPoints - updatedTotal}`);
 
     // Update display of remaining points if element exists
     const statPointsElement = document.getElementById('statPointsRemaining');
@@ -165,6 +172,13 @@ function renderTables(character) {
         </div>`).join('');
     statsBody.innerHTML = statsHtml;
     skillsBody.innerHTML = skillsHtml;
+
+    // Update remaining stat points display on initial render
+    const statPointsElement = document.getElementById('statPointsRemaining');
+    if (statPointsElement) {
+        const currentTotalStats = character.stats.reduce((sum, stat) => sum + stat.points, 0);
+        statPointsElement.textContent = (character.MAX_TOTAL_STAT_POINTS || 35) - currentTotalStats;
+    }
 }
 
 function startGame() {

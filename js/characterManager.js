@@ -60,18 +60,34 @@ function updateStat(name, value, character) {
         return;
     }
 
+    // Check total points logic (Added to mirror character.js)
+    const maxTotalPoints = 35;
+    const currentTotalWithoutThisStat = character.stats.reduce((sum, stat, i) => {
+        if (i === index) return sum;
+        return sum + stat.points;
+    }, 0);
+    const updatedTotal = currentTotalWithoutThisStat + newValue;
+
+    if (updatedTotal > maxTotalPoints) {
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+        alert(`Total stat points cannot exceed ${maxTotalPoints}.`);
+        return;
+    }
+
     character.stats[index].points = newValue;
     if (window.audioManager && newValue !== oldPoints) { // Play confirm only if value changed
         window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.6 }); // Placeholder for specific stat add/sub
     }
-    // Original renderCharacterInfo() was called here.
-    // This might need to call a more specific update function later,
-    // or the main game loop handles re-rendering.
-    // For now, if renderCharacterInfo is also moved or refactored,
-    // that call will be updated in script.js.
-    // If this function is called from an onchange event in HTML, that HTML needs to be updated too.
-    // The prompt mentions refactoring calls in script.js, so we'll handle it there.
-    // Let's assume renderCharacterInfo will be called from script.js after this.
+
+    // Calculate total used points
+    const currentTotal = character.stats.reduce((sum, stat) => sum + stat.points, 0);
+    // maxTotalPoints is already defined above
+
+    // Update display of remaining points if element exists
+    const statPointsElement = document.getElementById('statPointsRemaining');
+    if (statPointsElement) {
+        statPointsElement.textContent = maxTotalPoints - currentTotal;
+    }
 }
 
 // Render the tables for stats and skills on the character creator
@@ -106,6 +122,13 @@ function renderTables(character) {
         </div>`).join('');
     statsBody.innerHTML = statsHtml;
     skillsBody.innerHTML = skillsHtml;
+
+    // Update remaining stat points display on initial render
+    const statPointsElement = document.getElementById('statPointsRemaining');
+    if (statPointsElement) {
+        const currentTotalStats = character.stats.reduce((sum, stat) => sum + stat.points, 0);
+        statPointsElement.textContent = (character.MAX_TOTAL_STAT_POINTS || 35) - currentTotalStats;
+    }
 }
 
 // Renders only the stats, skills, and worn clothing parts for the character info panel
