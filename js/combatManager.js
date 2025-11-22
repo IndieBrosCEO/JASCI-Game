@@ -879,7 +879,8 @@
             logToConsole(`Error: Defender not set & not valid area effect. Attacker: ${attacker?.name}.`, 'red');
             if (attacker === this.gameState) this.promptPlayerAttackDeclaration(); else this.nextTurn(attacker); return;
         }
-        if (defender === this.gameState.player) {
+        // Allow defender to be gameState.player OR gameState (legacy fallback)
+        if (defender === this.gameState.player || defender === this.gameState) {
             if (!this.gameState.pendingCombatAction || Object.keys(this.gameState.pendingCombatAction).length === 0) {
                 this.gameState.playerDefenseChoice = { type: "Dodge", blockingLimb: null, description: "Error - No attack data" };
                 this.gameState.combatPhase = 'resolveRolls'; this.processAttack(); return;
