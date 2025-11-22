@@ -30,3 +30,18 @@ function updateXpBar() {
     xpBar.max = xpForNextLevel;
     xpBar.title = `${xpProgress} / ${xpForNextLevel}`;
 }
+
+if (window.EventManager) {
+    window.EventManager.on('xp:awarded', () => {
+        updateXpBar();
+        if (window.renderCharacterInfo) window.renderCharacterInfo();
+        if (window.levelUpUI && window.levelUpUI.isVisible) window.levelUpUI.updateDisplay();
+    });
+    window.EventManager.on('level:up', () => {
+        updateXpBar();
+        if (window.renderCharacterInfo) window.renderCharacterInfo();
+        if (window.levelUpUI && window.levelUpUI.isVisible) window.levelUpUI.updateDisplay();
+        // TODO: Play level up sound
+        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 });
+    });
+}

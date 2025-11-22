@@ -569,18 +569,12 @@ function renderCharacterInfo() {
     if (!characterInfoElement) return;
 
     const nameInput = document.getElementById("charName");
-    const levelSpan = document.getElementById("level");
-    const xpSpan = document.getElementById("xp");
-    if (!nameInput || !levelSpan || !xpSpan) return;
-
-    const name = nameInput.value;
-    const level = levelSpan.textContent;
-    const xp = xpSpan.textContent;
+    // Use gameState for authoritative data once game starts
+    const name = gameState.gameStarted && gameState.player.name ? gameState.player.name : (nameInput ? nameInput.value : "Player");
+    const level = gameState.level || 1;
+    const xp = gameState.totalXp || 0;
 
     // Set Name, Level, XP (or ensure they are set if characterInfoElement is cleared)
-    // For now, we assume renderCharacterStatsSkillsAndWornClothing appends to a container within characterInfoElement,
-    // so we might not need to clear everything here if the sub-container is managed.
-    // Let's ensure the basic structure is there.
     let nameLevelXpContainer = characterInfoElement.querySelector('#nameLevelXpContainer');
     if (!nameLevelXpContainer) {
         nameLevelXpContainer = document.createElement('div');
@@ -588,10 +582,18 @@ function renderCharacterInfo() {
         // Prepend this so it appears above stats/skills
         characterInfoElement.prepend(nameLevelXpContainer);
     }
+
+    // Calculate next level XP
+    let xpNext = "Max";
+    if (window.xpManager && window.xpManager.levelCurve) {
+        const nextLvl = window.xpManager.levelCurve.find(l => l.level > level);
+        if (nextLvl) xpNext = nextLvl.total;
+    }
+
     nameLevelXpContainer.innerHTML = ` 
         <div>Name: ${name}</div>
         <div>Level: ${level}</div>
-        <div>XP: ${xp}</div>
+        <div>XP: ${xp} / ${xpNext}</div>
     `;
 
     // Call the function from character.js to render stats, skills, and worn clothing
