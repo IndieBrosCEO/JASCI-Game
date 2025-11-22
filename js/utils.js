@@ -191,7 +191,7 @@ function getSkillModifier(skillName, entity) {
         "Explosives": "Intelligence",
         "Guns": "Perception",
         "Intimidation": "Charisma",
-        "Investigation": "Intelligence",
+        "Investigation": "Perception",
         "Lockpick": "Dexterity",
         "Medicine": "Intelligence",
         "Melee Weapons": "Strength",
