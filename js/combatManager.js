@@ -331,10 +331,15 @@
         participants.forEach(p => {
             if (!p) return;
             const isPlayer = p === this.gameState;
-            this.initiativeTracker.push({ entity: p, initiative: rollDie(20) + getStatModifier("Dexterity", isPlayer ? this.gameState : p), isPlayer });
+            this.initiativeTracker.push({
+                entity: p,
+                initiative: rollDie(20) + getStatModifier("Dexterity", isPlayer ? this.gameState : p),
+                tieBreaker: Math.random(),
+                isPlayer
+            });
             if (!isPlayer) p.movedThisTurn = false;
         });
-        this.initiativeTracker.sort((a, b) => b.initiative - a.initiative || (a.isPlayer ? -1 : (b.isPlayer ? 1 : 0)));
+        this.initiativeTracker.sort((a, b) => b.initiative - a.initiative || b.tieBreaker - a.tieBreaker);
         this.currentTurnIndex = -1; this.gameState.isInCombat = true;
         logToConsole("Combat Started!", 'red');
         this.updateInitiativeDisplay(); this.nextTurn();
@@ -877,8 +882,31 @@
         if (statusEffectAttackPenalty !== 0) actionContext.detailedModifiers.push({ text: `Status: ${statusEffectAttackPenalty}`, value: statusEffectAttackPenalty, type: 'negative' });
 
 
-        let baseRoll = actionContext.naturalRollOverride !== undefined ? actionContext.naturalRollOverride : rollDie(20);
-        if (actionContext.isSecondAttack) baseRoll = Math.min(actionContext.naturalRollOverride !== undefined ? actionContext.naturalRollOverride : rollDie(20), rollDie(20)); // Ensure second attack disadvantage uses potentially overridden natural roll
+        // Advantage / Disadvantage Logic
+        let roll1 = actionContext.naturalRollOverride !== undefined ? actionContext.naturalRollOverride : rollDie(20);
+        let roll2 = actionContext.naturalRollOverride !== undefined ? actionContext.naturalRollOverride : rollDie(20);
+        let baseRoll = roll1;
+
+        // Check for Aiming status (Advantage)
+        if (attacker.aimingEffect) {
+            actionContext.advantage = true;
+        }
+
+        // Check for Dual Wield Second Attack (Disadvantage)
+        if (actionContext.isSecondAttack) {
+            actionContext.disadvantage = true;
+        }
+
+        if (actionContext.advantage && !actionContext.disadvantage) {
+            baseRoll = Math.max(roll1, roll2);
+            actionContext.detailedModifiers.push({ text: "Advantage", value: 0, type: 'positive' });
+        } else if (actionContext.disadvantage && !actionContext.advantage) {
+            baseRoll = Math.min(roll1, roll2);
+            actionContext.detailedModifiers.push({ text: "Disadvantage", value: 0, type: 'negative' });
+        } else if (actionContext.advantage && actionContext.disadvantage) {
+            baseRoll = roll1; // Cancel out
+            actionContext.detailedModifiers.push({ text: "Adv/Dis Cancel", value: 0, type: 'neutral' });
+        }
 
         actionContext.bodyPartModifier = 0;
         if (this.gameState.combatCurrentDefender && targetBodyPartArg) {
@@ -1690,6 +1718,12 @@
                 });
             }
         }
+        // Consume Aiming Effect if used
+        if (attacker.aimingEffect) {
+            attacker.aimingEffect = false;
+            logToConsole(`${attackerName} is no longer aiming.`, 'grey');
+        }
+
         if (hit && !explosionProcessed && defender) {
             let actualTargetBodyPart = intendedBodyPart;
             if (((defender === this.gameState ? this.gameState.playerDefenseChoice?.type : this.gameState.npcDefenseChoice) || "Dodge") === "BlockUnarmed" && defenseResult.naturalRoll >= 11) {
@@ -1867,6 +1901,33 @@
             window.turnManager.updateTurnUI();
             this.nextTurn(this.gameState);
         } else logToConsole("Cannot end player turn: Not in combat or not player's turn.", 'orange');
+    }
+
+    handleAimAction() {
+        if (this.gameState.actionPointsRemaining <= 0) {
+            logToConsole("Not enough Action Points to Aim.", "orange");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            return;
+        }
+
+        logToConsole("Player takes aim! (Advantage on next attack)", "lightgreen");
+        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Needs a specific sound potentially
+
+        this.gameState.player.aimingEffect = true;
+        this.gameState.actionPointsRemaining--;
+        window.turnManager.updateTurnUI();
+
+        // Aim consumes the action. If the player has MP left, they can move, or end turn.
+        // We hide the attack UI to indicate the 'Attack' action is done (replaced by Aim).
+        // The player is now in the 'playerPostAction' phase or similar.
+        document.getElementById('attackDeclarationUI')?.classList.add('hidden');
+
+        if (this.gameState.movementPointsRemaining > 0) {
+            this.gameState.combatPhase = 'playerPostAction';
+            logToConsole("Action spent. Move or End Turn (T).", "lightblue");
+        } else {
+            this.endPlayerTurn();
+        }
     }
 
     handleReloadActionDeclaration() {
