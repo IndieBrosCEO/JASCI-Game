@@ -594,6 +594,11 @@ function renderCharacterInfo() {
         <div>Name: ${name}</div>
         <div>Level: ${level}</div>
         <div>XP: ${xp} / ${xpNext}</div>
+        <div style="margin-top: 5px; font-size: 0.9em;">
+            <div title="Press 'U' to spend">Unspent Skill Points: ${gameState.unspentSkillPoints}</div>
+            <div title="Press 'U' to spend">Unspent Stat Points: ${gameState.unspentStatPoints}</div>
+            <div title="Press 'U' to spend">Unspent Perk Picks: ${gameState.unspentPerkPicks}</div>
+        </div>
     `;
 
     // Call the function from character.js to render stats, skills, and worn clothing
