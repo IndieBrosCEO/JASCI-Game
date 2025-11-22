@@ -496,15 +496,15 @@ function renderCharacterStatsSkillsAndWornClothing(character, characterInfoEleme
 }
 
 function applyHungerThirstDamage(gameState, damageAmount) {
-    logToConsole(`DEBUG: applyHungerThirstDamage CALLED. Damage: ${damageAmount}. Initial torso HP: ${gameState.health && gameState.health.torso ? gameState.health.torso.current : 'N/A'}`);
+    logToConsole(`DEBUG: applyHungerThirstDamage CALLED. Damage: ${damageAmount}. Initial torso HP: ${gameState.player.health && gameState.player.health.torso ? gameState.player.health.torso.current : 'N/A'}`);
     // The 'character' parameter in other health functions is analogous to 'gameState' here,
     // as player-specific health is directly on gameState.health.
-    if (!gameState.health || !gameState.health.torso) {
+    if (!gameState.player.health || !gameState.player.health.torso) {
         logToConsole("Error: Player health or torso data is missing. Cannot apply hunger/thirst damage.");
         return;
     }
 
-    let torso = gameState.health.torso;
+    let torso = gameState.player.health.torso;
     let oldHp = torso.current;
 
     logToConsole(`DEBUG: Modifying torso HP. Current HP before change: ${torso.current}, Damage to apply: ${damageAmount}`);
