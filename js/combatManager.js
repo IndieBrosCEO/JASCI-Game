@@ -545,7 +545,7 @@
                     if (tearGasDamage > 0) {
                         logToConsole(`${combatantName} takes ${tearGasDamage} damage from tear gas.`, 'red');
                         this.applyDamage(this.gameState.combatCurrentAttacker || { name: "Environment" }, combatant, "torso", tearGasDamage, "Chemical", { name: "Tear Gas Cloud" });
-                        let healthEntity = combatant === this.gameState ? this.gameState : combatant;
+                        let healthEntity = combatant === this.gameState ? this.gameState.player : combatant;
                         if (healthEntity.health.torso.current <= 0 || healthEntity.health.head.current <= 0) {
                             logToConsole(`DEFEATED: ${combatantName} succumbed to tear gas!`, 'darkred');
                             if (combatant === this.gameState) { this.endCombat(); window.gameOver(this.gameState); return; }

@@ -596,7 +596,7 @@ function renderCharacterInfo() {
     // Call the function from character.js to render stats, skills, and worn clothing
     // gameState is passed as the 'character' object for the player.
     renderCharacterStatsSkillsAndWornClothing(gameState, characterInfoElement);
-    renderHealthTable(gameState); // Ensure health table (armor) updates
+    renderHealthTable(gameState.player); // Ensure health table (armor) updates
     updatePlayerStatusDisplay(); // Update clock and needs display
 
     // Display the ASCII face
