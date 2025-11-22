@@ -97,7 +97,7 @@ class FireManager {
             if (entity) {
                 // Apply burn damage
                 if (window.combatManager && typeof window.combatManager.applyEnvironmentalDamage === 'function') {
-                     window.combatManager.applyEnvironmentalDamage(entity, this.burnDamage, "fire");
+                    window.combatManager.applyEnvironmentalDamage(entity, this.burnDamage, "fire");
                 } else {
                     // Fallback if combatManager helper doesn't exist
                     if (entity.health && entity.health.torso) {
@@ -110,9 +110,9 @@ class FireManager {
 
             // 2. Spread
             const neighbors = [
-                {dx: 0, dy: -1, dz: 0}, {dx: 0, dy: 1, dz: 0},
-                {dx: -1, dy: 0, dz: 0}, {dx: 1, dy: 0, dz: 0},
-                {dx: 0, dy: 0, dz: 1}, {dx: 0, dy: 0, dz: -1}
+                { dx: 0, dy: -1, dz: 0 }, { dx: 0, dy: 1, dz: 0 },
+                { dx: -1, dy: 0, dz: 0 }, { dx: 1, dy: 0, dz: 0 },
+                { dx: 0, dy: 0, dz: 1 }, { dx: 0, dy: 0, dz: -1 }
             ];
 
             neighbors.forEach(n => {
@@ -130,7 +130,7 @@ class FireManager {
                         // Actually, it's better to collect new fires and add them after.
                         // However, we need to check if we already added it to newFires to avoid duplicates.
                         if (!newFires.some(nf => nf.x === nx && nf.y === ny && nf.z === nz)) {
-                            newFires.push({x: nx, y: ny, z: nz});
+                            newFires.push({ x: nx, y: ny, z: nz });
                         }
                     }
                 }
@@ -159,11 +159,17 @@ class FireManager {
         });
 
         if (gameState.activeFires.length > 0 && window.audioManager) {
-             window.audioManager.playSoundEffect('fire_loop.wav', { loop: true, volume: 0.5, id: 'fire_loop' });
-             // Managing the loop requires tracking if it's already playing.
-             // Simple logic: play if not playing. Stop if no fires.
+            // Check if already playing by some id logic or just rely on playSound handling (it handles duplicates for loading but not necessarily playback loop if we call it every turn)
+            // For a simple fix, we use playSound which initiates it.
+            // However, playSound returns a sourceNode. We need to store it to stop it.
+            if (!this.fireLoopSource) {
+                this.fireLoopSource = window.audioManager.playSound('fire_loop.wav', { loop: true, volume: 0.5 });
+            }
         } else if (window.audioManager) {
-             window.audioManager.stopSoundEffect('fire_loop');
+            if (this.fireLoopSource) {
+                window.audioManager.stopSound(this.fireLoopSource);
+                this.fireLoopSource = null;
+            }
         }
 
         window.mapRenderer.scheduleRender();
@@ -180,11 +186,11 @@ class FireManager {
             // We need to replace the flammable tile.
             // Usually checking middle layer first, then bottom.
             // If middle is flammable, replace middle. Else replace bottom.
-             const mapData = window.mapRenderer.getCurrentMapData();
-             const levelData = mapData.levels[z];
+            const mapData = window.mapRenderer.getCurrentMapData();
+            const levelData = mapData.levels[z];
 
-             const assetMgr = window.assetManager || window.assetManagerInstance;
-             const replaceLayer = (layerName) => {
+            const assetMgr = window.assetManager || window.assetManagerInstance;
+            const replaceLayer = (layerName) => {
                 if (!levelData[layerName]) return false;
                 const tileData = levelData[layerName][y]?.[x];
                 const tileId = (typeof tileData === 'object' && tileData !== null && tileData.tileId) ? tileData.tileId : tileData;
@@ -195,21 +201,21 @@ class FireManager {
                     return true;
                 }
                 return false;
-             };
+            };
 
-             if (!replaceLayer('middle')) {
-                 replaceLayer('bottom');
-             }
+            if (!replaceLayer('middle')) {
+                replaceLayer('bottom');
+            }
 
-             if (window.logToConsole) window.logToConsole(`Fire burned out at ${x}, ${y}, ${z}. Turned to Ash.`, 'grey');
+            if (window.logToConsole) window.logToConsole(`Fire burned out at ${x}, ${y}, ${z}. Turned to Ash.`, 'grey');
 
         } else {
             // Just extinguished by water.
             // "Extinguishing also prevents any further spread from that tile." - naturally handled by removing from activeFires.
             // "returning it to its original base tile" - If it was burning, it hasn't changed tile ID yet (visuals handled by renderer overlay).
             // So we just remove it from activeFires.
-             if (window.logToConsole) window.logToConsole(`Fire extinguished at ${x}, ${y}, ${z}.`, 'blue');
-             if (window.audioManager) window.audioManager.playSoundEffect('extinguish.wav');
+            if (window.logToConsole) window.logToConsole(`Fire extinguished at ${x}, ${y}, ${z}.`, 'blue');
+            if (window.audioManager) window.audioManager.playSound('extinguish.wav');
         }
         window.mapRenderer.scheduleRender();
     }
