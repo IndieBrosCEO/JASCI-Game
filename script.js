@@ -2758,7 +2758,7 @@ function runConsumableAndNeedsTest() {
             gameState.inventory.currentlyDisplayedItems = [beansInventoryItem]; // Mock display for interactInventoryItem
             gameState.inventory.cursor = 0;
             const initialBeansHunger = gameState.playerHunger;
-            interactInventoryItem(); // This should consume it
+            window.inventoryManager.interactInventoryItem(); // This should consume it
             logToConsole(`After Beans - Hunger: ${gameState.playerHunger} (was ${initialBeansHunger}), Thirst: ${gameState.playerThirst}`);
             if (initialBeansHunger + beansDef.effects.hunger > maxNeeds && gameState.playerHunger !== maxNeeds) {
                 logToConsole(`TEST WARNING: Beans hunger did not cap at max. Expected ${maxNeeds}, got ${gameState.playerHunger}`);
@@ -2785,7 +2785,7 @@ function runConsumableAndNeedsTest() {
             gameState.inventory.currentlyDisplayedItems = [waterInventoryItem];
             gameState.inventory.cursor = 0;
             const initialWaterThirst = gameState.playerThirst;
-            interactInventoryItem();
+            window.inventoryManager.interactInventoryItem();
             logToConsole(`After Water - Hunger: ${gameState.playerHunger}, Thirst: ${gameState.playerThirst} (was ${initialWaterThirst})`);
             if (initialWaterThirst + waterDef.effects.thirst > maxNeeds && gameState.playerThirst !== maxNeeds) {
                 logToConsole(`TEST WARNING: Water thirst did not cap at max. Expected ${maxNeeds}, got ${gameState.playerThirst}`);
