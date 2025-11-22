@@ -272,24 +272,71 @@
         logToConsole(`[promptPlayerDefenseDeclaration] Set isWaitingForPlayerCombatInput to TRUE. Phase: ${this.gameState.combatPhase}`, 'magenta');
         const defenseTypeSelect = document.getElementById('combatDefenseTypeSelect');
         const blockingLimbSelect = document.getElementById('combatBlockingLimbSelect');
+        const dodgeDescriptionInput = document.getElementById('dodgeDescriptionInput');
+        const dodgeDebtWarning = document.getElementById('dodgeDebtWarning');
         const defenseUI = document.getElementById('defenseDeclarationUI');
-        if (!defenseTypeSelect || !blockingLimbSelect || !defenseUI) {
+
+        if (!defenseTypeSelect || !blockingLimbSelect || !defenseUI || !dodgeDescriptionInput || !dodgeDebtWarning) {
             logToConsole("Defense UI elements not found! Defaulting to Dodge.", 'red');
             this.gameState.playerDefenseChoice = { type: "Dodge", blockingLimb: null, description: "UI Error - Defaulted" };
             this.gameState.combatPhase = 'resolveRolls'; this.processAttack(); return;
         }
         document.getElementById('defenderPrompt').innerHTML = '';
-        defenseTypeSelect.value = "Dodge"; blockingLimbSelect.classList.add('hidden');
+
+        // Determine if player can dodge
+        const currentSpeed = this.gameState.movementPointsRemaining || 6; // Use remaining for now or derived stat if available
+        // User requested: "You cannot declare a Dodge if the new debt would exceed your current Speed."
+        // But speed usually refers to Max Speed, not remaining moves.
+        // Derived stat "Movement Speed" is in feet. 30ft = 6 tiles.
+        // Let's assume standard D&D-ish speed: 30ft (6 tiles).
+        // Or better, use the 'Movement Speed' derived stat if available, else 30.
+        const derivedStats = window.calculateDerivedStats ? window.calculateDerivedStats(this.gameState) : {};
+        const maxSpeedFeet = derivedStats["Movement Speed"] || 30;
+        const maxSpeedTiles = Math.floor(maxSpeedFeet / 5);
+        const currentDebtTiles = (this.gameState.player.movementDebt || 0) / 5;
+        const debtCostTiles = 2; // 10 ft
+
+        const canDodge = (currentDebtTiles + debtCostTiles) <= maxSpeedTiles &&
+                         !this.gameState.statusEffects?.isGrappled &&
+                         this.gameState.playerPosture !== 'prone'; // Restrained check implies grappled or similar
+
+        const dodgeOption = defenseTypeSelect.querySelector('option[value="Dodge"]');
+        if (dodgeOption) {
+            if (!canDodge) {
+                dodgeOption.disabled = true;
+                dodgeOption.textContent = "Dodge (Cannot Dodge)";
+            } else {
+                dodgeOption.disabled = false;
+                dodgeOption.textContent = "Dodge";
+            }
+        }
+
+        // Default selection logic
+        if (defenseTypeSelect.value === "Dodge" && !canDodge) {
+             defenseTypeSelect.value = "BlockUnarmed"; // Fallback
+        }
+
+        // Initial UI State based on current selection
+        const updateUIForSelection = (val) => {
+            blockingLimbSelect.classList.toggle('hidden', val !== 'BlockUnarmed');
+            dodgeDescriptionInput.classList.toggle('hidden', val !== 'Dodge');
+            dodgeDebtWarning.classList.toggle('hidden', val !== 'Dodge');
+            if (val === 'BlockUnarmed') blockingLimbSelect.value = "leftArm";
+        };
+
+        updateUIForSelection(defenseTypeSelect.value);
+
         const canBlockArmed = this.gameState.inventory.handSlots.some(item => item?.type.includes("melee"));
         const blockArmedOption = defenseTypeSelect.querySelector('option[value="BlockArmed"]');
         if (blockArmedOption) blockArmedOption.disabled = !canBlockArmed;
-        if (!canBlockArmed && defenseTypeSelect.value === "BlockArmed") defenseTypeSelect.value = "Dodge";
+        if (!canBlockArmed && defenseTypeSelect.value === "BlockArmed") defenseTypeSelect.value = canDodge ? "Dodge" : "BlockUnarmed";
+
         if (this.defenseTypeChangeListener) defenseTypeSelect.removeEventListener('change', this.defenseTypeChangeListener);
         this.defenseTypeChangeListener = (event) => {
-            blockingLimbSelect.classList.toggle('hidden', event.target.value !== 'BlockUnarmed');
-            if (event.target.value === 'BlockUnarmed') blockingLimbSelect.value = "leftArm";
+            updateUIForSelection(event.target.value);
         };
         defenseTypeSelect.addEventListener('change', this.defenseTypeChangeListener);
+
         logToConsole(`${this.gameState.combatCurrentAttacker?.name || "Opponent"} is attacking ${(attackData?.bodyPart) || "your body"} with ${attackData?.weapon?.name || "Unarmed"}! Choose your defense.`, 'orange');
         defenseUI.classList.remove('hidden'); this.gameState.combatPhase = 'playerDefenseDeclare';
     }
@@ -433,7 +480,7 @@
         this.updateCombatUI();
         attackerName = currentEntry.isPlayer ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id || "Unknown");
         this.gameState.attackerMapPos = currentEntry.isPlayer ? { ...this.gameState.playerPos } : (attacker.mapPos ? { ...attacker.mapPos } : null);
-        logToConsole(`--- ${attackerName}'s Turn --- (${this.gameState.isWaitingForPlayerCombatInput ? "WAITING FLAG TRUE" : "WAITING FLAG FALSE"})`, 'lightblue');
+        logToConsole(`--- ${attackerName}'s Turn ---`, 'lightblue');
 
         // Clear player-specific LOS line data if it's not the player's turn
         if (!currentEntry.isPlayer) {
@@ -792,8 +839,23 @@
         this.gameState.isWaitingForPlayerCombatInput = false;
         const defenseType = document.getElementById('combatDefenseTypeSelect').value;
         const blockingLimb = defenseType === 'BlockUnarmed' ? document.getElementById('combatBlockingLimbSelect').value : null;
-        this.gameState.playerDefenseChoice = { type: defenseType, blockingLimb, description: defenseType + (blockingLimb ? ` with ${blockingLimb}` : "") };
-        logToConsole(`Player defends: ${this.gameState.playerDefenseChoice.description}.`, 'lightgreen');
+        let description = defenseType;
+
+        if (defenseType === 'Dodge') {
+            const descInput = document.getElementById('dodgeDescriptionInput');
+            const userDesc = descInput ? descInput.value.trim() : "";
+            description = `Dodges${userDesc ? ": " + userDesc : ""}`;
+
+            // Apply Movement Debt
+            if (!this.gameState.player.movementDebt) this.gameState.player.movementDebt = 0;
+            this.gameState.player.movementDebt += 10; // 10 ft
+            logToConsole(`Movement Debt Increased to ${this.gameState.player.movementDebt}ft.`, 'grey');
+        } else if (defenseType === 'BlockUnarmed') {
+            description = `Blocks with ${blockingLimb}`;
+        }
+
+        this.gameState.playerDefenseChoice = { type: defenseType, blockingLimb, description };
+        logToConsole(`Player defends: ${description}.`, 'lightgreen');
         document.getElementById('defenseDeclarationUI').classList.add('hidden');
         this.gameState.combatPhase = 'resolveRolls';
         await this.processAttack();
@@ -1029,7 +1091,7 @@
         let baseDefenseValue = 0, defenseSkillName = "";
         switch (defenseType) {
             case "Dodge": defenseSkillName = "Unarmed + Dexterity"; baseDefenseValue = getStatModifier("Dexterity", defender) + getSkillModifier("Unarmed", defender); break;
-            case "BlockUnarmed": defenseSkillName = "Unarmed + Constitution"; baseDefenseValue = getStatModifier("Constitution", defender) + getSkillModifier("Unarmed", defender); break;
+            case "BlockUnarmed": defenseSkillName = "Unarmed"; baseDefenseValue = getSkillModifier("Unarmed", defender); break;
             case "BlockArmed": defenseSkillName = "Melee Weapons"; baseDefenseValue = getSkillModifier("Melee Weapons", defender); break;
         }
         if (baseDefenseValue !== 0) actionContext.detailedModifiers.push({ text: `Skill (${defenseSkillName}): ${baseDefenseValue > 0 ? '+' : ''}${baseDefenseValue}`, value: baseDefenseValue, type: baseDefenseValue > 0 ? 'positive' : 'negative' });
@@ -1719,6 +1781,23 @@
             this.applySpecialEffect(attacker, weapon, (defender && hit ? defender : null), this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || this.gameState.defenderMapPos || attacker?.mapPos || this.gameState.playerPos);
         }
 
+        // Unarmed Block Failure Logic
+        if (hit && defender && ((defender === this.gameState ? this.gameState.playerDefenseChoice?.type : this.gameState.npcDefenseChoice) || "Dodge") === "BlockUnarmed") {
+             if (defenseResult.naturalRoll <= 5) { // Failed by <= 5 margin logic, simplified to roll check as requested "On a failed unarmed block by <=5" usually implies margin, but natural roll is easier to track.
+                 // Actually, user said: "On a failed unarmed block by <=5, the blocking limb takes the hit, by >=6, the intended target is hit."
+                 // This usually means Margin of Failure. Failure Margin = Attack Roll - Defense Roll.
+                 // If I missed (Attack > Defense), then Margin = Attack - Defense.
+                 const margin = attackResult.roll - defenseResult.roll;
+                 if (margin <= 5) {
+                     const blockingLimb = (defender === this.gameState ? this.gameState.playerDefenseChoice?.blockingLimb : null) || "leftArm"; // Default limb
+                     intendedBodyPart = blockingLimb;
+                     logToConsole(`Block partially failed (Margin ${margin}). Damage redirected to blocking limb (${blockingLimb}).`, 'orange');
+                 } else {
+                     logToConsole(`Block failed significantly (Margin ${margin}). Hit connects to intended target (${intendedBodyPart}).`, 'red');
+                 }
+             }
+        }
+
         // Fire Source Logic (Ignition)
         if (weapon?.tags?.includes("fire_source")) {
             const targetTile = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || this.gameState.defenderMapPos;
@@ -1817,10 +1896,6 @@
 
         if (hit && !explosionProcessed && defender) {
             let actualTargetBodyPart = intendedBodyPart;
-            if (((defender === this.gameState ? this.gameState.playerDefenseChoice?.type : this.gameState.npcDefenseChoice) || "Dodge") === "BlockUnarmed" && defenseResult.naturalRoll >= 11) {
-                actualTargetBodyPart = (defender === this.gameState ? this.gameState.playerDefenseChoice?.blockingLimb : null) || intendedBodyPart;
-                logToConsole(`Block redirects to ${actualTargetBodyPart}.`, 'grey');
-            }
             let numHitsCalc = 1;
             if (attackType === "ranged" && weapon?.type.includes("firearm")) {
                 if (actionContext.isBurst) numHitsCalc = rollDie(3);
