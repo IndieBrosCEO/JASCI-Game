@@ -1,4 +1,4 @@
-﻿const ClothingLayers = {
+const ClothingLayers = {
     HEAD_BOTTOM: "head_bottom",
     HEAD_TOP: "head_top",
     TORSO_BOTTOM: "torso_bottom",
@@ -85,8 +85,7 @@ const gameState = {
         { name: "Constitution", points: 3, bgColor: "red", textColor: "black" },
         { name: "Perception", points: 3, bgColor: "cyan", textColor: "black" },
         { name: "Willpower", points: 3, bgColor: "blue", textColor: "white" },
-        { name: "Charisma", points: 3, bgColor: "darkred", textColor: "white" },
-        { name: "Marksmanship", points: 3, bgColor: "magenta", textColor: "black" }
+        { name: "Charisma", points: 3, bgColor: "darkred", textColor: "white" }
     ],
     skills: [
         { name: "Animal Handling", points: 0, bgColor: "darkred", textColor: "white" },
@@ -123,7 +122,7 @@ const gameState = {
     saveVersion: 1,
     totalXp: 0,
     level: 1,
-    unspentSkillPoints: 0,
+    unspentSkillPoints: 30, // Changed from 0 to 30 for starting skill points
     unspentStatPoints: 0,
     unspentPerkPicks: 0,
     perkRanks: {}, // e.g., { "perkId1": 1, "perkId2": 2 }
