@@ -159,7 +159,7 @@ class FireManager {
         });
 
         if (gameState.activeFires.length > 0 && window.audioManager) {
-             window.audioManager.playSoundEffect('fire_loop_01.wav', { loop: true, volume: 0.5, id: 'fire_loop' });
+             window.audioManager.playSoundEffect('fire_loop.wav', { loop: true, volume: 0.5, id: 'fire_loop' });
              // Managing the loop requires tracking if it's already playing.
              // Simple logic: play if not playing. Stop if no fires.
         } else if (window.audioManager) {
@@ -209,7 +209,7 @@ class FireManager {
             // "returning it to its original base tile" - If it was burning, it hasn't changed tile ID yet (visuals handled by renderer overlay).
             // So we just remove it from activeFires.
              if (window.logToConsole) window.logToConsole(`Fire extinguished at ${x}, ${y}, ${z}.`, 'blue');
-             if (window.audioManager) window.audioManager.playSoundEffect('extinguish_01.wav');
+             if (window.audioManager) window.audioManager.playSoundEffect('extinguish.wav');
         }
         window.mapRenderer.scheduleRender();
     }
