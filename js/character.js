@@ -870,8 +870,8 @@ function calculateDerivedStats(character) {
 
     const hitPoints = 10 + (constitution * 2);
     const carryWeight = 50 + (strength * 10);
-    const actionPoints = 2 + Math.floor(dexterity / 3);
-    const movementSpeed = 5 + (Math.floor(dexterity / 2) * 5);
+    const actionPoints = 1;
+    const movementSpeed = 30;
 
     return {
         "Hit Points": hitPoints,
