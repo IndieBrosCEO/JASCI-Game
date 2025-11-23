@@ -1342,7 +1342,8 @@
         if (this.gameState.combatPhase !== 'resolveRolls') { this.nextTurn(); return; }
         const attacker = this.gameState.combatCurrentAttacker;
         const defender = this.gameState.combatCurrentDefender;
-        const { weapon, attackType, bodyPart: intendedBodyPart, fireMode = "single", actionType = "attack" } = this.gameState.pendingCombatAction || {};
+        // Use 'let' for variables that might be reassigned (intendedBodyPart)
+        let { weapon, attackType, bodyPart: intendedBodyPart, fireMode = "single", actionType = "attack" } = this.gameState.pendingCombatAction || {};
 
         if (!this.gameState.pendingCombatAction?.actionType) {
             if (attacker === this.gameState) this.promptPlayerAttackDeclaration(); else this.nextTurn(); return;

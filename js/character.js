@@ -615,7 +615,8 @@ function updateHealthCrisis(character) {
 function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, character) {
     if (!character.health || !character.health[bodyPart]) return;
     let part = character.health[bodyPart];
-    let dc, healing;
+    let dc, healing = 0;
+    let isCrisisResolution = false;
 
     // "Poorly tended: crisis treatment ineffective."
     if (treatmentType === "Poorly Tended" && part.crisisTimer > 0) {
@@ -625,13 +626,21 @@ function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, charac
 
     if (treatmentType === "Well Tended") {
         dc = 15;
-        healing = (restType === "short") ? 2 : part.max;
+        if (restType === "short") healing = 2;
+        else if (restType === "long") healing = part.max;
+
+        if (part.crisisTimer > 0) isCrisisResolution = true;
+
     } else if (treatmentType === "Standard Treatment") {
         dc = 10;
-        healing = (restType === "short") ? 1 : 3;
+        if (restType === "short") healing = 1;
+        else if (restType === "long") healing = 3;
+
+        if (part.crisisTimer > 0) isCrisisResolution = true;
+
     } else if (treatmentType === "Poorly Tended") {
         dc = 5;
-        healing = (restType === "long") ? 1 : 0; // Poorly tended long rest heals 1 HP
+        if (restType === "long") healing = 1;
     } else {
         logToConsole("Invalid treatment type.");
         return;
@@ -643,19 +652,40 @@ function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, charac
     const roll = rollDie(20);
     const totalRoll = roll + medicineBonus; // medicineBonus is the character's Medicine skill points/modifier
 
-    logToConsole(`Medicine check on ${part.name} for ${character.name || character.id} (${treatmentType}, ${restType}): Rolled ${roll} + Medicine Bonus ${medicineBonus} = ${totalRoll} (DC ${dc})`);
+    logToConsole(`Medicine check on ${part.name} for ${character.name || character.id} (${treatmentType}, ${restType || 'Immediate'}): Rolled ${roll} + Medicine Bonus ${medicineBonus} = ${totalRoll} (DC ${dc})`);
 
     if (totalRoll >= dc) {
-        let oldHP = part.current;
-        part.current = Math.min(part.current + healing, part.max);
-        logToConsole(`Treatment successful on ${part.name}: HP increased from ${oldHP} to ${part.current}/${part.max}.`, "green");
+        // 1. Immediate Crisis Resolution
+        if (isCrisisResolution) {
+            if (treatmentType === "Well Tended") {
+                // "restore injured part to 1 HP immediately"
+                if (part.current === 0) part.current = 1;
+                part.crisisTimer = 0;
+                part.crisisDescription = "";
+                part.isDestroyed = false;
+                logToConsole(`Health crisis in ${part.name} resolved (Well Tended). Restored to 1 HP immediately.`, "green");
+            } else if (treatmentType === "Standard Treatment") {
+                // "end crisis"
+                part.crisisTimer = 0;
+                part.crisisDescription = "";
+                part.isDestroyed = false;
+                logToConsole(`Health crisis in ${part.name} ended (Standard Treatment).`, "green");
+            }
+        }
 
-        // If HP is now above 0, and it was in crisis, resolve the crisis.
+        // 2. Rest Healing
+        if (healing > 0) {
+            let oldHP = part.current;
+            part.current = Math.min(part.current + healing, part.max);
+            logToConsole(`Treatment healing on ${part.name}: +${healing} HP (${oldHP} -> ${part.current}/${part.max}).`, "green");
+        }
+
+        // 3. Cleanup check (if healing naturally resolved crisis that wasn't handled specifically?)
         if (part.current > 0 && part.crisisTimer > 0) {
             part.crisisTimer = 0;
-            part.crisisDescription = ""; // Clear crisis description
-            part.isDestroyed = false; // If it was merely in crisis, it's no longer destroyed by that crisis.
-            logToConsole(`Health crisis in ${part.name} for ${character.name || character.id} resolved.`, "green");
+            part.crisisDescription = "";
+            part.isDestroyed = false;
+            logToConsole(`Health crisis in ${part.name} for ${character.name || character.id} resolved due to HP restoration.`, "green");
         }
     } else {
         logToConsole(`Treatment FAILED on ${part.name}.`, "orange");
