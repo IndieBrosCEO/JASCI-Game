@@ -22,12 +22,46 @@ function updateTurnUI_internal() {
     const actionUI = document.getElementById("actionPointsUI");
     if (movementUI) movementUI.textContent = "Moves Left: " + gameState.movementPointsRemaining;
     if (actionUI) actionUI.textContent = "Actions Left: " + gameState.actionPointsRemaining;
+
+    // Vehicle UI
+    let vehicleUI = document.getElementById("vehicleMovementPointsUI");
+    if (gameState.player && gameState.player.isInVehicle) {
+        if (!vehicleUI) {
+            vehicleUI = document.createElement("div");
+            vehicleUI.id = "vehicleMovementPointsUI";
+            vehicleUI.style.color = "cyan"; // Distinct color
+            // Insert after movementPointsUI
+            if (movementUI && movementUI.parentNode) {
+                movementUI.parentNode.insertBefore(vehicleUI, movementUI.nextSibling);
+            }
+        }
+
+        const vehicle = window.vehicleManager ? window.vehicleManager.getVehicleById(gameState.player.isInVehicle) : null;
+        if (vehicle) {
+            // Round to 1 decimal place for cleaner display if cost is fractional
+            const displayMP = (vehicle.currentMovementPoints !== undefined) ? Math.floor(vehicle.currentMovementPoints * 10) / 10 : 0;
+            vehicleUI.textContent = "Vehicle Moves Left: " + displayMP;
+            vehicleUI.style.display = "block";
+        }
+    } else {
+        if (vehicleUI) {
+            vehicleUI.style.display = "none";
+        }
+    }
 }
 
 function startTurn_internal() {
     gameState.movementPointsRemaining = 6;
     gameState.actionPointsRemaining = 1;
     gameState.hasDashed = false;
+
+    // Reset vehicle MP
+    if (gameState.vehicles) {
+        gameState.vehicles.forEach(v => {
+            v.currentMovementPoints = 6; // Standard base, or derive from vehicle stats if intended
+        });
+    }
+
     logToConsole(`Turn ${gameState.currentTurn} started. Moves: ${gameState.movementPointsRemaining}, Actions: ${gameState.actionPointsRemaining}`);
     updateTurnUI_internal();
 }
@@ -159,11 +193,13 @@ async function move_internal(direction) {
         }
 
         // Vehicle movement cost & fuel
-        const vehicleMoveCost = 1; // TODO: Base this on vehicle.calculatedStats.speed or engine type
+        const vehicleMoveCost = window.vehicleManager.getVehicleMovementCost(vehicleId);
         const fuelPerMove = 1;   // TODO: Base this on vehicle.calculatedStats.fuelEfficiency or engine type
 
-        if (gameState.movementPointsRemaining < vehicleMoveCost) {
-            logToConsole(`Not enough movement points to move ${vehicle.name}. Required: ${vehicleMoveCost}`, "orange");
+        if (vehicle.currentMovementPoints === undefined) vehicle.currentMovementPoints = 6; // Fallback initialization
+
+        if (vehicle.currentMovementPoints < vehicleMoveCost) {
+            logToConsole(`Not enough vehicle movement points to move ${vehicle.name}. Required: ${vehicleMoveCost}, Have: ${vehicle.currentMovementPoints}`, "orange");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             return;
         }
@@ -187,34 +223,11 @@ async function move_internal(direction) {
         const nextY = currentVehiclePos.y + dy;
         const nextZ = currentVehiclePos.z; // Vehicle Z-level changes are not handled by basic move yet
 
-        // Basic collision check for vehicle (can be expanded)
-        if (window.mapRenderer.isWalkable(nextX, nextY, nextZ)) {
-            // Animate vehicle movement (placeholder, actual animation is complex)
-            if (window.animationManager && typeof window.animationManager.startMovementAnimation === 'function') {
-                // The entity passed to startMovementAnimation would be the vehicle object itself,
-                // or an object that can have its .mapPos updated by the animation.
-                // For now, we'll update directly and then schedule render.
-                // await window.animationManager.startMovementAnimation(vehicle, nextX, nextY, nextZ, 200);
-            }
-
-            vehicle.mapPos = { x: nextX, y: nextY, z: nextZ };
-            gameState.playerPos = { ...vehicle.mapPos }; // Player moves with the vehicle
-
-            vehicle.fuel -= fuelPerMove;
-            gameState.movementPointsRemaining -= vehicleMoveCost;
-
-            logToConsole(`${vehicle.name} moved to (${nextX},${nextY},${nextZ}). Fuel: ${vehicle.fuel}. MP Left: ${gameState.movementPointsRemaining}`, "info");
-            // TODO: Play vehicle move sound based on terrain/vehicle type
-            if (window.audioManager) window.audioManager.playUiSound('ui_vehicle_move_01.wav');
-
-
-            // Call calculateVehicleStats if fuel change might affect it (e.g. weight)
-            // window.vehicleManager.calculateVehicleStats(vehicle.id); // Not strictly needed for just fuel change unless weight is affected
-
+        // Use standard movement logic for vehicle which now handles MP correctly
+        // Pass localAssetManager and the calculated cost
+        const result = await window.attemptCharacterMove(gameState, direction, localAssetManager, vehicleMoveCost);
+        if (result) {
             moveSuccessful = true;
-        } else {
-            logToConsole(`${vehicle.name} cannot move to (${nextX},${nextY},${nextZ}): Path blocked.`, "orange");
-            if (window.audioManager) window.audioManager.playUiSound('ui_blocked_01.wav');
         }
 
     } else { // Player is NOT in a vehicle, standard character movement

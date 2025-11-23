@@ -183,6 +183,12 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
             logToConsole(`${logPrefix} Character is on Z-Transition Tile (or Slope): '${zTransitionDef.name}'. Attempting Z-move.`);
             const cost = zTransitionDef.z_cost || 1;
             let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
+            if (vehicleId) {
+                const vehicle = window.vehicleManager ? window.vehicleManager.getVehicleById(vehicleId) : null;
+                if (vehicle) {
+                    currentMP = vehicle.currentMovementPoints !== undefined ? vehicle.currentMovementPoints : 6;
+                }
+            }
 
             if (currentMP >= cost) {
                 if (zTransitionDef.tags?.includes('slope') && zTransitionDef.target_dz !== undefined) {
@@ -233,7 +239,12 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
 
                             if (isPlayer) {
                                 window.gameState.playerPos = { x: targetX, y: targetY, z: finalDestZSlope };
-                                window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
+                                if (vehicleId) {
+                                    const vehicle = window.vehicleManager.getVehicleById(vehicleId);
+                                    if (vehicle) vehicle.currentMovementPoints -= actualMoveCost;
+                                } else {
+                                    window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
+                                }
                                 // Move grappled target if player is grappling
                                 if (window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player') {
                                     const grappledNpc = window.gameState.npcs.find(npc => npc.id === window.gameState.statusEffects.grappledTargetId);
@@ -292,7 +303,12 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                         if (!entityAtDest) {
                             if (isPlayer) {
                                 window.gameState.playerPos = { x: targetX, y: targetY, z: targetZUp };
-                                window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
+                                if (vehicleId) {
+                                    const vehicle = window.vehicleManager.getVehicleById(vehicleId);
+                                    if (vehicle) vehicle.currentMovementPoints -= actualMoveCost;
+                                } else {
+                                    window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
+                                }
                                 // Move grappled target
                                 if (window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player' && window.gameState.statusEffects.grappledTargetId) {
                                     const grappledNpc = window.gameState.npcs.find(npc => npc.id === window.gameState.statusEffects.grappledTargetId);
@@ -342,7 +358,12 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                         if (!entityAtDest) {
                             if (isPlayer) {
                                 window.gameState.playerPos = { x: targetX, y: targetY, z: targetZDown };
-                                window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
+                                if (vehicleId) {
+                                    const vehicle = window.vehicleManager.getVehicleById(vehicleId);
+                                    if (vehicle) vehicle.currentMovementPoints -= actualMoveCost;
+                                } else {
+                                    window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
+                                }
                                 // Move grappled target
                                 if (window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player') {
                                     const grappledNpc = window.gameState.npcs.find(npc => npc.id === window.gameState.statusEffects.grappledTargetId);
@@ -421,8 +442,15 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
             const cost = explicitZTransDefAtTarget.z_cost || 1;
             let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
 
-            if (currentMP < cost) {
-                logToConsole(`${logPrefix} Not enough MP for explicit Z-transition. Need ${cost}, have ${currentMP}.`);
+            // Re-check currentMP for Z transition as it might be vehicle MP
+            let mpForZ = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
+            if (vehicleId) {
+                 const vehicle = window.vehicleManager ? window.vehicleManager.getVehicleById(vehicleId) : null;
+                 if (vehicle) mpForZ = vehicle.currentMovementPoints !== undefined ? vehicle.currentMovementPoints : 6;
+            }
+
+            if (mpForZ < cost) {
+                logToConsole(`${logPrefix} Not enough MP for explicit Z-transition. Need ${cost}, have ${mpForZ}.`);
             } else {
                 const finalDestZ = originalPos.z + explicitZTransDefAtTarget.target_dz;
                 if (window.mapRenderer.isWalkable(targetX, targetY, finalDestZ)) {
@@ -437,7 +465,12 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                     if (!entityAtDest) {
                         if (isPlayer) {
                             window.gameState.playerPos = { x: targetX, y: targetY, z: finalDestZ };
-                            window.gameState.movementPointsRemaining -= cost;
+                            if (vehicleId) {
+                                const vehicle = window.vehicleManager.getVehicleById(vehicleId);
+                                if (vehicle) vehicle.currentMovementPoints -= cost;
+                            } else {
+                                window.gameState.movementPointsRemaining -= cost;
+                            }
                         } else {
                             character.mapPos = { x: targetX, y: targetY, z: finalDestZ };
                             character.currentMovementPoints -= cost;
@@ -499,6 +532,12 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
             if (!(targetX === originalPos.x && targetY === originalPos.y)) { // Ensure actual movement
                 // const cost = 1; // Standard horizontal move cost
                 let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
+
+                if (vehicleId) {
+                    const vehicle = window.vehicleManager ? window.vehicleManager.getVehicleById(vehicleId) : null;
+                    if (vehicle) currentMP = vehicle.currentMovementPoints !== undefined ? vehicle.currentMovementPoints : 6;
+                }
+
                 if (currentMP >= actualMoveCost) {
                     // Check fuel if vehicle
                     if (vehicleId && window.vehicleManager) {
@@ -514,7 +553,12 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
 
                     if (isPlayer) {
                         window.gameState.playerPos = { x: targetX, y: targetY, z: originalPos.z };
-                        window.gameState.movementPointsRemaining -= actualMoveCost;
+                        if (vehicleId) {
+                            const vehicle = window.vehicleManager.getVehicleById(vehicleId);
+                            if (vehicle) vehicle.currentMovementPoints -= actualMoveCost;
+                        } else {
+                            window.gameState.movementPointsRemaining -= actualMoveCost;
+                        }
                     } else {
                         character.mapPos = { x: targetX, y: targetY, z: originalPos.z };
                         character.currentMovementPoints -= actualMoveCost;
