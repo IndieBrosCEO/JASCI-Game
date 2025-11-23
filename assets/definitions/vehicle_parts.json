@@ -433,5 +433,254 @@
     "effects": {
       "providesLight": true
     }
+  },
+  {
+    "id": "chassis_bicycle",
+    "name": "Bicycle Frame",
+    "type": "chassis",
+    "durability": 30,
+    "weight": 12,
+    "recipe": {
+      "description": "Weld together a lightweight bicycle frame.",
+      "components": [
+        {
+          "quantity": 5,
+          "family": "metal",
+          "require": {
+            "type": "tube",
+            "material": "steel"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "component",
+          "require": {
+            "type": "mechanical_parts"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "hacksaw" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 200,
+      "batch_size": 1
+    },
+    "slotPoints": {
+      "engine": 1,
+      "wheel": 2,
+      "utility_small": 1,
+      "storage_small": 1
+    },
+    "sprite": "o-o"
+  },
+  {
+    "id": "chassis_motorcycle",
+    "name": "Motorcycle Chassis",
+    "type": "chassis",
+    "durability": 150,
+    "weight": 90,
+    "recipe": {
+      "description": "A sturdy frame for a motorcycle.",
+      "components": [
+        {
+          "quantity": 20,
+          "family": "metal",
+          "require": {
+            "type": "tube",
+            "material": "steel"
+          }
+        },
+        {
+          "quantity": 8,
+          "family": "component",
+          "require": {
+            "type": "mechanical_parts"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 15
+        }
+      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "pipe_bender" ],
+      "station_required": "garage_bay",
+      "time_to_craft": 600,
+      "batch_size": 1
+    },
+    "slotPoints": {
+      "engine": 1,
+      "wheel": 2,
+      "utility_small": 2,
+      "storage_small": 2,
+      "armor_light": 1
+    },
+    "sprite": "O=O"
+  },
+  {
+    "id": "pedal_crankset",
+    "name": "Pedal Crankset",
+    "type": "engine",
+    "durability": 50,
+    "weight": 3,
+    "recipe": {
+      "description": "A set of pedals, cranks, and a chainring.",
+      "components": [
+        {
+          "quantity": 3,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "component",
+          "require": {
+            "type": "mechanical_parts"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "tools_required": [ "wrench_set" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
+    "effects": {
+      "power": 5,
+      "fuelEfficiency": 0.0
+    },
+    "maxFuel": 0
+  },
+  {
+    "id": "engine_motorcycle_twin",
+    "name": "V-Twin Motorcycle Engine",
+    "type": "engine",
+    "durability": 80,
+    "weight": 45,
+    "recipe": {
+      "description": "A powerful V-Twin engine.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "engine_kit",
+          "require": {
+            "type": "motorcycle"
+          }
+        },
+        {
+          "quantity": 8,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 20
+        }
+      ],
+      "tools_required": [ "wrench_set", "screwdriver_set_multi" ],
+      "station_required": "engine_assembly_jig",
+      "time_to_craft": 500,
+      "batch_size": 1
+    },
+    "effects": {
+      "power": 100,
+      "fuelEfficiency": 0.15
+    },
+    "maxFuel": 100
+  },
+  {
+    "id": "wheel_bicycle",
+    "name": "Bicycle Wheel",
+    "type": "wheel",
+    "durability": 15,
+    "weight": 2,
+    "recipe": {
+      "description": "A light wheel with thin tires.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "rubber",
+          "require": {
+            "form": "strips_chunks"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "tools_required": [ "wrench_set" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 30,
+      "batch_size": 1
+    },
+    "effects": {
+      "traction": 0.6
+    }
+  },
+  {
+    "id": "wheel_motorcycle",
+    "name": "Motorcycle Wheel",
+    "type": "wheel",
+    "durability": 45,
+    "weight": 12,
+    "recipe": {
+      "description": "A robust wheel for motorcycles.",
+      "components": [
+        {
+          "quantity": 4,
+          "family": "rubber",
+          "require": {
+            "form": "strips_chunks"
+          }
+        },
+        {
+          "quantity": 3,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 10
+        }
+      ],
+      "tools_required": [ "wrench_set", "tire_iron" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
+    "effects": {
+      "traction": 0.85
+    }
   }
 ]

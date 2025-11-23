@@ -113,5 +113,65 @@
     ],
     "defaultFuel": 50,
     "sprite": "v"
+  },
+  {
+    "id": "bicycle_road",
+    "name": "Road Bicycle",
+    "description": "A simple human-powered bicycle. Silent and fuel-free, but offers no protection.",
+    "chassisId": "chassis_bicycle",
+    "defaultParts": [
+      {
+        "partId": "pedal_crankset",
+        "slotType": "engine",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_bicycle",
+        "slotType": "wheel",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_bicycle",
+        "slotType": "wheel",
+        "slotIndex": 1
+      }
+    ],
+    "defaultFuel": 0,
+    "sprite": "o-o"
+  },
+  {
+    "id": "motorcycle_dirt",
+    "name": "Dirt Bike",
+    "description": "A rugged motorcycle built for off-road travel. Fast and agile.",
+    "chassisId": "chassis_motorcycle",
+    "defaultParts": [
+      {
+        "partId": "engine_motorcycle_twin",
+        "slotType": "engine",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_motorcycle",
+        "slotType": "wheel",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_motorcycle",
+        "slotType": "wheel",
+        "slotIndex": 1
+      },
+      {
+        "partId": "headlights_basic",
+        "slotType": "utility_small",
+        "slotIndex": 0
+      },
+      {
+        "partId": "storage_box_small",
+        "slotType": "storage_small",
+        "slotIndex": 0
+      }
+    ],
+    "defaultFuel": 100,
+    "sprite": "O=O"
   }
 ]
