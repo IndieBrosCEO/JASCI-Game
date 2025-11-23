@@ -177,7 +177,7 @@ class VehicleManager {
         vehicle.calculatedStats = {
             weight: totalWeight,
             power: totalPower,
-            speed: totalPower > 0 && totalWeight > 0 ? Math.max(1, Math.floor((totalPower / totalWeight) * 10 * tractionFactor)) : 0, // Arbitrary speed formula
+            speed: totalPower > 0 && totalWeight > 0 ? Math.max(1, Math.floor((totalPower / totalWeight) * 200 * tractionFactor)) : 0, // Adjusted constant for higher speed values (tiles/turn)
             armor: totalArmor, // Overall armor rating
             cargoCapacity: totalCargoCapacity,
         };
@@ -201,12 +201,10 @@ class VehicleManager {
         if (speed <= 0) return 999; // Immobile
 
         // Higher speed = lower movement cost.
-        // Standard walk speed is around 5 tiles/turn (assuming 30ft speed).
-        // Vehicle speed of 10 should cost 1 MP.
-        // Vehicle speed of 20 should cost 0.5 MP (but MP are integers).
-        // So we can return a cost < 1 if MP supports floats.
-        // Or we can say: Cost = 10 / Speed.
-        return Math.max(0.25, 10 / speed);
+        // Base human speed is roughly 6 tiles/turn.
+        // If vehicle speed is 60 tiles/turn, cost should be 0.1 MP/tile (6 MP / 0.1 = 60).
+        // Formula: Cost = 6 / Speed.
+        return Math.max(0.1, 6.0 / speed);
     }
 
     consumeFuel(vehicleId, distance) {
