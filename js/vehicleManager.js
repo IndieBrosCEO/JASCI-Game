@@ -69,7 +69,8 @@ class VehicleManager {
             fuel: template.defaultFuel || 0,
             maxFuel: 0, // Will be calculated from engine parts
             cargo: [], // { capacity: X, items: [] } - if storage parts are attached
-            passengers: [] // Array of entity IDs (e.g., player ID, NPC IDs)
+            passengers: [], // Array of entity IDs (e.g., player ID, NPC IDs)
+            currentMovementPoints: 6 // Separate movement pool for vehicle (defaults to 6, like entities)
         };
 
         // Add chassis durability
