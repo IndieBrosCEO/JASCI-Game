@@ -170,6 +170,8 @@
       "medical",
       "modern"
     ],
+    "isConsumable": true,
+    "quantity": 1,
     "effects": {
       "health": 10,
       "stopBleeding": true
