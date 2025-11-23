@@ -229,7 +229,11 @@ class VehicleManager {
         allPartIds.forEach(partId => {
             const partDef = this.vehicleParts[partId];
             if (partDef && partDef.type === "engine") {
-                efficiency += (partDef.effects && partDef.effects.fuelEfficiency) || 0.1;
+                if (partDef.effects && typeof partDef.effects.fuelEfficiency !== 'undefined') {
+                    efficiency += partDef.effects.fuelEfficiency;
+                } else {
+                    efficiency += 0.1;
+                }
                 engineCount++;
             }
         });
