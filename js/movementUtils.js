@@ -1,4 +1,4 @@
-﻿// js/movementUtils.js
+// js/movementUtils.js
 
 // This file will contain shared movement logic for players and NPCs.
 
@@ -36,10 +36,29 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         return false;
     }
 
+    // Vehicle handling
+    let vehicleId = null;
+    if (isPlayer && window.gameState.player.isInVehicle) {
+        vehicleId = window.gameState.player.isInVehicle;
+    }
+    // TODO: Add NPC vehicle check if NPCs can drive.
+
     let movementPointsOwner = isPlayer ? window.gameState : character;
     let currentMovementPoints = isPlayer ? movementPointsOwner.movementPointsRemaining : movementPointsOwner.currentMovementPoints;
 
     let actualMoveCost = moveCostOverride !== null ? moveCostOverride : 1;
+
+    if (vehicleId) {
+        if (window.vehicleManager) {
+            const vehicleMoveCost = window.vehicleManager.getVehicleMovementCost(vehicleId);
+            // Only override cost if it's beneficial (or maybe vehicles are harder to maneuver?)
+            // For now, let's assume vehicle cost replaces standard walk cost.
+            if (moveCostOverride === null) {
+                actualMoveCost = vehicleMoveCost;
+            }
+        }
+    }
+
     // Grappling movement cost adjustment
     if (isPlayer && window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player') {
         actualMoveCost *= 2; // Double movement cost if player is grappling someone
@@ -146,332 +165,376 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
 
     let moveSuccessful = false; // Flag to track if any kind of position change or fall occurred
 
+    // Vehicle movement limitation: Vehicles generally cannot use Z-transitions like ladders/stairs unless specially designed (e.g., ramps).
+    // For now, assume vehicles can ONLY move horizontally or use slopes (if they are ramps).
+    // We'll treat slopes as valid for vehicles, but stairs/ladders as invalid.
+
     // --- Movement Logic Order ---
     // 1. Z-Transition (Character is ON a z_transition tile - includes slopes)
     if (charIsOnZTransition && zTransitionDef) {
-        logToConsole(`${logPrefix} Character is on Z-Transition Tile (or Slope): '${zTransitionDef.name}'. Attempting Z-move.`);
-        const cost = zTransitionDef.z_cost || 1;
-        let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
+        // Vehicle check: If in vehicle, only allow slopes.
+        if (vehicleId && !zTransitionDef.tags?.includes('slope')) {
+             logToConsole(`${logPrefix} Cannot use ${zTransitionDef.name} while in a vehicle.`, "orange");
+             // Proceed to horizontal check, maybe they are just driving *past* a ladder?
+             // But if they are ON the tile, standard movement usually prioritizes the transition interaction.
+             // Let's assume they can move OFF the tile horizontally (Step 3) if they don't take the transition.
+             // So we skip this block.
+        } else {
+            logToConsole(`${logPrefix} Character is on Z-Transition Tile (or Slope): '${zTransitionDef.name}'. Attempting Z-move.`);
+            const cost = zTransitionDef.z_cost || 1;
+            let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
 
-        if (currentMP >= cost) {
-            if (zTransitionDef.tags?.includes('slope') && zTransitionDef.target_dz !== undefined) {
-                const finalDestZSlope = originalPos.z + zTransitionDef.target_dz;
-                // Check if the target tile (targetX, targetY) at originalPos.z is a solid_terrain_top,
-                // as slopes typically lead onto the top of an adjacent solid block.
-                const adjLevelDataSlope = currentMap.levels[originalPos.z.toString()];
-                let adjTileDefSlope = null;
-                if (adjLevelDataSlope) {
-                    const midRawSlope = adjLevelDataSlope.middle?.[targetY]?.[targetX];
-                    const midIdSlope = (typeof midRawSlope === 'object' && midRawSlope?.tileId !== undefined) ? midRawSlope.tileId : midRawSlope;
-                    if (midIdSlope && localAssetManager.tilesets[midIdSlope]?.tags?.includes('solid_terrain_top')) {
-                        adjTileDefSlope = localAssetManager.tilesets[midIdSlope];
+            if (currentMP >= cost) {
+                if (zTransitionDef.tags?.includes('slope') && zTransitionDef.target_dz !== undefined) {
+                    const finalDestZSlope = originalPos.z + zTransitionDef.target_dz;
+                    // Check if the target tile (targetX, targetY) at originalPos.z is a solid_terrain_top,
+                    // as slopes typically lead onto the top of an adjacent solid block.
+                    const adjLevelDataSlope = currentMap.levels[originalPos.z.toString()];
+                    let adjTileDefSlope = null;
+                    if (adjLevelDataSlope) {
+                        const midRawSlope = adjLevelDataSlope.middle?.[targetY]?.[targetX];
+                        const midIdSlope = (typeof midRawSlope === 'object' && midRawSlope?.tileId !== undefined) ? midRawSlope.tileId : midRawSlope;
+                        if (midIdSlope && localAssetManager.tilesets[midIdSlope]?.tags?.includes('solid_terrain_top')) {
+                            adjTileDefSlope = localAssetManager.tilesets[midIdSlope];
+                        } else {
+                            const botRawSlope = adjLevelDataSlope.bottom?.[targetY]?.[targetX];
+                            const botIdSlope = (typeof botRawSlope === 'object' && botRawSlope?.tileId !== undefined) ? botRawSlope.tileId : botRawSlope;
+                            if (botIdSlope && localAssetManager.tilesets[botIdSlope]?.tags?.includes('solid_terrain_top')) {
+                                adjTileDefSlope = localAssetManager.tilesets[botIdSlope];
+                            }
+                        }
+                    }
+
+                    // The destination for a slope move is (targetX, targetY) at finalDestZSlope.
+                    // isWalkable should check if (targetX, targetY, finalDestZSlope) is a valid standing spot.
+                    if (adjTileDefSlope && window.mapRenderer.isWalkable(targetX, targetY, finalDestZSlope)) {
+                        let npcAtDest = false;
+                        if (isPlayer) { // Player checking against NPCs
+                            npcAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === finalDestZSlope && npc.health?.torso?.current > 0);
+                        } else { // NPC checking against player and other NPCs
+                            if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === finalDestZSlope) npcAtDest = true;
+                            if (!npcAtDest) npcAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === finalDestZSlope && otherNpc.health?.torso?.current > 0);
+                        }
+
+                        if (!npcAtDest) {
+                            // If moving in a vehicle, check fuel and update vehicle pos
+                            let fuelConsumed = false;
+                            if (vehicleId && window.vehicleManager) {
+                                if (!window.vehicleManager.consumeFuel(vehicleId, 1)) { // Assume slope takes 1 unit of distance/fuel?
+                                    logToConsole("Vehicle out of fuel!", "red");
+                                    return false;
+                                }
+                                const vehicle = window.vehicleManager.getVehicleById(vehicleId);
+                                if (vehicle) {
+                                    vehicle.mapPos = { x: targetX, y: targetY, z: finalDestZSlope };
+                                    fuelConsumed = true;
+                                }
+                            }
+
+                            if (isPlayer) {
+                                window.gameState.playerPos = { x: targetX, y: targetY, z: finalDestZSlope };
+                                window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
+                                // Move grappled target if player is grappling
+                                if (window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player') {
+                                    const grappledNpc = window.gameState.npcs.find(npc => npc.id === window.gameState.statusEffects.grappledTargetId);
+                                    if (grappledNpc) {
+                                        grappledNpc.mapPos = { ...window.gameState.playerPos };
+                                        logToConsole(`Moved grappled target ${grappledNpc.name} with player.`, 'grey');
+                                    }
+                                }
+                            } else {
+                                character.mapPos = { x: targetX, y: targetY, z: finalDestZSlope };
+                                character.currentMovementPoints -= actualMoveCost; // Use actualMoveCost
+                            }
+                            logToConsole(`${logPrefix} Used slope '${zTransitionDef.name}' to move onto '${adjTileDefSlope.name}'. New Z: ${finalDestZSlope}. Cost: ${actualMoveCost} MP.`, "green");
+                            if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for slope
+                            moveSuccessful = true;
+                            if (isPlayer) {
+                                if (window.gameState.viewFollowsPlayerZ) {
+                                    window.gameState.currentViewZ = window.gameState.playerPos.z;
+                                }
+                                if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
+                                    // Use globally exposed PLAYER_VISION_RADIUS_CONST
+                                    window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
+                                }
+                                // updatePlayerStatusDisplay() is called in turnManager.move after attemptCharacterMove returns
+                            }
+                        } else {
+                            logToConsole(`${logPrefix} Cannot use slope: Destination (${targetX},${targetY},${finalDestZSlope}) occupied.`);
+                        }
                     } else {
-                        const botRawSlope = adjLevelDataSlope.bottom?.[targetY]?.[targetX];
-                        const botIdSlope = (typeof botRawSlope === 'object' && botRawSlope?.tileId !== undefined) ? botRawSlope.tileId : botRawSlope;
-                        if (botIdSlope && localAssetManager.tilesets[botIdSlope]?.tags?.includes('solid_terrain_top')) {
-                            adjTileDefSlope = localAssetManager.tilesets[botIdSlope];
+                        logToConsole(`${logPrefix} Slope move failed: Adjacent tile (${targetX},${targetY},${originalPos.z}) not solid_terrain_top or destination Z=${finalDestZSlope} not walkable.`);
+                    }
+                }
+
+                // General Z-Transition (non-slope, or slope failed and trying alternatives)
+                if (!moveSuccessful && !vehicleId) { // Vehicles cannot do standard Z-step ups/downs
+                    // Try Moving Up (standard z-transition step-up)
+                    const targetZUp = originalPos.z + 1;
+                    // Check if the tile at (targetX, targetY, originalPos.z) is impassable (e.g., a wall to step onto)
+                    const targetTileAtCurrentZImpassableInfo = isTileStrictlyImpassable(targetX, targetY, originalPos.z);
+                    const isTargetTileAtCurrentZImpassable = targetTileAtCurrentZImpassableInfo.impassable;
+
+                    // Character needs headroom at their current X,Y but at targetZUp
+                    // And the landing spot (targetX, targetY, targetZUp) must be walkable
+                    if (isTargetTileAtCurrentZImpassable &&
+                        window.mapRenderer.isTileEmpty(originalPos.x, originalPos.y, targetZUp) &&
+                        window.mapRenderer.isWalkable(targetX, targetY, targetZUp)) {
+
+                        let entityAtDest = false;
+                        if (isPlayer) {
+                            entityAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === targetZUp && npc.health?.torso?.current > 0);
+                        } else {
+                            if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === targetZUp) entityAtDest = true;
+                            if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZUp && otherNpc.health?.torso?.current > 0);
+                        }
+
+                        if (!entityAtDest) {
+                            if (isPlayer) {
+                                window.gameState.playerPos = { x: targetX, y: targetY, z: targetZUp };
+                                window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
+                                // Move grappled target
+                                if (window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player' && window.gameState.statusEffects.grappledTargetId) {
+                                    const grappledNpc = window.gameState.npcs.find(npc => npc.id === window.gameState.statusEffects.grappledTargetId);
+                                    if (grappledNpc) {
+                                        grappledNpc.mapPos = { ...window.gameState.playerPos };
+                                        logToConsole(`Moved grappled target ${grappledNpc.name} with player to ${JSON.stringify(grappledNpc.mapPos)}.`, 'grey');
+                                    }
+                                }
+                            } else {
+                                character.mapPos = { x: targetX, y: targetY, z: targetZUp };
+                                character.currentMovementPoints -= actualMoveCost;
+                            }
+                            logToConsole(`${logPrefix} Used z_transition '${zTransitionDef.name}' to step UP onto '${targetTileAtCurrentZImpassableInfo.name}' at Z+1. Cost: ${actualMoveCost} MP.`, "green");
+                            if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for Z-up
+                            moveSuccessful = true;
+                            if (isPlayer) {
+                                if (window.gameState.viewFollowsPlayerZ) {
+                                    window.gameState.currentViewZ = window.gameState.playerPos.z;
+                                }
+                                if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
+                                    // Use globally exposed PLAYER_VISION_RADIUS_CONST
+                                    window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
+                                }
+                            }
+                        } else {
+                            logToConsole(`${logPrefix} Cannot step UP via z_transition: Destination (${targetX},${targetY},${targetZUp}) occupied.`);
                         }
                     }
                 }
 
-                // The destination for a slope move is (targetX, targetY) at finalDestZSlope.
-                // isWalkable should check if (targetX, targetY, finalDestZSlope) is a valid standing spot.
-                if (adjTileDefSlope && window.mapRenderer.isWalkable(targetX, targetY, finalDestZSlope)) {
-                    let npcAtDest = false;
-                    if (isPlayer) { // Player checking against NPCs
-                        npcAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === finalDestZSlope && npc.health?.torso?.current > 0);
-                    } else { // NPC checking against player and other NPCs
-                        if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === finalDestZSlope) npcAtDest = true;
-                        if (!npcAtDest) npcAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === finalDestZSlope && otherNpc.health?.torso?.current > 0);
-                    }
+                if (!moveSuccessful && !vehicleId) { // Vehicles cannot do standard Z-step downs
+                    // Try Moving Down (standard z-transition step-down, e.g. into a hole)
+                    const targetZDown = originalPos.z - 1;
+                    // Character needs clear space at (targetX, targetY, originalPos.z) to step "into" before dropping
+                    // And the landing spot (targetX, targetY, targetZDown) must be walkable
+                    if (window.mapRenderer.isTileEmpty(targetX, targetY, originalPos.z) &&
+                        window.mapRenderer.isWalkable(targetX, targetY, targetZDown)) {
 
-                    if (!npcAtDest) {
+                        let entityAtDest = false;
                         if (isPlayer) {
-                            window.gameState.playerPos = { x: targetX, y: targetY, z: finalDestZSlope };
-                            window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
-                            // Move grappled target if player is grappling
-                            if (window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player') {
-                                const grappledNpc = window.gameState.npcs.find(npc => npc.id === window.gameState.statusEffects.grappledTargetId);
-                                if (grappledNpc) {
-                                    grappledNpc.mapPos = { ...window.gameState.playerPos };
-                                    logToConsole(`Moved grappled target ${grappledNpc.name} with player.`, 'grey');
+                            entityAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === targetZDown && npc.health?.torso?.current > 0);
+                        } else {
+                            if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === targetZDown) entityAtDest = true;
+                            if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZDown && otherNpc.health?.torso?.current > 0);
+                        }
+
+                        if (!entityAtDest) {
+                            if (isPlayer) {
+                                window.gameState.playerPos = { x: targetX, y: targetY, z: targetZDown };
+                                window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
+                                // Move grappled target
+                                if (window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player') {
+                                    const grappledNpc = window.gameState.npcs.find(npc => npc.id === window.gameState.statusEffects.grappledTargetId);
+                                    if (grappledNpc) {
+                                        grappledNpc.mapPos = { ...window.gameState.playerPos };
+                                        logToConsole(`Moved grappled target ${grappledNpc.name} with player.`, 'grey');
+                                    }
+                                }
+                            } else {
+                                character.mapPos = { x: targetX, y: targetY, z: targetZDown };
+                                character.currentMovementPoints -= actualMoveCost; // Use actualMoveCost
+                            }
+                            logToConsole(`${logPrefix} Used z_transition '${zTransitionDef.name}' to step DOWN to Z-1. Cost: ${actualMoveCost} MP.`, "purple");
+                            if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for Z-down
+                            moveSuccessful = true;
+                            if (isPlayer) {
+                                if (window.gameState.viewFollowsPlayerZ) {
+                                    window.gameState.currentViewZ = window.gameState.playerPos.z;
+                                }
+                                if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
+                                    // Use globally exposed PLAYER_VISION_RADIUS_CONST
+                                    window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
                                 }
                             }
                         } else {
-                            character.mapPos = { x: targetX, y: targetY, z: finalDestZSlope };
-                            character.currentMovementPoints -= actualMoveCost; // Use actualMoveCost
+                            logToConsole(`${logPrefix} Cannot step DOWN via z_transition: Destination (${targetX},${targetY},${targetZDown}) occupied.`);
                         }
-                        logToConsole(`${logPrefix} Used slope '${zTransitionDef.name}' to move onto '${adjTileDefSlope.name}'. New Z: ${finalDestZSlope}. Cost: ${actualMoveCost} MP.`, "green");
-                        if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for slope
-                        moveSuccessful = true;
-                        if (isPlayer) {
-                            if (window.gameState.viewFollowsPlayerZ) {
-                                window.gameState.currentViewZ = window.gameState.playerPos.z;
-                            }
-                            if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                                // Use globally exposed PLAYER_VISION_RADIUS_CONST
-                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
-                            }
-                            // updatePlayerStatusDisplay() is called in turnManager.move after attemptCharacterMove returns
-                        }
-                    } else {
-                        logToConsole(`${logPrefix} Cannot use slope: Destination (${targetX},${targetY},${finalDestZSlope}) occupied.`);
                     }
+                }
+
+                if (moveSuccessful) {
+                    if (isPlayer) {
+                        if (window.gameState.viewFollowsPlayerZ) window.gameState.currentViewZ = window.gameState.playerPos.z;
+                        if (window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
+                        // Player specific UI updates will be handled by the caller (turnManager.js)
+                    }
+                    // Caller (turnManager or combatManager) will handle UI/render updates.
+                    return true;
                 } else {
-                    logToConsole(`${logPrefix} Slope move failed: Adjacent tile (${targetX},${targetY},${originalPos.z}) not solid_terrain_top or destination Z=${finalDestZSlope} not walkable.`);
+                    logToConsole(`${logPrefix} Z-Transition/Slope ON tile: Conditions for any Z-move not met or failed.`);
                 }
+            } else if (charIsOnZTransition && zTransitionDef) { // Not enough MP
+                logToConsole(`${logPrefix} Not enough MP for z_transition/slope assisted move. Need ${cost}, have ${currentMP}.`);
             }
-
-            // General Z-Transition (non-slope, or slope failed and trying alternatives)
-            if (!moveSuccessful) {
-                // Try Moving Up (standard z-transition step-up)
-                const targetZUp = originalPos.z + 1;
-                // Check if the tile at (targetX, targetY, originalPos.z) is impassable (e.g., a wall to step onto)
-                const targetTileAtCurrentZImpassableInfo = isTileStrictlyImpassable(targetX, targetY, originalPos.z);
-                const isTargetTileAtCurrentZImpassable = targetTileAtCurrentZImpassableInfo.impassable;
-
-                // Character needs headroom at their current X,Y but at targetZUp
-                // And the landing spot (targetX, targetY, targetZUp) must be walkable
-                if (isTargetTileAtCurrentZImpassable &&
-                    window.mapRenderer.isTileEmpty(originalPos.x, originalPos.y, targetZUp) &&
-                    window.mapRenderer.isWalkable(targetX, targetY, targetZUp)) {
-
-                    let entityAtDest = false;
-                    if (isPlayer) {
-                        entityAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === targetZUp && npc.health?.torso?.current > 0);
-                    } else {
-                        if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === targetZUp) entityAtDest = true;
-                        if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZUp && otherNpc.health?.torso?.current > 0);
-                    }
-
-                    if (!entityAtDest) {
-                        if (isPlayer) {
-                            window.gameState.playerPos = { x: targetX, y: targetY, z: targetZUp };
-                            window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
-                            // Move grappled target
-                            if (window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player' && window.gameState.statusEffects.grappledTargetId) {
-                                const grappledNpc = window.gameState.npcs.find(npc => npc.id === window.gameState.statusEffects.grappledTargetId);
-                                if (grappledNpc) {
-                                    grappledNpc.mapPos = { ...window.gameState.playerPos };
-                                    logToConsole(`Moved grappled target ${grappledNpc.name} with player to ${JSON.stringify(grappledNpc.mapPos)}.`, 'grey');
-                                }
-                            }
-                        } else {
-                            character.mapPos = { x: targetX, y: targetY, z: targetZUp };
-                            character.currentMovementPoints -= actualMoveCost;
-                        }
-                        logToConsole(`${logPrefix} Used z_transition '${zTransitionDef.name}' to step UP onto '${targetTileAtCurrentZImpassableInfo.name}' at Z+1. Cost: ${actualMoveCost} MP.`, "green");
-                        if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for Z-up
-                        moveSuccessful = true;
-                        if (isPlayer) {
-                            if (window.gameState.viewFollowsPlayerZ) {
-                                window.gameState.currentViewZ = window.gameState.playerPos.z;
-                            }
-                            if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                                // Use globally exposed PLAYER_VISION_RADIUS_CONST
-                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
-                            }
-                        }
-                    } else {
-                        logToConsole(`${logPrefix} Cannot step UP via z_transition: Destination (${targetX},${targetY},${targetZUp}) occupied.`);
-                    }
-                }
-            }
-
-            if (!moveSuccessful) { // Try Moving Down (standard z-transition step-down, e.g. into a hole)
-                const targetZDown = originalPos.z - 1;
-                // Character needs clear space at (targetX, targetY, originalPos.z) to step "into" before dropping
-                // And the landing spot (targetX, targetY, targetZDown) must be walkable
-                if (window.mapRenderer.isTileEmpty(targetX, targetY, originalPos.z) &&
-                    window.mapRenderer.isWalkable(targetX, targetY, targetZDown)) {
-
-                    let entityAtDest = false;
-                    if (isPlayer) {
-                        entityAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === targetZDown && npc.health?.torso?.current > 0);
-                    } else {
-                        if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === targetZDown) entityAtDest = true;
-                        if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZDown && otherNpc.health?.torso?.current > 0);
-                    }
-
-                    if (!entityAtDest) {
-                        if (isPlayer) {
-                            window.gameState.playerPos = { x: targetX, y: targetY, z: targetZDown };
-                            window.gameState.movementPointsRemaining -= actualMoveCost; // Use actualMoveCost
-                            // Move grappled target
-                            if (window.gameState.statusEffects?.isGrappling && window.gameState.statusEffects.grappledBy === 'player') {
-                                const grappledNpc = window.gameState.npcs.find(npc => npc.id === window.gameState.statusEffects.grappledTargetId);
-                                if (grappledNpc) {
-                                    grappledNpc.mapPos = { ...window.gameState.playerPos };
-                                    logToConsole(`Moved grappled target ${grappledNpc.name} with player.`, 'grey');
-                                }
-                            }
-                        } else {
-                            character.mapPos = { x: targetX, y: targetY, z: targetZDown };
-                            character.currentMovementPoints -= actualMoveCost; // Use actualMoveCost
-                        }
-                        logToConsole(`${logPrefix} Used z_transition '${zTransitionDef.name}' to step DOWN to Z-1. Cost: ${actualMoveCost} MP.`, "purple");
-                        if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for Z-down
-                        moveSuccessful = true;
-                        if (isPlayer) {
-                            if (window.gameState.viewFollowsPlayerZ) {
-                                window.gameState.currentViewZ = window.gameState.playerPos.z;
-                            }
-                            if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                                // Use globally exposed PLAYER_VISION_RADIUS_CONST
-                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
-                            }
-                        }
-                    } else {
-                        logToConsole(`${logPrefix} Cannot step DOWN via z_transition: Destination (${targetX},${targetY},${targetZDown}) occupied.`);
-                    }
-                }
-            }
-
-            if (moveSuccessful) {
-                if (isPlayer) {
-                    if (window.gameState.viewFollowsPlayerZ) window.gameState.currentViewZ = window.gameState.playerPos.z;
-                    if (window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
-                    // Player specific UI updates will be handled by the caller (turnManager.js)
-                }
-                // Caller (turnManager or combatManager) will handle UI/render updates.
-                return true;
-            } else {
-                logToConsole(`${logPrefix} Z-Transition/Slope ON tile: Conditions for any Z-move not met or failed.`);
-            }
-        } else if (charIsOnZTransition && zTransitionDef) { // Not enough MP
-            logToConsole(`${logPrefix} Not enough MP for z_transition/slope assisted move. Need ${cost}, have ${currentMP}.`);
         }
     } // End of "Character is ON a z_transition" block
 
 
     // 2. Explicit Z-Transition (Character is moving INTO a z_transition tile like stairs/ladder at targetX, targetY, originalPos.z)
-    let explicitZTransDefAtTarget = null;
-    const targetLevelDataForExplicitZ = currentMap.levels[originalPos.z.toString()];
-    if (targetLevelDataForExplicitZ) {
-        const checkTileForExplicitZ = (tileId) => {
-            if (tileId && localAssetManager.tilesets[tileId]) {
-                const def = localAssetManager.tilesets[tileId];
-                // Ensure it's a z_transition but NOT a slope (slopes are handled by being ON them)
-                if (def.tags?.includes('z_transition') && !def.tags?.includes('slope')) {
-                    return def;
+    if (!vehicleId) { // Vehicles cannot use ladders/stairs
+        let explicitZTransDefAtTarget = null;
+        const targetLevelDataForExplicitZ = currentMap.levels[originalPos.z.toString()];
+        if (targetLevelDataForExplicitZ) {
+            const checkTileForExplicitZ = (tileId) => {
+                if (tileId && localAssetManager.tilesets[tileId]) {
+                    const def = localAssetManager.tilesets[tileId];
+                    // Ensure it's a z_transition but NOT a slope (slopes are handled by being ON them)
+                    if (def.tags?.includes('z_transition') && !def.tags?.includes('slope')) {
+                        return def;
+                    }
                 }
+                return null;
+            };
+            const midRaw = targetLevelDataForExplicitZ.middle?.[targetY]?.[targetX];
+            const midId = (typeof midRaw === 'object' && midRaw?.tileId !== undefined) ? midRaw.tileId : midRaw;
+            explicitZTransDefAtTarget = checkTileForExplicitZ(midId);
+            if (!explicitZTransDefAtTarget) {
+                const botRaw = targetLevelDataForExplicitZ.bottom?.[targetY]?.[targetX];
+                const botId = (typeof botRaw === 'object' && botRaw?.tileId !== undefined) ? botRaw.tileId : botRaw;
+                explicitZTransDefAtTarget = checkTileForExplicitZ(botId);
             }
-            return null;
-        };
-        const midRaw = targetLevelDataForExplicitZ.middle?.[targetY]?.[targetX];
-        const midId = (typeof midRaw === 'object' && midRaw?.tileId !== undefined) ? midRaw.tileId : midRaw;
-        explicitZTransDefAtTarget = checkTileForExplicitZ(midId);
-        if (!explicitZTransDefAtTarget) {
-            const botRaw = targetLevelDataForExplicitZ.bottom?.[targetY]?.[targetX];
-            const botId = (typeof botRaw === 'object' && botRaw?.tileId !== undefined) ? botRaw.tileId : botRaw;
-            explicitZTransDefAtTarget = checkTileForExplicitZ(botId);
         }
-    }
 
-    if (explicitZTransDefAtTarget) {
-        logToConsole(`${logPrefix} Target tile (${targetX},${targetY},${originalPos.z}) is an Explicit Z-Transition: '${explicitZTransDefAtTarget.name}'.`);
-        const cost = explicitZTransDefAtTarget.z_cost || 1;
-        let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
+        if (explicitZTransDefAtTarget) {
+            logToConsole(`${logPrefix} Target tile (${targetX},${targetY},${originalPos.z}) is an Explicit Z-Transition: '${explicitZTransDefAtTarget.name}'.`);
+            const cost = explicitZTransDefAtTarget.z_cost || 1;
+            let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
 
-        if (currentMP < cost) {
-            logToConsole(`${logPrefix} Not enough MP for explicit Z-transition. Need ${cost}, have ${currentMP}.`);
-        } else {
-            const finalDestZ = originalPos.z + explicitZTransDefAtTarget.target_dz;
-            if (window.mapRenderer.isWalkable(targetX, targetY, finalDestZ)) {
-                let entityAtDest = false;
-                if (isPlayer) {
-                    entityAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === finalDestZ && npc.health?.torso?.current > 0);
-                } else {
-                    if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === finalDestZ) entityAtDest = true;
-                    if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === finalDestZ && otherNpc.health?.torso?.current > 0);
-                }
-
-                if (!entityAtDest) {
-                    if (isPlayer) {
-                        window.gameState.playerPos = { x: targetX, y: targetY, z: finalDestZ };
-                        window.gameState.movementPointsRemaining -= cost;
-                    } else {
-                        character.mapPos = { x: targetX, y: targetY, z: finalDestZ };
-                        character.currentMovementPoints -= cost;
-                    }
-                    logToConsole(`${logPrefix} Used explicit Z-transition '${explicitZTransDefAtTarget.name}'. New Z: ${finalDestZ}. Cost: ${cost} MP.`, "cyan");
-                    if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for explicit Z-trans
-                    moveSuccessful = true;
-                    if (isPlayer) {
-                        if (window.gameState.viewFollowsPlayerZ) {
-                            window.gameState.currentViewZ = window.gameState.playerPos.z; // playerPos.z IS finalDestZ here
-                        }
-                        if (window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
-                        if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                            const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
-                            window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
-                        }
-                    }
-                    return true; // Move successful
-                } else {
-                    logToConsole(`${logPrefix} Cannot use explicit Z-transition: Destination (${targetX},${targetY},${finalDestZ}) occupied.`);
-                }
+            if (currentMP < cost) {
+                logToConsole(`${logPrefix} Not enough MP for explicit Z-transition. Need ${cost}, have ${currentMP}.`);
             } else {
-                logToConsole(`${logPrefix} Explicit Z-transition destination (${targetX},${targetY},${finalDestZ}) is not walkable.`);
+                const finalDestZ = originalPos.z + explicitZTransDefAtTarget.target_dz;
+                if (window.mapRenderer.isWalkable(targetX, targetY, finalDestZ)) {
+                    let entityAtDest = false;
+                    if (isPlayer) {
+                        entityAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === finalDestZ && npc.health?.torso?.current > 0);
+                    } else {
+                        if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === finalDestZ) entityAtDest = true;
+                        if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === finalDestZ && otherNpc.health?.torso?.current > 0);
+                    }
+
+                    if (!entityAtDest) {
+                        if (isPlayer) {
+                            window.gameState.playerPos = { x: targetX, y: targetY, z: finalDestZ };
+                            window.gameState.movementPointsRemaining -= cost;
+                        } else {
+                            character.mapPos = { x: targetX, y: targetY, z: finalDestZ };
+                            character.currentMovementPoints -= cost;
+                        }
+                        logToConsole(`${logPrefix} Used explicit Z-transition '${explicitZTransDefAtTarget.name}'. New Z: ${finalDestZ}. Cost: ${cost} MP.`, "cyan");
+                        if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for explicit Z-trans
+                        moveSuccessful = true;
+                        if (isPlayer) {
+                            if (window.gameState.viewFollowsPlayerZ) {
+                                window.gameState.currentViewZ = window.gameState.playerPos.z; // playerPos.z IS finalDestZ here
+                            }
+                            if (window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
+                            if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
+                                const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
+                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                            }
+                        }
+                        return true; // Move successful
+                    } else {
+                        logToConsole(`${logPrefix} Cannot use explicit Z-transition: Destination (${targetX},${targetY},${finalDestZ}) occupied.`);
+                    }
+                } else {
+                    logToConsole(`${logPrefix} Explicit Z-transition destination (${targetX},${targetY},${finalDestZ}) is not walkable.`);
+                }
             }
         }
     } // End of "Moving INTO a z_transition" block
 
 
     // 3. Standard Horizontal Movement (if no Z-transitions were used)
-    // Check if target tile at current Z is strictly impassable
-    const targetStrictlyImpassableInfo = isTileStrictlyImpassable(targetX, targetY, originalPos.z);
-    if (targetStrictlyImpassableInfo.impassable) {
-        logToConsole(`${logPrefix} Movement blocked by '${targetStrictlyImpassableInfo.name}' at (${targetX},${targetY},${originalPos.z}).`);
-        return false; // Player bumps into impassable, no further checks.
-    }
-
-    // Check occupation at the target (targetX, targetY, originalPos.z)
-    let entityBlockingHorizontalTarget = false;
-    if (isPlayer) {
-        entityBlockingHorizontalTarget = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === originalPos.z && npc.health?.torso?.current > 0);
-    } else {
-        if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === originalPos.z) entityBlockingHorizontalTarget = true;
-        if (!entityBlockingHorizontalTarget) {
-            entityBlockingHorizontalTarget = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === originalPos.z && otherNpc.health?.torso?.current > 0);
+    if (!moveSuccessful) {
+        // Check if target tile at current Z is strictly impassable
+        const targetStrictlyImpassableInfo = isTileStrictlyImpassable(targetX, targetY, originalPos.z);
+        if (targetStrictlyImpassableInfo.impassable) {
+            logToConsole(`${logPrefix} Movement blocked by '${targetStrictlyImpassableInfo.name}' at (${targetX},${targetY},${originalPos.z}).`);
+            return false; // Player bumps into impassable, no further checks.
         }
-    }
 
-    if (entityBlockingHorizontalTarget) {
-        logToConsole(`${logPrefix} Cannot move horizontally to (${targetX},${targetY},${originalPos.z}): Occupied.`);
-        // Do not return yet for NPCs, they might still fall if the tile below entity is not walkable for them.
-        // For players, this is usually a stop.
-        if (isPlayer) return false;
-    }
+        // Check occupation at the target (targetX, targetY, originalPos.z)
+        let entityBlockingHorizontalTarget = false;
+        if (isPlayer) {
+            entityBlockingHorizontalTarget = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === originalPos.z && npc.health?.torso?.current > 0);
+        } else {
+            if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === originalPos.z) entityBlockingHorizontalTarget = true;
+            if (!entityBlockingHorizontalTarget) {
+                entityBlockingHorizontalTarget = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === originalPos.z && otherNpc.health?.torso?.current > 0);
+            }
+        }
 
-    // If not blocked by an entity AND the tile is walkable at the same Z.
-    if (!entityBlockingHorizontalTarget && window.mapRenderer.isWalkable(targetX, targetY, originalPos.z)) {
-        if (!(targetX === originalPos.x && targetY === originalPos.y)) { // Ensure actual movement
-            const cost = 1; // Standard horizontal move cost
-            let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
-            if (currentMP >= cost) {
-                if (isPlayer) {
-                    window.gameState.playerPos = { x: targetX, y: targetY, z: originalPos.z };
-                    window.gameState.movementPointsRemaining -= cost;
-                } else {
-                    character.mapPos = { x: targetX, y: targetY, z: originalPos.z };
-                    character.currentMovementPoints -= cost;
-                }
-                logToConsole(`${logPrefix} Moved horizontally to (${targetX},${targetY},Z:${originalPos.z}). Cost: ${cost} MP.`);
-                if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for horizontal move
-                if (isPlayer && window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
-                moveSuccessful = true;
-                if (isPlayer) {
-                    // For horizontal moves, playerPos.z doesn't change, so currentViewZ doesn't need update based on viewFollowsPlayerZ here.
-                    if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                        // Use globally exposed PLAYER_VISION_RADIUS_CONST
-                        window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
+        if (entityBlockingHorizontalTarget) {
+            logToConsole(`${logPrefix} Cannot move horizontally to (${targetX},${targetY},${originalPos.z}): Occupied.`);
+            // Do not return yet for NPCs, they might still fall if the tile below entity is not walkable for them.
+            // For players, this is usually a stop.
+            if (isPlayer) return false;
+        }
+
+        // If not blocked by an entity AND the tile is walkable at the same Z.
+        if (!entityBlockingHorizontalTarget && window.mapRenderer.isWalkable(targetX, targetY, originalPos.z)) {
+            if (!(targetX === originalPos.x && targetY === originalPos.y)) { // Ensure actual movement
+                // const cost = 1; // Standard horizontal move cost
+                let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
+                if (currentMP >= actualMoveCost) {
+                    // Check fuel if vehicle
+                    if (vehicleId && window.vehicleManager) {
+                        if (!window.vehicleManager.consumeFuel(vehicleId, 1)) {
+                            logToConsole("Vehicle out of fuel!", "red");
+                            return false;
+                        }
+                        const vehicle = window.vehicleManager.getVehicleById(vehicleId);
+                        if (vehicle) {
+                            vehicle.mapPos = { x: targetX, y: targetY, z: originalPos.z };
+                        }
                     }
+
+                    if (isPlayer) {
+                        window.gameState.playerPos = { x: targetX, y: targetY, z: originalPos.z };
+                        window.gameState.movementPointsRemaining -= actualMoveCost;
+                    } else {
+                        character.mapPos = { x: targetX, y: targetY, z: originalPos.z };
+                        character.currentMovementPoints -= actualMoveCost;
+                    }
+                    logToConsole(`${logPrefix} Moved horizontally to (${targetX},${targetY},Z:${originalPos.z}). Cost: ${actualMoveCost} MP.`);
+                    if (window.audioManager) window.audioManager.playFootstepSound(); // Footstep for horizontal move
+                    if (isPlayer && window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
+                    moveSuccessful = true;
+                    if (isPlayer) {
+                        // For horizontal moves, playerPos.z doesn't change, so currentViewZ doesn't need update based on viewFollowsPlayerZ here.
+                        if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
+                            // Use globally exposed PLAYER_VISION_RADIUS_CONST
+                            window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
+                        }
+                    }
+                    return true; // Move successful
+                } else {
+                    logToConsole(`${logPrefix} Not enough MP for horizontal move. Need ${actualMoveCost}, have ${currentMP}.`);
+                    return false;
                 }
-                return true; // Move successful
-            } else {
-                logToConsole(`${logPrefix} Not enough MP for horizontal move. Need ${cost}, have ${currentMP}.`);
-                return false;
             }
         }
     }
@@ -513,6 +576,8 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         }
 
         let proceedWithFall = false;
+        // Vehicles: generally shouldn't drive off cliffs unless intentional?
+        // For now, let's say players in vehicles CAN drive off cliffs (Thelma & Louise style).
         if (isPlayer) {
             proceedWithFall = true; // Players always commit to the fall if they walk off
         } else { // NPC
@@ -546,6 +611,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                     const fallMoveCost = 1;
                     let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
                     if (currentMP >= fallMoveCost) {
+                        // Vehicle fuel consumption? Gravity is free.
                         if (isPlayer) window.gameState.movementPointsRemaining -= fallMoveCost;
                         else character.currentMovementPoints -= fallMoveCost;
                         logToConsole(`${logPrefix} Spent ${fallMoveCost} MP to initiate fall.`);
@@ -554,6 +620,17 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                         if (isPlayer) window.gameState.movementPointsRemaining = 0;
                         else character.currentMovementPoints = 0;
                     }
+
+                    // If in vehicle, move vehicle to final destination (initiateFallCheck might have moved character)
+                    if (vehicleId && window.vehicleManager) {
+                        const vehicle = window.vehicleManager.getVehicleById(vehicleId);
+                        if (vehicle) {
+                            vehicle.mapPos = { ...window.gameState.playerPos }; // Assuming initiateFallCheck updated playerPos
+                            logToConsole(`Vehicle fell with player to ${JSON.stringify(vehicle.mapPos)}`, "orange");
+                            // TODO: Apply damage to vehicle from fall?
+                        }
+                    }
+
                     // Listener position updated by handleFalling -> calculateAndApplyFallDamage -> which calls player UI updates that should include listener pos update.
                     // Or more directly, handleFalling updates playerPos, then we can call updateListenerPosition.
                     if (isPlayer && window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);

@@ -1,4 +1,4 @@
-﻿class VehicleManager {
+class VehicleManager {
     constructor(gameState, assetManager) {
         this.gameState = gameState;
         this.assetManager = assetManager;
@@ -191,6 +191,57 @@
 
         logToConsole(`VehicleManager: Stats calculated for ${vehicle.name} (ID: ${vehicle.id}): Speed ${vehicle.calculatedStats.speed}, Weight ${totalWeight}, Power ${totalPower}, Armor ${totalArmor}, Cargo ${totalCargoCapacity}, Max Fuel ${maxFuel}.`, "info");
         return vehicle.calculatedStats;
+    }
+
+    getVehicleMovementCost(vehicleId) {
+        const vehicle = this.getVehicleById(vehicleId);
+        if (!vehicle || !vehicle.calculatedStats) return 1; // Default cost if vehicle not found
+
+        const speed = vehicle.calculatedStats.speed;
+        if (speed <= 0) return 999; // Immobile
+
+        // Higher speed = lower movement cost.
+        // Standard walk speed is around 5 tiles/turn (assuming 30ft speed).
+        // Vehicle speed of 10 should cost 1 MP.
+        // Vehicle speed of 20 should cost 0.5 MP (but MP are integers).
+        // So we can return a cost < 1 if MP supports floats.
+        // Or we can say: Cost = 10 / Speed.
+        return Math.max(0.25, 10 / speed);
+    }
+
+    consumeFuel(vehicleId, distance) {
+        const vehicle = this.getVehicleById(vehicleId);
+        if (!vehicle) return false;
+
+        // Calculate efficiency based on engines
+        let efficiency = 0;
+        const allPartIds = new Set();
+        Object.values(vehicle.attachedParts).forEach(slotArray => {
+            slotArray.forEach(partId => {
+                if (partId) allPartIds.add(partId);
+            });
+        });
+
+        let engineCount = 0;
+        allPartIds.forEach(partId => {
+            const partDef = this.vehicleParts[partId];
+            if (partDef && partDef.type === "engine") {
+                efficiency += (partDef.effects && partDef.effects.fuelEfficiency) || 0.1;
+                engineCount++;
+            }
+        });
+
+        if (engineCount > 0) efficiency /= engineCount; // Average efficiency
+
+        const fuelConsumed = distance * efficiency;
+        if (vehicle.fuel >= fuelConsumed) {
+            vehicle.fuel -= fuelConsumed;
+            if (vehicle.fuel < 0) vehicle.fuel = 0; // Should not happen due to check
+            return true;
+        } else {
+            // Not enough fuel
+            return false;
+        }
     }
 
     addPartToVehicle(vehicleId, partIdToAdd, slotType, slotIndex) {
