@@ -82,7 +82,7 @@
       }
     ],
     "defaultFuel": 150,
-    "sprite": "V sección C"
+    "sprite": "C"
   },
   {
     "id": "scooter_vespa",
@@ -137,7 +137,7 @@
       }
     ],
     "defaultFuel": 0,
-    "sprite": "o-o"
+    "sprite": "b"
   },
   {
     "id": "motorcycle_dirt",
@@ -172,6 +172,96 @@
       }
     ],
     "defaultFuel": 100,
-    "sprite": "O=O"
+    "sprite": "m"
+  },
+  {
+    "id": "car_hatchback",
+    "name": "Compact Hatchback",
+    "description": "A small, fuel-efficient city car.",
+    "chassisId": "chassis_hatchback",
+    "defaultParts": [
+      {
+        "partId": "engine_basic_v4",
+        "slotType": "engine",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_car",
+        "slotType": "wheel",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_car",
+        "slotType": "wheel",
+        "slotIndex": 1
+      },
+      {
+        "partId": "wheel_car",
+        "slotType": "wheel",
+        "slotIndex": 2
+      },
+      {
+        "partId": "wheel_car",
+        "slotType": "wheel",
+        "slotIndex": 3
+      },
+      {
+        "partId": "headlights_basic",
+        "slotType": "utility_small",
+        "slotIndex": 0
+      },
+      {
+        "partId": "storage_trunk",
+        "slotType": "storage_small",
+        "slotIndex": 0
+      }
+    ],
+    "defaultFuel": 200,
+    "sprite": "h"
+  },
+  {
+    "id": "car_sedan",
+    "name": "Family Sedan",
+    "description": "A reliable four-door sedan with good cargo space and power.",
+    "chassisId": "chassis_sedan",
+    "defaultParts": [
+      {
+        "partId": "engine_v6",
+        "slotType": "engine",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_car",
+        "slotType": "wheel",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_car",
+        "slotType": "wheel",
+        "slotIndex": 1
+      },
+      {
+        "partId": "wheel_car",
+        "slotType": "wheel",
+        "slotIndex": 2
+      },
+      {
+        "partId": "wheel_car",
+        "slotType": "wheel",
+        "slotIndex": 3
+      },
+      {
+        "partId": "headlights_basic",
+        "slotType": "utility_small",
+        "slotIndex": 0
+      },
+      {
+        "partId": "storage_trunk",
+        "slotType": "storage_small",
+        "slotIndex": 0
+      }
+    ],
+    "defaultFuel": 300,
+    "sprite": "s"
   }
 ]

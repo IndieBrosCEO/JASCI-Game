@@ -42,7 +42,7 @@
       "utility_small": 2,
       "storage_small": 1
     },
-    "sprite": "V sección C"
+    "sprite": "C"
   },
   {
     "id": "chassis_scooter",
@@ -127,10 +127,51 @@
       "batch_size": 1
     },
     "effects": {
-      "power": 100,
+      "power": 150,
       "fuelEfficiency": 0.1
     },
     "maxFuel": 200
+  },
+  {
+    "id": "engine_v6",
+    "name": "V6 Engine",
+    "type": "engine",
+    "durability": 120,
+    "weight": 120,
+    "recipe": {
+      "description": "A powerful V6 engine.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "engine_kit",
+          "require": {
+            "type": "v6"
+          }
+        },
+        {
+          "quantity": 15,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 25
+        }
+      ],
+      "tools_required": [ "wrench_set", "hoist" ],
+      "station_required": "engine_assembly_jig",
+      "time_to_craft": 1200,
+      "batch_size": 1
+    },
+    "effects": {
+      "power": 280,
+      "fuelEfficiency": 0.08
+    },
+    "maxFuel": 300
   },
   {
     "id": "engine_scooter_small",
@@ -476,7 +517,7 @@
       "utility_small": 1,
       "storage_small": 1
     },
-    "sprite": "o-o"
+    "sprite": "b"
   },
   {
     "id": "chassis_motorcycle",
@@ -521,7 +562,7 @@
       "storage_small": 2,
       "armor_light": 1
     },
-    "sprite": "O=O"
+    "sprite": "m"
   },
   {
     "id": "pedal_crankset",
@@ -681,6 +722,169 @@
     },
     "effects": {
       "traction": 0.85
+    }
+  },
+  {
+    "id": "wheel_car",
+    "name": "Car Wheel",
+    "type": "wheel",
+    "durability": 50,
+    "weight": 20,
+    "recipe": {
+      "description": "A standard car tire on a rim.",
+      "components": [
+        {
+          "quantity": 8,
+          "family": "rubber",
+          "require": {
+            "form": "strips_chunks"
+          }
+        },
+        {
+          "quantity": 5,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 10
+        }
+      ],
+      "tools_required": [ "wrench_set", "tire_iron" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 80,
+      "batch_size": 1
+    },
+    "effects": {
+      "traction": 0.9
+    }
+  },
+  {
+    "id": "chassis_hatchback",
+    "name": "Hatchback Chassis",
+    "type": "chassis",
+    "durability": 200,
+    "weight": 300,
+    "recipe": {
+      "description": "The frame of a compact hatchback car.",
+      "components": [
+        {
+          "quantity": 40,
+          "family": "metal",
+          "require": {
+            "type": "sheet",
+            "material": "steel"
+          }
+        },
+        {
+          "quantity": 10,
+          "family": "component",
+          "require": {
+            "type": "mechanical_parts"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 20
+        }
+      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "hoist" ],
+      "station_required": "garage_bay",
+      "time_to_craft": 1500,
+      "batch_size": 1
+    },
+    "slotPoints": {
+      "engine": 1,
+      "wheel": 4,
+      "utility_small": 4,
+      "storage_small": 2,
+      "armor_light": 2,
+      "seat": 4
+    },
+    "sprite": "h"
+  },
+  {
+    "id": "chassis_sedan",
+    "name": "Sedan Chassis",
+    "type": "chassis",
+    "durability": 300,
+    "weight": 450,
+    "recipe": {
+      "description": "The frame of a standard sedan.",
+      "components": [
+        {
+          "quantity": 60,
+          "family": "metal",
+          "require": {
+            "type": "sheet",
+            "material": "steel"
+          }
+        },
+        {
+          "quantity": 15,
+          "family": "component",
+          "require": {
+            "type": "mechanical_parts"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 25
+        }
+      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "hoist" ],
+      "station_required": "garage_bay",
+      "time_to_craft": 2000,
+      "batch_size": 1
+    },
+    "slotPoints": {
+      "engine": 1,
+      "wheel": 4,
+      "utility_small": 4,
+      "storage_small": 3,
+      "armor_light": 4,
+      "seat": 5
+    },
+    "sprite": "s"
+  },
+  {
+    "id": "storage_trunk",
+    "name": "Car Trunk",
+    "type": "storage_small",
+    "durability": 50,
+    "weight": 20,
+    "recipe": {
+      "description": "A spacious trunk compartment.",
+      "components": [
+        {
+          "quantity": 10,
+          "family": "metal",
+          "require": {
+            "type": "sheet"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 15
+        }
+      ],
+      "tools_required": [ "welding_torch_oxyacetylene" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 200,
+      "batch_size": 1
+    },
+    "effects": {
+      "cargoCapacity": 50
     }
   }
 ]
