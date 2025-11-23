@@ -612,11 +612,15 @@ function updateHealthCrisis(character) {
 
 
 // Apply treatment to a damaged body part of a character
-function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, character) {
+function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, character, overrideRoll = null) {
     if (!character.health || !character.health[bodyPart]) return;
     let part = character.health[bodyPart];
     let dc, healing = 0;
     let isCrisisResolution = false;
+
+    // Safely determine names for logging
+    const partName = part.name || window.formatBodyPartName(bodyPart) || bodyPart;
+    const charName = (character === window.gameState || character === window.gameState?.player) ? (character.name || "Player") : (character.name || character.id || "Unknown");
 
     // "Poorly tended: crisis treatment ineffective."
     if (treatmentType === "Poorly Tended" && part.crisisTimer > 0) {
@@ -649,10 +653,16 @@ function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, charac
     // Perform skill check using Persuasion/Intimidation skill check logic as a template
     // This assumes a getSkillValue function similar to what's used for Persuasion/Intimidation.
     // For Medicine, the bonus is directly passed as medicineBonus (e.g., from player's Medicine skill).
-    const roll = rollDie(20);
-    const totalRoll = roll + medicineBonus; // medicineBonus is the character's Medicine skill points/modifier
+    let roll, totalRoll;
+    if (overrideRoll !== null) {
+        totalRoll = overrideRoll;
+        roll = totalRoll - medicineBonus; // Reverse calculate natural roll for logging
+    } else {
+        roll = rollDie(20);
+        totalRoll = roll + medicineBonus;
+    }
 
-    logToConsole(`Medicine check on ${part.name} for ${character.name || character.id} (${treatmentType}, ${restType || 'Immediate'}): Rolled ${roll} + Medicine Bonus ${medicineBonus} = ${totalRoll} (DC ${dc})`);
+    logToConsole(`Medicine check on ${partName} for ${charName} (${treatmentType}, ${restType || 'Immediate'}): Rolled ${roll} + Medicine Bonus ${medicineBonus} = ${totalRoll} (DC ${dc})`);
 
     if (totalRoll >= dc) {
         // 1. Immediate Crisis Resolution
@@ -663,13 +673,13 @@ function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, charac
                 part.crisisTimer = 0;
                 part.crisisDescription = "";
                 part.isDestroyed = false;
-                logToConsole(`Health crisis in ${part.name} resolved (Well Tended). Restored to 1 HP immediately.`, "green");
+                logToConsole(`Health crisis in ${partName} resolved (Well Tended). Restored to 1 HP immediately.`, "green");
             } else if (treatmentType === "Standard Treatment") {
                 // "end crisis"
                 part.crisisTimer = 0;
                 part.crisisDescription = "";
                 part.isDestroyed = false;
-                logToConsole(`Health crisis in ${part.name} ended (Standard Treatment).`, "green");
+                logToConsole(`Health crisis in ${partName} ended (Standard Treatment).`, "green");
             }
         }
 
@@ -677,7 +687,7 @@ function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, charac
         if (healing > 0) {
             let oldHP = part.current;
             part.current = Math.min(part.current + healing, part.max);
-            logToConsole(`Treatment healing on ${part.name}: +${healing} HP (${oldHP} -> ${part.current}/${part.max}).`, "green");
+            logToConsole(`Treatment healing on ${partName}: +${healing} HP (${oldHP} -> ${part.current}/${part.max}).`, "green");
         }
 
         // 3. Cleanup check (if healing naturally resolved crisis that wasn't handled specifically?)
@@ -685,10 +695,10 @@ function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, charac
             part.crisisTimer = 0;
             part.crisisDescription = "";
             part.isDestroyed = false;
-            logToConsole(`Health crisis in ${part.name} for ${character.name || character.id} resolved due to HP restoration.`, "green");
+            logToConsole(`Health crisis in ${partName} for ${charName} resolved due to HP restoration.`, "green");
         }
     } else {
-        logToConsole(`Treatment FAILED on ${part.name}.`, "orange");
+        logToConsole(`Treatment FAILED on ${partName}.`, "orange");
     }
 
     if (window.renderHealthTable) {
@@ -827,12 +837,7 @@ function openMedicalTreatmentModal(bodyPartKey) {
     itemContainer.innerHTML = ""; // Clear old options
 
     // Scan inventory for medical items
-    // Define known medical items and their bonuses
-    const medicalItems = [
-        { id: "bandage", name: "Bandage", bonus: 2 },
-        { id: "bandage_simple", name: "Simple Bandage", bonus: 2 },
-        { id: "first_aid_kit", name: "First Aid Kit", bonus: 5 }
-    ];
+    const medicalItems = window.getMedicalItems();
 
     let hasMedicalItems = false;
     if (window.gameState.inventory && window.gameState.inventory.container && window.gameState.inventory.container.items) {
@@ -864,6 +869,7 @@ function openMedicalTreatmentModal(bodyPartKey) {
     };
 
     newConfirmBtn.onclick = () => {
+        newConfirmBtn.disabled = true; // Prevent double-clicks
         // Get selection
         const selectedMethod = document.querySelector('input[name="treatmentMethod"]:checked').value;
         window.performMedicalTreatment(bodyPartKey, selectedMethod);
@@ -890,11 +896,7 @@ function performMedicalTreatment(bodyPartKey, methodValue) {
 
     if (methodValue !== 'skill') {
         // Item selected
-         const medicalItems = [
-            { id: "bandage", name: "Bandage", bonus: 2 },
-            { id: "bandage_simple", name: "Simple Bandage", bonus: 2 },
-            { id: "first_aid_kit", name: "First Aid Kit", bonus: 5 }
-        ];
+        const medicalItems = window.getMedicalItems();
         const medItemDef = medicalItems.find(m => m.id === methodValue);
 
         if (medItemDef) {
@@ -918,7 +920,7 @@ function performMedicalTreatment(bodyPartKey, methodValue) {
 
     // Consume Item
     if (itemToConsume) {
-        window.inventoryManager.removeItem(itemToConsume); // Removes specific instance
+        window.inventoryManager.removeItem(itemToConsume.id, 1); // Correctly use ID and Quantity
         logToConsole(`Used ${itemToConsume.name} for treatment.`, "white");
     }
 
@@ -937,7 +939,8 @@ function performMedicalTreatment(bodyPartKey, methodValue) {
 
     // Apply Treatment Logic
     // Using "short" rest type to simulate "Field Aid" / First Aid healing if successful
-    window.applyTreatment(bodyPartKey, resultTier, "short", bonus + itemBonus, window.gameState.player);
+    // Pass totalRoll to override internal roll in applyTreatment
+    window.applyTreatment(bodyPartKey, resultTier, "short", bonus + itemBonus, window.gameState.player, totalRoll);
 
     // Refresh UI after short delay to let user see result
     setTimeout(() => {
@@ -963,6 +966,16 @@ function performMedicalTreatment(bodyPartKey, methodValue) {
 
 window.openMedicalTreatmentModal = openMedicalTreatmentModal;
 window.performMedicalTreatment = performMedicalTreatment;
+
+// Get medical item definitions
+function getMedicalItems() {
+    return [
+        { id: "bandage", name: "Bandage", bonus: 2 },
+        { id: "bandage_simple", name: "Simple Bandage", bonus: 2 },
+        { id: "first_aid_kit", name: "First Aid Kit", bonus: 5 }
+    ];
+}
+window.getMedicalItems = getMedicalItems;
 
 // Format body part names for display
 function formatBodyPartName(part) {
