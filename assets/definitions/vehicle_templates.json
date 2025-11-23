@@ -83,5 +83,35 @@
     ],
     "defaultFuel": 150,
     "sprite": "V sección C"
+  },
+  {
+    "id": "scooter_vespa",
+    "name": "Vespa Scooter",
+    "description": "A classic, nimble two-wheeled scooter. Great for city travel, but offers little protection.",
+    "chassisId": "chassis_scooter",
+    "defaultParts": [
+      {
+        "partId": "engine_scooter_small",
+        "slotType": "engine",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_scooter",
+        "slotType": "wheel",
+        "slotIndex": 0
+      },
+      {
+        "partId": "wheel_scooter",
+        "slotType": "wheel",
+        "slotIndex": 1
+      },
+      {
+        "partId": "headlights_basic",
+        "slotType": "utility_small",
+        "slotIndex": 0
+      }
+    ],
+    "defaultFuel": 50,
+    "sprite": "v"
   }
 ]

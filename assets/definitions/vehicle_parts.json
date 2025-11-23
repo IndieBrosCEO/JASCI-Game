@@ -45,6 +45,49 @@
     "sprite": "V sección C"
   },
   {
+    "id": "chassis_scooter",
+    "name": "Scooter Chassis",
+    "type": "chassis",
+    "durability": 60,
+    "weight": 40,
+    "recipe": {
+      "description": "A lightweight chassis for a two-wheeled scooter.",
+      "components": [
+        {
+          "quantity": 15,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        },
+        {
+          "quantity": 5,
+          "family": "component",
+          "require": {
+            "type": "mechanical_parts"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 10
+        }
+      ],
+      "tools_required": [ "wrench_set", "welding_torch_oxyacetylene" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 400,
+      "batch_size": 1
+    },
+    "slotPoints": {
+      "engine": 1,
+      "wheel": 2,
+      "utility_small": 1,
+      "storage_small": 1
+    },
+    "sprite": "v"
+  },
+  {
     "id": "engine_basic_v4",
     "name": "Basic V4 Engine",
     "type": "engine",
@@ -90,6 +133,47 @@
     "maxFuel": 200
   },
   {
+    "id": "engine_scooter_small",
+    "name": "Small Scooter Engine",
+    "type": "engine",
+    "durability": 40,
+    "weight": 20,
+    "recipe": {
+      "description": "A small engine suitable for scooters or light equipment.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "engine_kit",
+          "require": {
+            "type": "small_engine"
+          }
+        },
+        {
+          "quantity": 5,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 10
+        }
+      ],
+      "tools_required": [ "wrench_set" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 300,
+      "batch_size": 1
+    },
+    "effects": {
+      "power": 30,
+      "fuelEfficiency": 0.3
+    },
+    "maxFuel": 50
+  },
+  {
     "id": "wheel_standard",
     "name": "Standard Wheel",
     "type": "wheel",
@@ -126,6 +210,45 @@
     },
     "effects": {
       "traction": 0.8
+    }
+  },
+  {
+    "id": "wheel_scooter",
+    "name": "Scooter Wheel",
+    "type": "wheel",
+    "durability": 20,
+    "weight": 5,
+    "recipe": {
+      "description": "A small wheel for scooters.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "rubber",
+          "require": {
+            "form": "strips_chunks"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "tools_required": [ "wrench_set", "tire_iron" ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 25,
+      "batch_size": 1
+    },
+    "effects": {
+      "traction": 0.7
     }
   },
   {
