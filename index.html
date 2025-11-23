@@ -514,5 +514,25 @@
 
         <button id="closeSettingsButton" style="margin-top: 15px;">Close</button>
     </div>
+
+    <!-- Medical Treatment Modal -->
+    <div id="medicalTreatmentModal" class="hidden" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 1px solid white; background-color: black; padding: 20px; z-index: 120; width: 350px;">
+        <h2>Treat Injury: <span id="treatmentBodyPart">Head</span></h2>
+        <div id="treatmentOptions" style="margin-bottom: 10px;">
+            <label style="display:block; margin-bottom: 5px; font-weight:bold;">Method:</label>
+            <div style="margin-bottom: 5px;">
+                <input type="radio" id="treatmentMethodSkill" name="treatmentMethod" value="skill" checked>
+                <label for="treatmentMethodSkill">Skill Only (Medicine: <span id="treatmentSkillValue">0</span>)</label>
+            </div>
+            <div id="treatmentItemOptions">
+                <!-- Dynamically populated options for items -->
+            </div>
+        </div>
+        <div style="margin-top: 15px; text-align: right;">
+            <button id="confirmTreatmentButton">Attempt Treatment (1 AP)</button>
+            <button id="cancelTreatmentButton">Cancel</button>
+        </div>
+        <div id="treatmentResult" style="margin-top: 10px; font-weight: bold; min-height: 20px;"></div>
+    </div>
 </body>
 </html>
