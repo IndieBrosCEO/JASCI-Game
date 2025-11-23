@@ -595,13 +595,10 @@ function updateHealthCrisis(character) {
                 // If timer runs out, the part is considered destroyed (if not already), and character might die.
                 part.isDestroyed = true;
                 logToConsole(`Health crisis in ${part.name} for ${characterName} was not treated. Part is now destroyed.`, 'red');
-                // Check for death if a vital part is destroyed or other game rules for death apply.
-                // For now, head or torso destruction is fatal.
-                if (part.name === "Head" || part.name === "Torso") {
-                    logToConsole(`${characterName} has died due to untreated crisis in a vital part (${part.name}).`, 'darkred');
-                    gameOver(character); // Pass character to gameOver
-                    return; // Stop further crisis checks if character died
-                }
+                // "failing to address it -> death"
+                logToConsole(`${characterName} has died due to untreated health crisis (${part.name}).`, 'darkred');
+                gameOver(character); // Pass character to gameOver
+                return; // Stop further crisis checks if character died
             }
         }
     }
@@ -620,14 +617,20 @@ function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, charac
     let part = character.health[bodyPart];
     let dc, healing;
 
+    // "Poorly tended: crisis treatment ineffective."
+    if (treatmentType === "Poorly Tended" && part.crisisTimer > 0) {
+        logToConsole("Poorly tended treatment is ineffective for a Health Crisis.", "orange");
+        return;
+    }
+
     if (treatmentType === "Well Tended") {
-        dc = 18;
+        dc = 15;
         healing = (restType === "short") ? 2 : part.max;
     } else if (treatmentType === "Standard Treatment") {
-        dc = 15;
+        dc = 10;
         healing = (restType === "short") ? 1 : 3;
     } else if (treatmentType === "Poorly Tended") {
-        dc = 10;
+        dc = 5;
         healing = (restType === "long") ? 1 : 0; // Poorly tended long rest heals 1 HP
     } else {
         logToConsole("Invalid treatment type.");
