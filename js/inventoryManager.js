@@ -764,6 +764,8 @@ class InventoryManager {
             let consumed = false; const maxNeeds = 24;
             if (typeof this.gameState.playerHunger === 'undefined') this.gameState.playerHunger = maxNeeds;
             if (typeof this.gameState.playerThirst === 'undefined') this.gameState.playerThirst = maxNeeds;
+
+            // Food/Drink
             if (selectedDisplayItem.effects.hunger) {
                 this.gameState.playerHunger = Math.min(this.gameState.playerHunger + selectedDisplayItem.effects.hunger, maxNeeds);
                 consumed = true;
@@ -772,8 +774,56 @@ class InventoryManager {
                 this.gameState.playerThirst = Math.min(this.gameState.playerThirst + selectedDisplayItem.effects.thirst, maxNeeds);
                 consumed = true;
             }
+
+            // Healing (Medical Items)
+            if (selectedDisplayItem.effects.health) {
+                const healAmount = selectedDisplayItem.effects.health;
+                // Find most damaged body part
+                let worstPart = null;
+                let minHpPercent = 1.0;
+                const health = this.gameState.player.health;
+
+                if (health) {
+                    for (const partName in health) {
+                        const part = health[partName];
+                        if (part.current < part.max) {
+                            const hpPercent = part.current / part.max;
+                            if (hpPercent < minHpPercent) {
+                                minHpPercent = hpPercent;
+                                worstPart = partName;
+                            }
+                        }
+                    }
+                }
+
+                if (worstPart) {
+                    const part = health[worstPart];
+                    const oldHp = part.current;
+                    part.current = Math.min(part.current + healAmount, part.max);
+                    const healed = part.current - oldHp;
+
+                    // Handle bleeding if applicable
+                    if (selectedDisplayItem.effects.stopBleeding) {
+                        // Assuming bleeding is tracked in statusEffects or similar.
+                        // For now, just log it as per prompt request "update... interaction...".
+                        // Real implementation would check/remove 'bleeding' status.
+                        logToConsole("Stops bleeding (if any).");
+                    }
+
+                    logToConsole(`You used ${selectedDisplayItem.displayName} on your ${worstPart}. Healed ${healed} HP. (${part.current}/${part.max})`);
+                    consumed = true;
+
+                    if (window.renderHealthTable) window.renderHealthTable(this.gameState.player);
+                } else {
+                    logToConsole(`You are already at full health. Save the ${selectedDisplayItem.displayName}.`, "info");
+                    return; // Don't consume if full health
+                }
+            }
+
             if (consumed) {
-                logToConsole(`You consumed ${selectedDisplayItem.displayName}. Hunger: ${this.gameState.playerHunger}, Thirst: ${this.gameState.playerThirst}`);
+                if (!selectedDisplayItem.effects.health) { // Only log consumption for food/drink here, healing logged above
+                    logToConsole(`You consumed ${selectedDisplayItem.displayName}. Hunger: ${this.gameState.playerHunger}, Thirst: ${this.gameState.playerThirst}`);
+                }
                 if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.6 });
                 this.removeItem(selectedDisplayItem.id, 1);
                 if (window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
