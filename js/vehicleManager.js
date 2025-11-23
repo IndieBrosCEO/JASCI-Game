@@ -1,3 +1,5 @@
+// js/vehicleManager.js
+
 class VehicleManager {
     constructor(gameState, assetManager) {
         this.gameState = gameState;
@@ -177,7 +179,7 @@ class VehicleManager {
         vehicle.calculatedStats = {
             weight: totalWeight,
             power: totalPower,
-            speed: totalPower > 0 && totalWeight > 0 ? Math.max(1, Math.floor((totalPower / totalWeight) * 200 * tractionFactor)) : 0, // Adjusted constant for higher speed values (tiles/turn)
+            speed: totalPower > 0 && totalWeight > 0 ? Math.max(1, Math.floor((totalPower / totalWeight) * 600 * tractionFactor)) : 0, // Adjusted constant to 600 for higher speed values
             armor: totalArmor, // Overall armor rating
             cargoCapacity: totalCargoCapacity,
         };
@@ -204,7 +206,9 @@ class VehicleManager {
         // Base human speed is roughly 6 tiles/turn.
         // If vehicle speed is 60 tiles/turn, cost should be 0.1 MP/tile (6 MP / 0.1 = 60).
         // Formula: Cost = 6 / Speed.
-        return Math.max(0.1, 6.0 / speed);
+        const cost = Math.max(0.1, 6.0 / speed);
+        // logToConsole(`Vehicle Movement Cost Debug: Speed ${speed} -> Cost ${cost}`);
+        return cost;
     }
 
     consumeFuel(vehicleId, distance) {
