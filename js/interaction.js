@@ -24,7 +24,7 @@ function _getActionsForItem(it) {
     }
 
     const tileDef = assetManagerInstance.tilesets[it.id];
-    if (it.itemType !== 'npc' && !tileDef) return ["Cancel"];
+    if (it.itemType !== 'npc' && it.itemType !== 'vehicle' && it.itemType !== 'construction_instance' && !tileDef) return ["Cancel"];
 
     const tags = tileDef ? tileDef.tags || [] : [];
     const actions = ["Cancel"];
