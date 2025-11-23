@@ -38,9 +38,10 @@ function updateTurnUI_internal() {
 
         const vehicle = window.vehicleManager ? window.vehicleManager.getVehicleById(gameState.player.isInVehicle) : null;
         if (vehicle) {
-            // Round to 1 decimal place for cleaner display if cost is fractional
-            const displayMP = (vehicle.currentMovementPoints !== undefined) ? Math.floor(vehicle.currentMovementPoints * 10) / 10 : 0;
-            vehicleUI.textContent = "Vehicle Moves Left: " + displayMP;
+            // Calculate moves left based on current MP and cost per move
+            const cost = window.vehicleManager.getVehicleMovementCost(vehicle.id);
+            const displayMoves = (vehicle.currentMovementPoints !== undefined && cost > 0) ? Math.floor(vehicle.currentMovementPoints / cost) : 0;
+            vehicleUI.textContent = "Vehicle Moves Left: " + displayMoves;
             vehicleUI.style.display = "block";
         }
     } else {
