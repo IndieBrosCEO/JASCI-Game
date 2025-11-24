@@ -2,19 +2,19 @@
 "use strict";
 
 // Data Management Imports
-import { getMapData, snapshot, undo as undoData, redo as redoData, setPlayerStart as setPlayerStartInData, addPortalToMap, removePortalFromMap, updatePortalInMap, getNextPortalId as getNextPortalIdFromData, deleteZLevel as deleteZLevelFromData, addNpcToMap, removeNpcFromMap, getNextNpcId as getNextNpcIdFromData } from './mapDataManager.js'; // Added NPC data functions
+import { getMapData, snapshot, undo as undoData, redo as redoData, setPlayerStart as setPlayerStartInData, addPortalToMap, removePortalFromMap, updatePortalInMap, getNextPortalId as getNextPortalIdFromData, deleteZLevel as deleteZLevelFromData, addNpcToMap, removeNpcFromMap, getNextNpcId as getNextNpcIdFromData, addVehicleToMap, removeVehicleFromMap } from './mapDataManager.js'; // Added Vehicle data functions
 
 // Tile Logic Imports
 import { placeTile, ensureTileIsObject, getTopmostTileAt } from './tileManager.js'; // Assuming getTopmostTileAt is in tileManager
 
 // UI Update Function Imports
-import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerStartDisplay, updateToolButtonUI, updateSelectedPortalInfoUI, updateContainerInventoryUI, updateLockPropertiesUI, updateTilePropertyEditorUI, getRect3DDepth, updateUIFromLoadedMap, populateItemSelectDropdown, updateSelectedNpcInfoUI, populateNpcBaseTypeDropdown, updateNpcFacePreview, populateNpcFaceUI } from './uiManager.js'; // Added NPC UI functions and specific face functions
+import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerStartDisplay, updateToolButtonUI, updateSelectedPortalInfoUI, updateContainerInventoryUI, updateLockPropertiesUI, updateTilePropertyEditorUI, getRect3DDepth, updateUIFromLoadedMap, populateItemSelectDropdown, updateSelectedNpcInfoUI, populateNpcBaseTypeDropdown, updateNpcFacePreview, populateNpcFaceUI, updateSelectedVehicleInfoUI, populateVehicleBaseTypeDropdown } from './uiManager.js'; // Added Vehicle UI functions
 
 // Tool Logic Imports
-import { handlePlayerStartTool, handlePortalToolClick, handleSelectInspectTool, floodFill2D, floodFill3D, drawLine, drawRect, defineStamp, applyStamp, handleNpcToolClick } from './toolManager.js'; // Added handleNpcToolClick
+import { handlePlayerStartTool, handlePortalToolClick, handleSelectInspectTool, floodFill2D, floodFill3D, drawLine, drawRect, defineStamp, applyStamp, handleNpcToolClick, handleVehicleToolClick } from './toolManager.js'; // Added handleVehicleToolClick
 
 // Configuration and Utilities
-import { LAYER_TYPES, LOG_MSG, ERROR_MSG, DEFAULT_3D_DEPTH, NPC_ID_PREFIX } from './config.js'; // Added NPC_ID_PREFIX
+import { LAYER_TYPES, LOG_MSG, ERROR_MSG, DEFAULT_3D_DEPTH, NPC_ID_PREFIX, VEHICLE_ID_PREFIX } from './config.js'; // Added VEHICLE_ID_PREFIX
 import { logToConsole } from './config.js'; // Assuming logToConsole is also in config.js or a utility module
 
 // Import/Export Logic
@@ -29,6 +29,12 @@ let appState = null;             // Holds currentTool, currentTileId, selections
 // Helper function to get the currently selected base NPC ID from the dropdown
 function getSelectedBaseNpcId() {
     const selectElement = document.getElementById('npcBaseTypeSelect');
+    return selectElement ? selectElement.value : null;
+}
+
+// Helper function to get the currently selected base Vehicle ID from the dropdown
+function getSelectedBaseVehicleId() {
+    const selectElement = document.getElementById('vehicleBaseTypeSelect');
     return selectElement ? selectElement.value : null;
 }
 
@@ -68,7 +74,7 @@ export function handleCellMouseDown(event) {
     const mapData = getMapData();
 
     // Common logic: Clear selections if not using a selection-type tool.
-    if (appState.currentTool !== "selectInspect" && appState.currentTool !== "portal" && appState.currentTool !== "npc") {
+    if (appState.currentTool !== "selectInspect" && appState.currentTool !== "portal" && appState.currentTool !== "npc" && appState.currentTool !== "vehicle") {
         clearAllSelections(); // Helper function to clear selection states and update their UIs
     }
 
@@ -172,6 +178,33 @@ export function handleCellMouseDown(event) {
                 }
             };
             handleNpcToolClick(x, y, z, mapData, appState, assetManagerInstance, npcToolInteractionInterface);
+            break;
+        case "vehicle": // Added Vehicle tool case
+            const vehicleToolInteractionInterface = {
+                ...toolInteractionInterface.getUIRenderers(),
+                updateVehicleEditorUI: (vehicle, vehicleDefs) => updateSelectedVehicleInfoUI(vehicle, vehicleDefs || assetManagerInstance.vehicleTemplateDefinitions),
+                clearOtherSelections: clearAllSelections,
+                showStatusMessage: (message, type = 'info') => {
+                    // Reuse same status message element logic if generic
+                    const statusElement = document.getElementById('mapMakerStatusMessage');
+                    if (statusElement) {
+                        statusElement.textContent = message;
+                        statusElement.className = 'status-message-area';
+                        statusElement.classList.add(`status-${type}`);
+                        statusElement.style.display = 'block';
+                        setTimeout(() => {
+                            if (statusElement.textContent === message) {
+                                statusElement.style.display = 'none';
+                                statusElement.textContent = '';
+                                statusElement.className = 'status-message-area';
+                            }
+                        }, 3000);
+                    } else {
+                        console.log(`MapMaker Status (${type}): ${message}`);
+                    }
+                }
+            };
+            handleVehicleToolClick(x, y, z, mapData, appState, assetManagerInstance, vehicleToolInteractionInterface);
             break;
         case "fill":
             floodFill2D(x, y, z, appState.currentTileId, mapData, assetManagerInstance, toolInteractionInterface);
@@ -479,6 +512,12 @@ function setupButtonEventListeners() {
     el('addItemToContainerBtn', 'click', handleAddItemToContainerClick);
     el('isLockedCheckbox', 'change', handleToggleLockStateClick);
     el('lockDifficultyInput', 'input', handleChangeLockDcInput);
+
+    // Vehicle Properties
+    el('saveVehiclePropertiesBtn', 'click', handleSaveVehiclePropertiesClick);
+    el('removeVehicleBtn', 'click', handleRemoveSelectedVehicleClick);
+    el('toggleVehicleConfigBtn', 'click', () => toggleSectionVisibility('vehicleConfigContent', 'toggleVehicleConfigBtn', 'Vehicle'));
+
     // Note: Remove item from container is handled via dynamically created buttons in UIManager.
     // Those buttons will call `interactionDispatcher.removeItemFromContainer(index)`.
 
@@ -619,7 +658,7 @@ function handleToolButtonClick(toolName) {
     appState.currentTool = toolName;
     updateToolButtonUI(toolName);
 
-    if (toolName !== "selectInspect" && toolName !== "portal" && toolName !== "npc") {
+    if (toolName !== "selectInspect" && toolName !== "portal" && toolName !== "npc" && toolName !== "vehicle") {
         clearAllSelections(); // This will also call updateSelectedNpcInfoUI
     } else if (toolName === "npc") {
         // When NPC tool is selected, ensure panel is visible (updateSelectedNpcInfoUI handles this based on selectedNpc)
@@ -628,6 +667,14 @@ function handleToolButtonClick(toolName) {
         // If switching away from NPC tool (and not to selectInspect which might keep it), clear selection
         appState.selectedNpc = null;
         updateSelectedNpcInfoUI(null, assetManagerInstance.npcDefinitions); // Hide panel
+    }
+
+    // Vehicle Tool Logic
+    if (toolName === "vehicle") {
+        updateSelectedVehicleInfoUI(appState.selectedVehicle, assetManagerInstance.vehicleTemplateDefinitions);
+    } else if (appState.selectedVehicle && toolName !== "vehicle" && toolName !== "selectInspect") {
+        appState.selectedVehicle = null;
+        updateSelectedVehicleInfoUI(null, assetManagerInstance.vehicleTemplateDefinitions);
     }
 
 
@@ -1161,4 +1208,55 @@ function handleRemoveSelectedNpcClick() {
     appState.selectedNpc = null; // Clear selection
     updateSelectedNpcInfoUI(null, assetManagerInstance.npcDefinitions); // Update editor UI
     triggerFullGridRender(); // Update grid to remove NPC marker
+}
+
+// --- Vehicle Panel Event Handlers ---
+
+function handleSaveVehiclePropertiesClick() {
+    const mapData = getMapData();
+    if (!assetManagerInstance.vehicleTemplateDefinitions) {
+        alert("Vehicle templates not loaded, cannot save Vehicle.");
+        return;
+    }
+
+    const instanceName = document.getElementById('vehicleInstanceNameInput')?.value.trim();
+
+    if (appState.selectedVehicle) { // Editing existing Vehicle
+        snapshot();
+        const vehicleToUpdate = mapData.vehicles.find(v => v.id === appState.selectedVehicle.id);
+        if (vehicleToUpdate) {
+            vehicleToUpdate.name = instanceName || (assetManagerInstance.vehicleTemplateDefinitions[vehicleToUpdate.templateId]?.name || vehicleToUpdate.id);
+
+            logToConsole(LOG_MSG.VEHICLE_PROPS_SAVED(vehicleToUpdate.id));
+            appState.selectedVehicle = vehicleToUpdate;
+        } else {
+            alert("Error: Selected Vehicle not found in map data. Cannot save.");
+            return;
+        }
+    } else {
+        alert("No Vehicle selected to save. Use the Vehicle tool to place a Vehicle first.");
+        return;
+    }
+
+    updateSelectedVehicleInfoUI(appState.selectedVehicle, assetManagerInstance.vehicleTemplateDefinitions);
+    triggerFullGridRender();
+}
+
+function handleRemoveSelectedVehicleClick() {
+    if (!appState.selectedVehicle) {
+        alert("No Vehicle selected to remove.");
+        return;
+    }
+    if (!confirm(`Are you sure you want to remove Vehicle "${appState.selectedVehicle.name || appState.selectedVehicle.id}"?`)) {
+        return;
+    }
+
+    snapshot();
+    const removed = removeVehicleFromMap(appState.selectedVehicle.id);
+    if (removed) {
+        logToConsole(LOG_MSG.REMOVED_VEHICLE(appState.selectedVehicle.id));
+    }
+    appState.selectedVehicle = null;
+    updateSelectedVehicleInfoUI(null, assetManagerInstance.vehicleTemplateDefinitions);
+    triggerFullGridRender();
 }

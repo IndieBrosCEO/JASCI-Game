@@ -54,6 +54,9 @@ export const PORTAL_ID_PREFIX = 'portal_';
 // Default attributes for NPCs
 export const NPC_ID_PREFIX = 'npc_'; // Added for NPCs
 
+// Default attributes for Vehicles
+export const VEHICLE_ID_PREFIX = 'vehicle_';
+
 // Default depth for 3D drawing tools like rectangle and stamp
 export const DEFAULT_3D_DEPTH = 1;
 
@@ -134,7 +137,11 @@ export const LOG_MSG = {
     NPC_TOOL_SELECTED_EXISTING: (id, z) => `NPC Tool: Selected existing NPC ID '${id}' at Z:${z}`,
     NPC_TOOL_ADDED_NEW: (id, x, y, z, baseId) => `NPC Tool: Added new NPC ID '${id}' (Base: ${baseId}) at (${x},${y}, Z:${z})`,
     NPC_PROPS_SAVED: (id) => `NPC properties saved for ID: ${id}`,
-    REMOVED_NPC: (id) => `Removed NPC with ID: ${id}`
+    REMOVED_NPC: (id) => `Removed NPC with ID: ${id}`,
+    VEHICLE_TOOL_SELECTED_EXISTING: (id, z) => `Vehicle Tool: Selected existing Vehicle ID '${id}' at Z:${z}`,
+    VEHICLE_TOOL_ADDED_NEW: (id, x, y, z, baseId) => `Vehicle Tool: Added new Vehicle ID '${id}' (Template: ${baseId}) at (${x},${y}, Z:${z})`,
+    VEHICLE_PROPS_SAVED: (id) => `Vehicle properties saved for ID: ${id}`,
+    REMOVED_VEHICLE: (id) => `Removed Vehicle with ID: ${id}`
 };
 
 /**

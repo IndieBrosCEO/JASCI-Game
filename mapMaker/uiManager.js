@@ -1,4 +1,4 @@
-﻿// mapMaker/uiManager.js
+// mapMaker/uiManager.js
 "use strict";
 
 import { getMapData, getPlayerStart } from './mapDataManager.js'; // For mapData access
@@ -286,7 +286,7 @@ function applyStampPreview(cellElement, x, y, currentTool, stampData3D, previewP
     }
 }
 
-function renderOverlays(gridContainer, mapData, currentEditingZ, selectedPortal, selectedNpc) {
+function renderOverlays(gridContainer, mapData, currentEditingZ, selectedPortal, selectedNpc, selectedVehicle) {
     // Portals
     (mapData.portals || []).forEach(portal => {
         if (portal.z === currentEditingZ) {
@@ -321,6 +321,29 @@ function renderOverlays(gridContainer, mapData, currentEditingZ, selectedPortal,
                     cell.classList.remove('selected-npc-cell'); // Ensure it's removed if not selected
                 }
                 cell.appendChild(npcMarker);
+            }
+        }
+    });
+
+    // Vehicles
+    (mapData.vehicles || []).forEach(vehicle => {
+        if (vehicle.mapPos?.z === currentEditingZ) {
+            const cell = gridContainer.querySelector(`.cell[data-x='${vehicle.mapPos.x}'][data-y='${vehicle.mapPos.y}'][data-z='${currentEditingZ}']`);
+            if (cell) {
+                const vehicleMarker = document.createElement('div');
+                vehicleMarker.className = 'vehicle-marker';
+                const vehicleTemplate = assetManagerInstance.vehicleTemplateDefinitions?.[vehicle.templateId];
+                vehicleMarker.textContent = vehicleTemplate?.sprite || 'V';
+                vehicleMarker.style.color = 'blue'; // Default color for vehicle marker? Or from template?
+                // vehicleMarker.style.backgroundColor = 'rgba(0, 0, 255, 0.2)';
+                vehicleMarker.title = `Vehicle: ${vehicle.name || vehicleTemplate?.name || vehicle.id} (Template: ${vehicle.templateId})`;
+
+                if (selectedVehicle?.id === vehicle.id) {
+                    cell.classList.add('selected-vehicle-cell'); // CSS needs to handle this class
+                } else {
+                    cell.classList.remove('selected-vehicle-cell');
+                }
+                cell.appendChild(vehicleMarker);
             }
         }
     });
@@ -462,7 +485,7 @@ export function renderMergedGrid(mapData, currentEditingZ, gridWidth, gridHeight
             gridContainer.appendChild(cellElement);
         }
     }
-    renderOverlays(gridContainer, mapData, currentEditingZ, uiStateHolder.selectedPortal, uiStateHolder.selectedNpc);
+    renderOverlays(gridContainer, mapData, currentEditingZ, uiStateHolder.selectedPortal, uiStateHolder.selectedNpc, uiStateHolder.selectedVehicle);
 }
 
 
@@ -800,6 +823,7 @@ export function resetUIForNewMap(defaultGridWidth, defaultGridHeight, defaultZ, 
         uiStateHolder.selectedTileForInventory = null;
         uiStateHolder.selectedPortal = null;
         uiStateHolder.selectedNpc = null;
+        uiStateHolder.selectedVehicle = null;
         uiStateHolder.selectedGenericTile = null;
         uiStateHolder.activeTagFilters = [];
         uiStateHolder.onionSkinState = {
@@ -816,6 +840,7 @@ export function resetUIForNewMap(defaultGridWidth, defaultGridHeight, defaultZ, 
     updateSelectedPortalInfoUI(null);
     updateTilePropertyEditorUI(null, getMapData());
     // if (typeof updateSelectedNpcInfoUI === 'function') updateSelectedNpcInfoUI(null, getMapData());
+    updateSelectedVehicleInfoUI(null, assetManagerInstance ? assetManagerInstance.vehicleTemplateDefinitions : {});
 
     if (el('rect3dDepthInput')) el('rect3dDepthInput').value = DEFAULT_3D_DEPTH;
     document.querySelectorAll(".tagFilterCheckbox").forEach(checkbox => checkbox.checked = false);
@@ -865,6 +890,107 @@ export function populateNpcBaseTypeDropdown(npcDefinitions) {
         errorOption.textContent = "No NPC definitions loaded.";
         selectElement.appendChild(errorOption);
         logToConsole(ERROR_MSG.NO_NPC_DEFINITIONS_LOADED || "Error: No NPC definitions loaded for dropdown.", "warn");
+    }
+}
+
+// --- Vehicle Editor UI ---
+/**
+ * Populates the Vehicle base type dropdown in the Vehicle configuration panel.
+ * @param {object} vehicleTemplates - An object where keys are Vehicle IDs and values are Vehicle template objects.
+ */
+export function populateVehicleBaseTypeDropdown(vehicleTemplates) {
+    const selectElement = document.getElementById('vehicleBaseTypeSelect');
+    if (!selectElement) {
+        console.warn("UIManager: vehicleBaseTypeSelect DOM element not found.");
+        return;
+    }
+    selectElement.innerHTML = ''; // Clear existing options
+
+    if (vehicleTemplates && Object.keys(vehicleTemplates).length > 0) {
+        const defaultOption = document.createElement('option');
+        defaultOption.value = "";
+        defaultOption.textContent = "-- Select Base Vehicle --";
+        selectElement.appendChild(defaultOption);
+
+        for (const templateId in vehicleTemplates) {
+            const template = vehicleTemplates[templateId];
+            const option = document.createElement('option');
+            option.value = templateId;
+            option.textContent = `${template.name || templateId} (ID: ${templateId})`;
+            selectElement.appendChild(option);
+        }
+    } else {
+        const errorOption = document.createElement('option');
+        errorOption.value = "";
+        errorOption.textContent = "No Vehicle templates loaded.";
+        selectElement.appendChild(errorOption);
+        logToConsole("Warning: No Vehicle templates loaded for dropdown.", "warn");
+    }
+}
+
+/**
+ * Updates the Vehicle editor UI elements based on the currently selected Vehicle.
+ * @param {object | null} selectedVehicle - The selected Vehicle object instance, or null if none.
+ * @param {object} vehicleTemplates - All available Vehicle templates from assetManager.
+ */
+export function updateSelectedVehicleInfoUI(selectedVehicle, vehicleTemplates) {
+    const el = (id) => document.getElementById(id);
+    const vehicleConfigContainer = el('vehicleToolsContainer');
+    const vehicleConfigControlsDiv = el('vehicleConfigControls');
+    const selectedInfoDiv = el('selectedVehicleInfo');
+    const removeBtn = el('removeVehicleBtn');
+
+    if (!vehicleConfigContainer || !vehicleConfigControlsDiv || !selectedInfoDiv || !removeBtn) {
+        console.warn("UIManager: Vehicle editor DOM elements not found.");
+        return;
+    }
+
+    const fields = {
+        editingVehicleId: el('editingVehicleId'),
+        editingVehiclePos: el('editingVehiclePos'),
+        vehicleBaseTypeSelect: el('vehicleBaseTypeSelect'),
+        vehicleInstanceNameInput: el('vehicleInstanceNameInput')
+    };
+
+    if (fields.vehicleBaseTypeSelect && fields.vehicleBaseTypeSelect.options.length <= 1 && vehicleTemplates) {
+        populateVehicleBaseTypeDropdown(vehicleTemplates);
+    }
+
+    if (uiStateHolder && uiStateHolder.currentTool === 'vehicle' && !selectedVehicle) {
+        vehicleConfigContainer.style.display = 'block';
+        vehicleConfigControlsDiv.style.display = 'block';
+        selectedInfoDiv.textContent = "Selected Vehicle: None (Click on map to place)";
+        removeBtn.style.display = 'none';
+
+        if (fields.editingVehicleId) fields.editingVehicleId.textContent = "N/A (New)";
+        if (fields.editingVehiclePos) fields.editingVehiclePos.textContent = "N/A";
+        if (fields.vehicleInstanceNameInput) fields.vehicleInstanceNameInput.value = '';
+
+    } else if (selectedVehicle) {
+        vehicleConfigContainer.style.display = 'block';
+        vehicleConfigControlsDiv.style.display = 'block';
+        selectedInfoDiv.textContent = `Selected Vehicle: ${selectedVehicle.name || selectedVehicle.id} (Template: ${selectedVehicle.templateId}) at (${selectedVehicle.mapPos.x}, ${selectedVehicle.mapPos.y}, Z:${selectedVehicle.mapPos.z})`;
+        removeBtn.style.display = 'inline-block';
+
+        if (fields.editingVehicleId) fields.editingVehicleId.textContent = selectedVehicle.id;
+        if (fields.editingVehiclePos) fields.editingVehiclePos.textContent = `(${selectedVehicle.mapPos.x}, ${selectedVehicle.mapPos.y}, Z:${selectedVehicle.mapPos.z})`;
+
+        if (fields.vehicleBaseTypeSelect) fields.vehicleBaseTypeSelect.value = selectedVehicle.templateId || "";
+
+        let displayName = selectedVehicle.name;
+        if (!displayName && selectedVehicle.templateId && vehicleTemplates && vehicleTemplates[selectedVehicle.templateId]) {
+            displayName = vehicleTemplates[selectedVehicle.templateId].name;
+        }
+        if (fields.vehicleInstanceNameInput) fields.vehicleInstanceNameInput.value = displayName || '';
+
+    } else {
+        vehicleConfigContainer.style.display = 'none';
+        selectedInfoDiv.textContent = "Selected Vehicle: None";
+        removeBtn.style.display = 'none';
+        if (fields.editingVehicleId) fields.editingVehicleId.textContent = "N/A";
+        if (fields.editingVehiclePos) fields.editingVehiclePos.textContent = "N/A";
+        if (fields.vehicleInstanceNameInput) fields.vehicleInstanceNameInput.value = '';
+        if (fields.vehicleBaseTypeSelect) fields.vehicleBaseTypeSelect.value = '';
     }
 }
 

@@ -65,6 +65,7 @@
             <button class="toolBtn" data-tool="playerStart" id="setPlayerStartToolBtn" title="Set Player Start Position (☻)">P☻</button>
             <button class="toolBtn" data-tool="portal" title="Add/Edit Portal (▓)">Portal</button>
             <button class="toolBtn" data-tool="npc" title="Place NPC (N)">NPC</button> <!-- New NPC Button -->
+            <button class="toolBtn" data-tool="vehicle" title="Place Vehicle (V)">Vehicle</button> <!-- New Vehicle Button -->
             <label for="brushSizeInput" style="margin-left: 15px;">Brush Size:</label>
             <input type="number" id="brushSizeInput" value="1" min="1" max="10" style="width: 50px;" title="Set brush size (1-10)" />
         </div>
@@ -181,6 +182,31 @@
     <hr />
 
     <!-- NPC Configuration Panel -->
+    <div id="vehicleToolsContainer" style="display:none; padding: 10px; border: 1px solid #ccc; margin-top: 10px;">
+        <h3>Vehicle Configuration <button id="toggleVehicleConfigBtn" style="font-size: 0.8em; margin-left: 10px;">Hide</button></h3>
+        <div id="vehicleConfigContent">
+            <div id="vehicleConfigControls" style="margin-top: 10px; padding: 10px; border: 1px solid #ddd;">
+                <h4>Configure Selected/New Vehicle</h4>
+                <div>Editing Vehicle: <strong id="editingVehicleId">N/A</strong> at (<span id="editingVehiclePos">N/A</span>)</div>
+
+                <label for="vehicleBaseTypeSelect">Base Vehicle Type:</label>
+                <select id="vehicleBaseTypeSelect" style="margin-bottom: 5px;"></select>
+                <br />
+
+                <label for="vehicleInstanceNameInput">Vehicle Name:</label>
+                <input type="text" id="vehicleInstanceNameInput" placeholder="Optional specific name" style="width: 200px; margin-bottom: 5px;" />
+                <br />
+
+                <button id="saveVehiclePropertiesBtn" style="margin-top: 5px;">Save Vehicle</button>
+            </div>
+            <div id="selectedVehicleInfo" style="margin-top: 5px; padding: 5px; border: 1px solid #eee;">
+                Selected Vehicle: None
+            </div>
+            <button id="removeVehicleBtn" style="display:none; margin-top: 5px;">Remove Selected Vehicle</button>
+        </div>
+    </div>
+    <hr />
+
     <div id="npcToolsContainer" style="display:none; padding: 10px; border: 1px solid #ccc; margin-top: 10px;">
         <h3>NPC Configuration <button id="toggleNpcConfigBtn" style="font-size: 0.8em; margin-left: 10px;">Hide</button></h3>
         <div id="npcConfigContent">

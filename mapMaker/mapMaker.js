@@ -41,6 +41,7 @@ import {
     resetUIForNewMap,
     populateItemSelectDropdown,
     populateNpcBaseTypeDropdown, // Added for NPC dropdown
+    populateVehicleBaseTypeDropdown, // Added for Vehicle dropdown
     updatePlayerStartDisplay,
     updateGridDimensionsUI,
     updateToolButtonUI, // Needed for direct tool changes by shortcut if not fully in eventHandlers
@@ -82,6 +83,7 @@ const appState = {
     selectedTileForInventory: null,
     selectedPortal: null,
     selectedNpc: null, // This was already here, good.
+    selectedVehicle: null, // Added for vehicles
     selectedGenericTile: null,
 
     // Interaction states for tools
@@ -200,6 +202,12 @@ async function initializeMapMaker() {
         populateNpcBaseTypeDropdown(assetManager.npcDefinitions);
     } else {
         logToConsole("NPC definitions not available on assetManager at init time for dropdown.", "warn");
+    }
+
+    if (assetManager.vehicleTemplateDefinitions) {
+        populateVehicleBaseTypeDropdown(assetManager.vehicleTemplateDefinitions);
+    } else {
+        logToConsole("Vehicle definitions not available on assetManager at init time for dropdown.", "warn");
     }
     buildPalette(appState.currentTileId, appState.activeTagFilters);
 

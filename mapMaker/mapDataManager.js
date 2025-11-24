@@ -32,6 +32,7 @@ import { logToConsole } from './config.js';
  * @property {MapPosition} startPos - Player's starting position.
  * @property {Object<string, MapLevelLayer>} levels - Contains data for each Z-level, keyed by Z index string.
  * @property {Array<object>} npcs - List of non-player characters on the map.
+ * @property {Array<object>} vehicles - List of vehicles on the map.
  * @property {Array<object>} portals - List of portals on the map.
  * @property {string} [description] - Optional description of the map.
  * @property {string} [author] - Optional author of the map.
@@ -89,6 +90,7 @@ export function initNewMap(gridWidth, gridHeight, initialZ = DEFAULT_START_POS_Z
         },
         levels: {}, // Z-levels will be added by ensureLayersForZ
         npcs: [],
+        vehicles: [],
         portals: [],
         description: "",
         author: "",
@@ -172,6 +174,12 @@ export function deleteZLevel(zToDelete, currentMapData, currentGridWidth, curren
     currentMapData.npcs = currentMapData.npcs.filter(npc => npc.mapPos?.z !== zToDelete);
     if (currentMapData.npcs.length < initialNpcCount) {
         logToConsole(LOG_MSG.REMOVED_NPCS_FROM_DELETED_Z(initialNpcCount - currentMapData.npcs.length, zToDelete));
+    }
+
+    const initialVehicleCount = currentMapData.vehicles.length;
+    currentMapData.vehicles = currentMapData.vehicles.filter(v => v.mapPos?.z !== zToDelete);
+    if (currentMapData.vehicles.length < initialVehicleCount) {
+        logToConsole(`Removed ${initialVehicleCount - currentMapData.vehicles.length} vehicle(s) from deleted Z-level ${zToDelete}.`);
     }
 
     const initialPortalCount = currentMapData.portals.length;
@@ -321,6 +329,46 @@ export function getNpcAt(x, y, z) {
     return mapData.npcs.find(npc => npc.mapPos && npc.mapPos.x === x && npc.mapPos.y === y && npc.mapPos.z === z) || null;
 }
 
+// --- Vehicle Management ---
+/**
+ * Adds a Vehicle to the map data.
+ * @param {object} vehicleData - The vehicle object to add.
+ */
+export function addVehicleToMap(vehicleData) {
+    if (!mapData.vehicles) mapData.vehicles = [];
+    mapData.vehicles.push(vehicleData);
+    logToConsole("Vehicle added to map data:", vehicleData);
+}
+
+/**
+ * Removes a Vehicle from the map data by its ID.
+ * @param {string} vehicleId - The ID of the vehicle to remove.
+ * @returns {boolean} True if a vehicle was removed, false otherwise.
+ */
+export function removeVehicleFromMap(vehicleId) {
+    if (!mapData.vehicles) return false;
+    const initialLength = mapData.vehicles.length;
+    mapData.vehicles = mapData.vehicles.filter(v => v.id !== vehicleId);
+    if (mapData.vehicles.length < initialLength) {
+        logToConsole(`Vehicle with ID '${vehicleId}' removed from map data.`);
+        return true;
+    }
+    logToConsole(`Vehicle with ID '${vehicleId}' not found for removal.`);
+    return false;
+}
+
+/**
+ * Finds a Vehicle at a specific map coordinate.
+ * @param {number} x - X-coordinate.
+ * @param {number} y - Y-coordinate.
+ * @param {number} z - Z-coordinate.
+ * @returns {object|null} The Vehicle object if found, otherwise null.
+ */
+export function getVehicleAt(x, y, z) {
+    if (!mapData.vehicles) return null;
+    return mapData.vehicles.find(v => v.mapPos && v.mapPos.x === x && v.mapPos.y === y && v.mapPos.z === z) || null;
+}
+
 // --- Portal Management ---
 /**
  * Adds a portal to the map data.
@@ -390,6 +438,26 @@ export function getNextPortalId() {
         const idParts = p.id.split('_');
         const idNum = parseInt(idParts[1], 10);
         return isNaN(idNum) ? -1 : idNum;
+    }));
+    return maxIdNum + 1;
+}
+
+/**
+ * Calculates the next available Vehicle ID based on existing Vehicles.
+ * Assumes Vehicle IDs are in the format "vehicle_NUMBER".
+ * @returns {number} The next integer to use for a new Vehicle ID.
+ */
+export function getNextVehicleId() {
+    if (!mapData.vehicles || mapData.vehicles.length === 0) return 0;
+    const maxIdNum = Math.max(-1, ...mapData.vehicles.map(v => {
+        if (v.id && typeof v.id === 'string') {
+            const idParts = v.id.split('_');
+            if (idParts.length > 1) {
+                const idNum = parseInt(idParts[idParts.length - 1], 10);
+                return isNaN(idNum) ? -1 : idNum;
+            }
+        }
+        return -1;
     }));
     return maxIdNum + 1;
 }
