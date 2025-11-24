@@ -1,9 +1,9 @@
 // mapMaker/toolManager.js
 "use strict";
 
-import { snapshot, setPlayerStart as setPlayerStartInData, addPortalToMap, getNextPortalId as getNextPortalIdFromData, addNpcToMap, getNextNpcId as getNextNpcIdFromData } from './mapDataManager.js'; // Added addNpcToMap and getNextNpcId
+import { snapshot, setPlayerStart as setPlayerStartInData, addPortalToMap, getNextPortalId as getNextPortalIdFromData, addNpcToMap, getNextNpcId as getNextNpcIdFromData, addVehicleToMap, getNextVehicleId as getNextVehicleIdFromData } from './mapDataManager.js'; // Added vehicle functions
 import { placeTile, getTopmostTileAt, getLayerForTile } from './tileManager.js'; // Added getLayerForTile
-import { DEFAULT_PORTAL_TARGET_MAP_ID, DEFAULT_PORTAL_TARGET_X, DEFAULT_PORTAL_TARGET_Y, DEFAULT_PORTAL_TARGET_Z, DEFAULT_PORTAL_NAME, PORTAL_ID_PREFIX, NPC_ID_PREFIX, LAYER_TYPES, LOG_MSG, ERROR_MSG, STAMP_COPY_LAYERS } from './config.js'; // Added NPC_ID_PREFIX
+import { DEFAULT_PORTAL_TARGET_MAP_ID, DEFAULT_PORTAL_TARGET_X, DEFAULT_PORTAL_TARGET_Y, DEFAULT_PORTAL_TARGET_Z, DEFAULT_PORTAL_NAME, PORTAL_ID_PREFIX, NPC_ID_PREFIX, VEHICLE_ID_PREFIX, LAYER_TYPES, LOG_MSG, ERROR_MSG, STAMP_COPY_LAYERS } from './config.js'; // Added NPC_ID_PREFIX and VEHICLE_ID_PREFIX
 import { logToConsole } from './config.js';
 import { createEmptyGrid } from './gridUtils.js';
 
@@ -200,6 +200,59 @@ export function handleNpcToolClick(x, y, z, mapData, appState, assetManager, int
     if (clearOtherSelections) clearOtherSelections(); // Clear portal, tile selections
     if (updateNpcEditorUI) updateNpcEditorUI(appState.selectedNpc, assetManager.npcDefinitions);
     if (renderGrid) renderGrid(); // Update grid to show NPC selection/marker
+}
+
+/**
+ * Handles clicks for the Vehicle tool.
+ * If a vehicle exists at the click location, it's selected.
+ * Otherwise, if a base Vehicle type is selected in the Vehicle panel, a new Vehicle is created.
+ * @param {number} x - Clicked X-coordinate.
+ * @param {number} y - Clicked Y-coordinate.
+ * @param {number} z - Current editing Z-level.
+ * @param {MapData} mapData - The current map data.
+ * @param {object} appState - The main application state.
+ * @param {object} assetManager - Instance of the AssetManager.
+ * @param {object} interactionFns - Object containing callbacks like updateVehicleEditorUI, renderGrid, clearOtherSelections.
+ */
+export function handleVehicleToolClick(x, y, z, mapData, appState, assetManager, interactionFns) {
+    snapshot();
+
+    const { updateVehicleEditorUI, renderGrid, clearOtherSelections } = interactionFns;
+
+    const existingVehicle = mapData.vehicles.find(v => v.mapPos?.x === x && v.mapPos?.y === y && v.mapPos?.z === z);
+
+    if (existingVehicle) {
+        appState.selectedVehicle = existingVehicle;
+        logToConsole(LOG_MSG.VEHICLE_TOOL_SELECTED_EXISTING(existingVehicle.id, existingVehicle.mapPos.z));
+    } else {
+        const selectedBaseVehicleId = document.getElementById('vehicleBaseTypeSelect')?.value;
+        if (!selectedBaseVehicleId || !assetManager.vehicleTemplateDefinitions || !assetManager.vehicleTemplateDefinitions[selectedBaseVehicleId]) {
+            logToConsole("Vehicle Tool: No base Vehicle type selected or definitions missing.", "warn");
+            if (interactionFns.showStatusMessage) {
+                interactionFns.showStatusMessage("Select a base Vehicle type to place.", "warn");
+            }
+            appState.selectedVehicle = null;
+        } else {
+            const baseVehicleDef = assetManager.vehicleTemplateDefinitions[selectedBaseVehicleId];
+
+            // Basic instance creation
+            const newVehicleInstance = {
+                templateId: selectedBaseVehicleId,
+                id: `${VEHICLE_ID_PREFIX}${getNextVehicleIdFromData()}`,
+                name: baseVehicleDef.name,
+                mapPos: { x, y, z },
+                rotation: 0 // Default rotation
+            };
+
+            addVehicleToMap(newVehicleInstance);
+            appState.selectedVehicle = newVehicleInstance;
+            logToConsole(LOG_MSG.VEHICLE_TOOL_ADDED_NEW(newVehicleInstance.id, x, y, z, selectedBaseVehicleId));
+        }
+    }
+
+    if (clearOtherSelections) clearOtherSelections();
+    if (updateVehicleEditorUI) updateVehicleEditorUI(appState.selectedVehicle, assetManager.vehicleTemplateDefinitions);
+    if (renderGrid) renderGrid();
 }
 
 
