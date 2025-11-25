@@ -1,4 +1,4 @@
-﻿// js/mapRenderer.js
+// js/mapRenderer.js
 // Helper functions for FOW and LOS
 
 function darkenColor(hexColor, factor) {
@@ -400,13 +400,18 @@ function isTileBlockingVision(tileX, tileY, tileZ, playerZ) {
     const mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
 
     if (!tilesets || !mapData || !mapData.levels) {
-        return false; // Cannot determine, assume non-blocking for safety in BFS
+        return false;
+    }
+
+    // Bounds check
+    if (!mapData.dimensions || tileX < 0 || tileY < 0 || tileX >= mapData.dimensions.width || tileY >= mapData.dimensions.height) {
+        return true; // Out of bounds blocks
     }
 
     const zStr = tileZ.toString();
     const levelData = mapData.levels[zStr];
 
-    if (!levelData) { // No level data at this Z means it's open air, doesn't block.
+    if (!levelData) {
         return false;
     }
 
@@ -421,12 +426,19 @@ function isTileBlockingVision(tileX, tileY, tileZ, playerZ) {
 
             if (effectiveTileOnMiddle && effectiveTileOnMiddle !== "") {
                 const tileDefMiddle = tilesets[effectiveTileOnMiddle];
+
+                // Debug logging for specific tile
+                if (tileX === 6 && tileY === 5) {
+                    console.log(`DEBUG isTileBlockingVision(6,5): effectiveTileOnMiddle=${effectiveTileOnMiddle}`);
+                    console.log(`DEBUG tileDefMiddle found? ${!!tileDefMiddle}`);
+                    if (tileDefMiddle) console.log(`DEBUG tags: ${tileDefMiddle.tags}`);
+                }
+
                 if (tileDefMiddle) {
                     const tags = tileDefMiddle.tags || [];
                     const isImpassable = tags.includes('impassable');
                     const isTransparent = tags.includes('transparent') || tags.includes('allows_vision');
 
-                    // Rule: "On the player’s Z only block when a middle-layer tile is tagged impassable and lacks transparent/allows_vision"
                     if (isImpassable && !isTransparent) {
                         return true; // BLOCKS
                     }
@@ -435,8 +447,6 @@ function isTileBlockingVision(tileX, tileY, tileZ, playerZ) {
                 }
             }
         }
-        // Bottom Layer (Player's Z): Never blocks vision.
-        // If middle didn't block, then this tile on player's Z doesn't block.
         return false;
     }
     // --- Other Z-levels Logic ---
@@ -2033,53 +2043,172 @@ window.mapRenderer = {
             // Allow ignoring cap for benchmarks.
             const effectiveRadius = _ignoreCap ? _visionRadius : Math.min(_visionRadius, 60);
 
-            // We clamp to map dimensions.
-            const minX = Math.max(0, Math.floor(_playerX - effectiveRadius));
-            const maxX = Math.min(W - 1, Math.ceil(_playerX + effectiveRadius));
-            const minY = Math.max(0, Math.floor(_playerY - effectiveRadius));
-            const maxY = Math.min(H - 1, Math.ceil(_playerY + effectiveRadius));
+            // Use Symmetrical Shadowcasting for the player's Z level (Optimization A.2)
+            if (window.Shadowcaster) {
+                 const fowLayer = gameState.fowData[_playerZ.toString()];
+                 if (fowLayer) {
+                     // Callback to check blocking (on player Z)
+                     // We use the same isTileBlockingVision logic but restricted to Z
+                     const isBlocking = (x, y) => {
+                         // Bounds check inside blocking check or caster? Caster does basic bounds?
+                         // Caster expects valid coords? We should check bounds.
+                         if (x < 0 || y < 0 || x >= W || y >= H) return true;
+                         return this.isTileBlockingVision(x, y, _playerZ, _playerZ);
+                     };
 
-            // Determine Z range. For now, let's assume we check all loaded Z levels.
-            // Optimization: Limit Z range if needed (e.g., playerZ +/- 20)
-            // const minZ = _playerZ - 10;
-            // const maxZ = _playerZ + 10;
-            const zKeys = Object.keys(mapLevels).map(k => parseInt(k));
+                     const setVisible = (x, y) => {
+                         if (x >= 0 && y >= 0 && x < W && y < H) {
+                             if (fowLayer[y][x] !== 'visible') {
+                                 fowLayer[y][x] = 'visible';
+                                 if (!gameState.fowData.fowCurrentlyVisible[_playerZ.toString()]) {
+                                     gameState.fowData.fowCurrentlyVisible[_playerZ.toString()] = [];
+                                 }
+                                 gameState.fowData.fowCurrentlyVisible[_playerZ.toString()].push({ x: x, y: y });
+                             }
+                         }
+                     };
 
-            // Optimization: If vision radius is very large (e.g. 2000), we essentially check the whole map.
-            // isTileVisible does a distance check first, so passing a large radius is fine,
-            // but iterating 1000x1000 tiles is slow.
-            // However, we iterate the bounding box of (Player +/- Radius) INTERSECTED with Map.
-            // If Map is 100x100 and Radius is 2000, we iterate 100x100.
-            // If Map is 2000x2000 and Radius is 10, we iterate 20x20.
-            // So performance depends on the smaller of (MapSize) vs (VisionArea).
+                     window.Shadowcaster.compute(_playerX, _playerY, effectiveRadius, isBlocking, setVisible);
+                 }
 
-            // 3D Visibility Check
-            // We check every tile in the bounding box on every Z level.
-            zKeys.forEach(z => {
-                // optimization: skip if Z is too far? (Vertical vision usually limited?)
-                // User requirement: "account for 3d space".
-                // Let's assume unlimited vertical check for now within map bounds.
+                 // Vertical Propagation (Optimization B)
+                 // For other Z levels, visibility is derived from the player's Z visibility.
+                 // We assume if (x,y) is visible on PlayerZ, we can check vertical line of sight for (x,y) on other Zs.
+                 // This avoids full raycasting for every tile on every Z.
 
-                const fowLayer = gameState.fowData[z.toString()];
-                if (!fowLayer) return; // Should have been initialized above
+                 const visibleOnCurrentZ = gameState.fowData.fowCurrentlyVisible[_playerZ.toString()];
+                 if (visibleOnCurrentZ && visibleOnCurrentZ.length > 0) {
+                     Object.keys(mapLevels).forEach(zKey => {
+                         const z = parseInt(zKey);
+                         if (z === _playerZ) return; // Already done
 
-                for (let y = minY; y <= maxY; y++) {
-                    for (let x = minX; x <= maxX; x++) {
-                        // isTileVisible handles the distance check and line-of-sight check
-                        // We pass effectiveRadius to ensure consistency with the bounding box
-                        if (this.isTileVisible(_playerX, _playerY, _playerZ, x, y, z, effectiveRadius)) {
-                            if (fowLayer[y][x] !== 'visible') {
-                                fowLayer[y][x] = 'visible';
-                                // Track newly visible tiles
-                                if (!gameState.fowData.fowCurrentlyVisible[z.toString()]) {
-                                    gameState.fowData.fowCurrentlyVisible[z.toString()] = [];
+                         const fowLayerOther = gameState.fowData[zKey];
+                         if (!fowLayerOther) return;
+
+                         // We check vertical LOS for each visible tile on current Z
+                         visibleOnCurrentZ.forEach(pt => {
+                             const { x, y } = pt;
+                             // Check if we can see from (x, y, playerZ) to (x, y, z)
+                             // This is a strictly vertical check (or steep angle check for very close Zs, but mostly vertical)
+
+                             // Simplified Vertical Check:
+                             // Can we trace a line from PlayerPos to (x, y, z)?
+                             // Or simpler: Can we see (x, y, z) *given* we can see (x, y, playerZ)?
+                             // Yes, if the vertical column at (x, y) is open between playerZ and z.
+
+                             // We use isTileVisible for this single vertical check?
+                             // No, isTileVisible is a raycast from PlayerPos.
+                             // Raycast from PlayerPos to (x, y, z).
+
+                             // Wait, we replaced O(R^2) raycasts with Shadowcasting + Vertical Check.
+                             // Raycasting to (x, y, z) is still a raycast.
+                             // But we only do it for *visible tiles* on Planar view, not the whole box.
+                             // And we can optimize it: We know the path to (x, y, playerZ) is clear.
+                             // So we only need to check if the path deviates vertically?
+
+                             // Actually, if we use standard raycasting for these tiles, it's:
+                             // Count(VisibleTiles) * NumZLevels.
+                             // For R=60, VisibleTiles ~ 3000-5000?
+                             // Raycast is length ~30.
+                             // 5000 * 30 * 3 = 450,000 checks. Still high?
+                             // But Shadowcasting visited each tile ONCE (very fast).
+
+                             // Let's use a cheaper approximation for Z != playerZ.
+                             // "Onion Skinning" implies looking down.
+                             // If I see (x, y) on Z, and Z is transparent floor/hole, I see (x, y) on Z-1.
+                             // So:
+
+                             let canSee = false;
+                             if (z < _playerZ) {
+                                 // Looking down
+                                 // Check layers between z and playerZ at (x,y)
+                                 // If all are transparent/holes, then visible.
+                                 // Note: We already know (x,y) on playerZ is visible.
+
+                                 // We need to check blocking from playerZ down to z.
+                                 // But wait, the Ray from Player(0,0,0) to Target(10,10,-1) passes through (5,5,-0.5).
+                                 // It does NOT stay in the column (x,y).
+                                 // So strictly vertical check is wrong for perspective.
+
+                                 // However, for top-down tile games, "Onion Skin" usually means "Render what's below the visible floor".
+                                 // The Renderer *already* handles this by drawing lower levels under visible transparent tiles.
+                                 // It does NOT use fowData[z] for this.
+
+                                 // So: Do we NEED to populate fowData[z] for z != playerZ?
+                                 // Only if the user switches view to Z-1?
+                                 // Or if we need to see entities on Z-1.
+
+                                 // If we only need it for "Look Mode" or picking targets:
+                                 // We can just rely on the renderer's onion skinning for visual.
+                                 // And use on-demand raycasting for targeting.
+
+                                 // BUT, to keep existing behavior where switching Z shows FOW:
+                                 // We can perform the Raycast check only for visible tiles.
+                                 // It is expensive but much less than checking ALL tiles in bounding box (including hidden ones).
+
+                                 // Also, we can limit the Z check to +/- 2 levels or something reasonable.
+
+                                 if (Math.abs(z - _playerZ) <= 2) { // Optimization: Limit vertical FOW calculation depth
+                                     if (this.isTileVisible(_playerX, _playerY, _playerZ, x, y, z, effectiveRadius)) {
+                                         if (fowLayerOther[y][x] !== 'visible') {
+                                             fowLayerOther[y][x] = 'visible';
+                                             if (!gameState.fowData.fowCurrentlyVisible[zKey]) gameState.fowData.fowCurrentlyVisible[zKey] = [];
+                                             gameState.fowData.fowCurrentlyVisible[zKey].push({x, y});
+                                         }
+                                     }
+                                 }
+                             } else {
+                                 // Looking up
+                                 // Similar logic.
+                                 if (Math.abs(z - _playerZ) <= 2) {
+                                     if (this.isTileVisible(_playerX, _playerY, _playerZ, x, y, z, effectiveRadius)) {
+                                         if (fowLayerOther[y][x] !== 'visible') {
+                                             fowLayerOther[y][x] = 'visible';
+                                             if (!gameState.fowData.fowCurrentlyVisible[zKey]) gameState.fowData.fowCurrentlyVisible[zKey] = [];
+                                             gameState.fowData.fowCurrentlyVisible[zKey].push({x, y});
+                                         }
+                                     }
+                                 }
+                             }
+                         });
+                     });
+                 }
+
+            } else {
+                // Fallback to old slow method if Shadowcaster missing
+                 // We clamp to map dimensions.
+                const minX = Math.max(0, Math.floor(_playerX - effectiveRadius));
+                const maxX = Math.min(W - 1, Math.ceil(_playerX + effectiveRadius));
+                const minY = Math.max(0, Math.floor(_playerY - effectiveRadius));
+                const maxY = Math.min(H - 1, Math.ceil(_playerY + effectiveRadius));
+
+                // Determine Z range. For now, let's assume we check all loaded Z levels.
+                const zKeys = Object.keys(mapLevels).map(k => parseInt(k));
+
+                // 3D Visibility Check
+                // We check every tile in the bounding box on every Z level.
+                zKeys.forEach(z => {
+                    const fowLayer = gameState.fowData[z.toString()];
+                    if (!fowLayer) return; // Should have been initialized above
+
+                    for (let y = minY; y <= maxY; y++) {
+                        for (let x = minX; x <= maxX; x++) {
+                            // isTileVisible handles the distance check and line-of-sight check
+                            // We pass effectiveRadius to ensure consistency with the bounding box
+                            if (this.isTileVisible(_playerX, _playerY, _playerZ, x, y, z, effectiveRadius)) {
+                                if (fowLayer[y][x] !== 'visible') {
+                                    fowLayer[y][x] = 'visible';
+                                    // Track newly visible tiles
+                                    if (!gameState.fowData.fowCurrentlyVisible[z.toString()]) {
+                                        gameState.fowData.fowCurrentlyVisible[z.toString()] = [];
+                                    }
+                                    gameState.fowData.fowCurrentlyVisible[z.toString()].push({ x: x, y: y });
                                 }
-                                gameState.fowData.fowCurrentlyVisible[z.toString()].push({ x: x, y: y });
                             }
                         }
                     }
-                }
-            });
+                });
+            }
 
             this.scheduleRender();
         };
