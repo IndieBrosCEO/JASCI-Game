@@ -545,6 +545,8 @@ window.mapRenderer = {
         currentMapData = mapData; // mapData from assetManager now contains .levels and .startPos.z
         gameState.lightSources = [];
         gameState.containers = [];
+        // Reset FOW data to ensure dimensions match new map
+        gameState.fowData = { fowCurrentlyVisible: {} };
 
         if (mapData && mapData.dimensions && mapData.levels && mapData.startPos !== undefined) {
             const H = mapData.dimensions.height;
@@ -903,7 +905,7 @@ window.mapRenderer = {
                     voidHtml += "<br>"; // New line after each row
                 }
                 container.innerHTML = voidHtml;
-                logToConsole(`renderMapLayers: No data for currentViewZ = ${currentZ}. Displaying empty grid.`);
+                // logToConsole(`renderMapLayers: No data for currentViewZ = ${currentZ}. Displaying empty grid.`); // Removed as requested
             }
             gameState.tileCache = null; // Clear cache as the Z-level is not valid for rendering
             return;
@@ -2023,11 +2025,15 @@ window.mapRenderer = {
             });
 
             // Determine bounding box for visibility check
+            // Performance Optimization: Cap effective vision radius to 60 tiles to prevent freezing on large maps with "Clear" weather (2000+ radius).
+            // 60 tiles is sufficient for screen visibility.
+            const effectiveRadius = Math.min(_visionRadius, 60);
+
             // We clamp to map dimensions.
-            const minX = Math.max(0, Math.floor(_playerX - _visionRadius));
-            const maxX = Math.min(W - 1, Math.ceil(_playerX + _visionRadius));
-            const minY = Math.max(0, Math.floor(_playerY - _visionRadius));
-            const maxY = Math.min(H - 1, Math.ceil(_playerY + _visionRadius));
+            const minX = Math.max(0, Math.floor(_playerX - effectiveRadius));
+            const maxX = Math.min(W - 1, Math.ceil(_playerX + effectiveRadius));
+            const minY = Math.max(0, Math.floor(_playerY - effectiveRadius));
+            const maxY = Math.min(H - 1, Math.ceil(_playerY + effectiveRadius));
 
             // Determine Z range. For now, let's assume we check all loaded Z levels.
             // Optimization: Limit Z range if needed (e.g., playerZ +/- 20)
@@ -2056,7 +2062,8 @@ window.mapRenderer = {
                 for (let y = minY; y <= maxY; y++) {
                     for (let x = minX; x <= maxX; x++) {
                         // isTileVisible handles the distance check and line-of-sight check
-                        if (this.isTileVisible(_playerX, _playerY, _playerZ, x, y, z, _visionRadius)) {
+                        // We pass effectiveRadius to ensure consistency with the bounding box
+                        if (this.isTileVisible(_playerX, _playerY, _playerZ, x, y, z, effectiveRadius)) {
                             if (fowLayer[y][x] !== 'visible') {
                                 fowLayer[y][x] = 'visible';
                                 // Track newly visible tiles
