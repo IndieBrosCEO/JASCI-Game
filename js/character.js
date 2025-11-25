@@ -433,9 +433,9 @@ function startGame() {
     if (window.mapRenderer.getCurrentMapData()) { // Only run these if a map is loaded
         window.interaction.detectInteractableItems();
         window.interaction.showInteractableItems();
-        if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function' && gameState.playerPos) {
-            const PLAYER_VISION_RADIUS_CONST = 10; // TODO: Centralize this constant
-            window.mapRenderer.updateFOW_BFS(gameState.playerPos.x, gameState.playerPos.y, gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+        const radius = window.getPlayerVisionRadius ? window.getPlayerVisionRadius() : 10;
+        if (window.mapRenderer && typeof window.mapRenderer.updateFOW === 'function' && gameState.playerPos) {
+            window.mapRenderer.updateFOW(gameState.playerPos.x, gameState.playerPos.y, gameState.playerPos.z, radius);
         }
     }
     window.turnManager.startTurn();

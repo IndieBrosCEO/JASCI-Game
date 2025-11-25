@@ -1975,109 +1975,105 @@ window.mapRenderer = {
     isTileEmpty: isTileEmpty,
 
     updateFOW_BFS: function (playerX, playerY, playerZ, visionRadius) {
-        // Define the original function logic as a separate function or an arrow function
-        // to correctly capture 'this' from the mapRenderer object.
+        // Redirect to new updateFOW function
+        this.updateFOW(playerX, playerY, playerZ, visionRadius);
+    },
+
+    updateFOW: function (playerX, playerY, playerZ, visionRadius) {
         const originalLogic = (_playerX, _playerY, _playerZ, _visionRadius) => {
-            const currentMap = this.getCurrentMapData(); // 'this' refers to mapRenderer
+            const currentMap = this.getCurrentMapData();
             if (!currentMap || !currentMap.dimensions || !currentMap.levels) {
-                logToConsole("updateFOW_BFS: No map data, cannot update FOW.", "warn");
+                logToConsole("updateFOW: No map data, cannot update FOW.", "warn");
                 return;
             }
 
-            const H = currentMap.dimensions.height; // This H and W are mapTotalHeight/Width
-            const W = currentMap.dimensions.width; // So FOW updates still iterate full map
-            const playerZStr = _playerZ.toString();
+            const H = currentMap.dimensions.height;
+            const W = currentMap.dimensions.width;
+            const mapLevels = currentMap.levels;
 
-            if (!currentMap.dimensions || typeof H !== 'number' || H <= 0 || typeof W !== 'number' || W <= 0) {
-                logToConsole(`updateFOW_BFS: Invalid map dimensions (H: ${H}, W: ${W}) for Z-level ${playerZStr}. Cannot process FOW. Map ID: ${currentMap.id || 'Unknown'}.`, "error");
-                return;
-            }
+            if (H <= 0 || W <= 0) return;
 
-            // Ensure fowData for the current Z-level exists and is correctly sized
-            if (!gameState.fowData[playerZStr] || gameState.fowData[playerZStr].length !== H || (H > 0 && gameState.fowData[playerZStr][0].length !== W)) {
-                logToConsole(`updateFOW_BFS: FOW data for Z-level ${playerZStr} is missing, malformed, or dimensions mismatch. Initializing/Re-initializing. Map H:${H}, W:${W}. Current FOW H:${gameState.fowData[playerZStr]?.length}, W:${gameState.fowData[playerZStr]?.[0]?.length}`, "info");
-                gameState.fowData[playerZStr] = Array(H).fill(null).map(() => Array(W).fill('hidden'));
-            }
-            const currentFowLayer = gameState.fowData[playerZStr];
-            // Ensure fowCurrentlyVisible for this Z-level is initialized
+            // Ensure FOW data structure is ready for all relevant Z levels
+            // For simplicity, we iterate all known map levels. In a huge streaming map, we'd only do near ones.
+            Object.keys(mapLevels).forEach(zKey => {
+                if (!gameState.fowData[zKey]) {
+                    gameState.fowData[zKey] = Array(H).fill(null).map(() => Array(W).fill('hidden'));
+                }
+            });
+
+            // Initialize fowCurrentlyVisible tracking if missing
             if (!gameState.fowData.fowCurrentlyVisible) {
                 gameState.fowData.fowCurrentlyVisible = {};
             }
-            if (!gameState.fowData.fowCurrentlyVisible[playerZStr]) {
-                gameState.fowData.fowCurrentlyVisible[playerZStr] = [];
-            }
 
-            // Change previously visible tiles to 'visited'
-            if (gameState.fowData.fowCurrentlyVisible[playerZStr]) {
-                for (const tile of gameState.fowData.fowCurrentlyVisible[playerZStr]) {
-                    if (currentFowLayer[tile.y] && currentFowLayer[tile.y][tile.x] === 'visible') {
-                        currentFowLayer[tile.y][tile.x] = 'visited';
+            // Mark all currently visible tiles as 'visited' before calculating new visibility
+            Object.keys(gameState.fowData.fowCurrentlyVisible).forEach(zKey => {
+                const visibleTiles = gameState.fowData.fowCurrentlyVisible[zKey];
+                if (visibleTiles && visibleTiles.length > 0) {
+                    const fowLayer = gameState.fowData[zKey];
+                    if (fowLayer) {
+                        visibleTiles.forEach(tile => {
+                            if (fowLayer[tile.y] && fowLayer[tile.y][tile.x] === 'visible') {
+                                fowLayer[tile.y][tile.x] = 'visited';
+                            }
+                        });
                     }
                 }
-                gameState.fowData.fowCurrentlyVisible[playerZStr] = []; // Clear for current update
-            }
+                gameState.fowData.fowCurrentlyVisible[zKey] = [];
+            });
 
+            // Determine bounding box for visibility check
+            // We clamp to map dimensions.
+            const minX = Math.max(0, Math.floor(_playerX - _visionRadius));
+            const maxX = Math.min(W - 1, Math.ceil(_playerX + _visionRadius));
+            const minY = Math.max(0, Math.floor(_playerY - _visionRadius));
+            const maxY = Math.min(H - 1, Math.ceil(_playerY + _visionRadius));
 
-            const queue = [];
-            const visitedThisTurn = new Set(); // Tracks tiles visited by BFS in *this specific call*
+            // Determine Z range. For now, let's assume we check all loaded Z levels.
+            // Optimization: Limit Z range if needed (e.g., playerZ +/- 20)
+            // const minZ = _playerZ - 10;
+            // const maxZ = _playerZ + 10;
+            const zKeys = Object.keys(mapLevels).map(k => parseInt(k));
 
-            queue.push({ x: _playerX, y: _playerY, z: _playerZ, dist: 0 });
-            visitedThisTurn.add(`${_playerX},${_playerY},${_playerZ}`);
+            // Optimization: If vision radius is very large (e.g. 2000), we essentially check the whole map.
+            // isTileVisible does a distance check first, so passing a large radius is fine,
+            // but iterating 1000x1000 tiles is slow.
+            // However, we iterate the bounding box of (Player +/- Radius) INTERSECTED with Map.
+            // If Map is 100x100 and Radius is 2000, we iterate 100x100.
+            // If Map is 2000x2000 and Radius is 10, we iterate 20x20.
+            // So performance depends on the smaller of (MapSize) vs (VisionArea).
 
-            while (queue.length > 0) {
-                const current = queue.shift();
+            // 3D Visibility Check
+            // We check every tile in the bounding box on every Z level.
+            zKeys.forEach(z => {
+                // optimization: skip if Z is too far? (Vertical vision usually limited?)
+                // User requirement: "account for 3d space".
+                // Let's assume unlimited vertical check for now within map bounds.
 
-                if (current.dist > _visionRadius) {
-                    continue;
-                }
+                const fowLayer = gameState.fowData[z.toString()];
+                if (!fowLayer) return; // Should have been initialized above
 
-                // Only update FOW for the player's actual Z level during BFS exploration
-                if (current.z === _playerZ) {
-                    if (current.y >= 0 && current.y < H && current.x >= 0 && current.x < W) {
-                        if (currentFowLayer[current.y][current.x] !== 'visible') {
-                            currentFowLayer[current.y][current.x] = 'visible';
-                            // Add to list of tiles made visible in this update
-                            gameState.fowData.fowCurrentlyVisible[playerZStr].push({ x: current.x, y: current.y });
+                for (let y = minY; y <= maxY; y++) {
+                    for (let x = minX; x <= maxX; x++) {
+                        // isTileVisible handles the distance check and line-of-sight check
+                        if (this.isTileVisible(_playerX, _playerY, _playerZ, x, y, z, _visionRadius)) {
+                            if (fowLayer[y][x] !== 'visible') {
+                                fowLayer[y][x] = 'visible';
+                                // Track newly visible tiles
+                                if (!gameState.fowData.fowCurrentlyVisible[z.toString()]) {
+                                    gameState.fowData.fowCurrentlyVisible[z.toString()] = [];
+                                }
+                                gameState.fowData.fowCurrentlyVisible[z.toString()].push({ x: x, y: y });
+                            }
                         }
-                    } else {
-                        continue; // Out of bounds
-                    }
-                } else {
-                    // This case should ideally not be reached if BFS is constrained to player's Z,
-                    // but kept for safety.
-                    continue;
-                }
-
-                // If the current tile blocks vision, don't explore its neighbors
-                if (this.isTileBlockingVision(current.x, current.y, current.z, _playerZ)) {
-                    continue;
-                }
-
-                const neighbors = [
-                    { dx: 0, dy: -1 }, { dx: 0, dy: 1 },
-                    { dx: -1, dy: 0 }, { dx: 1, dy: 0 },
-                ];
-
-                for (const neighborDelta of neighbors) {
-                    const nextX = current.x + neighborDelta.dx;
-                    const nextY = current.y + neighborDelta.dy;
-                    const nextZ = current.z; // BFS for FOW typically stays on the same Z
-                    const nextDist = current.dist + 1;
-
-                    if (nextX < 0 || nextX >= W || nextY < 0 || nextY >= H) {
-                        continue;
-                    }
-
-                    if (nextDist <= _visionRadius && !visitedThisTurn.has(`${nextX},${nextY},${nextZ}`)) {
-                        visitedThisTurn.add(`${nextX},${nextY},${nextZ}`);
-                        queue.push({ x: nextX, y: nextY, z: nextZ, dist: nextDist });
                     }
                 }
-            }
-            this.scheduleRender(); // 'this' refers to mapRenderer
+            });
+
+            this.scheduleRender();
         };
 
-        // Call profileFunction, passing the original logic bound to 'this' (mapRenderer context)
-        return profileFunction("mapRenderer.updateFOW_BFS", originalLogic.bind(this), playerX, playerY, playerZ, visionRadius);
+        // Call profileFunction
+        return profileFunction("mapRenderer.updateFOW", originalLogic.bind(this), playerX, playerY, playerZ, visionRadius);
     }
 };

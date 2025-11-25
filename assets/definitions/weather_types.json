@@ -1,17 +1,20 @@
 {
   "clear": {
     "name": "Clear Skies",
+    "visionRadius": 2112,
     "effects": [],
     "duration": [240, 720], 
     "transitionTo": {
       "rain_light": 0.1,
       "windy_light": 0.1,
-      "clear": 0.8
+      "fog": 0.05,
+      "clear": 0.75
     },
     "ambientSoundLoop": null 
   },
   "rain_light": {
     "name": "Light Rain",
+    "visionRadius": 1056,
     "baseEffects": [
       { "type": "visibility_penalty", "baseValue": -1 },
       { "type": "ranged_attack_penalty", "baseValue": -1 }
@@ -21,7 +24,8 @@
     "duration": [60, 240], 
     "transitionTo": {
       "rain_heavy": 0.3,
-      "clear": 0.6,
+      "clear": 0.5,
+      "fog": 0.1,
       "windy_light": 0.1
     },
     "ambientSoundLoop": "rain_light_loop.wav",
@@ -29,6 +33,7 @@
   },
   "rain_heavy": {
     "name": "Heavy Rain",
+    "visionRadius": 1056,
     "baseEffects": [
       { "type": "visibility_penalty", "baseValue": -3 },
       { "type": "ranged_attack_penalty", "baseValue": -3 },
@@ -47,6 +52,7 @@
   },
   "snow_light": {
     "name": "Light Snow",
+    "visionRadius": 1056,
     "baseEffects": [
       { "type": "visibility_penalty", "baseValue": -2 },
       { "type": "ranged_attack_penalty", "baseValue": -1 },
@@ -57,7 +63,8 @@
     "duration": [120, 360],
     "transitionTo": {
       "snow_heavy": 0.25,
-      "clear": 0.6,
+      "clear": 0.5,
+      "fog": 0.1,
       "windy_light": 0.15
     },
     "ambientSoundLoop": "wind_light_loop.wav", 
@@ -65,6 +72,7 @@
   },
   "snow_heavy": {
     "name": "Heavy Snow",
+    "visionRadius": 250,
     "baseEffects": [
       { "type": "visibility_penalty", "baseValue": -4 },
       { "type": "ranged_attack_penalty", "baseValue": -3 },
@@ -84,6 +92,7 @@
   },
   "windy_light": {
     "name": "Light Wind",
+    "visionRadius": 2112,
     "baseEffects": [
       { "type": "thrown_weapon_deviation", "baseValue": 1 } 
     ],
@@ -99,6 +108,7 @@
   },
   "windy_heavy": {
     "name": "Heavy Wind",
+    "visionRadius": 2112,
     "baseEffects": [
       { "type": "thrown_weapon_deviation", "baseValue": 2 },
       { "type": "ranged_attack_penalty", "baseValue": -1 } 
@@ -112,5 +122,23 @@
       "rain_heavy": 0.2
     },
     "ambientSoundLoop": "wind_heavy_loop.wav"
+  },
+  "fog": {
+    "name": "Fog",
+    "visionRadius": 50,
+    "baseEffects": [
+      { "type": "visibility_penalty", "baseValue": -5 },
+      { "type": "ranged_attack_penalty", "baseValue": -2 }
+    ],
+    "intensityScalesEffects": true,
+    "defaultIntensity": [0.5, 1.0],
+    "duration": [60, 180],
+    "transitionTo": {
+      "clear": 0.5,
+      "rain_light": 0.3,
+      "windy_light": 0.2
+    },
+    "ambientSoundLoop": "wind_light_loop.wav",
+    "visualEffect": "fog"
   }
 }
