@@ -426,6 +426,14 @@ function isTileBlockingVision(tileX, tileY, tileZ, playerZ) {
 
             if (effectiveTileOnMiddle && effectiveTileOnMiddle !== "") {
                 const tileDefMiddle = tilesets[effectiveTileOnMiddle];
+
+                // Debug logging for specific tile
+                if (tileX === 6 && tileY === 5) {
+                    console.log(`DEBUG isTileBlockingVision(6,5): effectiveTileOnMiddle=${effectiveTileOnMiddle}`);
+                    console.log(`DEBUG tileDefMiddle found? ${!!tileDefMiddle}`);
+                    if (tileDefMiddle) console.log(`DEBUG tags: ${tileDefMiddle.tags}`);
+                }
+
                 if (tileDefMiddle) {
                     const tags = tileDefMiddle.tags || [];
                     const isOpaque = tags.includes('blocks_vision') ||
