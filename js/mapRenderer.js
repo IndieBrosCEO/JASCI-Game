@@ -1981,8 +1981,8 @@ window.mapRenderer = {
         this.updateFOW(playerX, playerY, playerZ, visionRadius);
     },
 
-    updateFOW: function (playerX, playerY, playerZ, visionRadius) {
-        const originalLogic = (_playerX, _playerY, _playerZ, _visionRadius) => {
+    updateFOW: function (playerX, playerY, playerZ, visionRadius, ignoreCap = false) {
+        const originalLogic = (_playerX, _playerY, _playerZ, _visionRadius, _ignoreCap) => {
             const currentMap = this.getCurrentMapData();
             if (!currentMap || !currentMap.dimensions || !currentMap.levels) {
                 logToConsole("updateFOW: No map data, cannot update FOW.", "warn");
@@ -2027,7 +2027,8 @@ window.mapRenderer = {
             // Determine bounding box for visibility check
             // Performance Optimization: Cap effective vision radius to 60 tiles to prevent freezing on large maps with "Clear" weather (2000+ radius).
             // 60 tiles is sufficient for screen visibility.
-            const effectiveRadius = Math.min(_visionRadius, 60);
+            // Allow ignoring cap for benchmarks.
+            const effectiveRadius = _ignoreCap ? _visionRadius : Math.min(_visionRadius, 60);
 
             // We clamp to map dimensions.
             const minX = Math.max(0, Math.floor(_playerX - effectiveRadius));
@@ -2081,6 +2082,6 @@ window.mapRenderer = {
         };
 
         // Call profileFunction
-        return profileFunction("mapRenderer.updateFOW", originalLogic.bind(this), playerX, playerY, playerZ, visionRadius);
+        return profileFunction("mapRenderer.updateFOW", originalLogic.bind(this), playerX, playerY, playerZ, visionRadius, ignoreCap);
     }
 };

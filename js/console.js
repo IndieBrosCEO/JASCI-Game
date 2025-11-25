@@ -1305,16 +1305,27 @@ function processConsoleCommand(commandText) {
 
         case 'benchmark':
             logToConsoleUI("Starting Benchmark...", "info");
-            const maxSize = args[0] ? parseInt(args[0], 10) : 300;
+
+            // default to 1000, but allow override, and clamp at 1000
+            const MAX_BENCH_SIZE = 1000;
+            const maxSizeArg = args[0] ? parseInt(args[0], 10) : MAX_BENCH_SIZE;
+            const maxSize = Math.min(MAX_BENCH_SIZE, maxSizeArg);
 
             // Run async to allow UI to update with "Starting..." message
             setTimeout(() => {
                 try {
                     const originalMap = window.mapRenderer.getCurrentMapData();
-                    const sizes = [50, 100, 200, 300].filter(s => s <= maxSize);
+
+                    // --- Phase 1: Map Size Scalability (Fixed Radius 60) ---
+                    const step = 50; // Larger step to save time
+                    const startSize = 50;
+                    const sizes = [];
+                    for (let size = startSize; size <= maxSize; size += step) {
+                        sizes.push(size);
+                    }
                     if (sizes.length === 0) sizes.push(maxSize);
 
-                    logToConsoleUI(`Testing sizes: ${sizes.join(', ')}`, "info");
+                    logToConsoleUI(`Phase 1: Testing Map Sizes (Radius 60): ${sizes.join(', ')}`, "info");
 
                     sizes.forEach(size => {
                         const dummyMap = {
@@ -1326,13 +1337,12 @@ function processConsoleCommand(commandText) {
                                     middle: Array(size).fill(null).map(() => Array(size).fill(null))
                                 }
                             },
-                            startPos: { x: Math.floor(size/2), y: Math.floor(size/2), z: 0 }
+                            startPos: { x: Math.floor(size / 2), y: Math.floor(size / 2), z: 0 }
                         };
 
                         window.mapRenderer.initializeCurrentMap(dummyMap);
 
                         // 1. Render Time (DOM creation/update)
-                        // Force a full clear to measure creation cost
                         if (gameState.tileCache) gameState.tileCache = null;
 
                         const startRender = performance.now();
@@ -1340,15 +1350,53 @@ function processConsoleCommand(commandText) {
                         const endRender = performance.now();
                         const renderTime = (endRender - startRender).toFixed(2);
 
-                        // 2. FOW Time (Calculation)
+                        // 2. FOW Time (Calculation - Capped at 60)
                         const startFOW = performance.now();
-                        // Use 60 radius (the cap) to test max load logic
-                        window.mapRenderer.updateFOW(Math.floor(size/2), Math.floor(size/2), 0, 60);
+                        const radius = 60;
+                        window.mapRenderer.updateFOW(
+                            Math.floor(size / 2),
+                            Math.floor(size / 2),
+                            0,
+                            radius
+                        );
                         const endFOW = performance.now();
                         const fowTime = (endFOW - startFOW).toFixed(2);
 
-                        logToConsoleUI(`Map ${size}x${size} (${size*size} tiles): Render=${renderTime}ms, FOW=${fowTime}ms`, "success");
+                        logToConsoleUI(
+                            `Map ${size}x${size} (${size * size} tiles): ` +
+                            `Render=${renderTime}ms, FOW=${fowTime}ms`,
+                            "success"
+                        );
                     });
+
+                    // --- Phase 2: Radius Scalability (Fixed Map Size) ---
+                    const fixedMapSize = Math.min(maxSize, 300); // Use up to 300 for radius test
+                    logToConsoleUI(`Phase 2: Testing FOW Radii on Map ${fixedMapSize}x${fixedMapSize}...`, "info");
+
+                    const dummyMapForRadius = {
+                        id: `benchmark_radius_${fixedMapSize}`,
+                        dimensions: { width: fixedMapSize, height: fixedMapSize },
+                        levels: { "0": { bottom: Array(fixedMapSize).fill(null).map(() => Array(fixedMapSize).fill("floor")), middle: [] } },
+                        startPos: { x: Math.floor(fixedMapSize / 2), y: Math.floor(fixedMapSize / 2), z: 0 }
+                    };
+                    window.mapRenderer.initializeCurrentMap(dummyMapForRadius);
+
+                    const radii = [10, 50, 100, 200, 500, 1000];
+                    radii.forEach(r => {
+                        const startFOW = performance.now();
+                        // Force ignore cap for stress testing
+                        window.mapRenderer.updateFOW(
+                            Math.floor(fixedMapSize / 2),
+                            Math.floor(fixedMapSize / 2),
+                            0,
+                            r,
+                            true // ignoreCap
+                        );
+                        const endFOW = performance.now();
+                        const fowTime = (endFOW - startFOW).toFixed(2);
+                        logToConsoleUI(`Radius ${r}: FOW=${fowTime}ms`, "success");
+                    });
+
 
                     // Restore
                     if (originalMap) {
