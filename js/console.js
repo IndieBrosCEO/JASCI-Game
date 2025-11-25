@@ -177,6 +177,10 @@ const commandHelpInfo = {
     'setxp': {
         syntax: 'setxp <amount>',
         description: 'Sets the player\'s total XP to the specified amount.'
+    },
+    'benchmark': {
+        syntax: 'benchmark [maxSize]',
+        description: 'Runs a rendering performance benchmark. Warning: May freeze game briefly.'
     }
 };
 
@@ -1297,6 +1301,69 @@ function processConsoleCommand(commandText) {
             }
             window.xpManager.setXp(xpToSet);
             logToConsoleUI(`Total XP set to ${gameState.totalXp}.`, 'success');
+            break;
+
+        case 'benchmark':
+            logToConsoleUI("Starting Benchmark...", "info");
+            const maxSize = args[0] ? parseInt(args[0], 10) : 300;
+
+            // Run async to allow UI to update with "Starting..." message
+            setTimeout(() => {
+                try {
+                    const originalMap = window.mapRenderer.getCurrentMapData();
+                    const sizes = [50, 100, 200, 300].filter(s => s <= maxSize);
+                    if (sizes.length === 0) sizes.push(maxSize);
+
+                    logToConsoleUI(`Testing sizes: ${sizes.join(', ')}`, "info");
+
+                    sizes.forEach(size => {
+                        const dummyMap = {
+                            id: `benchmark_${size}`,
+                            dimensions: { width: size, height: size },
+                            levels: {
+                                "0": {
+                                    bottom: Array(size).fill(null).map(() => Array(size).fill("floor")),
+                                    middle: Array(size).fill(null).map(() => Array(size).fill(null))
+                                }
+                            },
+                            startPos: { x: Math.floor(size/2), y: Math.floor(size/2), z: 0 }
+                        };
+
+                        window.mapRenderer.initializeCurrentMap(dummyMap);
+
+                        // 1. Render Time (DOM creation/update)
+                        // Force a full clear to measure creation cost
+                        if (gameState.tileCache) gameState.tileCache = null;
+
+                        const startRender = performance.now();
+                        window.mapRenderer.renderMapLayers();
+                        const endRender = performance.now();
+                        const renderTime = (endRender - startRender).toFixed(2);
+
+                        // 2. FOW Time (Calculation)
+                        const startFOW = performance.now();
+                        // Use 60 radius (the cap) to test max load logic
+                        window.mapRenderer.updateFOW(Math.floor(size/2), Math.floor(size/2), 0, 60);
+                        const endFOW = performance.now();
+                        const fowTime = (endFOW - startFOW).toFixed(2);
+
+                        logToConsoleUI(`Map ${size}x${size} (${size*size} tiles): Render=${renderTime}ms, FOW=${fowTime}ms`, "success");
+                    });
+
+                    // Restore
+                    if (originalMap) {
+                        window.mapRenderer.initializeCurrentMap(originalMap);
+                        window.mapRenderer.scheduleRender();
+                        logToConsoleUI("Benchmark complete. Original map restored.", "info");
+                    } else {
+                        logToConsoleUI("Benchmark complete. No original map to restore.", "warn");
+                    }
+
+                } catch (e) {
+                    logToConsoleUI(`Benchmark Error: ${e.message}`, "error");
+                    console.error(e);
+                }
+            }, 100);
             break;
 
         default:
