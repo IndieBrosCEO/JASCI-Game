@@ -149,6 +149,21 @@ class WeatherManager {
         }
         return 0;
     }
+
+    /**
+     * Gets the current vision radius based on the active weather.
+     * @returns {number} The vision radius in tiles. Defaults to 10 if not defined.
+     */
+    getVisionRadius() {
+        if (this.gameState.currentWeather && this.gameState.currentWeather.type) {
+            const type = this.gameState.currentWeather.type;
+            const def = this.weatherDefinitions[type];
+            if (def && typeof def.visionRadius === 'number') {
+                return def.visionRadius;
+            }
+        }
+        return 10; // Default fallback radius
+    }
 }
 
 // Make it globally accessible (or manage through a central game object)

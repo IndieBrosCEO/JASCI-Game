@@ -21,6 +21,14 @@
 
 const PLAYER_VISION_RADIUS_CONST = 10; // Centralized constant
 
+function getPlayerVisionRadius() {
+    if (window.weatherManager && typeof window.weatherManager.getVisionRadius === 'function') {
+        return window.weatherManager.getVisionRadius();
+    }
+    return 10; // Default if weatherManager not ready
+}
+window.getPlayerVisionRadius = getPlayerVisionRadius;
+
 /**************************************************************
  * Global State & Constants
  **************************************************************/

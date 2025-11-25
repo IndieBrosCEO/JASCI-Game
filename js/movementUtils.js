@@ -264,9 +264,9 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                                 if (window.gameState.viewFollowsPlayerZ) {
                                     window.gameState.currentViewZ = window.gameState.playerPos.z;
                                 }
-                                if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                                    // Use globally exposed PLAYER_VISION_RADIUS_CONST
-                                    window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
+                                const radius = window.getPlayerVisionRadius ? window.getPlayerVisionRadius() : 10;
+                                if (window.mapRenderer && typeof window.mapRenderer.updateFOW === 'function') {
+                                    window.mapRenderer.updateFOW(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, radius);
                                 }
                                 // updatePlayerStatusDisplay() is called in turnManager.move after attemptCharacterMove returns
                             }
@@ -328,9 +328,9 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                                 if (window.gameState.viewFollowsPlayerZ) {
                                     window.gameState.currentViewZ = window.gameState.playerPos.z;
                                 }
-                                if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                                    // Use globally exposed PLAYER_VISION_RADIUS_CONST
-                                    window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
+                                const radius = window.getPlayerVisionRadius ? window.getPlayerVisionRadius() : 10;
+                                if (window.mapRenderer && typeof window.mapRenderer.updateFOW === 'function') {
+                                    window.mapRenderer.updateFOW(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, radius);
                                 }
                             }
                         } else {
@@ -383,9 +383,9 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                                 if (window.gameState.viewFollowsPlayerZ) {
                                     window.gameState.currentViewZ = window.gameState.playerPos.z;
                                 }
-                                if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                                    // Use globally exposed PLAYER_VISION_RADIUS_CONST
-                                    window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
+                                const radius = window.getPlayerVisionRadius ? window.getPlayerVisionRadius() : 10;
+                                if (window.mapRenderer && typeof window.mapRenderer.updateFOW === 'function') {
+                                    window.mapRenderer.updateFOW(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, radius);
                                 }
                             }
                         } else {
@@ -483,9 +483,9 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                                 window.gameState.currentViewZ = window.gameState.playerPos.z; // playerPos.z IS finalDestZ here
                             }
                             if (window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
-                            if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                                const PLAYER_VISION_RADIUS_CONST = 120; // TODO: Centralize this constant
-                                window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, PLAYER_VISION_RADIUS_CONST);
+                            const radius = window.getPlayerVisionRadius ? window.getPlayerVisionRadius() : 10;
+                            if (window.mapRenderer && typeof window.mapRenderer.updateFOW === 'function') {
+                                window.mapRenderer.updateFOW(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, radius);
                             }
                         }
                         return true; // Move successful
@@ -569,9 +569,9 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                     moveSuccessful = true;
                     if (isPlayer) {
                         // For horizontal moves, playerPos.z doesn't change, so currentViewZ doesn't need update based on viewFollowsPlayerZ here.
-                        if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                            // Use globally exposed PLAYER_VISION_RADIUS_CONST
-                            window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
+                        const radius = window.getPlayerVisionRadius ? window.getPlayerVisionRadius() : 10;
+                        if (window.mapRenderer && typeof window.mapRenderer.updateFOW === 'function') {
+                            window.mapRenderer.updateFOW(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, radius);
                         }
                     }
                     return true; // Move successful
@@ -679,8 +679,9 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                             window.gameState.currentViewZ = window.gameState.playerPos.z;
                         }
                         if (window.audioManager) window.audioManager.updateListenerPosition(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z);
-                        if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                            window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
+                        const radius = window.getPlayerVisionRadius ? window.getPlayerVisionRadius() : 10;
+                        if (window.mapRenderer && typeof window.mapRenderer.updateFOW === 'function') {
+                            window.mapRenderer.updateFOW(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, radius);
                         }
                     }
                     return true;
@@ -791,9 +792,9 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                         if (window.gameState.viewFollowsPlayerZ) {
                             window.gameState.currentViewZ = window.gameState.playerPos.z; // Player Z has changed due to fall
                         }
-                        if (window.mapRenderer && typeof window.mapRenderer.updateFOW_BFS === 'function') {
-                            // Use globally exposed PLAYER_VISION_RADIUS_CONST
-                            window.mapRenderer.updateFOW_BFS(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, window.PLAYER_VISION_RADIUS_CONST);
+                        const radius = window.getPlayerVisionRadius ? window.getPlayerVisionRadius() : 10;
+                        if (window.mapRenderer && typeof window.mapRenderer.updateFOW === 'function') {
+                            window.mapRenderer.updateFOW(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, radius);
                         }
                     }
                     return true;
