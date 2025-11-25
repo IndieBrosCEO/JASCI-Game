@@ -1,0 +1,170 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - heading "Character Creator" [level=2] [ref=e5]
+    - text: "Character Name:"
+    - textbox [ref=e6]: Name Here
+    - text: "Level: 1"
+    - text: "XP: 0"
+    - 'heading "Stats (Stat Points: 14)" [level=3] [ref=e7]'
+    - 'heading "Skills (Skill Points: 30)" [level=3] [ref=e8]'
+    - heading "Derived Stats" [level=3] [ref=e10]
+    - generic [ref=e11]:
+      - heading "Face Creator" [level=3] [ref=e12]
+      - generic [ref=e13]:
+        - generic [ref=e14]: "Head Width (5-12):"
+        - slider "Head Width (5-12):" [ref=e15]: "5"
+        - generic [ref=e16]: "5"
+      - generic [ref=e17]:
+        - generic [ref=e18]: "Head Height (6-12):"
+        - slider "Head Height (6-12):" [ref=e19]: "7"
+        - generic [ref=e20]: "7"
+      - generic [ref=e21]:
+        - generic [ref=e22]: "Skin Color:"
+        - textbox "Skin Color:" [ref=e23]: "#f5deb3"
+      - generic [ref=e24]:
+        - generic [ref=e25]: "Eye Size (1-3):"
+        - slider "Eye Size (1-3):" [ref=e26]: "2"
+        - generic [ref=e27]: "2"
+      - generic [ref=e28]:
+        - generic [ref=e29]: "Eye Color:"
+        - textbox "Eye Color:" [ref=e30]: "#000000"
+      - generic [ref=e31]:
+        - generic [ref=e32]: "Brow Height (0-1):"
+        - slider "Brow Height (0-1):" [ref=e33]: "0"
+        - generic [ref=e34]: "0"
+      - generic [ref=e35]:
+        - generic [ref=e36]: "Brow Angle (-1 to 1):"
+        - slider "Brow Angle (-1 to 1):" [ref=e37]: "0"
+        - generic [ref=e38]: "0"
+      - generic [ref=e39]:
+        - generic [ref=e40]: "Brow Width (1-3):"
+        - slider "Brow Width (1-3):" [ref=e41]: "2"
+        - generic [ref=e42]: "2"
+      - generic [ref=e43]:
+        - generic [ref=e44]: "Eyebrow Color:"
+        - textbox "Eyebrow Color:" [ref=e45]: "#000000"
+      - generic [ref=e46]:
+        - generic [ref=e47]: "Nose Width (1-5):"
+        - slider "Nose Width (1-5):" [ref=e48]: "2"
+        - generic [ref=e49]: "2"
+      - generic [ref=e50]:
+        - generic [ref=e51]: "Nose Height (1-2):"
+        - slider "Nose Height (1-2):" [ref=e52]: "2"
+        - generic [ref=e53]: "2"
+      - generic [ref=e54]:
+        - generic [ref=e55]: "Mouth Width (1-6):"
+        - slider "Mouth Width (1-6):" [ref=e56]: "3"
+        - generic [ref=e57]: "3"
+      - generic [ref=e58]:
+        - generic [ref=e59]: "Mouth Fullness (1-2):"
+        - slider "Mouth Fullness (1-2):" [ref=e60]: "1"
+        - generic [ref=e61]: "1"
+      - generic [ref=e62]:
+        - generic [ref=e63]: "Lip Color:"
+        - textbox "Lip Color:" [ref=e64]: "#ffc0cb"
+      - generic [ref=e65]:
+        - generic [ref=e66]: "Hairstyle:"
+        - combobox "Hairstyle:" [ref=e67]:
+          - option "Bald"
+          - option "Short" [selected]
+          - option "Medium"
+          - option "Long"
+          - option "Mohawk"
+          - option "Tonsure"
+          - option "Pixie Cut"
+          - option "Buzz Cut"
+          - option "Bowl Cut"
+          - option "Jawline Bob"
+          - option "Combover"
+          - option "French Crop (Curls)"
+          - option "Afro"
+          - option "Liberty Spikes"
+          - option "Ponytail"
+          - option "Pigtails"
+          - option "Dreads"
+          - option "Cornrows"
+          - option "Top Knot"
+          - option "Reverse Mohawk"
+          - option "Flat Top"
+          - option "High Top"
+          - option "Pompadour"
+          - option "Beehive"
+          - option "Double Buns"
+          - option "Devilock"
+          - option "Really High Top"
+      - generic [ref=e68]:
+        - generic [ref=e69]: "Facial Hair:"
+        - combobox "Facial Hair:" [ref=e70]:
+          - option "None" [selected]
+          - option "Stubble"
+          - option "Mustache"
+          - option "Goatee"
+          - option "Beard"
+      - generic [ref=e71]:
+        - generic [ref=e72]: "Hair Color:"
+        - textbox "Hair Color:" [ref=e73]: "#000000"
+      - generic [ref=e74]:
+        - generic [ref=e75]: "Glasses:"
+        - combobox "Glasses:" [ref=e76]:
+          - option "None" [selected]
+          - option "Round"
+          - option "Square"
+          - option "Monocle"
+      - generic [ref=e77]:
+        - generic [ref=e78]: "Glasses Color:"
+        - textbox "Glasses Color:" [ref=e79]: "#707070"
+      - button "Randomize Face" [ref=e80] [cursor=pointer]
+      - heading "Preview:" [level=4] [ref=e81]
+    - button "Start Game" [ref=e83] [cursor=pointer]
+    - button "Save Game" [ref=e84] [cursor=pointer]
+    - button "Load Game" [ref=e85] [cursor=pointer]
+  - generic [ref=e90]:
+    - paragraph [ref=e91]: TimeManager initialized.
+    - paragraph [ref=e92]: Extended runAllBasicConnectionTests with testCombatInitiationWithGenericNpc.
+    - paragraph [ref=e93]: Extended runAllBasicConnectionTests with testPlayerTakesDamageWithArmor.
+    - paragraph [ref=e94]: FOW data initialized for Z-level 0.
+  - generic [ref=e95]:
+    - heading "Game Controls" [level=2] [ref=e96]
+    - button "Settings" [ref=e97] [cursor=pointer]
+    - button "Toggle Roof" [ref=e98] [cursor=pointer]
+    - generic [ref=e99]:
+      - button "Zoom In (+)" [ref=e100] [cursor=pointer]
+      - button "Zoom Out (-)" [ref=e101] [cursor=pointer]
+    - generic [ref=e102]:
+      - text: "Select Map:"
+      - combobox "Select Map:" [ref=e103]
+    - generic [ref=e104]:
+      - generic [ref=e105]: "Moves Left:"
+      - generic [ref=e106]: "Actions Left:"
+    - generic [ref=e107]:
+      - text: "XP:"
+      - progressbar "0 / 100" [ref=e108]
+    - generic [ref=e109]:
+      - heading "Time & Needs" [level=3] [ref=e110]
+      - generic [ref=e111]:
+        - text: ╔════╗
+        - text: ║00:00║
+        - text: ╚════╝
+      - generic [ref=e112]: "[■■■■■■■■■■■■■■■■■■■■■■■■] (24/24)"
+      - generic [ref=e113]: "[■■■■■■■■■■■■■■■■■■■■■■■■] (24/24)"
+      - generic [ref=e114]: "Player Z: 0"
+      - generic [ref=e115]: "View Z: 0"
+    - generic [ref=e116]:
+      - heading "Health Status" [level=3] [ref=e117]
+      - table [ref=e118]:
+        - rowgroup [ref=e119]:
+          - row "Body Part HP Armor Crisis Timer" [ref=e120]:
+            - cell "Body Part" [ref=e121]
+            - cell "HP" [ref=e122]
+            - cell "Armor" [ref=e123]
+            - cell "Crisis Timer" [ref=e124]
+        - rowgroup
+      - heading "Interactions" [level=3] [ref=e125]
+      - heading "Actions" [level=3] [ref=e126]
+      - heading "Equipped Hand Items" [level=3] [ref=e127]
+      - heading "Hand Slots" [level=3] [ref=e128]
+      - heading "Equipped Containers" [level=3] [ref=e129]
+```
