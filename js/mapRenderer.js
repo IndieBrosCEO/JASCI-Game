@@ -490,10 +490,13 @@ function isTileVisible(playerX, playerY, playerZ, targetX, targetY, targetZ, vis
 
     if (line.length < 2) return true; // Target is adjacent or same tile (already handled by playerX/Y/Z === targetX/Y/Z or distance check)
 
-    // Iterate through each point in the line, starting from the second point (index 1).
-    // The first point (index 0) is the playerPos itself.
-    // The loop will include the targetPos if line.slice(1) is used directly.
-    for (const point of line.slice(1)) {
+    // Iterate through each point in the line, starting from the second point (index 1)
+    // and ending BEFORE the last point (the target itself).
+    // We want to see the target even if it blocks vision (e.g. a wall), but not through it.
+    // line.slice(1, -1) gives us the points strictly between start and end.
+    const pointsToCheck = line.slice(1, -1);
+
+    for (const point of pointsToCheck) {
         // playerZ is the Z-coordinate of the viewer (the player)
         if (isTileBlockingVision(point.x, point.y, point.z, playerZ)) {
             // logToConsole(`isTileVisible: LOS blocked at (${point.x},${point.y},${point.z}) for player at Z=${playerZ}`);
