@@ -436,10 +436,10 @@ function isTileBlockingVision(tileX, tileY, tileZ, playerZ) {
 
                 if (tileDefMiddle) {
                     const tags = tileDefMiddle.tags || [];
-                    const isImpassable = tags.includes('impassable');
-                    const isTransparent = tags.includes('transparent') || tags.includes('allows_vision');
+                    const isOpaque = tags.includes('blocks_vision') ||
+                                     (tags.includes('impassable') && !tags.includes('transparent') && !tags.includes('allows_vision'));
 
-                    if (isImpassable && !isTransparent) {
+                    if (isOpaque) {
                         return true; // BLOCKS
                     }
                 } else {
