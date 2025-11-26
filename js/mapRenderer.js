@@ -1146,7 +1146,11 @@ window.mapRenderer = {
 
                 if (gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y && currentZ === gameState.targetingCoords.z) {
                     finalSpriteForTile = 'X';
-                    finalColorForTile = 'red';
+                    if (gameState.isJumpTargetingMode) {
+                        finalColorForTile = gameState.isCurrentJumpTargetValid ? 'yellow' : 'red';
+                    } else {
+                        finalColorForTile = 'red';
+                    }
                     finalDisplayIdForTile = 'TARGET_CURSOR';
                 } else if (gameState.activeFires && gameState.activeFires.some(f => f.x === x && f.y === y && f.z === currentZ)) {
                     finalSpriteForTile = '^'; // Fire sprite
