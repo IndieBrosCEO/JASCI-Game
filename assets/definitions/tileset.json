@@ -532,7 +532,7 @@
     "isLocked": false
   },
   "WOH": {
-    "sprite": "┄",
+    "sprite": "_",
     "name": "Wood Door Hz Open",
     "color": "#A1662F",
     "tags": [
@@ -548,7 +548,7 @@
     ]
   },
   "WOV": {
-    "sprite": "┆",
+    "sprite": "'",
     "name": "Wood Door Vt Open",
     "color": "#A1662F",
     "tags": [
@@ -613,7 +613,7 @@
     "isLocked": false
   },
   "MOH": {
-    "sprite": "┄",
+    "sprite": "_",
     "name": "Metal Door Hz Open",
     "color": "#808080",
     "tags": [
@@ -628,7 +628,7 @@
     ]
   },
   "MOV": {
-    "sprite": "┆",
+    "sprite": "'",
     "name": "Metal Door Vt Open",
     "color": "#808080",
     "tags": [
@@ -687,7 +687,7 @@
     ]
   },
   "WinOH": {
-    "sprite": "┄",
+    "sprite": "=",
     "name": "Window Hz Open",
     "color": "#00FFFF",
     "tags": [
@@ -701,7 +701,7 @@
     ]
   },
   "WinOV": {
-    "sprite": "┆",
+    "sprite": "\"",
     "name": "Window Vt Open",
     "color": "#00FFFF",
     "tags": [
@@ -791,7 +791,7 @@
     "uniqueID": ""
   },
   "SN": {
-    "sprite": "⊡",
+    "sprite": "s",
     "name": "Sink",
     "color": "#C0C0C0",
     "tags": [
@@ -899,7 +899,7 @@
     "uniqueID": ""
   },
   "ST": {
-    "sprite": "▣",
+    "sprite": "S",
     "name": "Stove/Oven",
     "color": "#808080",
     "tags": [
@@ -920,7 +920,7 @@
     "uniqueID": ""
   },
   "MW": {
-    "sprite": "≋",
+    "sprite": "m",
     "name": "Microwave",
     "color": "#808080",
     "tags": [
@@ -939,7 +939,7 @@
     "uniqueID": ""
   },
   "SF2": {
-    "sprite": "≡",
+    "sprite": "H",
     "name": "Sofa",
     "color": "#800000",
     "tags": [
@@ -950,7 +950,7 @@
     ]
   },
   "CH": {
-    "sprite": "╥",
+    "sprite": "h",
     "name": "Armchair",
     "color": "#800000",
     "tags": [
@@ -961,7 +961,7 @@
     ]
   },
   "TB": {
-    "sprite": "☐",
+    "sprite": "n",
     "name": "Coffee Table",
     "color": "#A52A2A",
     "tags": [
@@ -972,7 +972,7 @@
     ]
   },
   "TV": {
-    "sprite": "▢",
+    "sprite": "T",
     "name": "Television",
     "color": "#808080",
     "tags": [
@@ -1013,7 +1013,7 @@
     ]
   },
   "NK": {
-    "sprite": "▦",
+    "sprite": "#",
     "name": "Nightstand",
     "color": "#A52A2A",
     "tags": [
@@ -1032,7 +1032,7 @@
     "uniqueID": ""
   },
   "DRS": {
-    "sprite": "∥",
+    "sprite": "D",
     "name": "Dresser",
     "color": "#A52A2A",
     "tags": [
@@ -1074,7 +1074,7 @@
     "uniqueID": ""
   },
   "CR": {
-    "sprite": "≔",
+    "sprite": "c",
     "name": "Chair",
     "color": "#A52A2A",
     "tags": [
@@ -1095,7 +1095,7 @@
     ]
   },
   "SH": {
-    "sprite": "╱",
+    "sprite": "/",
     "name": "Shower",
     "color": "#0000FF",
     "tags": [
@@ -1105,7 +1105,7 @@
     ]
   },
   "BTB": {
-    "sprite": "◯",
+    "sprite": "b",
     "name": "Bathtub",
     "color": "#FFFFFF",
     "tags": [
@@ -1115,7 +1115,7 @@
     ]
   },
   "FLR": {
-    "sprite": "⌧",
+    "sprite": "f",
     "name": "Floor Lamp",
     "color": "#FFFF00",
     "tags": [
@@ -1138,7 +1138,7 @@
     ]
   },
   "CP": {
-    "sprite": "⌨",
+    "sprite": "k",
     "name": "Computer",
     "color": "#A9A9A9",
     "tags": [
@@ -1148,7 +1148,7 @@
     ]
   },
   "PR": {
-    "sprite": "⋈",
+    "sprite": "p",
     "name": "Printer",
     "color": "#808080",
     "tags": [
@@ -1158,7 +1158,7 @@
     ]
   },
   "WM": {
-    "sprite": "≋",
+    "sprite": "W",
     "name": "Washer",
     "color": "#FFFFFF",
     "tags": [
@@ -1169,7 +1169,7 @@
     ]
   },
   "DRY": {
-    "sprite": "≡",
+    "sprite": "d",
     "name": "Dryer",
     "color": "#FFFFFF",
     "tags": [
