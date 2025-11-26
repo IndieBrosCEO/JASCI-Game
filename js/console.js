@@ -181,6 +181,10 @@ const commandHelpInfo = {
     'benchmark': {
         syntax: 'benchmark [maxSize]',
         description: 'Runs a rendering performance benchmark. Warning: May freeze game briefly.'
+    },
+    'testweapons': {
+        syntax: 'testweapons',
+        description: 'Runs a test to ensure all weapons can be added to inventory and equipped.'
     }
 };
 
@@ -1412,6 +1416,13 @@ function processConsoleCommand(commandText) {
                     console.error(e);
                 }
             }, 100);
+            break;
+        case 'testweapons':
+            if (typeof testAllWeapons === 'function') {
+                testAllWeapons();
+            } else {
+                logToConsoleUI("Error: testAllWeapons function not found.", 'error');
+            }
             break;
 
         default:
