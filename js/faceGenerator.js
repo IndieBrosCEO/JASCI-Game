@@ -126,7 +126,7 @@ function generateAsciiFace(faceParams) {
 
             const bgColor = window.darkenColor(baseBgColor, 0.4) || '#000000'; // Darken this actual color by 40%
 
-            let cellHtml = `<span style="color:${fgColor}; background-color:${bgColor};">${charToDisplay}</span>`;
+            let cellHtml = `<span style="color:${fgColor}; background-color:${bgColor}; margin-left: 0;">${charToDisplay}</span>`;
 
             // If a wrapper class is specified (e.g., for eyes or mouth), wrap the cell in another span
             if (cellData.wrapperClass) {
