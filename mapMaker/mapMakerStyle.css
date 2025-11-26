@@ -1,4 +1,9 @@
-﻿/* mapMakerStyle.css */
+/* mapMakerStyle.css */
+
+@font-face {
+    font-family: 'DwarfFortress';
+    src: url('../assets/fonts/WebPlus_IBM_VGA_8x16.woff') format('woff');
+}
 
 :root {
     /* will be set dynamically from JS */
@@ -6,7 +11,7 @@
 }
 
 body {
-    font-family: monospace;
+    font-family: 'DwarfFortress', monospace;
     background-color: #000;
     color: #fff;
     margin: 0;
@@ -39,7 +44,7 @@ h1 {
     background-color: #444;
     border: none;
     cursor: pointer;
-    font-family: monospace;
+    font-family: 'DwarfFortress', monospace;
 }
 
     .toolBtn.selected {
@@ -103,7 +108,7 @@ h1 {
 
 /* Buttons */
 button {
-    font-family: monospace;
+    font-family: 'DwarfFortress', monospace;
     padding: 5px 10px;
     background-color: #444;
     color: #fff;
@@ -114,6 +119,10 @@ button {
     button:hover {
         background-color: #555;
     }
+
+input, textarea, select {
+    font-family: 'DwarfFortress', monospace;
+}
 
 /* Brush preview style */
 .cell.brush-preview {
