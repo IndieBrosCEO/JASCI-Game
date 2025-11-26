@@ -126,12 +126,8 @@ function generateAsciiFace(faceParams) {
 
             const bgColor = window.darkenColor(baseBgColor, 0.4) || '#000000'; // Darken this actual color by 40%
 
-            let cellHtml = `<span style="color:${fgColor}; background-color:${bgColor}; margin-left: 0;">${charToDisplay}</span>`;
-
-            // If a wrapper class is specified (e.g., for eyes or mouth), wrap the cell in another span
-            if (cellData.wrapperClass) {
-                cellHtml = `<span class="${cellData.wrapperClass}">${cellHtml}</span>`;
-            }
+            const wrapperClass = cellData.wrapperClass ? ` class="${cellData.wrapperClass}"` : '';
+            let cellHtml = `<span${wrapperClass} style="color:${fgColor}; background-color:${bgColor}; margin-left: 0;">${charToDisplay}</span>`;
 
             lineHtml += cellHtml;
         }
@@ -1574,6 +1570,7 @@ function updateAnimatedParts() {
         liveEyes.forEach((eye, index) => {
             if (newEyes[index]) {
                 eye.innerHTML = newEyes[index].innerHTML;
+                eye.style.cssText = newEyes[index].style.cssText;
             }
         });
     }
@@ -1583,6 +1580,7 @@ function updateAnimatedParts() {
         liveMouths.forEach((mouthPart, index) => {
             if (newMouths[index]) {
                 mouthPart.innerHTML = newMouths[index].innerHTML;
+                mouthPart.style.cssText = newMouths[index].style.cssText;
             }
         });
     }
