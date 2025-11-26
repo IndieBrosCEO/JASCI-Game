@@ -184,6 +184,21 @@ function testCraftingRecipes() {
         }
     }
 
+    // Test Case 4: Candle
+    const candle = window.craftingManager.getRecipeById('candle');
+    if (!candle || !candle.recipe || !candle.recipe.components) {
+        console.error("FAIL: 'candle' recipe not found or malformed.");
+        passed = false;
+    } else {
+        const components = candle.recipe.components;
+        const tallow = components.find(c => c.family === 'tallow');
+        const fabric = components.find(c => c.family === 'fabric');
+        if (!tallow || tallow.quantity !== 1 || !fabric || fabric.quantity !== 1) {
+            console.error("FAIL: 'candle' recipe has incorrect components.", components);
+            passed = false;
+        }
+    }
+
     return passed;
 }
 
