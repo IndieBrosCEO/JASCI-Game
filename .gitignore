@@ -24,3 +24,4 @@ node_modules/
 /.vs/JASCI-Game.slnx/FileContentIndex/c0191603-c9d4-484e-964a-a412cc44e881.vsidx
 /.vs/JASCI-Game.slnx/FileContentIndex/d659d235-28ff-404c-9a82-c5c7c8a25149.vsidx
 /.vs/JASCI-Game.slnx/FileContentIndex/e9c9361a-645b-446f-9a91-01fba605d5de.vsidx
+*.log
