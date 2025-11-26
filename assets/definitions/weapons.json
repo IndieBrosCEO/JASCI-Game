@@ -113,7 +113,7 @@
           "family": "fabric",
           "quantity": 1,
           "require": {
-            "grade": "rough"
+            "type": "scrap"
           }
         }
       ],
@@ -124,7 +124,7 @@
         }
       ],
       "time_to_craft": 10,
-      "batch_s-ize": 1
+      "batch_size": 1
     }
   },
   {
@@ -153,7 +153,34 @@
       "makeshift",
       "stealthy"
     ],
-    "canEquip": true
+    "canEquip": true,
+    "recipe": {
+      "description": "Fashion a crude shiv from a piece of scrap metal.",
+      "components": [
+        {
+          "family": "metal",
+          "quantity": 1,
+          "require": {
+            "type": "scrap"
+          }
+        },
+        {
+          "family": "fabric",
+          "quantity": 1,
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 0
+        }
+      ],
+      "time_to_craft": 5,
+      "batch_size": 1
+    }
   },
   {
     "id": "torch_melee",
