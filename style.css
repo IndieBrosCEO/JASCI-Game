@@ -13,7 +13,7 @@ body {
     box-sizing: border-box;
 }
 
-input, button {
+input, button, select, option {
     font-family: 'DwarfFortress', monospace;
     background-color: #444;
     color: #fff;
