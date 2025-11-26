@@ -770,7 +770,7 @@ async function handleKeyDown(event) {
     // Jump ('J' key)
     if (event.key === 'j' || event.key === 'J') {
         if (typeof window.handleJumpKeyPress === 'function') {
-            handleJumpKeyPress();
+            window.handleJumpKeyPress(); // This now toggles mode or confirms jump
         }
         event.preventDefault();
         return;
@@ -1195,6 +1195,9 @@ async function handleKeyDown(event) {
         if (movedTarget) { // This will now only be true if X/Y movement happened
             logToConsole(`Targeting Coords: X=${gameState.targetingCoords.x}, Y=${gameState.targetingCoords.y}, Z=${gameState.targetingCoords.z}`);
             updateTargetingInfoUI(); // Update display if X/Y changed
+            if (window.gameState.isJumpTargetingMode && typeof window.updateJumpTargetValidation === 'function') {
+                window.updateJumpTargetValidation();
+            }
             window.mapRenderer.scheduleRender();
             event.preventDefault();
             return; // Prevent player movement or other actions
@@ -1572,6 +1575,14 @@ async function handleKeyDown(event) {
             event.preventDefault(); return;
         case 'f': case 'F':
             if (gameState.isTargetingMode) {
+                // If in jump mode, 'F' should act as a jump confirmation.
+                if (window.gameState.isJumpTargetingMode) {
+                    if (typeof window.handleJumpKeyPress === 'function') {
+                        window.handleJumpKeyPress(); // This will attempt the jump
+                    }
+                    event.preventDefault();
+                    return;
+                }
                 // Sound for confirming target is complex because of LOS check below.
                 // It should play *after* LOS success.
                 gameState.targetConfirmed = true; // This flag might be premature before LOS
@@ -1733,6 +1744,13 @@ async function handleKeyDown(event) {
             event.preventDefault(); break;
         */
         case 'Escape':
+            if (window.gameState.isJumpTargetingMode) {
+                if (typeof window.toggleJumpTargeting === 'function') {
+                    window.toggleJumpTargeting(); // This will turn off jump mode
+                }
+                event.preventDefault();
+                return;
+            }
             if (gameState.isConstructionModeActive && window.ConstructionUI) {
                 window.ConstructionUI.exitPlacementMode();
                 event.preventDefault();
@@ -1919,6 +1937,7 @@ function populateKeybinds() {
         "Open/Close Inventory: I",
         "End Turn / Pass Time (Out of Combat): T",
         "Dash (Spend Action for Moves): X",
+        "Toggle Jump Mode: J",
         "Toggle Look Mode: L",
         "Toggle Prone: P",
         "Toggle Crouch: K",
@@ -1946,6 +1965,10 @@ function populateKeybinds() {
         "Change Targeting Z-Level Up: > / .",
         "Confirm Target: F",
         "Cancel Targeting: Escape",
+        "",
+        "--- Jump Targeting Mode ---",
+        "Confirm Jump: J / F",
+        "Cancel Jump: Escape",
         "",
         "--- Action Menu ---",
         "Navigate Actions: 1-9 (selects action)",
