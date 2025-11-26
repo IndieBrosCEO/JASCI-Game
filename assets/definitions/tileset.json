@@ -42,7 +42,7 @@
     ]
   },
   "TGR": {
-    "sprite": "W",
+    "sprite": "w",
     "name": "Tall Grass",
     "color": "#008000",
     "tags": [
@@ -52,7 +52,7 @@
     ]
   },
   "MSH": {
-    "sprite": "w",
+    "sprite": "%",
     "name": "Marsh",
     "color": "#2e4b36",
     "tags": [
@@ -532,7 +532,7 @@
     "isLocked": false
   },
   "WOH": {
-    "sprite": "┄",
+    "sprite": "'",
     "name": "Wood Door Hz Open",
     "color": "#A1662F",
     "tags": [
@@ -548,7 +548,7 @@
     ]
   },
   "WOV": {
-    "sprite": "┆",
+    "sprite": "\"",
     "name": "Wood Door Vt Open",
     "color": "#A1662F",
     "tags": [
@@ -613,7 +613,7 @@
     "isLocked": false
   },
   "MOH": {
-    "sprite": "┄",
+    "sprite": "'",
     "name": "Metal Door Hz Open",
     "color": "#808080",
     "tags": [
@@ -628,7 +628,7 @@
     ]
   },
   "MOV": {
-    "sprite": "┆",
+    "sprite": "\"",
     "name": "Metal Door Vt Open",
     "color": "#808080",
     "tags": [
@@ -687,7 +687,7 @@
     ]
   },
   "WinOH": {
-    "sprite": "┄",
+    "sprite": "-",
     "name": "Window Hz Open",
     "color": "#00FFFF",
     "tags": [
@@ -701,7 +701,7 @@
     ]
   },
   "WinOV": {
-    "sprite": "┆",
+    "sprite": "|",
     "name": "Window Vt Open",
     "color": "#00FFFF",
     "tags": [
@@ -760,7 +760,7 @@
     ]
   },
   "CN": {
-    "sprite": "∩",
+    "sprite": "_",
     "name": "Counter",
     "color": "#d3d3d3",
     "tags": [
@@ -770,7 +770,7 @@
     ]
   },
   "CB": {
-    "sprite": "□",
+    "sprite": "[",
     "name": "Cabinet",
     "color": "#A52A2A",
     "tags": [
@@ -791,7 +791,7 @@
     "uniqueID": ""
   },
   "SN": {
-    "sprite": "⊡",
+    "sprite": "s",
     "name": "Sink",
     "color": "#C0C0C0",
     "tags": [
@@ -801,7 +801,7 @@
     ]
   },
   "DR": {
-    "sprite": "π",
+    "sprite": "r",
     "name": "Drawer",
     "color": "#A52A2A",
     "tags": [
@@ -820,7 +820,7 @@
     "uniqueID": ""
   },
   "GC": {
-    "sprite": "Æ",
+    "sprite": "g",
     "name": "Gun Case",
     "color": "#808000",
     "tags": [
@@ -840,7 +840,7 @@
     "uniqueID": ""
   },
   "TC": {
-    "sprite": "u",
+    "sprite": "o",
     "name": "Trash Can",
     "color": "#808080",
     "tags": [
@@ -899,7 +899,7 @@
     "uniqueID": ""
   },
   "ST": {
-    "sprite": "▣",
+    "sprite": "S",
     "name": "Stove/Oven",
     "color": "#808080",
     "tags": [
@@ -920,7 +920,7 @@
     "uniqueID": ""
   },
   "MW": {
-    "sprite": "≋",
+    "sprite": "m",
     "name": "Microwave",
     "color": "#808080",
     "tags": [
@@ -939,7 +939,7 @@
     "uniqueID": ""
   },
   "SF2": {
-    "sprite": "≡",
+    "sprite": "H",
     "name": "Sofa",
     "color": "#800000",
     "tags": [
@@ -950,7 +950,7 @@
     ]
   },
   "CH": {
-    "sprite": "╥",
+    "sprite": "h",
     "name": "Armchair",
     "color": "#800000",
     "tags": [
@@ -961,7 +961,7 @@
     ]
   },
   "TB": {
-    "sprite": "☐",
+    "sprite": "n",
     "name": "Coffee Table",
     "color": "#A52A2A",
     "tags": [
@@ -972,7 +972,7 @@
     ]
   },
   "TV": {
-    "sprite": "▢",
+    "sprite": "T",
     "name": "Television",
     "color": "#808080",
     "tags": [
@@ -982,7 +982,7 @@
     ]
   },
   "STL": {
-    "sprite": "⌠",
+    "sprite": "]",
     "name": "Bookshelf",
     "color": "#DEB887",
     "tags": [
@@ -1013,7 +1013,7 @@
     ]
   },
   "NK": {
-    "sprite": "▦",
+    "sprite": "#",
     "name": "Nightstand",
     "color": "#A52A2A",
     "tags": [
@@ -1032,7 +1032,7 @@
     "uniqueID": ""
   },
   "DRS": {
-    "sprite": "∥",
+    "sprite": "D",
     "name": "Dresser",
     "color": "#A52A2A",
     "tags": [
@@ -1053,7 +1053,7 @@
     "uniqueID": ""
   },
   "DSK": {
-    "sprite": "⌂",
+    "sprite": "p",
     "name": "Desk",
     "color": "#808080",
     "tags": [
@@ -1074,7 +1074,7 @@
     "uniqueID": ""
   },
   "CR": {
-    "sprite": "≔",
+    "sprite": "c",
     "name": "Chair",
     "color": "#A52A2A",
     "tags": [
@@ -1085,7 +1085,7 @@
     ]
   },
   "TW": {
-    "sprite": "‖",
+    "sprite": "t",
     "name": "Toilet",
     "color": "#FFFFFF",
     "tags": [
@@ -1095,7 +1095,7 @@
     ]
   },
   "SH": {
-    "sprite": "╱",
+    "sprite": "/",
     "name": "Shower",
     "color": "#0000FF",
     "tags": [
@@ -1105,7 +1105,7 @@
     ]
   },
   "BTB": {
-    "sprite": "◯",
+    "sprite": "U",
     "name": "Bathtub",
     "color": "#FFFFFF",
     "tags": [
@@ -1115,7 +1115,7 @@
     ]
   },
   "FLR": {
-    "sprite": "⌧",
+    "sprite": "L",
     "name": "Floor Lamp",
     "color": "#FFFF00",
     "tags": [
@@ -1138,7 +1138,7 @@
     ]
   },
   "CP": {
-    "sprite": "⌨",
+    "sprite": "K",
     "name": "Computer",
     "color": "#A9A9A9",
     "tags": [
@@ -1148,7 +1148,7 @@
     ]
   },
   "PR": {
-    "sprite": "⋈",
+    "sprite": "P",
     "name": "Printer",
     "color": "#808080",
     "tags": [
@@ -1158,7 +1158,7 @@
     ]
   },
   "WM": {
-    "sprite": "≋",
+    "sprite": "W",
     "name": "Washer",
     "color": "#FFFFFF",
     "tags": [
@@ -1169,7 +1169,7 @@
     ]
   },
   "DRY": {
-    "sprite": "≡",
+    "sprite": "y",
     "name": "Dryer",
     "color": "#FFFFFF",
     "tags": [
@@ -1180,7 +1180,7 @@
     ]
   },
   "FT": {
-    "sprite": "♣",
+    "sprite": "F",
     "name": "Fireplace",
     "color": "#FF0000",
     "tags": [
@@ -1229,7 +1229,7 @@
     "lightColor": "#FFDD33"
   },
   "FLT": {
-    "sprite": "Î",
+    "sprite": "t",
     "name": "Floor Torch",
     "color": "#A0522D",
     "tags": [
@@ -1243,7 +1243,7 @@
     "lightIntensity": 0.9
   },
   "SLN": {
-    "sprite": "Ħ",
+    "sprite": "¶",
     "name": "Standing Lantern",
     "color": "#808080",
     "tags": [
@@ -1256,7 +1256,7 @@
     "lightIntensity": 0.8
   },
   "TLN_P": {
-    "sprite": "ñ",
+    "sprite": "l",
     "name": "Table Lantern (Placed)",
     "color": "#A52A2A",
     "tags": [
@@ -1269,7 +1269,7 @@
     "lightIntensity": 0.7
   },
   "CDL_P": {
-    "sprite": "¦",
+    "sprite": "i",
     "name": "Candle (Placed)",
     "color": "#FFFFFF",
     "tags": [
@@ -1282,7 +1282,7 @@
     "lightIntensity": 0.5
   },
   "STLMP": {
-    "sprite": "¶",
+    "sprite": "í",
     "name": "Streetlamp",
     "color": "#A9A9A9",
     "tags": [
@@ -1296,7 +1296,7 @@
     "lightIntensity": 0.9
   },
   "FLDL": {
-    "sprite": "Θ",
+    "sprite": "Φ",
     "name": "Floodlight",
     "color": "#D3D3D3",
     "tags": [
@@ -1351,7 +1351,7 @@
     "lightIntensity": 0.6
   },
   "SOLG": {
-    "sprite": "þ",
+    "sprite": "°",
     "name": "Solar Garden Lamp",
     "color": "#808080",
     "tags": [

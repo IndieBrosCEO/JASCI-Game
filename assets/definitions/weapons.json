@@ -145,7 +145,7 @@
     "weightLbs": 0.5,
     "size": 1,
     "value": 5,
-    "sprite": "¡",
+    "sprite": "!",
     "color": "lightgray",
     "tags": [
       "melee",
