@@ -28,43 +28,7 @@
     "name": "Mine"
   },
   {
-    "id": "slopeTest",
-    "name": "Slope Test"
-  },
-  {
     "id": "Valley",
     "name": "Valley"
-  },
-  {
-    "id": "Slope",
-    "name": "Slope"
-  },
-  {
-    "id": "portals",
-    "name": "Portals"
-  },
-  {
-    "id": "Small_Map",
-    "name": "Small Map"
-  },
-  {
-    "id": "Big_Oasis",
-    "name": "Big Oasis"
-  },
-  {
-    "id": "Swamp_House_Boat",
-    "name": "Swamp House Boat"
-  },
-  {
-    "id": "lights",
-    "name": "Lights"
-  },
-  {
-    "id": "beachHouse",
-    "name": "Beach House"
-  },
-  {
-    "id": "testVehicleMap",
-    "name": "Vehicle Test Map"
   }
 ]
