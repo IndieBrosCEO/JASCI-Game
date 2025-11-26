@@ -1,6 +1,11 @@
 ﻿/* Base styles */
+@font-face {
+    font-family: 'DwarfFortress';
+    src: url('assets/fonts/WebPlus_IBM_VGA_8x16.woff') format('woff');
+}
+
 body {
-    font-family: monospace;
+    font-family: 'DwarfFortress', monospace;
     background-color: #000;
     color: #fff;
     margin: 0;
@@ -124,7 +129,7 @@ button {
     background: #111;
     color: #0f0;
     padding: 5px;
-    font-family: monospace;
+    font-family: 'DwarfFortress', monospace;
     box-sizing: border-box; /* Added for consistency */
 }
 
@@ -162,7 +167,7 @@ th, td {
     flex-grow: 1;
     position: relative;
     background-color: #000;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: 'DwarfFortress', monospace;
     white-space: pre; /* respect spaces/newlines */
     line-height: 1em; /* one line per row */
     overflow: auto; /* scroll if too big */
@@ -241,7 +246,7 @@ th, td {
     }
 
 #asciiFacePreview {
-    font-family: 'Courier New', Courier, monospace;
+    font-family: 'DwarfFortress', monospace;
     white-space: pre;
     border: 1px solid #555;
     background-color: #1a1a1a;
@@ -260,7 +265,7 @@ th, td {
 }
 
 #charInfoAsciiFace {
-    font-family: 'Courier New', Courier, monospace;
+    font-family: 'DwarfFortress', monospace;
     white-space: pre;
     border: 1px solid #555;
     background-color: #1a1a1a;
@@ -365,7 +370,7 @@ button.preset-swatch { /* More specific selector */
     box-sizing: border-box;
     white-space: normal;
     line-height: normal;
-    font-family: monospace;
+    font-family: 'DwarfFortress', monospace;
     /* margin-bottom: 10px; Added by #combat-console-stack gap */
 }
 
@@ -374,7 +379,7 @@ button.preset-swatch { /* More specific selector */
     #combatUIDiv label,
     #combatUIDiv select,
     #combatUIDiv button {
-        font-family: monospace; /* Explicitly set for children, or a UI font */
+        font-family: 'DwarfFortress', monospace; /* Explicitly set for children, or a UI font */
         margin-bottom: 3px; /* Reduced spacing */
         font-size: 0.9em; /* Slightly smaller font size for combat elements */
     }
