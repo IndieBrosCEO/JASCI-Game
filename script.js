@@ -767,6 +767,15 @@ async function handleKeyDown(event) {
         return;
     }
 
+    // Jump ('J' key)
+    if (event.key === 'j' || event.key === 'J') {
+        if (typeof window.handleJumpKeyPress === 'function') {
+            handleJumpKeyPress();
+        }
+        event.preventDefault();
+        return;
+    }
+
     // Console Toggle (Backquote key, often with Shift for tilde '~')
     if (event.code === 'Backquote') {
         event.preventDefault();
