@@ -148,6 +148,7 @@
     "sprite": "¡",
     "color": "lightgray",
     "tags": [
+      "weapon",
       "melee",
       "blade",
       "makeshift",
