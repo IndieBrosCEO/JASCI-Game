@@ -14,6 +14,7 @@ body {
 }
 
 input, button {
+    font-family: 'DwarfFortress', monospace;
     background-color: #444;
     color: #fff;
     border: none;
