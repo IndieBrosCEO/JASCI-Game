@@ -1019,6 +1019,40 @@
     "family": "explosive",
     "properties": {
       "type": "incendiary"
+    },
+    "recipe": {
+      "description": "Craft a molotov cocktail.",
+      "components": [
+        {
+          "family": "container",
+          "quantity": 1,
+          "require": {
+            "type": "bottle"
+          }
+        },
+        {
+          "family": "fuel",
+          "quantity": 1,
+          "require": {
+            "type": "gasoline"
+          }
+        },
+        {
+          "family": "fabric",
+          "quantity": 1,
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Explosives",
+          "level": 2
+        }
+      ],
+      "time_to_craft": 10,
+      "batch_size": 1
     }
   },
   {

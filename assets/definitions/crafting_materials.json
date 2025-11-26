@@ -276,6 +276,29 @@
     "properties": {
       "type": "strip",
       "grade": 1
+    },
+    "recipe": {
+      "description": "Cut a piece of leather into strips.",
+      "components": [
+        {
+          "family": "leather",
+          "quantity": 1,
+          "require": {
+            "type": "rawhide"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "knife_melee"
+      ],
+      "time_to_craft": 5,
+      "batch_size": 3
     }
   },
   {

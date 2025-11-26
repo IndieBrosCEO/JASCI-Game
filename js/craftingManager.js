@@ -35,6 +35,7 @@ class CraftingManager {
 
                     // The recipe key will be the ID of the item that is produced
                     this.recipes[itemDef.id] = {
+                        id: itemDef.id, // Explicitly add the ID to the recipe object
                         ...itemDef.recipe, // Spread all properties from the item's recipe object
                         resultItemId: itemDef.id, // Implicitly the item itself
                         resultQuantity: itemDef.recipe.resultQuantity || 1, // Default to 1 if not specified
