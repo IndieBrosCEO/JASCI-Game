@@ -12,7 +12,8 @@ async function runProgressionSystemTests() {
         testSaveMigration: await testSaveMigration(),
         testLevelCurve: testLevelCurve(),
         testEventBus: testEventBus(),
-        xpManagerTests: runXpManagerTests()
+        xpManagerTests: runXpManagerTests(),
+        testCraftingRecipes: testCraftingRecipes()
     };
 
     // Summary
@@ -124,6 +125,67 @@ async function testSaveMigration() {
 
 // Expose the test runner to the global scope so it can be called from the console.
 window.runProgressionSystemTests = runProgressionSystemTests;
+
+/**
+ * Test 4: Verifies the correctness of a few fixed crafting recipes.
+ */
+function testCraftingRecipes() {
+    console.log("Running Crafting Recipes Test...");
+
+    if (!window.craftingManager) {
+        console.error("Crafting Recipes Test FAIL: craftingManager not available.");
+        return false;
+    }
+
+    let passed = true;
+
+    // Test Case 1: Hand Saw (wood)
+    const handSawWood = window.craftingManager.getRecipeById('hand_saw_wood');
+    if (!handSawWood || !handSawWood.recipe || !handSawWood.recipe.components) {
+        console.error("FAIL: 'hand_saw_wood' recipe not found or malformed.");
+        passed = false;
+    } else {
+        const components = handSawWood.recipe.components;
+        const wood = components.find(c => c.family === 'wood');
+        const metalSheet = components.find(c => c.family === 'metal_sheet');
+        if (!wood || wood.quantity !== 1 || !metalSheet || metalSheet.quantity !== 1) {
+            console.error("FAIL: 'hand_saw_wood' recipe has incorrect components.", components);
+            passed = false;
+        }
+    }
+
+    // Test Case 2: Molotov Cocktail
+    const molotov = window.craftingManager.getRecipeById('molotov_cocktail');
+    if (!molotov || !molotov.recipe || !molotov.recipe.components) {
+        console.error("FAIL: 'molotov_cocktail' recipe not found or malformed.");
+        passed = false;
+    } else {
+        const components = molotov.recipe.components;
+        const container = components.find(c => c.family === 'container');
+        const fabric = components.find(c => c.family === 'fabric');
+        const fuel = components.find(c => c.family === 'fuel');
+        if (!container || container.quantity !== 1 || !fabric || fabric.quantity !== 1 || !fuel || fuel.quantity !== 1) {
+            console.error("FAIL: 'molotov_cocktail' recipe has incorrect components.", components);
+            passed = false;
+        }
+    }
+
+    // Test Case 3: Leather Strips
+    const leatherStrips = window.craftingManager.getRecipeById('leather_strips');
+    if(!leatherStrips || !leatherStrips.recipe || !leatherStrips.recipe.components){
+        console.error("FAIL: 'leather_strips' recipe not found or malformed.");
+        passed = false;
+    } else {
+        const components = leatherStrips.recipe.components;
+        const leather = components.find(c => c.family === 'leather');
+        if(!leather || leather.quantity !== 1){
+            console.error("FAIL: 'leather_strips' recipe has incorrect components.", components);
+            passed = false;
+        }
+    }
+
+    return passed;
+}
 
 function runXpManagerTests() {
     console.log("Running XpManager tests...");

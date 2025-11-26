@@ -53,7 +53,7 @@
     "recipe": {
       "description": "Make simple wax candles.",
       "components": [
-        { "family": "wax", "quantity": 1 },
+        { "family": "wax", "quantity": 1, "require": { "type": "beeswax" } },
         { "family": "component", "quantity": 3, "require": {"type": "wick"} }
       ],
       "skills_required": [ { "skill": "Survival", "level": 0 } ],
@@ -116,7 +116,7 @@
     "recipe": {
       "description": "Craft a basic hand saw.",
       "components": [
-        { "family": "metal", "quantity": 1, "require": { "type": "sheet" } },
+        { "family": "metal_sheet", "quantity": 1, "require": { "thickness": "thin" } },
         { "family": "wood", "quantity": 1, "require": { "type": "plank" } }
       ],
       "skills_required": [ { "skill": "Repair", "level": 3 } ],
@@ -139,7 +139,7 @@
       "description": "Craft a box of matches.",
       "components": [
         { "family": "wood", "quantity": 1, "require": { "type": "stick" } },
-        { "family": "chemical", "quantity": 1, "require": { "type": "phosphorus" } }
+        { "family": "chemical", "quantity": 1, "require": { "type": "sulfur" } }
       ],
       "skills_required": [ { "skill": "Survival", "level": 2 } ],
       "time_to_craft": 10,
@@ -161,8 +161,8 @@
       "description": "Craft a simple lighter.",
       "components": [
         { "family": "casing", "quantity": 1, "require": { "size": "small", "material": "plastic" } },
-        { "family": "component", "quantity": 1, "require": { "type": "flint" } },
-        { "family": "fuel", "quantity": 1, "require": { "type": "lighter_fluid" } }
+        { "family": "component", "quantity": 1, "require": { "type": "spring" } },
+        { "family": "fuel", "quantity": 1, "require": { "type": "gasoline" } }
       ],
       "skills_required": [ { "skill": "Electronics", "level": 3 } ],
       "time_to_craft": 20,
