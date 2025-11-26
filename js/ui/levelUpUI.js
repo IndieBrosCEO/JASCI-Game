@@ -30,7 +30,6 @@ class LevelUpUI {
         container.style.padding = '20px';
         container.style.overflowY = 'auto';
         container.style.color = '#ddd';
-        container.style.fontFamily = 'monospace';
         container.style.boxShadow = '0 0 20px rgba(0,0,0,0.8)';
 
         container.innerHTML = `
