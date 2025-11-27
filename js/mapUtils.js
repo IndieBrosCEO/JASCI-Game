@@ -128,29 +128,6 @@ class MapUtils {
         if (factionId === "police") return { x: 20, y: 20, z: 0 }; // Example
         return { x: 10, y: 10, z: 0 }; // Default fallback
     }
-
-    /**
-     * Checks if a specific tile is occupied by a character (player or NPC).
-     * @param {number} x - The x-coordinate of the tile.
-     * @param {number} y - The y-coordinate of the tile.
-     * @param {number} z - The z-coordinate of the tile.
-     * @returns {boolean} True if the tile is occupied, false otherwise.
-     */
-    isTileOccupied(x, y, z) {
-        // Check player position
-        if (this.gameState.playerPos.x === x && this.gameState.playerPos.y === y && this.gameState.playerPos.z === z) {
-            return true;
-        }
-
-        // Check NPC positions
-        for (const npc of this.gameState.npcs) {
-            if (npc.mapPos.x === x && npc.mapPos.y === y && npc.mapPos.z === z) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
 
 // Make globally accessible if needed by other modules directly, or instantiate in script.js
