@@ -164,6 +164,7 @@ const gameState = {
     targetingType: null, // Can be 'ranged' or 'melee'
     isJumpTargetingMode: false, // NEW: for jump-specific targeting
     isCurrentJumpTargetValid: false, // NEW: for jump target validation
+    currentJumpInvalidReason: "", // NEW: reason for invalid jump
     targetConfirmed: false,
     selectedTargetEntity: null,
 

@@ -1,3 +1,4 @@
+
 // js/jump.js
 
 // This file will contain the logic for the character jump mechanic.
@@ -45,9 +46,11 @@ function updateJumpTargetValidation() {
     const targetPos = window.gameState.targetingCoords;
     const jumpRange = calculateJumpRange(window.gameState.player);
 
-    const landingSpot = getJumpLandingSpot(playerPos, targetPos, jumpRange);
+    const result = getJumpLandingSpot(playerPos, targetPos, jumpRange);
 
-    window.gameState.isCurrentJumpTargetValid = (landingSpot !== null);
+    window.gameState.isCurrentJumpTargetValid = result.isValid;
+    window.gameState.currentJumpInvalidReason = result.reason;
+
 
     // Schedule a re-render to update the targeting reticle color.
     if (window.mapRenderer) window.mapRenderer.scheduleRender();
@@ -72,17 +75,17 @@ async function handleJumpKeyPress() {
             const playerPos = window.gameState.playerPos;
             const targetPos = window.gameState.targetingCoords;
             const jumpRange = calculateJumpRange(window.gameState.player);
-            const landingSpot = getJumpLandingSpot(playerPos, targetPos, jumpRange);
+            const result = getJumpLandingSpot(playerPos, targetPos, jumpRange);
 
-            if (landingSpot) {
-                await performJump(playerPos, landingSpot, JUMP_COST);
+            if (result.isValid) {
+                await performJump(playerPos, result.spot, JUMP_COST);
             } else {
                 // This case should ideally not be hit if isCurrentJumpTargetValid is accurate.
                 logToConsole("Cannot jump there.", "orange");
                 if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             }
         } else {
-            logToConsole("Invalid jump target.", "orange");
+            logToConsole(`Invalid jump target: ${window.gameState.currentJumpInvalidReason}`, "orange");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         }
     } else {
@@ -109,8 +112,8 @@ if (typeof window !== 'undefined') {
 function calculateJumpRange(character) {
     const strengthModifier = window.getStatModifier("Strength", character);
 
-    // Horizontal jump: 1 tile + STR modifier, with a minimum of 1.
-    const horizontal = Math.max(1, 1 + strengthModifier);
+    // Horizontal jump: 2 tiles + STR modifier, with a minimum of 1.
+    const horizontal = Math.max(1, 2 + strengthModifier);
 
     // Vertical jump (up): 1 tile, or 2 tiles if STR modifier is +2 or greater.
     const verticalUp = (strengthModifier >= 2) ? 2 : 1;
@@ -125,71 +128,54 @@ function calculateJumpRange(character) {
  * @param {{x, y, z}} startPos - The starting position of the jump.
  * @param {{x, y, z}} targetPos - The intended target position.
  * @param {{horizontal, verticalUp}} jumpRange - The character's jump range.
- * @returns {{x, y, z}|null} - The coordinates of the landing spot, or null if no valid spot is found.
+ * @returns {{isValid: boolean, reason: string, spot: {x, y, z}|null}} - An object indicating if the jump is valid, the reason if not, and the landing spot if valid.
  */
 function getJumpLandingSpot(startPos, targetPos, jumpRange) {
     const dx = targetPos.x - startPos.x;
     const dy = targetPos.y - startPos.y;
     const horizontalDist = Math.sqrt(dx * dx + dy * dy);
 
-    // If target is the start position, do nothing.
-    if (horizontalDist === 0 && targetPos.z === startPos.z) return null;
+    if (horizontalDist === 0 && targetPos.z === startPos.z) return { isValid: false, reason: "Target is the same as the start position.", spot: null };
 
-    // Clamp the horizontal distance to the character's max jump range.
-    const clampedHorizontalDist = Math.min(horizontalDist, jumpRange.horizontal);
-    const ratio = (horizontalDist > 0) ? clampedHorizontalDist / horizontalDist : 0;
+    if (horizontalDist > jumpRange.horizontal) return { isValid: false, reason: "Target is too far.", spot: null };
 
-    const finalX = Math.round(startPos.x + dx * ratio);
-    const finalY = Math.round(startPos.y + dy * ratio);
+    const finalX = targetPos.x;
+    const finalY = targetPos.y;
 
     const dz = targetPos.z - startPos.z;
 
-    // Check vertical distance constraints.
     if (dz > 0 && dz > jumpRange.verticalUp) {
-        // logToConsole("Target is too high to jump up to.", "orange"); // Too noisy for real-time validation
-        return null;
+        return { isValid: false, reason: "Target is too high to jump up to.", spot: null };
     }
 
-    // Trace the path to check for obstacles.
     const path = window.mapRenderer.getLine3D(startPos.x, startPos.y, startPos.z, finalX, finalY, startPos.z);
-    for (const point of path) {
-        // Don't check the starting tile itself for obstacles.
-        if (point.x === startPos.x && point.y === startPos.y) continue;
-
-        // Check for obstacles at jump height (1 level above the path).
+    // We only check for head clearance along the path. Obstacles on the ground are "jumped over".
+    // The final landing spot's validity is checked separately. We skip the start and end of the path.
+    for (let i = 1; i < path.length - 1; i++) {
+        const point = path[i];
         if (!window.mapRenderer.isTileEmpty(point.x, point.y, startPos.z + 1)) {
-             // logToConsole("Jump path is blocked from above.", "orange");
-             return null;
-        }
-        // Check for obstacles at the path's z-level.
-        if (!window.mapRenderer.isTileEmpty(point.x, point.y, startPos.z)) {
-            // logToConsole("Jump path is blocked by a wall.", "orange");
-            return null;
+             return { isValid: false, reason: "Jump path is blocked from above.", spot: null };
         }
     }
 
-    // Now, find a valid landing spot at the destination.
-    let landingZ = -1; // Default to an invalid Z level.
-
-    for (let z = startPos.z + jumpRange.verticalUp; z >= startPos.z - 20; z--) { // Scan down max 20 tiles from max jump height.
+    let landingZ = -1;
+    for (let z = startPos.z + jumpRange.verticalUp; z >= startPos.z - 20; z--) {
         if (window.mapRenderer.isWalkable(finalX, finalY, z)) {
             landingZ = z;
             break;
         }
     }
 
-    if (landingZ === -1) return null; // No valid landing spot found.
-
+    if (landingZ === -1) return { isValid: false, reason: "No valid landing spot found.", spot: null };
 
     const finalLandingSpot = { x: finalX, y: finalY, z: landingZ };
 
-    // Final check: is the landing spot valid and unoccupied?
     if (window.mapRenderer.isWalkable(finalLandingSpot.x, finalLandingSpot.y, finalLandingSpot.z) &&
         !window.mapUtils.isTileOccupied(finalLandingSpot.x, finalLandingSpot.y, finalLandingSpot.z)) {
-        return finalLandingSpot;
+        return { isValid: true, reason: "", spot: finalLandingSpot };
     }
 
-    return null; // No valid spot found.
+    return { isValid: false, reason: "Landing spot is occupied or not walkable.", spot: null };
 }
 
 
