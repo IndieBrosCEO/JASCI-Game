@@ -2704,8 +2704,16 @@ function saveGame() {
         return;
     }
     try {
+        // Handle non-serializable parts of the gameState, like Sets.
+        const originalIdempotencyKeys = gameState.processedIdempotencyKeys;
+        gameState.processedIdempotencyKeys = Array.from(originalIdempotencyKeys);
+
         const gameStateString = JSON.stringify(gameState);
         localStorage.setItem('jasciGameSave', gameStateString);
+
+        // Restore the original Set to the live gameState so the game can continue normally.
+        gameState.processedIdempotencyKeys = originalIdempotencyKeys;
+
         alert("Game Saved!");
         logToConsole("Game state saved to localStorage.", "info");
         if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
@@ -2723,63 +2731,65 @@ function loadGame() {
         if (savedGameStateString) {
             const loadedState = JSON.parse(savedGameStateString);
 
-            // Deep merge or careful assignment is needed here.
-            // For a simple overwrite of the entire gameState:
+            // Version check
+            const currentSaveVersion = 1; // This should be incremented when save format changes.
+            if (loadedState.saveVersion !== currentSaveVersion) {
+                logToConsole(`Warning: Loading an old save version (${loadedState.saveVersion || 'undefined'}). Current version is ${currentSaveVersion}. Some features may not work correctly.`, "warn");
+                // Here you could run a migration function if needed, e.g., migrateSave(loadedState);
+            }
+
+            // Restore non-serializable parts
+            if (Array.isArray(loadedState.processedIdempotencyKeys)) {
+                loadedState.processedIdempotencyKeys = new Set(loadedState.processedIdempotencyKeys);
+            } else {
+                // If it's somehow not an array (e.g., from an old save before the fix), initialize it fresh.
+                loadedState.processedIdempotencyKeys = new Set();
+            }
+
+            // Overwrite the entire live gameState.
             Object.assign(gameState, loadedState);
 
-            // After loading, re-initialize parts of the game that depend on the new state
-            // or that are not part of the JSON (like DOM elements, caches, etc.)
-
-            // Re-initialize asset-dependent parts if map changed or assets are dynamic
-            // For now, assume assets are static and loaded at init.
-
-            // Refresh UI elements
+            // Re-initialize UI and other non-persistent elements.
+            // This is crucial to make the game reflect the loaded state.
             if (gameState.gameStarted) {
                 const characterCreator = document.getElementById('character-creator');
                 const characterInfoPanel = document.getElementById('character-info-panel');
                 if (characterCreator) characterCreator.classList.add('hidden');
                 if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
 
-                renderCharacterInfo(); // Update character display
-                if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI(); // Update inventory display
-                window.renderHealthTable(gameState); // Update health display
-                updatePlayerStatusDisplay(); // Update clock, needs, Z-levels
-                window.turnManager.updateTurnUI(); // Update turn info
+                renderCharacterInfo();
+                window.inventoryManager.updateInventoryUI();
+                window.renderHealthTable(gameState.player); // Correctly pass the player object
+                updatePlayerStatusDisplay();
+                window.turnManager.updateTurnUI();
 
-                // Map related UI and state
+                // Re-initialize map state. The loaded gameState has map data.
+                // mapRenderer needs to be told to use it.
                 if (window.mapRenderer) {
-                    // If map data itself is part of gameState and needs to be re-applied to mapRenderer
-                    // This depends on how mapRenderer stores/gets its map data.
-                    // If mapRenderer.currentMapData is not directly part of gameState,
-                    // it might need to be reloaded or re-initialized.
-                    // For now, let's assume mapLevels in gameState is the source of truth
-                    // and mapRenderer will use it.
-                    // It's crucial that mapRenderer's internal state is consistent with loaded gameState.mapLevels.
-                    // A function like `mapRenderer.setCurrentMapFromGameState(gameState)` might be needed.
-                    // For now, we'll just schedule a render.
                     window.mapRenderer.scheduleRender();
                 }
 
                 window.interaction.detectInteractableItems();
                 window.interaction.showInteractableItems();
 
-                // Re-establish NPC references or re-initialize them if they have complex states not in JSON
-                // For now, assuming NPCs are fully serialized. If not, they might need:
-                // gameState.npcs.forEach(npc => initializeNpcFace(npc)); // If face generation is needed
+                // Re-initialize NPC faces or other dynamic data if needed.
+                gameState.npcs.forEach(npc => {
+                    if (typeof initializeNpcFace === 'function') {
+                        initializeNpcFace(npc);
+                    }
+                });
+
 
                 logToConsole("Game state loaded from localStorage.", "info");
                 alert("Game Loaded!");
                 if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
-
             } else {
-                // If the loaded game state indicates game was not started (e.g. save from char creator)
-                // Reset to character creator or initial menu.
-                // For now, just log it. A more robust system would handle this.
-                logToConsole("Loaded game state indicates game was not started. UI may be inconsistent.", "warn");
-                // Potentially show character creator again
+                // Handle saves made from the character creator.
+                logToConsole("Loaded game state from character creator.", "info");
                 const characterCreator = document.getElementById('character-creator');
                 if (characterCreator) characterCreator.classList.remove('hidden');
-                window.renderTables(gameState); // Re-render char creation tables
+                window.renderTables(gameState);
+                window.renderDerivedStats(gameState);
             }
 
         } else {

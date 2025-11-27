@@ -1,0 +1,12 @@
+Weapon,Damage,Splash Damage,Burn Damage Per Round,Damage Type,Burst Radius in ft,Size,Weight
+40mm fragmentation grenade,2d6,1d8,,Slashing,10,Tiny,1 lb.
+C4/Semtex,2d10,2d6,,Concussion,10,Small,1 lb.
+Det cord,2d6,,,Fire,5,Med,2 lb.
+Dynamite,d10,1d8,,Concussion,5,Tiny,1 lb.
+Fragmentation grenade,2d6,1d8,,Slashing,20,Tiny,1 lb.
+Smoke grenade,0,,,None,20,Small,2 lb.
+Tear gas grenade,1d2-1,,,Acid,20,Small,2 lb.
+Thermite grenade,2d6,,2d6,Fire,5,Small,2 lb.
+White phosphorus grenade,2d6,,1d6,Fire,20,Small,2 lb.
+"Acid, mild",1d4,,1d4,Acid,10,Tiny,1 lb.
+Molotov Cocktail,1d6,,1d6,Fire,10,Small,1 lb.
