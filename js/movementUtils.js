@@ -25,9 +25,11 @@
 async function attemptCharacterMove(character, direction, assetManagerInstance, moveCostOverride = null, animationDurationOverride = null) {
     const isPlayer = (character === window.gameState);
     const logPrefix = isPlayer ? "[PlayerMovement]" : `[NPCMovement ${character.id || 'UnknownNPC'}]`;
+    console.log(`${logPrefix} attemptCharacterMove called with direction: ${direction}`);
 
     if (isPlayer && window.gameState.isActionMenuActive) {
         logToConsole(`${logPrefix} Cannot move: Action menu active.`, "orange");
+        console.log(`${logPrefix} Blocked: Action menu is active.`);
         return false;
     }
 
@@ -501,9 +503,10 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
 
 
     // 3. Standard Horizontal Movement (if no Z-transitions were used)
+    // Check if target tile at current Z is strictly impassable, this is used for both horizontal move and fall checks.
+    const targetStrictlyImpassableInfo = isTileStrictlyImpassable(targetX, targetY, originalPos.z);
+
     if (!moveSuccessful) {
-        // Check if target tile at current Z is strictly impassable
-        const targetStrictlyImpassableInfo = isTileStrictlyImpassable(targetX, targetY, originalPos.z);
         if (targetStrictlyImpassableInfo.impassable) {
             logToConsole(`${logPrefix} Movement blocked by '${targetStrictlyImpassableInfo.name}' at (${targetX},${targetY},${originalPos.z}).`);
             return false; // Player bumps into impassable, no further checks.
