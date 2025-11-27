@@ -204,6 +204,17 @@ function startGame() {
     const characterInfoPanel = document.getElementById('character-info-panel');
     // const gameControls = document.getElementById('game-controls'); // This ID does not exist in index.html right-panel is used.
 
+    // Critical: Copy stats and skills from the character creator (gameState) to the player object.
+    // This ensures the player starts with the stats configured by the user.
+    if (window.gameState.player) {
+        window.gameState.player.stats = JSON.parse(JSON.stringify(window.gameState.stats));
+        window.gameState.player.skills = JSON.parse(JSON.stringify(window.gameState.skills));
+        logToConsole("Player stats and skills initialized from character creator.", "info");
+    } else {
+        logToConsole("Warning: gameState.player object not found during startGame. Stats/skills not copied.", "warn");
+    }
+
+
     // Ensure currentMapData is loaded (now via window.mapRenderer.getCurrentMapData())
     let currentMap = window.mapRenderer.getCurrentMapData();
     if (!currentMap) {

@@ -1146,7 +1146,11 @@ window.mapRenderer = {
 
                 if (gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y && currentZ === gameState.targetingCoords.z) {
                     finalSpriteForTile = 'X';
-                    finalColorForTile = 'red';
+                    if (gameState.isJumpTargetingMode) {
+                        finalColorForTile = gameState.isCurrentJumpTargetValid ? 'yellow' : 'red';
+                    } else {
+                        finalColorForTile = 'red';
+                    }
                     finalDisplayIdForTile = 'TARGET_CURSOR';
                 } else if (gameState.activeFires && gameState.activeFires.some(f => f.x === x && f.y === y && f.z === currentZ)) {
                     finalSpriteForTile = '^'; // Fire sprite
@@ -1907,85 +1911,41 @@ window.mapRenderer = {
     },
 
     isWalkable: function (x, y, z) {
-        const debugPrefix = `isWalkable(${x},${y},${z}):`;
-        // console.log(`${debugPrefix} Checking...`); // Keep console logs minimal
-
         const mapData = this.getCurrentMapData();
         const tilesets = assetManagerInstance ? assetManagerInstance.tilesets : null;
 
-        if (!mapData || !mapData.levels || !mapData.dimensions || !tilesets) {
-            return false;
-        }
-        if (x < 0 || y < 0 || y >= mapData.dimensions.height || x >= mapData.dimensions.width) {
+        if (!mapData || !mapData.levels || !mapData.dimensions || !tilesets || x < 0 || y < 0 || y >= mapData.dimensions.height || x >= mapData.dimensions.width) {
             return false;
         }
 
         const zStr = z.toString();
         const currentLevelData = mapData.levels[zStr];
 
-        let supportedFromBelow = false;
-        const zBelowStr = (z - 1).toString();
-        const levelDataBelow = mapData.levels[zBelowStr];
-        if (levelDataBelow) {
-            const tileOnMiddleBelowRaw = levelDataBelow.middle?.[y]?.[x];
-            const effMidBelow = (typeof tileOnMiddleBelowRaw === 'object' && tileOnMiddleBelowRaw?.tileId !== undefined) ? tileOnMiddleBelowRaw.tileId : tileOnMiddleBelowRaw;
-            if (effMidBelow && tilesets[effMidBelow]?.tags) {
-                if (tilesets[effMidBelow].tags.includes('solid_terrain_top')) {
-                    supportedFromBelow = true;
-                }
-            }
-            if (!supportedFromBelow) {
-                const tileOnBottomBelowRaw = levelDataBelow.bottom?.[y]?.[x];
-                const effBotBelow = (typeof tileOnBottomBelowRaw === 'object' && tileOnBottomBelowRaw?.tileId !== undefined) ? tileOnBottomBelowRaw.tileId : tileOnBottomBelowRaw;
-                if (effBotBelow && tilesets[effBotBelow]?.tags?.includes('solid_terrain_top')) {
-                    supportedFromBelow = true;
-                }
-            }
+        if (!currentLevelData) {
+            return false; // No level data means not walkable
         }
 
-        if (!currentLevelData || !currentLevelData.bottom || !currentLevelData.middle) {
-            return supportedFromBelow;
-        }
-
-        const tileOnMiddleRaw = currentLevelData.middle[y]?.[x];
+        // A tile is NOT walkable if an impassable object is on the middle layer.
+        const tileOnMiddleRaw = currentLevelData.middle?.[y]?.[x];
         const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw?.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
-
         if (effectiveTileOnMiddle && tilesets[effectiveTileOnMiddle]) {
             const tileDefMiddle = tilesets[effectiveTileOnMiddle];
-            if (tileDefMiddle.tags) {
-                if (tileDefMiddle.tags.includes("walkable_on_z") || tileDefMiddle.tags.includes("z_transition")) {
-                    return true;
-                }
-                if (tileDefMiddle.tags.includes("solid_terrain_top")) {
-                    return false;
-                }
-                if (tileDefMiddle.tags.includes("impassable")) {
-                    return false;
-                }
+            if (tileDefMiddle.tags && tileDefMiddle.tags.includes("impassable")) {
+                return false;
             }
-        } else if (effectiveTileOnMiddle && !tilesets[effectiveTileOnMiddle]) {
-            return false;
         }
 
-        const tileOnBottomRaw = currentLevelData.bottom[y]?.[x];
+        // A tile IS walkable if its bottom layer has a 'floor' or 'z_transition' tag.
+        const tileOnBottomRaw = currentLevelData.bottom?.[y]?.[x];
         const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw?.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
-
         if (effectiveTileOnBottom && tilesets[effectiveTileOnBottom]) {
             const tileDefBottom = tilesets[effectiveTileOnBottom];
-            if (tileDefBottom.tags) {
-                if (tileDefBottom.tags.includes("impassable")) {
-                    return false;
-                }
-                if (tileDefBottom.tags.includes("floor") ||
-                    tileDefBottom.tags.includes("transparent_floor") ||
-                    tileDefBottom.tags.includes("z_transition")) {
-                    return true;
-                }
+            if (tileDefBottom.tags && (tileDefBottom.tags.includes("floor") || tileDefBottom.tags.includes("z_transition"))) {
+                return true;
             }
-        } else if (effectiveTileOnBottom && !tilesets[effectiveTileOnBottom]) {
-            return false;
         }
-        return supportedFromBelow;
+
+        return false; // Default to not walkable
     },
     isTileEmpty: isTileEmpty,
 

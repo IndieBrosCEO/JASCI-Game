@@ -1,58 +1,105 @@
+
 // js/jump.js
 
 // This file will contain the logic for the character jump mechanic.
 
-// --- Key Press Handler ---
 /**
- * Handles the jump key press event. This is the main entry point for the jump action.
- * It checks for necessary conditions, calculates the jump, and executes it.
+ * Toggles the jump targeting mode on or off.
+ */
+function toggleJumpTargeting() {
+    // If any other targeting mode is active, an action menu is open, or inventory is open, do not enter jump mode.
+    if ((window.gameState.isTargetingMode && !window.gameState.isJumpTargetingMode) || window.gameState.isActionMenuActive || window.gameState.inventory.open) {
+        logToConsole("Cannot enter jump mode right now.", "orange");
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+        return;
+    }
+
+    window.gameState.isJumpTargetingMode = !window.gameState.isJumpTargetingMode;
+
+    if (window.gameState.isJumpTargetingMode) {
+        // Enter jump targeting mode
+        window.gameState.isTargetingMode = true; // Use the general targeting flag as well
+        window.gameState.targetingCoords = { ...window.gameState.playerPos }; // Start targeting from player
+        logToConsole("Jump mode activated. Move target and press 'J' or 'F' to jump.", "info");
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+        updateJumpTargetValidation(); // Initial validation check
+    } else {
+        // Exit jump targeting mode
+        window.gameState.isTargetingMode = false;
+        logToConsole("Jump mode deactivated.", "info");
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+    }
+    // Update UI elements related to targeting
+    if (window.updateTargetingInfoUI) window.updateTargetingInfoUI();
+    if (window.mapRenderer) window.mapRenderer.scheduleRender();
+}
+
+
+/**
+ * Validates the current jump target coordinates and updates the game state.
+ * This function is called whenever the targeting cursor moves in jump mode.
+ */
+function updateJumpTargetValidation() {
+    if (!window.gameState.isJumpTargetingMode) return;
+
+    const playerPos = window.gameState.playerPos;
+    const targetPos = window.gameState.targetingCoords;
+    const jumpRange = calculateJumpRange(window.gameState.player);
+
+    const result = getJumpLandingSpot(playerPos, targetPos, jumpRange);
+
+    window.gameState.isCurrentJumpTargetValid = result.isValid;
+    window.gameState.currentJumpInvalidReason = result.reason;
+
+
+    // Schedule a re-render to update the targeting reticle color.
+    if (window.mapRenderer) window.mapRenderer.scheduleRender();
+}
+
+
+/**
+ * Handles the jump key press event. This function now either initiates a jump
+ * or confirms a jump if already in jump targeting mode.
  */
 async function handleJumpKeyPress() {
-    const JUMP_COST = 2;
+    // If we are in jump targeting mode, pressing 'J' again confirms the jump.
+    if (window.gameState.isJumpTargetingMode) {
+        if (window.gameState.isCurrentJumpTargetValid) {
+            const JUMP_COST = 2;
+            if (window.gameState.movementPointsRemaining < JUMP_COST) {
+                logToConsole("Not enough movement points to jump.", "orange");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+                return;
+            }
 
-    // A player cannot jump while in a vehicle.
-    if (window.gameState.player.isInVehicle) {
-        logToConsole("You cannot jump while in a vehicle.", "orange");
-        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
-        return;
-    }
+            const playerPos = window.gameState.playerPos;
+            const targetPos = window.gameState.targetingCoords;
+            const jumpRange = calculateJumpRange(window.gameState.player);
+            const result = getJumpLandingSpot(playerPos, targetPos, jumpRange);
 
-    // A player must have enough movement points to jump.
-    if (window.gameState.movementPointsRemaining < JUMP_COST) {
-        logToConsole("Not enough movement points to jump.", "orange");
-        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
-        return;
-    }
-
-    // A player must be in targeting mode to choose a jump direction.
-    if (window.gameState.isTargetingMode) {
-        const playerPos = window.gameState.playerPos;
-        const targetPos = window.gameState.targetingCoords;
-
-        // Calculate the player's jump range based on their stats.
-        const jumpRange = calculateJumpRange(window.gameState.player);
-
-        // Find the best valid landing spot based on the target and range.
-        const landingSpot = getJumpLandingSpot(playerPos, targetPos, jumpRange);
-
-        // If a valid spot is found, perform the jump.
-        if (landingSpot) {
-            await performJump(playerPos, landingSpot, JUMP_COST);
+            if (result.isValid) {
+                await performJump(playerPos, result.spot, JUMP_COST);
+            } else {
+                // This case should ideally not be hit if isCurrentJumpTargetValid is accurate.
+                logToConsole("Cannot jump there.", "orange");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            }
         } else {
-            logToConsole("You can't jump there.", "orange");
+            logToConsole(`Invalid jump target: ${window.gameState.currentJumpInvalidReason}`, "orange");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         }
     } else {
-        logToConsole("Enter targeting mode ('r') to select a jump direction.", "info");
-        // Future enhancement: A dedicated "jump mode" could be initiated here.
-        return;
+        // If not in jump targeting mode, pressing 'J' toggles it on.
+        toggleJumpTargeting();
     }
 }
 
 
-// Assign to window to be globally accessible from script.js
+// Assign to window to be globally accessible
 if (typeof window !== 'undefined') {
     window.handleJumpKeyPress = handleJumpKeyPress;
+    window.toggleJumpTargeting = toggleJumpTargeting;
+    window.updateJumpTargetValidation = updateJumpTargetValidation;
 }
 
 
@@ -65,8 +112,8 @@ if (typeof window !== 'undefined') {
 function calculateJumpRange(character) {
     const strengthModifier = window.getStatModifier("Strength", character);
 
-    // Horizontal jump: 1 tile + STR modifier, with a minimum of 1.
-    const horizontal = Math.max(1, 1 + strengthModifier);
+    // Horizontal jump: 2 tiles + STR modifier, with a minimum of 1.
+    const horizontal = Math.max(1, 2 + strengthModifier);
 
     // Vertical jump (up): 1 tile, or 2 tiles if STR modifier is +2 or greater.
     const verticalUp = (strengthModifier >= 2) ? 2 : 1;
@@ -81,86 +128,54 @@ function calculateJumpRange(character) {
  * @param {{x, y, z}} startPos - The starting position of the jump.
  * @param {{x, y, z}} targetPos - The intended target position.
  * @param {{horizontal, verticalUp}} jumpRange - The character's jump range.
- * @returns {{x, y, z}|null} - The coordinates of the landing spot, or null if no valid spot is found.
+ * @returns {{isValid: boolean, reason: string, spot: {x, y, z}|null}} - An object indicating if the jump is valid, the reason if not, and the landing spot if valid.
  */
 function getJumpLandingSpot(startPos, targetPos, jumpRange) {
     const dx = targetPos.x - startPos.x;
     const dy = targetPos.y - startPos.y;
     const horizontalDist = Math.sqrt(dx * dx + dy * dy);
 
-    // If target is the start position, do nothing.
-    if (horizontalDist === 0 && targetPos.z === startPos.z) return null;
+    if (horizontalDist === 0 && targetPos.z === startPos.z) return { isValid: false, reason: "Target is the same as the start position.", spot: null };
 
-    // Clamp the horizontal distance to the character's max jump range.
-    const clampedHorizontalDist = Math.min(horizontalDist, jumpRange.horizontal);
-    const ratio = (horizontalDist > 0) ? clampedHorizontalDist / horizontalDist : 0;
+    if (horizontalDist > jumpRange.horizontal) return { isValid: false, reason: "Target is too far.", spot: null };
 
-    const finalX = Math.round(startPos.x + dx * ratio);
-    const finalY = Math.round(startPos.y + dy * ratio);
+    const finalX = targetPos.x;
+    const finalY = targetPos.y;
 
     const dz = targetPos.z - startPos.z;
 
-    // Check vertical distance constraints.
     if (dz > 0 && dz > jumpRange.verticalUp) {
-        logToConsole("Target is too high to jump up to.", "orange");
-        return null;
+        return { isValid: false, reason: "Target is too high to jump up to.", spot: null };
     }
 
-    // Trace the path to check for obstacles.
-    const path = window.mapUtils.getLineOfSight(startPos, {x: finalX, y: finalY, z: startPos.z});
-    for (const point of path) {
-        // Don't check the starting tile itself for obstacles.
-        if (point.x === startPos.x && point.y === startPos.y) continue;
-
-        // Check for obstacles at jump height (1 level above the path).
+    const path = window.mapRenderer.getLine3D(startPos.x, startPos.y, startPos.z, finalX, finalY, startPos.z);
+    // We only check for head clearance along the path. Obstacles on the ground are "jumped over".
+    // The final landing spot's validity is checked separately. We skip the start and end of the path.
+    for (let i = 1; i < path.length - 1; i++) {
+        const point = path[i];
         if (!window.mapRenderer.isTileEmpty(point.x, point.y, startPos.z + 1)) {
-             logToConsole("Jump path is blocked from above.", "orange");
-             return null;
-        }
-        // Check for obstacles at the path's z-level.
-        if (!window.mapRenderer.isTileEmpty(point.x, point.y, startPos.z)) {
-            // Allow jumping over low obstacles. This is a simple check.
-            // A more complex system could check the tile's 'height'.
-            // For now, if it's not empty, it's a wall.
-            logToConsole("Jump path is blocked by a wall.", "orange");
-            return null;
+             return { isValid: false, reason: "Jump path is blocked from above.", spot: null };
         }
     }
 
-    // Now, find a valid landing spot at the destination.
-    let landingZ = -1; // Default to an invalid Z level.
-
-    // Scan downwards from the target Z to find the first walkable surface.
-    for (let z = targetPos.z; z >= targetPos.z - 10; z--) { // Scan down max 10 tiles.
+    let landingZ = -1;
+    for (let z = startPos.z + jumpRange.verticalUp; z >= startPos.z - 20; z--) {
         if (window.mapRenderer.isWalkable(finalX, finalY, z)) {
             landingZ = z;
             break;
         }
     }
 
-    if (landingZ === -1) {
-        // If no walkable tile was found below the target, scan from player's Z level downwards
-        // This handles jumping straight across a gap where the target cursor might be at the same Z.
-        for (let z = startPos.z; z >= startPos.z - 10; z--) {
-             if (window.mapRenderer.isWalkable(finalX, finalY, z)) {
-                landingZ = z;
-                break;
-            }
-        }
-    }
-
-    if (landingZ === -1) return null; // Still no valid landing spot found.
-
+    if (landingZ === -1) return { isValid: false, reason: "No valid landing spot found.", spot: null };
 
     const finalLandingSpot = { x: finalX, y: finalY, z: landingZ };
 
-    // Final check: is the landing spot valid and unoccupied?
     if (window.mapRenderer.isWalkable(finalLandingSpot.x, finalLandingSpot.y, finalLandingSpot.z) &&
         !window.mapUtils.isTileOccupied(finalLandingSpot.x, finalLandingSpot.y, finalLandingSpot.z)) {
-        return finalLandingSpot;
+        return { isValid: true, reason: "", spot: finalLandingSpot };
     }
 
-    return null; // No valid spot found.
+    return { isValid: false, reason: "Landing spot is occupied or not walkable.", spot: null };
 }
 
 
@@ -204,8 +219,9 @@ async function performJump(startPos, landingSpot, cost) {
     window.interaction.showInteractableItems();
     logToConsole(`Jumped to (${landingSpot.x}, ${landingSpot.y}, ${landingSpot.z}).`);
 
-    // Exit targeting mode after jump
+    // Exit ALL targeting modes after jump
     window.gameState.isTargetingMode = false;
+    window.gameState.isJumpTargetingMode = false;
     window.gameState.targetingType = null;
     if(window.updateTargetingInfoUI){
         window.updateTargetingInfoUI();
