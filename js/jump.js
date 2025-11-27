@@ -112,8 +112,8 @@ if (typeof window !== 'undefined') {
 function calculateJumpRange(character) {
     const strengthModifier = window.getStatModifier("Strength", character);
 
-    // Horizontal jump: 1 tile + STR modifier, with a minimum of 1.
-    const horizontal = Math.max(1, 1 + strengthModifier);
+    // Horizontal jump: 2 tiles + STR modifier, with a minimum of 1.
+    const horizontal = Math.max(1, 2 + strengthModifier);
 
     // Vertical jump (up): 1 tile, or 2 tiles if STR modifier is +2 or greater.
     const verticalUp = (strengthModifier >= 2) ? 2 : 1;
@@ -226,5 +226,4 @@ async function performJump(startPos, landingSpot, cost) {
     if(window.updateTargetingInfoUI){
         window.updateTargetingInfoUI();
     }
-    window.gameState.isAnimationPlaying = false;
 }
