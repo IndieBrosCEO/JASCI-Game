@@ -4,20 +4,63 @@
     "name": "5.56mm Rounds",
     "description": "A box of 5.56mm rifle ammunition.",
     "family": "ammunition",
-    "properties": { "caliber": "5.56mm" },
-    "type": "ammunition", "size": 1, "weightLbs": 0.6,
-    "tags": [ "ammo", "modern", "rifle" ],
-    "ammoType": "5.56mm", "quantity": 30,
+    "properties": {
+      "caliber": "5.56mm"
+    },
+    "type": "ammunition",
+    "size": 1,
+    "weightLbs": 0.6,
+    "tags": [
+      "ammo",
+      "modern",
+      "rifle"
+    ],
+    "ammoType": "5.56mm",
+    "quantity": 30,
     "recipe": {
       "description": "Reload 5.56mm rifle cartridges.",
       "components": [
-        { "family": "casing", "quantity": 10, "require": { "caliber": "5.56mm", "type": "rifle" } },
-        { "family": "primer", "quantity": 10, "require": { "type": "rifle", "size": "small" } },
-        { "family": "explosive", "quantity": 3, "require": { "type": "gunpowder" } },
-        { "family": "projectile", "quantity": 10, "require": { "caliber": "5.56mm", "type": "bullet" } }
+        {
+          "family": "casing",
+          "quantity": 10,
+          "require": {
+            "caliber": "5.56mm",
+            "type": "rifle"
+          }
+        },
+        {
+          "family": "primer",
+          "quantity": 10,
+          "require": {
+            "type": "rifle",
+            "size": "small"
+          }
+        },
+        {
+          "family": "explosive",
+          "quantity": 3,
+          "require": {
+            "type": "gunpowder"
+          }
+        },
+        {
+          "family": "projectile",
+          "quantity": 10,
+          "require": {
+            "caliber": "5.56mm",
+            "type": "bullet"
+          }
+        }
       ],
-      "skills_required": [ { "skill": "Guns", "level": 3 } ],
-      "station_required": "reloading_bench", "time_to_craft": 20, "batch_size": 10
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 3
+        }
+      ],
+      "station_required": "reloading_bench",
+      "time_to_craft": 20,
+      "batch_size": 10
     }
   },
   {
@@ -25,31 +68,86 @@
     "name": "7.62mm Rounds",
     "description": "A box of 7.62mm rifle ammunition (e.g. for NATO spec rifles).",
     "family": "ammunition",
-    "properties": { "caliber": "7.62mm" },
-    "type": "ammunition", "size": 1, "weightLbs": 0.7,
-    "tags": [ "ammo", "modern", "rifle" ],
-    "ammoType": "7.62mm", "quantity": 20
+    "properties": {
+      "caliber": "7.62mm"
+    },
+    "type": "ammunition",
+    "size": 1,
+    "weightLbs": 0.7,
+    "tags": [
+      "ammo",
+      "modern",
+      "rifle"
+    ],
+    "ammoType": "7.62mm",
+    "quantity": 20
   },
-    {
+  {
     "id": "ammo_9mm",
     "name": "9mm Rounds",
     "description": "A box of 9mm pistol ammunition.",
     "family": "ammunition",
-    "properties": { "caliber": "9mm" },
-    "type": "ammunition", "size": 1, "weightLbs": 0.5,
-    "tags": [ "ammo", "modern", "pistol", "smg" ],
-    "ammoType": "9mm", "quantity": 50,
+    "properties": {
+      "caliber": "9mm"
+    },
+    "type": "ammunition",
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [
+      "ammo",
+      "modern",
+      "pistol",
+      "smg"
+    ],
+    "ammoType": "9mm",
+    "quantity": 50,
     "recipe": {
       "description": "Reload 9mm pistol cartridges.",
       "components": [
-        { "family": "casing", "quantity": 10, "require": { "caliber": "9mm", "type": "pistol" } },
-        { "family": "primer", "quantity": 10, "require": { "type": "pistol", "size": "small" } },
-        { "family": "explosive", "quantity": 2, "require": { "type": "gunpowder" } },
-        { "family": "projectile", "quantity": 10, "require": { "caliber": "9mm", "type": "bullet" } }
+        {
+          "family": "casing",
+          "quantity": 10,
+          "require": {
+            "caliber": "9mm",
+            "type": "pistol"
+          }
+        },
+        {
+          "family": "primer",
+          "quantity": 10,
+          "require": {
+            "type": "pistol",
+            "size": "small"
+          }
+        },
+        {
+          "family": "explosive",
+          "quantity": 2,
+          "require": {
+            "type": "gunpowder"
+          }
+        },
+        {
+          "family": "projectile",
+          "quantity": 10,
+          "require": {
+            "caliber": "9mm",
+            "type": "bullet"
+          }
+        }
       ],
-      "skills_required": [ { "skill": "Guns", "level": 2 } ],
-      "tools_required": [ "hand_reloader_tool" ], "station_required": "reloading_bench",
-      "time_to_craft": 15, "batch_size": 10
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "hand_reloader_tool"
+      ],
+      "station_required": "reloading_bench",
+      "time_to_craft": 15,
+      "batch_size": 10
     }
   },
   {
@@ -57,22 +155,246 @@
     "name": "12-Gauge Buckshot Shells",
     "description": "A box of 12-gauge shotgun shells (buckshot).",
     "family": "ammunition",
-    "properties": { "caliber": "12gauge", "type": "buckshot" },
-    "type": "ammunition", "size": 1, "weightLbs": 0.9,
-    "tags": [ "ammo", "modern", "shotgun" ],
-    "ammoType": "12gauge_buckshot", "quantity": 10,
+    "properties": {
+      "caliber": "12gauge",
+      "type": "buckshot"
+    },
+    "type": "ammunition",
+    "size": 1,
+    "weightLbs": 0.9,
+    "tags": [
+      "ammo",
+      "modern",
+      "shotgun"
+    ],
+    "ammoType": "12gauge_buckshot",
+    "quantity": 10,
     "recipe": {
       "description": "Reload 12-gauge buckshot shells.",
       "components": [
-        { "family": "casing", "quantity": 5, "require": { "caliber": "12gauge", "type": "shotshell" } },
-        { "family": "primer", "quantity": 5, "require": { "type": "shotgun" } },
-        { "family": "explosive", "quantity": 2, "require": { "type": "gunpowder" } },
-        { "family": "projectile", "quantity": 5, "require": { "caliber": "12gauge", "type": "shot" } },
-        { "family": "component", "quantity": 5, "require": {"type": "wad"} }
+        {
+          "family": "casing",
+          "quantity": 5,
+          "require": {
+            "caliber": "12gauge",
+            "type": "shotshell"
+          }
+        },
+        {
+          "family": "primer",
+          "quantity": 5,
+          "require": {
+            "type": "shotgun"
+          }
+        },
+        {
+          "family": "explosive",
+          "quantity": 2,
+          "require": {
+            "type": "gunpowder"
+          }
+        },
+        {
+          "family": "projectile",
+          "quantity": 5,
+          "require": {
+            "caliber": "12gauge",
+            "type": "shot"
+          }
+        },
+        {
+          "family": "component",
+          "quantity": 5,
+          "require": {
+            "type": "wad"
+          }
+        }
       ],
-      "skills_required": [ { "skill": "Guns", "level": 1 } ],
-      "tools_required": [ "shotshell_press_basic" ], "station_required": "reloading_bench",
-      "time_to_craft": 10, "batch_size": 5
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "shotshell_press_basic"
+      ],
+      "station_required": "reloading_bench",
+      "time_to_craft": 10,
+      "batch_size": 5
     }
+  },
+  {
+    "id": "ammo_45acp",
+    "name": ".45 ACP Rounds",
+    "description": "A box of .45 ACP ammunition. Common in heavy pistols and SMGs.",
+    "family": "ammunition",
+    "properties": {
+      "caliber": ".45ACP"
+    },
+    "type": "ammunition",
+    "size": 1,
+    "weightLbs": 0.6,
+    "tags": [
+      "ammo",
+      "modern",
+      "pistol"
+    ],
+    "ammoType": ".45ACP",
+    "quantity": 50
+  },
+  {
+    "id": "ammo_22lr",
+    "name": ".22 LR Rounds",
+    "description": "A box of .22 Long Rifle ammunition. Small and light.",
+    "family": "ammunition",
+    "properties": {
+      "caliber": ".22LR"
+    },
+    "type": "ammunition",
+    "size": 1,
+    "weightLbs": 0.3,
+    "tags": [
+      "ammo",
+      "modern",
+      "pistol",
+      "rifle"
+    ],
+    "ammoType": ".22LR",
+    "quantity": 100
+  },
+  {
+    "id": "ammo_38spl",
+    "name": ".38 Special Rounds",
+    "description": "A box of .38 Special ammunition. Common for revolvers.",
+    "family": "ammunition",
+    "properties": {
+      "caliber": ".38SPL"
+    },
+    "type": "ammunition",
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [
+      "ammo",
+      "modern",
+      "revolver"
+    ],
+    "ammoType": ".38SPL",
+    "quantity": 50
+  },
+  {
+    "id": "ammo_357mag",
+    "name": ".357 Magnum Rounds",
+    "description": "A box of .357 Magnum ammunition. Powerful revolver rounds.",
+    "family": "ammunition",
+    "properties": {
+      "caliber": ".357MAG"
+    },
+    "type": "ammunition",
+    "size": 1,
+    "weightLbs": 0.6,
+    "tags": [
+      "ammo",
+      "modern",
+      "revolver"
+    ],
+    "ammoType": ".357MAG",
+    "quantity": 50
+  },
+  {
+    "id": "ammo_50bmg",
+    "name": ".50 BMG Rounds",
+    "description": "A box of .50 Browning Machine Gun ammunition. Extremely powerful.",
+    "family": "ammunition",
+    "properties": {
+      "caliber": ".50BMG"
+    },
+    "type": "ammunition",
+    "size": 2,
+    "weightLbs": 3,
+    "tags": [
+      "ammo",
+      "modern",
+      "rifle",
+      "heavy"
+    ],
+    "ammoType": ".50BMG",
+    "quantity": 10
+  },
+  {
+    "id": "ammo_32acp",
+    "name": ".32 ACP Rounds",
+    "description": "A box of .32 ACP ammunition. For small pistols.",
+    "family": "ammunition",
+    "properties": {
+      "caliber": ".32ACP"
+    },
+    "type": "ammunition",
+    "size": 1,
+    "weightLbs": 0.4,
+    "tags": [
+      "ammo",
+      "modern",
+      "pistol"
+    ],
+    "ammoType": ".32ACP",
+    "quantity": 50
+  },
+  {
+    "id": "ammo_10mm",
+    "name": "10mm Auto Rounds",
+    "description": "A box of 10mm Auto ammunition. Powerful pistol rounds.",
+    "family": "ammunition",
+    "properties": {
+      "caliber": "10mm"
+    },
+    "type": "ammunition",
+    "size": 1,
+    "weightLbs": 0.6,
+    "tags": [
+      "ammo",
+      "modern",
+      "pistol"
+    ],
+    "ammoType": "10mm",
+    "quantity": 50
+  },
+  {
+    "id": "ammo_50ae",
+    "name": ".50 AE Rounds",
+    "description": "A box of .50 Action Express ammunition. For massive handguns.",
+    "family": "ammunition",
+    "properties": {
+      "caliber": ".50AE"
+    },
+    "type": "ammunition",
+    "size": 1,
+    "weightLbs": 0.8,
+    "tags": [
+      "ammo",
+      "modern",
+      "pistol"
+    ],
+    "ammoType": ".50AE",
+    "quantity": 20
+  },
+  {
+    "id": "ammo_44mag",
+    "name": ".44 Magnum Rounds",
+    "description": "A box of .44 Magnum ammunition. For heavy revolvers.",
+    "family": "ammunition",
+    "properties": {
+      "caliber": ".44mag"
+    },
+    "type": "ammunition",
+    "size": 1,
+    "weightLbs": 0.7,
+    "tags": [
+      "ammo",
+      "modern",
+      "revolver"
+    ],
+    "ammoType": ".44mag",
+    "quantity": 50
   }
 ]

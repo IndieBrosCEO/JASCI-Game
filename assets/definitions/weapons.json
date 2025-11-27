@@ -19,7 +19,7 @@
       "modern",
       "handgun"
     ],
-    "damage": "1d7",
+    "damage": "1d10",
     "damageType": "Ballistic",
     "rateOfFire": "S",
     "magazineSize": 8,
@@ -47,7 +47,7 @@
       "revolver",
       "handgun"
     ],
-    "damage": "1d6",
+    "damage": "1d8",
     "damageType": "Ballistic",
     "rateOfFire": "S",
     "magazineSize": 6,
@@ -72,7 +72,8 @@
       "piercing",
       "slashing",
       "knife",
-      "tool"
+      "tool",
+      "piercing"
     ],
     "damage": "1d4",
     "damageType": "Piercing",
@@ -94,9 +95,10 @@
       "weapon",
       "melee",
       "bludgeoning",
-      "improvised"
+      "improvised",
+      "bludgeoning"
     ],
-    "damage": "1d6",
+    "damage": "1d4",
     "damageType": "Bludgeoning",
     "canEquip": true,
     "recipe": {
@@ -203,5 +205,1539 @@
     "lightRadius": 5,
     "lightColor": "#FFA500",
     "canEquip": true
+  },
+  {
+    "id": "spear",
+    "name": "Spear",
+    "description": "Spear.",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 9,
+    "damage": "1d8",
+    "damageType": "Piercing",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "piercing"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "medium"
+    }
+  },
+  {
+    "id": "katana",
+    "name": "Katana",
+    "description": "Katana.",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 6,
+    "damage": "1d8",
+    "damageType": "Slashing",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "medium"
+    }
+  },
+  {
+    "id": "longsword",
+    "name": "Longsword",
+    "description": "Longsword.",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 4,
+    "damage": "1d8",
+    "damageType": "Slashing",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "medium"
+    }
+  },
+  {
+    "id": "hatchet",
+    "name": "Hatchet",
+    "description": "Hatchet.",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 4,
+    "damage": "1d6",
+    "damageType": "Slashing",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "small"
+    }
+  },
+  {
+    "id": "rapier",
+    "name": "Rapier",
+    "description": "Rapier.",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 3,
+    "damage": "1d6",
+    "damageType": "Piercing",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "piercing"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "medium"
+    }
+  },
+  {
+    "id": "sword_cane",
+    "name": "Sword cane",
+    "description": "Sword cane.",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 3,
+    "damage": "1d6",
+    "damageType": "Piercing",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "piercing"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "medium"
+    }
+  },
+  {
+    "id": "sap",
+    "name": "Sap",
+    "description": "Sap.",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 3,
+    "damage": "1d3",
+    "damageType": "Bludgeoning",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "small"
+    }
+  },
+  {
+    "id": "kama",
+    "name": "Kama",
+    "description": "Kama.",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 2,
+    "damage": "1d6",
+    "damageType": "Slashing",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "small"
+    }
+  },
+  {
+    "id": "machete",
+    "name": "Machete",
+    "description": "Machete.",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 2,
+    "damage": "1d6",
+    "damageType": "Slashing",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "small"
+    }
+  },
+  {
+    "id": "cleaver",
+    "name": "Cleaver",
+    "description": "Cleaver.",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 2,
+    "damage": "1d4",
+    "damageType": "Slashing",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "small"
+    }
+  },
+  {
+    "id": "metal_baton",
+    "name": "Metal baton",
+    "description": "Metal baton.",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 2,
+    "damage": "1d4",
+    "damageType": "Bludgeoning",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "medium"
+    }
+  },
+  {
+    "id": "tonfa",
+    "name": "Tonfa",
+    "description": "Tonfa.",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 2,
+    "damage": "1d4",
+    "damageType": "Bludgeoning",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "medium"
+    }
+  },
+  {
+    "id": "nunchaku",
+    "name": "Nunchaku",
+    "description": "Nunchaku.",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 2,
+    "damage": "1d3",
+    "damageType": "Bludgeoning",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "small"
+    }
+  },
+  {
+    "id": "whip",
+    "name": "Whip",
+    "description": "Whip.",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 2,
+    "damage": "1d2",
+    "damageType": "Bludgeoning",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "small"
+    }
+  },
+  {
+    "id": "chain_saw",
+    "name": "Chain saw",
+    "description": "Chain saw.",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 10,
+    "damage": "1d10",
+    "damageType": "Slashing",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "medium"
+    }
+  },
+  {
+    "id": "kukri",
+    "name": "Kukri",
+    "description": "Kukri.",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 1,
+    "damage": "1d6",
+    "damageType": "Slashing",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "small"
+    }
+  },
+  {
+    "id": "bayonet_fixed",
+    "name": "Bayonet (fixed)",
+    "description": "Bayonet (fixed).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 1,
+    "damage": "1d5",
+    "damageType": "Piercing",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "piercing"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "medium"
+    }
+  },
+  {
+    "id": "brass_knuckles",
+    "name": "Brass knuckles",
+    "description": "Brass knuckles.",
+    "canEquip": true,
+    "size": 1,
+    "weightLbs": 1,
+    "damage": "1d3",
+    "damageType": "Bludgeoning",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "bludgeoning"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "medium"
+    }
+  },
+  {
+    "id": "straight_razor",
+    "name": "Straight razor",
+    "description": "Straight razor.",
+    "canEquip": true,
+    "size": 1,
+    "weightLbs": 0.5,
+    "damage": "1d3",
+    "damageType": "Slashing",
+    "type": "weapon_melee",
+    "family": "melee_weapon",
+    "tags": [
+      "weapon",
+      "melee",
+      "slashing"
+    ],
+    "properties": {
+      "type": "melee",
+      "size": "medium"
+    }
+  },
+  {
+    "id": "m_60",
+    "name": "M-60",
+    "description": "M-60.",
+    "canEquip": true,
+    "size": 5,
+    "weightLbs": 22,
+    "damage": "1d10",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "A",
+    "magazineSize": 100,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "generic_ammo",
+    "properties": {
+      "type": "gun",
+      "caliber": "generic_ammo",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "m2hb",
+    "name": "M2HB",
+    "description": "M2HB.",
+    "canEquip": true,
+    "size": 5,
+    "weightLbs": 75,
+    "damage": "2d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "A",
+    "magazineSize": 100,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "generic_ammo",
+    "properties": {
+      "type": "gun",
+      "caliber": "generic_ammo",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "tec_9_9mm_machine_pistol",
+    "name": "TEC-9 (9mm machine pistol)",
+    "description": "TEC-9 (9mm machine pistol).",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 4,
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S,A",
+    "magazineSize": 32,
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol"
+    ],
+    "ammoType": "9mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "9mm",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "mac_ingram_m10_45_machine_pistol",
+    "name": "MAC Ingram M10 (.45 machine pistol)",
+    "description": "MAC Ingram M10 (.45 machine pistol).",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 6,
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S,A",
+    "magazineSize": 30,
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol"
+    ],
+    "ammoType": ".45ACP",
+    "properties": {
+      "type": "gun",
+      "caliber": ".45ACP",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "hk_mp5_9mm_submachine_gun",
+    "name": "HK MP5 (9mm submachine gun)",
+    "description": "HK MP5 (9mm submachine gun).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 7,
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S,A",
+    "magazineSize": 30,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "9mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "9mm",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "akm_ak_47_7_62mmr_assault_rifle",
+    "name": "AKM/AK-47 (7.62mmR assault rifle)",
+    "description": "AKM/AK-47 (7.62mmR assault rifle).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 10,
+    "damage": "1d8",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S,A",
+    "magazineSize": 30,
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle"
+    ],
+    "ammoType": "7.62mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "7.62mm",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "m16a2_5_56mm_assault_rifle",
+    "name": "M16A2 (5.56mm assault rifle)",
+    "description": "M16A2 (5.56mm assault rifle).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 8,
+    "damage": "1d8",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S,A",
+    "magazineSize": 30,
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle"
+    ],
+    "ammoType": "5.56mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "5.56mm",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "m4_carbine_5_56mm_assault_rifle",
+    "name": "M4 Carbine (5.56mm assault rifle)",
+    "description": "M4 Carbine (5.56mm assault rifle).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 7,
+    "damage": "1d8",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S,A",
+    "magazineSize": 30,
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle"
+    ],
+    "ammoType": "5.56mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "5.56mm",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "steyr_aug_5_56mm_assault_rifle",
+    "name": "Steyr AUG (5.56mm assault rifle)",
+    "description": "Steyr AUG (5.56mm assault rifle).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 9,
+    "damage": "1d8",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S,A",
+    "magazineSize": 30,
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle"
+    ],
+    "ammoType": "5.56mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "5.56mm",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "skorpion_32_machine_pistol",
+    "name": "Skorpion (.32 machine pistol)",
+    "description": "Skorpion (.32 machine pistol).",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 4,
+    "damage": "1d4",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S,A",
+    "magazineSize": 20,
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol"
+    ],
+    "ammoType": ".32ACP",
+    "properties": {
+      "type": "gun",
+      "caliber": ".32ACP",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "beretta_93r_9mm_machine_pistol",
+    "name": "Beretta 93R (9mm machine pistol)",
+    "description": "Beretta 93R (9mm machine pistol).",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 3,
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S,A",
+    "magazineSize": 20,
+    "tags": [
+      "weapon",
+      "firearm",
+      "pistol"
+    ],
+    "ammoType": "9mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "9mm",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "uzi_9mm_submachine_gun",
+    "name": "Uzi (9mm submachine gun)",
+    "description": "Uzi (9mm submachine gun).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 8,
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S,A",
+    "magazineSize": 20,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "9mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "9mm",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "hk_g3_7_62mm_assault_rifle",
+    "name": "HK G3 (7.62mm assault rifle)",
+    "description": "HK G3 (7.62mm assault rifle).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 11,
+    "damage": "1d10",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S,A",
+    "magazineSize": 20,
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle"
+    ],
+    "ammoType": "7.62mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "7.62mm",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "glock_17_9mm_autoloader",
+    "name": "Glock 17 (9mm autoloader)",
+    "description": "Glock 17 (9mm autoloader).",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 2,
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 17,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "9mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "9mm",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "beretta_92f_9mm_autoloader",
+    "name": "Beretta 92F (9mm autoloader)",
+    "description": "Beretta 92F (9mm autoloader).",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 3,
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 15,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "9mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "9mm",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "glock_201_10mm_autoloader",
+    "name": "Glock 201 (10mm autoloader)",
+    "description": "Glock 201 (10mm autoloader).",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 3,
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 15,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "10mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "10mm",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "hk_mp5k_9mm_submachine_gun",
+    "name": "HK MP5K (9mm submachine gun)",
+    "description": "HK MP5K (9mm submachine gun).",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 5,
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S,A",
+    "magazineSize": 15,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "9mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "9mm",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "barrett_light_fifty_50_sniper_rifle",
+    "name": "Barrett Light Fifty (.50 sniper rifle)",
+    "description": "Barrett Light Fifty (.50 sniper rifle).",
+    "canEquip": true,
+    "size": 5,
+    "weightLbs": 35,
+    "damage": "2d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 11,
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle"
+    ],
+    "ammoType": ".50BMG",
+    "properties": {
+      "type": "gun",
+      "caliber": ".50BMG",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "flamethrower",
+    "name": "Flamethrower",
+    "description": "Flamethrower.",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 50,
+    "damage": "1d8",
+    "damageType": "Flaming",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "A",
+    "magazineSize": 10,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "generic_ammo",
+    "properties": {
+      "type": "gun",
+      "caliber": "generic_ammo",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "colt_double_eagle_10mm_autoloader",
+    "name": "Colt Double Eagle (10mm autoloader)",
+    "description": "Colt Double Eagle (10mm autoloader).",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 3,
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 9,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "10mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "10mm",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "sites_m9_9mm_autoloader",
+    "name": "SITES M9 (9mm autoloader)",
+    "description": "SITES M9 (9mm autoloader).",
+    "canEquip": true,
+    "size": 1,
+    "weightLbs": 2,
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 8,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "9mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "9mm",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "aa_12_12_gauge_automatic_shotgun",
+    "name": "AA-12 (12-gauge automatic shotgun)",
+    "description": "AA-12 (12-gauge automatic shotgun).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 14,
+    "damage": "1d10",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S,A",
+    "magazineSize": 8,
+    "tags": [
+      "weapon",
+      "firearm",
+      "shotgun"
+    ],
+    "ammoType": "12gauge_buckshot",
+    "properties": {
+      "type": "gun",
+      "caliber": "12gauge_buckshot",
+      "action": "automatic"
+    }
+  },
+  {
+    "id": "walther_ppk_32_autoloader",
+    "name": "Walther PPK (.32 autoloader)",
+    "description": "Walther PPK (.32 autoloader).",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 1,
+    "damage": "1d4",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 7,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": ".32ACP",
+    "properties": {
+      "type": "gun",
+      "caliber": ".32ACP",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "colt_m1911_45_autoloader",
+    "name": "Colt M1911 (.45 autoloader)",
+    "description": "Colt M1911 (.45 autoloader).",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 3,
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 7,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": ".45ACP",
+    "properties": {
+      "type": "gun",
+      "caliber": ".45ACP",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "benelli_121_m1_12_gague_shotgun",
+    "name": "Benelli 121 M1 (12-gague shotgun)",
+    "description": "Benelli 121 M1 (12-gague shotgun).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 8,
+    "damage": "1d10",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 7,
+    "tags": [
+      "weapon",
+      "firearm",
+      "shotgun"
+    ],
+    "ammoType": "generic_ammo",
+    "properties": {
+      "type": "gun",
+      "caliber": "generic_ammo",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "pathfinder_22_revolver",
+    "name": "Pathfinder (.22 revolver)",
+    "description": "Pathfinder (.22 revolver).",
+    "canEquip": true,
+    "size": 1,
+    "weightLbs": 1,
+    "damage": "1d3",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 6,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": ".22LR",
+    "properties": {
+      "type": "gun",
+      "caliber": ".22LR",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "ruger_service_six_38s_revolver",
+    "name": "Ruger Service-Six (.38S revolver)",
+    "description": "Ruger Service-Six (.38S revolver).",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 2,
+    "damage": "1d6",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 6,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": ".38SPL",
+    "properties": {
+      "type": "gun",
+      "caliber": ".38SPL",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "colt_python1_357_revolver",
+    "name": "Colt Python1 (.357 revolver)",
+    "description": "Colt Python1 (.357 revolver).",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 3,
+    "damage": "1d8",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 6,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": ".357MAG",
+    "properties": {
+      "type": "gun",
+      "caliber": ".357MAG",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "winchester_94_444_hunting_rifle",
+    "name": "Winchester 94 (.444 hunting rifle)",
+    "description": "Winchester 94 (.444 hunting rifle).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 7,
+    "damage": "1d10",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 6,
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle"
+    ],
+    "ammoType": ".44mag",
+    "properties": {
+      "type": "gun",
+      "caliber": ".44mag",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "mossberg_12_gauge_shotgun",
+    "name": "Mossberg (12-gauge shotgun)",
+    "description": "Mossberg (12-gauge shotgun).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 7,
+    "damage": "1d10",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 6,
+    "tags": [
+      "weapon",
+      "firearm",
+      "shotgun"
+    ],
+    "ammoType": "12gauge_buckshot",
+    "properties": {
+      "type": "gun",
+      "caliber": "12gauge_buckshot",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "browning_bps_10_gauge_shotgun",
+    "name": "Browning BPS (10-gauge shotgun)",
+    "description": "Browning BPS (10-gauge shotgun).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 11,
+    "damage": "1d10",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 5,
+    "tags": [
+      "weapon",
+      "firearm",
+      "shotgun"
+    ],
+    "ammoType": "generic_ammo",
+    "properties": {
+      "type": "gun",
+      "caliber": "generic_ammo",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "hk_psg11_7_62mm_sniper_rifle",
+    "name": "HK PSG11 (7.62mm sniper rifle)",
+    "description": "HK PSG11 (7.62mm sniper rifle).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 16,
+    "damage": "1d10",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 5,
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle"
+    ],
+    "ammoType": "7.62mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "7.62mm",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "beretta_m3p_12_gauge_shotgun",
+    "name": "Beretta M3P (12-gauge shotgun)",
+    "description": "Beretta M3P (12-gauge shotgun).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 9,
+    "damage": "1d10",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 5,
+    "tags": [
+      "weapon",
+      "firearm",
+      "shotgun"
+    ],
+    "ammoType": "12gauge_buckshot",
+    "properties": {
+      "type": "gun",
+      "caliber": "12gauge_buckshot",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "remington_700_7_62mm_hunting_rifle",
+    "name": "Remington 700 (7.62mm hunting rifle)",
+    "description": "Remington 700 (7.62mm hunting rifle).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 8,
+    "damage": "1d10",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 5,
+    "tags": [
+      "weapon",
+      "firearm",
+      "rifle"
+    ],
+    "ammoType": "7.62mm",
+    "properties": {
+      "type": "gun",
+      "caliber": "7.62mm",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "derringer_45",
+    "name": "Derringer (.45)",
+    "description": "Derringer (.45).",
+    "canEquip": true,
+    "size": 1,
+    "weightLbs": 1,
+    "damage": "1d4",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 2,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": ".45ACP",
+    "properties": {
+      "type": "gun",
+      "caliber": ".45ACP",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "sawed_off_shotgun_12_ga_shotgun",
+    "name": "Sawed-off shotgun (12-ga shotgun)",
+    "description": "Sawed-off shotgun (12-ga shotgun).",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 4,
+    "damage": "1d10",
+    "damageType": "Ballistic",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 2,
+    "tags": [
+      "weapon",
+      "firearm",
+      "shotgun"
+    ],
+    "ammoType": "generic_ammo",
+    "properties": {
+      "type": "gun",
+      "caliber": "generic_ammo",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "m72a3_law_rocket_launcher",
+    "name": "M72A3 LAW (rocket launcher)",
+    "description": "M72A3 LAW (rocket launcher).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 5,
+    "damage": "2d10",
+    "damageType": "Explosive",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 1,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "generic_ammo",
+    "properties": {
+      "type": "gun",
+      "caliber": "generic_ammo",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "m79_grenade_launcher",
+    "name": "M79 (grenade launcher)",
+    "description": "M79 (grenade launcher).",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 7,
+    "damage": "2d6",
+    "damageType": "Explosive",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 1,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "generic_ammo",
+    "properties": {
+      "type": "gun",
+      "caliber": "generic_ammo",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "crossbow",
+    "name": "Crossbow",
+    "description": "Crossbow.",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 7,
+    "damage": "1d6",
+    "damageType": "Piercing",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 1,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "generic_ammo",
+    "properties": {
+      "type": "gun",
+      "caliber": "generic_ammo",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "compound_bow",
+    "name": "Compound bow",
+    "description": "Compound bow.",
+    "canEquip": true,
+    "size": 4,
+    "weightLbs": 3,
+    "damage": "1d4",
+    "damageType": "Piercing",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 1,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "generic_ammo",
+    "properties": {
+      "type": "gun",
+      "caliber": "generic_ammo",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "javelin",
+    "name": "Javelin",
+    "description": "Javelin.",
+    "canEquip": true,
+    "size": 3,
+    "weightLbs": 2,
+    "damage": "1d6",
+    "damageType": "Piercing",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 1,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "generic_ammo",
+    "properties": {
+      "type": "gun",
+      "caliber": "generic_ammo",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "shuriken",
+    "name": "Shuriken",
+    "description": "Shuriken.",
+    "canEquip": true,
+    "size": 1,
+    "weightLbs": 0.5,
+    "damage": "1",
+    "damageType": "Slashing",
+    "type": "weapon_firearm",
+    "family": "firearm",
+    "rateOfFire": "S",
+    "magazineSize": 1,
+    "tags": [
+      "weapon",
+      "firearm"
+    ],
+    "ammoType": "generic_ammo",
+    "properties": {
+      "type": "gun",
+      "caliber": "generic_ammo",
+      "action": "semi-auto"
+    }
+  },
+  {
+    "id": "40mm_fragmentation_grenade",
+    "name": "40mm fragmentation grenade",
+    "description": "40mm fragmentation grenade.",
+    "canEquip": true,
+    "size": 1,
+    "weightLbs": 1,
+    "damage": "2d6",
+    "damageType": "Slashing",
+    "type": "weapon_thrown",
+    "family": "explosive",
+    "burstRadiusFt": 10,
+    "tags": [
+      "weapon",
+      "thrown",
+      "explosive"
+    ]
+  },
+  {
+    "id": "fragmentation_grenade",
+    "name": "Fragmentation grenade",
+    "description": "Fragmentation grenade.",
+    "canEquip": true,
+    "size": 1,
+    "weightLbs": 1,
+    "damage": "2d6",
+    "damageType": "Slashing",
+    "type": "weapon_thrown",
+    "family": "explosive",
+    "burstRadiusFt": 20,
+    "tags": [
+      "weapon",
+      "thrown",
+      "explosive"
+    ]
+  },
+  {
+    "id": "tear_gas_grenade",
+    "name": "Tear gas grenade",
+    "description": "Tear gas grenade.",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 2,
+    "damage": "1d2-1",
+    "damageType": "Acid",
+    "type": "weapon_thrown",
+    "family": "explosive",
+    "burstRadiusFt": 20,
+    "tags": [
+      "weapon",
+      "thrown",
+      "explosive"
+    ]
+  },
+  {
+    "id": "thermite_grenade",
+    "name": "Thermite grenade",
+    "description": "Thermite grenade.",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 2,
+    "damage": "2d6",
+    "damageType": "Fire",
+    "type": "weapon_thrown",
+    "family": "explosive",
+    "burstRadiusFt": 5,
+    "tags": [
+      "weapon",
+      "thrown",
+      "explosive"
+    ]
+  },
+  {
+    "id": "white_phosphorus_grenade",
+    "name": "White phosphorus grenade",
+    "description": "White phosphorus grenade.",
+    "canEquip": true,
+    "size": 2,
+    "weightLbs": 2,
+    "damage": "2d6",
+    "damageType": "Fire",
+    "type": "weapon_thrown",
+    "family": "explosive",
+    "burstRadiusFt": 20,
+    "tags": [
+      "weapon",
+      "thrown",
+      "explosive"
+    ]
+  },
+  {
+    "id": "acid_mild",
+    "name": "Acid, mild",
+    "description": "Acid, mild.",
+    "canEquip": true,
+    "size": 1,
+    "weightLbs": 1,
+    "damage": "1d4",
+    "damageType": "Acid",
+    "type": "weapon_thrown",
+    "family": "explosive",
+    "burstRadiusFt": 10,
+    "tags": [
+      "weapon",
+      "thrown",
+      "explosive"
+    ]
   }
 ]
