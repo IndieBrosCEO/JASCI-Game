@@ -1,12 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\assets",
-    "\\assets\\definitions",
     "\\js",
     "\\mapMaker",
     "\\Maps"
   ],
-  "SelectedNode": "\\verify_colored_ui.js",
+  "SelectedNode": "\\js\\faceGenerator.js",
   "PreviewInSolutionExplorer": false
 }

@@ -240,6 +240,8 @@
                 </div>
 
                 <button id="startGameButton">Start Game</button>
+                <button onclick="saveGame()">Save Game</button>
+                <button onclick="loadGame()">Load Game</button>
             </div>
 
             <!-- Vehicle Modification UI (Initially Hidden) -->
@@ -373,8 +375,6 @@
         <!-- Right Column -->
         <div id="right-panel" class="menu-game-controls">
             <h2>Game Controls</h2>
-            <button onclick="saveGame()">Save Game</button>
-            <button onclick="loadGame()">Load Game</button>
             <button id="openSettingsButton">Settings</button>
             <button onclick="window.mapRenderer.toggleRoof()">Toggle Roof</button>
             <div style="margin-top: 5px; margin-bottom: 5px;">
