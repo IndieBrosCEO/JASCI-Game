@@ -1,0 +1,161 @@
+[
+  {
+    "id": "raw_meat",
+    "name": "Raw Meat",
+    "description": "Uncooked meat harvested from an animal. Needs cooking.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 1,
+    "value": 2,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": "%",
+    "color": "red",
+    "tags": [
+      "food",
+      "raw",
+      "consumable_ingredient"
+    ],
+    "family": "food",
+    "properties": {
+      "type": "meat"
+    }
+  },
+  {
+    "id": "cooked_meat",
+    "name": "Cooked Meat",
+    "description": "Meat that has been cooked and is safe to eat.",
+    "type": "consumable",
+    "size": 1,
+    "weightLbs": 1,
+    "value": 5,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": "%",
+    "color": "brown",
+    "tags": [
+      "food",
+      "consumable"
+    ],
+    "effects": {
+      "hunger": -15
+    },
+    "family": "food",
+    "properties": {
+      "type": "cooked_meat"
+    }
+  },
+  {
+    "id": "bone",
+    "name": "Bone",
+    "description": "A bone from an animal. Can be used for crafting or sharpened into tools.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 0.5,
+    "value": 1,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": "!",
+    "color": "white",
+    "tags": [
+      "material",
+      "crafting",
+      "organic"
+    ],
+    "family": "organic",
+    "properties": {
+      "type": "bone"
+    }
+  },
+  {
+    "id": "dirty_water",
+    "name": "Dirty Water",
+    "description": "Water collected from an untrusted source. Needs purification.",
+    "type": "consumable",
+    "size": 1,
+    "weightLbs": 1,
+    "value": 0,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "~",
+    "color": "brown",
+    "tags": [
+      "liquid",
+      "unsafe"
+    ],
+    "effects": {
+      "thirst": -5,
+      "poison": 10
+    },
+    "family": "liquid",
+    "properties": {
+      "type": "water",
+      "quality": "dirty"
+    }
+  },
+  {
+    "id": "iron_ore",
+    "name": "Iron Ore",
+    "description": "A chunk of rock rich in iron. Smelt it to get iron ingots.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 2,
+    "value": 3,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": "o",
+    "color": "darkred",
+    "tags": [
+      "ore",
+      "metal_source",
+      "crafting"
+    ],
+    "family": "ore",
+    "properties": {
+      "metal": "iron"
+    }
+  },
+  {
+    "id": "copper_ore",
+    "name": "Copper Ore",
+    "description": "A chunk of rock rich in copper. Smelt it to get copper ingots.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 2,
+    "value": 3,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": "o",
+    "color": "orange",
+    "tags": [
+      "ore",
+      "metal_source",
+      "crafting"
+    ],
+    "family": "ore",
+    "properties": {
+      "metal": "copper"
+    }
+  },
+  {
+    "id": "stone_chunk",
+    "name": "Stone Chunk",
+    "description": "A heavy chunk of rock.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 3,
+    "value": 0,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "*",
+    "color": "gray",
+    "tags": [
+      "stone",
+      "crafting"
+    ],
+    "family": "stone",
+    "properties": {
+      "type": "chunk"
+    }
+  }
+]

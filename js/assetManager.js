@@ -101,7 +101,9 @@ class AssetManager {
             'traps.json', // Added traps.json
             'constructions.json', // Added constructions.json
             'families.json', // Added families.json
-            'perks.json' // Added perks.json
+            'perks.json', // Added perks.json
+            'harvest_resources.json', // Added harvest resources
+            'loot_tables.json' // Added loot tables
         ];
 
         for (const filename of definitionFiles) {
@@ -122,7 +124,24 @@ class AssetManager {
                     }
                 } else if (filename === 'tileset.json') {
                     this.tilesets = parsedJson;
-                    console.log("AssetManager: Base tilesets loaded:", this.tilesets);
+                    // Inject harvest tags programmatically if missing (temporary fix for JSON edit issues)
+                    if (this.tilesets["TRK"]) {
+                        if (!this.tilesets["TRK"].tags.includes("harvest:wood")) this.tilesets["TRK"].tags.push("harvest:wood");
+                        if (!this.tilesets["TRK"].tags.includes("interactive")) this.tilesets["TRK"].tags.push("interactive");
+                    }
+                    if (this.tilesets["BSH"]) {
+                        if (!this.tilesets["BSH"].tags.includes("harvest:wood")) this.tilesets["BSH"].tags.push("harvest:wood");
+                        if (!this.tilesets["BSH"].tags.includes("interactive")) this.tilesets["BSH"].tags.push("interactive");
+                    }
+                    if (this.tilesets["BLK"]) {
+                        if (!this.tilesets["BLK"].tags.includes("harvest:stone")) this.tilesets["BLK"].tags.push("harvest:stone");
+                        if (!this.tilesets["BLK"].tags.includes("interactive")) this.tilesets["BLK"].tags.push("interactive");
+                    }
+                    if (this.tilesets["ASH"]) {
+                        if (!this.tilesets["ASH"].tags.includes("scavenge:junk")) this.tilesets["ASH"].tags.push("scavenge:junk");
+                        if (!this.tilesets["ASH"].tags.includes("interactive")) this.tilesets["ASH"].tags.push("interactive");
+                    }
+                    console.log("AssetManager: Base tilesets loaded and patched:", this.tilesets);
                 } else if (filename === 'npcs.json') {
                     this.npcDefinitions = Object.fromEntries(parsedJson.map(npc => [npc.id, npc]));
                 } else if (filename === 'fish.json') {
@@ -182,7 +201,10 @@ class AssetManager {
                 } else if (filename === 'perks.json') {
                     this.perks = parsedJson;
                     console.log(`AssetManager: Loaded perks definition.`);
-                } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json', 'trap_kits.json'].includes(filename)) {
+                } else if (filename === 'loot_tables.json') {
+                    this.lootTables = parsedJson;
+                    console.log(`AssetManager: Loaded loot tables.`);
+                } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json', 'trap_kits.json', 'harvest_resources.json'].includes(filename)) {
                     // All new item files are arrays of items
                     if (Array.isArray(parsedJson)) {
                         parsedJson.forEach(item => {
