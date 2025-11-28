@@ -27,6 +27,7 @@ function _getActionsForItem(it) {
     if (it.itemType !== 'npc' && it.itemType !== 'vehicle' && it.itemType !== 'construction_instance' && !tileDef) return ["Cancel"];
 
     const tags = tileDef ? tileDef.tags || [] : [];
+    console.log(`_getActionsForItem: ID=${it.id}, Tags=${JSON.stringify(tags)}`);
     const actions = ["Cancel"];
 
     if (tags.includes("door") || tags.includes("window")) {
@@ -43,6 +44,28 @@ function _getActionsForItem(it) {
     if (window.fishingManager && window.fishingManager.isAdjacentToWater(window.gameState.playerPos) && window.fishingManager.getEquippedFishingPole(window.gameState)) {
         actions.push("Fish");
     }
+
+    // Harvesting
+    if (tags.includes("harvest:wood")) actions.push("Harvest Wood");
+    if (tags.includes("harvest:stone")) actions.push("Mine Stone");
+    if (tags.includes("harvest:plant")) actions.push("Harvest Plant");
+    if (tags.includes("harvest:sand")) actions.push("Harvest Sand");
+    if (tags.includes("harvest:mud")) actions.push("Harvest Mud");
+    if (tags.includes("harvest:gravel")) actions.push("Harvest Gravel");
+
+    // Scavenging
+    if (tags.includes("scavenge:generic") || tags.includes("scavenge:junk")) actions.push("Scavenge");
+    if (tags.includes("scavenge:furniture")) actions.push("Scavenge Furniture"); // Or just "Scavenge" if generic is preferred
+    if (tags.includes("scavenge:machinery")) actions.push("Scavenge Machinery");
+    if (tags.includes("scavenge:electronics")) actions.push("Scavenge Electronics");
+    if (tags.includes("scavenge:appliance")) actions.push("Scavenge Appliance");
+    if (tags.includes("scavenge:glass")) actions.push("Scavenge Glass");
+
+    // Butchery
+    if (it.itemType === "corpse") {
+        actions.push("Butcher");
+    }
+
     // Added for traps
     if (it.itemType === "trap" && it.trapState === "detected") {
         actions.push("Examine Trap", "Attempt to Disarm");
@@ -484,6 +507,15 @@ function _performAction(action, it) {
     } else if (action === "Fish") {
         if (window.fishingManager) {
             window.fishingManager.startFishing(window.gameState);
+        }
+    } else if (action === "Harvest Wood" || action === "Mine Stone" || action === "Scavenge" || action === "Butcher" ||
+               action === "Harvest Plant" || action === "Harvest Sand" || action === "Harvest Mud" || action === "Harvest Gravel" ||
+               action === "Scavenge Furniture" || action === "Scavenge Machinery" || action === "Scavenge Electronics" ||
+               action === "Scavenge Appliance" || action === "Scavenge Glass") {
+        if (window.harvestManager) {
+            window.harvestManager.attemptHarvest(action, it, window.gameState);
+        } else {
+            console.error("HarvestManager not initialized.");
         }
     }
 

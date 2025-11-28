@@ -5121,5 +5121,28 @@
       "material": "metal",
       "size": "large"
     }
+  },
+  {
+    "id": "electronic_scrap",
+    "name": "Electronic Scrap",
+    "description": "Bits of circuit boards, wires, and broken components.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 0.2,
+    "value": 1,
+    "stackable": true,
+    "maxStack": 50,
+    "sprite": "e",
+    "color": "green",
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "scrap"
+    ],
+    "family": "salvage",
+    "properties": {
+      "type": "electronic_scrap"
+    }
   }
 ]
