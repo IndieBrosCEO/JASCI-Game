@@ -27,6 +27,7 @@ function _getActionsForItem(it) {
     if (it.itemType !== 'npc' && it.itemType !== 'vehicle' && it.itemType !== 'construction_instance' && !tileDef) return ["Cancel"];
 
     const tags = tileDef ? tileDef.tags || [] : [];
+    console.log(`_getActionsForItem: ID=${it.id}, Tags=${JSON.stringify(tags)}`);
     const actions = ["Cancel"];
 
     if (tags.includes("door") || tags.includes("window")) {
@@ -43,6 +44,17 @@ function _getActionsForItem(it) {
     if (window.fishingManager && window.fishingManager.isAdjacentToWater(window.gameState.playerPos) && window.fishingManager.getEquippedFishingPole(window.gameState)) {
         actions.push("Fish");
     }
+
+    // Harvesting
+    if (tags.includes("harvest:wood")) actions.push("Harvest Wood");
+    if (tags.includes("harvest:stone")) actions.push("Mine Stone");
+    if (tags.includes("scavenge:generic") || tags.includes("scavenge:junk")) actions.push("Scavenge");
+
+    // Butchery
+    if (it.itemType === "corpse") {
+        actions.push("Butcher");
+    }
+
     // Added for traps
     if (it.itemType === "trap" && it.trapState === "detected") {
         actions.push("Examine Trap", "Attempt to Disarm");

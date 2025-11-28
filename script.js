@@ -2162,6 +2162,14 @@ async function initialize() { // Made async
             console.error("SCRIPT.JS: TrapManager or its core dependencies not available for initialization.");
         }
 
+        // HarvestManager
+        if (window.HarvestManager && window.assetManager) {
+            window.harvestManager = new HarvestManager(window.assetManager);
+            logToConsole("HarvestManager instance created.", "info");
+        } else {
+            console.error("SCRIPT.JS: HarvestManager class not available.");
+        }
+
         // Initialize UIs (after their managers are ready)
         // Ensure CraftingUI is instantiated AFTER window.craftingManager is initialized
         console.log("SCRIPT.JS: Pre-CraftingUI instantiation check:");
