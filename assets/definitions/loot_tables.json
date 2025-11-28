@@ -1,0 +1,34 @@
+{
+  "harvest:wood": [
+    { "itemId": "wood_log", "chance": 0.4, "min": 1, "max": 2 },
+    { "itemId": "wood_stick", "chance": 0.5, "min": 1, "max": 4 },
+    { "itemId": "plant_fibers_strong", "chance": 0.2, "min": 1, "max": 3 },
+    { "itemId": "tree_bark_brown_pigment", "chance": 0.1, "min": 1, "max": 2 }
+  ],
+  "harvest:stone": [
+    { "itemId": "stone_chunk", "chance": 0.6, "min": 1, "max": 3 },
+    { "itemId": "stone_sharp_fragment", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "iron_ore", "chance": 0.05, "min": 1, "max": 1 },
+    { "itemId": "copper_ore", "chance": 0.05, "min": 1, "max": 1 }
+  ],
+  "scavenge:generic": [
+    { "itemId": "scrap_metal", "chance": 0.3, "min": 1, "max": 3 },
+    { "itemId": "plastic_junk_item", "chance": 0.3, "min": 1, "max": 3 },
+    { "itemId": "cloth_scrap", "chance": 0.2, "min": 1, "max": 4 },
+    { "itemId": "glass_bottle_empty", "chance": 0.1, "min": 1, "max": 1 },
+    { "itemId": "nails", "chance": 0.15, "min": 2, "max": 10 },
+    { "itemId": "duct_tape", "chance": 0.05, "min": 1, "max": 1 }
+  ],
+  "scavenge:junk": [
+      { "itemId": "scrap_metal", "chance": 0.5, "min": 1, "max": 5 },
+      { "itemId": "plastic_junk_item", "chance": 0.4, "min": 1, "max": 4 },
+      { "itemId": "wire_insulated_thin", "chance": 0.2, "min": 1, "max": 3 },
+      { "itemId": "electronic_scrap", "chance": 0.1, "min": 1, "max": 2 }
+  ],
+  "butcher:corpse": [
+      { "itemId": "raw_meat", "chance": 1.0, "min": 1, "max": 3 },
+      { "itemId": "bone", "chance": 0.5, "min": 1, "max": 2 },
+      { "itemId": "animal_hide_raw_small", "chance": 0.3, "min": 1, "max": 1 },
+      { "itemId": "sinew_animal", "chance": 0.2, "min": 1, "max": 2 }
+  ]
+}
