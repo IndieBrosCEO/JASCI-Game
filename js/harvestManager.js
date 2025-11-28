@@ -32,6 +32,22 @@ class HarvestManager {
             lootTableId = "harvest:stone";
             requiredSkill = "Survival";
             skillDifficulty = 8;
+        } else if (tags.includes("harvest:plant")) {
+            lootTableId = "harvest:plant";
+            requiredSkill = "Survival";
+            skillDifficulty = 5;
+        } else if (tags.includes("harvest:sand")) {
+            lootTableId = "harvest:sand";
+            requiredSkill = "Survival";
+            skillDifficulty = 5;
+        } else if (tags.includes("scavenge:furniture")) {
+            lootTableId = "scavenge:furniture";
+            requiredSkill = "Investigation"; // Or Repair?
+            skillDifficulty = 5;
+        } else if (tags.includes("scavenge:machinery")) {
+            lootTableId = "scavenge:machinery";
+            requiredSkill = "Investigation";
+            skillDifficulty = 10;
         } else if (tags.includes("scavenge:generic") || tags.includes("container")) {
              if (item.id === "TC" || tags.includes("scavenge:generic")) {
                  lootTableId = "scavenge:generic";

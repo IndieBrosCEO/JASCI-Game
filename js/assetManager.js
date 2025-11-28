@@ -136,9 +136,19 @@ class AssetManager {
                     };
 
                     patchTile("TRK", ["harvest:wood", "interactive"]);
-                    patchTile("BSH", ["harvest:wood", "interactive"]);
+                    patchTile("BSH", ["harvest:plant", "interactive"]); // Changed from wood
+                    patchTile("TGR", ["harvest:plant", "interactive"]);
+                    patchTile("GR", ["harvest:plant"]); // Maybe interactive? or just harvestable via tool
                     patchTile("BLK", ["harvest:stone", "interactive"]);
                     patchTile("ASH", ["scavenge:junk", "interactive"]);
+                    patchTile("SA", ["harvest:sand", "interactive"]);
+
+                    // Furniture
+                    ["CH", "CR", "TB", "DSK", "DRS", "STL", "BD", "NK", "CN", "CB"].forEach(id => patchTile(id, ["scavenge:furniture", "interactive"]));
+
+                    // Machinery
+                    ["lathe_tile", "engine_jig_tile", "vehicle_bay_tile", "forge_simple_tile", "reloading_bench_tile"].forEach(id => patchTile(id, ["scavenge:machinery", "interactive"]));
+
                     console.log("AssetManager: Base tilesets loaded and patched:", this.tilesets);
                 } else if (filename === 'npcs.json') {
                     this.npcDefinitions = Object.fromEntries(parsedJson.map(npc => [npc.id, npc]));
