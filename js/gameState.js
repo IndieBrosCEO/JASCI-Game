@@ -162,6 +162,9 @@ const gameState = {
     isTargetingMode: false,
     targetingCoords: { x: 0, y: 0, z: 0 }, // Initialized to a default, will be updated when entering targeting mode
     targetingType: null, // Can be 'ranged' or 'melee'
+    isJumpTargetingMode: false, // NEW: for jump-specific targeting
+    isCurrentJumpTargetValid: false, // NEW: for jump target validation
+    currentJumpInvalidReason: "", // NEW: reason for invalid jump
     targetConfirmed: false,
     selectedTargetEntity: null,
 
