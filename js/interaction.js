@@ -48,7 +48,18 @@ function _getActionsForItem(it) {
     // Harvesting
     if (tags.includes("harvest:wood")) actions.push("Harvest Wood");
     if (tags.includes("harvest:stone")) actions.push("Mine Stone");
+    if (tags.includes("harvest:plant")) actions.push("Harvest Plant");
+    if (tags.includes("harvest:sand")) actions.push("Harvest Sand");
+    if (tags.includes("harvest:mud")) actions.push("Harvest Mud");
+    if (tags.includes("harvest:gravel")) actions.push("Harvest Gravel");
+
+    // Scavenging
     if (tags.includes("scavenge:generic") || tags.includes("scavenge:junk")) actions.push("Scavenge");
+    if (tags.includes("scavenge:furniture")) actions.push("Scavenge Furniture"); // Or just "Scavenge" if generic is preferred
+    if (tags.includes("scavenge:machinery")) actions.push("Scavenge Machinery");
+    if (tags.includes("scavenge:electronics")) actions.push("Scavenge Electronics");
+    if (tags.includes("scavenge:appliance")) actions.push("Scavenge Appliance");
+    if (tags.includes("scavenge:glass")) actions.push("Scavenge Glass");
 
     // Butchery
     if (it.itemType === "corpse") {
@@ -497,7 +508,10 @@ function _performAction(action, it) {
         if (window.fishingManager) {
             window.fishingManager.startFishing(window.gameState);
         }
-    } else if (action === "Harvest Wood" || action === "Mine Stone" || action === "Scavenge" || action === "Butcher") {
+    } else if (action === "Harvest Wood" || action === "Mine Stone" || action === "Scavenge" || action === "Butcher" ||
+               action === "Harvest Plant" || action === "Harvest Sand" || action === "Harvest Mud" || action === "Harvest Gravel" ||
+               action === "Scavenge Furniture" || action === "Scavenge Machinery" || action === "Scavenge Electronics" ||
+               action === "Scavenge Appliance" || action === "Scavenge Glass") {
         if (window.harvestManager) {
             window.harvestManager.attemptHarvest(action, it, window.gameState);
         } else {
