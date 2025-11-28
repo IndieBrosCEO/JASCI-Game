@@ -437,7 +437,7 @@ function isTileBlockingVision(tileX, tileY, tileZ, playerZ) {
                 if (tileDefMiddle) {
                     const tags = tileDefMiddle.tags || [];
                     const isOpaque = tags.includes('blocks_vision') ||
-                                     (tags.includes('impassable') && !tags.includes('transparent') && !tags.includes('allows_vision'));
+                        (tags.includes('impassable') && !tags.includes('transparent') && !tags.includes('allows_vision'));
 
                     if (isOpaque) {
                         return true; // BLOCKS
@@ -1907,85 +1907,58 @@ window.mapRenderer = {
     },
 
     isWalkable: function (x, y, z) {
-        const debugPrefix = `isWalkable(${x},${y},${z}):`;
-        // console.log(`${debugPrefix} Checking...`); // Keep console logs minimal
-
         const mapData = this.getCurrentMapData();
         const tilesets = assetManagerInstance ? assetManagerInstance.tilesets : null;
 
-        if (!mapData || !mapData.levels || !mapData.dimensions || !tilesets) {
-            return false;
-        }
-        if (x < 0 || y < 0 || y >= mapData.dimensions.height || x >= mapData.dimensions.width) {
+        if (!mapData || !mapData.levels || !mapData.dimensions || !tilesets || x < 0 || y < 0 || y >= mapData.dimensions.height || x >= mapData.dimensions.width) {
             return false;
         }
 
         const zStr = z.toString();
         const currentLevelData = mapData.levels[zStr];
 
-        let supportedFromBelow = false;
+        // First, check for impassable objects on the current level.
+        if (currentLevelData) {
+            const tileOnMiddleRaw = currentLevelData.middle?.[y]?.[x];
+            const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw?.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
+            if (effectiveTileOnMiddle && tilesets[effectiveTileOnMiddle]) {
+                const tileDefMiddle = tilesets[effectiveTileOnMiddle];
+                if (tileDefMiddle.tags && tileDefMiddle.tags.includes("impassable")) {
+                    return false;
+                }
+            }
+        }
+
+        // A tile is walkable if it has a floor tag on the current z-level.
+        if (currentLevelData) {
+            const tileOnBottomRaw = currentLevelData.bottom?.[y]?.[x];
+            const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw?.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
+            if (effectiveTileOnBottom && tilesets[effectiveTileOnBottom]) {
+                const tileDefBottom = tilesets[effectiveTileOnBottom];
+                if (tileDefBottom.tags && (tileDefBottom.tags.includes("floor") || tileDefBottom.tags.includes("z_transition"))) {
+                    return true;
+                }
+            }
+        }
+
+        // OR if the tile below has a solid_terrain_top tag.
         const zBelowStr = (z - 1).toString();
         const levelDataBelow = mapData.levels[zBelowStr];
         if (levelDataBelow) {
             const tileOnMiddleBelowRaw = levelDataBelow.middle?.[y]?.[x];
             const effMidBelow = (typeof tileOnMiddleBelowRaw === 'object' && tileOnMiddleBelowRaw?.tileId !== undefined) ? tileOnMiddleBelowRaw.tileId : tileOnMiddleBelowRaw;
-            if (effMidBelow && tilesets[effMidBelow]?.tags) {
-                if (tilesets[effMidBelow].tags.includes('solid_terrain_top')) {
-                    supportedFromBelow = true;
-                }
+            if (effMidBelow && tilesets[effMidBelow]?.tags?.includes('solid_terrain_top')) {
+                return true;
             }
-            if (!supportedFromBelow) {
-                const tileOnBottomBelowRaw = levelDataBelow.bottom?.[y]?.[x];
-                const effBotBelow = (typeof tileOnBottomBelowRaw === 'object' && tileOnBottomBelowRaw?.tileId !== undefined) ? tileOnBottomBelowRaw.tileId : tileOnBottomBelowRaw;
-                if (effBotBelow && tilesets[effBotBelow]?.tags?.includes('solid_terrain_top')) {
-                    supportedFromBelow = true;
-                }
+
+            const tileOnBottomBelowRaw = levelDataBelow.bottom?.[y]?.[x];
+            const effBotBelow = (typeof tileOnBottomBelowRaw === 'object' && tileOnBottomBelowRaw?.tileId !== undefined) ? tileOnBottomBelowRaw.tileId : tileOnBottomBelowRaw;
+            if (effBotBelow && tilesets[effBotBelow]?.tags?.includes('solid_terrain_top')) {
+                return true;
             }
         }
 
-        if (!currentLevelData || !currentLevelData.bottom || !currentLevelData.middle) {
-            return supportedFromBelow;
-        }
-
-        const tileOnMiddleRaw = currentLevelData.middle[y]?.[x];
-        const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw?.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
-
-        if (effectiveTileOnMiddle && tilesets[effectiveTileOnMiddle]) {
-            const tileDefMiddle = tilesets[effectiveTileOnMiddle];
-            if (tileDefMiddle.tags) {
-                if (tileDefMiddle.tags.includes("walkable_on_z") || tileDefMiddle.tags.includes("z_transition")) {
-                    return true;
-                }
-                if (tileDefMiddle.tags.includes("solid_terrain_top")) {
-                    return false;
-                }
-                if (tileDefMiddle.tags.includes("impassable")) {
-                    return false;
-                }
-            }
-        } else if (effectiveTileOnMiddle && !tilesets[effectiveTileOnMiddle]) {
-            return false;
-        }
-
-        const tileOnBottomRaw = currentLevelData.bottom[y]?.[x];
-        const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw?.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
-
-        if (effectiveTileOnBottom && tilesets[effectiveTileOnBottom]) {
-            const tileDefBottom = tilesets[effectiveTileOnBottom];
-            if (tileDefBottom.tags) {
-                if (tileDefBottom.tags.includes("impassable")) {
-                    return false;
-                }
-                if (tileDefBottom.tags.includes("floor") ||
-                    tileDefBottom.tags.includes("transparent_floor") ||
-                    tileDefBottom.tags.includes("z_transition")) {
-                    return true;
-                }
-            }
-        } else if (effectiveTileOnBottom && !tilesets[effectiveTileOnBottom]) {
-            return false;
-        }
-        return supportedFromBelow;
+        return false; // Default to not walkable
     },
     isTileEmpty: isTileEmpty,
 
@@ -2045,138 +2018,138 @@ window.mapRenderer = {
 
             // Use Symmetrical Shadowcasting for the player's Z level (Optimization A.2)
             if (window.Shadowcaster) {
-                 const fowLayer = gameState.fowData[_playerZ.toString()];
-                 if (fowLayer) {
-                     // Callback to check blocking (on player Z)
-                     // We use the same isTileBlockingVision logic but restricted to Z
-                     const isBlocking = (x, y) => {
-                         // Bounds check inside blocking check or caster? Caster does basic bounds?
-                         // Caster expects valid coords? We should check bounds.
-                         if (x < 0 || y < 0 || x >= W || y >= H) return true;
-                         return this.isTileBlockingVision(x, y, _playerZ, _playerZ);
-                     };
+                const fowLayer = gameState.fowData[_playerZ.toString()];
+                if (fowLayer) {
+                    // Callback to check blocking (on player Z)
+                    // We use the same isTileBlockingVision logic but restricted to Z
+                    const isBlocking = (x, y) => {
+                        // Bounds check inside blocking check or caster? Caster does basic bounds?
+                        // Caster expects valid coords? We should check bounds.
+                        if (x < 0 || y < 0 || x >= W || y >= H) return true;
+                        return this.isTileBlockingVision(x, y, _playerZ, _playerZ);
+                    };
 
-                     const setVisible = (x, y) => {
-                         if (x >= 0 && y >= 0 && x < W && y < H) {
-                             if (fowLayer[y][x] !== 'visible') {
-                                 fowLayer[y][x] = 'visible';
-                                 if (!gameState.fowData.fowCurrentlyVisible[_playerZ.toString()]) {
-                                     gameState.fowData.fowCurrentlyVisible[_playerZ.toString()] = [];
-                                 }
-                                 gameState.fowData.fowCurrentlyVisible[_playerZ.toString()].push({ x: x, y: y });
-                             }
-                         }
-                     };
+                    const setVisible = (x, y) => {
+                        if (x >= 0 && y >= 0 && x < W && y < H) {
+                            if (fowLayer[y][x] !== 'visible') {
+                                fowLayer[y][x] = 'visible';
+                                if (!gameState.fowData.fowCurrentlyVisible[_playerZ.toString()]) {
+                                    gameState.fowData.fowCurrentlyVisible[_playerZ.toString()] = [];
+                                }
+                                gameState.fowData.fowCurrentlyVisible[_playerZ.toString()].push({ x: x, y: y });
+                            }
+                        }
+                    };
 
-                     window.Shadowcaster.compute(_playerX, _playerY, effectiveRadius, isBlocking, setVisible);
-                 }
+                    window.Shadowcaster.compute(_playerX, _playerY, effectiveRadius, isBlocking, setVisible);
+                }
 
-                 // Vertical Propagation (Optimization B)
-                 // For other Z levels, visibility is derived from the player's Z visibility.
-                 // We assume if (x,y) is visible on PlayerZ, we can check vertical line of sight for (x,y) on other Zs.
-                 // This avoids full raycasting for every tile on every Z.
+                // Vertical Propagation (Optimization B)
+                // For other Z levels, visibility is derived from the player's Z visibility.
+                // We assume if (x,y) is visible on PlayerZ, we can check vertical line of sight for (x,y) on other Zs.
+                // This avoids full raycasting for every tile on every Z.
 
-                 const visibleOnCurrentZ = gameState.fowData.fowCurrentlyVisible[_playerZ.toString()];
-                 if (visibleOnCurrentZ && visibleOnCurrentZ.length > 0) {
-                     Object.keys(mapLevels).forEach(zKey => {
-                         const z = parseInt(zKey);
-                         if (z === _playerZ) return; // Already done
+                const visibleOnCurrentZ = gameState.fowData.fowCurrentlyVisible[_playerZ.toString()];
+                if (visibleOnCurrentZ && visibleOnCurrentZ.length > 0) {
+                    Object.keys(mapLevels).forEach(zKey => {
+                        const z = parseInt(zKey);
+                        if (z === _playerZ) return; // Already done
 
-                         const fowLayerOther = gameState.fowData[zKey];
-                         if (!fowLayerOther) return;
+                        const fowLayerOther = gameState.fowData[zKey];
+                        if (!fowLayerOther) return;
 
-                         // We check vertical LOS for each visible tile on current Z
-                         visibleOnCurrentZ.forEach(pt => {
-                             const { x, y } = pt;
-                             // Check if we can see from (x, y, playerZ) to (x, y, z)
-                             // This is a strictly vertical check (or steep angle check for very close Zs, but mostly vertical)
+                        // We check vertical LOS for each visible tile on current Z
+                        visibleOnCurrentZ.forEach(pt => {
+                            const { x, y } = pt;
+                            // Check if we can see from (x, y, playerZ) to (x, y, z)
+                            // This is a strictly vertical check (or steep angle check for very close Zs, but mostly vertical)
 
-                             // Simplified Vertical Check:
-                             // Can we trace a line from PlayerPos to (x, y, z)?
-                             // Or simpler: Can we see (x, y, z) *given* we can see (x, y, playerZ)?
-                             // Yes, if the vertical column at (x, y) is open between playerZ and z.
+                            // Simplified Vertical Check:
+                            // Can we trace a line from PlayerPos to (x, y, z)?
+                            // Or simpler: Can we see (x, y, z) *given* we can see (x, y, playerZ)?
+                            // Yes, if the vertical column at (x, y) is open between playerZ and z.
 
-                             // We use isTileVisible for this single vertical check?
-                             // No, isTileVisible is a raycast from PlayerPos.
-                             // Raycast from PlayerPos to (x, y, z).
+                            // We use isTileVisible for this single vertical check?
+                            // No, isTileVisible is a raycast from PlayerPos.
+                            // Raycast from PlayerPos to (x, y, z).
 
-                             // Wait, we replaced O(R^2) raycasts with Shadowcasting + Vertical Check.
-                             // Raycasting to (x, y, z) is still a raycast.
-                             // But we only do it for *visible tiles* on Planar view, not the whole box.
-                             // And we can optimize it: We know the path to (x, y, playerZ) is clear.
-                             // So we only need to check if the path deviates vertically?
+                            // Wait, we replaced O(R^2) raycasts with Shadowcasting + Vertical Check.
+                            // Raycasting to (x, y, z) is still a raycast.
+                            // But we only do it for *visible tiles* on Planar view, not the whole box.
+                            // And we can optimize it: We know the path to (x, y, playerZ) is clear.
+                            // So we only need to check if the path deviates vertically?
 
-                             // Actually, if we use standard raycasting for these tiles, it's:
-                             // Count(VisibleTiles) * NumZLevels.
-                             // For R=60, VisibleTiles ~ 3000-5000?
-                             // Raycast is length ~30.
-                             // 5000 * 30 * 3 = 450,000 checks. Still high?
-                             // But Shadowcasting visited each tile ONCE (very fast).
+                            // Actually, if we use standard raycasting for these tiles, it's:
+                            // Count(VisibleTiles) * NumZLevels.
+                            // For R=60, VisibleTiles ~ 3000-5000?
+                            // Raycast is length ~30.
+                            // 5000 * 30 * 3 = 450,000 checks. Still high?
+                            // But Shadowcasting visited each tile ONCE (very fast).
 
-                             // Let's use a cheaper approximation for Z != playerZ.
-                             // "Onion Skinning" implies looking down.
-                             // If I see (x, y) on Z, and Z is transparent floor/hole, I see (x, y) on Z-1.
-                             // So:
+                            // Let's use a cheaper approximation for Z != playerZ.
+                            // "Onion Skinning" implies looking down.
+                            // If I see (x, y) on Z, and Z is transparent floor/hole, I see (x, y) on Z-1.
+                            // So:
 
-                             let canSee = false;
-                             if (z < _playerZ) {
-                                 // Looking down
-                                 // Check layers between z and playerZ at (x,y)
-                                 // If all are transparent/holes, then visible.
-                                 // Note: We already know (x,y) on playerZ is visible.
+                            let canSee = false;
+                            if (z < _playerZ) {
+                                // Looking down
+                                // Check layers between z and playerZ at (x,y)
+                                // If all are transparent/holes, then visible.
+                                // Note: We already know (x,y) on playerZ is visible.
 
-                                 // We need to check blocking from playerZ down to z.
-                                 // But wait, the Ray from Player(0,0,0) to Target(10,10,-1) passes through (5,5,-0.5).
-                                 // It does NOT stay in the column (x,y).
-                                 // So strictly vertical check is wrong for perspective.
+                                // We need to check blocking from playerZ down to z.
+                                // But wait, the Ray from Player(0,0,0) to Target(10,10,-1) passes through (5,5,-0.5).
+                                // It does NOT stay in the column (x,y).
+                                // So strictly vertical check is wrong for perspective.
 
-                                 // However, for top-down tile games, "Onion Skin" usually means "Render what's below the visible floor".
-                                 // The Renderer *already* handles this by drawing lower levels under visible transparent tiles.
-                                 // It does NOT use fowData[z] for this.
+                                // However, for top-down tile games, "Onion Skin" usually means "Render what's below the visible floor".
+                                // The Renderer *already* handles this by drawing lower levels under visible transparent tiles.
+                                // It does NOT use fowData[z] for this.
 
-                                 // So: Do we NEED to populate fowData[z] for z != playerZ?
-                                 // Only if the user switches view to Z-1?
-                                 // Or if we need to see entities on Z-1.
+                                // So: Do we NEED to populate fowData[z] for z != playerZ?
+                                // Only if the user switches view to Z-1?
+                                // Or if we need to see entities on Z-1.
 
-                                 // If we only need it for "Look Mode" or picking targets:
-                                 // We can just rely on the renderer's onion skinning for visual.
-                                 // And use on-demand raycasting for targeting.
+                                // If we only need it for "Look Mode" or picking targets:
+                                // We can just rely on the renderer's onion skinning for visual.
+                                // And use on-demand raycasting for targeting.
 
-                                 // BUT, to keep existing behavior where switching Z shows FOW:
-                                 // We can perform the Raycast check only for visible tiles.
-                                 // It is expensive but much less than checking ALL tiles in bounding box (including hidden ones).
+                                // BUT, to keep existing behavior where switching Z shows FOW:
+                                // We can perform the Raycast check only for visible tiles.
+                                // It is expensive but much less than checking ALL tiles in bounding box (including hidden ones).
 
-                                 // Also, we can limit the Z check to +/- 2 levels or something reasonable.
+                                // Also, we can limit the Z check to +/- 2 levels or something reasonable.
 
-                                 if (Math.abs(z - _playerZ) <= 2) { // Optimization: Limit vertical FOW calculation depth
-                                     if (this.isTileVisible(_playerX, _playerY, _playerZ, x, y, z, effectiveRadius)) {
-                                         if (fowLayerOther[y][x] !== 'visible') {
-                                             fowLayerOther[y][x] = 'visible';
-                                             if (!gameState.fowData.fowCurrentlyVisible[zKey]) gameState.fowData.fowCurrentlyVisible[zKey] = [];
-                                             gameState.fowData.fowCurrentlyVisible[zKey].push({x, y});
-                                         }
-                                     }
-                                 }
-                             } else {
-                                 // Looking up
-                                 // Similar logic.
-                                 if (Math.abs(z - _playerZ) <= 2) {
-                                     if (this.isTileVisible(_playerX, _playerY, _playerZ, x, y, z, effectiveRadius)) {
-                                         if (fowLayerOther[y][x] !== 'visible') {
-                                             fowLayerOther[y][x] = 'visible';
-                                             if (!gameState.fowData.fowCurrentlyVisible[zKey]) gameState.fowData.fowCurrentlyVisible[zKey] = [];
-                                             gameState.fowData.fowCurrentlyVisible[zKey].push({x, y});
-                                         }
-                                     }
-                                 }
-                             }
-                         });
-                     });
-                 }
+                                if (Math.abs(z - _playerZ) <= 2) { // Optimization: Limit vertical FOW calculation depth
+                                    if (this.isTileVisible(_playerX, _playerY, _playerZ, x, y, z, effectiveRadius)) {
+                                        if (fowLayerOther[y][x] !== 'visible') {
+                                            fowLayerOther[y][x] = 'visible';
+                                            if (!gameState.fowData.fowCurrentlyVisible[zKey]) gameState.fowData.fowCurrentlyVisible[zKey] = [];
+                                            gameState.fowData.fowCurrentlyVisible[zKey].push({ x, y });
+                                        }
+                                    }
+                                }
+                            } else {
+                                // Looking up
+                                // Similar logic.
+                                if (Math.abs(z - _playerZ) <= 2) {
+                                    if (this.isTileVisible(_playerX, _playerY, _playerZ, x, y, z, effectiveRadius)) {
+                                        if (fowLayerOther[y][x] !== 'visible') {
+                                            fowLayerOther[y][x] = 'visible';
+                                            if (!gameState.fowData.fowCurrentlyVisible[zKey]) gameState.fowData.fowCurrentlyVisible[zKey] = [];
+                                            gameState.fowData.fowCurrentlyVisible[zKey].push({ x, y });
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    });
+                }
 
             } else {
                 // Fallback to old slow method if Shadowcaster missing
-                 // We clamp to map dimensions.
+                // We clamp to map dimensions.
                 const minX = Math.max(0, Math.floor(_playerX - effectiveRadius));
                 const maxX = Math.min(W - 1, Math.ceil(_playerX + effectiveRadius));
                 const minY = Math.max(0, Math.floor(_playerY - effectiveRadius));

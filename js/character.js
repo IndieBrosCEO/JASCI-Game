@@ -93,8 +93,8 @@ function updateStat(name, value, character) {
     // For now, if gameState.gameStarted is true, we skip the 35 cap check.
     if (!window.gameState || !window.gameState.gameStarted) {
         if (updatedTotal > maxTotalPoints) {
-             console.warn(`updateStat: Total points ${updatedTotal} exceeds max ${maxTotalPoints}`);
-             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            console.warn(`updateStat: Total points ${updatedTotal} exceeds max ${maxTotalPoints}`);
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             alert(`Total stat points cannot exceed ${maxTotalPoints}.`);
             return;
         }
@@ -204,6 +204,17 @@ function startGame() {
     const characterInfoPanel = document.getElementById('character-info-panel');
     // const gameControls = document.getElementById('game-controls'); // This ID does not exist in index.html right-panel is used.
 
+    // Critical: Copy stats and skills from the character creator (gameState) to the player object.
+    // This ensures the player starts with the stats configured by the user.
+    if (window.gameState.player) {
+        window.gameState.player.stats = JSON.parse(JSON.stringify(window.gameState.stats));
+        window.gameState.player.skills = JSON.parse(JSON.stringify(window.gameState.skills));
+        logToConsole("Player stats and skills initialized from character creator.", "info");
+    } else {
+        logToConsole("Warning: gameState.player object not found during startGame. Stats/skills not copied.", "warn");
+    }
+
+
     // Ensure currentMapData is loaded (now via window.mapRenderer.getCurrentMapData())
     let currentMap = window.mapRenderer.getCurrentMapData();
     if (!currentMap) {
@@ -218,7 +229,8 @@ function startGame() {
     // This might be redundant if initialize() and handleMapSelectionChangeWrapper() are correctly setting these.
     if (currentMap && currentMap.levels && currentMap.startPos) {
         gameState.mapLevels = currentMap.levels;
-        gameState.playerPos = { ...currentMap.startPos
+        gameState.playerPos = {
+            ...currentMap.startPos
         }; // Ensure we have x, y, and z
         gameState.currentViewZ = currentMap.startPos.z;
     } else if (currentMap) {
@@ -373,10 +385,10 @@ function startGame() {
         id: "fishing_rod_simple",
         nameForLog: "Fishing Rod"
     }
-    // Add other items like Canned Beans, Bottled Water if they are default starting items
-    // For example:
-    // { id: "canned_beans_food", nameForLog: "Canned Beans" },
-    // { id: "bottled_water_drink", nameForLog: "Bottled Water" }
+        // Add other items like Canned Beans, Bottled Water if they are default starting items
+        // For example:
+        // { id: "canned_beans_food", nameForLog: "Canned Beans" },
+        // { id: "bottled_water_drink", nameForLog: "Bottled Water" }
     ];
 
     logToConsole(`Processing ${allStartingItems.length} starting items. Player inventory capacity: ${gameState.inventory.container.maxSlots} slots.`);
@@ -786,10 +798,10 @@ function renderHealthTable(character) {
 
         // Allow clicking to treat if injured or in crisis
         if (current < max || crisisTimer > 0) {
-             clickHandler = `onclick="window.openMedicalTreatmentModal('${partNameKey}')"`;
-             cursorStyle = `style="cursor: pointer;"`;
-             titleAttr = `title="Click to attempt treatment"`;
-             row.classList.add("clickable-health-row"); // For optional CSS hover effects
+            clickHandler = `onclick="window.openMedicalTreatmentModal('${partNameKey}')"`;
+            cursorStyle = `style="cursor: pointer;"`;
+            titleAttr = `title="Click to attempt treatment"`;
+            row.classList.add("clickable-health-row"); // For optional CSS hover effects
         }
 
         row.innerHTML = `
@@ -842,17 +854,17 @@ function openMedicalTreatmentModal(bodyPartKey) {
     let hasMedicalItems = false;
     if (window.gameState.inventory && window.gameState.inventory.container && window.gameState.inventory.container.items) {
         medicalItems.forEach(medItem => {
-             // Count items in inventory
-             const count = window.gameState.inventory.container.items.filter(i => i.id === medItem.id).length;
-             if (count > 0) {
-                 hasMedicalItems = true;
-                 const div = document.createElement('div');
-                 div.innerHTML = `
+            // Count items in inventory
+            const count = window.gameState.inventory.container.items.filter(i => i.id === medItem.id).length;
+            if (count > 0) {
+                hasMedicalItems = true;
+                const div = document.createElement('div');
+                div.innerHTML = `
                     <input type="radio" id="treatmentMethod_${medItem.id}" name="treatmentMethod" value="${medItem.id}">
                     <label for="treatmentMethod_${medItem.id}">Use ${medItem.name} (+${medItem.bonus} Bonus, ${count} left)</label>
                  `;
-                 itemContainer.appendChild(div);
-             }
+                itemContainer.appendChild(div);
+            }
         });
     }
 
@@ -950,17 +962,17 @@ function performMedicalTreatment(bodyPartKey, methodValue) {
         // Just refresh the item list in case they want to treat again.
 
         // Refresh item list in modal without full re-open
-         const itemContainer = document.getElementById('treatmentItemOptions');
-         // (Simpler to just call openMedicalTreatmentModal again to refresh UI state but that resets selection)
-         // We'll leave it open. User clicks Cancel or X to close.
+        const itemContainer = document.getElementById('treatmentItemOptions');
+        // (Simpler to just call openMedicalTreatmentModal again to refresh UI state but that resets selection)
+        // We'll leave it open. User clicks Cancel or X to close.
 
-         // If item count dropped to 0, we should update UI.
-         if (itemToConsume) {
-              // Quick re-render of modal options
-              window.openMedicalTreatmentModal(bodyPartKey);
-              // Restore result message since re-open clears it
-              document.getElementById('treatmentResult').innerHTML = `Roll: ${roll} + Skill(${bonus}) + Item(${itemBonus}) = ${totalRoll}. Result: ${resultTier}`;
-         }
+        // If item count dropped to 0, we should update UI.
+        if (itemToConsume) {
+            // Quick re-render of modal options
+            window.openMedicalTreatmentModal(bodyPartKey);
+            // Restore result message since re-open clears it
+            document.getElementById('treatmentResult').innerHTML = `Roll: ${roll} + Skill(${bonus}) + Item(${itemBonus}) = ${totalRoll}. Result: ${resultTier}`;
+        }
     }, 500);
 }
 

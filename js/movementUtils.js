@@ -25,9 +25,11 @@
 async function attemptCharacterMove(character, direction, assetManagerInstance, moveCostOverride = null, animationDurationOverride = null) {
     const isPlayer = (character === window.gameState);
     const logPrefix = isPlayer ? "[PlayerMovement]" : `[NPCMovement ${character.id || 'UnknownNPC'}]`;
+    console.log(`${logPrefix} attemptCharacterMove called with direction: ${direction}`);
 
     if (isPlayer && window.gameState.isActionMenuActive) {
         logToConsole(`${logPrefix} Cannot move: Action menu active.`, "orange");
+        console.log(`${logPrefix} Blocked: Action menu is active.`);
         return false;
     }
 
@@ -174,11 +176,11 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
     if (charIsOnZTransition && zTransitionDef) {
         // Vehicle check: If in vehicle, only allow slopes.
         if (vehicleId && !zTransitionDef.tags?.includes('slope')) {
-             logToConsole(`${logPrefix} Cannot use ${zTransitionDef.name} while in a vehicle.`, "orange");
-             // Proceed to horizontal check, maybe they are just driving *past* a ladder?
-             // But if they are ON the tile, standard movement usually prioritizes the transition interaction.
-             // Let's assume they can move OFF the tile horizontally (Step 3) if they don't take the transition.
-             // So we skip this block.
+            logToConsole(`${logPrefix} Cannot use ${zTransitionDef.name} while in a vehicle.`, "orange");
+            // Proceed to horizontal check, maybe they are just driving *past* a ladder?
+            // But if they are ON the tile, standard movement usually prioritizes the transition interaction.
+            // Let's assume they can move OFF the tile horizontally (Step 3) if they don't take the transition.
+            // So we skip this block.
         } else {
             logToConsole(`${logPrefix} Character is on Z-Transition Tile (or Slope): '${zTransitionDef.name}'. Attempting Z-move.`);
             const cost = zTransitionDef.z_cost || 1;
@@ -445,8 +447,8 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
             // Re-check currentMP for Z transition as it might be vehicle MP
             let mpForZ = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
             if (vehicleId) {
-                 const vehicle = window.vehicleManager ? window.vehicleManager.getVehicleById(vehicleId) : null;
-                 if (vehicle) mpForZ = vehicle.currentMovementPoints !== undefined ? vehicle.currentMovementPoints : 6;
+                const vehicle = window.vehicleManager ? window.vehicleManager.getVehicleById(vehicleId) : null;
+                if (vehicle) mpForZ = vehicle.currentMovementPoints !== undefined ? vehicle.currentMovementPoints : 6;
             }
 
             if (mpForZ < cost) {
@@ -501,9 +503,10 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
 
 
     // 3. Standard Horizontal Movement (if no Z-transitions were used)
+    // Check if target tile at current Z is strictly impassable, this is used for both horizontal move and fall checks.
+    const targetStrictlyImpassableInfo = isTileStrictlyImpassable(targetX, targetY, originalPos.z);
+
     if (!moveSuccessful) {
-        // Check if target tile at current Z is strictly impassable
-        const targetStrictlyImpassableInfo = isTileStrictlyImpassable(targetX, targetY, originalPos.z);
         if (targetStrictlyImpassableInfo.impassable) {
             logToConsole(`${logPrefix} Movement blocked by '${targetStrictlyImpassableInfo.name}' at (${targetX},${targetY},${originalPos.z}).`);
             return false; // Player bumps into impassable, no further checks.
@@ -660,14 +663,14 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                         // Existing logic above calls consumeFuel for horizontal moves.
                         // We should do it here too.
                         if (!window.vehicleManager.consumeFuel(vehicleId, 1)) {
-                             // This check should ideally happen before move commit, but for consistency with this block structure:
-                             // If out of fuel, we already moved... technically a bug in this specific block but rare.
-                             // Let's assume check passed or add it before commit.
-                             // Reverting move is hard. Let's just log warning.
-                             logToConsole("Vehicle ran out of fuel during slope descent!", "orange");
+                            // This check should ideally happen before move commit, but for consistency with this block structure:
+                            // If out of fuel, we already moved... technically a bug in this specific block but rare.
+                            // Let's assume check passed or add it before commit.
+                            // Reverting move is hard. Let's just log warning.
+                            logToConsole("Vehicle ran out of fuel during slope descent!", "orange");
                         } else {
-                             const vehicle = window.vehicleManager.getVehicleById(vehicleId);
-                             if (vehicle) vehicle.mapPos = { x: targetX, y: targetY, z: potentialSlopeZ };
+                            const vehicle = window.vehicleManager.getVehicleById(vehicleId);
+                            if (vehicle) vehicle.mapPos = { x: targetX, y: targetY, z: potentialSlopeZ };
                         }
                     }
 

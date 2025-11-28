@@ -1193,9 +1193,9 @@
     }
   },
   {
-    "id": "benelli_121_m1_12_gague_shotgun",
-    "name": "Benelli 121 M1 (12-gague shotgun)",
-    "description": "Benelli 121 M1 (12-gague shotgun).",
+    "id": "benelli_121_m1_12_gauge_shotgun",
+    "name": "Benelli 121 M1 (12-gauge shotgun)",
+    "description": "Benelli 121 M1 (12-gauge shotgun).",
     "canEquip": true,
     "size": 4,
     "weightLbs": 8,
