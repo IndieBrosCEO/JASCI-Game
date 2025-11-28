@@ -94,14 +94,34 @@ class HarvestManager {
         if (loot.length > 0) {
             // Add items to inventory
             let gatheredItems = [];
+            let droppedItems = [];
             loot.forEach(drop => {
                 if (window.inventoryManager.addItemToInventoryById(drop.itemId, drop.quantity)) {
                     gatheredItems.push(drop);
+                } else {
+                    // Inventory full, drop to floor
+                    const itemDef = window.assetManager.getItem(drop.itemId);
+                    if (itemDef) {
+                        const droppedItem = new window.Item(itemDef);
+                        droppedItem.quantity = drop.quantity;
+
+                        if (!gameState.floorItems) gameState.floorItems = [];
+                        // Use player position for the drop location
+                        const dropPos = gameState.playerPos ? { ...gameState.playerPos } : { x: item.x, y: item.y, z: item.z };
+
+                        gameState.floorItems.push({
+                            x: dropPos.x,
+                            y: dropPos.y,
+                            z: dropPos.z,
+                            item: droppedItem
+                        });
+                        droppedItems.push(drop);
+                    }
                 }
             });
 
             if (gatheredItems.length > 0) {
-                // Log results
+                // Log gathered results
                 let message = "You gathered: ";
                 gatheredItems.forEach(drop => {
                     const itemDef = window.assetManager.getItem(drop.itemId);
@@ -109,9 +129,25 @@ class HarvestManager {
                     message += `${drop.quantity}x ${name}, `;
                 });
                 message = message.slice(0, -2); // Remove trailing comma
-
                 logToConsole(message, "success");
+            }
 
+            if (droppedItems.length > 0) {
+                 // Log dropped results
+                 let message = "Inventory full. Dropped on ground: ";
+                 droppedItems.forEach(drop => {
+                    const itemDef = window.assetManager.getItem(drop.itemId);
+                    const name = itemDef ? itemDef.name : drop.itemId;
+                    message += `${drop.quantity}x ${name}, `;
+                 });
+                 message = message.slice(0, -2);
+                 logToConsole(message, "orange");
+
+                 // Refresh map render to show items
+                 if (window.mapRenderer) window.mapRenderer.scheduleRender();
+            }
+
+            if (gatheredItems.length > 0 || droppedItems.length > 0) {
                 // Play sound
                 if (window.audioManager) {
                     // Determine sound based on action
@@ -121,16 +157,10 @@ class HarvestManager {
                 }
 
                 // Deplete resource?
-                // Some nodes might be finite.
-                // For now, assume infinite or no state change for simple harvest (sticks from tree).
-                // If we want to turn tree to stump, we need to modify map.
-
                 // Example: 10% chance to deplete a scavenger pile or turn rock to rubble
                 if (Math.random() < 0.1) {
                      // this.depleteNode(item);
                 }
-            } else {
-                 logToConsole("Could not pick up harvested items (Inventory Full?).", "orange");
             }
 
         } else {
