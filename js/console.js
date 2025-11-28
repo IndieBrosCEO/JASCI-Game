@@ -185,6 +185,10 @@ const commandHelpInfo = {
     'testweapons': {
         syntax: 'testweapons',
         description: 'Runs a test to ensure all weapons can be added to inventory and equipped.'
+    },
+    'harvest_help': {
+        syntax: 'harvest_help',
+        description: 'Displays a tutorial on how to harvest resources.'
     }
 };
 
@@ -1423,6 +1427,15 @@ function processConsoleCommand(commandText) {
             } else {
                 logToConsoleUI("Error: testAllWeapons function not found.", 'error');
             }
+            break;
+
+        case 'harvest_help':
+            logToConsoleUI("=== Harvesting Tutorial ===", 'info');
+            logToConsoleUI("1. Wood: Find a Tree or Bush. Stand adjacent. Press 'F' or click 'Interact'. Select 'Harvest Wood'. (Skill: Survival)", 'info');
+            logToConsoleUI("2. Stone: Find a Boulder. Stand adjacent. Interact. Select 'Mine Stone'. (Skill: Survival)", 'info');
+            logToConsoleUI("3. Scavenge: Find Trash Cans or Ash piles. Interact. Select 'Scavenge'. (Skill: Investigation)", 'info');
+            logToConsoleUI("4. Butcher: Stand over a corpse. Interact. Select 'Butcher'. (Skill: Survival)", 'info');
+            logToConsoleUI("Higher skills yield more loot!", 'success');
             break;
 
         default:

@@ -101,7 +101,9 @@ class AssetManager {
             'traps.json', // Added traps.json
             'constructions.json', // Added constructions.json
             'families.json', // Added families.json
-            'perks.json' // Added perks.json
+            'perks.json', // Added perks.json
+            'harvest_resources.json', // Added harvest resources
+            'loot_tables.json' // Added loot tables
         ];
 
         for (const filename of definitionFiles) {
@@ -122,7 +124,32 @@ class AssetManager {
                     }
                 } else if (filename === 'tileset.json') {
                     this.tilesets = parsedJson;
-                    console.log("AssetManager: Base tilesets loaded:", this.tilesets);
+                    // Inject harvest tags programmatically if missing (temporary fix for JSON edit issues)
+                    const patchTile = (id, tagsToAdd) => {
+                        const tile = this.tilesets[id];
+                        if (tile) {
+                            if (!tile.tags) tile.tags = [];
+                            tagsToAdd.forEach(tag => {
+                                if (!tile.tags.includes(tag)) tile.tags.push(tag);
+                            });
+                        }
+                    };
+
+                    patchTile("TRK", ["harvest:wood", "interactive"]);
+                    patchTile("BSH", ["harvest:plant", "interactive"]); // Changed from wood
+                    patchTile("TGR", ["harvest:plant", "interactive"]);
+                    patchTile("GR", ["harvest:plant"]); // Maybe interactive? or just harvestable via tool
+                    patchTile("BLK", ["harvest:stone", "interactive"]);
+                    patchTile("ASH", ["scavenge:junk", "interactive"]);
+                    patchTile("SA", ["harvest:sand", "interactive"]);
+
+                    // Furniture
+                    ["CH", "CR", "TB", "DSK", "DRS", "STL", "BD", "NK", "CN", "CB"].forEach(id => patchTile(id, ["scavenge:furniture", "interactive"]));
+
+                    // Machinery
+                    ["lathe_tile", "engine_jig_tile", "vehicle_bay_tile", "forge_simple_tile", "reloading_bench_tile"].forEach(id => patchTile(id, ["scavenge:machinery", "interactive"]));
+
+                    console.log("AssetManager: Base tilesets loaded and patched:", this.tilesets);
                 } else if (filename === 'npcs.json') {
                     this.npcDefinitions = Object.fromEntries(parsedJson.map(npc => [npc.id, npc]));
                 } else if (filename === 'fish.json') {
@@ -182,7 +209,10 @@ class AssetManager {
                 } else if (filename === 'perks.json') {
                     this.perks = parsedJson;
                     console.log(`AssetManager: Loaded perks definition.`);
-                } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json', 'trap_kits.json'].includes(filename)) {
+                } else if (filename === 'loot_tables.json') {
+                    this.lootTables = parsedJson;
+                    console.log(`AssetManager: Loaded loot tables.`);
+                } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json', 'trap_kits.json', 'harvest_resources.json'].includes(filename)) {
                     // All new item files are arrays of items
                     if (Array.isArray(parsedJson)) {
                         parsedJson.forEach(item => {
