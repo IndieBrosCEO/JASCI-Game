@@ -142,12 +142,23 @@ class AssetManager {
                     patchTile("BLK", ["harvest:stone", "interactive"]);
                     patchTile("ASH", ["scavenge:junk", "interactive"]);
                     patchTile("SA", ["harvest:sand", "interactive"]);
+                    patchTile("MU", ["harvest:mud", "interactive"]);
+                    patchTile("GV", ["harvest:gravel", "interactive"]);
 
                     // Furniture
                     ["CH", "CR", "TB", "DSK", "DRS", "STL", "BD", "NK", "CN", "CB"].forEach(id => patchTile(id, ["scavenge:furniture", "interactive"]));
 
                     // Machinery
                     ["lathe_tile", "engine_jig_tile", "vehicle_bay_tile", "forge_simple_tile", "reloading_bench_tile"].forEach(id => patchTile(id, ["scavenge:machinery", "interactive"]));
+
+                    // Electronics
+                    ["CP", "TV", "PR", "electronics_bench_adv_tile"].forEach(id => patchTile(id, ["scavenge:electronics", "interactive"]));
+
+                    // Appliances
+                    ["RF", "ST", "MW", "WM", "DRY"].forEach(id => patchTile(id, ["scavenge:appliance", "interactive"]));
+
+                    // Glass (Windows)
+                    ["WinCH", "WinCV", "WinOH", "WinOV", "WinB"].forEach(id => patchTile(id, ["scavenge:glass", "interactive"]));
 
                     console.log("AssetManager: Base tilesets loaded and patched:", this.tilesets);
                 } else if (filename === 'npcs.json') {

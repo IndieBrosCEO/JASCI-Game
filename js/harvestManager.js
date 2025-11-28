@@ -40,6 +40,14 @@ class HarvestManager {
             lootTableId = "harvest:sand";
             requiredSkill = "Survival";
             skillDifficulty = 5;
+        } else if (tags.includes("harvest:mud")) {
+            lootTableId = "harvest:mud";
+            requiredSkill = "Survival";
+            skillDifficulty = 5;
+        } else if (tags.includes("harvest:gravel")) {
+            lootTableId = "harvest:gravel";
+            requiredSkill = "Survival";
+            skillDifficulty = 5;
         } else if (tags.includes("scavenge:furniture")) {
             lootTableId = "scavenge:furniture";
             requiredSkill = "Investigation"; // Or Repair?
@@ -48,6 +56,18 @@ class HarvestManager {
             lootTableId = "scavenge:machinery";
             requiredSkill = "Investigation";
             skillDifficulty = 10;
+        } else if (tags.includes("scavenge:electronics")) {
+            lootTableId = "scavenge:electronics";
+            requiredSkill = "Investigation"; // Or Electronics
+            skillDifficulty = 8;
+        } else if (tags.includes("scavenge:appliance")) {
+            lootTableId = "scavenge:appliance";
+            requiredSkill = "Investigation";
+            skillDifficulty = 5;
+        } else if (tags.includes("scavenge:glass")) {
+            lootTableId = "scavenge:glass";
+            requiredSkill = "Investigation";
+            skillDifficulty = 0; // Very easy to just smash and grab
         } else if (tags.includes("scavenge:generic") || tags.includes("container")) {
              if (item.id === "TC" || tags.includes("scavenge:generic")) {
                  lootTableId = "scavenge:generic";

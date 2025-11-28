@@ -35,6 +35,32 @@
     { "itemId": "mechanical_parts_simple", "chance": 0.1, "min": 1, "max": 1 },
     { "itemId": "metal_bits_small", "chance": 0.3, "min": 2, "max": 10 }
   ],
+  "harvest:mud": [
+    { "itemId": "clay_lump", "chance": 0.5, "min": 1, "max": 2 },
+    { "itemId": "stone_sharp_fragment", "chance": 0.2, "min": 1, "max": 1 }
+  ],
+  "harvest:gravel": [
+    { "itemId": "stone_sharp_fragment", "chance": 0.6, "min": 1, "max": 3 },
+    { "itemId": "sand_pile", "chance": 0.3, "min": 1, "max": 2 }
+  ],
+  "scavenge:electronics": [
+    { "itemId": "electronic_scrap", "chance": 0.5, "min": 1, "max": 3 },
+    { "itemId": "wire_insulated_thin", "chance": 0.4, "min": 1, "max": 3 },
+    { "itemId": "circuit_board_blank", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "led_basic", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "battery_cell_small", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "memory_chip_basic", "chance": 0.1, "min": 1, "max": 1 }
+  ],
+  "scavenge:appliance": [
+    { "itemId": "scrap_metal", "chance": 0.5, "min": 1, "max": 4 },
+    { "itemId": "motor_small_electric", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "heating_element_nichrome_wire", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "rubber_hose_section", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "wire_insulated_thin", "chance": 0.3, "min": 1, "max": 3 }
+  ],
+  "scavenge:glass": [
+    { "itemId": "sharp_glass", "chance": 0.8, "min": 1, "max": 3 }
+  ],
   "scavenge:generic": [
     { "itemId": "scrap_metal", "chance": 0.3, "min": 1, "max": 3 },
     { "itemId": "plastic_junk_item", "chance": 0.3, "min": 1, "max": 3 },
