@@ -1131,5 +1131,705 @@
       "type": "tanning_rack",
       "grade": 1
     }
+  },
+  {
+    "id": "bed_basic",
+    "name": "Basic Bed",
+    "description": "A simple wooden bed with a mattress.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a basic bed.",
+      "components": [
+        {
+          "quantity": 6,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "fabric",
+          "require": {
+            "type": "sheet"
+          }
+        },
+        {
+          "quantity": 10,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "BD",
+    "family": "furniture",
+    "properties": {
+      "type": "bed"
+    }
+  },
+  {
+    "id": "chair_basic",
+    "name": "Wooden Chair",
+    "description": "A simple wooden chair.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a wooden chair.",
+      "components": [
+        {
+          "quantity": 4,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 20,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "CR",
+    "family": "furniture",
+    "properties": {
+      "type": "chair"
+    }
+  },
+  {
+    "id": "table_basic",
+    "name": "Wooden Table",
+    "description": "A simple wooden table.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a wooden table.",
+      "components": [
+        {
+          "quantity": 6,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 8,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 30,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "TB",
+    "family": "furniture",
+    "properties": {
+      "type": "table"
+    }
+  },
+  {
+    "id": "bookshelf_basic",
+    "name": "Wooden Bookshelf",
+    "description": "A wooden shelf for storing books and items.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a wooden bookshelf.",
+      "components": [
+        {
+          "quantity": 8,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 12,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 45,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "STL",
+    "family": "storage",
+    "properties": {
+      "type": "bookshelf"
+    }
+  },
+  {
+    "id": "cabinet_basic",
+    "name": "Wooden Cabinet",
+    "description": "A wooden cabinet for storage.",
+    "category": "storage",
+    "recipe": {
+      "description": "Construct a wooden cabinet.",
+      "components": [
+        {
+          "quantity": 6,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        },
+        {
+          "quantity": 8,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 40,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "CB",
+    "family": "storage",
+    "properties": {
+      "type": "cabinet"
+    }
+  },
+  {
+    "id": "dresser_basic",
+    "name": "Wooden Dresser",
+    "description": "A wooden dresser for storing clothes.",
+    "category": "storage",
+    "recipe": {
+      "description": "Construct a wooden dresser.",
+      "components": [
+        {
+          "quantity": 8,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 10,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 50,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "DRS",
+    "family": "storage",
+    "properties": {
+      "type": "dresser"
+    }
+  },
+  {
+    "id": "desk_basic",
+    "name": "Wooden Desk",
+    "description": "A wooden desk.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a wooden desk.",
+      "components": [
+        {
+          "quantity": 6,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 8,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 35,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "DSK",
+    "family": "furniture",
+    "properties": {
+      "type": "desk"
+    }
+  },
+  {
+    "id": "nightstand_basic",
+    "name": "Wooden Nightstand",
+    "description": "A small wooden nightstand.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a nightstand.",
+      "components": [
+        {
+          "quantity": 3,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 15,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "NK",
+    "family": "furniture",
+    "properties": {
+      "type": "nightstand"
+    }
+  },
+  {
+    "id": "floor_wood",
+    "name": "Wood Flooring",
+    "description": "Simple wooden flooring.",
+    "category": "structure",
+    "recipe": {
+      "description": "Lay down wooden flooring.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 15,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "WF",
+    "family": "structure",
+    "properties": {
+      "type": "floor"
+    }
+  },
+  {
+    "id": "stairs_up",
+    "name": "Stairs Up",
+    "description": "Wooden stairs leading up.",
+    "category": "structure",
+    "recipe": {
+      "description": "Construct stairs leading up.",
+      "components": [
+        {
+          "quantity": 10,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 20,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 120,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "ST_U",
+    "family": "structure",
+    "properties": {
+      "type": "stairs"
+    }
+  },
+  {
+    "id": "stairs_down",
+    "name": "Stairs Down",
+    "description": "Wooden stairs leading down.",
+    "category": "structure",
+    "recipe": {
+      "description": "Construct stairs leading down.",
+      "components": [
+        {
+          "quantity": 10,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 20,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 120,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "ST_D",
+    "family": "structure",
+    "properties": {
+      "type": "stairs"
+    }
+  },
+  {
+    "id": "campfire_basic",
+    "name": "Basic Campfire",
+    "description": "A simple fire for warmth and cooking.",
+    "category": "crafting_station",
+    "recipe": {
+      "description": "Build a campfire.",
+      "components": [
+        {
+          "quantity": 6,
+          "family": "wood",
+          "require": {
+            "type": "stick"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 1
+        }
+      ],
+      "time_to_craft": 10,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "campfire_basic_tile",
+    "family": "crafting_station",
+    "properties": {
+      "type": "campfire"
+    }
+  },
+  {
+    "id": "wall_metal_simple",
+    "name": "Metal Wall Section",
+    "description": "A wall made of metal sheets.",
+    "category": "defensive",
+    "recipe": {
+      "description": "Construct a metal wall section.",
+      "components": [
+        {
+          "quantity": 4,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "sturdy"
+          }
+        },
+        {
+          "quantity": 10,
+          "family": "fastener",
+          "require": {
+            "type": "rivet"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 10
+        }
+      ],
+      "tools_required": [
+        "rivet_gun_manual",
+        "metal_snips_heavy"
+      ],
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "MWV",
+    "family": "wall",
+    "properties": {
+      "material": "metal"
+    }
+  },
+  {
+    "id": "door_metal_simple",
+    "name": "Metal Door",
+    "description": "A sturdy metal door.",
+    "category": "defensive",
+    "recipe": {
+      "description": "Construct a metal door.",
+      "components": [
+        {
+          "quantity": 3,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "sturdy"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "component",
+          "require": {
+            "type": "mechanical_parts"
+          }
+        },
+        {
+          "quantity": 8,
+          "family": "fastener",
+          "require": {
+            "type": "rivet"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 12
+        }
+      ],
+      "tools_required": [
+        "rivet_gun_manual",
+        "metal_snips_heavy"
+      ],
+      "time_to_craft": 50,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "MDH",
+    "family": "door",
+    "properties": {
+      "material": "metal"
+    }
+  },
+  {
+    "id": "electronics_bench_advanced_built",
+    "name": "Advanced Electronics Bench",
+    "description": "A high-tech bench for advanced electronics work.",
+    "category": "crafting_station_advanced",
+    "recipe": {
+      "description": "Construct an advanced electronics bench.",
+      "components": [
+        {
+          "quantity": 4,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "sturdy"
+          }
+        },
+        {
+          "quantity": 5,
+          "family": "component",
+          "require": {
+            "type": "circuit_board"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "power_source",
+          "require": {
+            "type": "battery"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "wire",
+          "require": {
+            "material": "copper"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 15
+        },
+        {
+          "skill": "Repair",
+          "level": 10
+        }
+      ],
+      "tools_required": [
+        "soldering_iron_kit",
+        "multimeter_digital",
+        "wrench_set"
+      ],
+      "time_to_craft": 240,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "electronics_bench_adv_tile",
+    "family": "crafting_station",
+    "properties": {
+      "grade": "industrial"
+    }
+  },
+  {
+    "id": "barricade_wooden_built",
+    "name": "Wooden Barricade",
+    "description": "A hastily constructed wooden barricade.",
+    "category": "defensive",
+    "recipe": {
+      "description": "Build a wooden barricade.",
+      "components": [
+        {
+          "quantity": 3,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "hammer_peen"
+      ],
+      "time_to_craft": 20,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "WBD",
+    "family": "barricade",
+    "properties": {
+      "material": "wood"
+    }
   }
 ]

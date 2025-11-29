@@ -1737,5 +1737,55 @@
       "bottom",
       "inert"
     ]
+  },
+  "barricade_metal_tile": {
+    "sprite": "X",
+    "name": "Metal Barricade",
+    "color": "#A9A9A9",
+    "tags": [
+      "structure",
+      "impassable",
+      "metal",
+      "cover",
+      "breakable",
+      "middle"
+    ],
+    "description": "A sturdy metal barricade offering good cover."
+  },
+  "rain_collector_small_tile": {
+    "sprite": "Y",
+    "name": "Small Rain Collector",
+    "color": "#4682B4",
+    "tags": [
+      "structure",
+      "impassable",
+      "middle",
+      "interactive",
+      "water_source",
+      "resource_producer"
+    ],
+    "description": "Collects rainwater over time.",
+    "producesItemId": "bottled_water_drink",
+    "productionRatePerTick": 0.001,
+    "storageCapacity": 5
+  },
+  "storage_locker_small_tile": {
+    "sprite": "L",
+    "name": "Small Storage Locker",
+    "color": "#778899",
+    "tags": [
+      "interactive",
+      "container",
+      "furniture",
+      "middle",
+      "impassable",
+      "metal",
+      "storage"
+    ],
+    "description": "A small, lockable container for storing items.",
+    "contents": [],
+    "capacity": 15,
+    "isLocked": false,
+    "lockDifficulty": 5
   }
 }
