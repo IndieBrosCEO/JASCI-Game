@@ -193,10 +193,6 @@
       "width": 2,
       "height": 1
     },
-    "allowedTileTags": [
-      "floor",
-      "indoors"
-    ],
     "stationType": "workbench_general",
     "tags": [
       "interactive",
@@ -257,10 +253,6 @@
       "width": 1,
       "height": 1
     },
-    "allowedTileTags": [
-      "floor",
-      "outdoors_ok"
-    ],
     "stationType": "forge",
     "tags": [
       "interactive",
@@ -324,10 +316,6 @@
       "width": 1,
       "height": 1
     },
-    "allowedTileTags": [
-      "floor",
-      "indoors"
-    ],
     "stationType": "chemistry_bench",
     "tags": [
       "interactive",
@@ -380,10 +368,6 @@
       "width": 1,
       "height": 1
     },
-    "allowedTileTags": [
-      "floor",
-      "ground"
-    ],
     "health": 150,
     "armorValue": 8,
     "tags": [
@@ -438,10 +422,6 @@
       "width": 1,
       "height": 1
     },
-    "allowedTileTags": [
-      "outdoors_only",
-      "ground"
-    ],
     "producesItemId": "bottled_water_drink",
     "productionRatePerTick": 0.001,
     "storageCapacity": 5,
@@ -572,10 +552,6 @@
       "width": 2,
       "height": 1
     },
-    "allowedTileTags": [
-      "floor",
-      "indoors"
-    ],
     "stationType": "reloading_general",
     "tags": [
       "interactive",
@@ -649,11 +625,6 @@
       "width": 2,
       "height": 1
     },
-    "allowedTileTags": [
-      "floor",
-      "indoors",
-      "reinforced_area_optional"
-    ],
     "stationType": "munitions_assembly",
     "tags": [
       "interactive",
@@ -792,10 +763,6 @@
       "width": 2,
       "height": 2
     },
-    "allowedTileTags": [
-      "floor",
-      "indoors"
-    ],
     "stationType": "armor_station",
     "tags": [
       "interactive",
@@ -878,11 +845,6 @@
       "width": 3,
       "height": 1
     },
-    "allowedTileTags": [
-      "floor",
-      "indoors",
-      "requires_power_grid"
-    ],
     "stationType": "machining_lathe",
     "tags": [
       "interactive",
@@ -967,11 +929,6 @@
       "width": 4,
       "height": 3
     },
-    "allowedTileTags": [
-      "floor_reinforced",
-      "indoors_large",
-      "requires_power_grid"
-    ],
     "stationType": "vehicle_assembly",
     "tags": [
       "interactive",
@@ -1042,10 +999,6 @@
       "width": 2,
       "height": 1
     },
-    "allowedTileTags": [
-      "floor",
-      "indoors"
-    ],
     "stationType": "engine_work",
     "tags": [
       "interactive",
@@ -1107,10 +1060,6 @@
       "width": 2,
       "height": 1
     },
-    "allowedTileTags": [
-      "floor",
-      "indoors"
-    ],
     "stationType": "weaving",
     "tags": [
       "interactive",
@@ -1171,10 +1120,6 @@
       "width": 2,
       "height": 1
     },
-    "allowedTileTags": [
-      "ground",
-      "outdoors_ok"
-    ],
     "stationType": "tanning",
     "tags": [
       "interactive",
