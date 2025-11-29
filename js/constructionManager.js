@@ -173,6 +173,9 @@ class ConstructionManager {
                     }
                 }
 
+                // 3. Check allowedTileTags against the underlying 'bottom' (landscape/floor) tile
+                // REMOVED: User spec says no "inside" or "outside" tags and relies on layer occupancy only.
+                // The loop below is removed to allow placement based purely on target layer availability.
             }
         }
 
