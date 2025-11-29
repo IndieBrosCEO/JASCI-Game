@@ -435,10 +435,10 @@
             return;
         }
 
-        let nextTrackIndex;
-        do {
-            nextTrackIndex = Math.floor(Math.random() * this.musicTracks.length);
-        } while (this.musicTracks.length > 1 && nextTrackIndex === this.currentTrackIndex);
+        let nextTrackIndex = this.currentTrackIndex + 1;
+        if (nextTrackIndex >= this.musicTracks.length) {
+            nextTrackIndex = 0;
+        }
         this.currentTrackIndex = nextTrackIndex;
 
         const trackPath = this.musicTracks[this.currentTrackIndex];
