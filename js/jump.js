@@ -153,8 +153,33 @@ function getJumpLandingSpot(startPos, targetPos, jumpRange) {
     // The final landing spot's validity is checked separately. We skip the start and end of the path.
     for (let i = 1; i < path.length - 1; i++) {
         const point = path[i];
-        if (!window.mapRenderer.isTileEmpty(point.x, point.y, startPos.z + 1)) {
-            return { isValid: false, reason: "Jump path is blocked from above.", spot: null };
+        // Check for blocking tiles (impassable/ceiling) rather than strictly "not empty" to allow jumping in corridors
+        const tileZAbove = startPos.z + 1;
+        // If there is an impassable tile or a floor (ceiling) at Z+1, it blocks the jump arc.
+        // We use isWalkable to check if the space is occupied by blocking terrain? No, isWalkable checks support.
+        // We need to check if we can pass THROUGH Z+1.
+        // If Bottom(Z+1) is a floor, it's a ceiling for Z. Blocked.
+        // If Middle(Z+1) is impassable, it's an obstacle. Blocked.
+        // We use mapRenderer logic for this.
+
+        // Custom check: Block if tile at Z+1 is NOT empty and IS blocking.
+        // Simplest approximation: If it has a floor on bottom (ceiling) or impassable on middle.
+
+        const mapData = window.mapRenderer.getCurrentMapData();
+        if (mapData && mapData.levels && mapData.levels[tileZAbove.toString()]) {
+            const levelData = mapData.levels[tileZAbove.toString()];
+            // Check Bottom (Ceiling)
+            const tileOnBottomRaw = levelData.bottom?.[point.y]?.[point.x];
+            const effBot = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw?.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
+            if (effBot && window.assetManagerInstance.tilesets[effBot]?.tags?.includes('floor')) {
+                 return { isValid: false, reason: "Jump path is blocked by low ceiling.", spot: null };
+            }
+            // Check Middle (Obstacle)
+            const tileOnMiddleRaw = levelData.middle?.[point.y]?.[point.x];
+            const effMid = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw?.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
+             if (effMid && window.assetManagerInstance.tilesets[effMid]?.tags?.includes('impassable')) {
+                 return { isValid: false, reason: "Jump path is blocked from above.", spot: null };
+            }
         }
     }
 

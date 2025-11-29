@@ -114,6 +114,9 @@ class AnimationManager {
             case 'hitMissLabel': // Added for combat sequence
                 animationInstance = new HitMissLabelAnimation(animationType, data, this.gameState);
                 break;
+            case 'jump': // Added for jump mechanic
+                animationInstance = new JumpAnimation(animationType, data, this.gameState);
+                break;
             default:
                 console.warn(`AnimationManager: Unknown animation type: ${animationType}. Using generic Animation.`);
                 animationInstance = new Animation(animationType, data, this.gameState);
@@ -131,6 +134,17 @@ class AnimationManager {
         }
 
         return animationInstance.promise;
+    }
+
+    addJumpAnimation(entity, targetPos, duration = 300) {
+        return this.playAnimation('jump', {
+            entity: entity,
+            startPos: { ...entity.mapPos }, // Copy start pos
+            targetPos: targetPos,
+            duration: duration,
+            sprite: entity.sprite,
+            color: entity.color
+        });
     }
 
     isAnimationPlaying() {
@@ -1159,6 +1173,82 @@ window.ChainsawAttackAnimation = ChainsawAttackAnimation;
 window.AnimationManager = AnimationManager;
 window.Animation = Animation;
 window.MovementAnimation = MovementAnimation;
+
+class JumpAnimation extends Animation {
+    constructor(type, data, gameStateRef) {
+        // data: entity, startPos, targetPos, duration
+        super(type, { ...data, x: data.startPos.x, y: data.startPos.y, z: data.startPos.z }, gameStateRef);
+        this.startPos = data.startPos;
+        this.targetPos = data.targetPos;
+        this.entity = data.entity;
+
+        // Calculate the peak height of the jump arc (parabola)
+        // Midpoint of jump
+        this.midX = (this.startPos.x + this.targetPos.x) / 2;
+        this.midY = (this.startPos.y + this.targetPos.y) / 2;
+        // Peak Z should be higher than max(startZ, targetZ) + some height
+        this.peakHeight = Math.max(this.startPos.z, this.targetPos.z) + 1.5;
+
+        this.x = this.startPos.x;
+        this.y = this.startPos.y;
+        this.z = this.startPos.z;
+        this.visible = true;
+
+        // Hide the original entity during the jump logic if needed,
+        // but typically we just override its displayZ or render this sprite on top.
+        // For now, we'll let the entity render normally but maybe this animation draws over it?
+        // Actually, FallAnimation uses 'displayZ'. We can do the same.
+        this.originalDisplayZ = this.entity.displayZ;
+
+        console.log(`[JumpAnimation] Created: ${this.startPos.x},${this.startPos.y},${this.startPos.z} -> ${this.targetPos.x},${this.targetPos.y},${this.targetPos.z}`);
+    }
+
+    update() {
+        if (this.finished) {
+            if (this.entity.displayZ !== undefined) delete this.entity.displayZ;
+            this.visible = false;
+            return;
+        }
+
+        const elapsedTime = Date.now() - this.startTime;
+        let progress = elapsedTime / this.duration;
+        if (progress > 1) progress = 1;
+
+        // Linear interpolation for X/Y
+        this.x = this.startPos.x + (this.targetPos.x - this.startPos.x) * progress;
+        this.y = this.startPos.y + (this.targetPos.y - this.startPos.y) * progress;
+
+        // Parabolic interpolation for Z
+        // Simple arc: 4 * height * x * (1-x) + linear(start, end)
+        // Adjust so that at p=0 z=start, p=1 z=end, p=0.5 z=peak
+        // Base linear Z
+        const linearZ = this.startPos.z + (this.targetPos.z - this.startPos.z) * progress;
+        // Arc offset: Parabola passing through 0 at p=0 and p=1, peak at p=0.5
+        // Peak offset from linear line at p=0.5 is (peakHeight - linearMidZ)
+        // linearMidZ = (start + end) / 2
+        // We want Z at 0.5 to be peakHeight.
+        // Arc = A * p * (1-p)
+        // at p=0.5, A * 0.25 = peakHeight - linearMidZ
+        // A = 4 * (peakHeight - linearMidZ)
+
+        const linearMidZ = (this.startPos.z + this.targetPos.z) / 2;
+        const arcAmplitude = 4 * (Math.max(0, this.peakHeight - linearMidZ));
+        const arcOffset = arcAmplitude * progress * (1 - progress);
+
+        const currentZ = linearZ + arcOffset;
+
+        this.z = currentZ;
+        this.entity.displayZ = Math.round(currentZ); // Update entity display Z for renderer
+
+        super.update();
+
+        if (this.finished) {
+            if (this.entity.displayZ !== undefined) delete this.entity.displayZ;
+            this.visible = false;
+        }
+    }
+}
+window.JumpAnimation = JumpAnimation;
 
 
 // --- DiceRollAnimation Class ---

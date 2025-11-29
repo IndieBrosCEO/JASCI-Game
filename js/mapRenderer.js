@@ -1907,6 +1907,12 @@ window.mapRenderer = {
     },
 
     isWalkable: function (x, y, z) {
+        // Implementation of Standing Logic as defined:
+        // 1. Check for Blocking objects on the Middle Layer of the current Z.
+        // 2. Check for Support:
+        //    a. Floor on Bottom Layer of current Z.
+        //    b. Solid Top Object on Middle Layer of Z-1.
+
         const mapData = this.getCurrentMapData();
         const tilesets = assetManagerInstance ? assetManagerInstance.tilesets : null;
 
@@ -1917,31 +1923,31 @@ window.mapRenderer = {
         const zStr = z.toString();
         const currentLevelData = mapData.levels[zStr];
 
-        // First, check for impassable objects on the current level.
+        // 1. Check for Blocking objects on Middle Layer (Current Z)
         if (currentLevelData) {
             const tileOnMiddleRaw = currentLevelData.middle?.[y]?.[x];
             const effectiveTileOnMiddle = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw?.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
             if (effectiveTileOnMiddle && tilesets[effectiveTileOnMiddle]) {
                 const tileDefMiddle = tilesets[effectiveTileOnMiddle];
                 if (tileDefMiddle.tags && tileDefMiddle.tags.includes("impassable")) {
-                    return false;
+                    return false; // Blocked by wall/object
                 }
             }
         }
 
-        // A tile is walkable if it has a floor tag on the current z-level.
+        // 2a. Check for Support: Floor on Bottom Layer (Current Z)
         if (currentLevelData) {
             const tileOnBottomRaw = currentLevelData.bottom?.[y]?.[x];
             const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw?.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
             if (effectiveTileOnBottom && tilesets[effectiveTileOnBottom]) {
                 const tileDefBottom = tilesets[effectiveTileOnBottom];
                 if (tileDefBottom.tags && (tileDefBottom.tags.includes("floor") || tileDefBottom.tags.includes("z_transition"))) {
-                    return true;
+                    return true; // Supported by floor
                 }
             }
         }
 
-        // OR if the tile below has a solid_terrain_top tag.
+        // 2b. Check for Support: Solid Top Object on Middle Layer (Z-1)
         const zBelowStr = (z - 1).toString();
         const levelDataBelow = mapData.levels[zBelowStr];
         if (levelDataBelow) {
@@ -1949,11 +1955,11 @@ window.mapRenderer = {
             const tileOnMiddleBelowRaw = levelDataBelow.middle?.[y]?.[x];
             const effMidBelow = (typeof tileOnMiddleBelowRaw === 'object' && tileOnMiddleBelowRaw?.tileId !== undefined) ? tileOnMiddleBelowRaw.tileId : tileOnMiddleBelowRaw;
             if (effMidBelow && tilesets[effMidBelow]?.tags?.includes('solid_terrain_top')) {
-                return true;
+                return true; // Supported by solid top object below
             }
         }
 
-        return false; // Default to not walkable
+        return false; // No support found
     },
     isTileEmpty: isTileEmpty,
 
