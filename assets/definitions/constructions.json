@@ -1060,10 +1060,6 @@
       "width": 2,
       "height": 1
     },
-    "allowedTileTags": [
-      "floor",
-      "indoors"
-    ],
     "stationType": "weaving",
     "tags": [
       "interactive",
