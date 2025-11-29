@@ -173,23 +173,6 @@ class ConstructionManager {
                     }
                 }
 
-                // 3. Check allowedTileTags against the underlying 'bottom' (landscape/floor) tile
-                if (definition.allowedTileTags && definition.allowedTileTags.length > 0) {
-                    const bottomTileRaw = levelData.bottom?.[currentY]?.[currentX];
-                    const bottomTileId = typeof bottomTileRaw === 'object' ? bottomTileRaw?.tileId : bottomTileRaw;
-                    const bottomTileDef = bottomTileId ? this.assetManager.tilesets[bottomTileId] : null;
-
-                    if (!bottomTileDef || !bottomTileDef.tags) {
-                        logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}' at (${currentX},${currentY},${z}): Underlying tile has no definition or tags.`, "orange");
-                        return false;
-                    }
-                    const underlyingTileTags = bottomTileDef.tags;
-                    const canPlace = definition.allowedTileTags.some(reqTag => underlyingTileTags.includes(reqTag));
-                    if (!canPlace) {
-                        logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}' at (${currentX},${currentY},${z}): Underlying tile tags [${underlyingTileTags.join(', ')}] do not meet requirements [${definition.allowedTileTags.join(', ')}].`, "orange");
-                        return false;
-                    }
-                }
             }
         }
 
