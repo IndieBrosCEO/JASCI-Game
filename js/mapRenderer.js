@@ -1945,15 +1945,10 @@ window.mapRenderer = {
         const zBelowStr = (z - 1).toString();
         const levelDataBelow = mapData.levels[zBelowStr];
         if (levelDataBelow) {
+            // Strictly check ONLY the middle layer at Z-1 for solid_terrain_top, per game rules.
             const tileOnMiddleBelowRaw = levelDataBelow.middle?.[y]?.[x];
             const effMidBelow = (typeof tileOnMiddleBelowRaw === 'object' && tileOnMiddleBelowRaw?.tileId !== undefined) ? tileOnMiddleBelowRaw.tileId : tileOnMiddleBelowRaw;
             if (effMidBelow && tilesets[effMidBelow]?.tags?.includes('solid_terrain_top')) {
-                return true;
-            }
-
-            const tileOnBottomBelowRaw = levelDataBelow.bottom?.[y]?.[x];
-            const effBotBelow = (typeof tileOnBottomBelowRaw === 'object' && tileOnBottomBelowRaw?.tileId !== undefined) ? tileOnBottomBelowRaw.tileId : tileOnBottomBelowRaw;
-            if (effBotBelow && tilesets[effBotBelow]?.tags?.includes('solid_terrain_top')) {
                 return true;
             }
         }
