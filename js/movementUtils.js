@@ -204,13 +204,8 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                         const midIdSlope = (typeof midRawSlope === 'object' && midRawSlope?.tileId !== undefined) ? midRawSlope.tileId : midRawSlope;
                         if (midIdSlope && localAssetManager.tilesets[midIdSlope]?.tags?.includes('solid_terrain_top')) {
                             adjTileDefSlope = localAssetManager.tilesets[midIdSlope];
-                        } else {
-                            const botRawSlope = adjLevelDataSlope.bottom?.[targetY]?.[targetX];
-                            const botIdSlope = (typeof botRawSlope === 'object' && botRawSlope?.tileId !== undefined) ? botRawSlope.tileId : botRawSlope;
-                            if (botIdSlope && localAssetManager.tilesets[botIdSlope]?.tags?.includes('solid_terrain_top')) {
-                                adjTileDefSlope = localAssetManager.tilesets[botIdSlope];
-                            }
                         }
+                        // Strictly removed check for bottom layer having solid_terrain_top
                     }
 
                     // The destination for a slope move is (targetX, targetY) at finalDestZSlope.
