@@ -145,35 +145,37 @@ class ConstructionManager {
                     return false;
                 }
 
-                // 2. Check if target tile on 'building' and 'middle' layers is empty
-                // (Structures are typically placed on 'building', items/some interactables on 'middle')
-                const buildingTileRaw = levelData.building?.[currentY]?.[currentX];
-                const middleTileRaw = levelData.middle?.[currentY]?.[currentX];
-                const buildingTileId = typeof buildingTileRaw === 'object' ? buildingTileRaw?.tileId : buildingTileRaw;
-                const middleTileId = typeof middleTileRaw === 'object' ? middleTileRaw?.tileId : middleTileRaw;
+                // 2. Check if target tile on target layer is empty.
+                // Default target layer is 'middle' (consistent with world logic: objects are on middle layer).
+                // If definition specifies a targetLayer (e.g. 'bottom' for floors), use that.
+                const targetLayer = definition.targetLayer || 'middle';
 
-                if ((buildingTileId && buildingTileId !== "") || (middleTileId && middleTileId !== "")) {
-                    logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}' at (${currentX},${currentY},${z}): Tile occupied on building/middle layer.`, "orange");
-                    return false;
+                // We should also check 'middle' if placing on 'building' (legacy) or vice versa if we want to be strict,
+                // but moving forward we use 'middle'.
+                // However, to be safe against existing map data, we check if the SPECIFIC target layer is occupied.
+                // AND if we are placing on 'middle', we double check 'building' isn't there (legacy conflict).
+
+                const targetLayerRaw = levelData[targetLayer]?.[currentY]?.[currentX];
+                const targetLayerTileId = typeof targetLayerRaw === 'object' ? targetLayerRaw?.tileId : targetLayerRaw;
+
+                if (targetLayerTileId && targetLayerTileId !== "") {
+                     logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}' at (${currentX},${currentY},${z}): Tile occupied on '${targetLayer}' layer.`, "orange");
+                     return false;
+                }
+
+                // Extra check: if placing on middle, ensure building layer is empty too (legacy safety)
+                if (targetLayer === 'middle') {
+                    const buildingTileRaw = levelData.building?.[currentY]?.[currentX];
+                    const buildingTileId = typeof buildingTileRaw === 'object' ? buildingTileRaw?.tileId : buildingTileRaw;
+                    if (buildingTileId && buildingTileId !== "") {
+                        logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}' at (${currentX},${currentY},${z}): Legacy 'building' layer occupied.`, "orange");
+                        return false;
+                    }
                 }
 
                 // 3. Check allowedTileTags against the underlying 'bottom' (landscape/floor) tile
-                if (definition.allowedTileTags && definition.allowedTileTags.length > 0) {
-                    const bottomTileRaw = levelData.bottom?.[currentY]?.[currentX];
-                    const bottomTileId = typeof bottomTileRaw === 'object' ? bottomTileRaw?.tileId : bottomTileRaw;
-                    const bottomTileDef = bottomTileId ? this.assetManager.tilesets[bottomTileId] : null;
-
-                    if (!bottomTileDef || !bottomTileDef.tags) {
-                        logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}' at (${currentX},${currentY},${z}): Underlying tile has no definition or tags.`, "orange");
-                        return false;
-                    }
-                    const underlyingTileTags = bottomTileDef.tags;
-                    const canPlace = definition.allowedTileTags.some(reqTag => underlyingTileTags.includes(reqTag));
-                    if (!canPlace) {
-                        logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}' at (${currentX},${currentY},${z}): Underlying tile tags [${underlyingTileTags.join(', ')}] do not meet requirements [${definition.allowedTileTags.join(', ')}].`, "orange");
-                        return false;
-                    }
-                }
+                // REMOVED: User spec says no "inside" or "outside" tags and relies on layer occupancy only.
+                // The loop below is removed to allow placement based purely on target layer availability.
             }
         }
 
@@ -271,24 +273,41 @@ class ConstructionManager {
                 // More realistically, a multi-tile object would have one main entry in mapStructures
                 // and occupy multiple visual tiles. The mapManager.updateTileOnLayer should handle this.
 
+                // Determine target layer (default 'middle')
+                const targetLayer = definition.targetLayer || 'middle';
+
                 // For now, this simplified logic will place the *same* tile ID on all cells the structure occupies.
                 // This is okay for simple things like a 2x1 workbench if both tiles look the same.
                 // For complex multi-tile sprites, this needs a more advanced tile placement system.
                 if (this.mapManager && typeof this.mapManager.updateTileOnLayer === 'function') {
-                    this.mapManager.updateTileOnLayer(currentX, currentY, z, 'building', definition.tileIdPlaced);
+                    this.mapManager.updateTileOnLayer(currentX, currentY, z, targetLayer, definition.tileIdPlaced);
                 } else {
                     const mapData = window.mapRenderer.getCurrentMapData();
                     const levelData = mapData.levels[z.toString()];
-                    if (levelData && levelData.building) {
-                        levelData.building[currentY][currentX] = definition.tileIdPlaced;
+                    // Ensure layer exists
+                    if (levelData && !levelData[targetLayer]) {
+                        levelData[targetLayer] = Array(mapData.dimensions.height).fill(null).map(() => Array(mapData.dimensions.width).fill(""));
+                    }
+
+                    if (levelData && levelData[targetLayer]) {
+                        levelData[targetLayer][currentY][currentX] = definition.tileIdPlaced;
                     } else {
                         logToConsole(`${this.logPrefix} CRITICAL ERROR: Cannot place tile for '${definition.name}' at (${currentX},${currentY},${z}). mapManager or map data invalid. Rolling back components.`, "red");
                         // Rollback consumed components
-                        for (const component of definition.components) {
-                            this.inventoryManager.addItemToInventoryById(component.itemId, component.quantity); // Assuming addItemToInventoryById exists and handles stacking
+                        const recipeToUse = definition.recipe || definition; // Use the correct recipe object
+                        const componentsToRollback = recipeToUse.components || [];
+                        for (const component of componentsToRollback) {
+                            // Note: component.itemId is not standard in recipe components, usually family/require.
+                            // If it's a specific item recipe, it might have itemId.
+                            // However, we consumed based on resolved items.
+                            // Ideally we track exactly what was consumed.
+                            // For now, we try to refund based on component requirement, but this is imperfect if family was used.
+                            // Warning: This rollback logic is weak without resolved item tracking.
+                            // But fixing the crash:
+                            logToConsole(`${this.logPrefix} Rollback: Cannot perfectly restore generic components.`, "orange");
                         }
                         if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
-                        if (window.uiManager) window.uiManager.showToastNotification("Construction failed: map error (components restored).", "error");
+                        if (window.uiManager) window.uiManager.showToastNotification("Construction failed: map error.", "error");
                         if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Sound for failure
                         return false;
                     }

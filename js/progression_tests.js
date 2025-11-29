@@ -394,3 +394,140 @@ function testEventBus() {
         }, 100); // 100ms should be plenty of time for the events to fire.
     });
 }
+
+// js/world_logic_tests.js
+
+/**
+ * Runs a suite of tests for the World Logic (Z-levels, Construction, Movement).
+ * This should be called from the developer console.
+ */
+async function runWorldLogicTests() {
+    console.log("--- Running World Logic Tests ---");
+
+    const results = {
+        testGhostWalls: await testGhostWalls(),
+    };
+
+    console.log("--- Test Summary ---");
+    let allPassed = true;
+    for (const testName in results) {
+        if (results[testName]) {
+            console.log(`%c[PASS] ${testName}`, "color: green");
+        } else {
+            console.log(`%c[FAIL] ${testName}`, "color: red");
+            allPassed = false;
+        }
+    }
+
+    if (allPassed) {
+        logToConsole("All World Logic tests passed!", "event-success");
+    } else {
+        logToConsole("One or more World Logic tests failed. See console for details.", "error");
+    }
+    console.log("--- End of World Logic Tests ---");
+}
+
+/**
+ * Test: Verifies that placing a wall correctly blocks movement (fixes "Ghost Wall" bug).
+ * The bug was that constructions were placed on 'building' layer, but isWalkable only checked 'middle'.
+ */
+async function testGhostWalls() {
+    console.log("Running Ghost Walls Test...");
+
+    if (!window.constructionManager || !window.mapRenderer) {
+        console.error("FAIL: Managers not available.");
+        return false;
+    }
+
+    // 1. Find a clear spot near the player
+    const startX = window.gameState.playerPos.x;
+    const startY = window.gameState.playerPos.y;
+    const z = window.gameState.playerPos.z;
+
+    // Look for a spot 2 tiles away to avoid standing in it
+    let testX = startX + 2;
+    let testY = startY;
+
+    // Ensure it's currently walkable and empty
+    if (!window.mapRenderer.isWalkable(testX, testY, z)) {
+        console.log(`Test spot (${testX},${testY},${z}) is not initially walkable. Trying another.`);
+        testX = startX;
+        testY = startY + 2;
+        if (!window.mapRenderer.isWalkable(testX, testY, z)) {
+             console.error("FAIL: Could not find a clear walkable spot to test construction.");
+             return false;
+        }
+    }
+
+    console.log(`Testing construction at (${testX}, ${testY}, ${z})`);
+
+    // 2. Place a wall (using ID 'wall_wood_simple' which we know blocks movement)
+    // We mock the inventory/skill check by bypassing canBuild if possible, or we just force it via internal method if accessible?
+    // placeConstruction calls canBuild.
+    // Let's force placement by bypassing checks or ensuring requirements met.
+    // Easier: Just call the internal map update logic that ConstructionManager uses,
+    // OR temporarily mock canBuild to return true.
+
+    const originalCanBuild = window.constructionManager.canBuild;
+    window.constructionManager.canBuild = () => true; // Mock true
+
+    // We also need to mock inventory removal to avoid errors
+    const originalRemoveItems = window.inventoryManager.removeItems;
+    window.inventoryManager.removeItems = () => true; // Mock success
+
+    const originalIsValidPlacement = window.constructionManager.isValidPlacement;
+    window.constructionManager.isValidPlacement = () => true; // Assume valid
+
+    let constructionId = "wall_wood_simple";
+    // Ensure definition exists
+    if (!window.constructionManager.constructionDefinitions[constructionId]) {
+         console.error("FAIL: 'wall_wood_simple' definition not found.");
+         // Cleanup
+         window.constructionManager.canBuild = originalCanBuild;
+         window.inventoryManager.removeItems = originalRemoveItems;
+         window.constructionManager.isValidPlacement = originalIsValidPlacement;
+         return false;
+    }
+
+    // Capture initial state of the tile on all layers
+    const mapData = window.mapRenderer.getCurrentMapData();
+    const levelData = mapData.levels[z.toString()];
+    const initialBuilding = levelData.building ? levelData.building[testY][testX] : null;
+    const initialMiddle = levelData.middle ? levelData.middle[testY][testX] : null;
+
+    console.log(`Initial Tile State: Building='${initialBuilding}', Middle='${initialMiddle}'`);
+
+    // Perform placement
+    await window.constructionManager.placeConstruction(constructionId, { x: testX, y: testY, z: z });
+
+    // 3. Verify Walkability
+    const isWalkableAfter = window.mapRenderer.isWalkable(testX, testY, z);
+
+    // Check where it was placed
+    const finalBuilding = levelData.building ? levelData.building[testY][testX] : null;
+    const finalMiddle = levelData.middle ? levelData.middle[testY][testX] : null;
+
+    console.log(`Final Tile State: Building='${finalBuilding}', Middle='${finalMiddle}'`);
+    console.log(`Is Walkable After Construction: ${isWalkableAfter}`);
+
+    // Cleanup mocks
+    window.constructionManager.canBuild = originalCanBuild;
+    window.inventoryManager.removeItems = originalRemoveItems;
+    window.constructionManager.isValidPlacement = originalIsValidPlacement;
+
+    // Cleanup the wall (restore map)
+    if (levelData.building) levelData.building[testY][testX] = initialBuilding;
+    if (levelData.middle) levelData.middle[testY][testX] = initialMiddle;
+    window.mapRenderer.scheduleRender();
+
+    if (isWalkableAfter === true) {
+        console.error("FAIL: Tile is still walkable after placing a wall! (Ghost Wall Bug)");
+        return false;
+    } else {
+        console.log("PASS: Tile is blocked after placing a wall.");
+        return true;
+    }
+}
+
+// Expose
+window.runWorldLogicTests = runWorldLogicTests;
