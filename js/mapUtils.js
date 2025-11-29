@@ -149,6 +149,15 @@ class MapUtils {
             }
         }
 
+        // Check Vehicle positions
+        if (this.gameState.vehicles) {
+            for (const vehicle of this.gameState.vehicles) {
+                if (vehicle.mapPos && vehicle.mapPos.x === x && vehicle.mapPos.y === y && vehicle.mapPos.z === z) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 }
