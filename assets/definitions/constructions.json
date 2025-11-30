@@ -1,7 +1,7 @@
 [
   {
     "id": "wall_wood_simple",
-    "name": "Simple Wooden Wall Section",
+    "name": "Wood Wall",
     "description": "A basic defensive wall made of wood planks.",
     "category": "defensive",
     "recipe": {
@@ -51,7 +51,7 @@
   },
   {
     "id": "door_wood_simple_built",
-    "name": "Simple Wooden Door",
+    "name": "Wood Door",
     "description": "A simple wooden door that can be opened and closed.",
     "category": "defensive",
     "recipe": {
@@ -861,7 +861,7 @@
   },
   {
     "id": "vehicle_assembly_station",
-    "name": "Vehicle Assembly Station",
+    "name": "Vehicle Assembly Bay",
     "description": "A large, reinforced bay with hoists and tools for constructing and heavily modifying vehicles.",
     "category": "crafting_station_advanced",
     "recipe": {
@@ -1134,7 +1134,7 @@
   },
   {
     "id": "bed_basic",
-    "name": "Basic Bed",
+    "name": "Bed",
     "description": "A simple wooden bed with a mattress.",
     "category": "furniture",
     "recipe": {
@@ -1183,7 +1183,7 @@
   },
   {
     "id": "chair_basic",
-    "name": "Wooden Chair",
+    "name": "Chair",
     "description": "A simple wooden chair.",
     "category": "furniture",
     "recipe": {
@@ -1225,7 +1225,7 @@
   },
   {
     "id": "table_basic",
-    "name": "Wooden Table",
+    "name": "Coffee Table",
     "description": "A simple wooden table.",
     "category": "furniture",
     "recipe": {
@@ -1267,7 +1267,7 @@
   },
   {
     "id": "bookshelf_basic",
-    "name": "Wooden Bookshelf",
+    "name": "Bookshelf",
     "description": "A wooden shelf for storing books and items.",
     "category": "furniture",
     "recipe": {
@@ -1309,7 +1309,7 @@
   },
   {
     "id": "cabinet_basic",
-    "name": "Wooden Cabinet",
+    "name": "Cabinet",
     "description": "A wooden cabinet for storage.",
     "category": "storage",
     "recipe": {
@@ -1358,7 +1358,7 @@
   },
   {
     "id": "dresser_basic",
-    "name": "Wooden Dresser",
+    "name": "Dresser",
     "description": "A wooden dresser for storing clothes.",
     "category": "storage",
     "recipe": {
@@ -1400,7 +1400,7 @@
   },
   {
     "id": "desk_basic",
-    "name": "Wooden Desk",
+    "name": "Desk",
     "description": "A wooden desk.",
     "category": "furniture",
     "recipe": {
@@ -1442,7 +1442,7 @@
   },
   {
     "id": "nightstand_basic",
-    "name": "Wooden Nightstand",
+    "name": "Nightstand",
     "description": "A small wooden nightstand.",
     "category": "furniture",
     "recipe": {
@@ -1641,7 +1641,7 @@
   },
   {
     "id": "wall_metal_simple",
-    "name": "Metal Wall Section",
+    "name": "Metal Wall",
     "description": "A wall made of metal sheets.",
     "category": "defensive",
     "recipe": {
@@ -1834,7 +1834,7 @@
   },
   {
     "id": "window_wood_simple",
-    "name": "Simple Wooden Window",
+    "name": "Window",
     "description": "A basic window frame with glass.",
     "category": "structure",
     "recipe": {
@@ -1878,7 +1878,7 @@
   },
   {
     "id": "roof_wood",
-    "name": "Wooden Roof Section",
+    "name": "Roof (Wood)",
     "description": "A section of wooden roofing.",
     "category": "structure",
     "recipe": {
@@ -1920,7 +1920,7 @@
   },
   {
     "id": "roof_metal",
-    "name": "Metal Roof Section",
+    "name": "Roof (Metal)",
     "description": "A section of metal roofing.",
     "category": "structure",
     "recipe": {
@@ -1962,7 +1962,7 @@
   },
   {
     "id": "floor_tile",
-    "name": "Tiled Flooring",
+    "name": "Tile Flooring",
     "description": "Ceramic or stone tiled flooring.",
     "category": "structure",
     "recipe": {
@@ -2004,7 +2004,7 @@
   },
   {
     "id": "floor_carpet",
-    "name": "Carpet Flooring",
+    "name": "Carpet Floor",
     "description": "Soft carpet flooring.",
     "category": "structure",
     "recipe": {
@@ -2039,7 +2039,7 @@
   },
   {
     "id": "counter_wood",
-    "name": "Wooden Counter",
+    "name": "Counter",
     "description": "A wooden counter for workspace.",
     "category": "furniture",
     "recipe": {
@@ -2081,7 +2081,7 @@
   },
   {
     "id": "drawer_wood",
-    "name": "Wooden Drawer",
+    "name": "Drawer",
     "description": "A small wooden drawer unit.",
     "category": "storage",
     "recipe": {
@@ -2221,7 +2221,7 @@
   },
   {
     "id": "tv_set_repaired",
-    "name": "Television Set",
+    "name": "Television",
     "description": "A repaired television set.",
     "category": "furniture",
     "recipe": {
@@ -2272,7 +2272,7 @@
   },
   {
     "id": "toilet_ceramic",
-    "name": "Ceramic Toilet",
+    "name": "Toilet",
     "description": "A standard ceramic toilet.",
     "category": "furniture",
     "recipe": {
@@ -2310,7 +2310,7 @@
   },
   {
     "id": "shower_stall",
-    "name": "Shower Stall",
+    "name": "Shower",
     "description": "A basic shower stall.",
     "category": "furniture",
     "recipe": {
@@ -2382,7 +2382,7 @@
   },
   {
     "id": "torch_wall",
-    "name": "Wall Torch",
+    "name": "Torch",
     "description": "A torch mounted on the wall.",
     "category": "furniture",
     "recipe": {
@@ -2474,7 +2474,7 @@
   },
   {
     "id": "ladder_wood",
-    "name": "Wooden Ladder",
+    "name": "Ladder",
     "description": "A ladder for climbing between floors.",
     "category": "structure",
     "recipe": {
@@ -2516,7 +2516,7 @@
   },
   {
     "id": "slope_dirt_up",
-    "name": "Dirt Slope (Up)",
+    "name": "Dirt Slope Up",
     "description": "A ramp of packed dirt leading up.",
     "category": "structure",
     "recipe": {
@@ -2550,7 +2550,7 @@
   },
   {
     "id": "slope_dirt_down",
-    "name": "Dirt Slope (Down)",
+    "name": "Dirt Slope Down",
     "description": "A ramp of packed dirt leading down.",
     "category": "structure",
     "recipe": {
@@ -2584,7 +2584,7 @@
   },
   {
     "id": "safe_metal",
-    "name": "Metal Safe",
+    "name": "Safe",
     "description": "A heavy metal safe for secure storage.",
     "category": "storage",
     "recipe": {
@@ -2679,7 +2679,7 @@
   },
   {
     "id": "stove_electric",
-    "name": "Electric Stove",
+    "name": "Stove/Oven",
     "description": "An electric stove.",
     "category": "furniture",
     "recipe": {
@@ -2766,7 +2766,7 @@
   },
   {
     "id": "computer_desktop",
-    "name": "Desktop Computer",
+    "name": "Computer",
     "description": "A personal computer.",
     "category": "furniture",
     "recipe": {
@@ -2866,7 +2866,7 @@
   },
   {
     "id": "washer",
-    "name": "Washing Machine",
+    "name": "Washer",
     "description": "A washing machine.",
     "category": "furniture",
     "recipe": {
@@ -2913,7 +2913,7 @@
   },
   {
     "id": "dryer",
-    "name": "Clothes Dryer",
+    "name": "Dryer",
     "description": "A clothes dryer.",
     "category": "furniture",
     "recipe": {
@@ -2967,7 +2967,7 @@
   },
   {
     "id": "fireplace_stone",
-    "name": "Stone Fireplace",
+    "name": "Fireplace",
     "description": "A stone fireplace for heating and cooking.",
     "category": "furniture",
     "recipe": {
@@ -3050,7 +3050,7 @@
   },
   {
     "id": "lantern_table",
-    "name": "Table Lantern",
+    "name": "Table Lantern (Placed)",
     "description": "A small lantern for a table.",
     "category": "furniture",
     "recipe": {
@@ -3091,7 +3091,7 @@
   },
   {
     "id": "candle_placed",
-    "name": "Placed Candle",
+    "name": "Candle (Placed)",
     "description": "A candle placed on a surface.",
     "category": "furniture",
     "recipe": {
