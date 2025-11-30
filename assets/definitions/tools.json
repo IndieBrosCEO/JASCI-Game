@@ -168,5 +168,235 @@
       "time_to_craft": 20,
       "batch_size": 1
     }
+  },
+  {
+    "id": "hammer_peen",
+    "name": "Peen Hammer",
+    "family": "tool",
+    "properties": { "type": "hammer" },
+    "description": "A standard hammer with a peen for metalworking and construction.",
+    "type": "tool", "size": 2, "weightLbs": 2, "tags": [ "tool", "crafting", "construction" ],
+    "equipSlots": [ "hand" ], "action": "hammer",
+    "canEquip": true
+  },
+  {
+    "id": "shovel",
+    "name": "Shovel",
+    "family": "tool",
+    "properties": { "type": "shovel" },
+    "description": "A sturdy shovel for digging.",
+    "type": "tool", "size": 3, "weightLbs": 5, "tags": [ "tool", "digging" ],
+    "equipSlots": [ "hand" ], "action": "dig",
+    "canEquip": true
+  },
+  {
+    "id": "tongs_blacksmith",
+    "name": "Blacksmith Tongs",
+    "family": "tool",
+    "properties": { "type": "tongs" },
+    "description": "Long tongs for handling hot metal.",
+    "type": "tool", "size": 2, "weightLbs": 3, "tags": [ "tool", "crafting", "blacksmithing" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "soldering_iron_kit",
+    "name": "Soldering Iron Kit",
+    "family": "tool",
+    "properties": { "type": "soldering_iron" },
+    "description": "A kit for soldering electronic components.",
+    "type": "tool", "size": 1, "weightLbs": 2, "tags": [ "tool", "crafting", "electronics" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "pliers_set",
+    "name": "Set of Pliers",
+    "family": "tool",
+    "properties": { "type": "pliers" },
+    "description": "A set of pliers for gripping and bending.",
+    "type": "tool", "size": 1, "weightLbs": 1, "tags": [ "tool", "crafting" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "glassblowers_pipe",
+    "name": "Glassblower's Pipe",
+    "family": "tool",
+    "properties": { "type": "pipe" },
+    "description": "A pipe used for blowing glass.",
+    "type": "tool", "size": 2, "weightLbs": 3, "tags": [ "tool", "crafting", "glassworking" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "wrench_set",
+    "name": "Wrench Set",
+    "family": "tool",
+    "properties": { "type": "wrench" },
+    "description": "A set of wrenches for turning nuts and bolts.",
+    "type": "tool", "size": 2, "weightLbs": 4, "tags": [ "tool", "crafting", "mechanic" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "rivet_gun_manual",
+    "name": "Manual Rivet Gun",
+    "family": "tool",
+    "properties": { "type": "rivet_gun" },
+    "description": "A hand-operated tool for setting rivets.",
+    "type": "tool", "size": 1, "weightLbs": 2, "tags": [ "tool", "crafting" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "metal_snips_heavy",
+    "name": "Heavy Metal Snips",
+    "family": "tool",
+    "properties": { "type": "snips" },
+    "description": "Heavy-duty shears for cutting sheet metal.",
+    "type": "tool", "size": 1, "weightLbs": 2, "tags": [ "tool", "crafting" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "hand_drill",
+    "name": "Hand Drill",
+    "family": "tool",
+    "properties": { "type": "drill" },
+    "description": "A manual drill for making holes.",
+    "type": "tool", "size": 2, "weightLbs": 3, "tags": [ "tool", "crafting" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "welding_torch_oxyacetylene",
+    "name": "Oxyacetylene Welding Torch",
+    "family": "tool",
+    "properties": { "type": "welder" },
+    "description": "A torch for welding and cutting metal.",
+    "type": "tool", "size": 3, "weightLbs": 15, "tags": [ "tool", "crafting", "metalworking" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "multimeter_digital",
+    "name": "Digital Multimeter",
+    "family": "tool",
+    "properties": { "type": "multimeter" },
+    "description": "An instrument for measuring electrical properties.",
+    "type": "tool", "size": 1, "weightLbs": 1, "tags": [ "tool", "crafting", "electronics" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "concrete_mixer_small",
+    "name": "Small Concrete Mixer",
+    "family": "tool",
+    "properties": { "type": "mixer" },
+    "description": "A small mixer for preparing concrete.",
+    "type": "tool", "size": 4, "weightLbs": 50, "tags": [ "tool", "crafting", "construction" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": false
+  },
+  {
+    "id": "screwdriver_set_multi",
+    "name": "Multi-bit Screwdriver Set",
+    "family": "tool",
+    "properties": { "type": "screwdriver" },
+    "description": "A screwdriver with interchangeable bits.",
+    "type": "tool", "size": 1, "weightLbs": 1, "tags": [ "tool", "crafting" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "chisel_stone",
+    "name": "Stone Chisel",
+    "family": "tool",
+    "properties": { "type": "chisel" },
+    "description": "A hardened steel chisel for shaping stone.",
+    "type": "tool", "size": 1, "weightLbs": 1, "tags": [ "tool", "crafting", "masonry" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "tap_and_die_set",
+    "name": "Tap and Die Set",
+    "family": "tool",
+    "properties": { "type": "tap_die" },
+    "description": "Tools for cutting threads in metal.",
+    "type": "tool", "size": 2, "weightLbs": 5, "tags": [ "tool", "crafting", "machining" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "file_small_metal",
+    "name": "Small Metal File",
+    "family": "tool",
+    "properties": { "type": "file" },
+    "description": "A file for smoothing and shaping metal.",
+    "type": "tool", "size": 1, "weightLbs": 0.5, "tags": [ "tool", "crafting" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "heat_gun_tool",
+    "name": "Heat Gun",
+    "family": "tool",
+    "properties": { "type": "heat_gun" },
+    "description": "A tool that emits a stream of hot air.",
+    "type": "tool", "size": 2, "weightLbs": 2, "tags": [ "tool", "crafting" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "spindle_simple",
+    "name": "Simple Spindle",
+    "family": "tool",
+    "properties": { "type": "spindle" },
+    "description": "A simple tool for spinning thread.",
+    "type": "tool", "size": 1, "weightLbs": 0.5, "tags": [ "tool", "crafting", "textile" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "mortar_pestle",
+    "name": "Mortar and Pestle",
+    "family": "tool",
+    "properties": { "type": "mortar_pestle" },
+    "description": "A bowl and club used to crush and grind ingredients.",
+    "type": "tool", "size": 1, "weightLbs": 3, "tags": [ "tool", "crafting", "chemistry", "cooking" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "crucible_basic",
+    "name": "Basic Crucible",
+    "family": "tool",
+    "properties": { "type": "crucible" },
+    "description": "A ceramic or metal container that can withstand very high temperatures.",
+    "type": "tool", "size": 1, "weightLbs": 2, "tags": [ "tool", "crafting", "blacksmithing" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "tin_snips",
+    "name": "Tin Snips",
+    "family": "tool",
+    "properties": { "type": "snips" },
+    "description": "Hand shears for cutting thin sheet metal.",
+    "type": "tool", "size": 1, "weightLbs": 1, "tags": [ "tool", "crafting" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
+  },
+  {
+    "id": "knife_heavy_duty",
+    "name": "Heavy Duty Knife",
+    "family": "tool",
+    "properties": { "type": "knife" },
+    "description": "A strong knife capable of cutting tough materials.",
+    "type": "tool", "size": 1, "weightLbs": 1, "tags": [ "tool", "crafting" ],
+    "equipSlots": [ "hand" ],
+    "canEquip": true
   }
 ]

@@ -1,7 +1,7 @@
 [
   {
     "id": "wall_wood_simple",
-    "name": "Simple Wooden Wall Section",
+    "name": "Wood Wall",
     "description": "A basic defensive wall made of wood planks.",
     "category": "defensive",
     "recipe": {
@@ -51,7 +51,7 @@
   },
   {
     "id": "door_wood_simple_built",
-    "name": "Simple Wooden Door",
+    "name": "Wood Door",
     "description": "A simple wooden door that can be opened and closed.",
     "category": "defensive",
     "recipe": {
@@ -137,7 +137,7 @@
       ],
       "tools_required": [
         "shovel",
-        "hatchet_melee"
+        "hatchet"
       ],
       "time_to_craft": 45,
       "batch_size": 1
@@ -861,7 +861,7 @@
   },
   {
     "id": "vehicle_assembly_station",
-    "name": "Vehicle Assembly Station",
+    "name": "Vehicle Assembly Bay",
     "description": "A large, reinforced bay with hoists and tools for constructing and heavily modifying vehicles.",
     "category": "crafting_station_advanced",
     "recipe": {
@@ -1134,7 +1134,7 @@
   },
   {
     "id": "bed_basic",
-    "name": "Basic Bed",
+    "name": "Bed",
     "description": "A simple wooden bed with a mattress.",
     "category": "furniture",
     "recipe": {
@@ -1183,7 +1183,7 @@
   },
   {
     "id": "chair_basic",
-    "name": "Wooden Chair",
+    "name": "Chair",
     "description": "A simple wooden chair.",
     "category": "furniture",
     "recipe": {
@@ -1225,7 +1225,7 @@
   },
   {
     "id": "table_basic",
-    "name": "Wooden Table",
+    "name": "Coffee Table",
     "description": "A simple wooden table.",
     "category": "furniture",
     "recipe": {
@@ -1267,7 +1267,7 @@
   },
   {
     "id": "bookshelf_basic",
-    "name": "Wooden Bookshelf",
+    "name": "Bookshelf",
     "description": "A wooden shelf for storing books and items.",
     "category": "furniture",
     "recipe": {
@@ -1309,7 +1309,7 @@
   },
   {
     "id": "cabinet_basic",
-    "name": "Wooden Cabinet",
+    "name": "Cabinet",
     "description": "A wooden cabinet for storage.",
     "category": "storage",
     "recipe": {
@@ -1358,7 +1358,7 @@
   },
   {
     "id": "dresser_basic",
-    "name": "Wooden Dresser",
+    "name": "Dresser",
     "description": "A wooden dresser for storing clothes.",
     "category": "storage",
     "recipe": {
@@ -1400,7 +1400,7 @@
   },
   {
     "id": "desk_basic",
-    "name": "Wooden Desk",
+    "name": "Desk",
     "description": "A wooden desk.",
     "category": "furniture",
     "recipe": {
@@ -1442,7 +1442,7 @@
   },
   {
     "id": "nightstand_basic",
-    "name": "Wooden Nightstand",
+    "name": "Nightstand",
     "description": "A small wooden nightstand.",
     "category": "furniture",
     "recipe": {
@@ -1641,7 +1641,7 @@
   },
   {
     "id": "wall_metal_simple",
-    "name": "Metal Wall Section",
+    "name": "Metal Wall",
     "description": "A wall made of metal sheets.",
     "category": "defensive",
     "recipe": {
@@ -1830,6 +1830,1441 @@
     "family": "barricade",
     "properties": {
       "material": "wood"
+    }
+  },
+  {
+    "id": "window_wood_simple",
+    "name": "Window",
+    "description": "A basic window frame with glass.",
+    "category": "structure",
+    "recipe": {
+      "description": "Construct a simple window.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "blade",
+          "require": {
+            "type": "shard",
+            "material": "glass"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 20,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "WinCH",
+    "family": "wall",
+    "properties": {
+      "material": "wood",
+      "grade": 1
+    }
+  },
+  {
+    "id": "roof_wood",
+    "name": "Roof (Wood)",
+    "description": "A section of wooden roofing.",
+    "category": "structure",
+    "recipe": {
+      "description": "Construct a section of roof.",
+      "components": [
+        {
+          "quantity": 3,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "hammer_peen"
+      ],
+      "time_to_craft": 25,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "RW",
+    "family": "structure",
+    "properties": {
+      "type": "roof",
+      "material": "wood"
+    }
+  },
+  {
+    "id": "roof_metal",
+    "name": "Roof (Metal)",
+    "description": "A section of metal roofing.",
+    "category": "structure",
+    "recipe": {
+      "description": "Construct a section of metal roof.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "thin"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "fastener",
+          "require": {
+            "type": "rivet"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "tools_required": [
+        "rivet_gun_manual"
+      ],
+      "time_to_craft": 30,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "RM",
+    "family": "structure",
+    "properties": {
+      "type": "roof",
+      "material": "metal"
+    }
+  },
+  {
+    "id": "floor_tile",
+    "name": "Tile Flooring",
+    "description": "Ceramic or stone tiled flooring.",
+    "category": "structure",
+    "recipe": {
+      "description": "Lay down tiled flooring.",
+      "components": [
+        {
+          "quantity": 4,
+          "family": "ceramic",
+          "require": {
+            "type": "clay"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "construction_material",
+          "require": {
+            "type": "sand"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "hammer_peen"
+      ],
+      "time_to_craft": 30,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "FL",
+    "family": "structure",
+    "properties": {
+      "type": "floor",
+      "material": "ceramic"
+    }
+  },
+  {
+    "id": "floor_carpet",
+    "name": "Carpet Floor",
+    "description": "Soft carpet flooring.",
+    "category": "structure",
+    "recipe": {
+      "description": "Lay down carpet.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "fabric",
+          "require": {
+            "type": "sheet"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "knife_melee"
+      ],
+      "time_to_craft": 10,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "CT",
+    "family": "structure",
+    "properties": {
+      "type": "floor",
+      "material": "fabric"
+    }
+  },
+  {
+    "id": "counter_wood",
+    "name": "Counter",
+    "description": "A wooden counter for workspace.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a wooden counter.",
+      "components": [
+        {
+          "quantity": 6,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 8,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 35,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "CN",
+    "family": "furniture",
+    "properties": {
+      "type": "counter"
+    }
+  },
+  {
+    "id": "drawer_wood",
+    "name": "Drawer",
+    "description": "A small wooden drawer unit.",
+    "category": "storage",
+    "recipe": {
+      "description": "Construct a wooden drawer.",
+      "components": [
+        {
+          "quantity": 4,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 6,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 25,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "DR",
+    "family": "storage",
+    "properties": {
+      "type": "drawer"
+    }
+  },
+  {
+    "id": "sofa_basic",
+    "name": "Sofa",
+    "description": "A comfortable sofa.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a sofa.",
+      "components": [
+        {
+          "quantity": 6,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "fabric",
+          "require": {
+            "type": "sheet"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "padding",
+          "require": {
+            "material": "foam"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "needle_steel"
+      ],
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "SF2",
+    "family": "furniture",
+    "properties": {
+      "type": "sofa"
+    }
+  },
+  {
+    "id": "armchair_basic",
+    "name": "Armchair",
+    "description": "A comfortable armchair.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct an armchair.",
+      "components": [
+        {
+          "quantity": 4,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "fabric",
+          "require": {
+            "type": "sheet"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "padding",
+          "require": {
+            "material": "foam"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "needle_steel"
+      ],
+      "time_to_craft": 40,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "CH",
+    "family": "furniture",
+    "properties": {
+      "type": "armchair"
+    }
+  },
+  {
+    "id": "tv_set_repaired",
+    "name": "Television",
+    "description": "A repaired television set.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Repair a television set.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "salvage",
+          "require": {
+            "type": "electronic_scrap"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "casing",
+          "require": {
+            "material": "plastic",
+            "size": "medium"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "blade",
+          "require": {
+            "type": "shard",
+            "material": "glass"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 4
+        }
+      ],
+      "tools_required": [
+        "screwdriver_set_multi",
+        "soldering_iron_kit"
+      ],
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "TV",
+    "family": "furniture",
+    "properties": {
+      "type": "television"
+    }
+  },
+  {
+    "id": "toilet_ceramic",
+    "name": "Toilet",
+    "description": "A standard ceramic toilet.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a toilet.",
+      "components": [
+        {
+          "quantity": 10,
+          "family": "ceramic",
+          "require": {
+            "type": "clay"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "plastic",
+          "require": {
+            "type": "sheet"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        }
+      ],
+      "time_to_craft": 90,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "TW",
+    "family": "furniture",
+    "properties": {
+      "type": "toilet"
+    }
+  },
+  {
+    "id": "shower_stall",
+    "name": "Shower",
+    "description": "A basic shower stall.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a shower stall.",
+      "components": [
+        {
+          "quantity": 4,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "thin"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "component",
+          "require": {
+            "type": "hose"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        }
+      ],
+      "tools_required": [
+        "wrench_set"
+      ],
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "SH",
+    "family": "furniture",
+    "properties": {
+      "type": "shower"
+    }
+  },
+  {
+    "id": "bathtub_ceramic",
+    "name": "Bathtub",
+    "description": "A ceramic bathtub.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a bathtub.",
+      "components": [
+        {
+          "quantity": 12,
+          "family": "ceramic",
+          "require": {
+            "type": "clay"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        }
+      ],
+      "time_to_craft": 100,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "BTB",
+    "family": "furniture",
+    "properties": {
+      "type": "bathtub"
+    }
+  },
+  {
+    "id": "torch_wall",
+    "name": "Torch",
+    "description": "A torch mounted on the wall.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a wall torch.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "wood",
+          "require": {
+            "type": "stick"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "fabric",
+          "require": {
+            "type": "scrap"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "fuel",
+          "require": {
+            "type": "charcoal"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 1
+        }
+      ],
+      "time_to_craft": 5,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "TOR",
+    "family": "furniture",
+    "properties": {
+      "type": "light_source",
+      "style": "torch"
+    }
+  },
+  {
+    "id": "torch_floor",
+    "name": "Floor Torch",
+    "description": "A torch standing on the floor.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a floor torch.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "pole",
+          "require": {
+            "length": "long"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "fabric",
+          "require": {
+            "type": "scrap"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "fuel",
+          "require": {
+            "type": "charcoal"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 1
+        }
+      ],
+      "time_to_craft": 10,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "FLT",
+    "family": "furniture",
+    "properties": {
+      "type": "light_source",
+      "style": "torch_stand"
+    }
+  },
+  {
+    "id": "ladder_wood",
+    "name": "Ladder",
+    "description": "A ladder for climbing between floors.",
+    "category": "structure",
+    "recipe": {
+      "description": "Construct a ladder.",
+      "components": [
+        {
+          "quantity": 4,
+          "family": "wood",
+          "require": {
+            "type": "plank"
+          }
+        },
+        {
+          "quantity": 8,
+          "family": "fastener",
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "hand_saw_wood"
+      ],
+      "time_to_craft": 30,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "LADR",
+    "family": "structure",
+    "properties": {
+      "type": "ladder"
+    }
+  },
+  {
+    "id": "slope_dirt_up",
+    "name": "Dirt Slope Up",
+    "description": "A ramp of packed dirt leading up.",
+    "category": "structure",
+    "recipe": {
+      "description": "Pile dirt into a ramp.",
+      "components": [
+        {
+          "quantity": 10,
+          "family": "construction_material",
+          "require": {
+            "type": "sand"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "shovel"
+      ],
+      "time_to_craft": 45,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "DSL_U",
+    "family": "structure",
+    "properties": {
+      "type": "slope"
+    }
+  },
+  {
+    "id": "slope_dirt_down",
+    "name": "Dirt Slope Down",
+    "description": "A ramp of packed dirt leading down.",
+    "category": "structure",
+    "recipe": {
+      "description": "Dig and pile dirt into a ramp.",
+      "components": [
+        {
+          "quantity": 10,
+          "family": "construction_material",
+          "require": {
+            "type": "sand"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "shovel"
+      ],
+      "time_to_craft": 45,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "DSL_D",
+    "family": "structure",
+    "properties": {
+      "type": "slope"
+    }
+  },
+  {
+    "id": "safe_metal",
+    "name": "Safe",
+    "description": "A heavy metal safe for secure storage.",
+    "category": "storage",
+    "recipe": {
+      "description": "Construct a metal safe.",
+      "components": [
+        {
+          "quantity": 6,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "sturdy"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "component",
+          "require": {
+            "type": "mechanical_parts"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 8
+        }
+      ],
+      "tools_required": [
+        "welding_torch_oxyacetylene"
+      ],
+      "time_to_craft": 120,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "SF",
+    "family": "storage",
+    "properties": {
+      "type": "safe"
+    }
+  },
+  {
+    "id": "refrigerator",
+    "name": "Refrigerator",
+    "description": "A refrigerator.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Repair/Construct a refrigerator.",
+      "components": [
+        {
+          "quantity": 4,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "thin"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "motor",
+          "require": {
+            "type": "electric",
+            "size": "small"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "component",
+          "require": {
+            "type": "heating_element"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        },
+        {
+          "skill": "Electronics",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "screwdriver_set_multi",
+        "wrench_set"
+      ],
+      "time_to_craft": 90,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "RF",
+    "family": "storage",
+    "properties": {
+      "type": "appliance"
+    }
+  },
+  {
+    "id": "stove_electric",
+    "name": "Stove/Oven",
+    "description": "An electric stove.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a stove.",
+      "components": [
+        {
+          "quantity": 4,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "thin"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "component",
+          "require": {
+            "type": "heating_element"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        },
+        {
+          "skill": "Electronics",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "screwdriver_set_multi",
+        "wrench_set"
+      ],
+      "time_to_craft": 75,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "ST",
+    "family": "storage",
+    "properties": {
+      "type": "appliance"
+    }
+  },
+  {
+    "id": "microwave",
+    "name": "Microwave",
+    "description": "A microwave oven.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a microwave.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "thin"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "salvage",
+          "require": {
+            "type": "electronic_scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 4
+        }
+      ],
+      "tools_required": [
+        "screwdriver_set_multi"
+      ],
+      "time_to_craft": 45,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "MW",
+    "family": "storage",
+    "properties": {
+      "type": "appliance"
+    }
+  },
+  {
+    "id": "computer_desktop",
+    "name": "Computer",
+    "description": "A personal computer.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Assemble a computer.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "casing",
+          "require": {
+            "material": "plastic",
+            "size": "medium"
+          }
+        },
+        {
+          "quantity": 3,
+          "family": "component",
+          "require": {
+            "type": "circuit_board"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "component",
+          "require": {
+            "type": "memory_chip"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 6
+        }
+      ],
+      "tools_required": [
+        "screwdriver_set_multi",
+        "soldering_iron_kit"
+      ],
+      "time_to_craft": 120,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "CP",
+    "family": "furniture",
+    "properties": {
+      "type": "computer"
+    }
+  },
+  {
+    "id": "printer",
+    "name": "Printer",
+    "description": "A document printer.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Assemble a printer.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "casing",
+          "require": {
+            "material": "plastic",
+            "size": "medium"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "motor",
+          "require": {
+            "type": "electric",
+            "size": "small"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "component",
+          "require": {
+            "type": "gears"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 4
+        }
+      ],
+      "tools_required": [
+        "screwdriver_set_multi"
+      ],
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "PR",
+    "family": "furniture",
+    "properties": {
+      "type": "printer"
+    }
+  },
+  {
+    "id": "washer",
+    "name": "Washer",
+    "description": "A washing machine.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Repair/Construct a washing machine.",
+      "components": [
+        {
+          "quantity": 4,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "thin"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "motor",
+          "require": {
+            "type": "electric",
+            "size": "large"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        },
+        {
+          "skill": "Electronics",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "wrench_set",
+        "screwdriver_set_multi"
+      ],
+      "time_to_craft": 90,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "WM",
+    "family": "furniture",
+    "properties": {
+      "type": "appliance"
+    }
+  },
+  {
+    "id": "dryer",
+    "name": "Dryer",
+    "description": "A clothes dryer.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Repair/Construct a dryer.",
+      "components": [
+        {
+          "quantity": 4,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "thin"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "motor",
+          "require": {
+            "type": "electric",
+            "size": "large"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "component",
+          "require": {
+            "type": "heating_element"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        },
+        {
+          "skill": "Electronics",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "wrench_set",
+        "screwdriver_set_multi"
+      ],
+      "time_to_craft": 90,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "DRY",
+    "family": "furniture",
+    "properties": {
+      "type": "appliance"
+    }
+  },
+  {
+    "id": "fireplace_stone",
+    "name": "Fireplace",
+    "description": "A stone fireplace for heating and cooking.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a stone fireplace.",
+      "components": [
+        {
+          "quantity": 15,
+          "family": "construction_material",
+          "require": {
+            "type": "stone_block"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "shovel"
+      ],
+      "time_to_craft": 120,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "FT",
+    "family": "furniture",
+    "properties": {
+      "type": "fireplace"
+    }
+  },
+  {
+    "id": "lantern_standing",
+    "name": "Standing Lantern",
+    "description": "A tall lantern for lighting an area.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a standing lantern.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "pole",
+          "require": {
+            "length": "long"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "casing",
+          "require": {
+            "material": "metal",
+            "size": "small"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "blade",
+          "require": {
+            "type": "shard",
+            "material": "glass"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "time_to_craft": 30,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "SLN",
+    "family": "furniture",
+    "properties": {
+      "type": "light_source",
+      "style": "lantern"
+    }
+  },
+  {
+    "id": "lantern_table",
+    "name": "Table Lantern (Placed)",
+    "description": "A small lantern for a table.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a table lantern.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "casing",
+          "require": {
+            "material": "metal",
+            "size": "small"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "blade",
+          "require": {
+            "type": "shard",
+            "material": "glass"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "time_to_craft": 15,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "TLN_P",
+    "family": "furniture",
+    "properties": {
+      "type": "light_source",
+      "style": "lantern"
+    }
+  },
+  {
+    "id": "candle_placed",
+    "name": "Candle (Placed)",
+    "description": "A candle placed on a surface.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Place a candle.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "wax",
+          "require": {
+            "type": "beeswax"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "component",
+          "require": {
+            "type": "wick"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 0
+        }
+      ],
+      "time_to_craft": 5,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "CDL_P",
+    "family": "furniture",
+    "properties": {
+      "type": "light_source",
+      "style": "candle"
+    }
+  },
+  {
+    "id": "solar_lamp",
+    "name": "Solar Garden Lamp",
+    "description": "A small solar-powered lamp.",
+    "category": "furniture",
+    "recipe": {
+      "description": "Construct a solar lamp.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "casing",
+          "require": {
+            "material": "plastic",
+            "size": "small"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "component",
+          "require": {
+            "type": "circuit_board"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "power_source",
+          "require": {
+            "type": "battery"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "screwdriver_set_multi"
+      ],
+      "time_to_craft": 20,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "SOLG",
+    "family": "furniture",
+    "properties": {
+      "type": "light_source",
+      "style": "solar"
+    }
+  },
+  {
+    "id": "streetlamp",
+    "name": "Streetlamp",
+    "description": "A tall streetlamp.",
+    "category": "structure",
+    "recipe": {
+      "description": "Construct a streetlamp.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "pole",
+          "require": {
+            "length": "long"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "sturdy"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "component",
+          "require": {
+            "type": "led"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        },
+        {
+          "skill": "Electronics",
+          "level": 3
+        }
+      ],
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "STLMP",
+    "family": "structure",
+    "properties": {
+      "type": "light_source",
+      "style": "streetlamp"
+    }
+  },
+  {
+    "id": "floodlight",
+    "name": "Floodlight",
+    "description": "A powerful floodlight.",
+    "category": "structure",
+    "recipe": {
+      "description": "Construct a floodlight.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "sturdy"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "component",
+          "require": {
+            "type": "led"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 5
+        }
+      ],
+      "time_to_craft": 45,
+      "batch_size": 1
+    },
+    "tileIdPlaced": "FLDL",
+    "family": "structure",
+    "properties": {
+      "type": "light_source",
+      "style": "floodlight"
     }
   }
 ]
