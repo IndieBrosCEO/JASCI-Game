@@ -5,6 +5,8 @@
   "dependencies": {
     "@playwright/test": "^1.56.1",
     "playwright": "^1.57.0",
-    "playwright-core": "^1.57.0"
+    "playwright-core": "^1.57.0",
+    "uuid": "^13.0.0",
+    "ws": "^8.18.3"
   }
 }
