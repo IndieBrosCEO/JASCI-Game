@@ -93,6 +93,11 @@ class NpcManager {
                     newNpcInstance.mapPos = { x: spawnX, y: spawnY, z: spawnZ };
                     newNpcInstance.eventSourceId = eventInstanceId; // Tag NPC with event source
 
+                    // Initialize behavior from definition if not present
+                    if (!newNpcInstance.behavior) {
+                        newNpcInstance.behavior = npcDef.behavior || "idle";
+                    }
+
                     if (typeof window.initializeHealth === 'function') window.initializeHealth(newNpcInstance);
                     newNpcInstance.aggroList = [];
                     newNpcInstance.memory = {

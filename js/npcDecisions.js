@@ -327,6 +327,48 @@ async function attemptOpenDoor(npc, doorPos, gameState, assetManager) {
 window.attemptOpenDoor = attemptOpenDoor;
 
 
+// Helper to find nearest tile with specific tag or property
+function findNearestInterestingTile(npc, gameState, assetManager, criteriaFn, radius = 20) {
+    const mapData = window.mapRenderer.getCurrentMapData();
+    if (!mapData || !mapData.levels) return null;
+
+    let bestTile = null;
+    let bestDist = Infinity;
+
+    const startX = Math.max(0, npc.mapPos.x - radius);
+    const endX = Math.min(mapData.dimensions.width, npc.mapPos.x + radius);
+    const startY = Math.max(0, npc.mapPos.y - radius);
+    const endY = Math.min(mapData.dimensions.height, npc.mapPos.y + radius);
+    const z = npc.mapPos.z; // Search on same Z level for now
+
+    const levelData = mapData.levels[z.toString()];
+    if (!levelData) return null;
+
+    for (let y = startY; y < endY; y++) {
+        for (let x = startX; x < endX; x++) {
+            // Check both layers
+            const bottomTileRaw = levelData.bottom?.[y]?.[x];
+            const middleTileRaw = levelData.middle?.[y]?.[x];
+
+            const bottomId = (typeof bottomTileRaw === 'object' && bottomTileRaw.tileId) ? bottomTileRaw.tileId : bottomTileRaw;
+            const middleId = (typeof middleTileRaw === 'object' && middleTileRaw.tileId) ? middleTileRaw.tileId : middleTileRaw;
+
+            const bottomDef = assetManager.tilesets[bottomId];
+            const middleDef = assetManager.tilesets[middleId];
+
+            if (criteriaFn(bottomDef, bottomTileRaw) || criteriaFn(middleDef, middleTileRaw)) {
+                const dist = Math.abs(npc.mapPos.x - x) + Math.abs(npc.mapPos.y - y);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestTile = { x, y, z };
+                }
+            }
+        }
+    }
+    return bestTile;
+}
+if (typeof window !== 'undefined') window.findNearestInterestingTile = findNearestInterestingTile; // Expose for testing
+
 // Out-of-Combat Behavior (moved from combatManager.js)
 async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPerCycle = 3) {
     const npcName = npc.name || npc.id || "NPC_OOC";
@@ -341,8 +383,15 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
         npc.memory = {
             lastSeenTargetPos: null, lastSeenTargetTimestamp: 0,
             recentlyVisitedTiles: [], explorationTarget: null,
-            lastKnownSafePos: { ...npc.mapPos }
+            lastKnownSafePos: { ...npc.mapPos },
+            actionCooldown: 0
         };
+    }
+
+    // Cooldown decrement
+    if (npc.memory.actionCooldown > 0) {
+        npc.memory.actionCooldown--;
+        if (npc.memory.actionCooldown > 0) return; // Busy performing action
     }
 
     // Ensure companion specific fields are present if they are following
@@ -426,51 +475,199 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
             }
         }
 
-    } else { // Standard Non-Companion OOC Logic
-        pathfindingTarget = npc.memory.explorationTarget;
-        if (pathfindingTarget && npc.mapPos.x === pathfindingTarget.x && npc.mapPos.y === pathfindingTarget.y && npc.mapPos.z === pathfindingTarget.z) {
-            logToConsole(`NPC_OOC ${npcName}: Reached exploration target. Clearing.`, 'cyan');
-            const visitedKey = `${npc.mapPos.x},${npc.mapPos.y},${npc.mapPos.z}`;
-            if (!npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
-                npc.memory.recentlyVisitedTiles.push(visitedKey);
-                if (npc.memory.recentlyVisitedTiles.length > RECENTLY_VISITED_MAX_SIZE) {
-                    npc.memory.recentlyVisitedTiles.shift();
+    } else { // Standard Non-Companion OOC Logic & Goal Behaviors
+        const npcBehavior = npc.behavior || "idle";
+
+        // 1. Goal-Oriented Behavior
+        let goalTarget = null;
+
+        if (npcBehavior === "fish") {
+            goalTarget = findNearestInterestingTile(npc, gameState, assetManager, (def) => def && def.tags && def.tags.includes('water'));
+            if (goalTarget && getDistance3D(npc.mapPos, goalTarget) <= 1.5) {
+                logToConsole(`NPC ${npcName} is fishing.`, 'cyan');
+                npc.memory.actionCooldown = 5; // Busy for 5 cycles
+                return;
+            }
+        } else if (npcBehavior === "chop_wood") {
+            goalTarget = findNearestInterestingTile(npc, gameState, assetManager, (def) => def && (def.id === 'TRK' || (def.tags && (def.tags.includes('scavenge:wood') || def.tags.includes('tree')))));
+            if (goalTarget && getDistance3D(npc.mapPos, goalTarget) <= 1.5) {
+                logToConsole(`NPC ${npcName} is chopping wood.`, 'cyan');
+                npc.memory.actionCooldown = 10;
+                return;
+            }
+        } else if (npcBehavior === "farm") {
+            goalTarget = findNearestInterestingTile(npc, gameState, assetManager, (def) => def && (def.tags && (def.tags.includes('farmland') || def.tags.includes('plantable'))));
+            if (goalTarget && getDistance3D(npc.mapPos, goalTarget) <= 1) {
+                logToConsole(`NPC ${npcName} is farming.`, 'cyan');
+                npc.memory.actionCooldown = 8;
+                return;
+            }
+        } else if (npcBehavior === "craft") {
+            goalTarget = findNearestInterestingTile(npc, gameState, assetManager, (def) => def && (def.tags && def.tags.includes('crafting_station')));
+            if (goalTarget && getDistance3D(npc.mapPos, goalTarget) <= 1.5) {
+                logToConsole(`NPC ${npcName} is crafting.`, 'cyan');
+                npc.memory.actionCooldown = 15;
+                return;
+            }
+        } else if (npcBehavior === "scavenge") {
+            goalTarget = findNearestInterestingTile(npc, gameState, assetManager, (def) => def && (def.tags && (def.tags.includes('container') || def.tags.includes('loose_item'))));
+            if (goalTarget && getDistance3D(npc.mapPos, goalTarget) <= 1.5) {
+                logToConsole(`NPC ${npcName} is scavenging.`, 'cyan');
+                npc.memory.actionCooldown = 5;
+                return;
+            }
+        } else if (npcBehavior === "patrol") {
+            // Patrol logic: Move between random points or defined patrol points
+            // For now, simple random patrol points
+            if (!npc.memory.explorationTarget) {
+                const mapData = window.mapRenderer.getCurrentMapData();
+                if (mapData) {
+                    let attempts = 0;
+                    while (attempts < 5) {
+                        const dist = 5 + Math.floor(Math.random() * 10);
+                        const angle = Math.random() * 2 * Math.PI;
+                        const tx = Math.floor(npc.mapPos.x + Math.cos(angle) * dist);
+                        const ty = Math.floor(npc.mapPos.y + Math.sin(angle) * dist);
+                        const tz = npc.mapPos.z;
+                        if (tx >= 0 && tx < mapData.dimensions.width && ty >= 0 && ty < mapData.dimensions.height && window.mapRenderer.isWalkable(tx, ty, tz)) {
+                            npc.memory.explorationTarget = { x: tx, y: ty, z: tz };
+                            break;
+                        }
+                        attempts++;
+                    }
                 }
             }
-            pathfindingTarget = null;
-            npc.memory.explorationTarget = null;
+            goalTarget = npc.memory.explorationTarget;
+        } else if (npcBehavior === "guard_area") {
+            // Guard logic: Return to spawn/safe pos if far, otherwise idle/scan
+            const anchorPos = npc.memory.lastKnownSafePos || npc.mapPos;
+            if (getDistance3D(npc.mapPos, anchorPos) > 5) {
+                goalTarget = anchorPos;
+            } else {
+                // Idle / turn in place (simulated by small random move or no move)
+                if (Math.random() < 0.2) {
+                     // Pick a spot 1 tile away
+                     // ... reuse finding code or let standard wander handle small moves
+                }
+            }
+        } else if (npcBehavior === "search_for_people") {
+             // Search for nearest living entity (player or NPC)
+             let bestDist = Infinity;
+             let bestTarget = null;
+
+             // Check NPCs
+             if (gameState.npcs) {
+                 for (const otherNpc of gameState.npcs) {
+                     if (otherNpc === npc || otherNpc.health.torso.current <= 0) continue;
+                     const d = getDistance3D(npc.mapPos, otherNpc.mapPos);
+                     if (d < bestDist) {
+                         bestDist = d;
+                         bestTarget = otherNpc.mapPos;
+                     }
+                 }
+             }
+
+             // Check Player
+             const dPlayer = getDistance3D(npc.mapPos, gameState.playerPos);
+             if (dPlayer < bestDist) {
+                 bestDist = dPlayer;
+                 bestTarget = gameState.playerPos;
+             }
+
+             goalTarget = bestTarget;
+
+             if (goalTarget && bestDist <= 3) {
+                 logToConsole(`NPC ${npcName} found someone.`, 'cyan');
+                 npc.memory.actionCooldown = 5; // Chatting?
+                 return;
+             }
         }
 
-        if (!pathfindingTarget) {
-            let attempts = 0;
-            const mapData = window.mapRenderer.getCurrentMapData();
-            const OOC_EXPLORATION_RADIUS = NPC_EXPLORATION_RADIUS * 1.5;
+        // --- NPC vs NPC Combat Initiation Check ---
+        // Scan for hostile entities nearby to start combat
+        if (!gameState.isInCombat) {
+            let potentialCombatTarget = null;
+            let bestThreatDist = Infinity;
 
-            if (mapData && mapData.dimensions) {
-                while (attempts < MAX_EXPLORATION_TARGET_ATTEMPTS && !pathfindingTarget) {
-                    const angle = Math.random() * 2 * Math.PI;
-                    const radius = 2 + Math.floor(Math.random() * (OOC_EXPLORATION_RADIUS - 2));
-                    const targetX = Math.max(0, Math.min(mapData.dimensions.width - 1, Math.floor(npc.mapPos.x + Math.cos(angle) * radius)));
-                    const targetY = Math.max(0, Math.min(mapData.dimensions.height - 1, Math.floor(npc.mapPos.y + Math.sin(angle) * radius)));
-                    const targetZ = npc.mapPos.z;
-                    const visitedKey = `${targetX},${targetY},${targetZ}`;
-                    if (window.mapRenderer.isWalkable(targetX, targetY, targetZ) &&
-                        !_isTileOccupied(targetX, targetY, targetZ, gameState, npc.id) && // Use local _isTileOccupied
-                        !npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
-                        pathfindingTarget = { x: targetX, y: targetY, z: targetZ };
-                        npc.memory.explorationTarget = pathfindingTarget;
-                        logToConsole(`NPC_OOC ${npcName}: New OOC target: (${targetX},${targetY}, Z:${targetZ})`, 'cyan');
-                        break;
+            // Check Player
+            if (npc.teamId !== gameState.player.teamId && getDistance3D(npc.mapPos, gameState.playerPos) <= 10) {
+                // Simple LOS check (can use window.hasLineOfSight3D if available, here simple dist)
+                if (window.hasLineOfSight3D && window.hasLineOfSight3D(npc.mapPos, gameState.playerPos, assetManager.tilesets, window.mapRenderer.getCurrentMapData())) {
+                    potentialCombatTarget = gameState.player; // Target entity, not just pos
+                    bestThreatDist = getDistance3D(npc.mapPos, gameState.playerPos);
+                }
+            }
+
+            // Check other NPCs
+            if (gameState.npcs) {
+                for (const otherNpc of gameState.npcs) {
+                    if (otherNpc === npc || otherNpc.health.torso.current <= 0) continue;
+                    if (npc.teamId !== otherNpc.teamId) {
+                        const d = getDistance3D(npc.mapPos, otherNpc.mapPos);
+                        if (d <= 10 && d < bestThreatDist) {
+                             if (window.hasLineOfSight3D && window.hasLineOfSight3D(npc.mapPos, otherNpc.mapPos, assetManager.tilesets, window.mapRenderer.getCurrentMapData())) {
+                                potentialCombatTarget = otherNpc;
+                                bestThreatDist = d;
+                             }
+                        }
                     }
-                    attempts++;
                 }
             }
-            if (!pathfindingTarget && attempts >= MAX_EXPLORATION_TARGET_ATTEMPTS) {
-                logToConsole(`NPC_OOC ${npcName}: Failed to find OOC target. Using safe pos or idling.`, 'grey');
-                if (npc.memory.lastKnownSafePos && (npc.memory.lastKnownSafePos.x !== npc.mapPos.x || npc.memory.lastKnownSafePos.y !== npc.mapPos.y || npc.memory.lastKnownSafePos.z !== npc.mapPos.z)) {
-                    pathfindingTarget = npc.memory.lastKnownSafePos;
+
+            if (potentialCombatTarget) {
+                logToConsole(`NPC ${npcName} spotted hostile ${potentialCombatTarget.name || "Target"}. Initiating combat!`, 'red');
+                // Initiate combat. We must include the player in the participants list to ensure global combat state works correctly.
+                // even if the player isn't the direct target.
+                const participants = [npc, potentialCombatTarget];
+                // Ensure player is included if not already
+                if (potentialCombatTarget !== gameState.player) {
+                    participants.push(gameState);
+                } else {
+                    participants[1] = gameState; // Ensure reference is correct
+                }
+
+                if (window.combatManager) {
+                    window.combatManager.startCombat(participants, potentialCombatTarget === gameState ? gameState : potentialCombatTarget);
+                    return; // End OOC turn immediately
                 }
             }
+        }
+        // ------------------------------------------
+
+        if (goalTarget) {
+            pathfindingTarget = goalTarget;
+        } else {
+            // 2. Idle / No Goal Wandering (Low Chance)
+            const wanderChance = 0.1; // 10% chance to start wandering if idle
+            if (!npc.memory.explorationTarget && Math.random() < wanderChance) {
+                // Pick a random target 1-6 tiles away
+                const mapData = window.mapRenderer.getCurrentMapData();
+                if (mapData) {
+                    let attempts = 0;
+                    while (attempts < 5) {
+                        const dist = 1 + Math.floor(Math.random() * 6);
+                        const angle = Math.random() * 2 * Math.PI;
+                        const tx = Math.floor(npc.mapPos.x + Math.cos(angle) * dist);
+                        const ty = Math.floor(npc.mapPos.y + Math.sin(angle) * dist);
+                        const tz = npc.mapPos.z;
+
+                        if (tx >= 0 && tx < mapData.dimensions.width && ty >= 0 && ty < mapData.dimensions.height &&
+                            window.mapRenderer.isWalkable(tx, ty, tz)) {
+                            npc.memory.explorationTarget = { x: tx, y: ty, z: tz };
+                            break;
+                        }
+                        attempts++;
+                    }
+                }
+            }
+            pathfindingTarget = npc.memory.explorationTarget;
+        }
+
+        // Reaching target logic
+        if (pathfindingTarget && npc.mapPos.x === pathfindingTarget.x && npc.mapPos.y === pathfindingTarget.y && npc.mapPos.z === pathfindingTarget.z) {
+            // logToConsole(`NPC_OOC ${npcName}: Reached target.`, 'cyan');
+            pathfindingTarget = null;
+            npc.memory.explorationTarget = null;
         }
 
         if (pathfindingTarget && movesMadeThisCycle < maxMovesPerCycle) {
@@ -483,13 +680,8 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
 
                 // Call the moveNpcTowardsTarget now in npcDecisions.js, passing the animation duration
                 if (await moveNpcTowardsTarget(npc, pathfindingTarget, gameState, assetManager, oocAnimationDuration)) {
-                    movesMadeThisCycle = (maxMovesPerCycle - movesMadeThisCycle) - npc.currentMovementPoints; // This logic seems complex for movesMadeThisCycle
-                    // It should likely just be incremented if a move was successful.
-                    // Let's simplify: if moveNpcTowardsTarget returns true, increment movesMadeThisCycle.
-                    // However, moveNpcTowardsTarget itself calls attemptCharacterMove which deducts MP.
-                    // The number of moves taken within moveNpcTowardsTarget might be more than 1 if it handles multiple steps.
-                    // For now, the existing MP deduction within moveNpcTowardsTarget/attemptCharacterMove will handle costs.
-                    // The loop condition `movesMadeThisCycle < maxMovesPerCycle` will control iterations.
+                    // movesMadeThisCycle calculation is implicitly handled by loop limit, but we should update it
+                    // effectively if we want to be strict. For now simple checks suffice.
                     npc.memory.lastKnownSafePos = { ...npc.mapPos };
                     const visitedKey = `${npc.mapPos.x},${npc.mapPos.y},${npc.mapPos.z}`;
                     if (!npc.memory.recentlyVisitedTiles.includes(visitedKey)) {
@@ -499,7 +691,7 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
                         }
                     }
                     if (npc.memory.explorationTarget && npc.mapPos.x === npc.memory.explorationTarget.x && npc.mapPos.y === npc.memory.explorationTarget.y && npc.mapPos.z === npc.memory.explorationTarget.z) {
-                        logToConsole(`NPC_OOC ${npcName}: Reached OOC target. Clearing.`, 'cyan');
+                        // logToConsole(`NPC_OOC ${npcName}: Reached OOC target. Clearing.`, 'cyan');
                         npc.memory.explorationTarget = null;
                     }
                 } else {
@@ -511,8 +703,8 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
             }
             npc.currentMovementPoints = originalCombatMP; // Restore combat MP
         }
-    } // <<<< ADDED CLOSING BRACE FOR THE FUNCTION async function handleNpcOutOfCombatTurn
-} // <<<< ADDED CLOSING BRACE FOR THE FUNCTION async function handleNpcOutOfCombatTurn 2
+    }
+}
 window.handleNpcOutOfCombatTurn = handleNpcOutOfCombatTurn;
 
 // NPC Target Selection Logic for Combat (moved from combatManager.js)

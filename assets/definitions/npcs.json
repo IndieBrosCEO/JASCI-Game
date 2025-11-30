@@ -2047,7 +2047,7 @@
     "sprite": "F",
     "color": "cyan",
     "factionId": "civilian",
-    "behavior": "idle",
+    "behavior": "fish",
     "health": {
       "head": {
         "max": 5,
