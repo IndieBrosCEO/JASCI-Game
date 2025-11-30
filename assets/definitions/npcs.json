@@ -1204,7 +1204,7 @@
     "name": "Mountain Lion",
     "sprite": "L",
     "color": "goldenrod",
-    "factionId": "creature_hostile",
+    "factionId": "creature_predator",
     "behavior": "hunt_aggressive",
     "patrolPoints": [],
     "health": {
@@ -1248,7 +1248,7 @@
     "name": "Bobcat",
     "sprite": "b",
     "color": "tan",
-    "factionId": "creature_hostile",
+    "factionId": "creature_predator",
     "behavior": "hunt_cautious",
     "patrolPoints": [],
     "health": {
@@ -1292,7 +1292,7 @@
     "name": "Coyote",
     "sprite": "y",
     "color": "gray",
-    "factionId": "creature_hostile",
+    "factionId": "creature_predator",
     "behavior": "pack_hunt",
     "patrolPoints": [],
     "health": {
@@ -1382,7 +1382,7 @@
     "name": "Red-tailed Hawk",
     "sprite": "h",
     "color": "brown",
-    "factionId": "creature_neutral",
+    "factionId": "creature_predator",
     "behavior": "hunt_aerial",
     "patrolPoints": [],
     "health": {
@@ -1692,7 +1692,7 @@
     "name": "Western Rattlesnake",
     "sprite": "S",
     "color": "olivedrab",
-    "factionId": "creature_hostile",
+    "factionId": "creature_predator",
     "behavior": "ambush_strike",
     "patrolPoints": [],
     "health": {
@@ -1780,7 +1780,7 @@
     "name": "Tarantula",
     "sprite": "t",
     "color": "black",
-    "factionId": "creature_hostile",
+    "factionId": "creature_predator",
     "behavior": "defensive_strike",
     "patrolPoints": [],
     "health": {
