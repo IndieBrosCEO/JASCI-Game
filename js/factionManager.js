@@ -13,7 +13,8 @@ const Factions = {
     SCAVENGER: { id: "scavenger", name: "Scavengers", color: "saddlebrown" },
     MUTANT: { id: "mutant", name: "Mutants", color: "darkgreen" },
     ZOMBIE: { id: "zombie", name: "Zombies", color: "lightgreen" }, // Example, adjust as needed
-    CREATURE_HOSTILE: { id: "creature_hostile", name: "Hostile Creatures", color: "red" }, // e.g., Mountain Lion, Rattlesnake
+    CREATURE_HOSTILE: { id: "creature_hostile", name: "Hostile Creatures", color: "red" }, // e.g., Generic monsters
+    CREATURE_PREDATOR: { id: "creature_predator", name: "Predators", color: "orange" }, // e.g., Mountain Lion, Rattlesnake
     CREATURE_NEUTRAL: { id: "creature_neutral", name: "Neutral Creatures", color: "gray" }, // e.g., Raccoon, Vulture
     CREATURE_PREY: { id: "creature_prey", name: "Prey Animals", color: "lightgray" }, // e.g., Deer, Quail
     INSECT_SWARM: { id: "insect_swarm", name: "Insect Swarm", color: "yellow" }, // e.g., Bees (defensive)
@@ -37,6 +38,7 @@ const defaultFactionRelationships = {
         [Factions.MUTANT.id]: "hostile",
         [Factions.ZOMBIE.id]: "hostile",
         [Factions.CREATURE_HOSTILE.id]: "hostile",
+        [Factions.CREATURE_PREDATOR.id]: "hostile",
         [Factions.CREATURE_NEUTRAL.id]: "neutral",
         [Factions.CREATURE_PREY.id]: "neutral",
         [Factions.INSECT_SWARM.id]: "neutral", // Hostile if provoked
@@ -52,6 +54,7 @@ const defaultFactionRelationships = {
         [Factions.MUTANT.id]: "hostile",
         [Factions.ZOMBIE.id]: "hostile",
         [Factions.CREATURE_HOSTILE.id]: "hostile",
+        [Factions.CREATURE_PREDATOR.id]: "hostile",
         [Factions.GUARD.id]: "ally",
         [Factions.EARTH_FIRST.id]: "neutral",
         [Factions.PD_FACTION.id]: "ally"
@@ -97,9 +100,19 @@ const defaultFactionRelationships = {
     },
     [Factions.EARTH_FIRST.id]: {
         [Factions.PD_FACTION.id]: "neutral" // Or suspicious/hostile
+    },
+    // Predator-Prey Relationships
+    [Factions.CREATURE_PREDATOR.id]: {
+        [Factions.CREATURE_PREY.id]: "hostile",
+        [Factions.CREATURE_HOSTILE.id]: "neutral", // Predators might ignore monsters or fight, default neutral
+        [Factions.CREATURE_NEUTRAL.id]: "neutral", // Usually ignore scavengers
+        [Factions.PLAYER.id]: "hostile", // Predators attack player
+        [Factions.ZOMBIE.id]: "hostile" // Zombies attack life
+    },
+    [Factions.CREATURE_PREY.id]: {
+        [Factions.CREATURE_PREDATOR.id]: "hostile", // Fear/Flee behavior is technically a 'hostile' relation for detection
+        [Factions.PLAYER.id]: "neutral" // Usually neutral/fear
     }
-    // Zombies are generally hostile to all living non-zombies.
-    // Creatures are typically neutral or hostile based on their category.
 };
 
 // Player reputation with factions (will be stored in gameState)

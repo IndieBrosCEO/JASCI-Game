@@ -52,6 +52,7 @@ const redoStack = [];
 export function getMapData() {
     return mapData;
 }
+if (typeof window !== 'undefined') window.getMapData = getMapData; // Expose for testing
 
 /**
  * Sets the entire map data object. Used primarily during map loading.
