@@ -886,6 +886,10 @@ window.mapRenderer = {
         if (tempSpan.offsetHeight > 0) tileHeight = tempSpan.offsetHeight;
         document.body.removeChild(tempSpan);
 
+        // Cache tile size for use in mouse events
+        this.lastTileWidth = tileWidth;
+        this.lastTileHeight = tileHeight;
+
         // Viewport calculations
         const viewPortWidth = container.clientWidth;
         const viewPortHeight = container.clientHeight;
@@ -1143,6 +1147,171 @@ window.mapRenderer = {
                 let finalSpriteForTile = displaySprite;
                 let finalColorForTile = displayColor;
                 let finalDisplayIdForTile = displayId;
+
+        if (gameState.isConstructionModeActive && gameState.constructionGhostCoords &&
+            gameState.constructionGhostCoords.z === currentZ) {
+
+            const defId = gameState.selectedConstructionId;
+            const def = window.constructionManager && window.constructionManager.constructionDefinitions ? window.constructionManager.constructionDefinitions[defId] : null;
+            if (def) {
+                const gx = gameState.constructionGhostCoords.x;
+                const gy = gameState.constructionGhostCoords.y;
+                const size = def.size || { width: 1, height: 1 };
+
+                // Check if current tile (x, y) is within ghost bounds
+                if (x >= gx && x < gx + size.width && y >= gy && y < gy + size.height) {
+                    // It is part of the ghost!
+                    // Determine validity (once per render cycle or just recalculate?)
+                    // For performance, isValidPlacement is a bit heavy to call per tile.
+                    // But we only do it for tiles in ghost.
+                    // Let's call it for the origin once per frame/update?
+                    // Better: Assume valid unless we implement caching of validity.
+                    // Let's just check validity for the ORIGIN (gx, gy) because that's what placeConstruction does.
+                    // And we can reuse that boolean for all tiles in the ghost.
+
+                    if (window.mapRenderer._lastGhostValidityCheckTime !== Date.now() ||
+                        window.mapRenderer._lastGhostX !== gx || window.mapRenderer._lastGhostY !== gy) {
+
+                        window.mapRenderer._lastGhostValidity = window.constructionManager.isValidPlacement(def, { x: gx, y: gy, z: currentZ });
+                        window.mapRenderer._lastGhostValidityCheckTime = Date.now();
+                        window.mapRenderer._lastGhostX = gx;
+                        window.mapRenderer._lastGhostY = gy;
+                    }
+                    const isValid = window.mapRenderer._lastGhostValidity;
+
+                    // Get sprite from definition
+                    let ghostSprite = '?';
+                    let ghostColor = '#FFFFFF';
+                    if (def.tileIdPlaced && assetManagerInstance.tilesets[def.tileIdPlaced]) {
+                        const tileDef = assetManagerInstance.tilesets[def.tileIdPlaced];
+                        ghostSprite = tileDef.sprite;
+                        ghostColor = tileDef.color;
+                    }
+
+                    finalSpriteForTile = ghostSprite;
+                    // Tint color based on validity
+                    if (isValid) {
+                        finalColorForTile = 'rgba(0, 255, 0, 0.7)'; // Greenish tint
+                        // Or blend ghostColor with green?
+                        // finalColorForTile = blendColors(ghostColor, '#00FF00', 0.5);
+                    } else {
+                        finalColorForTile = 'rgba(255, 0, 0, 0.7)'; // Reddish tint
+                        // finalColorForTile = blendColors(ghostColor, '#FF0000', 0.5);
+                    }
+                    finalDisplayIdForTile = 'CONSTRUCTION_GHOST';
+                }
+            }
+        }
+
+        if (gameState.isConstructionModeActive && gameState.constructionGhostCoords &&
+            gameState.constructionGhostCoords.z === currentZ) {
+
+            const defId = gameState.selectedConstructionId;
+            const def = window.constructionManager && window.constructionManager.constructionDefinitions ? window.constructionManager.constructionDefinitions[defId] : null;
+            if (def) {
+                const gx = gameState.constructionGhostCoords.x;
+                const gy = gameState.constructionGhostCoords.y;
+                const size = def.size || { width: 1, height: 1 };
+
+                // Check if current tile (x, y) is within ghost bounds
+                if (x >= gx && x < gx + size.width && y >= gy && y < gy + size.height) {
+                    // It is part of the ghost!
+                    // Determine validity (once per render cycle or just recalculate?)
+                    // For performance, isValidPlacement is a bit heavy to call per tile.
+                    // But we only do it for tiles in ghost.
+                    // Let's call it for the origin once per frame/update?
+                    // Better: Assume valid unless we implement caching of validity.
+                    // Let's just check validity for the ORIGIN (gx, gy) because that's what placeConstruction does.
+                    // And we can reuse that boolean for all tiles in the ghost.
+
+                    if (window.mapRenderer._lastGhostValidityCheckTime !== Date.now() ||
+                        window.mapRenderer._lastGhostX !== gx || window.mapRenderer._lastGhostY !== gy) {
+
+                        window.mapRenderer._lastGhostValidity = window.constructionManager.isValidPlacement(def, { x: gx, y: gy, z: currentZ });
+                        window.mapRenderer._lastGhostValidityCheckTime = Date.now();
+                        window.mapRenderer._lastGhostX = gx;
+                        window.mapRenderer._lastGhostY = gy;
+                    }
+                    const isValid = window.mapRenderer._lastGhostValidity;
+
+                    // Get sprite from definition
+                    let ghostSprite = '?';
+                    let ghostColor = '#FFFFFF';
+                    if (def.tileIdPlaced && assetManagerInstance.tilesets[def.tileIdPlaced]) {
+                        const tileDef = assetManagerInstance.tilesets[def.tileIdPlaced];
+                        ghostSprite = tileDef.sprite;
+                        ghostColor = tileDef.color;
+                    }
+
+                    finalSpriteForTile = ghostSprite;
+                    // Tint color based on validity
+                    if (isValid) {
+                        finalColorForTile = 'rgba(0, 255, 0, 0.7)'; // Greenish tint
+                        // Or blend ghostColor with green?
+                        // finalColorForTile = blendColors(ghostColor, '#00FF00', 0.5);
+                    } else {
+                        finalColorForTile = 'rgba(255, 0, 0, 0.7)'; // Reddish tint
+                        // finalColorForTile = blendColors(ghostColor, '#FF0000', 0.5);
+                    }
+                    finalDisplayIdForTile = 'CONSTRUCTION_GHOST';
+                }
+            }
+        }
+
+        if (gameState.isConstructionModeActive && gameState.constructionGhostCoords &&
+            gameState.constructionGhostCoords.z === currentZ) {
+
+            const defId = gameState.selectedConstructionId;
+            const def = window.constructionManager && window.constructionManager.constructionDefinitions ? window.constructionManager.constructionDefinitions[defId] : null;
+            if (def) {
+                const gx = gameState.constructionGhostCoords.x;
+                const gy = gameState.constructionGhostCoords.y;
+                const size = def.size || { width: 1, height: 1 };
+
+                // Check if current tile (x, y) is within ghost bounds
+                if (x >= gx && x < gx + size.width && y >= gy && y < gy + size.height) {
+                    // It is part of the ghost!
+                    // Determine validity (once per render cycle or just recalculate?)
+                    // For performance, isValidPlacement is a bit heavy to call per tile.
+                    // But we only do it for tiles in ghost.
+                    // Let's call it for the origin once per frame/update?
+                    // Better: Assume valid unless we implement caching of validity.
+                    // Let's just check validity for the ORIGIN (gx, gy) because that's what placeConstruction does.
+                    // And we can reuse that boolean for all tiles in the ghost.
+
+                    if (window.mapRenderer._lastGhostValidityCheckTime !== Date.now() ||
+                        window.mapRenderer._lastGhostX !== gx || window.mapRenderer._lastGhostY !== gy) {
+
+                        window.mapRenderer._lastGhostValidity = window.constructionManager.isValidPlacement(def, { x: gx, y: gy, z: currentZ });
+                        window.mapRenderer._lastGhostValidityCheckTime = Date.now();
+                        window.mapRenderer._lastGhostX = gx;
+                        window.mapRenderer._lastGhostY = gy;
+                    }
+                    const isValid = window.mapRenderer._lastGhostValidity;
+
+                    // Get sprite from definition
+                    let ghostSprite = '?';
+                    let ghostColor = '#FFFFFF';
+                    if (def.tileIdPlaced && assetManagerInstance.tilesets[def.tileIdPlaced]) {
+                        const tileDef = assetManagerInstance.tilesets[def.tileIdPlaced];
+                        ghostSprite = tileDef.sprite;
+                        ghostColor = tileDef.color;
+                    }
+
+                    finalSpriteForTile = ghostSprite;
+                    // Tint color based on validity
+                    if (isValid) {
+                        finalColorForTile = 'rgba(0, 255, 0, 0.7)'; // Greenish tint
+                        // Or blend ghostColor with green?
+                        // finalColorForTile = blendColors(ghostColor, '#00FF00', 0.5);
+                    } else {
+                        finalColorForTile = 'rgba(255, 0, 0, 0.7)'; // Reddish tint
+                        // finalColorForTile = blendColors(ghostColor, '#FF0000', 0.5);
+                    }
+                    finalDisplayIdForTile = 'CONSTRUCTION_GHOST';
+                }
+            }
+        }
 
                 if (gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y && currentZ === gameState.targetingCoords.z) {
                     finalSpriteForTile = 'X';

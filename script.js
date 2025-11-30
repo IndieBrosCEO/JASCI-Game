@@ -2388,15 +2388,64 @@ async function initialize() { // Made async
                 }
             });
 
-            // Event listener for Look Mode mouse movement
+            // Event listener for Look Mode mouse movement and Construction Ghost
             mapContainerElement.addEventListener('mousemove', (event) => {
                 if (gameState.isLookModeActive && typeof window.showLookTooltip === 'function') {
                     window.showLookTooltip(event, gameState, window.mapRenderer, window.assetManager);
+                }
+
+                if (gameState.isConstructionModeActive) {
+                    const rect = mapContainerElement.getBoundingClientRect();
+                    const scrollLeft = mapContainerElement.scrollLeft;
+                    const scrollTop = mapContainerElement.scrollTop;
+                    let tileWidth = 10; let tileHeight = 18; // Default/fallback
+
+                    // Simple measurement or reuse cached values if available
+                    // For performance in mousemove, we avoid creating elements repeatedly.
+                    // Ideally we should cache tile size.
+                    // But using getComputedStyle every frame is also heavy.
+                    // Let's assume standard size for now or try to be quick.
+                    // The click handler does a full measure.
+                    // Let's assume 10x18 for now or try to get it from tileCache if possible,
+                    // or just replicate the measure logic but maybe throttle it?
+                    // For now, let's just do the measurement quickly.
+
+                    if (window.mapRenderer && window.mapRenderer.lastTileWidth) {
+                         tileWidth = window.mapRenderer.lastTileWidth;
+                         tileHeight = window.mapRenderer.lastTileHeight;
+                    } else {
+                        // Fallback measurement if renderer hasn't cached it
+                        const tempSpan = document.createElement('span');
+                        tempSpan.style.fontFamily = getComputedStyle(mapContainerElement).fontFamily;
+                        tempSpan.style.fontSize = getComputedStyle(mapContainerElement).fontSize;
+                        tempSpan.style.lineHeight = getComputedStyle(mapContainerElement).lineHeight;
+                        tempSpan.style.position = 'absolute'; tempSpan.style.visibility = 'hidden';
+                        tempSpan.textContent = 'M';
+                        document.body.appendChild(tempSpan);
+                        tileWidth = tempSpan.offsetWidth || 10;
+                        tileHeight = tempSpan.offsetHeight || 18;
+                        document.body.removeChild(tempSpan);
+                    }
+
+                    const x = Math.floor((event.clientX - rect.left + scrollLeft) / tileWidth);
+                    const y = Math.floor((event.clientY - rect.top + scrollTop) / tileHeight);
+                    const z = gameState.currentViewZ;
+
+                    if (gameState.constructionGhostCoords && gameState.constructionGhostCoords.x === x && gameState.constructionGhostCoords.y === y && gameState.constructionGhostCoords.z === z) {
+                        return; // No change
+                    }
+
+                    gameState.constructionGhostCoords = { x, y, z };
+                    window.mapRenderer.scheduleRender();
                 }
             });
             mapContainerElement.addEventListener('mouseleave', () => { // Hide tooltip when mouse leaves map
                 if (typeof window.hideLookTooltip === 'function') { // Always hide if mouse leaves, regardless of look mode status
                     window.hideLookTooltip();
+                }
+                if (gameState.isConstructionModeActive) {
+                    gameState.constructionGhostCoords = null;
+                    window.mapRenderer.scheduleRender();
                 }
             });
 
