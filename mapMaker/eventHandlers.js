@@ -1156,12 +1156,20 @@ function handleSaveNpcPropertiesClick() {
 
     const selectedBaseId = getSelectedBaseNpcId();
     const instanceName = document.getElementById('npcInstanceNameInput')?.value.trim();
+    const behavior = document.getElementById('npcBehaviorSelect')?.value;
 
     if (appState.selectedNpc) { // Editing existing NPC
         snapshot();
         const npcToUpdate = mapData.npcs.find(n => n.id === appState.selectedNpc.id);
         if (npcToUpdate) {
             npcToUpdate.name = instanceName || (assetManagerInstance.npcDefinitions[npcToUpdate.definitionId]?.name || npcToUpdate.id); // Instance name or fallback to base or ID
+
+            if (behavior && behavior !== "") {
+                npcToUpdate.behavior = behavior;
+            } else {
+                delete npcToUpdate.behavior; // Remove if default/empty to fallback to definition
+            }
+
             // If base type changed in UI (not standard for this simple setup, but if it were):
             // npcToUpdate.definitionId = selectedBaseId;
             // Then re-template other properties if needed, or just update sprite/color if they are also editable instance props.

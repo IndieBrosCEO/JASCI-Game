@@ -1016,7 +1016,8 @@ export function updateSelectedNpcInfoUI(selectedNpc, baseNpcDefinitions) {
         editingNpcId: el('editingNpcId'),
         editingNpcPos: el('editingNpcPos'),
         npcBaseTypeSelect: el('npcBaseTypeSelect'),
-        npcInstanceNameInput: el('npcInstanceNameInput')
+        npcInstanceNameInput: el('npcInstanceNameInput'),
+        npcBehaviorSelect: el('npcBehaviorSelect')
         // Add sprite and color inputs here if they become directly editable on instance
     };
 
@@ -1036,6 +1037,7 @@ export function updateSelectedNpcInfoUI(selectedNpc, baseNpcDefinitions) {
         if (fields.editingNpcId) fields.editingNpcId.textContent = "N/A (New)";
         if (fields.editingNpcPos) fields.editingNpcPos.textContent = "N/A";
         if (fields.npcInstanceNameInput) fields.npcInstanceNameInput.value = '';
+        if (fields.npcBehaviorSelect) fields.npcBehaviorSelect.value = ''; // Reset to default
         // Base type might be pre-selected or user needs to choose
         // if (fields.npcBaseTypeSelect) fields.npcBaseTypeSelect.value = ''; // Don't reset if user picked one
 
@@ -1057,6 +1059,10 @@ export function updateSelectedNpcInfoUI(selectedNpc, baseNpcDefinitions) {
             displayName = baseNpcDefinitions[selectedNpc.definitionId].name; // Fallback to base definition name
         }
         if (fields.npcInstanceNameInput) fields.npcInstanceNameInput.value = displayName || '';
+
+        if (fields.npcBehaviorSelect) {
+            fields.npcBehaviorSelect.value = selectedNpc.behavior || "";
+        }
 
         // Face Generator UI Population
         initializeNpcFaceParamsForMapMakerUI(selectedNpc); // Ensures faceData and asciiFace exist
