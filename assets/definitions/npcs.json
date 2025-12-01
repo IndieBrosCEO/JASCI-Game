@@ -2114,5 +2114,92 @@
     "cr": 0.5,
     "dialogueFile": "fishmonger_dialogues.json",
     "dialogue_start_node": "fish_joe_default"
+  },
+  {
+    "id": "bio_muncher",
+    "name": "Bio-Muncher",
+    "sprite": "m",
+    "color": "lime",
+    "factionId": "mutant",
+    "behavior": "melee_aggressive",
+    "patrolPoints": [],
+    "health": {
+      "head": { "max": 2, "current": 2, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 2, "current": 2, "armor": 0, "crisisTimer": 0 },
+      "leftArm": { "max": 2, "current": 2, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 2, "current": 2, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 2, "current": 2, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 2, "current": 2, "armor": 0, "crisisTimer": 0 }
+    },
+    "stats": {
+      "Strength": 2,
+      "Intelligence": -16,
+      "Dexterity": -6,
+      "Constitution": 2,
+      "Perception": 8,
+      "Willpower": 2,
+      "Charisma": 1,
+      "Marksmanship": 0
+    },
+    "skills": {
+      "Unarmed": 0,
+      "MeleeWeapons": 0,
+      "Guns": 0
+    },
+    "equippedWeaponId": "digestive_clamp",
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 6,
+    "tags": [
+      "hostile",
+      "mutant",
+      "melee",
+      "vulnerable_fire",
+      "vulnerable_physical_rupture"
+    ],
+    "teamId": 5,
+    "cr": 1
+  },
+  {
+    "id": "bio_static",
+    "name": "Bio-Static",
+    "sprite": "M",
+    "color": "electricblue",
+    "factionId": "mutant",
+    "behavior": "melee_aggressive",
+    "patrolPoints": [],
+    "health": {
+      "head": { "max": 10, "current": 10, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 10, "current": 10, "armor": 0, "crisisTimer": 0 },
+      "leftArm": { "max": 10, "current": 10, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 10, "current": 10, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 10, "current": 10, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 10, "current": 10, "armor": 0, "crisisTimer": 0 }
+    },
+    "stats": {
+      "Strength": 4,
+      "Intelligence": -14,
+      "Dexterity": -4,
+      "Constitution": 2,
+      "Perception": 8,
+      "Willpower": 2,
+      "Charisma": 1,
+      "Marksmanship": 0
+    },
+    "skills": {
+      "Unarmed": 2,
+      "MeleeWeapons": 2,
+      "Guns": 0
+    },
+    "equippedWeaponId": "digestive_clamp_taser",
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 2,
+    "tags": [
+      "hostile",
+      "mutant",
+      "melee",
+      "vulnerable_fire"
+    ],
+    "teamId": 5,
+    "cr": 2
   }
 ]

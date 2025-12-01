@@ -1192,12 +1192,53 @@
                 if (!existingEffect) entity.statusEffects["acid_burn"] = { id: "acid_burn", displayName: "Acid Burn", duration, sourceItemId: item.id, damagePerTurn, damageType: "Acid", description: `Corrosive acid burns, ${damagePerTurn} Acid dmg/turn.` };
                 else { existingEffect.duration = Math.max(existingEffect.duration, duration); existingEffect.damagePerTurn = Math.max(existingEffect.damagePerTurn, damagePerTurn); }
                 logToConsole(`${entityName} ${existingEffect ? 'acid burn refreshed/intensified' : 'suffering acid burn!'}. Dmg/turn: ${entity.statusEffects["acid_burn"].damagePerTurn}.`, 'darkgreen');
-            } else if (item.id === 'taser' || item.id === 'stun_gun_melee') { // Assuming specialEffect string is "Stun" or similar
+            } else if (item.id === 'taser' || item.id === 'stun_gun_melee' || effectString === "Digestive Clamp Taser") { // Assuming specialEffect string is "Stun" or similar
                 if (window.audioManager && targetEntity && (targetEntity.mapPos || targetEntity === this.gameState)) {
                     const targetPosition = targetEntity === this.gameState ? this.gameState.playerPos : targetEntity.mapPos;
                     window.audioManager.playSoundAtLocation('ui_click_01.wav', targetPosition, {}, { volume: 0.7 }); // Placeholder for taser_hit_01.wav
                 }
-                // Apply stun effect logic here
+
+                existingEffect = entity.statusEffects["stunned"]; duration = 1;
+                if (!existingEffect) {
+                    entity.statusEffects["stunned"] = { id: "stunned", displayName: "Stunned", duration: 1, sourceItemId: item.id, description: "Cannot act." };
+                    // For player, reduce AP to 0 immediately if it's their turn, or ensure they skip next turn
+                    if (entity === this.gameState) this.gameState.actionPointsRemaining = 0;
+                    else entity.currentActionPoints = 0;
+                    logToConsole(`${entityName} is stunned!`, 'red');
+                } else {
+                    existingEffect.duration = Math.max(existingEffect.duration, duration);
+                }
+
+                if (effectString === "Digestive Clamp Taser") {
+                    // Apply Grapple
+                   if (!entity.statusEffects.isGrappled) {
+                        entity.statusEffects.isGrappled = true;
+                        entity.statusEffects.grappledBy = (attacker === this.gameState) ? "player" : (attacker.id || "npc");
+                        logToConsole(`${entityName} is grappled by Digestive Clamp!`, 'red');
+                    }
+                    // Apply Digestive Enzyme DOT
+                    let clampEffect = entity.statusEffects["digestive_clamp"];
+                    if (!clampEffect) {
+                         entity.statusEffects["digestive_clamp"] = { id: "digestive_clamp", displayName: "Digestive Clamp", duration: 10, sourceItemId: item.id, damagePerTurn: 1, damageType: "Acid", description: "Digesting, 1 damage/turn." };
+                    } else {
+                        clampEffect.duration = 10;
+                    }
+                }
+            } else if (effectString === "Digestive Clamp") {
+                 // Apply Grapple
+                 if (!entity.statusEffects) entity.statusEffects = {};
+                 if (!entity.statusEffects.isGrappled) {
+                    entity.statusEffects.isGrappled = true;
+                    entity.statusEffects.grappledBy = (attacker === this.gameState) ? "player" : (attacker.id || "npc");
+                    logToConsole(`${entityName} is grappled by Digestive Clamp!`, 'red');
+                }
+                // Apply Digestive Enzyme DOT
+                let clampEffect = entity.statusEffects["digestive_clamp"];
+                if (!clampEffect) {
+                     entity.statusEffects["digestive_clamp"] = { id: "digestive_clamp", displayName: "Digestive Clamp", duration: 10, sourceItemId: item.id, damagePerTurn: 1, damageType: "Acid", description: "Digesting, 1 damage/turn." };
+                } else {
+                    clampEffect.duration = 10;
+                }
             }
             if (entity === this.gameState && window.renderCharacterInfo) window.renderCharacterInfo();
             if (entity === this.gameState && window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
@@ -2421,6 +2462,26 @@
         let damageReduction = 0;
         if (isPlayerVictim && window.perkManager && window.perkManager.hasPerk("Thick-Skinned") && ["Fire", "Explosive", "Acid"].includes(damageType)) {
             damageReduction = 1;
+        }
+
+        // Fire Vulnerability
+        if (entity.tags?.includes("vulnerable_fire") && damageType === "Fire") {
+            damageAmount *= 2;
+            logToConsole(`${entityName} is vulnerable to fire! Double damage.`, 'orange');
+        }
+
+        // Physical Impact Vulnerability (e.g. Bio-Muncher)
+        if (entity.tags?.includes("vulnerable_physical_rupture") && (damageType === "Bludgeoning" || damageType === "Physical") && damageAmount >= 5) {
+             // Rupture effect: Prevent enzymes/incapacitate
+             if (!entity.statusEffects) entity.statusEffects = {};
+             if (!entity.statusEffects["ruptured"]) {
+                 entity.statusEffects["ruptured"] = { id: "ruptured", displayName: "Ruptured", duration: 3, description: "Ruptured. Enzymes disabled. Incapacitated." };
+                 // Stun logic is separate, but we can add "stunned" status too or just rely on Ruptured logic in AI
+                 entity.statusEffects["stunned"] = { id: "stunned", displayName: "Stunned (Ruptured)", duration: 2, description: "Incapacitated by rupture." };
+                 if (entity !== this.gameState) entity.currentActionPoints = 0;
+                 else this.gameState.actionPointsRemaining = 0;
+                 logToConsole(`${entityName} ruptures from heavy impact! Incapacitated.`, 'magenta');
+             }
         }
 
         const reducedDamage = Math.max(0, damageAmount - effectiveArmor - damageReduction);
