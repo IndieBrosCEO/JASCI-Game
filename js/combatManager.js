@@ -1498,18 +1498,32 @@
 
                 logToConsole(`${weapon.name} sprays fire in a cone! Affected tiles: ${affectedTiles.length}`, 'orange');
 
+                // Determine target Z based on aiming
+                const targetZ = targetPos.z !== undefined ? targetPos.z : attackerPos.z;
+                const distTarget = Math.sqrt(Math.pow(targetPos.x - attackerPos.x, 2) + Math.pow(targetPos.y - attackerPos.y, 2));
+                const zDiff = targetZ - attackerPos.z;
+
                 affectedTiles.forEach(tile => {
+                    // Calculate interpolated Z for this tile
+                    let tileZ = attackerPos.z;
+                    if (distTarget > 0) {
+                        const distTile = Math.sqrt(Math.pow(tile.x - attackerPos.x, 2) + Math.pow(tile.y - attackerPos.y, 2));
+                        const progress = distTile / distTarget;
+                        // Linear interpolation of Z
+                        tileZ = Math.round(attackerPos.z + (zDiff * Math.min(1.0, progress)));
+                    }
+
                     // 1. Ignite Tile (Random chance or always?)
                     // "make the flames catch its path on fire, a few random tiles"
                     if (Math.random() < 0.3) { // 30% chance to ignite each tile in cone
-                        if (window.fireManager) window.fireManager.igniteTile(tile.x, tile.y, attackerPos.z);
+                        if (window.fireManager) window.fireManager.igniteTile(tile.x, tile.y, tileZ);
                     }
 
                     // 2. Damage Entities
-                    const entity = this.getCharactersInBlastRadius({x: tile.x, y: tile.y, z: attackerPos.z}, 0)[0]; // radius 0 = exact tile
+                    const entity = this.getCharactersInBlastRadius({x: tile.x, y: tile.y, z: tileZ}, 0)[0]; // radius 0 = exact tile
                     if (entity && entity !== attacker) {
                         const damage = rollDiceNotation(parseDiceNotation(weapon.damage));
-                        logToConsole(`${entity.name || entity.id} caught in fire cone!`, 'orangered');
+                        logToConsole(`${entity.name || entity.id} caught in fire cone at Z:${tileZ}!`, 'orangered');
                         this.applyDamage(attacker, entity, "torso", damage, "Fire", weapon);
                     }
                 });
