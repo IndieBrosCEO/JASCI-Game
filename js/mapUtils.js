@@ -160,6 +160,50 @@ class MapUtils {
 
         return false;
     }
+
+    /**
+     * Calculates tiles within a 2D cone.
+     * @param {object} startPos - {x, y}
+     * @param {object} targetPos - {x, y}
+     * @param {number} angleRad - Cone spread angle in radians (e.g., Math.PI / 4 for 45 deg).
+     * @param {number} range - Maximum range of the cone.
+     * @returns {Array} Array of {x, y} objects for tiles in the cone.
+     */
+    getTilesInCone(startPos, targetPos, angleRad, range) {
+        const tiles = [];
+        const directionAngle = Math.atan2(targetPos.y - startPos.y, targetPos.x - startPos.x);
+        const halfAngle = angleRad / 2;
+
+        // Bounding box for optimization
+        const minX = Math.floor(Math.min(startPos.x, targetPos.x) - range);
+        const maxX = Math.ceil(Math.max(startPos.x, targetPos.x) + range);
+        const minY = Math.floor(Math.min(startPos.y, targetPos.y) - range);
+        const maxY = Math.ceil(Math.max(startPos.y, targetPos.y) + range);
+
+        for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+                if (x === startPos.x && y === startPos.y) continue; // Exclude start tile
+
+                const dx = x - startPos.x;
+                const dy = y - startPos.y;
+                const distSq = dx * dx + dy * dy;
+
+                if (distSq <= range * range) {
+                    const angleToTile = Math.atan2(dy, dx);
+                    let angleDiff = angleToTile - directionAngle;
+
+                    // Normalize angle difference to -PI to +PI
+                    while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+                    while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+
+                    if (Math.abs(angleDiff) <= halfAngle) {
+                        tiles.push({ x, y });
+                    }
+                }
+            }
+        }
+        return tiles;
+    }
 }
 
 // Make globally accessible if needed by other modules directly, or instantiate in script.js

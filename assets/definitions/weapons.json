@@ -1050,26 +1050,52 @@
   {
     "id": "flamethrower",
     "name": "Flamethrower",
-    "description": "Flamethrower.",
+    "description": "A military-grade flamethrower. Unleashes a cone of fire.",
     "canEquip": true,
     "size": 4,
     "weightLbs": 50,
-    "damage": "1d8",
-    "damageType": "Flaming",
+    "damage": "2d6",
+    "damageType": "Fire",
     "type": "weapon_firearm",
     "family": "firearm",
-    "rateOfFire": "A",
+    "rateOfFire": "S",
     "magazineSize": 10,
+    "effectiveRange": 6,
+    "maxRange": 6,
     "tags": [
       "weapon",
-      "firearm"
+      "firearm",
+      "fire_source",
+      "area_effect"
     ],
-    "ammoType": "generic_ammo",
+    "ammoType": "flamethrower_fuel",
+    "specialEffect": "Cone of Fire",
+    "aoeType": "cone",
     "properties": {
-      "type": "gun",
-      "caliber": "generic_ammo",
-      "action": "automatic"
+      "type": "heavy",
+      "caliber": "fuel",
+      "action": "continuous"
     }
+  },
+  {
+    "id": "pepper_spray",
+    "name": "Pepper Spray",
+    "description": "A canister of chemical irritant. Sprays a cone of gas that blinds and irritates.",
+    "type": "weapon_utility_spray",
+    "weightLbs": 0.5,
+    "damage": "0",
+    "damageType": "Chemical",
+    "effectiveRange": 3,
+    "maxRange": 3,
+    "tags": [
+      "weapon",
+      "utility",
+      "non_lethal",
+      "area_effect"
+    ],
+    "specialEffect": "Temporary Blindness and Irritation",
+    "aoeType": "cone",
+    "canEquip": true
   },
   {
     "id": "colt_double_eagle_10mm_autoloader",

@@ -396,5 +396,24 @@
     ],
     "ammoType": ".44mag",
     "quantity": 50
+  },
+  {
+    "id": "ammo_flamethrower_fuel",
+    "name": "Flamethrower Fuel",
+    "description": "A tank of pressurized napalm fuel for flamethrowers.",
+    "family": "ammunition",
+    "properties": {
+      "caliber": "fuel"
+    },
+    "type": "ammunition",
+    "size": 3,
+    "weightLbs": 10,
+    "tags": [
+      "ammo",
+      "fuel",
+      "flammable"
+    ],
+    "ammoType": "flamethrower_fuel",
+    "quantity": 5
   }
 ]
