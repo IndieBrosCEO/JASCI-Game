@@ -1070,11 +1070,32 @@
     ],
     "ammoType": "flamethrower_fuel",
     "specialEffect": "Cone of Fire",
+    "aoeType": "cone",
     "properties": {
       "type": "heavy",
       "caliber": "fuel",
       "action": "continuous"
     }
+  },
+  {
+    "id": "pepper_spray",
+    "name": "Pepper Spray",
+    "description": "A canister of chemical irritant. Sprays a cone of gas that blinds and irritates.",
+    "type": "weapon_utility_spray",
+    "weightLbs": 0.5,
+    "damage": "0",
+    "damageType": "Chemical",
+    "effectiveRange": 3,
+    "maxRange": 3,
+    "tags": [
+      "weapon",
+      "utility",
+      "non_lethal",
+      "area_effect"
+    ],
+    "specialEffect": "Temporary Blindness and Irritation",
+    "aoeType": "cone",
+    "canEquip": true
   },
   {
     "id": "colt_double_eagle_10mm_autoloader",

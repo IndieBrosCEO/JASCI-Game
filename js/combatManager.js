@@ -1477,26 +1477,48 @@
                 window.audioManager.playSoundAtLocation(launchSound, attackerPos, {}, { volume: 1.0 });
             }
             // Animation for projectile is handled later in processAttack before explosion
-        } else if (weapon?.specialEffect === 'Cone of Fire') {
+        } else if (weapon?.aoeType === 'cone') {
+            const targetPos = this.gameState.defenderMapPos || defender?.mapPos || this.gameState.pendingCombatAction?.targetTile;
+
+            // Audio & Animation
             if (window.audioManager && attackerPos) {
-                window.audioManager.playSoundAtLocation('ui_error_01.wav', attackerPos, {}, { volume: 0.7, loop: false }); // Placeholder
+                // Placeholder sound - ideally differentiate based on weapon ID
+                window.audioManager.playSoundAtLocation('ui_error_01.wav', attackerPos, {}, { volume: 0.7, loop: false });
             }
-            if (window.animationManager) {
-                const targetPos = this.gameState.defenderMapPos || defender?.mapPos || this.gameState.pendingCombatAction?.targetTile;
-                if (attackerPos && targetPos) {
-                    window.animationManager.playAnimation('flamethrower', { attacker, targetPos, duration: 1500, particleSpawnRate: 15, particleLifetime: 600, coneAngle: Math.PI / 6, maxRange: weapon.effectiveRange || 6 });
+            if (window.animationManager && attackerPos && targetPos) {
+                if (weapon.id === 'flamethrower') {
+                    window.animationManager.playAnimation('flamethrower', {
+                        attacker,
+                        targetPos,
+                        duration: 1500,
+                        particleSpawnRate: 15,
+                        particleLifetime: 600,
+                        coneAngle: Math.PI / 6,
+                        maxRange: weapon.effectiveRange || 6
+                    });
+                } else if (weapon.id === 'pepper_spray') {
+                    window.animationManager.playAnimation('gasCloud', {
+                        centerPos: attackerPos, // GasCloud uses centerPos as origin
+                        coneDirection: targetPos, // And optional direction
+                        maxRadius: weapon.effectiveRange || 3,
+                        duration: 1500,
+                        coneAngle: Math.PI / 6,
+                        particleColor: 'orange',
+                        particleSpriteOptions: ['*', '⁂', '※'],
+                        expansionSpeed: 0.1,
+                        activeSpawningDuration: 500
+                    });
                 }
             }
 
             // Cone Calculation & Effect Application
-            const targetPos = this.gameState.defenderMapPos || defender?.mapPos || this.gameState.pendingCombatAction?.targetTile;
-            if (targetPos && window.MapUtils) { // Use window.MapUtils class instance or static helper if available
+            if (targetPos && window.MapUtils) {
                 const mapUtils = new window.MapUtils(this.gameState, this.assetManager, window.mapRenderer);
                 const coneAngle = Math.PI / 6; // 30 degrees spread
                 const range = weapon.effectiveRange || 6;
                 const affectedTiles = mapUtils.getTilesInCone(attackerPos, targetPos, coneAngle, range);
 
-                logToConsole(`${weapon.name} sprays fire in a cone! Affected tiles: ${affectedTiles.length}`, 'orange');
+                logToConsole(`${weapon.name} sprays a cone effect! Affected tiles: ${affectedTiles.length}`, 'orange');
 
                 // Determine target Z based on aiming
                 const targetZ = targetPos.z !== undefined ? targetPos.z : attackerPos.z;
@@ -1509,22 +1531,24 @@
                     if (distTarget > 0) {
                         const distTile = Math.sqrt(Math.pow(tile.x - attackerPos.x, 2) + Math.pow(tile.y - attackerPos.y, 2));
                         const progress = distTile / distTarget;
-                        // Linear interpolation of Z
                         tileZ = Math.round(attackerPos.z + (zDiff * Math.min(1.0, progress)));
                     }
 
-                    // 1. Ignite Tile (Random chance or always?)
-                    // "make the flames catch its path on fire, a few random tiles"
-                    if (Math.random() < 0.3) { // 30% chance to ignite each tile in cone
+                    // 1. Tile Effects
+                    if (weapon.tags?.includes('fire_source') && Math.random() < 0.3) {
                         if (window.fireManager) window.fireManager.igniteTile(tile.x, tile.y, tileZ);
                     }
 
-                    // 2. Damage Entities
+                    // 2. Entity Effects
                     const entity = this.getCharactersInBlastRadius({x: tile.x, y: tile.y, z: tileZ}, 0)[0]; // radius 0 = exact tile
                     if (entity && entity !== attacker) {
-                        const damage = rollDiceNotation(parseDiceNotation(weapon.damage));
-                        logToConsole(`${entity.name || entity.id} caught in fire cone at Z:${tileZ}!`, 'orangered');
-                        this.applyDamage(attacker, entity, "torso", damage, "Fire", weapon);
+                        if (weapon.id === 'flamethrower') {
+                            const damage = rollDiceNotation(parseDiceNotation(weapon.damage));
+                            logToConsole(`${entity.name || entity.id} caught in fire cone at Z:${tileZ}!`, 'orangered');
+                            this.applyDamage(attacker, entity, "torso", damage, "Fire", weapon);
+                        } else if (weapon.id === 'pepper_spray') {
+                            this.applySpecialEffect(attacker, weapon, entity, null);
+                        }
                     }
                 });
             }
