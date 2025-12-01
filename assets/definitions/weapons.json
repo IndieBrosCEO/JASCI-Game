@@ -1765,5 +1765,31 @@
       "thrown",
       "explosive"
     ]
+  },
+  {
+    "id": "digestive_clamp",
+    "name": "Digestive Clamp",
+    "description": "A horrifying biological clamp that secretes digestive enzymes.",
+    "type": "weapon_melee",
+    "size": 1,
+    "weightLbs": 0,
+    "damage": "1",
+    "damageType": "Physical",
+    "tags": ["weapon", "melee", "natural"],
+    "specialEffect": "Digestive Clamp",
+    "canEquip": false
+  },
+  {
+    "id": "digestive_clamp_taser",
+    "name": "Digestive Clamp/Taser Shock",
+    "description": "A mutated clamp capable of delivering electric shocks.",
+    "type": "weapon_melee",
+    "size": 1,
+    "weightLbs": 0,
+    "damage": "1",
+    "damageType": "Physical",
+    "tags": ["weapon", "melee", "natural"],
+    "specialEffect": "Digestive Clamp Taser",
+    "canEquip": false
   }
 ]
