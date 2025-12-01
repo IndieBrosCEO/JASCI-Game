@@ -1477,16 +1477,56 @@
                 window.audioManager.playSoundAtLocation(launchSound, attackerPos, {}, { volume: 1.0 });
             }
             // Animation for projectile is handled later in processAttack before explosion
-        } else if (weapon?.id === 'flamethrower') {
+        } else if (weapon?.specialEffect === 'Cone of Fire') {
             if (window.audioManager && attackerPos) {
-                window.audioManager.playSoundAtLocation('ui_error_01.wav', attackerPos, {}, { volume: 0.7, loop: false }); // Placeholder for flame_start_01.wav (when available)
-                // TODO: Manage flame_loop.wav (when available). This would require AudioManager to return the sound source
-                // for looping sounds, and for AnimationManager (FlamethrowerAnimation) to manage starting/stopping this loop
-                // and playing flame_end_01.wav (when available) on completion.
+                window.audioManager.playSoundAtLocation('ui_error_01.wav', attackerPos, {}, { volume: 0.7, loop: false }); // Placeholder
             }
             if (window.animationManager) {
                 const targetPos = this.gameState.defenderMapPos || defender?.mapPos || this.gameState.pendingCombatAction?.targetTile;
-                if (attackerPos && targetPos) window.animationManager.playAnimation('flamethrower', { attacker, targetPos, duration: 1500, particleSpawnRate: 10, particleLifetime: 500, coneAngle: Math.PI / 6, maxRange: 6 });
+                if (attackerPos && targetPos) {
+                    window.animationManager.playAnimation('flamethrower', { attacker, targetPos, duration: 1500, particleSpawnRate: 15, particleLifetime: 600, coneAngle: Math.PI / 6, maxRange: weapon.effectiveRange || 6 });
+                }
+            }
+
+            // Cone Calculation & Effect Application
+            const targetPos = this.gameState.defenderMapPos || defender?.mapPos || this.gameState.pendingCombatAction?.targetTile;
+            if (targetPos && window.MapUtils) { // Use window.MapUtils class instance or static helper if available
+                const mapUtils = new window.MapUtils(this.gameState, this.assetManager, window.mapRenderer);
+                const coneAngle = Math.PI / 6; // 30 degrees spread
+                const range = weapon.effectiveRange || 6;
+                const affectedTiles = mapUtils.getTilesInCone(attackerPos, targetPos, coneAngle, range);
+
+                logToConsole(`${weapon.name} sprays fire in a cone! Affected tiles: ${affectedTiles.length}`, 'orange');
+
+                // Determine target Z based on aiming
+                const targetZ = targetPos.z !== undefined ? targetPos.z : attackerPos.z;
+                const distTarget = Math.sqrt(Math.pow(targetPos.x - attackerPos.x, 2) + Math.pow(targetPos.y - attackerPos.y, 2));
+                const zDiff = targetZ - attackerPos.z;
+
+                affectedTiles.forEach(tile => {
+                    // Calculate interpolated Z for this tile
+                    let tileZ = attackerPos.z;
+                    if (distTarget > 0) {
+                        const distTile = Math.sqrt(Math.pow(tile.x - attackerPos.x, 2) + Math.pow(tile.y - attackerPos.y, 2));
+                        const progress = distTile / distTarget;
+                        // Linear interpolation of Z
+                        tileZ = Math.round(attackerPos.z + (zDiff * Math.min(1.0, progress)));
+                    }
+
+                    // 1. Ignite Tile (Random chance or always?)
+                    // "make the flames catch its path on fire, a few random tiles"
+                    if (Math.random() < 0.3) { // 30% chance to ignite each tile in cone
+                        if (window.fireManager) window.fireManager.igniteTile(tile.x, tile.y, tileZ);
+                    }
+
+                    // 2. Damage Entities
+                    const entity = this.getCharactersInBlastRadius({x: tile.x, y: tile.y, z: tileZ}, 0)[0]; // radius 0 = exact tile
+                    if (entity && entity !== attacker) {
+                        const damage = rollDiceNotation(parseDiceNotation(weapon.damage));
+                        logToConsole(`${entity.name || entity.id} caught in fire cone at Z:${tileZ}!`, 'orangered');
+                        this.applyDamage(attacker, entity, "torso", damage, "Fire", weapon);
+                    }
+                });
             }
         } else if (weapon && (weapon.id === 'taser' || weapon.id === 'stun_gun_melee') && defender) {
             if (window.audioManager && attackerPos) window.audioManager.playSoundAtLocation('ui_click_01.wav', attackerPos, {}, { volume: 0.7 }); // Placeholder for taser_fire_01.wav
