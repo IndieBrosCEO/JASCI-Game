@@ -1050,25 +1050,30 @@
   {
     "id": "flamethrower",
     "name": "Flamethrower",
-    "description": "Flamethrower.",
+    "description": "A military-grade flamethrower. Unleashes a cone of fire.",
     "canEquip": true,
     "size": 4,
     "weightLbs": 50,
-    "damage": "1d8",
-    "damageType": "Flaming",
+    "damage": "2d6",
+    "damageType": "Fire",
     "type": "weapon_firearm",
     "family": "firearm",
-    "rateOfFire": "A",
+    "rateOfFire": "S",
     "magazineSize": 10,
+    "effectiveRange": 6,
+    "maxRange": 6,
     "tags": [
       "weapon",
-      "firearm"
+      "firearm",
+      "fire_source",
+      "area_effect"
     ],
-    "ammoType": "generic_ammo",
+    "ammoType": "flamethrower_fuel",
+    "specialEffect": "Cone of Fire",
     "properties": {
-      "type": "gun",
-      "caliber": "generic_ammo",
-      "action": "automatic"
+      "type": "heavy",
+      "caliber": "fuel",
+      "action": "continuous"
     }
   },
   {
