@@ -123,6 +123,14 @@
                 <label for="mapCustomTagsInput">Custom Tags (comma-separated):</label>
                 <input type="text" id="mapCustomTagsInput" style="width: 300px; margin-bottom: 10px;" />
             </div>
+            <div>
+                <label for="mapAreaIdInput">Area ID:</label>
+                <input type="text" id="mapAreaIdInput" style="width: 300px; margin-bottom: 5px;" placeholder="e.g., fallbrook_pd" />
+            </div>
+            <div>
+                <label for="mapPrimaryParentInput">Primary Parent Map ID:</label>
+                <input type="text" id="mapPrimaryParentInput" style="width: 300px; margin-bottom: 10px;" placeholder="Optional parent map ID" />
+            </div>
             <button id="saveMapMetadataBtn">Save Metadata to Current Map</button>
             <span id="metadataStatus" style="margin-left: 10px; font-style: italic;"></span>
         </div>
@@ -160,6 +168,9 @@
                 <div>Editing Portal: <strong id="editingPortalId">N/A</strong> at (<span id="editingPortalPos">N/A</span>)</div>
                 <label for="portalTargetMapId">Target Map ID:</label>
                 <input type="text" id="portalTargetMapId" placeholder="e.g., another_map_id" />
+                <br />
+                <label for="portalToWorldNodeId">OR To World Node ID:</label>
+                <input type="text" id="portalToWorldNodeId" placeholder="e.g., fallbrook_hub" />
                 <br />
                 <label for="portalTargetX">Target X:</label>
                 <input type="number" id="portalTargetX" min="0" style="width: 60px;" />

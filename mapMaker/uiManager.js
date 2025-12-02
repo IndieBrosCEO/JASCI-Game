@@ -533,6 +533,7 @@ export function updateSelectedPortalInfoUI(selectedPortal) {
         editingPortalId: el('editingPortalId'),
         editingPortalPos: el('editingPortalPos'),
         portalTargetMapId: el('portalTargetMapId'),
+        portalToWorldNodeId: el('portalToWorldNodeId'),
         portalTargetX: el('portalTargetX'),
         portalTargetY: el('portalTargetY'),
         portalTargetZ: el('portalTargetZ'),
@@ -546,6 +547,7 @@ export function updateSelectedPortalInfoUI(selectedPortal) {
         if (fields.editingPortalId) fields.editingPortalId.textContent = selectedPortal.id;
         if (fields.editingPortalPos) fields.editingPortalPos.textContent = `(${selectedPortal.x}, ${selectedPortal.y}, Z:${selectedPortal.z})`;
         if (fields.portalTargetMapId) fields.portalTargetMapId.value = selectedPortal.targetMapId || '';
+        if (fields.portalToWorldNodeId) fields.portalToWorldNodeId.value = selectedPortal.toWorldNodeId || '';
         if (fields.portalTargetX) fields.portalTargetX.value = selectedPortal.targetX ?? '';
         if (fields.portalTargetY) fields.portalTargetY.value = selectedPortal.targetY ?? '';
         if (fields.portalTargetZ) fields.portalTargetZ.value = selectedPortal.targetZ ?? 0;
@@ -1097,6 +1099,8 @@ export function updateMapMetadataEditorUI(mapData) {
     if (el("mapDescriptionInput")) el("mapDescriptionInput").value = mapData.description || "";
     if (el("mapAuthorInput")) el("mapAuthorInput").value = mapData.author || "";
     if (el("mapCustomTagsInput")) el("mapCustomTagsInput").value = (mapData.customTags || []).join(', ');
+    if (el("mapAreaIdInput")) el("mapAreaIdInput").value = mapData.areaId || "";
+    if (el("mapPrimaryParentInput")) el("mapPrimaryParentInput").value = mapData.primaryParentMapId || "";
     const metadataStatus = el("metadataStatus");
     if (metadataStatus) metadataStatus.textContent = ""; // Clear any previous status
 }
