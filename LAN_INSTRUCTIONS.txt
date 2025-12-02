@@ -1,0 +1,6 @@
+Step 1: Run 'npm install ws' to install dependencies.
+Step 2: Start the server by running 'node server.js' in a terminal.
+Step 3: Open the game in two browser windows (or tabs).
+Step 4: On one window, click 'Settings' -> 'Set as Host'. It will connect automatically.
+Step 5: On the other window, click 'Settings' -> 'Connect to LAN' (using ws://localhost:8080 or the LAN IP).
+Step 6: The Host controls the game logic. The Client views the game and sends input (like Arrow keys) which the Host executes.
