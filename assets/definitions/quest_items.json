@@ -1,0 +1,19 @@
+[
+  {
+    "id": "biomass_reactor",
+    "name": "Biomass Reactor",
+    "description": "A backpack-sized container pulsating with red organic matter. It hums with energy.",
+    "weight": 15,
+    "tags": ["quest_item", "tool"],
+    "rarity": "unique"
+  },
+  {
+    "id": "dr_rodriguez_note",
+    "name": "Dr. Rodriguez's Note",
+    "description": "A printed text file found on a lab computer.",
+    "weight": 0.1,
+    "tags": ["quest_item", "readable"],
+    "rarity": "unique",
+    "text_content": "To whoever finds this,\n\nIf you are reading this, then the world has succumbed to the chaos we had feared. My name is Dr. Elena Rodriguez, lead scientist of Project Sunrise. This text file serves as my final entry and a desperate plea for understanding.\n\nBefore the apocalypse, our project was a beacon of hope, promising a sustainable and revolutionary energy solution. However, fear and ignorance threatened our work, forcing us to abandon it. Some of us, unable to let go, continued our experiments in secret, risking everything.\n\nOne of our own, Dr. Jonathan Mercer, was recruited by Earth First. We were divided, some believing in the potential for good, others fearing the consequences. Dr. Mercer's involvement, however, was cut short by the apocalypse itself. In his absence, the Biomass Reactor continued its mysterious operation, sustaining our underground haven.\n\nWe've managed to harness the living energy from various organisms, creating a unique, self-sustaining power source. But with this success came unintended consequences - mutations, anomalies, and the transformation of once-normal creatures into monsters.\n\nI implore you to use our work responsibly. The Biomass Reactor is powerful, but it is not without risks. The creatures born from our experiments are now part of this world, and they should not be underestimated.\n\nMay our work serve a purpose greater than the chaos that has unfolded.\n\nDr. Elena Rodriguez\nProject Sunrise Lead Scientist"
+  }
+]
