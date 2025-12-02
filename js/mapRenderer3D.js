@@ -104,8 +104,17 @@ window.mapRenderer3D = {
         const minY = Math.max(0, camY - range);
         const maxY = Math.min(mapData.dimensions.height - 1, camY + range);
 
-        const minZ = Math.max(0, focusZ - 5);
-        const maxZ = Math.min(Object.keys(mapData.levels).length - 1, focusZ + 5);
+        // Determine available Z levels from map data
+        const availableZLevels = Object.keys(mapData.levels).map(k => parseInt(k, 10)).sort((a, b) => a - b);
+        if (availableZLevels.length === 0) return;
+
+        const mapMinZ = availableZLevels[0];
+        const mapMaxZ = availableZLevels[availableZLevels.length - 1];
+
+        // Determine render range centered on focusZ, but constrained by map bounds if desired (or just render valid levels)
+        const renderRadiusZ = 5;
+        const minZ = Math.max(mapMinZ, focusZ - renderRadiusZ);
+        const maxZ = Math.min(mapMaxZ, focusZ + renderRadiusZ);
 
         // Clear container?
         // If we clear every frame, it's slow. We should pool/reuse.
@@ -133,6 +142,17 @@ window.mapRenderer3D = {
         // So iterate x, y normally?
         // Yes, painter's algo for isometric is usually just Z then Y then X.
 
+        // Helper to check FOW
+        const getFowStatus = (x, y, zStr) => {
+            if (window.gameState.fowData[zStr] && window.gameState.fowData[zStr][y]) {
+                return window.gameState.fowData[zStr][y][x];
+            }
+            return 'hidden';
+        };
+
+        // Access tilesets
+        const tilesets = (window.assetManager && window.assetManager.tilesets) ? window.assetManager.tilesets : (window.assetManagerInstance ? window.assetManagerInstance.tilesets : null);
+
         for (let z = minZ; z <= maxZ; z++) {
             const zStr = z.toString();
             const levelData = mapData.levels[zStr];
@@ -141,94 +161,71 @@ window.mapRenderer3D = {
             for (let y = minY; y <= maxY; y++) {
                 for (let x = minX; x <= maxX; x++) {
 
-                    // Logic to determine what to draw (similar to 2D renderMapLayers)
-                    // We need to resolve the top-most visible thing for this x,y,z
+                    const fowStatus = getFowStatus(x, y, zStr);
+                    if (fowStatus === 'hidden') continue;
 
-                    let sprite = null;
-                    let color = null;
-                    let isWall = false;
+                    // --- DRAW BOTTOM LAYER ---
+                    let bottomId = levelData.bottom?.[y]?.[x];
+                    bottomId = (typeof bottomId === 'object' && bottomId.tileId) ? bottomId.tileId : bottomId;
 
-                    // 1. Check Entity (Player/NPC/Vehicle)
-                    // Entities sit "on top" of the tile, effectively z + 0.5 visually?
-                    // We will handle them after the tile logic.
+                    if (bottomId && tilesets && tilesets[bottomId]) {
+                        const tileDef = tilesets[bottomId];
+                        let color = tileDef.color;
+                        if (fowStatus === 'visited') color = window.mapRenderer.darkenColor(color, 0.7);
+                        if (z < focusZ) color = window.mapRenderer.darkenColor(color, 0.5);
 
-                    // 2. Map Tile Logic (Middle then Bottom)
-                    // Similar to renderMapLayers
-                    let finalTileId = null;
-                    if (levelData.building?.[y]?.[x]) finalTileId = levelData.building[y][x];
-                    else if (levelData.item?.[y]?.[x]) finalTileId = levelData.item[y][x];
+                        this.drawTile(fragment, x, y, z, tileDef.sprite, color, centerX, centerY, camX, camY, focusZ, false, 0); // Layer 0
+                    }
+
+                    // --- DRAW MIDDLE LAYER ---
+                    let middleId = null;
+                    // Check specific layers if they exist in levelData (building, item), otherwise fall back to 'middle' property
+                    if (levelData.building?.[y]?.[x]) middleId = levelData.building[y][x];
+                    else if (levelData.item?.[y]?.[x]) middleId = levelData.item[y][x];
                     else if (levelData.middle?.[y]?.[x]) {
                          const raw = levelData.middle[y][x];
-                         finalTileId = (typeof raw === 'object' && raw.tileId) ? raw.tileId : raw;
+                         middleId = (typeof raw === 'object' && raw.tileId) ? raw.tileId : raw;
                     }
 
-                    let tileDef = null;
-                    // Fix: Access tilesets via window.assetManager if window.assetManagerInstance is not defined
-                    const tilesets = (window.assetManager && window.assetManager.tilesets) ? window.assetManager.tilesets : (window.assetManagerInstance ? window.assetManagerInstance.tilesets : null);
+                    if (middleId && tilesets && tilesets[middleId]) {
+                        const tileDef = tilesets[middleId];
+                        let color = tileDef.color;
+                        if (fowStatus === 'visited') color = window.mapRenderer.darkenColor(color, 0.7);
+                        if (z < focusZ) color = window.mapRenderer.darkenColor(color, 0.5);
 
-                    if (tilesets) {
-                        tileDef = tilesets[finalTileId];
+                        this.drawTile(fragment, x, y, z, tileDef.sprite, color, centerX, centerY, camX, camY, focusZ, false, 1); // Layer 1
                     }
 
-                    // If no middle object, check bottom (floor)
-                    if (!tileDef && tilesets) {
-                        let bottomId = levelData.bottom?.[y]?.[x];
-                        bottomId = (typeof bottomId === 'object' && bottomId.tileId) ? bottomId.tileId : bottomId;
-                        tileDef = tilesets[bottomId];
-                    }
+                    // --- DRAW ENTITIES ---
+                    // Only if visible (usually entities are not shown in FOW 'visited' unless memory/static, but standard behavior is usually hidden)
+                    // If FOW is visited, we usually don't draw dynamic entities.
+                    if (fowStatus === 'visible') {
+                        // Player
+                        if (window.gameState.playerPos.x === x && window.gameState.playerPos.y === y && window.gameState.playerPos.z === z) {
+                             this.drawTile(fragment, x, y, z, "☻", "green", centerX, centerY, camX, camY, focusZ, true, 2); // Layer 2
+                        }
 
-                    if (tileDef) {
-                        sprite = tileDef.sprite;
-                        color = tileDef.color;
+                        // NPCs
+                        const npc = window.gameState.npcs.find(n => n.mapPos.x === x && n.mapPos.y === y && n.mapPos.z === z);
+                        if (npc) {
+                             this.drawTile(fragment, x, y, z, npc.sprite, npc.color, centerX, centerY, camX, camY, focusZ, true, 2); // Layer 2
+                        }
 
-                        // Simple depth cues
-                        if (z < focusZ) {
-                            color = window.mapRenderer.darkenColor(color, 0.5);
-                        } else if (z > focusZ) {
-                             // Transparent look for things above?
-                             // Or just draw them.
+                        // Vehicles
+                        if (window.gameState.vehicles) {
+                            const vehicle = window.gameState.vehicles.find(v => v.mapPos.x === x && v.mapPos.y === y && v.mapPos.z === z);
+                            if (vehicle) {
+                                // Get vehicle sprite
+                                let vSprite = "V";
+                                let vColor = "white";
+                                if (window.vehicleManager) {
+                                    const template = window.vehicleManager.vehicleTemplates[vehicle.templateId];
+                                    if (template) { vSprite = template.sprite; vColor = "grey"; } // Default or template color
+                                }
+                                this.drawTile(fragment, x, y, z, vSprite, vColor, centerX, centerY, camX, camY, focusZ, true, 2);
+                            }
                         }
                     }
-
-                    // FOW Logic
-                    // We need to check visibility.
-                    // Assuming FOW is computed for the player's Z level or all levels.
-                    // We can reuse gameState.fowData
-                    let fowStatus = 'hidden';
-                    if (window.gameState.fowData[zStr] && window.gameState.fowData[zStr][y]) {
-                         fowStatus = window.gameState.fowData[zStr][y][x];
-                    }
-
-                    // Special case: If we are looking at focusZ, use its FOW.
-                    // If looking at Z != focusZ, we might not have updated FOW.
-                    // For now, respect what's there.
-
-                    if (fowStatus === 'hidden') {
-                        continue; // Don't draw hidden tiles in 3D? Or draw generic block?
-                        // Drawing nothing is best for "unknown".
-                    } else if (fowStatus === 'visited') {
-                        color = window.mapRenderer.darkenColor(color, 0.7);
-                    }
-
-                    if (sprite) {
-                        this.drawTile(fragment, x, y, z, sprite, color, centerX, centerY, camX, camY, focusZ);
-                    }
-
-                    // 3. Entity Logic
-                    // Check for entities at this x,y,z
-                    // Player
-                    if (window.gameState.playerPos.x === x && window.gameState.playerPos.y === y && window.gameState.playerPos.z === z) {
-                         this.drawTile(fragment, x, y, z, "☻", "green", centerX, centerY, camX, camY, focusZ, true);
-                    }
-
-                    // NPCs
-                    // (Optimization: iterate NPCs outside and match? Or filter here?
-                    // Since we loop x,y,z, better to have a lookup or just filter small npc list)
-                    const npc = window.gameState.npcs.find(n => n.mapPos.x === x && n.mapPos.y === y && n.mapPos.z === z);
-                    if (npc && (fowStatus === 'visible' || fowStatus === 'visited')) {
-                         this.drawTile(fragment, x, y, z, npc.sprite, npc.color, centerX, centerY, camX, camY, focusZ, true);
-                    }
-
                 }
             }
         }
@@ -236,38 +233,44 @@ window.mapRenderer3D = {
         container.appendChild(fragment);
     },
 
-    drawTile: function(container, x, y, z, sprite, color, centerX, centerY, camX, camY, focusZ, isEntity = false) {
+    drawTile: function(container, x, y, z, sprite, color, centerX, centerY, camX, camY, focusZ, isEntity = false, layerOffset = 0) {
         const span = document.createElement('span');
         span.textContent = sprite;
         span.style.color = color;
         span.style.position = 'absolute';
-        span.className = 'tile3d'; // Hook for CSS if needed
+        span.className = 'tile3d';
 
         // Calculate Screen Position
-        // Rel to Camera
         const dx = x - camX;
         const dy = y - camY;
-        const dz = z - focusZ; // relative to focus plane
+        const dz = z - focusZ;
 
         // Isometric Projection
-        // x goes Right-Down
-        // y goes Left-Down
-        // z goes Up
-
-        // Iso transformation
-        // screenX = (x - y) * stepX
-        // screenY = (x + y) * stepY - z * stepZ
-
         const screenX = (dx - dy) * this.isoStepX + centerX;
         const screenY = (dx + dy) * this.isoStepY - (dz * this.zStep) + centerY;
 
-        // Centering adjustment: The "center" of the char should be at screenX, screenY
         span.style.left = Math.floor(screenX) + 'px';
         span.style.top = Math.floor(screenY) + 'px';
-        span.style.zIndex = (z * 1000) + (x + y) + (isEntity ? 1 : 0); // Simple Z-index sort
 
-        // Optional: Add "height" shadow or block effect
-        // If it's a solid block, maybe draw a "side" character below it?
+        // Z-Index Sorting:
+        // 1. Z-level (Higher Z is on top)
+        // 2. Y-coordinate (Lower Y is further back, Higher Y is closer) -> Wait, in iso:
+        //    (0,0) is top. Increasing Y moves down-left. Increasing X moves down-right.
+        //    Painter's algo: Draw back to front.
+        //    Back is small X, small Y. Front is large X, large Y.
+        //    So we draw X=0,Y=0 first. X=10,Y=10 last.
+        //    We want X+Y to determine draw order within a Z-plane.
+        // 3. Layer within cell (Bottom < Middle < Entity)
+
+        // zIndex calculation:
+        // base = z * 10000 (assuming map width+height < 10000)
+        // plane = (x + y) * 10
+        // layer = layerOffset (0, 1, 2)
+
+        // Note: z can be negative. zIndex accepts negative.
+        // To keep things clean, maybe offset Z by +100 to ensure positive if needed, but not strictly required.
+
+        span.style.zIndex = (z * 10000) + ((x + y) * 10) + layerOffset;
 
         container.appendChild(span);
     }
