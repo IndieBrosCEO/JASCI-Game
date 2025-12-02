@@ -840,8 +840,13 @@ window.mapRenderer = {
         if (!gameState.renderScheduled) {
             gameState.renderScheduled = true;
             requestAnimationFrame(() => {
-                // Ensure 'this' context is correct for the method call
-                profileFunction("mapRenderer.renderMapLayers", () => window.mapRenderer.renderMapLayers(), ...arguments);
+                // Check for 3D mode
+                if (window.mapRenderer3D && window.mapRenderer3D.isEnabled) {
+                    profileFunction("mapRenderer3D.render", () => window.mapRenderer3D.render());
+                } else {
+                    // Ensure 'this' context is correct for the method call
+                    profileFunction("mapRenderer.renderMapLayers", () => window.mapRenderer.renderMapLayers(), ...arguments);
+                }
                 gameState.renderScheduled = false;
             });
         }
