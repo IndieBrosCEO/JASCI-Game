@@ -162,13 +162,19 @@ window.mapRenderer3D = {
                          finalTileId = (typeof raw === 'object' && raw.tileId) ? raw.tileId : raw;
                     }
 
-                    let tileDef = window.assetManagerInstance.tilesets[finalTileId];
+                    let tileDef = null;
+                    // Fix: Access tilesets via window.assetManager if window.assetManagerInstance is not defined
+                    const tilesets = (window.assetManager && window.assetManager.tilesets) ? window.assetManager.tilesets : (window.assetManagerInstance ? window.assetManagerInstance.tilesets : null);
+
+                    if (tilesets) {
+                        tileDef = tilesets[finalTileId];
+                    }
 
                     // If no middle object, check bottom (floor)
-                    if (!tileDef) {
+                    if (!tileDef && tilesets) {
                         let bottomId = levelData.bottom?.[y]?.[x];
                         bottomId = (typeof bottomId === 'object' && bottomId.tileId) ? bottomId.tileId : bottomId;
-                        tileDef = window.assetManagerInstance.tilesets[bottomId];
+                        tileDef = tilesets[bottomId];
                     }
 
                     if (tileDef) {
