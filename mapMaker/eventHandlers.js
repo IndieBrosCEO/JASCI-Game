@@ -955,6 +955,7 @@ function handleSavePortalPropertiesClick() {
     snapshot();
     const portalDataUpdates = {
         targetMapId: document.getElementById('portalTargetMapId').value.trim().replace(/\.json$/i, ""),
+        toWorldNodeId: document.getElementById('portalToWorldNodeId').value.trim(),
         targetX: parseInt(document.getElementById('portalTargetX').value, 10) || 0,
         targetY: parseInt(document.getElementById('portalTargetY').value, 10) || 0,
         targetZ: parseInt(document.getElementById('portalTargetZ').value, 10) || 0,
@@ -1124,13 +1125,17 @@ function handleSaveMapMetadataClick() {
     const newAuthor = document.getElementById('mapAuthorInput')?.value || "";
     const newCustomTagsRaw = document.getElementById('mapCustomTagsInput')?.value || "";
     const newCustomTags = newCustomTagsRaw === "" ? [] : newCustomTagsRaw.split(',').map(tag => tag.trim()).filter(Boolean);
+    const newAreaId = document.getElementById('mapAreaIdInput')?.value.trim() || "";
+    const newPrimaryParentMapId = document.getElementById('mapPrimaryParentInput')?.value.trim() || "";
 
     mapData.name = newName;
     mapData.description = newDescription;
     mapData.author = newAuthor;
     mapData.customTags = newCustomTags;
+    mapData.areaId = newAreaId;
+    mapData.primaryParentMapId = newPrimaryParentMapId;
 
-    logToConsole("Map metadata updated in mapData object:", { name: newName, description: newDescription, author: newAuthor, customTags: newCustomTags });
+    logToConsole("Map metadata updated in mapData object:", { name: newName, description: newDescription, author: newAuthor, customTags: newCustomTags, areaId: newAreaId, primaryParentMapId: newPrimaryParentMapId });
 
     const metadataStatus = document.getElementById('metadataStatus');
     if (metadataStatus) {

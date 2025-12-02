@@ -63,6 +63,9 @@ const gameState = {
 
     gameStarted: false,
     currentMapId: null, // Will be set when a map is loaded for portal tracking
+    currentAreaId: null, // The logical area the player is in
+    currentWorldNodeId: null, // The world graph node the player is at
+    isWorldMapMode: false, // True if viewing the world graph
     awaitingPortalConfirmation: false, // True if player is on a portal and confirm prompt is active
     portalPromptActive: false, // True if the portal confirmation prompt is physically visible
 

@@ -1798,35 +1798,45 @@ function checkAndHandlePortal(newX, newY) {
     const portal = currentMap.portals.find(p => p.x === newX && p.y === newY);
 
     if (portal) {
-        logToConsole(`Player stepped on portal to ${portal.targetMapId} at (${portal.targetX}, ${portal.targetY})`);
-        // TODO: Play a sound indicating portal activation or prompt appearance (e.g., ui_menu_open_01.wav or a mystical sound)
-        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.6 }); // Placeholder
+        let destinationText = "";
+        if (portal.toWorldNodeId) {
+            const worldNode = window.worldMapManager.getWorldNode(portal.toWorldNodeId);
+            destinationText = `World Map: ${worldNode ? worldNode.displayName : portal.toWorldNodeId}`;
+        } else {
+            destinationText = `${portal.targetMapId || 'an unnamed map'} at (X:${portal.targetX}, Y:${portal.targetY})`;
+        }
+
+        logToConsole(`Player stepped on portal to ${destinationText}`);
+        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.6 });
 
         gameState.awaitingPortalConfirmation = true;
-        gameState.portalPromptActive = true; // Set flag before showing prompt
+        gameState.portalPromptActive = true;
 
-        // Simple window.confirm for now. A custom modal would be better for UI consistency.
-        // Adding a slight delay to ensure the current move/render cycle completes visually.
         setTimeout(() => {
-            const travel = window.confirm(`You've stepped on a portal to '${portal.targetMapId || 'an unnamed map'}'. Do you want to travel to (X:${portal.targetX}, Y:${portal.targetY})?`);
+            const travel = window.confirm(`You've stepped on a portal to '${destinationText}'. Do you want to travel?`);
             if (travel) {
-                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 }); // Confirm sound
-                initiateMapTransition(portal.targetMapId, portal.targetX, portal.targetY);
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 });
+
+                if (portal.toWorldNodeId) {
+                    // Entering node from a portal implies exiting to view (fromWorldMap = false)
+                    window.worldMapManager.enterNode(portal.toWorldNodeId, false);
+                    gameState.awaitingPortalConfirmation = false;
+                } else {
+                    initiateMapTransition(portal.targetMapId, portal.targetX, portal.targetY, portal.targetZ);
+                }
             } else {
                 logToConsole("Portal travel declined.");
-                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Neutral cancel
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
                 gameState.awaitingPortalConfirmation = false;
             }
-            // Reset prompt active flag regardless of choice, after a short delay to prevent re-triggering
-            // if the player somehow doesn't move off immediately.
             setTimeout(() => {
                 gameState.portalPromptActive = false;
             }, 100);
-        }, 50); // 50ms delay
+        }, 50);
     }
 }
 
-async function initiateMapTransition(targetMapId, targetX, targetY) {
+async function initiateMapTransition(targetMapId, targetX, targetY, targetZ = null) {
     if (!targetMapId) {
         logToConsole("Portal travel failed: No target map ID specified.", "error");
         gameState.awaitingPortalConfirmation = false;
@@ -1837,7 +1847,8 @@ async function initiateMapTransition(targetMapId, targetX, targetY) {
     const cleanMapId = targetMapId.replace(/\.json$/i, "");
     logToConsole(`Attempting to load map with cleaned ID: '${cleanMapId}' (original: '${targetMapId}')`);
 
-    logToConsole(`Traveling to map: ${cleanMapId} at (${targetX}, ${targetY})...`);
+    const destText = targetZ !== null ? `(${targetX}, ${targetY}, Z${targetZ})` : `(${targetX}, ${targetY})`;
+    logToConsole(`Traveling to map: ${cleanMapId} at ${destText}...`);
     gameState.awaitingPortalConfirmation = false; // Reset this as we are now processing the transition
 
     // Show a loading message or overlay (optional, but good for UX)
@@ -1857,21 +1868,32 @@ async function initiateMapTransition(targetMapId, targetX, targetY) {
         gameState.layers = newMapData.layers;
 
         // Update player position, ensuring it's within bounds of the new map
-        let finalX = targetX;
-        let finalY = targetY;
+        let finalX = targetX !== undefined ? targetX : (newMapData.startPos ? newMapData.startPos.x : 0);
+        let finalY = targetY !== undefined ? targetY : (newMapData.startPos ? newMapData.startPos.y : 0);
+
         if (newMapData.dimensions) {
-            if (targetX < 0 || targetX >= newMapData.dimensions.width) {
-                logToConsole(`Target X (${targetX}) is out of bounds for map ${cleanMapId}. Clamping or using startPos.`, "warn");
+            if (finalX < 0 || finalX >= newMapData.dimensions.width) {
+                logToConsole(`Target X (${finalX}) is out of bounds for map ${cleanMapId}. Clamping or using startPos.`, "warn");
                 finalX = newMapData.startPos ? newMapData.startPos.x : 0; // Fallback to startPos or 0
             }
-            if (targetY < 0 || targetY >= newMapData.dimensions.height) {
-                logToConsole(`Target Y (${targetY}) is out of bounds for map ${cleanMapId}. Clamping or using startPos.`, "warn");
+            if (finalY < 0 || finalY >= newMapData.dimensions.height) {
+                logToConsole(`Target Y (${finalY}) is out of bounds for map ${cleanMapId}. Clamping or using startPos.`, "warn");
                 finalY = newMapData.startPos ? newMapData.startPos.y : 0; // Fallback to startPos or 0
             }
         } else {
             logToConsole(`New map ${cleanMapId} has no dimension data. Placing player at raw target coords.`, "warn");
         }
-        gameState.playerPos = { x: finalX, y: finalY };
+
+        // Determine Z
+        let finalZ = 0;
+        if (targetZ !== null && targetZ !== undefined) {
+            finalZ = targetZ;
+        } else if (newMapData.startPos && newMapData.startPos.z !== undefined) {
+            finalZ = newMapData.startPos.z;
+        }
+
+        gameState.playerPos = { x: finalX, y: finalY, z: finalZ };
+        gameState.currentViewZ = finalZ;
 
         // Spawn NPCs for the new map
         spawnNpcsFromMapData(newMapData); // This clears old NPCs and spawns new ones
@@ -1909,7 +1931,7 @@ async function initiateMapTransition(targetMapId, targetX, targetY) {
         // Schedule a re-render of the map
         window.mapRenderer.scheduleRender();
 
-        logToConsole(`Arrived at ${newMapData.name || cleanMapId}. Player at (${finalX}, ${finalY}).`);
+        logToConsole(`Arrived at ${newMapData.name || cleanMapId}. Player at (${finalX}, ${finalY}, Z${finalZ}).`);
 
     } else {
         logToConsole(`Failed to travel: Could not load map '${cleanMapId}'.`, "error");
@@ -1923,6 +1945,8 @@ async function initiateMapTransition(targetMapId, targetX, targetY) {
         gameState.portalPromptActive = false;
     }, 150); // Slightly longer delay than the prompt itself.
 }
+// Expose as window.loadMap for WorldMapManager
+window.loadMap = initiateMapTransition;
 
 // Keybinds Display Functions
 function populateKeybinds() {
@@ -2015,6 +2039,11 @@ async function initialize() { // Made async
         console.log("Keybinds populated.");
         await assetManager.loadDefinitions();
         console.log("Asset definitions loaded.");
+
+        // Initialize WorldMapManager
+        window.worldMapManager = new WorldMapManager();
+        await window.worldMapManager.init(window.assetManager);
+        console.log("WorldMapManager initialized.");
 
         // Instantiate and Initialize Managers that depend on loaded assets
         // This is the CORRECT place, after assets are loaded.
