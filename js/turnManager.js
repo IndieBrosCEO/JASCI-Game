@@ -165,6 +165,18 @@ async function endTurn_internal() { // Make async
         window.fireManager.processTurn();
     }
 
+    // Project Sunrise: Gas Mechanic
+    if (window.gameState.sunriseEventActive && window.gameState.playerPos.z === -1) {
+         // Simple damage application
+         if (window.gameState.currentTurn % 2 === 0) { // Every other turn
+             logToConsole("The orange gas burns your lungs!", "danger");
+             if (window.combatManager) {
+                 window.combatManager.applyDamage(window.gameState.player, 2, "poison", "Gas");
+                 if (window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
+             }
+         }
+    }
+
     gameState.currentTurn++;
     startTurn_internal(); // Call internal startTurn
     window.mapRenderer.scheduleRender();
