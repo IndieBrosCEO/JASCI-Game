@@ -103,7 +103,9 @@ class AssetManager {
             'families.json', // Added families.json
             'perks.json', // Added perks.json
             'harvest_resources.json', // Added harvest resources
-            'loot_tables.json' // Added loot tables
+            'loot_tables.json', // Added loot tables
+            'world_graph.json',
+            'areas.json'
         ];
 
         for (const filename of definitionFiles) {
@@ -223,6 +225,12 @@ class AssetManager {
                 } else if (filename === 'loot_tables.json') {
                     this.lootTables = parsedJson;
                     console.log(`AssetManager: Loaded loot tables.`);
+                } else if (filename === 'world_graph.json') {
+                    this.worldGraph = parsedJson;
+                    console.log(`AssetManager: Loaded world graph.`);
+                } else if (filename === 'areas.json') {
+                    this.areas = parsedJson;
+                    console.log(`AssetManager: Loaded areas.`);
                 } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json', 'trap_kits.json', 'harvest_resources.json'].includes(filename)) {
                     // All new item files are arrays of items
                     if (Array.isArray(parsedJson)) {
