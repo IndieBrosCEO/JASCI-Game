@@ -1,0 +1,16 @@
+[
+  {
+    "areaId": "fallbrook_pd",
+    "displayName": "Fallbrook Police Department",
+    "worldNodeId": "fallbrook_hub",
+    "type": "facility",
+    "defaultMapId": "FPD"
+  },
+  {
+    "areaId": "wasteland_camp",
+    "displayName": "Wasteland Camp",
+    "worldNodeId": "outskirts",
+    "type": "camp",
+    "defaultMapId": "Small_Race_Track"
+  }
+]
