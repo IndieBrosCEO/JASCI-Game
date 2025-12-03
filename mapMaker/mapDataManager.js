@@ -37,6 +37,8 @@ import { logToConsole } from './config.js';
  * @property {string} [description] - Optional description of the map.
  * @property {string} [author] - Optional author of the map.
  * @property {string[]} [customTags] - Optional list of custom tags for the map.
+ * @property {string} [areaId] - The Area ID this map belongs to.
+ * @property {string} [primaryParentMapId] - Optional parent map ID for hierarchy.
  */
 
 /** @type {MapData} */
@@ -66,6 +68,8 @@ export function setMapData(newMapData) {
     mapData.description = newMapData.description || "";
     mapData.author = newMapData.author || "";
     mapData.customTags = Array.isArray(newMapData.customTags) ? newMapData.customTags : [];
+    mapData.areaId = newMapData.areaId || "";
+    mapData.primaryParentMapId = newMapData.primaryParentMapId || "";
 
     // Consider adding validation or transformation logic here if needed
     logToConsole("Map data has been replaced (e.g. by loading a new map). Metadata fields ensured.");
@@ -95,7 +99,9 @@ export function initNewMap(gridWidth, gridHeight, initialZ = DEFAULT_START_POS_Z
         portals: [],
         description: "",
         author: "",
-        customTags: []
+        customTags: [],
+        areaId: "",
+        primaryParentMapId: ""
     };
     ensureLayersForZ(initialZ, gridWidth, gridHeight, mapData); // Pass mapData to modify
     clearUndoRedoStacks();

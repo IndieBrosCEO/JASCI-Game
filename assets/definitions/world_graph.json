@@ -1,0 +1,29 @@
+{
+  "nodes": [
+    {
+      "id": "fallbrook_hub",
+      "displayName": "Fallbrook",
+      "worldPos": { "x": 100, "y": 100 },
+      "climate": "temperate",
+      "danger": "low",
+      "defaultAreaId": "fallbrook_pd"
+    },
+    {
+      "id": "outskirts",
+      "displayName": "Outskirts",
+      "worldPos": { "x": 120, "y": 110 },
+      "climate": "arid",
+      "danger": "medium",
+      "defaultAreaId": "wasteland_camp"
+    }
+  ],
+  "edges": [
+    {
+      "fromNodeId": "fallbrook_hub",
+      "toNodeId": "outskirts",
+      "pathType": "road",
+      "travelTime": 30,
+      "encounterTable": "road_encounters"
+    }
+  ]
+}
