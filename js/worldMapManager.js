@@ -134,11 +134,21 @@ class WorldMapManager {
         }
     }
 
-    renderWorldMapUI() {
+    // readOnly: if true, disable travel buttons (e.g. viewing from inside a map)
+    renderWorldMapUI(readOnly = false) {
         const worldMapUI = document.getElementById('worldMapUI');
         const mapContainer = document.getElementById('mapContainer');
 
         if (!worldMapUI || !mapContainer) return;
+
+        // Ensure we are viewing a valid node.
+        // If currentWorldNodeId is null, try to resolve it from currentAreaId.
+        if (!window.gameState.currentWorldNodeId && window.gameState.currentAreaId) {
+            const area = this.getArea(window.gameState.currentAreaId);
+            if (area) {
+                window.gameState.currentWorldNodeId = area.worldNodeId;
+            }
+        }
 
         // Toggle visibility
         mapContainer.classList.add('hidden');
@@ -152,22 +162,34 @@ class WorldMapManager {
             html += `<h1>${currentNode.displayName}</h1>`;
             html += `<p>Climate: ${currentNode.climate}, Danger: ${currentNode.danger}</p>`;
 
-            // Only show "Enter Area" if there is a default area mapped
-            if (currentNode.defaultAreaId) {
-                html += `<button onclick="window.worldMapManager.enterNode('${currentNode.id}', true)">Enter ${currentNode.displayName} Area</button>`;
+            if (!readOnly) {
+                // Only show "Enter Area" if there is a default area mapped AND we are traveling
+                if (currentNode.defaultAreaId) {
+                    html += `<button onclick="window.worldMapManager.enterNode('${currentNode.id}', true)">Enter ${currentNode.displayName} Area</button>`;
+                } else {
+                    html += `<p>No accessible area here.</p>`;
+                }
             } else {
-                html += `<p>No accessible area here.</p>`;
+                html += `<p>You are currently in this area.</p>`;
+                html += `<button onclick="window.worldMapManager.hideWorldMapUI()">Close Map</button>`;
             }
         } else {
             html += `<h1>Unknown Location</h1>`;
+            html += `<button onclick="window.worldMapManager.hideWorldMapUI()">Close Map</button>`;
         }
 
-        html += `<h2>Travel to:</h2><ul>`;
+        if (readOnly) {
+             html += `<h2>Connections:</h2><ul>`;
+        } else {
+             html += `<h2>Travel to:</h2><ul>`;
+        }
+
         paths.forEach(path => {
-            const otherId = path.fromNodeId === currentNode.id ? path.toNodeId : path.fromNodeId;
+            const otherId = path.fromNodeId === currentNode?.id ? path.toNodeId : path.fromNodeId;
             const otherNode = this.getWorldNode(otherId);
+            const buttonDisabled = readOnly ? 'disabled' : '';
             html += `<li>
-                <button onclick="window.worldMapManager.travelToNode('${otherId}')">
+                <button onclick="window.worldMapManager.travelToNode('${otherId}')" ${buttonDisabled}>
                     ${otherNode ? otherNode.displayName : otherId} (${path.travelTime}m - ${path.pathType})
                 </button>
             </li>`;

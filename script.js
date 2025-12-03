@@ -1500,6 +1500,22 @@ async function handleKeyDown(event) {
             }
             event.preventDefault(); return;
         }
+        if (event.key.toLowerCase() === 'm' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'M' for World Map
+            if (window.worldMapManager) {
+                const worldMapUI = document.getElementById('worldMapUI');
+                if (worldMapUI && !worldMapUI.classList.contains('hidden')) {
+                    window.worldMapManager.hideWorldMapUI();
+                    logToConsole("Closed World Map.");
+                } else {
+                    // Open in read-only mode if not already in World Map Mode (traveling)
+                    const readOnly = !window.gameState.isWorldMapMode;
+                    window.worldMapManager.renderWorldMapUI(readOnly);
+                    logToConsole("Opened World Map.");
+                }
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            }
+            event.preventDefault(); return;
+        }
         if (event.key.toLowerCase() === 'u' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'U' for Level Up/Upgrade
             if (window.levelUpUI) {
                 window.levelUpUI.toggle();
@@ -1966,6 +1982,7 @@ function populateKeybinds() {
         "Toggle Prone: P",
         "Toggle Crouch: K",
         "Search for Traps: V",
+        "Toggle World Map: M",
         "Wait (Skip Hours): Shift + T",
         "Open/Close Console: ` (Backquote/Tilde)",
         "Open/Close Crafting Menu: C",
