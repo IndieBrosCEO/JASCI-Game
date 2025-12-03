@@ -93,6 +93,10 @@ class NpcManager {
                     newNpcInstance.mapPos = { x: spawnX, y: spawnY, z: spawnZ };
                     newNpcInstance.eventSourceId = eventInstanceId; // Tag NPC with event source
 
+                    // Initialize biological stats
+                    newNpcInstance.hunger = Math.floor(Math.random() * 30); // 0-30 hunger
+                    newNpcInstance.reproductionCooldown = Math.floor(Math.random() * 500) + 100; // 100-600 turns
+
                     // Initialize behavior from definition if not present
                     if (!newNpcInstance.behavior) {
                         newNpcInstance.behavior = npcDef.behavior || "idle";

@@ -394,6 +394,72 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
         if (npc.memory.actionCooldown > 0) return; // Busy performing action
     }
 
+    // --- Hunger Update ---
+    if (npc.hunger !== undefined) {
+        npc.hunger += 1;
+    } else {
+        npc.hunger = 0; // Initialize if missing
+    }
+
+    // --- Reproduction Logic ---
+    if (npc.reproductionCooldown !== undefined) {
+        if (npc.reproductionCooldown > 0) {
+            npc.reproductionCooldown--;
+        } else {
+            // Attempt Reproduction
+            // 1. Check max population cap for this species
+            const speciesCount = gameState.npcs.filter(n => n.definitionId === npc.definitionId).length;
+            const MAX_SPECIES_POPULATION = 10; // Simple cap
+
+            if (speciesCount < MAX_SPECIES_POPULATION) {
+                // 2. Check for mate nearby
+                // Need to ensure mate is also ready to reproduce (cooldown <= 0)
+                const mate = gameState.npcs.find(n =>
+                    n !== npc &&
+                    n.definitionId === npc.definitionId &&
+                    n.health.torso.current > 0 &&
+                    (n.reproductionCooldown === undefined || n.reproductionCooldown <= 0) &&
+                    getDistance3D(npc.mapPos, n.mapPos) <= 2 // Close range
+                );
+
+                if (mate) {
+                    // 3. Spawn baby
+                    // We need to access npcManager. Since handleNpcOutOfCombatTurn is in npcDecisions.js,
+                    // we rely on window.npcManager.
+                    if (window.npcManager && typeof window.npcManager.spawnNpcGroupInArea === 'function') {
+                        logToConsole(`Reproduction: ${npc.name} and ${mate.name} produced offspring.`, 'green');
+                        // Spawn 1 new NPC near the parent
+                        // We use a custom areaKey logic or pass coordinates if supported,
+                        // but spawnNpcGroupInArea mainly takes area keys.
+                        // Let's assume we can't easily target exact coords via that method without a key.
+                        // However, we can create a temporary area key logic or just spawn near player if logic allows,
+                        // but better is to implement a specific spawn-near function or hack it.
+                        // For now, let's use "player_vicinity_event" but this places it near player, which is wrong if parents are far.
+                        // Correct fix: Add support to spawnNpcGroupInArea for direct coords or use a new helper.
+                        // Or simply push to gameState.npcs manually like spawnNpcGroupInArea does.
+
+                        const babyDef = assetManager.getNpc(npc.definitionId);
+                        if (babyDef) {
+                            const baby = JSON.parse(JSON.stringify(babyDef));
+                            baby.id = `bred_${npc.definitionId}_${Date.now()}`;
+                            baby.definitionId = npc.definitionId;
+                            baby.mapPos = { ...npc.mapPos }; // Spawn on parent
+                            baby.hunger = 0;
+                            baby.reproductionCooldown = 500; // Long cooldown for baby
+                            if (typeof window.initializeHealth === 'function') window.initializeHealth(baby);
+                            if (typeof window.initializeNpcFace === 'function') window.initializeNpcFace(baby);
+                            gameState.npcs.push(baby);
+
+                            // Reset parents cooldowns
+                            npc.reproductionCooldown = 300;
+                            mate.reproductionCooldown = 300;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // Ensure companion specific fields are present if they are following
     if (npc.isFollowingPlayer && npc.currentOrders === undefined) {
         npc.currentOrders = "follow_close"; // Default order
@@ -748,11 +814,39 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
 
         if (candidate !== npc && candHealth?.torso?.current > 0 && candHealth?.head?.current > 0 &&
             candTeamId !== npc.teamId && npc.mapPos && candPos) {
-            if (window.hasLineOfSight3D(npc.mapPos, candPos, currentTilesets, currentMapData)) {
-                const dist = getDistance3D(npc.mapPos, candPos);
-                // Add if not already in potentialTargets from aggro list
-                if (!potentialTargets.some(pt => pt.entity === candidate)) {
-                    potentialTargets.push({ entity: candidate, pos: candPos, distance: dist, type: 'initiative' });
+
+            // --- Predator Hunger Logic ---
+            // If NPC is a predator and target is prey (and not player, usually), check hunger.
+            // Assuming player is not tagged 'prey'.
+            // If target is player, predators might attack regardless of hunger (territorial).
+            // But if target is another NPC (prey), apply hunger check.
+            let ignoreDueToHunger = false;
+            let ignoreDueToConservation = false;
+
+            if (!isPlayer && npc.tags?.includes("predator") && candidate.tags?.includes("prey")) {
+                // Hunger Check
+                const HUNGER_THRESHOLD = 50; // Arbitrary threshold
+                if ((npc.hunger || 0) < HUNGER_THRESHOLD) {
+                    ignoreDueToHunger = true;
+                    // logToConsole(`${npc.name} ignores ${candidate.name} (Not hungry: ${npc.hunger})`, 'grey');
+                }
+
+                // Conservation Check
+                // Count instances of this prey species (definitionId)
+                const speciesCount = gameState.npcs.filter(n => n.definitionId === candidate.definitionId && n.health.torso.current > 0).length;
+                if (speciesCount <= 1) {
+                    ignoreDueToConservation = true;
+                    // logToConsole(`${npc.name} ignores ${candidate.name} (Conservation: Only ${speciesCount} left)`, 'grey');
+                }
+            }
+
+            if (!ignoreDueToHunger && !ignoreDueToConservation) {
+                if (window.hasLineOfSight3D(npc.mapPos, candPos, currentTilesets, currentMapData)) {
+                    const dist = getDistance3D(npc.mapPos, candPos);
+                    // Add if not already in potentialTargets from aggro list
+                    if (!potentialTargets.some(pt => pt.entity === candidate)) {
+                        potentialTargets.push({ entity: candidate, pos: candPos, distance: dist, type: 'initiative' });
+                    }
                 }
             }
         }
@@ -1032,6 +1126,24 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
         }
 
         let actionTakenInIter = false;
+
+        // --- Flee Logic Check ---
+        if (shouldNpcFlee(npc) && npc.currentMovementPoints > 0) {
+            logToConsole(`NPC ${npcName} is a prey/passive type. Attempting to flee from threat at (${currentTargetPos.x}, ${currentTargetPos.y}).`, 'cyan');
+            const fleeTarget = getFleeTarget(npc, currentTargetPos);
+            if (fleeTarget) {
+                // Pass animation duration for fleeing
+                if (await moveNpcTowardsTarget(npc, fleeTarget, gameState, assetManager, 300)) {
+                     actionTakenInIter = true;
+                     // Continue loop to keep moving if MP remains
+                     continue;
+                } else {
+                     logToConsole(`NPC ${npcName} could not move to flee target.`, 'orange');
+                }
+            }
+        }
+        // ------------------------
+
         const weaponToUse = npc.equippedWeaponId ? assetManager.getItem(npc.equippedWeaponId) : null;
         const attackType = weaponToUse ? (weaponToUse.type.includes("melee") ? "melee" : (weaponToUse.type.includes("firearm") || weaponToUse.type.includes("bow") || weaponToUse.type.includes("crossbow") || weaponToUse.type.includes("weapon_ranged_other") || weaponToUse.type.includes("thrown") ? "ranged" : "melee")) : "melee";
         const fireMode = weaponToUse?.fireModes?.includes("burst") ? "burst" : (weaponToUse?.fireModes?.[0] || "single");
@@ -1059,7 +1171,16 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
         //   - Otherwise, standard weapon attack.
         // This would involve setting gameState.pendingCombatAction to a different actionType.
 
-        if (canAttack && npc.currentActionPoints > 0) {
+        // If fleeing, we skip attacking unless cornered?
+        // For now, shouldNpcFlee logic above handles movement.
+        // If they moved, actionTakenInIter is true, loop continues.
+        // If they are out of MP, they stop.
+        // If they still have AP and are cornered (didn't move), maybe they attack?
+        // But the requirement is "prey should run away... not go towards them".
+        // If they are strictly prey (neutral_flees), they probably shouldn't attack.
+        const isStrictlyPassive = shouldNpcFlee(npc);
+
+        if (canAttack && npc.currentActionPoints > 0 && !isStrictlyPassive) {
             logToConsole(`NPC DECISIONS: ${npcName} attacks ${currentTarget.name || "Player"} with ${weaponToUse ? weaponToUse.name : "Unarmed"}. Dist: ${distanceToTarget3D.toFixed(1)}, LOS: ${hasLOStoTarget}`, 'gold');
             gameState.pendingCombatAction = {
                 target: currentTarget, weapon: weaponToUse, attackType,
@@ -1144,3 +1265,69 @@ async function executeNpcTurn(npc, gameState, combatManager, assetManager) {
     }
 }
 window.executeNpcTurn = executeNpcTurn;
+
+// Helper function to check if NPC should flee
+function shouldNpcFlee(npc) {
+    if (!npc.tags) return false;
+    // Check for explicit flee tags
+    if (npc.tags.includes("neutral_flees")) return true;
+
+    // Check for prey tag, unless they are also hostile when threatened (some prey fight back)
+    if (npc.tags.includes("prey")) {
+        // If it's prey and NOT explicitly hostile when threatened, flee.
+        if (!npc.tags.includes("hostile_if_threatened")) return true;
+
+        // Some animals might be prey but fight back (e.g. Boar?), but prompt says "prey should run away".
+        // If it has "hostile_if_threatened", we let standard AI handle it (which might attack or move to attack).
+        // If standard AI supports fleeing when low HP, that would cover the "threatened" part.
+    }
+
+    // Behavior string check
+    if (npc.behavior && npc.behavior.startsWith("flee")) return true;
+
+    return false;
+}
+window.shouldNpcFlee = shouldNpcFlee;
+
+// Helper function to calculate a flee target
+function getFleeTarget(npc, threatPos) {
+    if (!npc.mapPos || !threatPos) return null;
+
+    const mapData = window.mapRenderer.getCurrentMapData();
+    if (!mapData) return null;
+
+    // Vector from threat to NPC
+    let dx = npc.mapPos.x - threatPos.x;
+    let dy = npc.mapPos.y - threatPos.y;
+
+    // Normalize (roughly) and scale
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist === 0) {
+        // On top of each other? Pick random direction
+        dx = Math.random() - 0.5;
+        dy = Math.random() - 0.5;
+    } else {
+        dx = dx / dist;
+        dy = dy / dist;
+    }
+
+    const fleeDist = 10; // Try to run 10 tiles away relative to current pos (or just pick a spot far away)
+    // Actually, we just want a target tile that is 'away'.
+    // findPath3D goes to target. So we need to pick a valid tile 'away'.
+
+    const targetX = Math.round(npc.mapPos.x + dx * fleeDist);
+    const targetY = Math.round(npc.mapPos.y + dy * fleeDist);
+
+    // Clamp to map bounds
+    const clampedX = Math.max(0, Math.min(mapData.dimensions.width - 1, targetX));
+    const clampedY = Math.max(0, Math.min(mapData.dimensions.height - 1, targetY));
+    const z = npc.mapPos.z;
+
+    // We simply return this target. The moveNpcTowardsTarget function uses pathfinding.
+    // If the exact tile is blocked, pathfinding usually tries to get close.
+    // But for fleeing, we might want to ensure we don't get stuck.
+    // Ideally we'd verify walkability, but moveNpcTowardsTarget does check path validity.
+
+    return { x: clampedX, y: clampedY, z };
+}
+window.getFleeTarget = getFleeTarget;
