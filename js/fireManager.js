@@ -149,6 +149,28 @@ class FireManager {
             this.igniteTile(nf.x, nf.y, nf.z);
         });
 
+        // 4. Emit Smoke
+        if (gameState.activeFires.length > 0 && window.gasManager) {
+            gameState.activeFires.forEach(fire => {
+                if (Math.random() < 0.3) { // 30% chance per turn to emit smoke
+                    // Check if smoke already exists to avoid density explosion
+                    // GasManager spawnGas logic handles simple array push, we should rely on GasManager to manage density or multiple clouds
+                    // But to be efficient, maybe only emit if space is clear or low density?
+                    // For now, simple emission.
+                    // Emit smoke directly above the fire if possible, or at the fire location
+                    let smokeZ = fire.z;
+                    // Logic to rise? Handled by GasManager spread? Or here?
+                    // Let's emit at fire location, let GasManager handle spread (including vertical if implemented)
+                    // Actually, smoke rises. Let's try to emit at z+1 if possible
+                    if (fire.z < (gameState.mapLevels ? Object.keys(gameState.mapLevels).length : 1) - 1) { // Simple Z check
+                         // Ideally check if z+1 is blocked
+                    }
+
+                    window.gasManager.spawnGas(fire.x, fire.y, fire.z, 'smoke', 5, 0.5); // duration 5, density 0.5
+                }
+            });
+        }
+
         // Process removals
         firesToRemove.forEach(fire => {
             if (fire.burnedOut) {
@@ -221,11 +243,11 @@ class FireManager {
     }
 
     getEntityAt(x, y, z) {
-        if (gameState.playerPos.x === x && gameState.playerPos.y === y && gameState.playerPos.z === z) {
+        if (gameState.playerPos && gameState.playerPos.x === x && gameState.playerPos.y === y && gameState.playerPos.z === z) {
             return gameState.player;
         }
         if (gameState.npcs) {
-            return gameState.npcs.find(n => n.mapPos.x === x && n.mapPos.y === y && n.mapPos.z === z);
+            return gameState.npcs.find(n => n.mapPos && n.mapPos.x === x && n.mapPos.y === y && n.mapPos.z === z);
         }
         return null;
     }

@@ -162,6 +162,10 @@ const commandHelpInfo = {
         syntax: 'spawnvehicle <templateId> [x y z]',
         description: 'Spawns a vehicle with the given template ID. Optionally spawns at x y z coordinates, otherwise spawns at player location.'
     },
+    'spawn_gas': {
+        syntax: 'spawn_gas <type> <duration> [density]',
+        description: 'Spawns a gas cloud at player position. Types: smoke, tear_gas, mustard_gas, steam.'
+    },
     'explosion': {
         syntax: 'explosion <x> <y> <z> <radius> <damage> [damageType]',
     description: 'Creates an explosion at x,y,z with a radius, damage (e.g., "3d6"), and optional damage type.'
@@ -1247,6 +1251,28 @@ function processConsoleCommand(commandText) {
                 }
             } else {
                 logToConsoleUI(`Failed to spawn vehicle with template ID "${vehicleTemplateId}". Check template ID and game state.`, 'error');
+            }
+            break;
+
+        case 'spawn_gas':
+            if (args.length < 2) {
+                logToConsoleUI("Usage: spawn_gas <type> <duration> [density]", 'error');
+                break;
+            }
+            const gasType = args[0];
+            const gasDuration = parseInt(args[1], 10);
+            const gasDensity = args[2] ? parseFloat(args[2]) : 1.0;
+
+            if (isNaN(gasDuration)) {
+                logToConsoleUI("Error: Duration must be a number.", 'error');
+                break;
+            }
+
+            if (window.gasManager && window.gameState.playerPos) {
+                window.gasManager.spawnGas(window.gameState.playerPos.x, window.gameState.playerPos.y, window.gameState.playerPos.z, gasType, gasDuration, gasDensity);
+                logToConsoleUI(`Spawned ${gasType} cloud for ${gasDuration} turns.`, 'success');
+            } else {
+                logToConsoleUI("Error: GasManager not available or player position unknown.", 'error');
             }
             break;
 

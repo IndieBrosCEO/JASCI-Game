@@ -1120,38 +1120,35 @@
 
             if (item.id === "smoke_grenade_thrown" && !areaEffectProcessedThisCall) {
                 if (window.audioManager && effectImpactPos) window.audioManager.playSoundAtLocation('ui_click_01.wav', effectImpactPos, {}, { volume: 0.6 }); // Placeholder for gas_hiss_01.wav
-                if (!this.gameState.environmentalEffects) this.gameState.environmentalEffects = {};
-                if (!this.gameState.environmentalEffects.smokeTiles) this.gameState.environmentalEffects.smokeTiles = [];
                 const smokeDuration = 5;
-                for (let dx = -burstRadiusTiles; dx <= burstRadiusTiles; dx++) {
-                    for (let dy = -burstRadiusTiles; dy <= burstRadiusTiles; dy++) {
-                        if (Math.sqrt(dx * dx + dy * dy) <= burstRadiusTiles) {
-                            const tileX = impactTile.x + dx; const tileY = impactTile.y + dy;
-                            const existingSmoke = this.gameState.environmentalEffects.smokeTiles.find(st => st.x === tileX && st.y === tileY);
-                            if (existingSmoke) existingSmoke.duration = Math.max(existingSmoke.duration, smokeDuration);
-                            else this.gameState.environmentalEffects.smokeTiles.push({ x: tileX, y: tileY, duration: smokeDuration });
+                if (window.gasManager) {
+                    for (let dx = -burstRadiusTiles; dx <= burstRadiusTiles; dx++) {
+                        for (let dy = -burstRadiusTiles; dy <= burstRadiusTiles; dy++) {
+                            if (Math.sqrt(dx * dx + dy * dy) <= burstRadiusTiles) {
+                                const tileX = impactTile.x + dx; const tileY = impactTile.y + dy;
+                                // Assuming smoke rises or spreads on impact Z
+                                window.gasManager.spawnGas(tileX, tileY, impactTile.z, 'smoke', smokeDuration, 1.0);
+                            }
                         }
                     }
+                    logToConsole(`Smoke cloud created at (${impactTile.x},${impactTile.y}), radius ${burstRadiusTiles}t, duration ${smokeDuration} turns.`, 'grey');
                 }
-                logToConsole(`Smoke cloud created at (${impactTile.x},${impactTile.y}), radius ${burstRadiusTiles}t, duration ${smokeDuration} turns.`, 'grey');
                 if (window.mapRenderer) window.mapRenderer.scheduleRender();
                 areaEffectProcessedThisCall = true;
             } else if (item.id === "tear_gas_grenade_thrown" && !areaEffectProcessedThisCall) {
                 if (window.audioManager && effectImpactPos) window.audioManager.playSoundAtLocation('ui_click_01.wav', effectImpactPos, {}, { volume: 0.6 }); // Placeholder for gas_hiss_01.wav
-                if (!this.gameState.environmentalEffects) this.gameState.environmentalEffects = {};
-                if (!this.gameState.environmentalEffects.tearGasTiles) this.gameState.environmentalEffects.tearGasTiles = [];
                 const gasDuration = 4;
-                for (let dx = -burstRadiusTiles; dx <= burstRadiusTiles; dx++) {
-                    for (let dy = -burstRadiusTiles; dy <= burstRadiusTiles; dy++) {
-                        if (Math.sqrt(dx * dx + dy * dy) <= burstRadiusTiles) {
-                            const tileX = impactTile.x + dx; const tileY = impactTile.y + dy;
-                            const existingGas = this.gameState.environmentalEffects.tearGasTiles.find(gt => gt.x === tileX && gt.y === tileY);
-                            if (existingGas) existingGas.duration = Math.max(existingGas.duration, gasDuration);
-                            else this.gameState.environmentalEffects.tearGasTiles.push({ x: tileX, y: tileY, duration: gasDuration });
+                if (window.gasManager) {
+                    for (let dx = -burstRadiusTiles; dx <= burstRadiusTiles; dx++) {
+                        for (let dy = -burstRadiusTiles; dy <= burstRadiusTiles; dy++) {
+                            if (Math.sqrt(dx * dx + dy * dy) <= burstRadiusTiles) {
+                                const tileX = impactTile.x + dx; const tileY = impactTile.y + dy;
+                                window.gasManager.spawnGas(tileX, tileY, impactTile.z, 'tear_gas', gasDuration, 1.0);
+                            }
                         }
                     }
+                    logToConsole(`Tear gas cloud created at (${impactTile.x},${impactTile.y}), radius ${burstRadiusTiles}t, duration ${gasDuration} turns.`, 'yellow');
                 }
-                logToConsole(`Tear gas cloud created at (${impactTile.x},${impactTile.y}), radius ${burstRadiusTiles}t, duration ${gasDuration} turns.`, 'yellow');
                 if (window.mapRenderer) window.mapRenderer.scheduleRender();
                 areaEffectProcessedThisCall = true;
             }

@@ -396,6 +396,14 @@ function getLine3D(x0, y0, z0, x1, y1, z1) {
 // This function checks if a tile blocks vision based on new rules for BFS FOW.
 // playerZ is the Z-level of the entity whose vision is being calculated.
 function isTileBlockingVision(tileX, tileY, tileZ, playerZ) {
+    // Gas/Smoke Opacity Check
+    if (window.gasManager) {
+        const gasOpacity = window.gasManager.getOpacityAt(tileX, tileY, tileZ);
+        if (gasOpacity >= 0.8) return true; // High density blocks vision completely
+        // For lower densities, we might not block completely but FOW might handle dimming.
+        // For binary "isBlocking" logic, we block only on high opacity.
+    }
+
     const tilesets = window.assetManagerInstance ? window.assetManagerInstance.tilesets : null;
     const mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
 
@@ -1495,27 +1503,13 @@ window.mapRenderer = {
             }
         }
 
-        // --- START: Render Environmental Effects (Smoke, Tear Gas) on current Z-level (Viewport Aware) ---
-        const environmentalEffectsToRender = [];
-        // ... (filtering effects for currentZ remains same) ...
-        if (gameState.environmentalEffects) {
-            if (gameState.environmentalEffects.smokeTiles) {
-                environmentalEffectsToRender.push(...gameState.environmentalEffects.smokeTiles
-                    .filter(eff => eff.z === currentZ && eff.duration > 0)
-                    .map(eff => ({ ...eff, type: 'smoke' })));
-            }
-            if (gameState.environmentalEffects.tearGasTiles) {
-                environmentalEffectsToRender.push(...gameState.environmentalEffects.tearGasTiles
-                    .filter(eff => eff.z === currentZ && eff.duration > 0)
-                    .map(eff => ({ ...eff, type: 'tearGas' })));
-            }
-        }
+        // --- START: Render Environmental Effects (Gas/Smoke) on current Z-level (Viewport Aware) ---
+        if (window.gasManager && window.gameState.gasClouds) {
+            window.gameState.gasClouds.forEach(cloud => {
+                if (cloud.z !== currentZ) return;
+                const x = cloud.x;
+                const y = cloud.y;
 
-
-        if (environmentalEffectsToRender.length > 0 && tileCacheData) {
-            environmentalEffectsToRender.forEach(effect => {
-                const x = effect.x; // absolute map X
-                const y = effect.y; // absolute map Y
                 // Check if effect is within viewport
                 if (x >= startCol && x <= endCol && y >= startRow && y <= endRow) {
                     const fowStatus = currentFowData?.[y]?.[x];
@@ -1524,19 +1518,29 @@ window.mapRenderer = {
                         if (cachedCell && cachedCell.span) {
                             let effectSprite = '?';
                             let effectColor = '#FFFFFF';
-                            if (effect.type === 'smoke') {
-                                const smokeSprites = ['░', '▒', '▓'];
-                                effectSprite = smokeSprites[Math.floor(Math.random() * smokeSprites.length)];
+
+                            // Density based sprite
+                            if (cloud.density > 0.7) effectSprite = '▓';
+                            else if (cloud.density > 0.4) effectSprite = '▒';
+                            else effectSprite = '░';
+
+                            if (cloud.type === 'smoke') {
                                 effectColor = '#888888';
-                            } else if (effect.type === 'tearGas') {
-                                const gasSprites = ['~', ';', ','];
-                                effectSprite = gasSprites[Math.floor(Math.random() * gasSprites.length)];
-                                effectColor = '#B8B868';
+                            } else if (cloud.type === 'tear_gas') {
+                                effectColor = '#B8B868'; // Yellowish green
+                            } else if (cloud.type === 'mustard_gas') {
+                                effectColor = '#9B870C'; // Dark yellow
+                            } else if (cloud.type === 'steam') {
+                                effectColor = '#EEEEEE'; // White/Grey
                             }
-                            cachedCell.span.textContent = effectSprite;
-                            cachedCell.span.style.color = effectColor;
-                            cachedCell.sprite = effectSprite; // Update cache
-                            cachedCell.color = effectColor;
+
+                            // Only render if density is high enough to be visible
+                            if (cloud.density > 0.1) {
+                                cachedCell.span.textContent = effectSprite;
+                                cachedCell.span.style.color = effectColor;
+                                cachedCell.sprite = effectSprite; // Update cache
+                                cachedCell.color = effectColor;
+                            }
                         }
                     }
                 }

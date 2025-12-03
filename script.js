@@ -2100,6 +2100,15 @@ async function initialize() { // Made async
             window.fireManager = null;
         }
 
+        if (window.GasManager) {
+            window.gasManager = new window.GasManager();
+            window.gasManager.init(window.gameState);
+            logToConsole("GasManager instance created and initialized.", "info");
+        } else {
+            console.error("SCRIPT.JS: GasManager class not available.");
+            window.gasManager = null;
+        }
+
         window.interaction.initInteraction(assetManager);
         window.mapRenderer.initMapRenderer(assetManager); // Initialize mapRenderer with assetManager.
         window.mapManager = window.mapRenderer; // Assign mapRenderer to mapManager
