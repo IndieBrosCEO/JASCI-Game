@@ -165,6 +165,11 @@ async function endTurn_internal() { // Make async
         window.fireManager.processTurn();
     }
 
+    // Process Gas Spread and Dissipation
+    if (window.gasManager && typeof window.gasManager.processTurn === 'function') {
+        window.gasManager.processTurn();
+    }
+
     gameState.currentTurn++;
     startTurn_internal(); // Call internal startTurn
     window.mapRenderer.scheduleRender();
