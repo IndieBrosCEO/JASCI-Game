@@ -238,6 +238,28 @@ class DialogueManager {
                         console.warn("Cannot start combat: currentNpc or combatManager is missing.");
                     }
                     break;
+                case 'startQuest':
+                    if (params.length === 1 && window.questManager) {
+                        window.questManager.startQuest(params[0]);
+                    }
+                    break;
+                case 'completeQuest':
+                    if (params.length === 1 && window.questManager) {
+                        window.questManager.completeQuest(params[0]);
+                    }
+                    break;
+                case 'advanceQuest':
+                    // advanceQuest:questId:type:target:amount
+                    // e.g., advanceQuest:sample_quest:talk:npc_guide:1
+                    // params would be [questId, type, target, amount]
+                    if (params.length >= 3 && window.questManager) {
+                        const qId = params[0];
+                        const qType = params[1];
+                        const qTarget = params[2];
+                        const qAmt = params.length > 3 ? parseInt(params[3]) : 1;
+                        window.questManager.updateObjective(qType, qTarget, qAmt);
+                    }
+                    break;
                 // Add more actions here
                 default:
                     console.warn(`Unknown dialogue action: ${action}`);
