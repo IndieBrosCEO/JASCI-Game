@@ -2539,6 +2539,13 @@
                     if (window.proceduralQuestManager && typeof window.proceduralQuestManager.checkObjectiveCompletion === 'function') {
                         window.proceduralQuestManager.checkObjectiveCompletion({ type: "npc_killed", npcId: entity.id, npcTags: entity.tags || [], definitionId: entity.definitionId });
                     }
+                    if (window.questManager && typeof window.questManager.updateObjective === 'function') {
+                        window.questManager.updateObjective("kill", entity.id); // Check by ID
+                        window.questManager.updateObjective("kill", entity.definitionId); // Check by definition
+                        if (entity.tags) {
+                            entity.tags.forEach(tag => window.questManager.updateObjective("kill", tag));
+                        }
+                    }
                 }
             } else if (part.crisisTimer === 0 && !part.isDestroyed) { // Not in crisis yet, and part just reached 0 HP
                 // Check if this hit to 0 HP is immediately fatal (e.g. head/torso destruction rules, or if game over handles it)
@@ -2571,6 +2578,13 @@
                         if (window.proceduralQuestManager && typeof window.proceduralQuestManager.checkObjectiveCompletion === 'function') {
                             window.proceduralQuestManager.checkObjectiveCompletion({ type: "npc_killed", npcId: entity.id, npcTags: entity.tags || [], definitionId: entity.definitionId });
                         }
+                        if (window.questManager && typeof window.questManager.updateObjective === 'function') {
+                            window.questManager.updateObjective("kill", entity.id);
+                            window.questManager.updateObjective("kill", entity.definitionId);
+                            if (entity.tags) {
+                                entity.tags.forEach(tag => window.questManager.updateObjective("kill", tag));
+                            }
+                        }
                     }
                 }
             }
@@ -2591,6 +2605,13 @@
                     // Notify Quest System
                     if (window.proceduralQuestManager && typeof window.proceduralQuestManager.checkObjectiveCompletion === 'function') {
                         window.proceduralQuestManager.checkObjectiveCompletion({ type: "npc_killed", npcId: entity.id, npcTags: entity.tags || [], definitionId: entity.definitionId });
+                    }
+                    if (window.questManager && typeof window.questManager.updateObjective === 'function') {
+                        window.questManager.updateObjective("kill", entity.id);
+                        window.questManager.updateObjective("kill", entity.definitionId);
+                        if (entity.tags) {
+                            entity.tags.forEach(tag => window.questManager.updateObjective("kill", tag));
+                        }
                     }
                     // It's important that after this, the NPC is properly removed from combat, lists, etc.
                     // This might be better handled by a central death processing function called by gameOver.
