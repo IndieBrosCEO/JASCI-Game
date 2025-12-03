@@ -57,6 +57,7 @@ const companionManager = new CompanionManager(gameState, assetManager, window.tu
 const npcManager = new NpcManager(gameState, assetManager, window.mapRenderer, combatManager, window.turnManager); // Use window.mapRenderer and window.turnManager
 const dynamicEventManager = new DynamicEventManager(gameState, assetManager, npcManager, window.factionManager, TimeManager); // Use window.factionManager
 const proceduralQuestManager = new ProceduralQuestManager(gameState, assetManager, npcManager, window.factionManager, TimeManager, window.mapUtils); // Use window.factionManager
+const questManager = new QuestManager(gameState, assetManager);
 
 // UI Managers (assuming they don't have complex cross-dependencies for instantiation here)
 // If they do, their instantiation might need to be adjusted or moved post-initialize of others.
@@ -89,6 +90,7 @@ window.companionManager = companionManager;
 window.npcManager = npcManager;
 window.dynamicEventManager = dynamicEventManager;
 window.proceduralQuestManager = proceduralQuestManager;
+window.questManager = questManager;
 // window.CraftingUI = CraftingUI; // This was causing an error as CraftingUI (const) is commented out. Correct assignment is in initialize().
 // window.ConstructionUI = ConstructionUI; // This was causing an error as ConstructionUI (const) is commented out. Correct assignment is in initialize().
 window.VehicleModificationUI = VehicleModificationUI;
@@ -1910,6 +1912,13 @@ async function initiateMapTransition(targetMapId, targetX, targetY, targetZ = nu
 
         gameState.playerPos = { x: finalX, y: finalY, z: finalZ };
         gameState.currentViewZ = finalZ;
+
+        // Notify Quest System about visit
+        if (window.questManager && typeof window.questManager.updateObjective === 'function') {
+            window.questManager.updateObjective("visit", cleanMapId);
+            if (newMapData.name) window.questManager.updateObjective("visit", newMapData.name);
+            if (newMapData.areaId) window.questManager.updateObjective("visit", newMapData.areaId);
+        }
 
         // Spawn NPCs for the new map
         spawnNpcsFromMapData(newMapData); // This clears old NPCs and spawns new ones
