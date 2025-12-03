@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JASCI Quest Editor</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        #sidebar {
+            width: 250px;
+            border-right: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+
+        #editor {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .quest-item {
+            padding: 8px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .quest-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .quest-item.active {
+            background-color: #e0e0e0;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"], textarea, input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* Fix padding width issue */
+        }
+
+        textarea {
+            height: 100px;
+        }
+
+        button {
+            padding: 8px 12px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button.danger {
+            background-color: #dc3545;
+        }
+        button.danger:hover {
+            background-color: #c82333;
+        }
+
+        .list-section {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fff;
+        }
+
+        .list-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .io-section {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h3>Quests</h3>
+        <div id="quest-list"></div>
+        <button id="add-quest">Add New Quest</button>
+    </div>
+    <div id="editor">
+        <h2>Quest Editor</h2>
+        <div id="editor-content" style="display:none;">
+            <div class="form-group">
+                <label for="quest-id">Quest ID:</label>
+                <input type="text" id="quest-id">
+            </div>
+            <div class="form-group">
+                <label for="quest-title">Title:</label>
+                <input type="text" id="quest-title">
+            </div>
+            <div class="form-group">
+                <label for="quest-description">Description:</label>
+                <textarea id="quest-description"></textarea>
+            </div>
+
+            <h3>Objectives</h3>
+            <div id="objectives-container" class="list-section"></div>
+            <button id="add-objective">Add Objective</button>
+
+            <h3>Rewards</h3>
+            <div class="form-group">
+                <label for="reward-xp">XP:</label>
+                <input type="number" id="reward-xp" value="0">
+            </div>
+            <div class="form-group">
+                <label for="reward-items">Reward Items (ID, comma separated):</label>
+                <input type="text" id="reward-items" list="items-list" placeholder="e.g. health_potion, sword_iron">
+                <datalist id="items-list"></datalist>
+            </div>
+
+            <div class="io-section">
+                <button id="delete-quest" class="danger">Delete Quest</button>
+            </div>
+        </div>
+        <div id="no-selection">Select a quest to edit or create a new one.</div>
+
+        <div class="io-section">
+             <h3>Import/Export</h3>
+            <button id="export-json">Export JSON</button>
+            <input type="file" id="import-file" accept=".json" style="display: none;">
+             <button id="import-btn" onclick="document.getElementById('import-file').click()">Import JSON</button>
+        </div>
+    </div>
+
+    <script>
+        let quests = [
+             {
+                "id": "sample_quest",
+                "title": "Rat Catcher",
+                "description": "The local shopkeeper needs you to clear out the rats in his basement.",
+                "objectives": [
+                  {
+                    "type": "kill",
+                    "target": "rat",
+                    "count": 3,
+                    "current": 0,
+                    "description": "Kill 3 Rats"
+                  }
+                ],
+                "rewards": {
+                  "xp": 100,
+                  "gold": 50
+                }
+              }
+        ];
+        let activeQuestId = null;
+
+        const questListEl = document.getElementById('quest-list');
+        const editorContentEl = document.getElementById('editor-content');
+        const noSelectionEl = document.getElementById('no-selection');
+        const objectivesContainer = document.getElementById('objectives-container');
+
+        // Inputs
+        const idInput = document.getElementById('quest-id');
+        const titleInput = document.getElementById('quest-title');
+        const descInput = document.getElementById('quest-description');
+        const xpInput = document.getElementById('reward-xp');
+        const itemsInput = document.getElementById('reward-items');
+
+        let itemIds = []; // To store available item IDs for autocomplete
+
+        // Fetch item definitions for autocomplete
+        fetch('assets/definitions/items.json') // Try loading a consolidated items file if it exists, or individual ones
+            .then(response => {
+                 if (!response.ok) return fetch('assets/definitions/consumables.json'); // Fallback to one file to test
+                 return response;
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                     itemIds = data.map(i => i.id);
+                }
+                // Try loading other item files and aggregating
+                const files = ['weapons.json', 'tools.json', 'clothing.json', 'crafting_materials.json'];
+                Promise.all(files.map(f => fetch('assets/definitions/' + f).then(r => r.ok ? r.json() : [])))
+                .then(results => {
+                    results.forEach(arr => {
+                        if (Array.isArray(arr)) {
+                            itemIds = itemIds.concat(arr.map(i => i.id));
+                        }
+                    });
+                    console.log("Loaded " + itemIds.length + " item IDs for autocomplete.");
+                });
+            })
+            .catch(err => console.log("Could not load item definitions for autocomplete.", err));
+
+        function renderQuestList() {
+            questListEl.innerHTML = '';
+            quests.forEach(q => {
+                const div = document.createElement('div');
+                div.className = 'quest-item';
+                if (q.id === activeQuestId) div.classList.add('active');
+                div.textContent = q.title || q.id;
+                div.onclick = () => selectQuest(q.id);
+                questListEl.appendChild(div);
+            });
+        }
+
+        function selectQuest(id) {
+            activeQuestId = id;
+            const quest = quests.find(q => q.id === id);
+
+            if (quest) {
+                editorContentEl.style.display = 'block';
+                noSelectionEl.style.display = 'none';
+
+                idInput.value = quest.id;
+                titleInput.value = quest.title;
+                descInput.value = quest.description;
+                xpInput.value = quest.rewards?.xp || 0;
+                itemsInput.value = quest.rewards?.items ? quest.rewards.items.join(', ') : '';
+
+                renderObjectives(quest);
+            } else {
+                editorContentEl.style.display = 'none';
+                noSelectionEl.style.display = 'block';
+            }
+            renderQuestList();
+        }
+
+        function renderObjectives(quest) {
+            objectivesContainer.innerHTML = '';
+            if (!quest.objectives) quest.objectives = [];
+
+            quest.objectives.forEach((obj, index) => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <select onchange="updateObjective(${index}, 'type', this.value)">
+                        <option value="kill" ${obj.type === 'kill' ? 'selected' : ''}>Kill</option>
+                        <option value="collect" ${obj.type === 'collect' ? 'selected' : ''}>Collect</option>
+                        <option value="visit" ${obj.type === 'visit' ? 'selected' : ''}>Visit</option>
+                         <option value="talk" ${obj.type === 'talk' ? 'selected' : ''}>Talk</option>
+                    </select>
+                    <input type="text" placeholder="Target ID" value="${obj.target || ''}" onchange="updateObjective(${index}, 'target', this.value)">
+                    <input type="number" placeholder="Count" value="${obj.count || 1}" style="width: 60px" onchange="updateObjective(${index}, 'count', parseInt(this.value))">
+                    <input type="text" placeholder="Description" value="${obj.description || ''}" onchange="updateObjective(${index}, 'description', this.value)">
+                    <button class="danger" onclick="removeObjective(${index})">X</button>
+                `;
+                objectivesContainer.appendChild(div);
+            });
+
+            // Update datalist (called here or on load)
+            const datalist = document.getElementById('items-list');
+            if (datalist && itemIds.length > 0 && datalist.options.length === 0) {
+                datalist.innerHTML = '';
+                itemIds.forEach(id => {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    datalist.appendChild(option);
+                });
+            }
+        }
+
+        window.updateObjective = function(index, field, value) {
+            const quest = quests.find(q => q.id === activeQuestId);
+            if (quest && quest.objectives[index]) {
+                quest.objectives[index][field] = value;
+                quest.objectives[index].current = 0; // Reset current on edit
+            }
+        };
+
+        window.removeObjective = function(index) {
+             const quest = quests.find(q => q.id === activeQuestId);
+             if (quest) {
+                 quest.objectives.splice(index, 1);
+                 renderObjectives(quest);
+             }
+        };
+
+        document.getElementById('add-objective').onclick = () => {
+             const quest = quests.find(q => q.id === activeQuestId);
+             if (quest) {
+                 if (!quest.objectives) quest.objectives = [];
+                 quest.objectives.push({ type: 'kill', target: '', count: 1, current: 0, description: 'New Objective' });
+                 renderObjectives(quest);
+             }
+        };
+
+        document.getElementById('add-quest').onclick = () => {
+            const newId = 'quest_' + Date.now();
+            quests.push({
+                id: newId,
+                title: 'New Quest',
+                description: '',
+                objectives: [],
+                rewards: { xp: 0, gold: 0 }
+            });
+            selectQuest(newId);
+        };
+
+        document.getElementById('delete-quest').onclick = () => {
+            if (confirm("Are you sure?")) {
+                quests = quests.filter(q => q.id !== activeQuestId);
+                activeQuestId = null;
+                selectQuest(null);
+            }
+        };
+
+        // Input Listeners to update data
+        idInput.onchange = (e) => {
+            const quest = quests.find(q => q.id === activeQuestId);
+            if (quest) {
+                quest.id = e.target.value;
+                activeQuestId = quest.id; // Update active ref
+                renderQuestList();
+            }
+        };
+        titleInput.onchange = (e) => {
+             const quest = quests.find(q => q.id === activeQuestId);
+             if (quest) {
+                 quest.title = e.target.value;
+                 renderQuestList();
+             }
+        };
+        descInput.onchange = (e) => {
+             const quest = quests.find(q => q.id === activeQuestId);
+             if (quest) quest.description = e.target.value;
+        };
+        xpInput.onchange = (e) => {
+             const quest = quests.find(q => q.id === activeQuestId);
+             if (quest) {
+                 if (!quest.rewards) quest.rewards = {};
+                 quest.rewards.xp = parseInt(e.target.value);
+             }
+        };
+        itemsInput.onchange = (e) => {
+             const quest = quests.find(q => q.id === activeQuestId);
+             if (quest) {
+                 if (!quest.rewards) quest.rewards = {};
+                 quest.rewards.items = e.target.value.split(',').map(s => s.trim()).filter(s => s);
+             }
+        };
+
+        // Export/Import
+        document.getElementById('export-json').onclick = () => {
+            const dataStr = JSON.stringify(quests, null, 2);
+            const blob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "quests.json";
+            a.click();
+        };
+
+        document.getElementById('import-file').onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    quests = JSON.parse(e.target.result);
+                    activeQuestId = null;
+                    selectQuest(null);
+                    renderQuestList();
+                } catch (err) {
+                    alert("Invalid JSON");
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        // Init
+        renderQuestList();
+        selectQuest(quests[0].id);
+
+    </script>
+</body>
+</html>

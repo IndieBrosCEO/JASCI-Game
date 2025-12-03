@@ -75,6 +75,7 @@ class AssetManager {
         this.proceduralQuestTemplates = {};
         this.trapDefinitionsData = {};
         this.constructionDefinitions = {};
+        this.quests = {}; // Added for static quests
         this.levelCurve = [];
         this.families = {};
         this.familyItems = new Map(); // Initialize here to prevent crash before loadDefinitions
@@ -98,6 +99,7 @@ class AssetManager {
             'vehicle_templates.json',
             'dynamic_event_templates.json',
             'procedural_quest_templates.json',
+            'quests.json', // Added quests.json
             'traps.json', // Added traps.json
             'constructions.json', // Added constructions.json
             'families.json', // Added families.json
@@ -194,6 +196,15 @@ class AssetManager {
                         console.log(`AssetManager: Loaded ${Object.keys(this.proceduralQuestTemplates).length} procedural quest templates.`);
                     } else {
                         console.warn(`AssetManager: Expected array from procedural_quest_templates.json, but got ${typeof parsedJson}. Skipping file.`);
+                    }
+                } else if (filename === 'quests.json') {
+                    if (Array.isArray(parsedJson)) {
+                        parsedJson.forEach(quest => {
+                            this.quests[quest.id] = quest;
+                        });
+                        console.log(`AssetManager: Loaded ${Object.keys(this.quests).length} static quests.`);
+                    } else {
+                        console.warn(`AssetManager: Expected array from quests.json, but got ${typeof parsedJson}. Skipping file.`);
                     }
                 } else if (filename === 'traps.json') {
                     if (typeof parsedJson === 'object' && !Array.isArray(parsedJson)) {

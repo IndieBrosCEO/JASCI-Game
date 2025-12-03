@@ -320,6 +320,14 @@ class InventoryManager {
             logToConsole(`Added ${quantityToAdd}x ${itemInstance.name}.`);
             if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.5 });
             if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
+
+            if (window.questManager && typeof window.questManager.updateObjective === 'function') {
+                window.questManager.updateObjective("collect", itemInstance.id, quantityToAdd);
+                if (itemInstance.tags) {
+                    itemInstance.tags.forEach(tag => window.questManager.updateObjective("collect", tag, quantityToAdd));
+                }
+            }
+
             return true;
         } else {
             logToConsole(`Failed to add ${itemInstance.name}.`);

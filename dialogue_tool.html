@@ -70,6 +70,30 @@
         <div>
             <label for="node-actions">Actions (one per line):</label>
             <textarea id="node-actions" placeholder="e.g., giveItem:health_potion,1&#10;startCombat"></textarea>
+
+            <!-- Quest Action Helper -->
+            <div style="margin-top: 10px; border: 1px dashed #ccc; padding: 5px;">
+                <strong>Add Quest Action:</strong>
+                <select id="qa-type">
+                    <option value="startQuest">Start Quest</option>
+                    <option value="completeQuest">Complete Quest</option>
+                    <option value="advanceQuest">Advance Quest</option>
+                </select>
+                <input type="text" id="qa-id" list="quest-datalist" placeholder="Quest ID">
+                <datalist id="quest-datalist"></datalist>
+
+                <div id="qa-advance-opts" style="display:none; margin-top: 5px;">
+                    <select id="qa-obj-type">
+                        <option value="kill">Kill</option>
+                        <option value="collect">Collect</option>
+                        <option value="visit">Visit</option>
+                        <option value="talk">Talk</option>
+                    </select>
+                    <input type="text" id="qa-target" placeholder="Target ID">
+                    <input type="number" id="qa-amount" value="1" style="width: 50px;">
+                </div>
+                <button id="qa-add-btn" style="margin-top: 5px;">Insert Action</button>
+            </div>
         </div>
         <h3>Choices</h3>
         <div id="choices-container"></div>
@@ -121,6 +145,63 @@
         const npcTextInput = document.getElementById('npc-text');
         const nodeActionsInput = document.getElementById('node-actions');
         const choicesContainer = document.getElementById('choices-container');
+
+        // Quest Action Helper Elements
+        const qaType = document.getElementById('qa-type');
+        const qaId = document.getElementById('qa-id');
+        const qaAdvanceOpts = document.getElementById('qa-advance-opts');
+        const qaObjType = document.getElementById('qa-obj-type');
+        const qaTarget = document.getElementById('qa-target');
+        const qaAmount = document.getElementById('qa-amount');
+        const qaAddBtn = document.getElementById('qa-add-btn');
+        const questDatalist = document.getElementById('quest-datalist');
+
+        // Fetch Quests for Autocomplete
+        fetch('assets/definitions/quests.json')
+            .then(r => r.ok ? r.json() : [])
+            .then(data => {
+                if(Array.isArray(data)) {
+                    data.forEach(q => {
+                        const opt = document.createElement('option');
+                        opt.value = q.id;
+                        questDatalist.appendChild(opt);
+                    });
+                }
+            });
+
+        // Helper UI Logic
+        qaType.onchange = () => {
+            if (qaType.value === 'advanceQuest') {
+                qaAdvanceOpts.style.display = 'block';
+            } else {
+                qaAdvanceOpts.style.display = 'none';
+            }
+        };
+
+        qaAddBtn.onclick = () => {
+            const type = qaType.value;
+            const id = qaId.value.trim();
+            if (!id) { alert("Quest ID required."); return; }
+
+            let actionStr = "";
+            if (type === 'advanceQuest') {
+                const objType = qaObjType.value;
+                const target = qaTarget.value.trim();
+                const amount = qaAmount.value;
+                if (!target) { alert("Target required for advanceQuest."); return; }
+                actionStr = `${type}:${id}:${objType}:${target}:${amount}`;
+            } else {
+                actionStr = `${type}:${id}`;
+            }
+
+            if (nodeActionsInput.value.trim()) {
+                nodeActionsInput.value += "\n" + actionStr;
+            } else {
+                nodeActionsInput.value = actionStr;
+            }
+            // Trigger change event to save
+            nodeActionsInput.dispatchEvent(new Event('change'));
+        };
 
         function renderNodeList() {
             nodeList.innerHTML = '';

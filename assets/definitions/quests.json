@@ -1,0 +1,58 @@
+[
+  {
+    "id": "sample_quest",
+    "title": "Rat Catcher",
+    "description": "The local shopkeeper needs you to clear out the rats in his basement.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "rat",
+        "count": 3,
+        "current": 0,
+        "description": "Kill 3 Rats"
+      }
+    ],
+    "rewards": {
+      "xp": 100
+    }
+  },
+  {
+    "id": "grand_tour",
+    "title": "The Grand Tour",
+    "description": "Prove your worth by visiting the test grounds, defeating the training dummy, collecting a knife, and reporting back to Fish Joe.",
+    "objectives": [
+      {
+        "type": "visit",
+        "target": "testMap",
+        "count": 1,
+        "current": 0,
+        "description": "Visit the Test Map"
+      },
+      {
+        "type": "kill",
+        "target": "training_dummy",
+        "count": 1,
+        "current": 0,
+        "description": "Defeat the Training Dummy"
+      },
+      {
+        "type": "collect",
+        "target": "knife_melee",
+        "count": 1,
+        "current": 0,
+        "description": "Collect a Knife"
+      },
+      {
+        "type": "talk",
+        "target": "fish_joe",
+        "count": 1,
+        "current": 0,
+        "description": "Talk to Fish Joe"
+      }
+    ],
+    "rewards": {
+      "xp": 500,
+      "items": ["medkit_basic"]
+    }
+  }
+]
