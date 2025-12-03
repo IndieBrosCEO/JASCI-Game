@@ -1,0 +1,20 @@
+[
+  {
+    "id": "sample_quest",
+    "title": "Rat Catcher",
+    "description": "The local shopkeeper needs you to clear out the rats in his basement.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "rat",
+        "count": 3,
+        "current": 0,
+        "description": "Kill 3 Rats"
+      }
+    ],
+    "rewards": {
+      "xp": 100,
+      "gold": 50
+    }
+  }
+]
