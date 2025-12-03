@@ -409,6 +409,9 @@
 
         if (window.animationManager) while (window.animationManager.isAnimationPlaying()) await new Promise(r => setTimeout(r, 50));
 
+        // Yield to event loop to prevent freezing in NPC-only combat loops
+        await new Promise(r => setTimeout(r, 0));
+
         if (this.gameState.isWaitingForPlayerCombatInput) {
             logToConsole(`[nextTurn DEFERRED] Waiting for player input. Source: ${callSource}.`, 'magenta');
             this.isProcessingTurn = false;
@@ -665,9 +668,13 @@
             attacker.currentMovementPoints = attacker.defaultMovementPoints || 6; // Standard MP for NPCs
             logToConsole(`[nextTurn] NPC (${attackerName}) AP/MP RESET. AP: ${attacker.currentActionPoints}, MP: ${attacker.currentMovementPoints}`, 'yellow');
 
-            // Defender must be the player ENTITY, not the global gameState object
-            this.gameState.combatCurrentDefender = this.gameState.player;
-            this.gameState.defenderMapPos = this.gameState.playerPos ? { ...this.gameState.playerPos } : null;
+            // Defender selection should be handled by NPC AI (selectNpcCombatTarget).
+            // Do NOT force default to player, as this breaks NPC vs NPC combat where player is not involved.
+            // If combatCurrentDefender is already set (e.g. from previous turn or persistent targeting), we can leave it,
+            // but usually selectNpcCombatTarget will override it.
+            // Clearing it ensures AI makes a fresh decision.
+            // this.gameState.combatCurrentDefender = null;
+            // this.gameState.defenderMapPos = null;
 
             this.gameState.combatPhase = 'attackerDeclare';
             // IMPORTANT: release the lock BEFORE giving control to the AI, because the AI/resolve path
