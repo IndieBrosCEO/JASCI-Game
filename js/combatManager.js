@@ -334,28 +334,20 @@
         defenseUI.classList.remove('hidden'); this.gameState.combatPhase = 'playerDefenseDeclare';
     }
 
+    get isPlayerInvolved() {
+        return this.initiativeTracker.some(entry => entry.entity === this.gameState || entry.entity === this.gameState.player);
+    }
+
     startCombat(participants, initialTarget = null) {
         const combatUIDiv = document.getElementById('combatUIDiv');
+        const playerInvolved = participants.some(p => p === this.gameState || p === this.gameState.player);
+
         if (combatUIDiv) {
-            logToConsole(`[CombatManager.startCombat] Found #combatUIDiv. Current classes: ${combatUIDiv.className}`, 'debug');
-            logToConsole(`[CombatManager.startCombat] Computed display before change: ${window.getComputedStyle(combatUIDiv).display}`, 'debug');
-            combatUIDiv.classList.remove('hidden');
-            logToConsole(`[CombatManager.startCombat] #combatUIDiv classes after remove 'hidden': ${combatUIDiv.className}`, 'debug');
-            // Force a reflow before checking computed style again, though it might not be necessary for simple class changes.
-            // void combatUIDiv.offsetWidth; 
-            setTimeout(() => { // Use setTimeout to allow browser to repaint/reflow
-                if (document.getElementById('combatUIDiv')) { // Re-check existence in case of async issues
-                    logToConsole(`[CombatManager.startCombat] Computed display AFTER remove 'hidden' (async check): ${window.getComputedStyle(document.getElementById('combatUIDiv')).display}`, 'debug');
-                    const mapContainer = document.getElementById('mapContainer');
-                    if (mapContainer) {
-                        logToConsole(`[CombatManager.startCombat] Parent #mapContainer display: ${window.getComputedStyle(mapContainer).display}`, 'debug');
-                        const middlePanel = document.getElementById('middle-panel');
-                        if (middlePanel) {
-                            logToConsole(`[CombatManager.startCombat] Grandparent #middle-panel display: ${window.getComputedStyle(middlePanel).display}`, 'debug');
-                        }
-                    }
-                }
-            }, 0);
+            if (playerInvolved) {
+                combatUIDiv.classList.remove('hidden');
+            } else {
+                logToConsole(`[CombatManager.startCombat] Player not involved. Keeping combat UI hidden.`, 'lightblue');
+            }
         } else {
             console.error("CombatManager: combatUIDiv not found in DOM, cannot make it visible.");
             logToConsole("[CombatManager.startCombat] ERROR: #combatUIDiv not found in DOM.", "error");

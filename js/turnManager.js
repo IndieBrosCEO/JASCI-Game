@@ -182,7 +182,7 @@ async function move_internal(direction) {
     console.log('[TurnManager] move_internal: Checking isAnimationPlaying. Flag:', (window.animationManager ? window.animationManager.isAnimationPlaying() : 'N/A'));
 
     // Check if player is allowed to move freely (OOC or not involved in current combat)
-    const playerInCombat = gameState.isInCombat && window.combatManager && window.combatManager.initiativeTracker.some(e => e.entity === gameState);
+    const playerInCombat = gameState.isInCombat && window.combatManager && window.combatManager.isPlayerInvolved;
 
     // Player posture cost adjustments
     let moveCost = 1;
