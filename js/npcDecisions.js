@@ -685,11 +685,13 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
                 // Initiate combat. We must include the player in the participants list to ensure global combat state works correctly.
                 // even if the player isn't the direct target.
                 const participants = [npc, potentialCombatTarget];
-                // Ensure player is included if not already
+                // Ensure player is included if not already, BUT only if they are the target.
+                // If player is just a bystander (even close by), do not force them into initiative unless targeted.
+
                 if (potentialCombatTarget !== gameState.player) {
-                    participants.push(gameState);
+                    // Do not add gameState (player) to participants list
                 } else {
-                    participants[1] = gameState; // Ensure reference is correct
+                    participants[1] = gameState; // Ensure reference is correct if player is target
                 }
 
                 if (window.combatManager) {
@@ -1044,6 +1046,22 @@ async function _evaluateAndExecuteNpcDrop(npc, gameState, assetManager) {
 async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) {
     const npcName = npc.name || npc.id || "NPC";
     logToConsole(`NPC DECISIONS: ${npcName} starting combat turn (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints})`, 'gold');
+
+    // Check if player should be added to combat (Escalation)
+    // If the current defender is the player, but the player is NOT in the initiative tracker,
+    // we must restart/escalate combat to include the player.
+    if (gameState.combatCurrentDefender === gameState || gameState.combatCurrentDefender === gameState.player) {
+        const playerInInitiative = combatManager.initiativeTracker.some(e => e.entity === gameState || e.entity === gameState.player);
+        if (!playerInInitiative) {
+            logToConsole(`NPC ${npcName} is targeting Player who is not in combat. Escalating combat!`, 'red');
+            // Re-call startCombat with current participants PLUS player
+            const currentParticipants = combatManager.initiativeTracker.map(e => e.entity);
+            if (!currentParticipants.includes(gameState)) currentParticipants.push(gameState);
+
+            combatManager.startCombat(currentParticipants, gameState.combatCurrentDefender);
+            return true; // Return true as action initiated (sort of), or at least handled
+        }
+    }
 
     // TODO: Overall NPC Combat AI Enhancements:
     // - Fleeing Behavior: If health is critically low (e.g., < 25%) and/or morale is broken (if morale system added),
