@@ -181,6 +181,9 @@ async function move_internal(direction) {
     if (gameState.isActionMenuActive) return;
     console.log('[TurnManager] move_internal: Checking isAnimationPlaying. Flag:', (window.animationManager ? window.animationManager.isAnimationPlaying() : 'N/A'));
 
+    // Check if player is allowed to move freely (OOC or not involved in current combat)
+    const playerInCombat = gameState.isInCombat && window.combatManager && window.combatManager.initiativeTracker.some(e => e.entity === gameState);
+
     // Player posture cost adjustments
     let moveCost = 1;
     let moveSuccessful = false;
@@ -253,7 +256,10 @@ async function move_internal(direction) {
             moveCost = 3;
         }
 
-        if (window.gameState.movementPointsRemaining < moveCost) {
+        // If not in combat initiative, allow move regardless of MP (or treat as infinite/resetting)
+        // But if in combat, enforce it.
+        // Also check if gameState.isInCombat is false (OOC).
+        if ((gameState.isInCombat && playerInCombat) && window.gameState.movementPointsRemaining < moveCost) {
             logToConsole("Not enough movement points for current posture.", "orange");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             return;

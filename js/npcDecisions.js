@@ -685,9 +685,15 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
                 // Initiate combat. We must include the player in the participants list to ensure global combat state works correctly.
                 // even if the player isn't the direct target.
                 const participants = [npc, potentialCombatTarget];
-                // Ensure player is included if not already
+                // Ensure player is included if not already, BUT only if they are close enough or involved.
+                // If player is far away, don't force them into initiative.
+                const distToPlayer = getDistance3D(npc.mapPos, gameState.playerPos);
+                const PLAYER_COMBAT_INCLUSION_DIST = 20; // Tiles
+
                 if (potentialCombatTarget !== gameState.player) {
-                    participants.push(gameState);
+                    if (distToPlayer <= PLAYER_COMBAT_INCLUSION_DIST) {
+                        participants.push(gameState);
+                    }
                 } else {
                     participants[1] = gameState; // Ensure reference is correct
                 }
