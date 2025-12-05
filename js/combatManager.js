@@ -334,28 +334,20 @@
         defenseUI.classList.remove('hidden'); this.gameState.combatPhase = 'playerDefenseDeclare';
     }
 
+    get isPlayerInvolved() {
+        return this.initiativeTracker.some(entry => entry.entity === this.gameState || entry.entity === this.gameState.player);
+    }
+
     startCombat(participants, initialTarget = null) {
         const combatUIDiv = document.getElementById('combatUIDiv');
+        const playerInvolved = participants.some(p => p === this.gameState || p === this.gameState.player);
+
         if (combatUIDiv) {
-            logToConsole(`[CombatManager.startCombat] Found #combatUIDiv. Current classes: ${combatUIDiv.className}`, 'debug');
-            logToConsole(`[CombatManager.startCombat] Computed display before change: ${window.getComputedStyle(combatUIDiv).display}`, 'debug');
-            combatUIDiv.classList.remove('hidden');
-            logToConsole(`[CombatManager.startCombat] #combatUIDiv classes after remove 'hidden': ${combatUIDiv.className}`, 'debug');
-            // Force a reflow before checking computed style again, though it might not be necessary for simple class changes.
-            // void combatUIDiv.offsetWidth; 
-            setTimeout(() => { // Use setTimeout to allow browser to repaint/reflow
-                if (document.getElementById('combatUIDiv')) { // Re-check existence in case of async issues
-                    logToConsole(`[CombatManager.startCombat] Computed display AFTER remove 'hidden' (async check): ${window.getComputedStyle(document.getElementById('combatUIDiv')).display}`, 'debug');
-                    const mapContainer = document.getElementById('mapContainer');
-                    if (mapContainer) {
-                        logToConsole(`[CombatManager.startCombat] Parent #mapContainer display: ${window.getComputedStyle(mapContainer).display}`, 'debug');
-                        const middlePanel = document.getElementById('middle-panel');
-                        if (middlePanel) {
-                            logToConsole(`[CombatManager.startCombat] Grandparent #middle-panel display: ${window.getComputedStyle(middlePanel).display}`, 'debug');
-                        }
-                    }
-                }
-            }, 0);
+            if (playerInvolved) {
+                combatUIDiv.classList.remove('hidden');
+            } else {
+                logToConsole(`[CombatManager.startCombat] Player not involved. Keeping combat UI hidden.`, 'lightblue');
+            }
         } else {
             console.error("CombatManager: combatUIDiv not found in DOM, cannot make it visible.");
             logToConsole("[CombatManager.startCombat] ERROR: #combatUIDiv not found in DOM.", "error");
@@ -408,6 +400,9 @@
         logToConsole(`[nextTurn CALL] Source: ${callSource}. Current isWaitingForPlayerCombatInput: ${this.gameState.isWaitingForPlayerCombatInput}`, 'magenta');
 
         if (window.animationManager) while (window.animationManager.isAnimationPlaying()) await new Promise(r => setTimeout(r, 50));
+
+        // Yield to event loop to prevent freezing in NPC-only combat loops
+        await new Promise(r => setTimeout(r, 0));
 
         if (this.gameState.isWaitingForPlayerCombatInput) {
             logToConsole(`[nextTurn DEFERRED] Waiting for player input. Source: ${callSource}.`, 'magenta');
@@ -665,9 +660,13 @@
             attacker.currentMovementPoints = attacker.defaultMovementPoints || 6; // Standard MP for NPCs
             logToConsole(`[nextTurn] NPC (${attackerName}) AP/MP RESET. AP: ${attacker.currentActionPoints}, MP: ${attacker.currentMovementPoints}`, 'yellow');
 
-            // Defender must be the player ENTITY, not the global gameState object
-            this.gameState.combatCurrentDefender = this.gameState.player;
-            this.gameState.defenderMapPos = this.gameState.playerPos ? { ...this.gameState.playerPos } : null;
+            // Defender selection should be handled by NPC AI (selectNpcCombatTarget).
+            // Do NOT force default to player, as this breaks NPC vs NPC combat where player is not involved.
+            // If combatCurrentDefender is already set (e.g. from previous turn or persistent targeting), we can leave it,
+            // but usually selectNpcCombatTarget will override it.
+            // Clearing it ensures AI makes a fresh decision.
+            // this.gameState.combatCurrentDefender = null;
+            // this.gameState.defenderMapPos = null;
 
             this.gameState.combatPhase = 'attackerDeclare';
             // IMPORTANT: release the lock BEFORE giving control to the AI, because the AI/resolve path
