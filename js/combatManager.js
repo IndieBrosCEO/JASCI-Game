@@ -6,6 +6,8 @@
         this.currentTurnIndex = 0;
         this.isProcessingTurn = false;
         this.defenseTypeChangeListener = null;
+        this.turnsToProcess = 0;
+        this.backgroundRoundResolve = null;
     }
 
     updateCombatLOSLine(attackerEntity, targetEntityOrPos, weaponObj) {
@@ -339,6 +341,13 @@
     }
 
     startCombat(participants, initialTarget = null) {
+        // If we were in background mode and now we are starting a new combat (escalation),
+        // we must release the background runner so endTurn can finish.
+        if (this.backgroundRoundResolve) {
+            this.backgroundRoundResolve();
+            this.backgroundRoundResolve = null;
+        }
+
         const combatUIDiv = document.getElementById('combatUIDiv');
         const playerInvolved = participants.some(p => p === this.gameState || p === this.gameState.player);
 
@@ -374,7 +383,14 @@
         this.initiativeTracker.sort((a, b) => b.initiative - a.initiative || b.tieBreaker - a.tieBreaker);
         this.currentTurnIndex = -1; this.gameState.isInCombat = true;
         logToConsole("Combat Started!", 'red');
-        this.updateInitiativeDisplay(); this.nextTurn();
+        this.updateInitiativeDisplay();
+
+        if (participants.some(p => p === this.gameState || p === this.gameState.player)) {
+            this.nextTurn();
+        } else {
+             logToConsole("Combat started in background. Waiting for turn tick.", 'grey');
+             this.turnsToProcess = 0;
+        }
     }
 
     updateInitiativeDisplay() {
@@ -393,6 +409,20 @@
             logToConsole(`[nextTurn SKIPPED] Already processing a turn. Called by: ${previousAttackerEntity ? (previousAttackerEntity.name || 'player') : 'System'}.`, 'purple');
             return;
         }
+
+        // Background Combat Flow Control
+        if (this.gameState.isInCombat && !this.isPlayerInvolved) {
+            if (this.turnsToProcess <= 0) {
+                if (this.backgroundRoundResolve) {
+                    const resolve = this.backgroundRoundResolve;
+                    this.backgroundRoundResolve = null;
+                    resolve();
+                }
+                return;
+            }
+            this.turnsToProcess--;
+        }
+
         this.isProcessingTurn = true;
         logToConsole(`[nextTurn START] Lock acquired. Called by: ${previousAttackerEntity ? (previousAttackerEntity.name || 'player') : 'System'}.`, 'purple');
 
@@ -690,6 +720,10 @@
 
     endCombat() {
         logToConsole("Combat Ending...", 'lightblue');
+        if (this.backgroundRoundResolve) {
+            this.backgroundRoundResolve();
+            this.backgroundRoundResolve = null;
+        }
         this.gameState.isInCombat = false;
         this.gameState.combatPhase = null;
         this.gameState.attackerMapPos = null;
@@ -2724,6 +2758,17 @@
         if (window.animationManager) {
             window.animationManager.playAnimation('explosion', { centerPos: impactTile, radius: radius, duration: 1000 });
         }
+    }
+
+    async processBackgroundRound() {
+        if (!this.gameState.isInCombat || this.initiativeTracker.length === 0) return;
+        this.turnsToProcess = this.initiativeTracker.length;
+        this.isProcessingTurn = false; // Ensure lock is released to start the batch
+
+        return new Promise(resolve => {
+            this.backgroundRoundResolve = resolve;
+            this.nextTurn();
+        });
     }
 }
 window.CombatManager = CombatManager;
