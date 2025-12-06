@@ -1659,7 +1659,8 @@ async function handleKeyDown(event) {
                 window.mapRenderer.scheduleRender(); // Re-render to remove 'X'
 
                 // Integration with CombatManager
-                if (!gameState.isInCombat) {
+                // Allow initiating combat if not in combat OR if in background combat (player not involved)
+                if (!gameState.isInCombat || (combatManager && !combatManager.isPlayerInvolved)) {
                     let allParticipants = [];
                     allParticipants.push(gameState); // Add player
 
@@ -1718,7 +1719,8 @@ async function handleKeyDown(event) {
             // If none of the above, let the event propagate or do nothing.
             break;
         case 'r': case 'R': // Changed to include R
-            if (gameState.inventory.open || gameState.isInCombat) return; // Prevent if inventory open or in combat
+            // Allow targeting if not in combat OR if in background combat (player not involved)
+            if (gameState.inventory.open || (gameState.isInCombat && combatManager && combatManager.isPlayerInvolved)) return;
 
             if (gameState.isTargetingMode && gameState.targetingType === 'ranged') {
                 gameState.isTargetingMode = false;
