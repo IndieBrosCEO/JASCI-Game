@@ -1557,13 +1557,21 @@ async function handleKeyDown(event) {
             event.preventDefault(); return;
         }
         if (event.key === 't' || event.key === 'T') {
-            if (gameState.isInCombat && combatManager.initiativeTracker[combatManager.currentTurnIndex]?.entity === gameState) {
-                combatManager.endPlayerTurn();
-            } else if (gameState.isInCombat) {
-                logToConsole("Not your turn to end.");
+            const playerInCombat = gameState.isInCombat && combatManager && combatManager.isPlayerInvolved;
+            if (playerInCombat) {
+                if (combatManager.initiativeTracker[combatManager.currentTurnIndex]?.entity === gameState) {
+                    combatManager.endPlayerTurn();
+                } else {
+                    logToConsole("Not your turn to end.");
+                }
             } else {
                 // This is the standard out-of-combat "pass turn" action
-                window.turnManager.endTurn();
+                // Also handles background combat advancement via turnManager.endTurn
+                if (window.turnManager && typeof window.turnManager.endTurn === 'function') {
+                    window.turnManager.endTurn();
+                } else {
+                    console.error("turnManager.endTurn not found");
+                }
             }
             event.preventDefault(); return;
         }

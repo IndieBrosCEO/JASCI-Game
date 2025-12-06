@@ -266,11 +266,9 @@ async function move_internal(direction) {
             moveCost = 3;
         }
 
-        // If not in combat initiative, allow move regardless of MP (or treat as infinite/resetting)
-        // But if in combat, enforce it.
-        // Also check if gameState.isInCombat is false (OOC).
-        if ((gameState.isInCombat && playerInCombat) && window.gameState.movementPointsRemaining < moveCost) {
-            logToConsole("Not enough movement points for current posture.", "orange");
+        // Always enforce movement points to maintain strict turn-based economy
+        if (window.gameState.movementPointsRemaining < moveCost) {
+            logToConsole("Not enough movement points. End turn (T) to restore.", "orange");
             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             return;
         }

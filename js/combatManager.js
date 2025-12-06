@@ -8,6 +8,7 @@
         this.defenseTypeChangeListener = null;
         this.turnsToProcess = 0;
         this.backgroundRoundResolve = null;
+        this.isBackgroundSimulation = false;
     }
 
     updateCombatLOSLine(attackerEntity, targetEntityOrPos, weaponObj) {
@@ -429,7 +430,7 @@
         const callSource = previousAttackerEntity ? (previousAttackerEntity === this.gameState ? 'PlayerEndTurn/OutOfAP' : previousAttackerEntity.name) : 'System';
         logToConsole(`[nextTurn CALL] Source: ${callSource}. Current isWaitingForPlayerCombatInput: ${this.gameState.isWaitingForPlayerCombatInput}`, 'magenta');
 
-        if (window.animationManager) while (window.animationManager.isAnimationPlaying()) await new Promise(r => setTimeout(r, 50));
+        if (window.animationManager && !this.isBackgroundSimulation) while (window.animationManager.isAnimationPlaying()) await new Promise(r => setTimeout(r, 50));
 
         if (this.gameState.isWaitingForPlayerCombatInput) {
             logToConsole(`[nextTurn DEFERRED] Waiting for player input. Source: ${callSource}.`, 'magenta');
@@ -1486,7 +1487,7 @@
         const attackerPos = attacker.mapPos || this.gameState.playerPos; // Common attacker position
 
         if (attackType === 'melee' && defender) {
-            if (window.audioManager && attackerPos) {
+            if (window.audioManager && attackerPos && !this.isBackgroundSimulation) {
                 if (!weapon) {
                     window.audioManager.playSoundAtLocation('melee_unarmed_swing_01.wav', attackerPos);
                 } else {
@@ -1496,24 +1497,24 @@
                     window.audioManager.playSoundAtLocation(swingSound, attackerPos);
                 }
             }
-            if (window.animationManager) {
+            if (window.animationManager && !this.isBackgroundSimulation) {
                 if (weapon?.id === 'chain_saw_melee') window.animationManager.playAnimation('chainsawAttack', { attacker, defender, duration: 800, frameDuration: 40 });
                 else if (weapon?.id === 'whip') window.animationManager.playAnimation('whipCrack', { attacker, defender, duration: 700 });
                 else window.animationManager.playAnimation('meleeSwing', { attacker, x: attackerPos.x, y: attackerPos.y, originalSprite: (attacker === this.gameState ? '☻' : (attacker.sprite || '?')), originalColor: (attacker === this.gameState ? 'green' : (attacker.color || 'white')), duration: 600 });
             }
         } else if (weapon?.type?.includes("thrown") && weapon.type !== "weapon_utility_spray") {
-            if (window.audioManager && attackerPos) {
+            if (window.audioManager && attackerPos && !this.isBackgroundSimulation) {
                 window.audioManager.playSoundAtLocation('ui_click_01.wav', attackerPos, {}, { volume: 0.6 }); // Placeholder for throw_item_01.wav
                 if (weapon.type === "weapon_thrown_explosive" && weapon.tags?.includes("grenade")) {
                     window.audioManager.playSoundAtLocation('ui_click_01.wav', attackerPos, {}, { volume: 0.4 }); // Placeholder for grenade_pin_01.wav (played by attacker)
                 }
             }
-            if (window.animationManager) {
+            if (window.animationManager && !this.isBackgroundSimulation) {
                 let targetPos = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || this.gameState.defenderMapPos;
                 if (attackerPos && targetPos) window.animationManager.playAnimation('throwing', { startPos: attackerPos, endPos: targetPos, sprite: (weapon.sprite || 'o'), color: (weapon.color || 'cyan'), duration: 600, attacker, defender });
             }
         } else if (attackType === 'ranged' && weapon && !weapon.type?.includes("thrown") && weapon.type !== "weapon_utility_spray" && !weapon.tags?.includes("launcher_treated_as_rifle")) {
-            if (window.audioManager && attackerPos) {
+            if (window.audioManager && attackerPos && !this.isBackgroundSimulation) {
                 let fireSoundName = 'ui_click_01.wav'; // Default placeholder for generic ranged fire or if specific sound is missing. weapon_empty_click_01.wav is handled before processAttack.
                 // Specific fire sounds (actual files are missing, these are placeholders for when they are added)
                 if (weapon.type.includes("pistol")) fireSoundName = 'ui_click_01.wav'; // TODO: Play fire_pistol_01.wav
@@ -1526,7 +1527,7 @@
                 else if (weapon.type.includes("crossbow")) fireSoundName = 'ui_click_01.wav'; // TODO: Play fire_crossbow_01.wav
                 window.audioManager.playSoundAtLocation(fireSoundName, attackerPos, {}, { volume: 0.9 });
             }
-            if (window.animationManager) {
+            if (window.animationManager && !this.isBackgroundSimulation) {
                 const defenderPos = defender?.mapPos || this.gameState.defenderMapPos;
                 if (attackerPos && defenderPos) {
                     window.animationManager.playAnimation('rangedBullet', { startPos: attackerPos, endPos: defenderPos, sprite: weapon.projectileSprite || '*', color: weapon.projectileColor || 'yellow', duration: 400, attacker, defender });
@@ -1535,7 +1536,7 @@
                 }
             }
         } else if (weapon?.tags?.includes("launcher_treated_as_rifle") && weapon.explodesOnImpact) { // Launchers (rocket, grenade launcher)
-            if (window.audioManager && attackerPos) {
+            if (window.audioManager && attackerPos && !this.isBackgroundSimulation) {
                 let launchSound = 'ui_error_01.wav'; // Generic loud placeholder
                 if (weapon.ammoType?.includes("rocket")) {
                     launchSound = 'ui_error_01.wav'; // TODO: Play fire_rocket_01.wav when available
@@ -2759,11 +2760,15 @@
 
     async processBackgroundRound() {
         if (!this.gameState.isInCombat || this.initiativeTracker.length === 0) return;
+        this.isBackgroundSimulation = true; // Optimization: skip animations/sounds
         this.turnsToProcess = this.initiativeTracker.length;
         this.isProcessingTurn = false; // Ensure lock is released to start the batch
 
         return new Promise(resolve => {
-            this.backgroundRoundResolve = resolve;
+            this.backgroundRoundResolve = () => {
+                this.isBackgroundSimulation = false; // Reset on completion
+                resolve();
+            };
             this.nextTurn();
         });
     }
