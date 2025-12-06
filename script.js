@@ -1494,7 +1494,10 @@ async function handleKeyDown(event) {
                 }
             }
         }
-        if (event.key.toLowerCase() === 'c' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive && !gameState.isConstructionModeActive) { // 'C' for Crafting
+        // Allow restricted actions if not in combat, OR if in combat but player is not involved
+        const canPerformRestrictedAction = !gameState.isInCombat || (combatManager && !combatManager.isPlayerInvolved);
+
+        if (event.key.toLowerCase() === 'c' && canPerformRestrictedAction && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive && !gameState.isConstructionModeActive) { // 'C' for Crafting
             if (window.CraftingUI && typeof window.CraftingUI.toggle === 'function') {
                 window.CraftingUI.toggle(); // Corrected call
             } else {
@@ -1502,7 +1505,7 @@ async function handleKeyDown(event) {
             }
             event.preventDefault(); return;
         }
-        if (event.key.toLowerCase() === 'm' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'M' for World Map
+        if (event.key.toLowerCase() === 'm' && canPerformRestrictedAction && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'M' for World Map
             if (window.worldMapManager) {
                 const worldMapUI = document.getElementById('worldMapUI');
                 if (worldMapUI && !worldMapUI.classList.contains('hidden')) {
@@ -1518,7 +1521,7 @@ async function handleKeyDown(event) {
             }
             event.preventDefault(); return;
         }
-        if (event.key.toLowerCase() === 'u' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'U' for Level Up/Upgrade
+        if (event.key.toLowerCase() === 'u' && canPerformRestrictedAction && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'U' for Level Up/Upgrade
             if (window.levelUpUI) {
                 window.levelUpUI.toggle();
             } else {
@@ -1526,7 +1529,7 @@ async function handleKeyDown(event) {
             }
             event.preventDefault(); return;
         }
-        if (event.key.toLowerCase() === 'b' && !gameState.isInCombat && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'B' for Build/Construction
+        if (event.key.toLowerCase() === 'b' && canPerformRestrictedAction && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'B' for Build/Construction
             if (window.ConstructionUI) {
                 if (gameState.isConstructionModeActive) { // If already in placement mode, 'B' can also cancel it.
                     window.ConstructionUI.exitPlacementMode();
@@ -1656,7 +1659,8 @@ async function handleKeyDown(event) {
                 window.mapRenderer.scheduleRender(); // Re-render to remove 'X'
 
                 // Integration with CombatManager
-                if (!gameState.isInCombat) {
+                // Allow initiating combat if not in combat OR if in background combat (player not involved)
+                if (!gameState.isInCombat || (combatManager && !combatManager.isPlayerInvolved)) {
                     let allParticipants = [];
                     allParticipants.push(gameState); // Add player
 
@@ -1715,7 +1719,8 @@ async function handleKeyDown(event) {
             // If none of the above, let the event propagate or do nothing.
             break;
         case 'r': case 'R': // Changed to include R
-            if (gameState.inventory.open || gameState.isInCombat) return; // Prevent if inventory open or in combat
+            // Allow targeting if not in combat OR if in background combat (player not involved)
+            if (gameState.inventory.open || (gameState.isInCombat && combatManager && combatManager.isPlayerInvolved)) return;
 
             if (gameState.isTargetingMode && gameState.targetingType === 'ranged') {
                 gameState.isTargetingMode = false;

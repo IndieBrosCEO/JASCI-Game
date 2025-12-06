@@ -72,11 +72,23 @@ class TrapManager {
      * @param {number} searchRadius - How many tiles away to check (e.g., 1 for adjacent, 0 for current tile).
      */
     checkForTraps(entity, isActiveSearch = false, searchRadius = 1) {
-        if (!entity || !entity.mapPos) {
-            logToConsole(`${this.logPrefix} Cannot check for traps: entity or entity.mapPos is undefined.`, 'orange');
+        if (!entity) {
+            logToConsole(`${this.logPrefix} Cannot check for traps: entity is undefined.`, 'orange');
             return;
         }
-        const { x: entityX, y: entityY, z: entityZ } = entity.mapPos;
+
+        let entityMapPos = entity.mapPos;
+        // If entity is player, use global playerPos if mapPos is missing (historical structure)
+        if (!entityMapPos && entity === this.gameState.player) {
+            entityMapPos = this.gameState.playerPos;
+        }
+
+        if (!entityMapPos) {
+            // logToConsole(`${this.logPrefix} Cannot check for traps: entity.mapPos is undefined.`, 'orange');
+            return;
+        }
+
+        const { x: entityX, y: entityY, z: entityZ } = entityMapPos;
         let trapsDetectedThisCheck = 0;
 
         this.gameState.currentMapTraps.forEach(trapInstance => {
