@@ -1045,7 +1045,7 @@ async function _evaluateAndExecuteNpcDrop(npc, gameState, assetManager) {
  */
 async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) {
     const npcName = npc.name || npc.id || "NPC";
-    logToConsole(`NPC DECISIONS: ${npcName} starting combat turn (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints})`, 'gold');
+    // logToConsole(`NPC DECISIONS: ${npcName} starting combat turn (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints})`, 'gold');
 
     // Check if player should be added to combat (Escalation)
     // If the current defender is the player, but the player is NOT in the initiative tracker,
@@ -1099,7 +1099,7 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
     // For now, this function will assume targeting is done if gameState.combatCurrentDefender is set.
 
     if (!gameState.combatCurrentDefender && !selectNpcCombatTarget(npc, gameState, combatManager.initiativeTracker, assetManager)) {
-        logToConsole(`NPC ${npcName}: No primary combat target found. Considering secondary objectives or fallback movement.`, 'gold');
+            // logToConsole(`NPC ${npcName}: No primary combat target found. Considering secondary objectives or fallback movement.`, 'gold');
 
         // TODO: If no primary target, consider secondary objectives:
         // 1. Guard Point: If npc.behavior === "guard" and npc.guardPoint defined, move towards/scan around it.
@@ -1127,7 +1127,7 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
     for (let iter = 0; (npc.currentActionPoints > 0 || npc.currentMovementPoints > 0) && iter < 10; iter++) {
         // Re-evaluate target each iteration, in case it died or a higher priority one appears
         if (!selectNpcCombatTarget(npc, gameState, combatManager.initiativeTracker, assetManager)) {
-            logToConsole(`NPC ${npcName}: Target lost mid-turn or no new target. Ending actions.`, 'orange');
+                // logToConsole(`NPC ${npcName}: Target lost mid-turn or no new target. Ending actions.`, 'orange');
             return false; // No attack can be made
         }
         let currentTarget = gameState.combatCurrentDefender;
