@@ -576,11 +576,51 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
                 return;
             }
         } else if (npcBehavior === "scavenge") {
-            goalTarget = findNearestInterestingTile(npc, gameState, assetManager, (def) => def && (def.tags && (def.tags.includes('container') || def.tags.includes('loose_item'))));
-            if (goalTarget && getDistance3D(npc.mapPos, goalTarget) <= 1.5) {
-                logToConsole(`NPC ${npcName} is scavenging.`, 'cyan');
-                npc.memory.actionCooldown = 5;
-                return;
+            // Priority: Loose items on floor first, then containers
+            // Check for loose items within radius
+            let foundItem = null;
+            const radius = 20;
+            // floorItems is a global array
+            if (gameState.floorItems && gameState.floorItems.length > 0) {
+                let bestDist = Infinity;
+                gameState.floorItems.forEach(fi => {
+                    if (fi.z === npc.mapPos.z) {
+                        const d = getDistance3D(npc.mapPos, fi);
+                        if (d <= radius && d < bestDist) {
+                            // Check reachability? For now just distance.
+                            bestDist = d;
+                            foundItem = fi;
+                        }
+                    }
+                });
+            }
+
+            if (foundItem) {
+                goalTarget = { x: foundItem.x, y: foundItem.y, z: foundItem.z };
+                if (getDistance3D(npc.mapPos, goalTarget) <= 1.5) {
+                    // Try to pick it up
+                    if (npc.inventory && window.inventoryManager) {
+                        logToConsole(`NPC ${npcName} picks up ${foundItem.item.name}.`, 'cyan');
+                        if (window.inventoryManager.addItem(foundItem.item, npc.inventory.container.items, npc.inventory.container.maxSlots)) {
+                            // Remove from floorItems
+                            const idx = gameState.floorItems.indexOf(foundItem);
+                            if (idx > -1) gameState.floorItems.splice(idx, 1);
+                            if (window.mapRenderer) window.mapRenderer.scheduleRender();
+                        }
+                        npc.memory.actionCooldown = 5;
+                        return;
+                    }
+                }
+            } else {
+                // If no loose items, look for containers (existing logic)
+                goalTarget = findNearestInterestingTile(npc, gameState, assetManager, (def) => def && (def.tags && (def.tags.includes('container'))));
+                if (goalTarget && getDistance3D(npc.mapPos, goalTarget) <= 1.5) {
+                    logToConsole(`NPC ${npcName} is scavenging a container.`, 'cyan');
+                    // TODO: Actually loot items from the container if possible?
+                    // For now, just busy wait simulating searching.
+                    npc.memory.actionCooldown = 5;
+                    return;
+                }
             }
         } else if (npcBehavior === "patrol") {
             // Patrol logic: Move between random points or defined patrol points

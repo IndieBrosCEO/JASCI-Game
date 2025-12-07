@@ -111,6 +111,25 @@ class NpcManager {
                     };
                     if (typeof window.initializeNpcFace === 'function') window.initializeNpcFace(newNpcInstance);
 
+                    // Initialize Inventory for NPC
+                    if (!newNpcInstance.inventory) {
+                        // Create a simple inventory container for the NPC
+                        // Assuming InventoryContainer is globally available via InventoryManager
+                        if (window.InventoryContainer) {
+                            newNpcInstance.inventory = {
+                                container: new window.InventoryContainer("Pockets", "S"),
+                                handSlots: [null, null]
+                            };
+                            newNpcInstance.inventory.container.maxSlots = 5; // Default small capacity for NPCs
+                        } else {
+                            // Fallback if class not available
+                            newNpcInstance.inventory = {
+                                container: { items: [], maxSlots: 5, name: "Pockets" },
+                                handSlots: [null, null]
+                            };
+                        }
+                    }
+
                     if (targetFactionIdForHostility === "player_faction_or_local" || targetFactionIdForHostility === "player") {
                         if (newNpcInstance.teamId !== this.gameState.player.teamId) {
                             newNpcInstance.aggroList.push({ entityRef: this.gameState.player, threat: 500 });
@@ -142,6 +161,11 @@ class NpcManager {
         let despawnedCount = 0;
         this.gameState.npcs = this.gameState.npcs.filter(npc => {
             if (npcIds.includes(npc.id)) {
+                // Drop inventory before removing
+                if (window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
+                    window.inventoryManager.dropInventory(npc);
+                }
+
                 logToConsole(`${this.logPrefix} Despawning NPC ${npc.name || npc.id} (ID: ${npc.id}).`, "info");
                 despawnedCount++;
                 // If in combat, remove from combatManager's initiative tracker
