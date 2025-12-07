@@ -301,47 +301,70 @@ class InventoryManager {
         return totalCapacity;
     }
 
-    hasItem(itemId, quantity = 1) {
-        if (!this.gameState || !this.gameState.inventory || !this.gameState.inventory.container || !this.gameState.inventory.container.items) {
-            logToConsole(`[${this.logPrefix}.hasItem] Player inventory not available.`, "warn");
-            return false;
+    hasItem(itemId, quantity = 1, inventoryItems = null) {
+        if (!inventoryItems) {
+            if (!this.gameState || !this.gameState.inventory || !this.gameState.inventory.container || !this.gameState.inventory.container.items) {
+                // logToConsole(`[${this.logPrefix}.hasItem] Player inventory not available.`, "warn");
+                return false;
+            }
+            inventoryItems = this.gameState.inventory.container.items;
         }
-        return this.countItems(itemId, this.gameState.inventory.container.items) >= quantity;
+        return this.countItems(itemId, inventoryItems) >= quantity;
     }
 
     // addItem uses this.addItemToInventory which uses this.assetManager
-    addItem(itemInstance) {
-        if (!this.gameState.inventory.container) {
-            logToConsole(`${this.logPrefix} Inventory container not initialized. Cannot add item.`, "error", "dev");
-            return false;
-        }
-        const quantityToAdd = itemInstance.quantity || 1;
-        if (this.addItemToInventory(itemInstance, quantityToAdd, this.gameState.inventory.container.items, this.gameState.inventory.container.maxSlots)) {
-            logToConsole(`Added ${quantityToAdd}x ${itemInstance.name}.`);
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.5 });
-            if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
+    addItem(itemInstance, targetInventory = null, targetMaxSlots = null) {
+        let items = targetInventory;
+        let maxSlots = targetMaxSlots;
 
-            if (window.questManager && typeof window.questManager.updateObjective === 'function') {
-                window.questManager.updateObjective("collect", itemInstance.id, quantityToAdd);
-                if (itemInstance.tags) {
-                    itemInstance.tags.forEach(tag => window.questManager.updateObjective("collect", tag, quantityToAdd));
+        if (!items) {
+            if (!this.gameState.inventory.container) {
+                logToConsole(`${this.logPrefix} Inventory container not initialized. Cannot add item.`, "error", "dev");
+                return false;
+            }
+            items = this.gameState.inventory.container.items;
+            maxSlots = this.gameState.inventory.container.maxSlots;
+        } else if (maxSlots === null) {
+            // Default max slots if array provided but not limit
+            maxSlots = 999;
+        }
+
+        const quantityToAdd = itemInstance.quantity || 1;
+        if (this.addItemToInventory(itemInstance, quantityToAdd, items, maxSlots)) {
+            // Only play sound and update UI if it's the player's inventory
+            if (items === this.gameState.inventory.container.items) {
+                logToConsole(`Added ${quantityToAdd}x ${itemInstance.name}.`);
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.5 });
+                if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
+
+                if (window.questManager && typeof window.questManager.updateObjective === 'function') {
+                    window.questManager.updateObjective("collect", itemInstance.id, quantityToAdd);
+                    if (itemInstance.tags) {
+                        itemInstance.tags.forEach(tag => window.questManager.updateObjective("collect", tag, quantityToAdd));
+                    }
                 }
             }
-
             return true;
         } else {
-            logToConsole(`Failed to add ${itemInstance.name}.`);
-            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            if (items === this.gameState.inventory.container.items) {
+                logToConsole(`Failed to add ${itemInstance.name}.`);
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            }
             return false;
         }
     }
 
-    removeItem(itemIdOrName, quantity = 1) {
-        if (!this.gameState.inventory.container) {
-            logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error", "dev");
-            return null;
+    removeItem(itemIdOrName, quantity = 1, inventoryItems = null) {
+        let items = inventoryItems;
+        if (!items) {
+            if (!this.gameState.inventory.container) {
+                logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error", "dev");
+                return null;
+            }
+            items = this.gameState.inventory.container.items;
         }
-        const inv = this.gameState.inventory.container.items;
+
+        const inv = items;
         let itemToRemoveInstance = inv.find(i => i.id === itemIdOrName);
         let actualItemId = itemIdOrName;
         if (!itemToRemoveInstance) {
@@ -356,12 +379,18 @@ class InventoryManager {
             return null;
         }
         if (this.removeItems(actualItemId, quantity, inv)) {
-            logToConsole(`Removed ${quantity}x ${itemToRemoveInstance.name}.`);
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
-            if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
+            // Only update UI if it's the player's inventory
+            if (inv === this.gameState.inventory.container.items) {
+                logToConsole(`Removed ${quantity}x ${itemToRemoveInstance.name}.`);
+                if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav', { volume: 0.4 });
+                if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
+            }
             return this.assetManager.getItem(actualItemId); // Return definition
         } else {
-            logToConsole(`Failed to remove ${quantity}x ${itemToRemoveInstance.name}.`, "warn");
+            // Only log warning if it's the player's inventory or dev mode
+            if (inv === this.gameState.inventory.container.items) {
+                logToConsole(`Failed to remove ${quantity}x ${itemToRemoveInstance.name}.`, "warn");
+            }
             return null;
         }
     }
@@ -393,64 +422,107 @@ class InventoryManager {
         return false;
     }
 
-    equipItem(itemName, handIndex) {
-        if (!this.gameState.inventory.container) {
-            logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error", "dev"); return;
+    equipItem(itemName, handIndex, targetInventory = null, targetHandSlots = null) {
+        const isPlayer = !targetInventory; // Assume player if no target specified
+        let invItems = targetInventory;
+        let handSlots = targetHandSlots;
+
+        if (isPlayer) {
+            if (!this.gameState.inventory.container) {
+                logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error", "dev"); return;
+            }
+            invItems = this.gameState.inventory.container.items;
+            handSlots = this.gameState.inventory.handSlots;
         }
-        const inv = this.gameState.inventory.container.items;
-        const itemIndex = inv.findIndex(i => i.name === itemName);
+
+        const itemIndex = invItems.findIndex(i => i.name === itemName || i.id === itemName);
         if (itemIndex === -1) {
-            logToConsole(`Item "${itemName}" not found in inventory.`, "warn");
-            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
+            if (isPlayer) {
+                logToConsole(`Item "${itemName}" not found in inventory.`, "warn");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            }
+            return;
         }
-        const item = inv[itemIndex];
+        const item = invItems[itemIndex];
         if (item.isClothing) {
-            logToConsole(`${item.name} is clothing. Use 'Wear' action.`, "info");
-            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
+            if (isPlayer) {
+                logToConsole(`${item.name} is clothing. Use 'Wear' action.`, "info");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            }
+            return;
         }
         if (!item.canEquip) {
-            logToConsole(`Cannot equip "${itemName}" to a hand slot.`, "info");
-            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
+            if (isPlayer) {
+                logToConsole(`Cannot equip "${itemName}" to a hand slot.`, "info");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            }
+            return;
         }
-        if (this.gameState.inventory.handSlots[handIndex]) {
-            logToConsole(`Hand slot ${handIndex + 1} is occupied by ${this.gameState.inventory.handSlots[handIndex].name}.`, "info");
-            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
+        if (handSlots[handIndex]) {
+            if (isPlayer) {
+                logToConsole(`Hand slot ${handIndex + 1} is occupied by ${handSlots[handIndex].name}.`, "info");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            }
+            return;
         }
-        if (this.removeItems(item.id, 1, inv)) {
+        if (this.removeItems(item.id, 1, invItems)) {
             item.equipped = true;
-            this.gameState.inventory.handSlots[handIndex] = item;
-            logToConsole(`Equipped ${item.name} to hand slot ${handIndex + 1}.`);
-            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 });
-            if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
-            if (this.gameState.isInCombat && this.gameState.combatPhase === 'playerAttackDeclare' && window.combatManager) {
-                window.combatManager.populateWeaponSelect();
+            handSlots[handIndex] = item;
+
+            if (isPlayer) {
+                logToConsole(`Equipped ${item.name} to hand slot ${handIndex + 1}.`);
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 });
+                if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
+                if (this.gameState.isInCombat && this.gameState.combatPhase === 'playerAttackDeclare' && window.combatManager) {
+                    window.combatManager.populateWeaponSelect();
+                }
             }
         } else {
             logToConsole(`Failed to remove ${item.name} from inventory during equip.`, "error", "dev");
         }
     }
 
-    unequipItem(handIndex) {
-        if (!this.gameState.inventory.container) {
-            logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error", "dev"); return;
+    unequipItem(handIndex, targetInventory = null, targetHandSlots = null, targetMaxSlots = null) {
+        const isPlayer = !targetInventory;
+        let invItems = targetInventory;
+        let handSlots = targetHandSlots;
+        let maxSlots = targetMaxSlots;
+
+        if (isPlayer) {
+            if (!this.gameState.inventory.container) {
+                logToConsole(`${this.logPrefix} Inventory container not initialized.`, "error", "dev"); return;
+            }
+            invItems = this.gameState.inventory.container.items;
+            handSlots = this.gameState.inventory.handSlots;
+            maxSlots = this.gameState.inventory.container.maxSlots;
+        } else if (maxSlots === null) {
+            maxSlots = 999;
         }
-        const itemToUnequip = this.gameState.inventory.handSlots[handIndex];
+
+        const itemToUnequip = handSlots[handIndex];
         if (!itemToUnequip) {
-            logToConsole(`No item in hand ${handIndex + 1}.`, "info");
-            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); return;
+            if (isPlayer) {
+                logToConsole(`No item in hand ${handIndex + 1}.`, "info");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            }
+            return;
         }
-        if (this.addItemToInventory(itemToUnequip, 1, this.gameState.inventory.container.items, this.gameState.inventory.container.maxSlots)) {
+        if (this.addItemToInventory(itemToUnequip, 1, invItems, maxSlots)) {
             itemToUnequip.equipped = false;
-            this.gameState.inventory.handSlots[handIndex] = null;
-            logToConsole(`Unequipped ${itemToUnequip.name}.`);
-            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 });
-            if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
-            if (this.gameState.isInCombat && this.gameState.combatPhase === 'playerAttackDeclare' && window.combatManager) {
-                window.combatManager.populateWeaponSelect();
+            handSlots[handIndex] = null;
+            if (isPlayer) {
+                logToConsole(`Unequipped ${itemToUnequip.name}.`);
+                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 });
+                if (typeof this.updateInventoryUI === 'function') this.updateInventoryUI();
+                if (this.gameState.isInCombat && this.gameState.combatPhase === 'playerAttackDeclare' && window.combatManager) {
+                    window.combatManager.populateWeaponSelect();
+                }
             }
         } else {
-            logToConsole(`Not enough space to unequip ${itemToUnequip.name}.`, "orange");
-            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            if (isPlayer) {
+                logToConsole(`Not enough space to unequip ${itemToUnequip.name}.`, "orange");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+            }
         }
     }
 
