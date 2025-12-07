@@ -375,10 +375,6 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
     if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) return;
     if (!npc.mapPos) return;
 
-    if (gameState.currentTurn % gameState.npcMovementInterval !== 0) {
-        return;
-    }
-
     if (!npc.memory) {
         npc.memory = {
             lastSeenTargetPos: null, lastSeenTargetTimestamp: 0,
