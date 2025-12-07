@@ -192,15 +192,80 @@ class HarvestManager {
                     else window.audioManager.playUiSound("ui_pickup_01.wav");
                 }
 
-                // Deplete resource?
-                // Example: 10% chance to deplete a scavenger pile or turn rock to rubble
-                if (Math.random() < 0.1) {
-                     // this.depleteNode(item);
-                }
+                // Deplete resource logic
+                this.depleteNode(item);
             }
 
         } else {
             logToConsole("You didn't find anything useful.", "neutral");
+        }
+    }
+
+    depleteNode(item) {
+        // item contains x, y, z, id
+        if (!window.mapRenderer) return;
+        const currentMap = window.mapRenderer.getCurrentMapData();
+        if (!currentMap) return;
+
+        const zStr = item.z.toString();
+        const level = currentMap.levels[zStr];
+        if (!level) return;
+
+        // Determine layer and get tile
+        let layer = 'middle';
+        let tile = level.middle && level.middle[item.y] && level.middle[item.y][item.x];
+
+        // If not found or ID mismatch, check bottom (e.g., Grass, Bush)
+        // Note: item.id is the ID we detected initially.
+        let tileIdOnMap = (typeof tile === 'object' && tile !== null) ? tile.tileId : tile;
+
+        if (!tile || tileIdOnMap !== item.id) {
+            tile = level.bottom && level.bottom[item.y] && level.bottom[item.y][item.x];
+            tileIdOnMap = (typeof tile === 'object' && tile !== null) ? tile.tileId : tile;
+            if (tile && tileIdOnMap === item.id) {
+                layer = 'bottom';
+            } else {
+                // Not found on expected layers
+                return;
+            }
+        }
+
+        // Convert string tile to object to store state if needed
+        if (typeof tile !== 'object' || tile === null) {
+            tile = { tileId: tileIdOnMap, harvestCount: 0 };
+            level[layer][item.y][item.x] = tile;
+        }
+
+        // Initialize harvestCount if missing
+        if (typeof tile.harvestCount !== 'number') {
+            tile.harvestCount = 0;
+        }
+
+        // Increment count
+        tile.harvestCount++;
+
+        // Define limit (could be in tileset.json in future)
+        const limit = 3;
+
+        if (tile.harvestCount >= limit) {
+             // Depletion logic
+             if (layer === 'middle') {
+                 // Remove from middle layer
+                 level[layer][item.y][item.x] = null;
+                 logToConsole(`${item.name} has been depleted.`, "neutral");
+             } else {
+                 // Bottom layer - avoid holes by replacing with Tilled Soil or similar
+                 // Logic: If it's a Bush (BSH) or Tall Grass (TGR), maybe revert to Grass (GR)?
+                 // But Grass is also harvestable.
+                 // Let's degrade to Tilled Soil (TSL) which is generally 'dirt/ground' and not harvestable (usually).
+                 // Exception: If we harvested Grass (GR), also go to TSL.
+                 level[layer][item.y][item.x] = "TSL";
+                 logToConsole(`${item.name} has been depleted to soil.`, "neutral");
+             }
+
+             // Refresh map and interactions
+             if (window.mapRenderer) window.mapRenderer.scheduleRender();
+             if (window.interaction) window.interaction.detectInteractableItems();
         }
     }
 
