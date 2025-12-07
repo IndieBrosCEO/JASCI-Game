@@ -161,6 +161,11 @@ class NpcManager {
         let despawnedCount = 0;
         this.gameState.npcs = this.gameState.npcs.filter(npc => {
             if (npcIds.includes(npc.id)) {
+                // Drop inventory before removing
+                if (window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
+                    window.inventoryManager.dropInventory(npc);
+                }
+
                 logToConsole(`${this.logPrefix} Despawning NPC ${npc.name || npc.id} (ID: ${npc.id}).`, "info");
                 despawnedCount++;
                 // If in combat, remove from combatManager's initiative tracker

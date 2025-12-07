@@ -528,6 +528,9 @@
                             else {
                                 // NPC death is handled in applyDamage; if they die from status here,
                                 // they should be removed from initiativeTracker and npcs list.
+                                if (window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
+                                    window.inventoryManager.dropInventory(attacker);
+                                }
                                 this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== attacker);
                                 this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== attacker);
                                 if (!this.initiativeTracker.some(e => !e.isPlayer && e.entity.health?.torso?.current > 0 && e.entity.health?.head?.current > 0)) {
@@ -616,6 +619,9 @@
                             logToConsole(`DEFEATED: ${combatantName} succumbed to tear gas!`, 'darkred');
                             if (combatant === this.gameState) { this.endCombat(); window.gameOver(this.gameState); return; }
                             else {
+                                if (window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
+                                    window.inventoryManager.dropInventory(combatant);
+                                }
                                 this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== combatant);
                                 this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== combatant);
                                 window.mapRenderer.scheduleRender();
@@ -2141,6 +2147,9 @@
                 const stillInInitiative = this.initiativeTracker.find(e => e.entity === defender);
                 if (stillInInitiative) { // Only process if they haven't been removed by, say, an explosion already
                     logToConsole(`DEFEATED: ${defenderName} has fallen!`, 'red');
+                    if (defender !== this.gameState && window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
+                        window.inventoryManager.dropInventory(defender);
+                    }
                     this.initiativeTracker = this.initiativeTracker.filter(entry => entry.entity !== defender);
                     this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== defender);
                     if (defender === this.gameState) { this.endCombat(); window.gameOver(this.gameState); return; }

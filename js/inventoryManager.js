@@ -422,6 +422,74 @@ class InventoryManager {
         return false;
     }
 
+    /**
+     * Drops all items from an entity's inventory, hands, and worn clothing to the floor at their position.
+     * @param {object} entity - The entity (NPC or Player) whose inventory to drop.
+     */
+    dropInventory(entity) {
+        if (!entity || !entity.mapPos) return;
+        if (!this.gameState.floorItems) this.gameState.floorItems = [];
+
+        const dropList = [];
+
+        // 1. Container Items
+        if (entity.inventory && entity.inventory.container && entity.inventory.container.items) {
+            dropList.push(...entity.inventory.container.items);
+            entity.inventory.container.items = []; // Clear
+        }
+
+        // 2. Hand Slots
+        if (entity.inventory && entity.inventory.handSlots) {
+            entity.inventory.handSlots.forEach((item, idx) => {
+                if (item) {
+                    dropList.push(item);
+                    entity.inventory.handSlots[idx] = null;
+                }
+            });
+        }
+
+        // 3. Worn Clothing
+        if (entity.wornClothing) {
+            Object.values(entity.wornClothing).forEach(item => {
+                if (item) dropList.push(item);
+            });
+            entity.wornClothing = {}; // Clear
+        } else if (entity.player && entity.player.wornClothing) { // If passing gameState (Player)
+             // Usually we don't drop player inventory on death automatically in 'dropInventory', logic handles that in gameOver if desired.
+             // But if this is called for player, it will do it.
+             // Currently entity structure for player in gameState is gameState.player.
+             // If entity passed IS gameState.player:
+             if (entity.wornClothing) {
+                 Object.values(entity.wornClothing).forEach(item => {
+                     if (item) dropList.push(item);
+                 });
+                 entity.wornClothing = {};
+             }
+        }
+
+        // Drop them
+        let droppedCount = 0;
+        dropList.forEach(item => {
+            if (item) {
+                // Ensure it's a valid Item instance or copy
+                const itemInstance = new Item(item);
+                itemInstance.equipped = false; // Reset status
+                this.gameState.floorItems.push({
+                    x: entity.mapPos.x,
+                    y: entity.mapPos.y,
+                    z: entity.mapPos.z,
+                    item: itemInstance
+                });
+                droppedCount++;
+            }
+        });
+
+        if (droppedCount > 0) {
+            logToConsole(`${entity.name || entity.id} dropped ${droppedCount} items.`, 'grey');
+            if (window.mapRenderer) window.mapRenderer.scheduleRender();
+        }
+    }
+
     equipItem(itemName, handIndex, targetInventory = null, targetHandSlots = null) {
         const isPlayer = !targetInventory; // Assume player if no target specified
         let invItems = targetInventory;

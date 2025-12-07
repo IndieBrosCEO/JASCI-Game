@@ -1071,6 +1071,11 @@ function gameOver(character) {
         }
         // Ensure combat manager removes the NPC if it hasn't already
         if (window.combatManager && window.combatManager.initiativeTracker.find(e => e.entity === character)) {
+            // Drop loot before removal
+            if (window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
+                window.inventoryManager.dropInventory(character);
+            }
+
             window.combatManager.initiativeTracker = window.combatManager.initiativeTracker.filter(entry => entry.entity !== character);
             window.gameState.npcs = window.gameState.npcs.filter(npc => npc !== character);
             logToConsole(`gameOver for NPC ${characterName}: Removed from initiative and game npcs list.`, 'info');
