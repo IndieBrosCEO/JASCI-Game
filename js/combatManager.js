@@ -215,10 +215,10 @@
                 this.gameState.defenderMapPos = this.gameState.selectedTargetEntity.mapPos ?
                     { ...this.gameState.selectedTargetEntity.mapPos } :
                     (this.gameState.targetingCoords || null); // targetingCoords should be 3D
-                logToConsole(`Target acquired via targeting system: ${this.gameState.selectedTargetEntity.name || this.gameState.selectedTargetEntity.id} at Z:${this.gameState.defenderMapPos?.z}`, 'lightblue');
+                // logToConsole(`Target acquired via targeting system: ${this.gameState.selectedTargetEntity.name || this.gameState.selectedTargetEntity.id} at Z:${this.gameState.defenderMapPos?.z}`, 'lightblue');
             } else if (this.gameState.targetingCoords) { // Ensure targetingCoords exists
                 this.gameState.defenderMapPos = { ...this.gameState.targetingCoords }; // targetingCoords is already 3D
-                logToConsole(`Targeting system selected tile at X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}, Z:${this.gameState.defenderMapPos.z}.`, 'lightblue');
+                // logToConsole(`Targeting system selected tile at X:${this.gameState.defenderMapPos.x}, Y:${this.gameState.defenderMapPos.y}, Z:${this.gameState.defenderMapPos.z}.`, 'lightblue');
             } else {
                 logToConsole("Error: Target confirmed but no selected entity or targetingCoords available.", "red");
                 this.gameState.combatCurrentDefender = null;
@@ -428,7 +428,7 @@
         logToConsole(`[nextTurn START] Lock acquired. Called by: ${previousAttackerEntity ? (previousAttackerEntity.name || 'player') : 'System'}.`, 'purple');
 
         const callSource = previousAttackerEntity ? (previousAttackerEntity === this.gameState ? 'PlayerEndTurn/OutOfAP' : previousAttackerEntity.name) : 'System';
-        logToConsole(`[nextTurn CALL] Source: ${callSource}. Current isWaitingForPlayerCombatInput: ${this.gameState.isWaitingForPlayerCombatInput}`, 'magenta');
+        // logToConsole(`[nextTurn CALL] Source: ${callSource}. Current isWaitingForPlayerCombatInput: ${this.gameState.isWaitingForPlayerCombatInput}`, 'magenta');
 
         if (window.animationManager && !this.isBackgroundSimulation) while (window.animationManager.isAnimationPlaying()) await new Promise(r => setTimeout(r, 50));
 
@@ -436,7 +436,7 @@
         await new Promise(r => setTimeout(r, 0));
 
         if (this.gameState.isWaitingForPlayerCombatInput) {
-            logToConsole(`[nextTurn DEFERRED] Waiting for player input. Source: ${callSource}.`, 'magenta');
+            // logToConsole(`[nextTurn DEFERRED] Waiting for player input. Source: ${callSource}.`, 'magenta');
             this.isProcessingTurn = false;
             return;
         }
@@ -1710,7 +1710,7 @@
             }
 
             if (attackerActualPos && targetActualPos) {
-                logToConsole(`[CombatManager перед LOS Ranged] Tilesets: ${!!currentTilesetsForLOS} (Keys: ${currentTilesetsForLOS ? Object.keys(currentTilesetsForLOS).length : 'N/A'}), MapData: ${!!currentMapDataForLOS}, Levels: ${currentMapDataForLOS ? !!currentMapDataForLOS.levels : 'N/A'}`, 'purple');
+                // logToConsole(`[CombatManager перед LOS Ranged] Tilesets: ${!!currentTilesetsForLOS} (Keys: ${currentTilesetsForLOS ? Object.keys(currentTilesetsForLOS).length : 'N/A'}), MapData: ${!!currentMapDataForLOS}, Levels: ${currentMapDataForLOS ? !!currentMapDataForLOS.levels : 'N/A'}`, 'purple');
                 if (!window.hasLineOfSight3D(attackerActualPos, targetActualPos, currentTilesetsForLOS, currentMapDataForLOS)) {
                     const who = attacker === this.gameState ? "PLAYER" : "NPC";
                     logToConsole(`${who} RANGED ATTACK CANCELED: ${attackerName} has no Line of Sight to target at (${targetActualPos.x},${targetActualPos.y}, Z:${targetActualPos.z}).`, 'orange');
@@ -2464,7 +2464,7 @@
         // The bodyPartName coming from UI or random distribution should already be in correct camelCase.
         // Convert to lowercase for reliable access, as health object keys are lowercase.
         const accessKey = bodyPartName;
-        logToConsole(`[applyDamage Debug] Received bodyPartName: "${bodyPartName}", Access Key: "${accessKey}" for ${entity.name || entity.id || 'Player'}`, 'purple'); // DIAGNOSTIC LOG
+        // logToConsole(`[applyDamage Debug] Received bodyPartName: "${bodyPartName}", Access Key: "${accessKey}" for ${entity.name || entity.id || 'Player'}`, 'purple'); // DIAGNOSTIC LOG
 
         const entityName = (entity === this.gameState || entity === this.gameState.player) ? "Player" : (entity.name || entity.id);
         const isPlayerVictim = (entity === this.gameState || entity === this.gameState.player);
@@ -2679,7 +2679,7 @@
         this.gameState.isRetargeting = true;
         this.gameState.retargetingJustHappened = false;
         this.gameState.combatCurrentDefender = null; this.gameState.defenderMapPos = null; this.gameState.selectedTargetEntity = null;
-        logToConsole("Retargeting: Click new target on map.", 'lightblue');
+        // logToConsole("Retargeting: Click new target on map.", 'lightblue');
         if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav'); // Placeholder for ui_target_mode_01.wav
         this.promptPlayerAttackDeclaration();
         this.updateCombatUI();
@@ -2709,7 +2709,7 @@
             this.gameState.combatPhase = 'defenderDeclare';
             this.handleDefenderActionPrompt();
         } else {
-            logToConsole(`CombatManager: NPC ${npcName} did not initiate an attack (or completed non-attack actions). Ending turn.`, 'grey');
+            // logToConsole(`CombatManager: NPC ${npcName} did not initiate an attack (or completed non-attack actions). Ending turn.`, 'grey');
             await this.nextTurn(npc);
         }
     }
