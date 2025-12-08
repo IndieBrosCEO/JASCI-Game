@@ -15,6 +15,14 @@
         window.mapRenderer.scheduleRender();
     }
 
+    // Broadcast state if hosting and connected (Basic polling for now, optimized later)
+    if (window.networkManager && window.networkManager.isHost && window.networkManager.isConnected) {
+        // Debounce? Or check dirty flag?
+        // For now, let's just do it periodically or on flag.
+        // Assuming networkManager handles throttling.
+        // Actually, let's use a dirty flag in gameState if possible, but for MVP, let's hook into events.
+    }
+
     // Request the next frame to continue the loop.
     requestAnimationFrame(gameLoop);
 }
@@ -756,6 +764,20 @@ function toggleNearbyEntitiesPanel() {
  **************************************************************/
 // Keydown event handler for movement and actions
 async function handleKeyDown(event) {
+    // Multiplayer Input Interception
+    if (window.networkManager && window.networkManager.isConnected && !window.networkManager.isHost) {
+        // If client, send input to host and do NOT process locally
+        // Exception: Maybe some local UI toggles like Settings?
+        // For Shared Session, we want input to go to Host.
+
+        // Prevent default for game controls
+        if (event.key !== 'F12' && event.key !== 'F5') { // Allow dev tools/refresh
+            event.preventDefault();
+            window.networkManager.sendInput(event);
+            return;
+        }
+    }
+
     if (gameState.isWaiting) {
         gameState.isWaiting = false;
         logToConsole("Wait interrupted by user.", "warning");
@@ -2365,7 +2387,14 @@ async function initialize() { // Made async
 
         requestAnimationFrame(gameLoop); // Start the main game loop
 
-        document.addEventListener('keydown', handleKeyDown);
+        // Wrap handleKeyDown to broadcast state after local input processing if Host
+        document.addEventListener('keydown', async (event) => {
+            await handleKeyDown(event);
+            if (window.networkManager && window.networkManager.isHost && window.networkManager.isConnected) {
+                // Broadcast state after processing local input
+                window.networkManager.broadcastState();
+            }
+        });
 
 
         const mapContainerElement = document.getElementById('mapContainer'); // Renamed to avoid conflict
@@ -2769,6 +2798,34 @@ async function initialize() { // Made async
             closeSettingsButton.addEventListener('click', () => {
                 settingsModal.classList.add('hidden');
                 if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            });
+        }
+
+        // Multiplayer UI Listeners
+        const connectButton = document.getElementById('connectButton');
+        const hostButton = document.getElementById('hostButton');
+        const lanIpInput = document.getElementById('lanIpInput');
+
+        if (connectButton && lanIpInput) {
+            connectButton.addEventListener('click', () => {
+                const ip = lanIpInput.value;
+                if (window.networkManager) {
+                    window.networkManager.connect(ip);
+                }
+            });
+        }
+
+        if (hostButton) {
+            hostButton.addEventListener('click', () => {
+                if (window.networkManager) {
+                    window.networkManager.setHost(true);
+                    hostButton.textContent = "Hosting (Active)";
+                    hostButton.disabled = true;
+                    // Auto connect to local server if hosting
+                    if (!window.networkManager.isConnected) {
+                         window.networkManager.connect(lanIpInput.value || "ws://localhost:8080");
+                    }
+                }
             });
         }
 

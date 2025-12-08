@@ -491,6 +491,7 @@
     <script src="js/migration.js?v=2"></script>
     <script src="js/progression_tests.js?v=2"></script>
     <script src="js/jump.js?v=2"></script>
+    <script src="js/networkManager.js?v=2"></script>
 
     <div id="entityTooltip" class="tooltip hidden"></div>
 
@@ -523,6 +524,14 @@
         </div>
 
         <button id="closeSettingsButton" style="margin-top: 15px;">Close</button>
+
+        <div id="multiplayerSection" style="margin-top: 20px; border-top: 1px solid white; padding-top: 15px;">
+            <h3>LAN Multiplayer</h3>
+            <p>Start 'node server.js' first.</p>
+            <input type="text" id="lanIpInput" placeholder="ws://localhost:8080" value="ws://localhost:8080">
+            <button id="connectButton">Connect to LAN</button>
+            <button id="hostButton">Set as Host</button>
+        </div>
     </div>
 
     <!-- Medical Treatment Modal -->
