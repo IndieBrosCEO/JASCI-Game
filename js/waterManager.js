@@ -15,7 +15,25 @@ class WaterManager {
 
     getWaterAt(x, y, z) {
         const key = `${x},${y},${z}`;
-        return this.waterCells[key];
+        if (this.waterCells[key]) {
+            return this.waterCells[key];
+        }
+
+        // Check for static water tiles if no dynamic water exists
+        if (window.mapRenderer) {
+            const mapData = window.mapRenderer.getCurrentMapData();
+            if (mapData && mapData.levels && mapData.levels[z]) {
+                let bottomTile = mapData.levels[z].bottom?.[y]?.[x];
+                if (bottomTile && typeof bottomTile === 'object') bottomTile = bottomTile.tileId;
+
+                if (bottomTile === 'WS') {
+                    return { depth: 3, type: 'water', isStatic: true }; // Shallow
+                } else if (bottomTile === 'WD') {
+                    return { depth: 10, type: 'water', isStatic: true }; // Deep
+                }
+            }
+        }
+        return undefined;
     }
 
     addWater(x, y, z, amount) {
@@ -191,8 +209,17 @@ class WaterManager {
     }
 
     _isBlocked(x1, y1, z1, x2, y2, z2) {
-        const tile = window.mapRenderer.getCollisionTileAt(x2, y2, z2);
-        return tile !== "";
+        const tileId = window.mapRenderer.getCollisionTileAt(x2, y2, z2);
+        if (tileId === "") return false; // Not blocked
+
+        // Check if the blocking tile is permeable
+        if (window.assetManager && window.assetManager.tilesets[tileId]) {
+            const def = window.assetManager.tilesets[tileId];
+            if (def.tags && def.tags.includes("permeable")) {
+                return false; // Permeable objects don't block water flow
+            }
+        }
+        return true; // Blocked
     }
 
     processEntityBreath(entity) {
