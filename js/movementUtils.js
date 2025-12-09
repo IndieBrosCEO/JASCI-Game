@@ -66,25 +66,6 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         actualMoveCost *= 2; // Double movement cost if player is grappling someone
     }
 
-    // Water Movement Cost
-    if (window.waterManager) {
-        let checkZ = originalPos.z;
-        if (direction === 'up_z') checkZ++;
-        else if (direction === 'down_z') checkZ--;
-        const water = window.waterManager.getWaterAt(targetX, targetY, checkZ);
-        // If moving INTO water, cost increases.
-        // Or if moving FROM water? Assuming moving through water tile.
-        if (water) {
-            actualMoveCost += 1; // Base is usually 1, so this makes it 2.
-        }
-    }
-
-    if (currentMovementPoints < actualMoveCost) {
-        logToConsole(`${logPrefix} Not enough movement points. Need ${actualMoveCost}, have ${currentMovementPoints}.`);
-        if (isPlayer && window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
-        return false;
-    }
-
 
     const currentMap = window.mapRenderer.getCurrentMapData();
     if (!currentMap || !currentMap.dimensions || !currentMap.levels) {
@@ -151,6 +132,23 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
 
     if (targetX < 0 || targetX >= width || targetY < 0 || targetY >= height) {
         logToConsole(`${logPrefix} Can't move that way (map boundary).`);
+        return false;
+    }
+
+    // Water Movement Cost
+    if (window.waterManager) {
+        let checkZ = originalPos.z;
+        if (direction === 'up_z') checkZ++;
+        else if (direction === 'down_z') checkZ--;
+        const water = window.waterManager.getWaterAt(targetX, targetY, checkZ);
+        if (water) {
+            actualMoveCost += 1; // Base is usually 1, so this makes it 2.
+        }
+    }
+
+    if (currentMovementPoints < actualMoveCost) {
+        logToConsole(`${logPrefix} Not enough movement points. Need ${actualMoveCost}, have ${currentMovementPoints}.`);
+        if (isPlayer && window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return false;
     }
 
