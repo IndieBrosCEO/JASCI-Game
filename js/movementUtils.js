@@ -141,8 +141,9 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         if (direction === 'up_z') checkZ++;
         else if (direction === 'down_z') checkZ--;
         const water = window.waterManager.getWaterAt(targetX, targetY, checkZ);
-        if (water) {
-            actualMoveCost += 1; // Base is usually 1, so this makes it 2.
+        // Cost is +1 if there is water, making total 2. If it's deep water, it might be more or handled by swim logic.
+        if (water && water.depth > 0) {
+            actualMoveCost += 1;
         }
     }
 

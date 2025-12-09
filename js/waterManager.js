@@ -71,7 +71,8 @@ class WaterManager {
 
     // Extinguish fire at location if water is present
     extinguishFire(x, y, z) {
-        if (this.getWaterAt(x, y, z)) {
+        const water = this.getWaterAt(x, y, z);
+        if (water && water.depth > 0) {
             if (window.gameState.activeFires) {
                 const initialCount = window.gameState.activeFires.length;
                 window.gameState.activeFires = window.gameState.activeFires.filter(f => !(f.x === x && f.y === y && f.z === z));
@@ -87,7 +88,8 @@ class WaterManager {
         if (window.gameState.activeFires) {
             for (let i = window.gameState.activeFires.length - 1; i >= 0; i--) {
                 const fire = window.gameState.activeFires[i];
-                if (this.getWaterAt(fire.x, fire.y, fire.z)) {
+                const water = this.getWaterAt(fire.x, fire.y, fire.z);
+                if (water && water.depth > 0) {
                     window.gameState.activeFires.splice(i, 1);
                     if (window.logToConsole) window.logToConsole(`Fire at ${fire.x},${fire.y},${fire.z} extinguished by water.`, 'blue');
                 }
@@ -243,6 +245,12 @@ class WaterManager {
         if (entity.breath === undefined && !isAquatic) {
             entity.breath = 10; // Default NPC breath
             entity.maxBreath = 10;
+        }
+
+        // Ensure maxBreath is set if missing
+        if (entity.maxBreath === undefined) {
+            entity.maxBreath = 20; // Default max breath
+            if (entity.breath === undefined) entity.breath = entity.maxBreath;
         }
 
         if (isAquatic) {
