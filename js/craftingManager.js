@@ -34,13 +34,20 @@ class CraftingManager {
                     }
 
                     // The recipe key will be the ID of the item that is produced
-                    this.recipes[itemDef.id] = {
+                    const recipeData = {
                         id: itemDef.id, // Explicitly add the ID to the recipe object
                         ...itemDef.recipe, // Spread all properties from the item's recipe object
                         resultItemId: itemDef.id, // Implicitly the item itself
                         resultQuantity: itemDef.recipe.resultQuantity || 1, // Default to 1 if not specified
                         name: itemDef.name // Use the item's name for the recipe name
                     };
+
+                    // Normalize station_required to requiredStationType
+                    if (recipeData.station_required && !recipeData.requiredStationType) {
+                        recipeData.requiredStationType = recipeData.station_required;
+                    }
+
+                    this.recipes[itemDef.id] = recipeData;
                     recipesFoundCount++;
                 }
             }
@@ -101,7 +108,8 @@ class CraftingManager {
         // Check requiredStationType against gameState.activeCraftingStationType
         // This check is important for determining if crafting is possible *at the current station*
         if (recipe.requiredStationType) {
-            if (!this.gameState.activeCraftingStationType || this.gameState.activeCraftingStationType !== recipe.requiredStationType) {
+            const required = Array.isArray(recipe.requiredStationType) ? recipe.requiredStationType : [recipe.requiredStationType];
+            if (!this.gameState.activeCraftingStationType || !required.includes(this.gameState.activeCraftingStationType)) {
                 return false;
             }
         }

@@ -35,6 +35,9 @@ function _getActionsForItem(it) {
         if (tags.includes("open")) actions.push("Close");
         if (tags.includes("breakable")) actions.push("Break Down");
     }
+    if (tileDef && tileDef.stationType) {
+        actions.push(`Use ${tileDef.name}`);
+    }
     if (tags.includes("container")) {
         actions.push("Loot");
     }
@@ -381,6 +384,13 @@ function _performAction(action, it) {
     } else if (action === "Break Down" && DOOR_BREAK_MAP[currentTileIdOnMap]) {
         levelData.middle[y][x] = DOOR_BREAK_MAP[currentTileIdOnMap];
         logToConsole(`Broke ${tileName}`);
+    } else if (action.startsWith("Use ") && tileDef && tileDef.stationType) {
+        if (window.CraftingUI && typeof window.CraftingUI.open === 'function') {
+            logToConsole(`Using crafting station: ${tileDef.name} (Type: ${tileDef.stationType})`, "info");
+            window.CraftingUI.open(tileDef.stationType); // Pass station type to filter recipes
+        } else {
+            logToConsole(`CraftingUI not available to use station ${tileDef.name}.`, "warn");
+        }
     } else if (action === "Loot") {
         // Get tile definition to check its tags
         // Note: tileDef was already fetched if itemType is tile/door/container/trap.
