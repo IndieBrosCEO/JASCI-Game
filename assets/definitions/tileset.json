@@ -41,6 +41,16 @@
       "impassable"
     ]
   },
+  "MF": {
+    "sprite": ",",
+    "name": "Muddy Ground",
+    "color": "#5D4037",
+    "tags": [
+      "landscape",
+      "bottom",
+      "mud"
+    ]
+  },
   "TGR": {
     "sprite": "W",
     "name": "Tall Grass",
@@ -108,8 +118,7 @@
     "tags": [
       "landscape",
       "water",
-      "bottom",
-      "impassable"
+      "bottom"
     ]
   },
   "AR": {
@@ -1736,6 +1745,15 @@
       "landscape",
       "bottom",
       "inert"
+    ]
+  },
+  "RB": {
+    "sprite": ".",
+    "name": "Riverbed",
+    "color": "#3E2723",
+    "tags": [
+      "landscape",
+      "bottom"
     ]
   },
   "barricade_metal_tile": {

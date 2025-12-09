@@ -66,6 +66,19 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         actualMoveCost *= 2; // Double movement cost if player is grappling someone
     }
 
+    // Water Movement Cost
+    if (window.waterManager) {
+        let checkZ = originalPos.z;
+        if (direction === 'up_z') checkZ++;
+        else if (direction === 'down_z') checkZ--;
+        const water = window.waterManager.getWaterAt(targetX, targetY, checkZ);
+        // If moving INTO water, cost increases.
+        // Or if moving FROM water? Assuming moving through water tile.
+        if (water) {
+            actualMoveCost += 1; // Base is usually 1, so this makes it 2.
+        }
+    }
+
     if (currentMovementPoints < actualMoveCost) {
         logToConsole(`${logPrefix} Not enough movement points. Need ${actualMoveCost}, have ${currentMovementPoints}.`);
         if (isPlayer && window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
@@ -129,6 +142,8 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         case 'down': case 's': case 'ArrowDown': targetY++; break;
         case 'left': case 'a': case 'ArrowLeft': targetX--; break;
         case 'right': case 'd': case 'ArrowRight': targetX++; break;
+        case 'up_z': /* Z handled later */ break;
+        case 'down_z': /* Z handled later */ break;
         default:
             logToConsole(`${logPrefix} Unknown move direction: ${direction}`);
             return false;
@@ -172,6 +187,45 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
     // We'll treat slopes as valid for vehicles, but stairs/ladders as invalid.
 
     // --- Movement Logic Order ---
+    // 0. Swimming (Vertical Movement in Deep Water)
+    if ((direction === 'up_z' || direction === 'down_z') && !moveSuccessful) {
+        if (window.waterManager && window.waterManager.isWaterDeep(originalPos.x, originalPos.y, originalPos.z)) {
+            const targetZ = originalPos.z + (direction === 'up_z' ? 1 : -1);
+            const targetImpassableInfo = isTileStrictlyImpassable(targetX, targetY, targetZ);
+
+            if (!targetImpassableInfo.impassable) {
+                // Check entity collision at destination
+                let entityAtDest = false;
+                if (isPlayer) {
+                    entityAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === targetZ && npc.health?.torso?.current > 0);
+                } else {
+                    if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === targetZ) entityAtDest = true;
+                    if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZ && otherNpc.health?.torso?.current > 0);
+                }
+
+                if (!entityAtDest) {
+                    if (isPlayer) {
+                        window.gameState.playerPos = { x: targetX, y: targetY, z: targetZ };
+                        window.gameState.movementPointsRemaining -= actualMoveCost;
+                        if (window.gameState.viewFollowsPlayerZ) window.gameState.currentViewZ = targetZ;
+                    } else {
+                        character.mapPos = { x: targetX, y: targetY, z: targetZ };
+                        character.currentMovementPoints -= actualMoveCost;
+                    }
+                    logToConsole(`${logPrefix} Swimming ${direction === 'up_z' ? 'Up' : 'Down'} to Z:${targetZ}. Cost: ${actualMoveCost}.`, "cyan");
+                    moveSuccessful = true;
+                    return true;
+                } else {
+                    logToConsole(`${logPrefix} Swimming blocked: Destination occupied.`);
+                }
+            } else {
+                logToConsole(`${logPrefix} Swimming blocked by ${targetImpassableInfo.name}.`);
+            }
+        } else {
+            logToConsole(`${logPrefix} Cannot swim vertical: Not in deep water.`);
+        }
+    }
+
     // 1. Z-Transition (Character is ON a z_transition tile - includes slopes)
     if (charIsOnZTransition && zTransitionDef) {
         // Vehicle check: If in vehicle, only allow slopes.

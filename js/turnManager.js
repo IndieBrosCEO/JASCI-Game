@@ -180,6 +180,11 @@ async function endTurn_internal() { // Make async
         window.gasManager.processTurn();
     }
 
+    // Process Water Logic
+    if (window.waterManager && typeof window.waterManager.processTurn === 'function') {
+        window.waterManager.processTurn();
+    }
+
     gameState.currentTurn++;
     startTurn_internal(); // Call internal startTurn
     window.mapRenderer.scheduleRender();
