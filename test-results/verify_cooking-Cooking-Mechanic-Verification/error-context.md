@@ -1,0 +1,272 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - heading "Character Creator" [level=2] [ref=e5]
+    - text: "Character Name:"
+    - textbox [ref=e6]: Name Here
+    - text: "Level: 1"
+    - text: "XP: 0"
+    - 'heading "Stats (Stat Points: 14)" [level=3] [ref=e7]'
+    - generic [ref=e8]:
+      - generic "Physical power." [ref=e9]:
+        - text: "Strength:"
+        - spinbutton [ref=e10]: "3"
+      - generic "Reasoning, memory, and knowledge." [ref=e11]:
+        - text: "Intelligence:"
+        - spinbutton [ref=e12]: "3"
+      - generic "Agility, speed, and nimbleness." [ref=e13]:
+        - text: "Dexterity:"
+        - spinbutton [ref=e14]: "3"
+      - generic "Toughness and health." [ref=e15]:
+        - text: "Constitution:"
+        - spinbutton [ref=e16]: "3"
+      - generic "Awareness and ability to spot hidden things." [ref=e17]:
+        - text: "Perception:"
+        - spinbutton [ref=e18]: "3"
+      - generic "Resistance to mental effects." [ref=e19]:
+        - text: "Willpower:"
+        - spinbutton [ref=e20]: "3"
+      - generic "Force of personality, persuasiveness, and social influence" [ref=e21]:
+        - text: "Charisma:"
+        - spinbutton [ref=e22]: "3"
+    - 'heading "Skills (Skill Points: 30)" [level=3] [ref=e23]'
+    - generic [ref=e24]:
+      - generic "Governs the ability to interact with and control animals." [ref=e25]:
+        - text: "Animal Handling:"
+        - spinbutton [ref=e26]: "0"
+      - generic "The ability to use, repair, and modify electronic devices." [ref=e27]:
+        - text: "Electronics:"
+        - spinbutton [ref=e28]: "0"
+      - generic "Skill in handling, identifying, and disarming explosive devices." [ref=e29]:
+        - text: "Explosives:"
+        - spinbutton [ref=e30]: "0"
+      - generic "Proficiency with all types of firearms." [ref=e31]:
+        - text: "Guns:"
+        - spinbutton [ref=e32]: "0"
+      - generic "The ability to influence others through fear and threats." [ref=e33]:
+        - text: "Intimidation:"
+        - spinbutton [ref=e34]: "0"
+      - generic "The skill of uncovering clues and solving mysteries." [ref=e35]:
+        - text: "Investigation:"
+        - spinbutton [ref=e36]: "0"
+      - generic "The ability to open locks without a key." [ref=e37]:
+        - text: "Lockpick:"
+        - spinbutton [ref=e38]: "0"
+      - generic "The skill of healing wounds and treating illnesses." [ref=e39]:
+        - text: "Medicine:"
+        - spinbutton [ref=e40]: "0"
+      - generic "Proficiency with all types of melee weapons." [ref=e41]:
+        - text: "Melee Weapons:"
+        - spinbutton [ref=e42]: "0"
+      - generic "The ability to influence others through diplomacy and reason." [ref=e43]:
+        - text: "Persuasion:"
+        - spinbutton [ref=e44]: "0"
+      - generic "The skill of fixing broken items and machinery." [ref=e45]:
+        - text: "Repair:"
+        - spinbutton [ref=e46]: "0"
+      - generic "The ability to perform feats of manual dexterity, such as picking pockets." [ref=e47]:
+        - text: "Sleight of Hand:"
+        - spinbutton [ref=e48]: "0"
+      - generic "The skill of moving quietly and avoiding detection." [ref=e49]:
+        - text: "Stealth:"
+        - spinbutton [ref=e50]: "0"
+      - generic "The ability to survive in the wilderness." [ref=e51]:
+        - text: "Survival:"
+        - spinbutton [ref=e52]: "0"
+      - generic "Proficiency in hand-to-hand combat." [ref=e53]:
+        - text: "Unarmed:"
+        - spinbutton [ref=e54]: "0"
+    - generic [ref=e55]:
+      - heading "Derived Stats" [level=3] [ref=e56]
+      - generic [ref=e57]: "Hit Points: 16"
+      - generic [ref=e58]: "Movement Speed: 30"
+      - generic [ref=e59]: "Carry Weight: 80"
+      - generic [ref=e60]: "Action Points: 1"
+    - generic [ref=e61]:
+      - heading "Face Creator" [level=3] [ref=e62]
+      - generic [ref=e63]:
+        - generic [ref=e64]: "Head Width (5-12):"
+        - slider "Head Width (5-12):" [ref=e65]: "11"
+        - generic [ref=e66]: "11"
+      - generic [ref=e67]:
+        - generic [ref=e68]: "Head Height (6-12):"
+        - slider "Head Height (6-12):" [ref=e69]: "8"
+        - generic [ref=e70]: "8"
+      - generic [ref=e71]:
+        - generic [ref=e72]: "Skin Color:"
+        - textbox "Skin Color:" [ref=e73]: "#f5deb3"
+      - generic [ref=e74]:
+        - generic [ref=e75]: "Eye Size (1-3):"
+        - slider "Eye Size (1-3):" [ref=e76]: "3"
+        - generic [ref=e77]: "3"
+      - generic [ref=e78]:
+        - generic [ref=e79]: "Eye Color:"
+        - textbox "Eye Color:" [ref=e80]: "#ffc0cb"
+      - generic [ref=e81]:
+        - generic [ref=e82]: "Brow Height (0-1):"
+        - slider "Brow Height (0-1):" [ref=e83]: "1"
+        - generic [ref=e84]: "1"
+      - generic [ref=e85]:
+        - generic [ref=e86]: "Brow Angle (-1 to 1):"
+        - slider "Brow Angle (-1 to 1):" [ref=e87]: "0"
+        - generic [ref=e88]: "0"
+      - generic [ref=e89]:
+        - generic [ref=e90]: "Brow Width (1-3):"
+        - slider "Brow Width (1-3):" [ref=e91]: "3"
+        - generic [ref=e92]: "3"
+      - generic [ref=e93]:
+        - generic [ref=e94]: "Eyebrow Color:"
+        - textbox "Eyebrow Color:" [ref=e95]: "#e6e6fa"
+      - generic [ref=e96]:
+        - generic [ref=e97]: "Nose Width (1-5):"
+        - slider "Nose Width (1-5):" [ref=e98]: "5"
+        - generic [ref=e99]: "5"
+      - generic [ref=e100]:
+        - generic [ref=e101]: "Nose Height (1-2):"
+        - slider "Nose Height (1-2):" [ref=e102]: "2"
+        - generic [ref=e103]: "2"
+      - generic [ref=e104]:
+        - generic [ref=e105]: "Mouth Width (1-6):"
+        - slider "Mouth Width (1-6):" [ref=e106]: "6"
+        - generic [ref=e107]: "6"
+      - generic [ref=e108]:
+        - generic [ref=e109]: "Mouth Fullness (1-2):"
+        - slider "Mouth Fullness (1-2):" [ref=e110]: "2"
+        - generic [ref=e111]: "2"
+      - generic [ref=e112]:
+        - generic [ref=e113]: "Lip Color:"
+        - textbox "Lip Color:" [ref=e114]: "#d2691e"
+      - generic [ref=e115]:
+        - generic [ref=e116]: "Hairstyle:"
+        - combobox "Hairstyle:" [ref=e117]:
+          - option "Bald"
+          - option "Short"
+          - option "Medium"
+          - option "Long"
+          - option "Mohawk"
+          - option "Tonsure"
+          - option "Pixie Cut" [selected]
+          - option "Buzz Cut"
+          - option "Bowl Cut"
+          - option "Jawline Bob"
+          - option "Combover"
+          - option "French Crop (Curls)"
+          - option "Afro"
+          - option "Liberty Spikes"
+          - option "Ponytail"
+          - option "Pigtails"
+          - option "Dreads"
+          - option "Cornrows"
+          - option "Top Knot"
+          - option "Reverse Mohawk"
+          - option "Flat Top"
+          - option "High Top"
+          - option "Pompadour"
+          - option "Beehive"
+          - option "Double Buns"
+          - option "Devilock"
+          - option "Really High Top"
+      - generic [ref=e118]:
+        - generic [ref=e119]: "Facial Hair:"
+        - combobox "Facial Hair:" [ref=e120]:
+          - option "None"
+          - option "Stubble" [selected]
+          - option "Mustache"
+          - option "Goatee"
+          - option "Beard"
+      - generic [ref=e121]:
+        - generic [ref=e122]: "Hair Color:"
+        - textbox "Hair Color:" [ref=e123]: "#593e2a"
+      - generic [ref=e124]:
+        - generic [ref=e125]: "Glasses:"
+        - combobox "Glasses:" [ref=e126]:
+          - option "None"
+          - option "Round"
+          - option "Square"
+          - option "Monocle" [selected]
+      - generic [ref=e127]:
+        - generic [ref=e128]: "Glasses Color:"
+        - textbox "Glasses Color:" [ref=e129]: "#707070"
+      - button "Randomize Face" [ref=e130] [cursor=pointer]
+      - heading "Preview:" [level=4] [ref=e131]
+      - generic [ref=e132]:
+        - text: "\" \" \" \" \""
+        - text: "'\"\"\"\"\"\"\"\"\"\"\"'"
+        - text: "'/---------\\'"
+        - text: "'|#######-#|'"
+        - text: "'|#O####(O)|'"
+        - text: "'|##.....-,|'"
+        - text: "'|,#,JJ,),#''"
+        - text: "|.======.#|"
+        - text: "|...###.##|"
+        - text: \---------/
+    - button "Start Game" [ref=e133] [cursor=pointer]
+    - button "Save Game" [ref=e134] [cursor=pointer]
+    - button "Load Game" [ref=e135] [cursor=pointer]
+  - generic [ref=e1040]:
+    - paragraph [ref=e1041]: TimeManager initialized.
+    - paragraph [ref=e1042]: Extended runAllBasicConnectionTests with testCombatInitiationWithGenericNpc.
+    - paragraph [ref=e1043]: Extended runAllBasicConnectionTests with testPlayerTakesDamageWithArmor.
+    - paragraph [ref=e1044]: XpManager instance created and assigned to window.
+    - paragraph [ref=e1045]: PerkManager instance created and assigned to window.
+    - paragraph [ref=e1046]: LevelUpUI instance created and assigned to window.
+    - paragraph [ref=e1047]: "[CraftingManager] Initialized with 69 crafting recipes from item definitions."
+    - paragraph [ref=e1048]: CraftingManager instance created, assigned to window, and initialized.
+  - generic [ref=e1049]:
+    - heading "Game Controls" [level=2] [ref=e1050]
+    - button "Settings" [ref=e1051] [cursor=pointer]
+    - button "Toggle Roof" [ref=e1052] [cursor=pointer]
+    - generic [ref=e1053]:
+      - button "Zoom In (+)" [ref=e1054] [cursor=pointer]
+      - button "Zoom Out (-)" [ref=e1055] [cursor=pointer]
+    - generic [ref=e1056]:
+      - text: "Select Map:"
+      - combobox "Select Map:" [ref=e1057]:
+        - option "Clearing" [selected]
+        - option "Small Race Track"
+        - option "3 Building Test Map"
+        - option "npcTestMap"
+        - option "Fishing Island"
+        - option "Fallbrook Police Department"
+        - option "Tall Building"
+        - option "Mine"
+        - option "Valley"
+    - generic [ref=e1058]:
+      - generic [ref=e1059]: "Moves Left:"
+      - generic [ref=e1060]: "Actions Left:"
+    - generic [ref=e1061]:
+      - text: "XP:"
+      - progressbar "0 / 100" [ref=e1062]
+    - generic [ref=e1063]:
+      - heading "Time & Needs" [level=3] [ref=e1064]
+      - generic [ref=e1065]: Day 1 - 00:00
+      - generic [ref=e1066]: "Hunger: [##########]"
+      - generic [ref=e1067]: "Thirst: [##########]"
+      - generic [ref=e1068]: "Player Z: 0"
+      - generic [ref=e1069]: "View Z: 0"
+    - generic [ref=e1070]:
+      - heading "Health Status" [level=3] [ref=e1071]
+      - table [ref=e1072]:
+        - rowgroup [ref=e1073]:
+          - row "Body Part HP Armor Crisis Timer" [ref=e1074]:
+            - columnheader "Body Part" [ref=e1075]
+            - columnheader "HP" [ref=e1076]
+            - columnheader "Armor" [ref=e1077]
+            - columnheader "Crisis Timer" [ref=e1078]
+        - rowgroup
+      - heading "Interactions" [level=3] [ref=e1079]
+      - heading "Actions" [level=3] [ref=e1080]
+      - generic [ref=e1081]:
+        - generic [ref=e1082]: 1. Cancel
+        - generic [ref=e1083]: 2. Loot
+        - generic [ref=e1084]: 3. Scavenge Appliance
+      - heading "Equipped Hand Items" [level=3] [ref=e1085]
+      - generic [ref=e1086]:
+        - generic [ref=e1087]: "Left Hand: Empty"
+        - generic [ref=e1088]: "Right Hand: Empty"
+      - heading "Hand Slots" [level=3] [ref=e1089]
+      - heading "Equipped Containers" [level=3] [ref=e1090]
+      - generic [ref=e1091]: No capacity-providing clothing equipped.
+```

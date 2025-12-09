@@ -910,8 +910,11 @@
       "blocks_vision",
       "impassable",
       "electronics",
-      "middle"
+      "middle",
+      "cooking_station"
     ],
+    "description": "A kitchen stove and oven. Good for preparing meals.",
+    "stationType": "kitchen_cooking",
     "itemLink": "st_container_item",
     "contents": [],
     "capacity": 5,

@@ -370,6 +370,19 @@
     "effects": {
       "thirst": -15
     },
+    "recipe": {
+      "id": "boil_water",
+      "description": "Boil dirty water to make it safe to drink.",
+      "components": [
+        {
+          "quantity": 1,
+          "itemId": "dirty_water"
+        }
+      ],
+      "station_required": ["campfire_cooking", "kitchen_cooking"],
+      "time_to_craft": 15,
+      "batch_size": 1
+    },
     "family": "drink",
     "properties": {
       "type": "water",

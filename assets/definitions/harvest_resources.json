@@ -40,6 +40,19 @@
     "effects": {
       "hunger": -15
     },
+    "recipe": {
+      "id": "cooked_meat_cooking",
+      "description": "Cook raw meat to make it safe to eat.",
+      "components": [
+        {
+          "quantity": 1,
+          "itemId": "raw_meat"
+        }
+      ],
+      "station_required": ["campfire_cooking", "kitchen_cooking"],
+      "time_to_craft": 10,
+      "batch_size": 1
+    },
     "family": "food",
     "properties": {
       "type": "cooked_meat"
