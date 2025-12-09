@@ -2,8 +2,10 @@
 class WaterManager {
     constructor() {
         this.waterCells = {}; // key: "x,y,z", value: { depth: number, type: 'water' }
-        this.deepWaterThreshold = 7; // Depth at which swimming/breath logic applies
-        this.maxDepth = 10;
+        // "Two units of shallow water combine they become deep water"
+        // Shallow = 1 unit. Deep = 2 units.
+        this.deepWaterThreshold = 2;
+        this.maxDepth = 2; // Deep water takes up the whole cell (block). No need for >2 currently.
     }
 
     init(gameState) {
@@ -27,9 +29,11 @@ class WaterManager {
                 if (bottomTile && typeof bottomTile === 'object') bottomTile = bottomTile.tileId;
 
                 if (bottomTile === 'WS') {
-                    return { depth: 3, type: 'water', isStatic: true }; // Shallow
+                    // "Shallow water takes up the bottom layer" -> 1 unit
+                    return { depth: 1, type: 'water', isStatic: true };
                 } else if (bottomTile === 'WD') {
-                    return { depth: 10, type: 'water', isStatic: true }; // Deep
+                    // "Deep water takes up the whole cell" -> 2 units (Full Block)
+                    return { depth: 2, type: 'water', isStatic: true };
                 }
             }
         }
@@ -43,7 +47,10 @@ class WaterManager {
             this.waterCells[key] = { depth: 0, type: 'water' };
         }
         this.waterCells[key].depth += amount;
+
+        // Clamp logic
         if (this.waterCells[key].depth > this.maxDepth) this.waterCells[key].depth = this.maxDepth;
+
         if (this.waterCells[key].depth <= 0) {
             delete this.waterCells[key];
         }
@@ -135,7 +142,7 @@ class WaterManager {
                     absorbed = true;
                 }
 
-                // Middle Layer (Z-1 Support)
+                // Middle Layer (Z-1 Support) - water seeps down?
                 if (mapData.levels[z-1]) {
                     let belowMiddle = mapData.levels[z-1].middle?.[y]?.[x];
                     if (belowMiddle && typeof belowMiddle === 'object') belowMiddle = belowMiddle.tileId;
@@ -147,7 +154,7 @@ class WaterManager {
 
                 if (absorbed) {
                     diffs.push({x, y, z, change: -1});
-                    if (water.depth <= 1) return;
+                    if (water.depth <= 0.5) return; // Stop if absorbed significantly
                 }
             }
 
@@ -161,14 +168,36 @@ class WaterManager {
             }
 
             // 3. Spread (Flow Sideways)
-            if (water.depth > 1) {
+            // Logic: High pressure (Depth 2) wants to flow to Low pressure (Depth < 1)
+            // "When two units of shallow water combine they become deep water."
+            // Reverse: Deep water (2) can flow into empty (0) -> both become (1)?
+            // Or Deep water overflows?
+            // User did not specify flow physics, only combination.
+            // Assuming standard dispersion:
+            // If I have 2 (Deep), and neighbor has 0.
+            // I should give 1 to neighbor. Result: 1, 1.
+            // If I have 1 (Shallow), and neighbor has 1.
+            // I cannot flow there (pressure equal).
+            // If I have 1, neighbor 0.
+            // Should I flow? Water spreads. Yes. Result: 0.5, 0.5?
+            // Since we stick to integers mainly for "Deep/Shallow" states, let's allow fractions but visualize/clamp.
+            // Wait, previous code used integer steps (+1).
+            // If I use steps of 1:
+            // 2 (Deep) -> 0 => 1 (Shallow), 1 (Shallow). Correct.
+            // 1 (Shallow) -> 0 => ?
+            // If 1 moves to 0, old becomes 0, new becomes 1. That's movement, not spread.
+            // Spread implies volume conservation but area increase.
+            // If we have infinite source? No, we have finite units.
+            // Let's stick to: Only Deep Water (>= 2) spreads to neighbors with < 1.
+            // This conserves the "Shallow" puddles unless they merge.
+
+            if (water.depth >= 2) {
                 const neighbors = [
                     {dx: 0, dy: -1}, {dx: 0, dy: 1}, {dx: -1, dy: 0}, {dx: 1, dy: 0}
                 ];
-                // Simple diffusion to lowest neighbor
-                let targetN = null;
-                let maxDiff = 0;
 
+                // Find valid targets (neighbors with depth < 1)
+                let validTargets = [];
                 for (const n of neighbors) {
                     const nx = x + n.dx;
                     const ny = y + n.dy;
@@ -178,18 +207,19 @@ class WaterManager {
                     const neighborWater = this.getWaterAt(nx, ny, z);
                     const nDepth = neighborWater ? neighborWater.depth : 0;
 
-                    if (water.depth > nDepth + 1) {
-                        const diff = water.depth - nDepth;
-                        if (diff > maxDiff) {
-                            maxDiff = diff;
-                            targetN = {x: nx, y: ny};
-                        }
+                    if (nDepth < 1) {
+                        validTargets.push({x: nx, y: ny});
                     }
                 }
 
-                if (targetN) {
+                if (validTargets.length > 0) {
+                    // Spread to ONE neighbor per turn to avoid instant flattening?
+                    // Or split?
+                    // Let's move 1 unit to the first valid target.
+                    // 2 -> 1, Neighbor 0 -> 1.
+                    const target = validTargets[0];
                     diffs.push({x, y, z, change: -1});
-                    diffs.push({x: targetN.x, y: targetN.y, z, change: 1});
+                    diffs.push({x: target.x, y: target.y, z, change: 1});
                 }
             }
         });
@@ -203,11 +233,32 @@ class WaterManager {
     _hasFloor(x, y, z) {
         const mapData = window.mapRenderer.getCurrentMapData();
         if (!mapData || !mapData.levels || !mapData.levels[z]) return false;
+
+        // 1. Check Bottom Layer at Z
         let bot = mapData.levels[z].bottom?.[y]?.[x];
         if (bot && typeof bot === 'object') bot = bot.tileId;
-        if (!bot) return false;
+
+        // If bottom is strictly a hole, no floor.
         if (bot === 'HOLE') return false;
-        return true;
+
+        // If bottom exists (and not hole), it's a floor.
+        if (bot) return true;
+
+        // 2. Check Middle Layer at Z-1 (Standing on Top)
+        // Consistent with "Standing Logic"
+        if (mapData.levels[z-1]) {
+            let midBelow = mapData.levels[z-1].middle?.[y]?.[x];
+            if (midBelow && typeof midBelow === 'object') midBelow = midBelow.tileId;
+
+            if (midBelow && window.assetManager && window.assetManager.tilesets[midBelow]) {
+                const def = window.assetManager.tilesets[midBelow];
+                if (def.tags && def.tags.includes('solid_terrain_top')) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     _isBlocked(x1, y1, z1, x2, y2, z2) {
