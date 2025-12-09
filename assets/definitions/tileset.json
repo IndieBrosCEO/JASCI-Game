@@ -553,7 +553,8 @@
       "breakable",
       "building",
       "allows_vision",
-      "flammable"
+      "flammable",
+      "permeable"
     ]
   },
   "WOV": {
@@ -569,7 +570,8 @@
       "breakable",
       "building",
       "allows_vision",
-      "flammable"
+      "flammable",
+      "permeable"
     ]
   },
   "WDB": {
@@ -584,7 +586,8 @@
       "interactive",
       "building",
       "allows_vision",
-      "flammable"
+      "flammable",
+      "permeable"
     ]
   },
   "MDH": {
@@ -633,7 +636,8 @@
       "interactive",
       "breakable",
       "building",
-      "allows_vision"
+      "allows_vision",
+      "permeable"
     ]
   },
   "MOV": {
@@ -648,7 +652,8 @@
       "interactive",
       "breakable",
       "building",
-      "allows_vision"
+      "allows_vision",
+      "permeable"
     ]
   },
   "MDB": {
@@ -662,7 +667,8 @@
       "broken",
       "interactive",
       "building",
-      "allows_vision"
+      "allows_vision",
+      "permeable"
     ]
   },
   "WinCH": {
@@ -733,7 +739,8 @@
       "broken",
       "interactive",
       "building",
-      "allows_vision"
+      "allows_vision",
+      "permeable"
     ]
   },
   "RW": {
