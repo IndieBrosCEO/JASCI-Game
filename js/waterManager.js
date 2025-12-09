@@ -21,21 +21,19 @@ class WaterManager {
     addWater(x, y, z, amount) {
         const key = `${x},${y},${z}`;
         if (!this.waterCells[key]) {
+            if (amount <= 0) return;
             this.waterCells[key] = { depth: 0, type: 'water' };
         }
-        this.waterCells[key].depth = Math.min(this.maxDepth, this.waterCells[key].depth + amount);
+        this.waterCells[key].depth += amount;
+        if (this.waterCells[key].depth > this.maxDepth) this.waterCells[key].depth = this.maxDepth;
+        if (this.waterCells[key].depth <= 0) {
+            delete this.waterCells[key];
+        }
         if (window.mapRenderer) window.mapRenderer.scheduleRender();
     }
 
     removeWater(x, y, z, amount) {
-        const key = `${x},${y},${z}`;
-        if (this.waterCells[key]) {
-            this.waterCells[key].depth = Math.max(0, this.waterCells[key].depth - amount);
-            if (this.waterCells[key].depth <= 0) {
-                delete this.waterCells[key];
-            }
-            if (window.mapRenderer) window.mapRenderer.scheduleRender();
-        }
+        this.addWater(x, y, z, -amount);
     }
 
     setWaterLevel(x, y, z, depth) {
@@ -67,10 +65,8 @@ class WaterManager {
     }
 
     processTurn() {
-        // Basic flow or interaction logic can go here
-        // For now, ensure fires are extinguished in water
+        // Extinguish fires
         if (window.gameState.activeFires) {
-            // Iterate backwards to allow removal
             for (let i = window.gameState.activeFires.length - 1; i >= 0; i--) {
                 const fire = window.gameState.activeFires[i];
                 if (this.getWaterAt(fire.x, fire.y, fire.z)) {
@@ -80,16 +76,123 @@ class WaterManager {
             }
         }
 
-        // Process Player Breath
+        // Volumetric Flow & Absorption
+        this.processFlow();
+
+        // Process Breath
         if (window.gameState && window.gameState.player) {
             this.processEntityBreath(window.gameState.player);
         }
-        // Process NPC Breath
         if (window.gameState && window.gameState.npcs) {
             window.gameState.npcs.forEach(npc => {
                 this.processEntityBreath(npc);
             });
         }
+    }
+
+    processFlow() {
+        if (!window.mapRenderer) return;
+        const waterKeys = Object.keys(this.waterCells);
+        const diffs = [];
+
+        waterKeys.forEach(key => {
+            const [x, y, z] = key.split(',').map(Number);
+            const water = this.waterCells[key];
+            if (!water || water.depth <= 0) return;
+
+            // 1. Absorption Check
+            const mapData = window.mapRenderer.getCurrentMapData();
+            if (mapData && mapData.levels && mapData.levels[z]) {
+                const levelData = mapData.levels[z];
+
+                // Bottom Layer (Current Z)
+                let bottomTile = levelData.bottom?.[y]?.[x];
+                if (bottomTile && typeof bottomTile === 'object') bottomTile = bottomTile.tileId;
+
+                let absorbed = false;
+                if (bottomTile === 'GR' || bottomTile === 'TSL') {
+                    window.mapRenderer.updateTileOnLayer(x, y, z, 'bottom', 'MF');
+                    absorbed = true;
+                }
+
+                // Middle Layer (Z-1 Support)
+                if (mapData.levels[z-1]) {
+                    let belowMiddle = mapData.levels[z-1].middle?.[y]?.[x];
+                    if (belowMiddle && typeof belowMiddle === 'object') belowMiddle = belowMiddle.tileId;
+                    if (belowMiddle === 'DI') {
+                        window.mapRenderer.updateTileOnLayer(x, y, z-1, 'middle', 'MU');
+                        absorbed = true;
+                    }
+                }
+
+                if (absorbed) {
+                    diffs.push({x, y, z, change: -1});
+                    if (water.depth <= 1) return;
+                }
+            }
+
+            // 2. Gravity (Flow Down)
+            const floorAtZ = this._hasFloor(x, y, z);
+            if (!floorAtZ) {
+                // Falls to Z-1
+                diffs.push({x, y, z, change: -1});
+                diffs.push({x, y, z: z-1, change: 1});
+                return;
+            }
+
+            // 3. Spread (Flow Sideways)
+            if (water.depth > 1) {
+                const neighbors = [
+                    {dx: 0, dy: -1}, {dx: 0, dy: 1}, {dx: -1, dy: 0}, {dx: 1, dy: 0}
+                ];
+                // Simple diffusion to lowest neighbor
+                let targetN = null;
+                let maxDiff = 0;
+
+                for (const n of neighbors) {
+                    const nx = x + n.dx;
+                    const ny = y + n.dy;
+
+                    if (this._isBlocked(x, y, z, nx, ny, z)) continue;
+
+                    const neighborWater = this.getWaterAt(nx, ny, z);
+                    const nDepth = neighborWater ? neighborWater.depth : 0;
+
+                    if (water.depth > nDepth + 1) {
+                        const diff = water.depth - nDepth;
+                        if (diff > maxDiff) {
+                            maxDiff = diff;
+                            targetN = {x: nx, y: ny};
+                        }
+                    }
+                }
+
+                if (targetN) {
+                    diffs.push({x, y, z, change: -1});
+                    diffs.push({x: targetN.x, y: targetN.y, z, change: 1});
+                }
+            }
+        });
+
+        // Apply diffs
+        diffs.forEach(d => {
+            this.addWater(d.x, d.y, d.z, d.change);
+        });
+    }
+
+    _hasFloor(x, y, z) {
+        const mapData = window.mapRenderer.getCurrentMapData();
+        if (!mapData || !mapData.levels || !mapData.levels[z]) return false;
+        let bot = mapData.levels[z].bottom?.[y]?.[x];
+        if (bot && typeof bot === 'object') bot = bot.tileId;
+        if (!bot) return false;
+        if (bot === 'HOLE') return false;
+        return true;
+    }
+
+    _isBlocked(x1, y1, z1, x2, y2, z2) {
+        const tile = window.mapRenderer.getCollisionTileAt(x2, y2, z2);
+        return tile !== "";
     }
 
     processEntityBreath(entity) {
@@ -118,10 +221,20 @@ class WaterManager {
         if (isAquatic) {
             // Aquatic logic: breathe in water, suffocate in air
             if (!isUnderwater) {
-                // Suffocating
-                if (window.logToConsole && entity === window.gameState.player) window.logToConsole("You are suffocating in the air!", "red");
-                if (window.combatManager) {
-                    window.combatManager.applyDamage(null, entity, "torso", 2, "suffocation");
+                if (entity.breath > 0) {
+                    entity.breath--;
+                    if (entity === window.gameState.player && window.logToConsole) window.logToConsole("Gasping for water...", "orange");
+                } else {
+                    // Suffocating
+                    if (window.logToConsole && entity === window.gameState.player) window.logToConsole("You are suffocating in the air!", "red");
+                    if (window.combatManager) {
+                        window.combatManager.applyDamage(null, entity, "torso", 2, "suffocation");
+                    }
+                }
+            } else {
+                // Recover breath in water
+                if (entity.breath < entity.maxBreath) {
+                    entity.breath = Math.min(entity.maxBreath, entity.breath + 5);
                 }
             }
         } else {
@@ -137,7 +250,7 @@ class WaterManager {
                     }
                 }
             } else {
-                // Recover breath
+                // Recover breath in air
                 if (entity.breath < entity.maxBreath) {
                     entity.breath = Math.min(entity.maxBreath, entity.breath + 5);
                 }

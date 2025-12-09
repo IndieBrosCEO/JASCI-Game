@@ -41,6 +41,16 @@
       "impassable"
     ]
   },
+  "MF": {
+    "sprite": ",",
+    "name": "Muddy Ground",
+    "color": "#5D4037",
+    "tags": [
+      "landscape",
+      "bottom",
+      "mud"
+    ]
+  },
   "TGR": {
     "sprite": "W",
     "name": "Tall Grass",
