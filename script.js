@@ -1218,7 +1218,15 @@ async function handleKeyDown(event) {
         const H = currentMap ? currentMap.dimensions.height : 0;
         const W = currentMap ? currentMap.dimensions.width : 0;
 
-        if (event.key === '<' || event.key === ',') { // Use ',' as well for convenience
+        if (event.shiftKey && (event.key === '<' || event.key === ',')) {
+             // Physical Move Down (Swim/Fly)
+             window.turnManager.move('down_z');
+             event.preventDefault(); return;
+        } else if (event.shiftKey && (event.key === '>' || event.key === '.')) {
+             // Physical Move Up (Swim/Fly)
+             window.turnManager.move('up_z');
+             event.preventDefault(); return;
+        } else if (event.key === '<' || event.key === ',') { // Use ',' as well for convenience
             gameState.currentViewZ--;
             gameState.viewFollowsPlayerZ = false; // Player is manually controlling view
             logToConsole(`View Z changed to: ${gameState.currentViewZ}. View no longer follows player.`);
@@ -2148,6 +2156,15 @@ async function initialize() { // Made async
             window.gasManager = null;
         }
 
+        if (window.WaterManager) {
+            window.waterManager = new window.WaterManager();
+            window.waterManager.init(window.gameState);
+            logToConsole("WaterManager instance created and initialized.", "info");
+        } else {
+            console.error("SCRIPT.JS: WaterManager class not available.");
+            window.waterManager = null;
+        }
+
         window.interaction.initInteraction(assetManager);
         window.mapRenderer.initMapRenderer(assetManager); // Initialize mapRenderer with assetManager.
         window.mapManager = window.mapRenderer; // Assign mapRenderer to mapManager
@@ -2582,6 +2599,27 @@ async function initialize() { // Made async
             } else if (thirstElement) {
                 thirstElement.textContent = "Thirst N/A";
                 thirstElement.style.color = ""; // Reset color if N/A
+            }
+
+            // Update Breath Bar
+            const breathElement = document.getElementById('breathDisplay');
+            if (breathElement) {
+                const breath = gameState.player.breath !== undefined ? gameState.player.breath : 20;
+                const maxBreath = gameState.player.maxBreath || 20;
+                // Generate bar
+                let filled = Math.max(0, Math.min(maxBreath, breath));
+                let bar = "[";
+                for (let i = 0; i < maxBreath; i++) {
+                    bar += (i < filled) ? "■" : " ";
+                }
+                bar += `] (${breath}/${maxBreath})`;
+                breathElement.textContent = "Breath: " + bar;
+                if (breath < maxBreath) {
+                    breathElement.style.color = "cyan";
+                } else {
+                    breathElement.style.display = "none"; // Hide when full
+                }
+                if (breath < maxBreath) breathElement.style.display = "block"; // Ensure visible if not full
             }
 
             // Update Z-Level Displays

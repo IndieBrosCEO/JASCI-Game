@@ -598,6 +598,32 @@ window.mapRenderer = {
                 logToConsole("Map dimensions are zero or invalid. All FOW data cleared.", "warn");
             }
 
+            // Populate water volumes from map tiles across all Z-levels
+            if (window.waterManager) {
+                window.waterManager.init(gameState);
+                for (const zLevelKey in mapData.levels) {
+                    if (mapData.levels.hasOwnProperty(zLevelKey)) {
+                        const z = parseInt(zLevelKey, 10);
+                        const levelData = mapData.levels[zLevelKey];
+                        const layer = levelData['bottom'];
+                        if (layer) {
+                            for (let r = 0; r < H; r++) {
+                                for (let c = 0; c < W; c++) {
+                                    const tileData = layer[r]?.[c];
+                                    const baseTileId = (typeof tileData === 'object' && tileData !== null && tileData.tileId !== undefined) ? tileData.tileId : tileData;
+
+                                    if (baseTileId === 'WS') { // Shallow Water
+                                        window.waterManager.setWaterLevel(c, r, z, 1);
+                                    } else if (baseTileId === 'WD') { // Deep Water
+                                        window.waterManager.setWaterLevel(c, r, z, 10);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // Populate static light sources, containers, etc. from map tiles across all Z-levels
             for (const zLevelKey in mapData.levels) {
                 if (mapData.levels.hasOwnProperty(zLevelKey)) {
@@ -1160,6 +1186,26 @@ window.mapRenderer = {
                 let finalSpriteForTile = displaySprite;
                 let finalColorForTile = displayColor;
                 let finalDisplayIdForTile = displayId;
+
+                // Water Rendering Overlay
+                if (window.waterManager) {
+                    const water = window.waterManager.getWaterAt(x, y, currentZ);
+                    if (water && water.depth > 0) {
+                        if (water.depth >= window.waterManager.deepWaterThreshold) {
+                             finalSpriteForTile = '~';
+                             finalColorForTile = '#00008B'; // Deep Blue
+                             finalDisplayIdForTile = 'WATER_DEEP';
+                        } else {
+                             // Shallow water: Tint background blue
+                             tileDefinedBackgroundColor = 'rgba(0, 0, 255, 0.3)';
+                             if (finalDisplayIdForTile === 'MU' || finalDisplayIdForTile === 'GR' || finalDisplayIdForTile === 'DI' || finalDisplayIdForTile === "") {
+                                 finalSpriteForTile = '≈';
+                                 finalColorForTile = '#0000FF';
+                                 finalDisplayIdForTile = 'WATER_SHALLOW';
+                             }
+                        }
+                    }
+                }
 
         if (gameState.isConstructionModeActive && gameState.constructionGhostCoords &&
             gameState.constructionGhostCoords.z === currentZ) {

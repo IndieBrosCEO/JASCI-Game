@@ -224,6 +224,8 @@ if (!gameState.player) {
     gameState.player = {};
 }
 
+gameState.player.breath = 20;
+gameState.player.maxBreath = 20;
 gameState.player.isInVehicle = null; // vehicleId if player is in a vehicle, otherwise null
 gameState.player.teamId = 1;
 gameState.player.aggroList = [];
