@@ -170,7 +170,12 @@ async function endTurn_internal() { // Make async
         window.constructionManager.updateResourceProduction(gameState.currentTurn);
     }
 
-    // Process Fire Spread and Burn-out
+    // Process Water Logic (Extinguish fires first, then flow)
+    if (window.waterManager && typeof window.waterManager.processTurn === 'function') {
+        window.waterManager.processTurn();
+    }
+
+    // Process Fire Spread and Burn-out (After water to ensure extinguished fires don't burn)
     if (window.fireManager && typeof window.fireManager.processTurn === 'function') {
         window.fireManager.processTurn();
     }
@@ -178,11 +183,6 @@ async function endTurn_internal() { // Make async
     // Process Gas Spread and Dissipation
     if (window.gasManager && typeof window.gasManager.processTurn === 'function') {
         window.gasManager.processTurn();
-    }
-
-    // Process Water Logic
-    if (window.waterManager && typeof window.waterManager.processTurn === 'function') {
-        window.waterManager.processTurn();
     }
 
     gameState.currentTurn++;
