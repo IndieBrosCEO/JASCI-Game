@@ -1,4 +1,8 @@
-﻿[
+[
+  {
+    "id": "Epic_Map",
+    "name": "Epic City Map"
+  },
   {
     "id": "water_test_map_2",
     "name": "Water Test 2"
