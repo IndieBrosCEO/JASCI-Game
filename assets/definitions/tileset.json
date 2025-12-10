@@ -207,6 +207,16 @@
       "floor"
     ]
   },
+  "CF": {
+    "sprite": "░",
+    "name": "Concrete Flooring",
+    "color": "#a6a19a",
+    "tags": [
+      "bottom",
+      "building",
+      "floor"
+    ]
+  },
   "WF": {
     "sprite": "-",
     "name": "Wood Flooring",
@@ -219,10 +229,22 @@
       "flammable"
     ]
   },
+  "MTF": {
+    "sprite": "-",
+    "name": "Metal Flooring",
+    "color": "#808080",
+    "tags": [
+      "bottom",
+      "metal",
+      "building",
+      "floor",
+      "flammable"
+    ]
+  },
   "CT": {
     "sprite": "░",
     "name": "Carpet Floor",
-    "color": "#808080",
+    "color": "#D0B59A",
     "tags": [
       "bottom",
       "building",
