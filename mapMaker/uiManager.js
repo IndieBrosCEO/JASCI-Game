@@ -1113,6 +1113,7 @@ export function updateMapMetadataEditorUI(mapData) {
 export function populateNpcFaceUI(faceData) { // Added export
     const el = (id) => document.getElementById(id);
     if (!faceData) return;
+    logToConsole("populateNpcFaceUI called with skinColor: " + faceData.skinColor);
 
     // Sliders
     const sliders = {
@@ -1254,6 +1255,7 @@ function initializeNpcFaceParamsForMapMakerUI(npc) {
 
     if (needsFullRandom && typeof window.generateRandomFaceParams === 'function') {
         window.generateRandomFaceParams(npc.faceData); // Populates npc.faceData
+        applyZombieFaceConstraints(npc);
         logToConsole(`Initialized random face params for NPC ${npc.id || npc.name} in Map Maker.`);
     }
 
@@ -1273,6 +1275,32 @@ function initializeNpcFaceParamsForMapMakerUI(npc) {
 }
 
 
+
+/**
+ * Applies zombie-specific face constraints (green skin, red eyes) if the NPC is a zombie.
+ * @param {object} npc - The NPC object.
+ */
+export function applyZombieFaceConstraints(npc) {
+    if (!npc || !assetManagerInstance || !assetManagerInstance.npcDefinitions) return;
+    const def = assetManagerInstance.npcDefinitions[npc.definitionId];
+    if (!def) return;
+
+    // Check if zombie
+    const isZombie = (def.tags && def.tags.includes('zombie')) || (npc.definitionId && npc.definitionId.toLowerCase().includes('zombie'));
+
+    if (isZombie && npc.faceData) {
+        // Greenish skin tones
+        const zombieSkins = ['#8FBC8F', '#90EE90', '#6B8E23', '#556B2F', '#778899']; // DarkSeaGreen, LightGreen, OliveDrab, DarkOliveGreen, LightSlateGray
+        // Redish eye tones
+        const zombieEyes = ['#FF0000', '#8B0000', '#A52A2A', '#CD5C5C']; // Red, DarkRed, Brown, IndianRed
+
+        // Helper for random choice
+        const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+        npc.faceData.skinColor = pick(zombieSkins);
+        npc.faceData.eyeColor = pick(zombieEyes);
+    }
+}
 
 /**
  * Updates UI elements based on data from a newly loaded map.

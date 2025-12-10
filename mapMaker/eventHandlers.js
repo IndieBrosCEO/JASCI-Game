@@ -1,4 +1,4 @@
-﻿// mapMaker/eventHandlers.js
+// mapMaker/eventHandlers.js
 "use strict";
 
 // Data Management Imports
@@ -8,7 +8,7 @@ import { getMapData, snapshot, undo as undoData, redo as redoData, setPlayerStar
 import { placeTile, ensureTileIsObject, getTopmostTileAt } from './tileManager.js'; // Assuming getTopmostTileAt is in tileManager
 
 // UI Update Function Imports
-import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerStartDisplay, updateToolButtonUI, updateSelectedPortalInfoUI, updateContainerInventoryUI, updateLockPropertiesUI, updateTilePropertyEditorUI, getRect3DDepth, updateUIFromLoadedMap, populateItemSelectDropdown, updateSelectedNpcInfoUI, populateNpcBaseTypeDropdown, updateNpcFacePreview, populateNpcFaceUI, updateSelectedVehicleInfoUI, populateVehicleBaseTypeDropdown } from './uiManager.js'; // Added Vehicle UI functions
+import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerStartDisplay, updateToolButtonUI, updateSelectedPortalInfoUI, updateContainerInventoryUI, updateLockPropertiesUI, updateTilePropertyEditorUI, getRect3DDepth, updateUIFromLoadedMap, populateItemSelectDropdown, updateSelectedNpcInfoUI, populateNpcBaseTypeDropdown, updateNpcFacePreview, populateNpcFaceUI, updateSelectedVehicleInfoUI, populateVehicleBaseTypeDropdown, applyZombieFaceConstraints } from './uiManager.js'; // Added applyZombieFaceConstraints
 
 // Tool Logic Imports
 import { handlePlayerStartTool, handlePortalToolClick, handleSelectInspectTool, floodFill2D, floodFill3D, drawLine, drawRect, defineStamp, applyStamp, handleNpcToolClick, handleVehicleToolClick } from './toolManager.js'; // Added handleVehicleToolClick
@@ -543,8 +543,18 @@ function setupButtonEventListeners() {
     el('saveNpcPropertiesBtn', 'click', handleSaveNpcPropertiesClick);
     el('removeNpcBtn', 'click', handleRemoveSelectedNpcClick);
     el('toggleNpcConfigBtn', 'click', () => toggleSectionVisibility('npcConfigContent', 'toggleNpcConfigBtn', 'NPC'));
-    // Optional: Listener for npcBaseTypeSelect if needed for immediate UI changes upon selection
-    // el('npcBaseTypeSelect', 'change', handleNpcBaseTypeChange); 
+
+    // Listener for npcBaseTypeSelect to update the selected NPC's definition ID immediately
+    const npcBaseTypeSelect = document.getElementById('npcBaseTypeSelect');
+    if (npcBaseTypeSelect) {
+        npcBaseTypeSelect.addEventListener('change', (e) => {
+            if (appState.selectedNpc) {
+                appState.selectedNpc.definitionId = e.target.value;
+                // Note: We don't automatically randomize the face here, as that might overwrite custom work.
+                // The user can click "Randomize NPC Face" to apply constraints based on the new type.
+            }
+        });
+    }
 
     // --- NPC Face Generator Event Listeners ---
     const npcFaceControls = [
@@ -581,6 +591,7 @@ function setupButtonEventListeners() {
                 typeof updateNpcFacePreview === 'function') { // Use imported function
                 snapshot(); // Create undo state before randomization
                 window.generateRandomFaceParams(appState.selectedNpc.faceData); // Directly modify the selected NPC's faceData
+                applyZombieFaceConstraints(appState.selectedNpc); // Apply constraints if zombie
                 populateNpcFaceUI(appState.selectedNpc.faceData); // Update the UI controls from the new data - Use imported function
                 updateNpcFacePreview(appState.selectedNpc); // Update the preview - Use imported function
                 logToConsole(`Randomized face for NPC: ${appState.selectedNpc.name || appState.selectedNpc.id}`);
