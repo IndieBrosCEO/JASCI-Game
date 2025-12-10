@@ -617,15 +617,13 @@ window.mapRenderer = {
                                         const baseTileId = (typeof tileData === 'object' && tileData !== null && tileData.tileId !== undefined) ? tileData.tileId : tileData;
 
                                         if (baseTileId === 'WS') { // Shallow Water
-                                            // Check if water already exists to avoid overwriting
-                                            if (!window.waterManager.getWaterAt(c, r, z)) {
-                                                window.waterManager.setWaterLevel(c, r, z, 1);
-                                            }
+                                            window.waterManager.setWaterLevel(c, r, z, 1);
+                                            // Remove static water tile
+                                            layer[r][c] = "";
                                         } else if (baseTileId === 'WD') { // Deep Water
-                                            // Check if water already exists to avoid overwriting
-                                            if (!window.waterManager.getWaterAt(c, r, z)) {
-                                                window.waterManager.setWaterLevel(c, r, z, 2); // Depth 2
-                                            }
+                                            window.waterManager.setWaterLevel(c, r, z, 2); // Depth 2
+                                            // Remove static water tile
+                                            layer[r][c] = "";
                                         }
                                     }
                                 }
