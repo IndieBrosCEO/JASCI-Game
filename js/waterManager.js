@@ -35,6 +35,11 @@ class WaterManager {
 
         if (this.waterCells[key].depth <= 0) {
             delete this.waterCells[key];
+        } else {
+            // Immediate extinguish check per spec
+            if (window.fireManager && typeof window.fireManager.extinguishTile === 'function') {
+                window.fireManager.extinguishTile(x, y, z, false);
+            }
         }
         if (window.mapRenderer) window.mapRenderer.scheduleRender();
     }

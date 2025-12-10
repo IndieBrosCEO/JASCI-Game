@@ -38,6 +38,12 @@ class FireManager {
     igniteTile(x, y, z) {
         if (!this.isFlammable(x, y, z)) return false;
 
+        // Check for water - cannot ignite if wet
+        if (window.waterManager) {
+            const water = window.waterManager.getWaterAt(x, y, z);
+            if (water && water.depth > 0) return false;
+        }
+
         // Check if already burning
         if (this.isBurning(x, y, z)) {
             // Reset duration? Or ignore? Let's reset duration to keep it burning.
