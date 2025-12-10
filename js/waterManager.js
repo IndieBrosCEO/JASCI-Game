@@ -16,14 +16,23 @@ class WaterManager {
         }
     }
 
+    _getMapId() {
+        return window.mapRenderer && window.mapRenderer.getCurrentMapData() ? window.mapRenderer.getCurrentMapData().id : null;
+    }
+
     // Spec 3: Only look at dynamic water data. No static fallback.
     getWaterAt(x, y, z) {
-        const key = `${x},${y},${z}`;
+        const mapId = this._getMapId();
+        if (!mapId) return undefined;
+        const key = `${mapId},${x},${y},${z}`;
         return this.waterCells[key]; // Returns undefined or water object
     }
 
     addWater(x, y, z, amount) {
-        const key = `${x},${y},${z}`;
+        const mapId = this._getMapId();
+        if (!mapId) return;
+
+        const key = `${mapId},${x},${y},${z}`;
         if (!this.waterCells[key]) {
             if (amount <= 0) return;
             this.waterCells[key] = { depth: 0, type: 'water' };
@@ -49,10 +58,13 @@ class WaterManager {
     }
 
     setWaterLevel(x, y, z, depth) {
+        const mapId = this._getMapId();
+        if (!mapId) return;
+
         if (depth <= 0) {
             this.removeWater(x, y, z, 999);
         } else {
-            const key = `${x},${y},${z}`;
+            const key = `${mapId},${x},${y},${z}`;
             this.waterCells[key] = { depth: Math.min(this.maxDepth, depth), type: 'water' };
             if (window.mapRenderer) window.mapRenderer.scheduleRender();
         }
@@ -99,12 +111,17 @@ class WaterManager {
     // Spec 6: Flow Rules
     processFlow() {
         if (!window.mapRenderer) return; // Need map data for terrain checks
+        const currentMapId = this._getMapId();
+        if (!currentMapId) return;
 
         // Snapshot current water cells to avoid processing moved water multiple times in same turn?
         // Or iterate keys. Iterating keys is safer against infinite loops but water moving *into* a processed cell might be skipped or double processed.
         // Spec: "For each cell that has water... in this order".
         // A snapshot of keys is best practice for cellular automata.
-        const keys = Object.keys(this.waterCells);
+        const allKeys = Object.keys(this.waterCells);
+
+        // Filter keys for current map only
+        const keys = allKeys.filter(key => key.startsWith(currentMapId + ','));
 
         // We will collect changes and apply them after? Or applying sequentially affects downstream?
         // "Equalization with water below" implies immediate effect for the cell below?
@@ -130,14 +147,21 @@ class WaterManager {
         // This ensures a unit at Z=2 ends at Z=1, not Z=0.
 
         keys.sort((a, b) => {
-            const zA = parseInt(a.split(',')[2]);
-            const zB = parseInt(b.split(',')[2]);
+            // Key format: mapId,x,y,z. We need z (last element)
+            const partsA = a.split(',');
+            const partsB = b.split(',');
+            const zA = parseInt(partsA[partsA.length - 1]);
+            const zB = parseInt(partsB[partsB.length - 1]);
             return zA - zB; // Ascending Order (Bottom Up) guarantees max 1 fall per turn if we process keys.
         });
 
         keys.forEach(key => {
             if (processed.has(key)) return;
-            const [x, y, z] = key.split(',').map(Number);
+            // Parse coords from key (skip mapId which is parts[0]... parts[length-4]?)
+            // Assuming mapId can contain commas is dangerous but unlikely for IDs.
+            // Safer: we filtered by `startsWith(currentMapId + ',')`.
+            const coordsStr = key.substring(currentMapId.length + 1);
+            const [x, y, z] = coordsStr.split(',').map(Number);
 
             // Check if water still exists (it might have flowed away due to absorption in a previous step? No, keys are snapshot.)
             // Check actual current depth
