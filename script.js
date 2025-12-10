@@ -769,15 +769,6 @@ async function handleKeyDown(event) {
         return;
     }
 
-    // Jump ('J' key)
-    if (event.key === 'j' || event.key === 'J') {
-        if (typeof window.handleJumpKeyPress === 'function') {
-            window.handleJumpKeyPress(); // This now toggles mode or confirms jump
-        }
-        event.preventDefault();
-        return;
-    }
-
     // Console Toggle (Backquote key, often with Shift for tilde '~')
     if (event.code === 'Backquote') {
         event.preventDefault();
@@ -900,6 +891,15 @@ async function handleKeyDown(event) {
     // If the event target is an input field, textarea, or select, do not process the general game actions below.
     // This is placed after specific UI handlers (like the console) to allow them to function.
     if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT') {
+        return;
+    }
+
+    // Jump ('J' key)
+    if (event.key === 'j' || event.key === 'J') {
+        if (typeof window.handleJumpKeyPress === 'function') {
+            window.handleJumpKeyPress(); // This now toggles mode or confirms jump
+        }
+        event.preventDefault();
         return;
     }
 
@@ -1219,13 +1219,13 @@ async function handleKeyDown(event) {
         const W = currentMap ? currentMap.dimensions.width : 0;
 
         if (event.shiftKey && (event.key === '<' || event.key === ',')) {
-             // Physical Move Down (Swim/Fly)
-             window.turnManager.move('down_z');
-             event.preventDefault(); return;
+            // Physical Move Down (Swim/Fly)
+            window.turnManager.move('down_z');
+            event.preventDefault(); return;
         } else if (event.shiftKey && (event.key === '>' || event.key === '.')) {
-             // Physical Move Up (Swim/Fly)
-             window.turnManager.move('up_z');
-             event.preventDefault(); return;
+            // Physical Move Up (Swim/Fly)
+            window.turnManager.move('up_z');
+            event.preventDefault(); return;
         } else if (event.key === '<' || event.key === ',') { // Use ',' as well for convenience
             gameState.currentViewZ--;
             gameState.viewFollowsPlayerZ = false; // Player is manually controlling view
@@ -2505,8 +2505,8 @@ async function initialize() { // Made async
                     // For now, let's just do the measurement quickly.
 
                     if (window.mapRenderer && window.mapRenderer.lastTileWidth) {
-                         tileWidth = window.mapRenderer.lastTileWidth;
-                         tileHeight = window.mapRenderer.lastTileHeight;
+                        tileWidth = window.mapRenderer.lastTileWidth;
+                        tileHeight = window.mapRenderer.lastTileHeight;
                     } else {
                         // Fallback measurement if renderer hasn't cached it
                         const tempSpan = document.createElement('span');
