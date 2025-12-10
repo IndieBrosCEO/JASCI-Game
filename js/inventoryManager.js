@@ -754,46 +754,28 @@ class InventoryManager {
     }
 
     renderInventoryMenu() {
-        const list = document.getElementById("inventoryList");
-        if (!list) return;
-        list.innerHTML = "";
+        const splitContainer = document.getElementById("inventoryContainerSplit");
+        const leftPane = document.getElementById("inventoryPaneLeft");
+        const rightPane = document.getElementById("inventoryPaneRight");
+        const leftList = document.getElementById("inventoryListContainer");
+        const rightList = document.getElementById("inventoryListPlayer");
+        const titleArea = document.getElementById("inventoryTitleArea");
+
+        if (!splitContainer || !leftPane || !rightPane || !leftList || !rightList) {
+            console.error("Inventory UI elements missing.");
+            return;
+        }
+
+        // Reset lists
+        leftList.innerHTML = "";
+        rightList.innerHTML = "";
         this.gameState.inventory.currentlyDisplayedItems = [];
 
-        this.gameState.inventory.handSlots.forEach((item, index) => {
-            if (item) this.gameState.inventory.currentlyDisplayedItems.push({ ...item, equipped: true, source: 'hand', originalHandIndex: index, displayName: item.name });
-        });
-        for (const layer in this.gameState.player.wornClothing) {
-            const item = this.gameState.player.wornClothing[layer];
-            if (item) this.gameState.inventory.currentlyDisplayedItems.push({ ...item, equipped: true, source: 'clothing', originalLayer: layer, displayName: item.name });
-        }
-        if (this.gameState.inventory.container && this.gameState.inventory.container.items) {
-            this.gameState.inventory.container.items.forEach(item => {
-                this.gameState.inventory.currentlyDisplayedItems.push({ ...item, equipped: false, source: 'container', displayName: item.name });
-            });
-        }
-        let collectedFloorItems = [];
-        if (this.gameState.floorItems && this.gameState.playerPos) {
-            const { x: playerX, y: playerY, z: playerZ } = this.gameState.playerPos;
-            const R = 1;
-            this.gameState.floorItems.forEach(floorEntry => {
-                if (floorEntry.x >= playerX - R && floorEntry.x <= playerX + R &&
-                    floorEntry.y >= playerY - R && floorEntry.y <= playerY + R &&
-                    floorEntry.z === playerZ) {
-                    collectedFloorItems.push({ ...floorEntry.item, equipped: false, source: 'floor', originalFloorItemEntry: floorEntry, displayName: floorEntry.item.name });
-                }
-            });
-        }
-        collectedFloorItems.forEach(fi => this.gameState.inventory.currentlyDisplayedItems.push(fi));
-
-
-        // Clear the world containers before populating them
+        // --- 1. Detect World Containers ---
         this.gameState.worldContainers = [];
-
-        // Detect nearby containers from the map and add them to gameState.worldContainers
         if (this.gameState.playerPos && this.gameState.containers) {
-            const R = 1; // Interaction radius
+            const R = 1;
             const { x: px, y: py, z: pz } = this.gameState.playerPos;
-
             this.gameState.containers.forEach(container => {
                 if (container.x >= px - R && container.x <= px + R &&
                     container.y >= py - R && container.y <= py + R &&
@@ -805,94 +787,153 @@ class InventoryManager {
             });
         }
 
-        // Now, display items from the detected world containers
-        if (this.gameState.worldContainers && this.gameState.worldContainers.length > 0) {
+        // --- 2. Determine View Mode ---
+        const hasWorldContainer = this.gameState.worldContainers.length > 0;
+
+        if (hasWorldContainer) {
+            splitContainer.style.display = "flex";
+            leftPane.style.display = "flex"; // Show container pane
+            // Update Headers
+            leftPane.querySelector("h4").textContent = this.gameState.worldContainers[0].name; // Use first container name
+        } else {
+            splitContainer.style.display = "flex"; // Keep flex layout
+            leftPane.style.display = "none"; // Hide container pane
+        }
+
+        // --- 3. Populate Lists ---
+        let globalIndex = 0;
+
+        // Helper to add item to DOM and tracked list
+        const addItemToPane = (item, paneListElement, displayProps) => {
+            const d = document.createElement("div");
+            d.className = "inventory-item";
+
+            let prefix = "";
+            if (displayProps.equipped) prefix = "[E] ";
+            else if (displayProps.source === 'floor') prefix = "[F] ";
+
+            let sizeText = item.size !== undefined ? ` (Sz:${item.size})` : "";
+            if (displayProps.isPlaceholder) sizeText = ` (Cap:${displayProps.containerRef.capacity})`;
+
+            const qtyText = (item.quantity > 1 && !displayProps.isPlaceholder) ? ` x${item.quantity}` : "";
+            const name = displayProps.displayName || item.name;
+
+            d.textContent = `${prefix}${name}${qtyText}${sizeText}`;
+
+            if (globalIndex === this.gameState.inventory.cursor) {
+                d.classList.add("selected");
+                // Auto-scroll logic could go here
+                if (d.scrollIntoView) d.scrollIntoView({ block: "nearest" });
+            }
+
+            // Click to select
+            d.onclick = () => {
+                this.gameState.inventory.cursor = displayProps.globalIndex; // Needs to match current index
+                this.renderInventoryMenu(); // Re-render to update highlights
+            };
+
+            paneListElement.appendChild(d);
+
+            // Track item
+            this.gameState.inventory.currentlyDisplayedItems.push({
+                ...item,
+                ...displayProps,
+                globalIndex: globalIndex
+            });
+            globalIndex++;
+        };
+
+        // --- LEFT PANE (Container) ---
+        if (hasWorldContainer) {
             this.gameState.worldContainers.forEach(container => {
-                // Always show the container, even if empty
                 if (!container.items || container.items.length === 0) {
-                    this.gameState.inventory.currentlyDisplayedItems.push({
-                        id: `empty_container_${container.id}`,
-                        name: `[${container.name}] (Empty)`,
+                    addItemToPane({ id: `empty_${container.id}`, name: "(Empty)" }, leftList, {
                         source: 'worldContainer',
                         containerRef: container,
-                        isPlaceholder: true, // Flag to identify this as a non-item entry
-                        displayName: `[${container.name}] (Empty)`
+                        isPlaceholder: true,
+                        displayName: "(Empty)"
                     });
                 } else {
-                    container.items.forEach((item, itemIdx) => {
-                        this.gameState.inventory.currentlyDisplayedItems.push({
-                            ...item,
-                            equipped: false,
+                    container.items.forEach((item, idx) => {
+                        addItemToPane(item, leftList, {
                             source: 'worldContainer',
                             containerRef: container,
-                            originalItemIndex: itemIdx,
-                            displayName: `[${container.name.toUpperCase()}] ${item.name}` // Prepend container name
+                            originalItemIndex: idx,
+                            displayName: item.name
                         });
                     });
                 }
             });
         }
 
-        if (this.gameState.inventory.currentlyDisplayedItems.length === 0) {
-            list.textContent = " No items ";
-            this.gameState.inventory.cursor = 0; return;
-        }
-        if (this.gameState.inventory.cursor >= this.gameState.inventory.currentlyDisplayedItems.length) {
-            this.gameState.inventory.cursor = Math.max(0, this.gameState.inventory.currentlyDisplayedItems.length - 1);
-        }
-        if (this.gameState.inventory.cursor < 0 && this.gameState.inventory.currentlyDisplayedItems.length > 0) {
-            this.gameState.inventory.cursor = 0;
-        }
-
-        let floorHeaderRendered = false;
-        let lastContainerNameRendered = null;
-        this.gameState.inventory.currentlyDisplayedItems.forEach((item, idx) => {
-            let prefix = "";
-            let headerText = null;
-
-            if (item.source === 'floor' && !floorHeaderRendered) {
-                headerText = "--- Floor ---";
-                floorHeaderRendered = true;
-                lastContainerNameRendered = null;
-            } else if (item.source === 'worldContainer' && item.containerRef && item.containerRef.name !== lastContainerNameRendered) {
-                headerText = `--- ${item.containerRef.name} ---`;
-                lastContainerNameRendered = item.containerRef.name;
-                floorHeaderRendered = false;
-            } else if (item.source !== 'floor' && item.source !== 'worldContainer') {
-                floorHeaderRendered = false;
-                lastContainerNameRendered = null;
-            }
-
-            if (headerText) {
-                const headerDiv = document.createElement("div");
-                headerDiv.textContent = headerText;
-                headerDiv.classList.add("inventory-subheader");
-                list.appendChild(headerDiv);
-            }
-
-            const d = document.createElement("div");
-            if (item.equipped) {
-                prefix = `[EQUIPPED] `;
-            } else if (item.source === 'floor') {
-                prefix = "[FLOOR] ";
-            }
-
-            let sizeText = "";
-            if (item.isPlaceholder) {
-                // For empty container placeholders, show capacity
-                sizeText = ` (Capacity: ${item.containerRef.capacity || 0})`;
-            } else {
-                // For actual items, show size
-                sizeText = item.size !== undefined ? ` (Size: ${item.size})` : "";
-            }
-
-            const quantityText = !item.isPlaceholder && item.quantity > 1 ? ` (x${item.quantity})` : "";
-            const nameToDisplay = item.displayName || item.name || "Unknown Item";
-
-            d.textContent = `${idx + 1}. ${prefix}${nameToDisplay}${quantityText}${sizeText}`;
-            if (idx === this.gameState.inventory.cursor) d.classList.add("selected");
-            list.appendChild(d);
+        // --- RIGHT PANE (Player) ---
+        // Hands
+        this.gameState.inventory.handSlots.forEach((item, index) => {
+            if (item) addItemToPane(item, rightList, {
+                equipped: true, source: 'hand', originalHandIndex: index, displayName: item.name
+            });
         });
+        // Clothing
+        for (const layer in this.gameState.player.wornClothing) {
+            const item = this.gameState.player.wornClothing[layer];
+            if (item) addItemToPane(item, rightList, {
+                equipped: true, source: 'clothing', originalLayer: layer, displayName: item.name
+            });
+        }
+        // Inventory
+        if (this.gameState.inventory.container && this.gameState.inventory.container.items) {
+            this.gameState.inventory.container.items.forEach(item => {
+                addItemToPane(item, rightList, {
+                    equipped: false, source: 'container', displayName: item.name
+                });
+            });
+        }
+        // Floor Items
+        if (this.gameState.floorItems && this.gameState.playerPos) {
+            const { x: px, y: py, z: pz } = this.gameState.playerPos;
+            const R = 1;
+            this.gameState.floorItems.forEach(entry => {
+                if (entry.x >= px - R && entry.x <= px + R && entry.y >= py - R && entry.y <= py + R && entry.z === pz) {
+                    addItemToPane(entry.item, rightList, {
+                        equipped: false, source: 'floor', originalFloorItemEntry: entry, displayName: entry.item.name
+                    });
+                }
+            });
+        }
+
+        // --- 4. Cursor Management ---
+        if (this.gameState.inventory.currentlyDisplayedItems.length === 0) {
+            rightList.innerHTML = "<div style='padding:5px;'>— Empty —</div>";
+            this.gameState.inventory.cursor = 0;
+        } else {
+            // Clamp cursor
+            if (this.gameState.inventory.cursor >= this.gameState.inventory.currentlyDisplayedItems.length) {
+                this.gameState.inventory.cursor = this.gameState.inventory.currentlyDisplayedItems.length - 1;
+            }
+            if (this.gameState.inventory.cursor < 0) this.gameState.inventory.cursor = 0;
+        }
+
+        // Highlight Active Pane based on Cursor
+        const currentItem = this.gameState.inventory.currentlyDisplayedItems[this.gameState.inventory.cursor];
+        if (currentItem) {
+            if (currentItem.source === 'worldContainer') {
+                leftPane.classList.add("active-pane");
+                rightPane.classList.remove("active-pane");
+            } else {
+                leftPane.classList.remove("active-pane");
+                rightPane.classList.add("active-pane");
+            }
+        } else {
+            // Default to right pane if empty or unknown
+            rightPane.classList.add("active-pane");
+            leftPane.classList.remove("active-pane");
+        }
+
+        // Update Capacity Title
+        const capSpan = document.getElementById("invCapacity");
+        if (capSpan && this.gameState.inventory.container) {
+            capSpan.textContent = `${this.gameState.inventory.container.items.length}/${this.gameState.inventory.container.maxSlots}`;
+        }
     }
 
     toggleInventoryMenu() {
@@ -963,6 +1004,26 @@ class InventoryManager {
             return true;
         }
         return false;
+    }
+
+    navigateLeft() {
+        // Switch focus to Container Pane (Left)
+        // Find the first item that is a worldContainer item
+        const firstContainerIndex = this.gameState.inventory.currentlyDisplayedItems.findIndex(i => i.source === 'worldContainer');
+        if (firstContainerIndex !== -1) {
+            this.gameState.inventory.cursor = firstContainerIndex;
+            this.renderInventoryMenu();
+        }
+    }
+
+    navigateRight() {
+        // Switch focus to Player Pane (Right)
+        // Find the first item that is NOT a worldContainer item
+        const firstPlayerIndex = this.gameState.inventory.currentlyDisplayedItems.findIndex(i => i.source !== 'worldContainer');
+        if (firstPlayerIndex !== -1) {
+            this.gameState.inventory.cursor = firstPlayerIndex;
+            this.renderInventoryMenu();
+        }
     }
 
     handleTransferKey() {
@@ -1129,6 +1190,22 @@ class InventoryManager {
                 if (this.gameState.inventory.open) this.renderInventoryMenu();
                 return;
             }
+        }
+
+        // Context-sensitive 'F' Key: Transfer if container is open and item is in player inventory
+        // (If item is in world container, it was already handled by the 'worldContainer' check above)
+        if (this.gameState.worldContainers && this.gameState.worldContainers.length === 1 && !selectedDisplayItem.equipped) {
+             const targetContainer = this.gameState.worldContainers[0];
+             // We need to find the actual item instance in the player's inventory
+             // selectedDisplayItem is a copy/display object.
+             // We can find it by ID in the main container.
+             const actualItem = this.gameState.inventory.container.items.find(i => i.id === selectedDisplayItem.id);
+             // Note: This simple ID match might be ambiguous if duplicates exist, but it's consistent with existing logic.
+
+             if (actualItem && selectedDisplayItem.source === 'container') {
+                 this.transferItem(actualItem, targetContainer);
+                 return; // Stop further processing (don't equip/use)
+             }
         }
 
         if (selectedDisplayItem.equipped) {

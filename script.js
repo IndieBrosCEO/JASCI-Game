@@ -1317,7 +1317,19 @@ async function handleKeyDown(event) {
             case 'ArrowUp': case 'w': case 'W':
             case 'ArrowDown': case 's': case 'S':
             case 'ArrowLeft': case 'a': case 'A':
+                if (gameState.inventory.open) {
+                    if (window.inventoryManager && typeof window.inventoryManager.navigateLeft === 'function') {
+                        window.inventoryManager.navigateLeft();
+                    }
+                    event.preventDefault(); return;
+                }
             case 'ArrowRight': case 'd': case 'D':
+                if (gameState.inventory.open) {
+                    if (window.inventoryManager && typeof window.inventoryManager.navigateRight === 'function') {
+                        window.inventoryManager.navigateRight();
+                    }
+                    event.preventDefault(); return;
+                }
                 // await logic for move handled inside move, but we can await here if needed for sequence
                 await window.turnManager.move(event.key);
                 // Check for portal after movement
