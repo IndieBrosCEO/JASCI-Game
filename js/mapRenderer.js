@@ -726,6 +726,25 @@ window.mapRenderer = {
                                                 capacity = 5;
                                             }
 
+                                            // Extract pre-defined inventory from map data if available
+                                            let existingItems = [];
+                                            if (typeof tileData === 'object' && tileData !== null && Array.isArray(tileData.containerInventory)) {
+                                                tileData.containerInventory.forEach(entry => {
+                                                    const itemDef = assetManagerInstance.getItem(entry.id);
+                                                    if (itemDef) {
+                                                        // Note: We need Item constructor which might not be globally available here in strict modules,
+                                                        // but window.Item is set in inventoryManager.js.
+                                                        if (window.Item) {
+                                                            const newItem = new window.Item(itemDef);
+                                                            newItem.quantity = entry.quantity || 1;
+                                                            existingItems.push(newItem);
+                                                        } else {
+                                                            console.warn("Item constructor not found on window.");
+                                                        }
+                                                    }
+                                                });
+                                            }
+
                                             const containerInstance = {
                                                 x: c,
                                                 y: r,
@@ -734,12 +753,12 @@ window.mapRenderer = {
                                                 tileId: baseTileId,
                                                 name: itemName,
                                                 capacity: capacity,
-                                                items: []
+                                                items: existingItems // Initialize with items from map data
                                             };
                                             // Check if a container with the same position already exists
                                             const existingContainer = gameState.containers.find(c => c.x === c && c.y === r && c.z === z);
                                             if (!existingContainer) {
-                                                console.log(`MAP_RENDERER: Creating container instance: ID ${containerInstance.id}, TileID: ${containerInstance.tileId}, Name: ${containerInstance.name}, Pos: (${containerInstance.x},${containerInstance.y}, Z:${containerInstance.z}), Capacity: ${containerInstance.capacity}`);
+                                                console.log(`MAP_RENDERER: Creating container instance: ID ${containerInstance.id}, TileID: ${containerInstance.tileId}, Name: ${containerInstance.name}, Pos: (${containerInstance.x},${containerInstance.y}, Z:${containerInstance.z}), Capacity: ${containerInstance.capacity}, Pre-filled items: ${containerInstance.items.length}`);
                                                 gameState.containers.push(containerInstance);
                                                 if (typeof window.populateContainer === 'function') {
                                                     window.populateContainer(containerInstance);
