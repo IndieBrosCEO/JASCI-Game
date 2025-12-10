@@ -33,6 +33,60 @@ function Item(itemDef) { // itemDef is the raw object from JSON
 window.InventoryContainer = InventoryContainer;
 window.Item = Item;
 
+window.populateContainer = function(containerInstance) {
+    if (!containerInstance || !containerInstance.tileId) {
+        logToConsole("Error: Invalid container instance passed to populateContainer.", "error", "dev");
+        return;
+    }
+
+    // If container already has items (e.g. from Map Maker manual entry), do not auto-populate.
+    if (containerInstance.items && containerInstance.items.length > 0) {
+        // console.log(`Container ${containerInstance.name} already has items. Skipping auto-population.`);
+        return;
+    }
+
+    // Default to generic if no specific table found
+    let lootTableKey = "container:generic";
+
+    // Attempt to guess loot table from tile definition tags or name
+    if (window.assetManager && window.assetManager.tilesets) {
+        const tileDef = window.assetManager.tilesets[containerInstance.tileId];
+        if (tileDef) {
+            if (tileDef.tags) {
+                if (tileDef.tags.includes('medical')) lootTableKey = "container:medical";
+                else if (tileDef.tags.includes('food') || tileDef.name.toLowerCase().includes('fridge')) lootTableKey = "container:fridge";
+                else if (tileDef.name.toLowerCase().includes('cabinet')) lootTableKey = "container:cabinet";
+                else if (tileDef.name.toLowerCase().includes('desk')) lootTableKey = "container:desk";
+                else if (tileDef.name.toLowerCase().includes('locker')) lootTableKey = "container:locker";
+            }
+        }
+    }
+
+    // Logic to roll loot from table
+    const rollLoot = (tables) => {
+        if (tables && tables[lootTableKey]) {
+            const table = tables[lootTableKey];
+            table.forEach(entry => {
+                if (Math.random() < entry.chance) {
+                    const qty = Math.floor(Math.random() * (entry.max - entry.min + 1)) + entry.min;
+                    const itemDef = window.assetManager.getItem(entry.itemId);
+                    if (itemDef) {
+                        const newItem = new Item(itemDef);
+                        newItem.quantity = qty;
+                        containerInstance.items.push(newItem);
+                    }
+                }
+            });
+        }
+    };
+
+    // Use loot tables from assetManager
+    const lootTables = window.assetManager ? window.assetManager.lootTables : null;
+    if (lootTables) {
+        rollLoot(lootTables);
+    }
+};
+
 
 class InventoryManager {
     constructor(gameState, assetManager) {
@@ -861,6 +915,100 @@ class InventoryManager {
         }
     }
 
+    transferItem(item, targetContainer) {
+        if (!item || !targetContainer) return false;
+
+        const limit = targetContainer.maxSlots || targetContainer.capacity || 999;
+
+        // Check capacity of target container if it has limits (assumed simpler for now, just quantity/slots)
+        if (targetContainer.items.length >= limit) {
+             // Check if stackable and exists
+             const stackable = item.stackable;
+             const existing = targetContainer.items.find(i => i.id === item.id);
+             if (!stackable || !existing || (existing.quantity >= (item.maxStack || 99))) {
+                 logToConsole(`${targetContainer.name} is full.`, "orange");
+                 return false;
+             }
+        }
+
+        // Remove from source (Player Inventory)
+        // logic is tricky because 'item' here is likely a display item or reference.
+        // We need to remove it from gameState.inventory.container.items
+
+        const playerInv = this.gameState.inventory.container.items;
+        // Check if we can remove 1 (or all? usually 1 for single transfer interaction)
+        // Let's assume transferring 1 unit or the whole stack if Shift pressed?
+        // For simplicity, transfer entire stack for now, or 1?
+        // Standard game UI behavior: Interact = Use/Equip. Transfer Key = Transfer.
+        // Let's transfer 1 unit if stackable, or all?
+        // Let's transfer ALL for convenience in this text UI, or 1 if quantity > 1?
+        // Decision: Transfer 1.
+
+        const qtyToTransfer = 1;
+
+        if (this.removeItems(item.id, qtyToTransfer, playerInv)) {
+            // Add to target
+            // Need to create a new Item instance or copy to avoid reference issues if stack split
+            const itemDef = this.assetManager.getItem(item.id);
+            const newItem = new Item(itemDef);
+            newItem.quantity = qtyToTransfer;
+
+            // Add to container logic (simplified addItemToInventory logic)
+            // We can reuse addItemToInventory but need to pass targetContainer.items
+            this.addItemToInventory(newItem, qtyToTransfer, targetContainer.items, limit);
+
+            logToConsole(`Transferred ${newItem.name} to ${targetContainer.name}.`);
+            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+            this.renderInventoryMenu();
+            return true;
+        }
+        return false;
+    }
+
+    handleTransferKey() {
+        if (!this.gameState.inventory.open) return;
+
+        const cursorIndex = this.gameState.inventory.cursor;
+        const selectedDisplayItem = this.gameState.inventory.currentlyDisplayedItems[cursorIndex];
+
+        if (!selectedDisplayItem) return;
+
+        // If item is in World Container -> Take it (Same as Interact)
+        if (selectedDisplayItem.source === 'worldContainer') {
+            this.interactInventoryItem();
+            return;
+        }
+
+        // If item is in Player Inventory (container, hand, clothing?)
+        // Allow transfer if there is EXACTLY ONE open world container nearby to avoid ambiguity.
+        if (this.gameState.worldContainers && this.gameState.worldContainers.length === 1) {
+            const targetContainer = this.gameState.worldContainers[0];
+
+            // If item is equipped, warn or unequip first?
+            if (selectedDisplayItem.equipped) {
+                logToConsole("Unequip item before transferring.", "warn");
+                return;
+            }
+
+            if (selectedDisplayItem.source === 'container') { // Only main inventory for now
+                 // Find actual item in player inventory to ensure validity
+                 const actualItem = this.gameState.inventory.container.items.find(i => i.id === selectedDisplayItem.id); // Simple ID match might fail for duplicates?
+                 // displayItem usually has reference or index?
+                 // renderInventoryMenu copies props.
+
+                 if (actualItem) {
+                     this.transferItem(actualItem, targetContainer);
+                 }
+            } else {
+                logToConsole("Can only transfer items from main inventory.", "info");
+            }
+        } else if (this.gameState.worldContainers && this.gameState.worldContainers.length > 1) {
+            logToConsole("Multiple containers open. Cannot determine target for transfer.", "warn");
+        } else {
+            logToConsole("No open container to transfer to.", "info");
+        }
+    }
+
     interactInventoryItem() {
         if (!this.gameState.inventory.currentlyDisplayedItems || this.gameState.inventory.currentlyDisplayedItems.length === 0) {
             logToConsole("No items to interact with.", "info"); return;
@@ -907,6 +1055,9 @@ class InventoryManager {
             if (this.gameState.inventory.open) this.renderInventoryMenu();
             return;
         }
+
+        // Logic for Transfer Key (T) is handled separately in handleTransferKey
+        // Enter key (Interact) defaults to Use/Equip for player items.
 
         if (selectedDisplayItem.isConsumable && selectedDisplayItem.effects && !selectedDisplayItem.equipped) {
             let consumed = false; const maxNeeds = 24;

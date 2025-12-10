@@ -80,5 +80,41 @@
       { "itemId": "bone", "chance": 0.5, "min": 1, "max": 2 },
       { "itemId": "animal_hide_raw_small", "chance": 0.3, "min": 1, "max": 1 },
       { "itemId": "sinew_animal", "chance": 0.2, "min": 1, "max": 2 }
+  ],
+  "container:generic": [
+    { "itemId": "scrap_metal", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "rag_dirty", "chance": 0.3, "min": 1, "max": 3 },
+    { "itemId": "plastic_junk_item", "chance": 0.2, "min": 1, "max": 2 },
+    { "itemId": "glass_bottle_empty", "chance": 0.1, "min": 1, "max": 1 }
+  ],
+  "container:cabinet": [
+    { "itemId": "canned_beans_food", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "bottled_water_drink", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "rag_clean", "chance": 0.2, "min": 1, "max": 3 },
+    { "itemId": "matches_box", "chance": 0.1, "min": 1, "max": 1 },
+    { "itemId": "painkillers_weak", "chance": 0.05, "min": 1, "max": 1 }
+  ],
+  "container:fridge": [
+    { "itemId": "bottled_water_drink", "chance": 0.5, "min": 1, "max": 3 },
+    { "itemId": "canned_meat_food", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "soda_can_cola", "chance": 0.2, "min": 1, "max": 2 }
+  ],
+  "container:medical": [
+    { "itemId": "bandage_cloth", "chance": 0.5, "min": 1, "max": 3 },
+    { "itemId": "antiseptic_bottle", "chance": 0.3, "min": 1, "max": 1 },
+    { "itemId": "antibiotics_pills", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "first_aid_kit_basic", "chance": 0.05, "min": 1, "max": 1 }
+  ],
+  "container:desk": [
+    { "itemId": "paper_sheet", "chance": 0.5, "min": 1, "max": 5 },
+    { "itemId": "pen_black", "chance": 0.3, "min": 1, "max": 1 },
+    { "itemId": "battery_cell_small", "chance": 0.2, "min": 1, "max": 2 },
+    { "itemId": "flashlight_small", "chance": 0.1, "min": 1, "max": 1 }
+  ],
+  "container:locker": [
+    { "itemId": "jacket_denim", "chance": 0.1, "min": 1, "max": 1 },
+    { "itemId": "boots_work", "chance": 0.1, "min": 1, "max": 1 },
+    { "itemId": "baseball_bat", "chance": 0.05, "min": 1, "max": 1 },
+    { "itemId": "crowbar_tool", "chance": 0.05, "min": 1, "max": 1 }
   ]
 }

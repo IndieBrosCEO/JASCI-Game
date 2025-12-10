@@ -1120,6 +1120,11 @@ async function handleKeyDown(event) {
             case 'i': case 'I':
                 window.inventoryManager.toggleInventoryMenu(); // Corrected
                 event.preventDefault(); return;
+            case 't': case 'T':
+                if (typeof window.inventoryManager.handleTransferKey === 'function') {
+                    window.inventoryManager.handleTransferKey();
+                }
+                event.preventDefault(); return;
             default:
                 return; // Other keys do nothing if inventory is open
         }
