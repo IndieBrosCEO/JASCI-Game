@@ -598,29 +598,37 @@ window.mapRenderer = {
                 logToConsole("Map dimensions are zero or invalid. All FOW data cleared.", "warn");
             }
 
-            // Populate water volumes from map tiles across all Z-levels
+            // Populate water volumes from map tiles across all Z-levels (Bootstrapping)
             if (window.waterManager) {
                 window.waterManager.init(gameState);
-                for (const zLevelKey in mapData.levels) {
-                    if (mapData.levels.hasOwnProperty(zLevelKey)) {
-                        const z = parseInt(zLevelKey, 10);
-                        const levelData = mapData.levels[zLevelKey];
-                        const layer = levelData['bottom'];
-                        if (layer) {
-                            for (let r = 0; r < H; r++) {
-                                for (let c = 0; c < W; c++) {
-                                    const tileData = layer[r]?.[c];
-                                    const baseTileId = (typeof tileData === 'object' && tileData !== null && tileData.tileId !== undefined) ? tileData.tileId : tileData;
 
-                                    if (baseTileId === 'WS') { // Shallow Water
-                                        window.waterManager.setWaterLevel(c, r, z, 1);
-                                    } else if (baseTileId === 'WD') { // Deep Water
-                                        window.waterManager.setWaterLevel(c, r, z, 10);
+                // Only bootstrap if not already done for this map
+                if (!gameState.mapsBootstrapped[mapData.id]) {
+                    logToConsole(`Bootstrapping water for map ${mapData.id}.`);
+                    for (const zLevelKey in mapData.levels) {
+                        if (mapData.levels.hasOwnProperty(zLevelKey)) {
+                            const z = parseInt(zLevelKey, 10);
+                            const levelData = mapData.levels[zLevelKey];
+                            const layer = levelData['bottom'];
+                            if (layer) {
+                                for (let r = 0; r < H; r++) {
+                                    for (let c = 0; c < W; c++) {
+                                        const tileData = layer[r]?.[c];
+                                        const baseTileId = (typeof tileData === 'object' && tileData !== null && tileData.tileId !== undefined) ? tileData.tileId : tileData;
+
+                                        if (baseTileId === 'WS') { // Shallow Water
+                                            window.waterManager.setWaterLevel(c, r, z, 1);
+                                        } else if (baseTileId === 'WD') { // Deep Water
+                                            window.waterManager.setWaterLevel(c, r, z, 2); // Depth 2
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                    gameState.mapsBootstrapped[mapData.id] = true;
+                } else {
+                    logToConsole(`Map ${mapData.id} already bootstrapped for water. Skipping static conversion.`);
                 }
             }
 

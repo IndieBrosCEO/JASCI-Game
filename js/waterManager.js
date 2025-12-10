@@ -2,10 +2,8 @@
 class WaterManager {
     constructor() {
         this.waterCells = {}; // key: "x,y,z", value: { depth: number, type: 'water' }
-        // "Two units of shallow water combine they become deep water"
-        // Shallow = 1 unit. Deep = 2 units.
         this.deepWaterThreshold = 2;
-        this.maxDepth = 2; // Deep water takes up the whole cell (block). No need for >2 currently.
+        this.maxDepth = 2;
     }
 
     init(gameState) {
@@ -13,31 +11,15 @@ class WaterManager {
             gameState.waterCells = {};
         }
         this.waterCells = gameState.waterCells;
+        if (!gameState.mapsBootstrapped) {
+            gameState.mapsBootstrapped = {};
+        }
     }
 
+    // Spec 3: Only look at dynamic water data. No static fallback.
     getWaterAt(x, y, z) {
         const key = `${x},${y},${z}`;
-        if (this.waterCells[key]) {
-            return this.waterCells[key];
-        }
-
-        // Check for static water tiles if no dynamic water exists
-        if (window.mapRenderer) {
-            const mapData = window.mapRenderer.getCurrentMapData();
-            if (mapData && mapData.levels && mapData.levels[z]) {
-                let bottomTile = mapData.levels[z].bottom?.[y]?.[x];
-                if (bottomTile && typeof bottomTile === 'object') bottomTile = bottomTile.tileId;
-
-                if (bottomTile === 'WS') {
-                    // "Shallow water takes up the bottom layer" -> 1 unit
-                    return { depth: 1, type: 'water', isStatic: true };
-                } else if (bottomTile === 'WD') {
-                    // "Deep water takes up the whole cell" -> 2 units (Full Block)
-                    return { depth: 2, type: 'water', isStatic: true };
-                }
-            }
-        }
-        return undefined;
+        return this.waterCells[key]; // Returns undefined or water object
     }
 
     addWater(x, y, z, amount) {
@@ -71,42 +53,21 @@ class WaterManager {
         }
     }
 
+    // Spec 12: Underwater means depth >= 2
     isWaterDeep(x, y, z) {
         const water = this.getWaterAt(x, y, z);
         return water && water.depth >= this.deepWaterThreshold;
     }
 
-    // Extinguish fire at location if water is present
-    extinguishFire(x, y, z) {
-        const water = this.getWaterAt(x, y, z);
-        if (water && water.depth > 0) {
-            if (window.gameState.activeFires) {
-                const initialCount = window.gameState.activeFires.length;
-                window.gameState.activeFires = window.gameState.activeFires.filter(f => !(f.x === x && f.y === y && f.z === z));
-                if (window.gameState.activeFires.length < initialCount) {
-                    if (window.logToConsole) window.logToConsole(`Fire at ${x},${y},${z} extinguished by water.`, 'blue');
-                }
-            }
-        }
-    }
-
+    // Spec 5: Turn Order: Fire -> Flow -> Breath
     processTurn() {
-        // Extinguish fires
-        if (window.gameState.activeFires) {
-            for (let i = window.gameState.activeFires.length - 1; i >= 0; i--) {
-                const fire = window.gameState.activeFires[i];
-                const water = this.getWaterAt(fire.x, fire.y, fire.z);
-                if (water && water.depth > 0) {
-                    window.gameState.activeFires.splice(i, 1);
-                    if (window.logToConsole) window.logToConsole(`Fire at ${fire.x},${fire.y},${fire.z} extinguished by water.`, 'blue');
-                }
-            }
-        }
+        // 1. Extinguish Fires
+        this.processFireExtinguishing();
 
-        // Volumetric Flow & Absorption
+        // 2. Process Flow
         this.processFlow();
 
-        // Process Breath
+        // 3. Process Breath
         if (window.gameState && window.gameState.player) {
             this.processEntityBreath(window.gameState.player);
         }
@@ -117,135 +78,201 @@ class WaterManager {
         }
     }
 
+    processFireExtinguishing() {
+        if (window.gameState.activeFires) {
+            for (let i = window.gameState.activeFires.length - 1; i >= 0; i--) {
+                const fire = window.gameState.activeFires[i];
+                const water = this.getWaterAt(fire.x, fire.y, fire.z);
+                if (water && water.depth > 0) {
+                    window.gameState.activeFires.splice(i, 1);
+                    if (window.logToConsole) window.logToConsole(`Fire at ${fire.x},${fire.y},${fire.z} extinguished by water.`, 'blue');
+                }
+            }
+        }
+    }
+
+    // Spec 6: Flow Rules
     processFlow() {
-        if (!window.mapRenderer) return;
-        const waterKeys = Object.keys(this.waterCells);
-        const diffs = [];
+        if (!window.mapRenderer) return; // Need map data for terrain checks
 
-        waterKeys.forEach(key => {
-            const [x, y, z] = key.split(',').map(Number);
-            const water = this.waterCells[key];
-            if (!water || water.depth <= 0) return;
+        // Snapshot current water cells to avoid processing moved water multiple times in same turn?
+        // Or iterate keys. Iterating keys is safer against infinite loops but water moving *into* a processed cell might be skipped or double processed.
+        // Spec: "For each cell that has water... in this order".
+        // A snapshot of keys is best practice for cellular automata.
+        const keys = Object.keys(this.waterCells);
 
-            // 1. Absorption Check
-            const mapData = window.mapRenderer.getCurrentMapData();
-            if (mapData && mapData.levels && mapData.levels[z]) {
-                const levelData = mapData.levels[z];
+        // We will collect changes and apply them after? Or applying sequentially affects downstream?
+        // "Equalization with water below" implies immediate effect for the cell below?
+        // Usually simpler to iterate snapshot and apply changes immediately to a 'next state' or modify in place with care.
+        // Given "One unit moves down", modifying in place effectively moves it.
+        // If we process Top-Down, a unit falling might fall again.
+        // If we process Bottom-Up, a unit falls into space, then next iteration checks space?
+        // Standard is often arbitrary or specific scan order.
+        // Let's use the keys snapshot but apply changes immediately to `this.waterCells` so that `addWater` handles logic.
+        // But we must ensure a unit moved from A to B isn't processed again at B in the same turn.
+        // We can track "processed" cells.
 
-                // Bottom Layer (Current Z)
-                let bottomTile = levelData.bottom?.[y]?.[x];
-                if (bottomTile && typeof bottomTile === 'object') bottomTile = bottomTile.tileId;
+        const processed = new Set();
+        // Sort keys by Z (descending?) to handle falling efficiently? Or Ascending?
+        // If we process Z=10, drop to Z=9. Then process Z=9. The water drops again.
+        // Is water instantaneous (teleport to bottom) or 1 tile per turn?
+        // Spec 8.2: "One unit of water falls down from the current z to the z below."
+        // Spec 8.1: "One unit of water moves from the current cell down into the cell below."
+        // Implies 1 tile per turn.
+        // To enforce 1 tile per turn, we should iterate Bottom-Up?
+        // Z=0 processed (can't fall further usually). Z=1 processed (falls to 0).
+        // Z=2 processed (falls to 1).
+        // This ensures a unit at Z=2 ends at Z=1, not Z=0.
 
-                let absorbed = false;
-                if (bottomTile === 'GR' || bottomTile === 'TSL') {
-                    window.mapRenderer.updateTileOnLayer(x, y, z, 'bottom', 'MF');
-                    absorbed = true;
-                }
-
-                // Middle Layer (Z-1 Support) - water seeps down?
-                if (mapData.levels[z-1]) {
-                    let belowMiddle = mapData.levels[z-1].middle?.[y]?.[x];
-                    if (belowMiddle && typeof belowMiddle === 'object') belowMiddle = belowMiddle.tileId;
-                    if (belowMiddle === 'DI') {
-                        window.mapRenderer.updateTileOnLayer(x, y, z-1, 'middle', 'MU');
-                        absorbed = true;
-                    }
-                }
-
-                if (absorbed) {
-                    diffs.push({x, y, z, change: -1});
-                    if (water.depth <= 0.5) return; // Stop if absorbed significantly
-                }
-            }
-
-            // 2. Gravity (Flow Down)
-            const floorAtZ = this._hasFloor(x, y, z);
-            if (!floorAtZ) {
-                // Falls to Z-1
-                diffs.push({x, y, z, change: -1});
-                diffs.push({x, y, z: z-1, change: 1});
-                return;
-            }
-
-            // 3. Spread (Flow Sideways)
-            // Logic: High pressure (Depth 2) wants to flow to Low pressure (Depth < 1)
-            // "When two units of shallow water combine they become deep water."
-            // Reverse: Deep water (2) can flow into empty (0) -> both become (1)?
-            // Or Deep water overflows?
-            // User did not specify flow physics, only combination.
-            // Assuming standard dispersion:
-            // If I have 2 (Deep), and neighbor has 0.
-            // I should give 1 to neighbor. Result: 1, 1.
-            // If I have 1 (Shallow), and neighbor has 1.
-            // I cannot flow there (pressure equal).
-            // If I have 1, neighbor 0.
-            // Should I flow? Water spreads. Yes. Result: 0.5, 0.5?
-            // Since we stick to integers mainly for "Deep/Shallow" states, let's allow fractions but visualize/clamp.
-            // Wait, previous code used integer steps (+1).
-            // If I use steps of 1:
-            // 2 (Deep) -> 0 => 1 (Shallow), 1 (Shallow). Correct.
-            // 1 (Shallow) -> 0 => ?
-            // If 1 moves to 0, old becomes 0, new becomes 1. That's movement, not spread.
-            // Spread implies volume conservation but area increase.
-            // If we have infinite source? No, we have finite units.
-            // Let's stick to: Only Deep Water (>= 2) spreads to neighbors with < 1.
-            // This conserves the "Shallow" puddles unless they merge.
-
-            if (water.depth >= 2) {
-                const neighbors = [
-                    {dx: 0, dy: -1}, {dx: 0, dy: 1}, {dx: -1, dy: 0}, {dx: 1, dy: 0}
-                ];
-
-                // Find valid targets (neighbors with depth < 1)
-                let validTargets = [];
-                for (const n of neighbors) {
-                    const nx = x + n.dx;
-                    const ny = y + n.dy;
-
-                    if (this._isBlocked(x, y, z, nx, ny, z)) continue;
-
-                    const neighborWater = this.getWaterAt(nx, ny, z);
-                    const nDepth = neighborWater ? neighborWater.depth : 0;
-
-                    if (nDepth < 1) {
-                        validTargets.push({x: nx, y: ny});
-                    }
-                }
-
-                if (validTargets.length > 0) {
-                    // Spread to ONE neighbor per turn to avoid instant flattening?
-                    // Or split?
-                    // Let's move 1 unit to the first valid target.
-                    // 2 -> 1, Neighbor 0 -> 1.
-                    const target = validTargets[0];
-                    diffs.push({x, y, z, change: -1});
-                    diffs.push({x: target.x, y: target.y, z, change: 1});
-                }
-            }
+        keys.sort((a, b) => {
+            const zA = parseInt(a.split(',')[2]);
+            const zB = parseInt(b.split(',')[2]);
+            return zA - zB; // Ascending Order (Bottom Up) guarantees max 1 fall per turn if we process keys.
         });
 
-        // Apply diffs
-        diffs.forEach(d => {
-            this.addWater(d.x, d.y, d.z, d.change);
+        keys.forEach(key => {
+            if (processed.has(key)) return;
+            const [x, y, z] = key.split(',').map(Number);
+
+            // Check if water still exists (it might have flowed away due to absorption in a previous step? No, keys are snapshot.)
+            // Check actual current depth
+            const water = this.getWaterAt(x, y, z);
+            if (!water || water.depth <= 0) return;
+
+            // Mark as processed so we don't process it again if it somehow stays?
+            // Actually, if we move it, it's gone from here or depth reduces.
+            processed.add(key);
+
+            // 7. Absorption
+            // "If the original depth was 1, that cell will be empty... no further flow... in this turn."
+            const absorbed = this._processAbsorption(x, y, z, water);
+            if (absorbed) {
+                // Remove 1 unit
+                this.removeWater(x, y, z, 1);
+                // If it was 1, it's now 0. Stop.
+                // If it was 2, it's now 1. Continue.
+                if (water.depth < 1) return; // Was 1 (now 0) or effectively empty
+            }
+
+            // 8. Vertical Behavior
+            // "If either equalization or gravity happens... that cell does not attempt sideways spread."
+            const movedVertically = this._processVertical(x, y, z, water);
+
+            if (!movedVertically && water.depth === 2) {
+                // 9. Sideways Spread
+                this._processSideways(x, y, z);
+            }
         });
     }
 
-    _hasFloor(x, y, z) {
+    _processAbsorption(x, y, z, water) {
         const mapData = window.mapRenderer.getCurrentMapData();
         if (!mapData || !mapData.levels || !mapData.levels[z]) return false;
 
-        // 1. Check Bottom Layer at Z
+        const levelData = mapData.levels[z];
+        let absorbed = false;
+
+        // Bottom tile at Z
+        let bottomTile = levelData.bottom?.[y]?.[x];
+        if (bottomTile && typeof bottomTile === 'object') bottomTile = bottomTile.tileId;
+
+        // "Certain bottom tiles... GR or TSL -> MF"
+        // TODO: Move these mappings to a config if possible, but hardcoding for now based on previous code.
+        if (bottomTile === 'GR' || bottomTile === 'TSL') {
+            window.mapRenderer.updateTileOnLayer(x, y, z, 'bottom', 'MF');
+            absorbed = true;
+        }
+
+        // Middle layer one level below (Z-1)
+        if (!absorbed && mapData.levels[z - 1]) {
+            let belowMiddle = mapData.levels[z - 1].middle?.[y]?.[x];
+            if (belowMiddle && typeof belowMiddle === 'object') belowMiddle = belowMiddle.tileId;
+            // "DI -> MU"
+            if (belowMiddle === 'DI') {
+                window.mapRenderer.updateTileOnLayer(x, y, z - 1, 'middle', 'MU');
+                absorbed = true;
+            }
+        }
+
+        return absorbed;
+    }
+
+    _processVertical(x, y, z, water) {
+        // 8.1 Equalization
+        const waterBelow = this.getWaterAt(x, y, z - 1);
+        if (waterBelow && waterBelow.depth < this.maxDepth) {
+            // "One unit... moves down"
+            this.removeWater(x, y, z, 1);
+            this.addWater(x, y, z - 1, 1);
+            return true;
+        }
+
+        // If water below is full (depth 2), do nothing.
+        if (waterBelow && waterBelow.depth >= this.maxDepth) {
+            return false;
+        }
+
+        // 8.2 Gravity into empty space
+        // "If there is no floor at current pos and no water in cell below"
+        // We already checked waterBelow (it's null or empty if we are here? No, if it was < 2 we moved. If it was >= 2 we returned false. So here waterBelow is falsy or 0?)
+        // wait, if waterBelow exists but depth=0 (shouldn't happen as we delete key), or undefined.
+        // So here waterBelow is undefined.
+        if (!waterBelow) {
+            if (!this._hasFloor(x, y, z)) {
+                this.removeWater(x, y, z, 1);
+                this.addWater(x, y, z - 1, 1);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    _processSideways(x, y, z) {
+        // "Only cells with depth 2... allowed to spread" called from caller
+        // "Considers up to 4 neighbors... N, S, W, E"
+        const neighbors = [
+            {dx: 0, dy: -1}, {dx: 0, dy: 1}, {dx: -1, dy: 0}, {dx: 1, dy: 0}
+        ];
+
+        const validTargets = [];
+
+        for (const n of neighbors) {
+            const nx = x + n.dx;
+            const ny = y + n.dy;
+
+            // "Path not blocked by collision tile"
+            if (this._isBlocked(x, y, z, nx, ny, z)) continue;
+
+            // "Neighbor's water depth is less than 1" (i.e. 0)
+            const nWater = this.getWaterAt(nx, ny, z);
+            if (!nWater || nWater.depth < 1) {
+                validTargets.push({x: nx, y: ny});
+            }
+        }
+
+        if (validTargets.length > 0) {
+            // "One target chosen per turn... random"
+            const target = validTargets[Math.floor(Math.random() * validTargets.length)];
+
+            // "One unit moved"
+            this.removeWater(x, y, z, 1);
+            this.addWater(target.x, target.y, z, 1);
+        }
+    }
+
+    // Spec 4: Floor Logic
+    _hasFloor(x, y, z) {
+        const mapData = window.mapRenderer.getCurrentMapData();
+        if (!mapData || !mapData.levels || !mapData.levels[z]) return false; // No data means no floor? Spec says "absorption and floor detection may simply do nothing if there is no map data". If no map data, gravity applies? Spec 11: "if the map does not define tiles ... water ... can move ... floor detection may simply do nothing". "Do nothing" for floor detection means "No floor detected".
+
+        // 1. Bottom tile present and not hole
         let bot = mapData.levels[z].bottom?.[y]?.[x];
         if (bot && typeof bot === 'object') bot = bot.tileId;
 
-        // If bottom is strictly a hole, no floor.
-        if (bot === 'HOLE') return false;
+        if (bot && bot !== 'HOLE') return true;
 
-        // If bottom exists (and not hole), it's a floor.
-        if (bot) return true;
-
-        // 2. Check Middle Layer at Z-1 (Standing on Top)
-        // Consistent with "Standing Logic"
+        // 2. Middle layer below has solid terrain top
         if (mapData.levels[z-1]) {
             let midBelow = mapData.levels[z-1].middle?.[y]?.[x];
             if (midBelow && typeof midBelow === 'object') midBelow = midBelow.tileId;
@@ -261,15 +288,16 @@ class WaterManager {
         return false;
     }
 
+    // Spec 4: Blocked Logic
     _isBlocked(x1, y1, z1, x2, y2, z2) {
         const tileId = window.mapRenderer.getCollisionTileAt(x2, y2, z2);
         if (tileId === "") return false; // Not blocked
 
-        // Check if the blocking tile is permeable
+        // "Blocked ... unless tagged permeable"
         if (window.assetManager && window.assetManager.tilesets[tileId]) {
             const def = window.assetManager.tilesets[tileId];
             if (def.tags && def.tags.includes("permeable")) {
-                return false; // Permeable objects don't block water flow
+                return false;
             }
         }
         return true; // Blocked
@@ -277,7 +305,6 @@ class WaterManager {
 
     processEntityBreath(entity) {
         if (!entity || !entity.mapPos) return;
-        // Determine position (support falling entity displayZ if needed, but usually mapPos is logic source)
         const x = entity.mapPos.x;
         const y = entity.mapPos.y;
         const z = entity.mapPos.z;
@@ -285,46 +312,36 @@ class WaterManager {
         const water = this.getWaterAt(x, y, z);
         const isUnderwater = water && water.depth >= this.deepWaterThreshold;
 
-        // Check for aquatic trait
-        // Player is not aquatic by default. NPCs might have 'aquatic' in tags or stats.
-        // Assuming tags array or type check.
         let isAquatic = false;
         if (entity.tags && entity.tags.includes('aquatic')) isAquatic = true;
-        if (entity.species === 'fish') isAquatic = true; // Hardcoded check for fish.json logic
+        if (entity.species === 'fish') isAquatic = true;
 
-        // Initialize breath for NPCs if missing
         if (entity.breath === undefined && !isAquatic) {
-            entity.breath = 10; // Default NPC breath
+            entity.breath = 10;
             entity.maxBreath = 10;
         }
-
-        // Ensure maxBreath is set if missing
         if (entity.maxBreath === undefined) {
-            entity.maxBreath = 20; // Default max breath
+            entity.maxBreath = 20;
             if (entity.breath === undefined) entity.breath = entity.maxBreath;
         }
 
         if (isAquatic) {
-            // Aquatic logic: breathe in water, suffocate in air
             if (!isUnderwater) {
                 if (entity.breath > 0) {
                     entity.breath--;
                     if (entity === window.gameState.player && window.logToConsole) window.logToConsole("Gasping for water...", "orange");
                 } else {
-                    // Suffocating
                     if (window.logToConsole && entity === window.gameState.player) window.logToConsole("You are suffocating in the air!", "red");
                     if (window.combatManager) {
                         window.combatManager.applyDamage(null, entity, "torso", 2, "suffocation");
                     }
                 }
             } else {
-                // Recover breath in water
                 if (entity.breath < entity.maxBreath) {
                     entity.breath = Math.min(entity.maxBreath, entity.breath + 5);
                 }
             }
         } else {
-            // Normal logic: breathe in air, drown in water
             if (isUnderwater) {
                 if (entity.breath > 0) {
                     entity.breath--;
@@ -336,7 +353,6 @@ class WaterManager {
                     }
                 }
             } else {
-                // Recover breath in air
                 if (entity.breath < entity.maxBreath) {
                     entity.breath = Math.min(entity.maxBreath, entity.breath + 5);
                 }
