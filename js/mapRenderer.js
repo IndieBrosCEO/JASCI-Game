@@ -1043,6 +1043,21 @@ window.mapRenderer = {
                 let tileOnMiddleRawCurrentZ = currentLevelData.middle?.[y]?.[x] || "";
                 let effectiveTileOnBottomCurrentZ = (typeof tileOnBottomRawCurrentZ === 'object' && tileOnBottomRawCurrentZ !== null && tileOnBottomRawCurrentZ.tileId !== undefined) ? tileOnBottomRawCurrentZ.tileId : tileOnBottomRawCurrentZ;
                 let effectiveTileOnMiddleCurrentZ = (typeof tileOnMiddleRawCurrentZ === 'object' && tileOnMiddleRawCurrentZ !== null && tileOnMiddleRawCurrentZ.tileId !== undefined) ? tileOnMiddleRawCurrentZ.tileId : tileOnMiddleRawCurrentZ;
+
+                // Dynamic Water Layering Visualization
+                if (window.waterManager) {
+                    const water = window.waterManager.getWaterAt(x, y, currentZ);
+                    if (water && water.depth > 0) {
+                        if (water.depth === 1) {
+                            // Shallow water: visualizes as Bottom Layer
+                            effectiveTileOnBottomCurrentZ = 'WS';
+                        } else if (water.depth >= 2) {
+                            // Deep water: visualizes as Middle Layer (covers bottom)
+                            effectiveTileOnMiddleCurrentZ = 'WD';
+                        }
+                    }
+                }
+
                 let tileDefOnBottomCurrentZ = assetManagerInstance.tilesets[effectiveTileOnBottomCurrentZ];
                 let tileDefOnMiddleCurrentZ = assetManagerInstance.tilesets[effectiveTileOnMiddleCurrentZ];
                 let primaryTileDefOnCurrentZ = null;
@@ -1198,26 +1213,6 @@ window.mapRenderer = {
                 let finalSpriteForTile = displaySprite;
                 let finalColorForTile = displayColor;
                 let finalDisplayIdForTile = displayId;
-
-                // Water Rendering Overlay
-                if (window.waterManager) {
-                    const water = window.waterManager.getWaterAt(x, y, currentZ);
-                    if (water && water.depth > 0) {
-                        if (water.depth >= window.waterManager.deepWaterThreshold) {
-                             finalSpriteForTile = '~';
-                             finalColorForTile = '#00008B'; // Deep Blue
-                             finalDisplayIdForTile = 'WATER_DEEP';
-                        } else {
-                             // Shallow water: Tint background blue
-                             tileDefinedBackgroundColor = 'rgba(0, 0, 255, 0.3)';
-                             if (finalDisplayIdForTile === 'MU' || finalDisplayIdForTile === 'GR' || finalDisplayIdForTile === 'DI' || finalDisplayIdForTile === "") {
-                                 finalSpriteForTile = '≈';
-                                 finalColorForTile = '#0000FF';
-                                 finalDisplayIdForTile = 'WATER_SHALLOW';
-                             }
-                        }
-                    }
-                }
 
         if (gameState.isConstructionModeActive && gameState.constructionGhostCoords &&
             gameState.constructionGhostCoords.z === currentZ) {

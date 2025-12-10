@@ -205,7 +205,8 @@ class FireManager {
 
     extinguishTile(x, y, z, turnedToAsh = false) {
         const index = gameState.activeFires.findIndex(f => f.x === x && f.y === y && f.z === z);
-        if (index !== -1) {
+        const wasBurning = index !== -1;
+        if (wasBurning) {
             gameState.activeFires.splice(index, 1);
         }
 
@@ -237,7 +238,7 @@ class FireManager {
 
             if (window.logToConsole) window.logToConsole(`Fire burned out at ${x}, ${y}, ${z}. Turned to Ash.`, 'grey');
 
-        } else {
+        } else if (wasBurning) {
             // Just extinguished by water.
             // "Extinguishing also prevents any further spread from that tile." - naturally handled by removing from activeFires.
             // "returning it to its original base tile" - If it was burning, it hasn't changed tile ID yet (visuals handled by renderer overlay).
