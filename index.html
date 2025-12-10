@@ -431,8 +431,19 @@
                 <div id="equippedContainers"></div>
 
                 <div id="inventoryMenu" class="hidden">
-                    <h3>Inventory (Slots: <span id="invCapacity"></span>)</h3>
-                    <div id="inventoryList"></div>
+                    <div id="inventoryTitleArea">
+                        <h3>Inventory (Slots: <span id="invCapacity"></span>)</h3>
+                    </div>
+                    <div id="inventoryContainerSplit" class="inventory-split-view">
+                        <div id="inventoryPaneLeft" class="inventory-pane">
+                            <h4>Container</h4>
+                            <div id="inventoryListContainer" class="inventory-list"></div>
+                        </div>
+                        <div id="inventoryPaneRight" class="inventory-pane">
+                            <h4>Player</h4>
+                            <div id="inventoryListPlayer" class="inventory-list"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
