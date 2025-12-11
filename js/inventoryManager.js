@@ -1192,22 +1192,6 @@ class InventoryManager {
             }
         }
 
-        // Context-sensitive 'F' Key: Transfer if container is open and item is in player inventory
-        // (If item is in world container, it was already handled by the 'worldContainer' check above)
-        if (this.gameState.worldContainers && this.gameState.worldContainers.length === 1 && !selectedDisplayItem.equipped) {
-             const targetContainer = this.gameState.worldContainers[0];
-             // We need to find the actual item instance in the player's inventory
-             // selectedDisplayItem is a copy/display object.
-             // We can find it by ID in the main container.
-             const actualItem = this.gameState.inventory.container.items.find(i => i.id === selectedDisplayItem.id);
-             // Note: This simple ID match might be ambiguous if duplicates exist, but it's consistent with existing logic.
-
-             if (actualItem && selectedDisplayItem.source === 'container') {
-                 this.transferItem(actualItem, targetContainer);
-                 return; // Stop further processing (don't equip/use)
-             }
-        }
-
         if (selectedDisplayItem.equipped) {
             if (selectedDisplayItem.source === 'clothing' && selectedDisplayItem.originalLayer) {
                 this.unequipClothing(selectedDisplayItem.originalLayer);
