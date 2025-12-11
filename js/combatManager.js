@@ -411,6 +411,57 @@
             return;
         }
 
+        // Apply End of Turn Environmental Damage (Gas) for the entity who just finished their turn
+        if (previousAttackerEntity && this.gameState.environmentalEffects?.tearGasTiles) {
+             const entityPos = previousAttackerEntity === this.gameState ? this.gameState.playerPos : previousAttackerEntity.mapPos;
+             if (entityPos) {
+                 const isOnTearGasTile = this.gameState.environmentalEffects.tearGasTiles.some(t => t.x === entityPos.x && t.y === entityPos.y);
+                 if (isOnTearGasTile) {
+                     const entName = previousAttackerEntity === this.gameState ? "Player" : (previousAttackerEntity.name || previousAttackerEntity.id);
+                     const tearGasDamage = Math.max(0, rollDiceNotation(parseDiceNotation("1d2-1")));
+                     if (tearGasDamage > 0) {
+                         logToConsole(`${entName} ends turn in tear gas and takes ${tearGasDamage} damage.`, 'red');
+                         // We must bypass the isProcessingTurn check for applyDamage or handle it carefully.
+                         // applyDamage doesn't use the lock, but death logic might call nextTurn/endCombat.
+                         // Since we are at the start of nextTurn and about to acquire lock, let's process damage.
+                         // However, if they die, we need to handle removal from initiative before proceeding.
+
+                         // Note: We haven't set isProcessingTurn = true yet.
+                         this.applyDamage({ name: "Tear Gas" }, previousAttackerEntity, "torso", tearGasDamage, "Chemical", { name: "Tear Gas Cloud" });
+
+                         const healthEntity = previousAttackerEntity === this.gameState ? this.gameState.player : previousAttackerEntity;
+                         if (healthEntity.health.torso.current <= 0 || healthEntity.health.head.current <= 0) {
+                             logToConsole(`DEFEATED: ${entName} succumbed to tear gas at end of turn!`, 'darkred');
+                             if (previousAttackerEntity === this.gameState) {
+                                 this.endCombat();
+                                 window.gameOver(this.gameState);
+                                 return;
+                             } else {
+                                 // NPC died from end-of-turn damage.
+                                 // applyDamage handles dropInventory and XP.
+                                 // We just need to remove them from initiative so they don't get selected again if loop wraps.
+                                 // Adjust currentTurnIndex if we remove the current/previous entity to prevent skipping the next one
+                                 const idxToRemove = this.initiativeTracker.findIndex(e => e.entity === previousAttackerEntity);
+                                 this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== previousAttackerEntity);
+                                 this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== previousAttackerEntity);
+
+                                 if (idxToRemove !== -1 && idxToRemove <= this.currentTurnIndex) {
+                                     this.currentTurnIndex--;
+                                 }
+
+                                 window.mapRenderer.scheduleRender();
+                                 if (!this.initiativeTracker.some(e => !e.isPlayer && e.entity.health?.torso?.current > 0)) {
+                                     this.endCombat();
+                                     return;
+                                 }
+                                 // Entity removed, proceed to next turn normal logic
+                             }
+                         }
+                     }
+                 }
+             }
+        }
+
         // Background Combat Flow Control
         if (this.gameState.isInCombat && !this.isPlayerInvolved) {
             if (this.turnsToProcess <= 0) {
@@ -583,7 +634,8 @@
             }
             if (changed && window.mapRenderer) window.mapRenderer.scheduleRender();
 
-            // Update character statuses based on environmental effects
+            // Update character statuses based on environmental effects (Presence Only)
+            // Damage is now handled when an entity ENDS their turn (Start of nextTurn logic)
             this.initiativeTracker.map(e => e.entity).forEach(combatant => {
                 if (!combatant || (!combatant.mapPos && combatant !== this.gameState)) return;
                 const pos = (combatant === this.gameState) ? this.gameState.playerPos : combatant.mapPos; if (!pos) return;
@@ -598,40 +650,21 @@
                     } else currentInSmokeStatus.duration = Math.max(currentInSmokeStatus.duration, 1);
                 } else if (currentInSmokeStatus) delete combatant.statusEffects["in_smoke"];
 
-                // Tear Gas status & DoT
+                // Tear Gas status (Irritation only, damage moved)
                 const isOnTearGasTile = this.gameState.environmentalEffects.tearGasTiles?.some(t => t.x === pos.x && t.y === pos.y);
                 let currentTearGasStatus = combatant.statusEffects ? combatant.statusEffects["irritated_tear_gas"] : null;
                 if (isOnTearGasTile) {
                     const combatantName = combatant === this.gameState ? "Player" : (combatant.name || combatant.id);
                     if (!currentTearGasStatus) {
                         if (!combatant.statusEffects) combatant.statusEffects = {};
-                        combatant.statusEffects["irritated_tear_gas"] = { id: "irritated_tear_gas", displayName: "Irritated (Tear Gas)", duration: 1, sourceItemId: "tear_gas_grenade_thrown", accuracyPenalty: -2, description: "Eyes watering, coughing. Accuracy -2. Takes damage." };
+                        combatant.statusEffects["irritated_tear_gas"] = { id: "irritated_tear_gas", displayName: "Irritated (Tear Gas)", duration: 1, sourceItemId: "tear_gas_grenade_thrown", accuracyPenalty: -2, description: "Eyes watering, coughing. Accuracy -2. Takes damage at end of turn." };
                         logToConsole(`${combatantName} enters tear gas.`, 'orange');
                     } else {
                         currentTearGasStatus.duration = Math.max(currentTearGasStatus.duration, 1);
                     }
-                    const tearGasDamage = Math.max(0, rollDiceNotation(parseDiceNotation("1d2-1")));
-                    if (tearGasDamage > 0) {
-                        logToConsole(`${combatantName} takes ${tearGasDamage} damage from tear gas.`, 'red');
-                        this.applyDamage(this.gameState.combatCurrentAttacker || { name: "Environment" }, combatant, "torso", tearGasDamage, "Chemical", { name: "Tear Gas Cloud" });
-                        let healthEntity = combatant === this.gameState ? this.gameState.player : combatant;
-                        if (healthEntity.health.torso.current <= 0 || healthEntity.health.head.current <= 0) {
-                            logToConsole(`DEFEATED: ${combatantName} succumbed to tear gas!`, 'darkred');
-                            if (combatant === this.gameState) { this.endCombat(); window.gameOver(this.gameState); return; }
-                            else {
-                                if (window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
-                                    window.inventoryManager.dropInventory(combatant);
-                                }
-                                this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== combatant);
-                                this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== combatant);
-                                window.mapRenderer.scheduleRender();
-                                if (!this.initiativeTracker.some(e => !e.isPlayer && e.entity.health?.torso?.current > 0)) { this.endCombat(); return; }
-                            }
-                        }
-                    }
+                    // Damage removed from here
                 } else if (currentTearGasStatus && !isOnTearGasTile) {
-                    // If status was only from tile, it should be removed. If from direct hit, normal duration applies.
-                    // Current logic: status applied if on tile has duration 1, so it wears off if they move.
+                     // Status wears off naturally if duration was from tile (duration 1)
                 }
                 if (combatant === this.gameState && window.renderCharacterInfo) window.renderCharacterInfo();
                 if (combatant === this.gameState && window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
@@ -1972,9 +2005,12 @@
         let explosiveProps = null;
         if (isThrownExplosive) {
             explosiveProps = weapon;
-        } else if (isImpactLauncher && weapon && weapon.ammoType) {
-            explosiveProps = this.assetManager.getItem(weapon.ammoType);
-            if (!explosiveProps) { // Fallback if specific ammo item not found, use weapon's own stats if any
+        } else if (isImpactLauncher && weapon) {
+            if (weapon.ammoType) {
+                explosiveProps = this.assetManager.getItem(weapon.ammoType);
+            }
+            // Fallback: If ammo definition missing OR ammo lacks burst radius (generic ammo) but weapon has it
+            if (!explosiveProps || (!explosiveProps.burstRadiusFt && weapon.burstRadiusFt)) {
                 explosiveProps = weapon;
             }
         }
@@ -2090,7 +2126,22 @@
                 // TODO: Play thermite_loop.wav (when available). Current is a placeholder. Requires AudioManager loop management.
                 window.audioManager.playSoundAtLocation('ui_error_01.wav', impactTileThermite, {}, { volume: 0.7, loop: true, duration: 5000 }); // Long loop placeholder for thermite_loop.wav
             }
-            // TODO: Add visual effect for thermite burning (e.g., specific animation via AnimationManager or particle effect).
+            if (window.fireManager && impactTileThermite) {
+                const burstRadiusTiles = Math.ceil((weapon.burstRadiusFt || 5) / 5);
+                logToConsole(`THERMITE: Igniting area at (${impactTileThermite.x},${impactTileThermite.y}) with radius ${burstRadiusTiles}.`, 'orangered');
+
+                // Ignite center
+                window.fireManager.igniteTile(impactTileThermite.x, impactTileThermite.y, impactTileThermite.z);
+
+                // Ignite radius
+                for (let dx = -burstRadiusTiles; dx <= burstRadiusTiles; dx++) {
+                    for (let dy = -burstRadiusTiles; dy <= burstRadiusTiles; dy++) {
+                        if (Math.sqrt(dx * dx + dy * dy) <= burstRadiusTiles) {
+                             window.fireManager.igniteTile(impactTileThermite.x + dx, impactTileThermite.y + dy, impactTileThermite.z);
+                        }
+                    }
+                }
+            }
         }
 
 
