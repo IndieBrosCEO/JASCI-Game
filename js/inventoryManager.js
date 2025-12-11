@@ -771,9 +771,12 @@ class InventoryManager {
         rightList.innerHTML = "";
         this.gameState.inventory.currentlyDisplayedItems = [];
 
-        // --- 1. Detect World Containers ---
+        // --- 1. Detect Context (World Container vs Companion) ---
+        const targetEntity = this.gameState.inventory.targetEntity;
         this.gameState.worldContainers = [];
-        if (this.gameState.playerPos && this.gameState.containers) {
+
+        // Only look for world containers if NOT trading with a companion
+        if (!targetEntity && this.gameState.playerPos && this.gameState.containers) {
             const R = 1;
             const { x: px, y: py, z: pz } = this.gameState.playerPos;
             this.gameState.containers.forEach(container => {
@@ -789,15 +792,43 @@ class InventoryManager {
 
         // --- 2. Determine View Mode ---
         const hasWorldContainer = this.gameState.worldContainers.length > 0;
+        const isTrading = !!targetEntity;
 
-        if (hasWorldContainer) {
+        if (isTrading) {
+            splitContainer.style.display = "flex";
+            leftPane.style.display = "flex";
+            const header = leftPane.querySelector("h4");
+            if (header) {
+                header.textContent = `${targetEntity.name}'s Inventory`;
+                // Add Auto Equip button if not present
+                let autoEquipBtn = document.getElementById("autoEquipBtn");
+                if (!autoEquipBtn) {
+                    autoEquipBtn = document.createElement("button");
+                    autoEquipBtn.id = "autoEquipBtn";
+                    autoEquipBtn.textContent = "Auto Equip Best";
+                    autoEquipBtn.className = "retro-btn small";
+                    autoEquipBtn.style.marginLeft = "10px";
+                    autoEquipBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.autoEquipCompanion(targetEntity);
+                    };
+                    header.appendChild(autoEquipBtn);
+                }
+            }
+        } else if (hasWorldContainer) {
             splitContainer.style.display = "flex";
             leftPane.style.display = "flex"; // Show container pane
-            // Update Headers
-            leftPane.querySelector("h4").textContent = this.gameState.worldContainers[0].name; // Use first container name
+            const header = leftPane.querySelector("h4");
+            if (header) {
+                header.textContent = this.gameState.worldContainers[0].name; // Use first container name
+                const btn = document.getElementById("autoEquipBtn");
+                if (btn) btn.remove(); // Remove button if switching back to container view
+            }
         } else {
             splitContainer.style.display = "flex"; // Keep flex layout
             leftPane.style.display = "none"; // Hide container pane
+            const btn = document.getElementById("autoEquipBtn");
+            if (btn) btn.remove();
         }
 
         // --- 3. Populate Lists ---
@@ -878,8 +909,34 @@ class InventoryManager {
             });
         }
 
-        // --- LEFT PANE (Container) - POPULATE SECOND for Bottom Placement ---
-        if (hasWorldContainer) {
+        // --- LEFT PANE (Container OR Companion) - POPULATE SECOND for Bottom Placement ---
+        if (isTrading) {
+            // Companion Inventory (Hands)
+            if (targetEntity.inventory && targetEntity.inventory.handSlots) {
+                targetEntity.inventory.handSlots.forEach((item, index) => {
+                    if (item) addItemToPane(item, leftList, {
+                        equipped: true, source: 'companion', originalHandIndex: index, displayName: item.name, targetEntity: targetEntity
+                    });
+                });
+            }
+            // Companion Inventory (Clothing)
+            if (targetEntity.wornClothing) {
+                for (const layer in targetEntity.wornClothing) {
+                    const item = targetEntity.wornClothing[layer];
+                    if (item) addItemToPane(item, leftList, {
+                        equipped: true, source: 'companion', originalLayer: layer, displayName: item.name, targetEntity: targetEntity
+                    });
+                }
+            }
+            // Companion Inventory (Container)
+            if (targetEntity.inventory && targetEntity.inventory.container && targetEntity.inventory.container.items) {
+                targetEntity.inventory.container.items.forEach((item, idx) => {
+                    addItemToPane(item, leftList, {
+                        equipped: false, source: 'companion', originalItemIndex: idx, displayName: item.name, targetEntity: targetEntity
+                    });
+                });
+            }
+        } else if (hasWorldContainer) {
             this.gameState.worldContainers.forEach(container => {
                 if (!container.items || container.items.length === 0) {
                     addItemToPane({ id: `empty_${container.id}`, name: "(Empty)" }, leftList, {
@@ -936,8 +993,25 @@ class InventoryManager {
         }
     }
 
-    toggleInventoryMenu() {
-        this.gameState.inventory.open = !this.gameState.inventory.open;
+    toggleInventoryMenu(targetEntity = null) {
+        // If opening with a new target, ensure we open. If closing, or toggling same state, toggle.
+        if (targetEntity) {
+            if (!this.gameState.inventory.open) {
+                this.gameState.inventory.open = true;
+            }
+            this.gameState.inventory.targetEntity = targetEntity;
+        } else {
+            if (this.gameState.inventory.open && this.gameState.inventory.targetEntity) {
+                // If open with a target and toggle called without target (e.g. 'I' key), close it.
+                this.gameState.inventory.open = false;
+                this.gameState.inventory.targetEntity = null;
+            } else {
+                // Standard toggle
+                this.gameState.inventory.open = !this.gameState.inventory.open;
+                this.gameState.inventory.targetEntity = null;
+            }
+        }
+
         if (window.audioManager) {
             window.audioManager.playUiSound(this.gameState.inventory.open ? 'ui_click_01.wav' : 'ui_click_01.wav', { volume: this.gameState.inventory.open ? 0.6 : 0.5 });
         }
@@ -950,9 +1024,111 @@ class InventoryManager {
             inventoryMenuDiv.classList.add("hidden");
             this.clearInventoryHighlight();
             this.gameState.inventory.currentlyDisplayedItems = [];
+            this.gameState.inventory.targetEntity = null; // Clear target on close
             if (this.gameState.isInCombat && this.gameState.combatPhase === 'playerAttackDeclare' && window.combatManager) {
                 window.combatManager.populateWeaponSelect();
             }
+        }
+    }
+
+    autoEquipCompanion(companion) {
+        if (!companion || !companion.inventory) return;
+
+        logToConsole(`Auto-equipping ${companion.name}...`, "info");
+        let changesMade = false;
+
+        // Helper to get item definition
+        const getDef = (itemId) => this.assetManager.getItem(itemId);
+
+        // 1. Equip Best Armor per Layer
+        // First, unequip all clothing to pool it (virtually or literally)
+        // Ideally we iterate all items (worn + inventory) and pick best.
+        // Simplified: Iterate inventory. If item is clothing and better than what's worn (or nothing worn), wear it.
+        const invItems = companion.inventory.container.items;
+
+        // Sort inventory by armor value (descending) to try best items first
+        const potentialArmor = invItems.filter(i => {
+            const def = getDef(i.id);
+            return def && def.isClothing;
+        }).sort((a, b) => {
+            const defA = getDef(a.id);
+            const defB = getDef(b.id);
+            return (defB.armorValue || 0) - (defA.armorValue || 0);
+        });
+
+        potentialArmor.forEach(item => {
+            const def = getDef(item.id);
+            if (!def || !def.layer) return;
+
+            const currentWorn = companion.wornClothing[def.layer];
+            const currentArmor = currentWorn ? (getDef(currentWorn.id)?.armorValue || 0) : -1;
+
+            if ((def.armorValue || 0) > currentArmor) {
+                // Better armor found.
+                if (currentWorn) {
+                    // Unequip current (move to inventory)
+                    if (this.addItemToInventory(currentWorn, 1, invItems, 999)) {
+                        companion.wornClothing[def.layer] = null;
+                    }
+                }
+                // Equip new
+                if (this.removeItems(item.id, 1, invItems)) {
+                    item.equipped = true;
+                    companion.wornClothing[def.layer] = item;
+                    changesMade = true;
+                    logToConsole(`${companion.name} equipped ${item.name} on ${def.layer}.`, "green");
+                }
+            }
+        });
+
+        // 2. Equip Best Weapon (Main Hand)
+        // Simplified: If main hand empty or we find a higher damage weapon, swap.
+        // Assuming 'melee' style preference for now unless 'ranged' is set in companionSettings
+        const style = companion.companionSettings?.combatStyle || 'melee';
+
+        const potentialWeapons = invItems.filter(i => {
+            const def = getDef(i.id);
+            if (!def || !def.type) return false;
+            if (style === 'melee' && def.type.includes('melee')) return true;
+            if (style === 'ranged' && (def.type.includes('firearm') || def.type.includes('bow'))) return true;
+            return false;
+        }).sort((a, b) => {
+            const defA = getDef(a.id);
+            const defB = getDef(b.id);
+            // Heuristic: Damage * FireRate? Or just raw damage.
+            // Simplified: alphabetical reverse or random if no damage stat (assuming newer items are better?)
+            // Ideally definitions have 'damage'.
+            return (defB.damage || 0) - (defA.damage || 0);
+        });
+
+        if (potentialWeapons.length > 0) {
+            const bestWeapon = potentialWeapons[0];
+            const bestDef = getDef(bestWeapon.id);
+            const currentMain = companion.inventory.handSlots[0];
+            const currentMainDef = currentMain ? getDef(currentMain.id) : null;
+
+            const currentDmg = currentMainDef ? (currentMainDef.damage || 0) : -1;
+
+            if ((bestDef.damage || 0) > currentDmg) {
+                // Swap
+                if (currentMain) {
+                    this.addItemToInventory(currentMain, 1, invItems, 999);
+                    companion.inventory.handSlots[0] = null;
+                }
+                if (this.removeItems(bestWeapon.id, 1, invItems)) {
+                    bestWeapon.equipped = true;
+                    companion.inventory.handSlots[0] = bestWeapon;
+                    changesMade = true;
+                    logToConsole(`${companion.name} equipped ${bestWeapon.name}.`, "green");
+                }
+            }
+        }
+
+        if (changesMade) {
+            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+            this.renderInventoryMenu();
+        } else {
+            logToConsole(`${companion.name} already has the best gear equipped.`, "info");
         }
     }
 
@@ -1034,39 +1210,55 @@ class InventoryManager {
 
         if (!selectedDisplayItem) return;
 
-        // If item is in World Container -> Take it (Same as Interact)
-        if (selectedDisplayItem.source === 'worldContainer') {
+        // --- Logic for World Container OR Companion ---
+        const targetEntity = this.gameState.inventory.targetEntity;
+
+        // 1. Item is in the "Left Pane" (World Container or Companion) -> Take/Transfer to Player
+        if (selectedDisplayItem.source === 'worldContainer' || selectedDisplayItem.source === 'companion') {
+            // Logic duplicated/adapted from interactInventoryItem for "taking" from secondary source
+            const sourceContainer = selectedDisplayItem.containerRef ||
+                                    (selectedDisplayItem.targetEntity ? selectedDisplayItem.targetEntity.inventory.container : null);
+
+            // For companion hand/clothing items, we need specific references if they aren't in a container array
+            // But renderInventoryMenu's display items for hand/clothing don't map neatly back to a simple array index
+            // the way container items do if we want to "take" them via transfer key.
+            // Actually, handleTransferKey is for "Transfer" action (T).
+            // interactInventoryItem (Enter/Click) handles "Use/Take".
+            // The logic here in handleTransferKey calling interactInventoryItem is meant to make 'T' act as 'Take'
+            // when focus is on the container side.
+
             this.interactInventoryItem();
             return;
         }
 
-        // If item is in Player Inventory (container, hand, clothing?)
-        // Allow transfer if there is EXACTLY ONE open world container nearby to avoid ambiguity.
-        if (this.gameState.worldContainers && this.gameState.worldContainers.length === 1) {
-            const targetContainer = this.gameState.worldContainers[0];
+        // 2. Item is in Player Inventory -> Transfer to Target (World Container or Companion)
+        let targetContainer = null;
+        if (targetEntity && targetEntity.inventory && targetEntity.inventory.container) {
+            targetContainer = targetEntity.inventory.container;
+        } else if (this.gameState.worldContainers && this.gameState.worldContainers.length === 1) {
+            targetContainer = this.gameState.worldContainers[0];
+        }
 
-            // If item is equipped, warn or unequip first?
+        if (targetContainer) {
             if (selectedDisplayItem.equipped) {
                 logToConsole("Unequip item before transferring.", "warn");
                 return;
             }
 
-            if (selectedDisplayItem.source === 'container') { // Only main inventory for now
-                 // Find actual item in player inventory to ensure validity
-                 const actualItem = this.gameState.inventory.container.items.find(i => i.id === selectedDisplayItem.id); // Simple ID match might fail for duplicates?
-                 // displayItem usually has reference or index?
-                 // renderInventoryMenu copies props.
-
+            if (selectedDisplayItem.source === 'container') { // Only main inventory
+                 const actualItem = this.gameState.inventory.container.items.find(i => i.id === selectedDisplayItem.id);
                  if (actualItem) {
                      this.transferItem(actualItem, targetContainer);
                  }
             } else {
                 logToConsole("Can only transfer items from main inventory.", "info");
             }
-        } else if (this.gameState.worldContainers && this.gameState.worldContainers.length > 1) {
-            logToConsole("Multiple containers open. Cannot determine target for transfer.", "warn");
         } else {
-            logToConsole("No open container to transfer to.", "info");
+            if (this.gameState.worldContainers && this.gameState.worldContainers.length > 1) {
+                logToConsole("Multiple containers open. Cannot determine target.", "warn");
+            } else {
+                logToConsole("No open container or companion to transfer to.", "info");
+            }
         }
     }
 
@@ -1112,6 +1304,39 @@ class InventoryManager {
                 logToConsole(`Took ${actualItemFromContainer.name} from ${container.name}.`);
             } else {
                 logToConsole(`Not enough space to pick up ${actualItemFromContainer.name} from ${container.name}.`, "orange");
+            }
+            if (this.gameState.inventory.open) this.renderInventoryMenu();
+            return;
+        } else if (selectedDisplayItem.source === 'companion') {
+            const targetEntity = selectedDisplayItem.targetEntity;
+            if (!targetEntity) return;
+
+            let actualItem = null;
+            let removeFromSource = () => {};
+
+            // Determine source array based on type
+            if (selectedDisplayItem.originalItemIndex !== undefined && targetEntity.inventory.container) {
+                // Container item
+                const items = targetEntity.inventory.container.items;
+                actualItem = items[selectedDisplayItem.originalItemIndex];
+                removeFromSource = () => items.splice(selectedDisplayItem.originalItemIndex, 1);
+            } else if (selectedDisplayItem.originalHandIndex !== undefined) {
+                // Hand item
+                actualItem = targetEntity.inventory.handSlots[selectedDisplayItem.originalHandIndex];
+                removeFromSource = () => targetEntity.inventory.handSlots[selectedDisplayItem.originalHandIndex] = null;
+            } else if (selectedDisplayItem.originalLayer) {
+                // Clothing item
+                actualItem = targetEntity.wornClothing[selectedDisplayItem.originalLayer];
+                removeFromSource = () => targetEntity.wornClothing[selectedDisplayItem.originalLayer] = null;
+            }
+
+            if (actualItem) {
+                if (this.addItem(actualItem)) {
+                    removeFromSource();
+                    logToConsole(`Took ${actualItem.name} from ${targetEntity.name}.`);
+                } else {
+                    logToConsole(`Not enough space to take ${actualItem.name}.`, "orange");
+                }
             }
             if (this.gameState.inventory.open) this.renderInventoryMenu();
             return;
@@ -1192,19 +1417,16 @@ class InventoryManager {
             }
         }
 
-        // Context-sensitive 'F' Key: Transfer if container is open and item is in player inventory
-        // (If item is in world container, it was already handled by the 'worldContainer' check above)
-        if (this.gameState.worldContainers && this.gameState.worldContainers.length === 1 && !selectedDisplayItem.equipped) {
-             const targetContainer = this.gameState.worldContainers[0];
-             // We need to find the actual item instance in the player's inventory
-             // selectedDisplayItem is a copy/display object.
-             // We can find it by ID in the main container.
-             const actualItem = this.gameState.inventory.container.items.find(i => i.id === selectedDisplayItem.id);
-             // Note: This simple ID match might be ambiguous if duplicates exist, but it's consistent with existing logic.
+        // Context-sensitive 'F' Key: Transfer if container/companion is open and item is in player inventory
+        if (!selectedDisplayItem.equipped && (this.gameState.inventory.targetEntity || (this.gameState.worldContainers && this.gameState.worldContainers.length === 1))) {
+             let targetContainer = null;
+             if (this.gameState.inventory.targetEntity) targetContainer = this.gameState.inventory.targetEntity.inventory.container;
+             else targetContainer = this.gameState.worldContainers[0];
 
+             const actualItem = this.gameState.inventory.container.items.find(i => i.id === selectedDisplayItem.id);
              if (actualItem && selectedDisplayItem.source === 'container') {
                  this.transferItem(actualItem, targetContainer);
-                 return; // Stop further processing (don't equip/use)
+                 return; // Stop further processing
              }
         }
 

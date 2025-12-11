@@ -779,12 +779,17 @@ function applyRestHealing(character, restType) {
 
 
 // Render the health table UI for a character
-function renderHealthTable(character) {
-    const healthTableBody = document.querySelector("#healthTable tbody"); // Assumes only one health table for the player
+// If targetElementId is provided, renders there instead of the default sidebar table
+function renderHealthTable(character, targetElementId = null) {
+    const selector = targetElementId ? `#${targetElementId} tbody` : "#healthTable tbody";
+    const healthTableBody = document.querySelector(selector);
     if (!healthTableBody) return;
     healthTableBody.innerHTML = "";
 
     if (!character.health) return;
+
+    // Identify character for openMedicalTreatmentModal call
+    const charId = (character === window.gameState || character === window.gameState.player) ? 'player' : character.id;
 
     for (let partNameKey in character.health) {
         let { current, max, crisisTimer } = character.health[partNameKey];
@@ -798,10 +803,10 @@ function renderHealthTable(character) {
 
         // Allow clicking to treat if injured or in crisis
         if (current < max || crisisTimer > 0) {
-            clickHandler = `onclick="window.openMedicalTreatmentModal('${partNameKey}')"`;
+            clickHandler = `onclick="window.openMedicalTreatmentModal('${partNameKey}', '${charId}')"`;
             cursorStyle = `style="cursor: pointer;"`;
             titleAttr = `title="Click to attempt treatment"`;
-            row.classList.add("clickable-health-row"); // For optional CSS hover effects
+            row.classList.add("clickable-health-row");
         }
 
         row.innerHTML = `
@@ -819,13 +824,25 @@ function renderHealthTable(character) {
     }
 }
 
+// Helper to get entity from ID
+function getEntityById(id) {
+    if (id === 'player') return window.gameState.player;
+    if (window.gameState.npcs) {
+        return window.gameState.npcs.find(n => n.id === id);
+    }
+    return null;
+}
+
 // Open the medical treatment modal
-function openMedicalTreatmentModal(bodyPartKey) {
+function openMedicalTreatmentModal(bodyPartKey, targetId = 'player') {
     const modal = document.getElementById('medicalTreatmentModal');
     if (!modal) return;
 
-    // Check if player
-    if (!window.gameState || !window.gameState.player) return;
+    const targetEntity = getEntityById(targetId);
+    if (!targetEntity) {
+        logToConsole(`Error: Target entity '${targetId}' not found for treatment.`, "error");
+        return;
+    }
 
     // Reset previous listeners/state
     const confirmButton = document.getElementById('confirmTreatmentButton');
@@ -837,24 +854,21 @@ function openMedicalTreatmentModal(bodyPartKey) {
     const newCancelBtn = cancelButton.cloneNode(true);
     cancelButton.parentNode.replaceChild(newCancelBtn, cancelButton);
 
-    document.getElementById('treatmentBodyPart').textContent = window.formatBodyPartName(bodyPartKey);
+    document.getElementById('treatmentBodyPart').textContent = `${targetEntity.name}'s ${window.formatBodyPartName(bodyPartKey)}`;
     document.getElementById('treatmentResult').textContent = "";
 
-    // Update Medicine Skill Display
-    const medicineSkill = window.getSkillValue ? window.getSkillValue("Medicine") : 0;
+    // Update Medicine Skill Display (Player's skill)
+    const medicineSkill = window.getSkillValue ? window.getSkillValue("Medicine") : 0; // Uses player stats by default if no entity passed
     document.getElementById('treatmentSkillValue').textContent = medicineSkill;
 
     // Populate Items
     const itemContainer = document.getElementById('treatmentItemOptions');
-    itemContainer.innerHTML = ""; // Clear old options
+    itemContainer.innerHTML = "";
 
-    // Scan inventory for medical items
     const medicalItems = window.getMedicalItems();
-
     let hasMedicalItems = false;
     if (window.gameState.inventory && window.gameState.inventory.container && window.gameState.inventory.container.items) {
         medicalItems.forEach(medItem => {
-            // Count items in inventory
             const count = window.gameState.inventory.container.items.filter(i => i.id === medItem.id).length;
             if (count > 0) {
                 hasMedicalItems = true;
@@ -869,115 +883,134 @@ function openMedicalTreatmentModal(bodyPartKey) {
     }
 
     if (!hasMedicalItems) {
-        itemContainer.innerHTML = "<div style='color: grey; font-style: italic;'>No medical items in inventory.</div>";
+        itemContainer.innerHTML = "<div style='color: grey; font-style: italic;'>No medical items in player inventory.</div>";
     }
 
-    // Select Skill by default
     document.getElementById('treatmentMethodSkill').checked = true;
 
-    // Event Listeners
     newCancelBtn.onclick = () => {
         modal.classList.add('hidden');
     };
 
     newConfirmBtn.onclick = () => {
-        newConfirmBtn.disabled = true; // Prevent double-clicks
-        // Get selection
+        newConfirmBtn.disabled = true;
         const selectedMethod = document.querySelector('input[name="treatmentMethod"]:checked').value;
-        window.performMedicalTreatment(bodyPartKey, selectedMethod);
+        window.performMedicalTreatment(bodyPartKey, selectedMethod, targetId);
     };
 
     modal.classList.remove('hidden');
 }
 
 // Perform the medical treatment action
-function performMedicalTreatment(bodyPartKey, methodValue) {
-    if (!window.gameState.player) return;
+function performMedicalTreatment(bodyPartKey, methodValue, targetId = 'player') {
+    const targetEntity = getEntityById(targetId);
+    if (!targetEntity) return;
 
-    // Check Action Points
     if (window.gameState.actionPointsRemaining < 1) {
         logToConsole("Not enough Action Points to perform treatment.", "orange");
         if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
     }
 
-    // Determine Bonus and Item Consumption
     let bonus = window.getSkillValue ? window.getSkillValue("Medicine") : 0;
     let itemToConsume = null;
     let itemBonus = 0;
 
     if (methodValue !== 'skill') {
-        // Item selected
         const medicalItems = window.getMedicalItems();
         const medItemDef = medicalItems.find(m => m.id === methodValue);
-
         if (medItemDef) {
-            // Find actual item object to remove
             const invItems = window.gameState.inventory.container.items;
             const itemIndex = invItems.findIndex(i => i.id === methodValue);
-
-            if (itemIndex === -1) {
-                logToConsole("Selected item not found in inventory!", "red");
-                return; // Should not happen if UI is consistent
+            if (itemIndex !== -1) {
+                itemBonus = medItemDef.bonus;
+                itemToConsume = invItems[itemIndex];
             }
-
-            itemBonus = medItemDef.bonus;
-            itemToConsume = invItems[itemIndex];
         }
     }
 
-    // Deduct AP
     window.gameState.actionPointsRemaining--;
-    if (window.updateTurnStatusDisplay) window.updateTurnStatusDisplay();
+    if (window.turnManager && window.turnManager.updateTurnUI) window.turnManager.updateTurnUI();
 
-    // Consume Item
     if (itemToConsume) {
-        window.inventoryManager.removeItem(itemToConsume.id, 1); // Correctly use ID and Quantity
-        logToConsole(`Used ${itemToConsume.name} for treatment.`, "white");
+        window.inventoryManager.removeItem(itemToConsume.id, 1);
+        logToConsole(`Used ${itemToConsume.name} for treatment on ${targetEntity.name}.`, "white");
     }
 
-    // Perform Roll
     const roll = window.rollDie(20);
     const totalRoll = roll + bonus + itemBonus;
 
-    // Determine Result Tier
     let resultTier = "Poorly Tended";
     if (totalRoll >= 15) resultTier = "Well Tended";
     else if (totalRoll >= 10) resultTier = "Standard Treatment";
 
     const resultDiv = document.getElementById('treatmentResult');
-    resultDiv.innerHTML = `Roll: ${roll} + Skill(${bonus}) + Item(${itemBonus}) = ${totalRoll}. Result: ${resultTier}`;
-    resultDiv.style.color = (resultTier === "Poorly Tended" && roll + bonus + itemBonus < 5) ? "red" : "lime";
+    if (resultDiv) {
+        resultDiv.innerHTML = `Roll: ${roll} + Skill(${bonus}) + Item(${itemBonus}) = ${totalRoll}. Result: ${resultTier}`;
+        resultDiv.style.color = (resultTier === "Poorly Tended" && totalRoll < 5) ? "red" : "lime";
+    }
 
-    // Apply Treatment Logic
-    // Using "short" rest type to simulate "Field Aid" / First Aid healing if successful
-    // Pass totalRoll to override internal roll in applyTreatment
-    window.applyTreatment(bodyPartKey, resultTier, "short", bonus + itemBonus, window.gameState.player, totalRoll);
+    // Apply Treatment
+    window.applyTreatment(bodyPartKey, resultTier, "short", bonus + itemBonus, targetEntity, totalRoll);
 
-    // Refresh UI after short delay to let user see result
+    // Refresh UI
     setTimeout(() => {
-        // Re-open modal to refresh counts? Or close?
-        // Let's keep open but refresh item list if we want multiple treatments?
-        // For now, close after 1.5s if success? No, user might want to read.
-        // Just refresh the item list in case they want to treat again.
+        // Refresh specific modal if open (e.g. Companion Health)
+        const companionHealthModal = document.getElementById('companionHealthModal');
+        if (companionHealthModal && !companionHealthModal.classList.contains('hidden') && targetId !== 'player') {
+            window.renderHealthTable(targetEntity, 'companionHealthTable');
+        } else if (targetId === 'player') {
+            // Main sidebar automatically updated by applyTreatment calling global renderHealthTable
+        }
 
-        // Refresh item list in modal without full re-open
-        const itemContainer = document.getElementById('treatmentItemOptions');
-        // (Simpler to just call openMedicalTreatmentModal again to refresh UI state but that resets selection)
-        // We'll leave it open. User clicks Cancel or X to close.
-
-        // If item count dropped to 0, we should update UI.
-        if (itemToConsume) {
-            // Quick re-render of modal options
-            window.openMedicalTreatmentModal(bodyPartKey);
-            // Restore result message since re-open clears it
-            document.getElementById('treatmentResult').innerHTML = `Roll: ${roll} + Skill(${bonus}) + Item(${itemBonus}) = ${totalRoll}. Result: ${resultTier}`;
+        // Refresh treatment modal options if kept open
+        if (document.getElementById('medicalTreatmentModal') && !document.getElementById('medicalTreatmentModal').classList.contains('hidden')) {
+             // We can re-call openMedicalTreatmentModal to refresh items, but it resets selection.
+             // Just refreshing item list manually would be better, but simpler to just let user re-open if needed or deal with current state.
+             // For now, let's just ensure if we ran out of items, the UI reflects it if they try again.
+             // Re-calling open... handles it.
+             // window.openMedicalTreatmentModal(bodyPartKey, targetId);
         }
     }, 500);
 }
 
+// Function to open a Health Overview modal for an entity (Companion)
+function openMedicalModalForEntity(entity) {
+    if (!entity) return;
+
+    // Check if modal container exists, if not create it
+    let modal = document.getElementById('companionHealthModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'companionHealthModal';
+        modal.className = 'modal hidden';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close-button" id="closeCompanionHealthModal">&times;</span>
+                <h3 id="companionHealthName">Companion Health</h3>
+                <table id="companionHealthTable" class="health-table">
+                    <thead>
+                        <tr><th>Part</th><th>HP</th><th>Armor</th><th>Crisis</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('closeCompanionHealthModal').onclick = () => {
+            modal.classList.add('hidden');
+        };
+    }
+
+    document.getElementById('companionHealthName').textContent = `${entity.name}'s Health`;
+    window.renderHealthTable(entity, 'companionHealthTable'); // Render into this specific table
+    modal.classList.remove('hidden');
+}
+
 window.openMedicalTreatmentModal = openMedicalTreatmentModal;
 window.performMedicalTreatment = performMedicalTreatment;
+window.openMedicalModalForEntity = openMedicalModalForEntity;
 
 // Get medical item definitions
 function getMedicalItems() {
