@@ -1999,7 +1999,17 @@
         }
 
         const isThrownExplosive = weapon?.type === "weapon_thrown_explosive";
-        const isImpactLauncher = weapon?.explodesOnImpact && !isThrownExplosive; // e.g. Rocket Launcher, Grenade Launcher
+
+        let weaponDef = null;
+        if (weapon && weapon.id) {
+            weaponDef = this.assetManager.getItem(weapon.id);
+        }
+
+        // Use properties from template if missing on instance (handling save migration/stale instances)
+        const weaponExplodes = weapon?.explodesOnImpact || weaponDef?.explodesOnImpact;
+        const weaponBurstRadius = weapon?.burstRadiusFt || weaponDef?.burstRadiusFt;
+
+        const isImpactLauncher = weaponExplodes && !isThrownExplosive; // e.g. Rocket Launcher, Grenade Launcher
         // For thrown explosives, the explosiveProps come from the weapon itself (e.g. frag_grenade_thrown)
         // For launchers, explosiveProps come from the loaded ammo type (e.g. 40mm_grenade_frag for M79)
         let explosiveProps = null;
@@ -2010,8 +2020,11 @@
                 explosiveProps = this.assetManager.getItem(weapon.ammoType);
             }
             // Fallback: If ammo definition missing OR ammo lacks burst radius (generic ammo) but weapon has it
-            if (!explosiveProps || (!explosiveProps.burstRadiusFt && weapon.burstRadiusFt)) {
-                explosiveProps = weapon;
+            if (!explosiveProps || (!explosiveProps.burstRadiusFt && weaponBurstRadius)) {
+                // Determine which object to use for properties. We need one with the burst radius.
+                if (weapon.burstRadiusFt) explosiveProps = weapon;
+                else if (weaponDef && weaponDef.burstRadiusFt) explosiveProps = weaponDef;
+                else explosiveProps = weapon; // Should not happen if weaponBurstRadius is true
             }
         }
 
