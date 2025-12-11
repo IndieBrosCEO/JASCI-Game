@@ -807,20 +807,8 @@
             "tileId": "TC",
             "containerInventory": [
               {
-                "id": "wire_insulated_thin",
-                "quantity": 3
-              },
-              {
-                "id": "spring_small_metal",
-                "quantity": 1
-              },
-              {
-                "id": "plastic_junk_item",
+                "id": "gears_assorted",
                 "quantity": 5
-              },
-              {
-                "id": "plastic_casing_small_device",
-                "quantity": 1
               }
             ]
           },
@@ -927,7 +915,7 @@
           "CN",
           "",
           "EMBCN",
-          "",
+          "copper_wire_spool",
           "CN",
           "CN",
           "MWV",
