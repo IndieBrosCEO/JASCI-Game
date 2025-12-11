@@ -623,6 +623,8 @@
       "firearm"
     ],
     "ammoType": "generic_ammo",
+    "explodesOnImpact": true,
+    "burstRadiusFt": 15,
     "properties": {
       "type": "gun",
       "caliber": "generic_ammo",
@@ -647,6 +649,8 @@
       "firearm"
     ],
     "ammoType": "generic_ammo",
+    "explodesOnImpact": true,
+    "burstRadiusFt": 10,
     "properties": {
       "type": "gun",
       "caliber": "generic_ammo",
