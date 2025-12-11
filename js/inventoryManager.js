@@ -843,30 +843,7 @@ class InventoryManager {
             globalIndex++;
         };
 
-        // --- LEFT PANE (Container) ---
-        if (hasWorldContainer) {
-            this.gameState.worldContainers.forEach(container => {
-                if (!container.items || container.items.length === 0) {
-                    addItemToPane({ id: `empty_${container.id}`, name: "(Empty)" }, leftList, {
-                        source: 'worldContainer',
-                        containerRef: container,
-                        isPlaceholder: true,
-                        displayName: "(Empty)"
-                    });
-                } else {
-                    container.items.forEach((item, idx) => {
-                        addItemToPane(item, leftList, {
-                            source: 'worldContainer',
-                            containerRef: container,
-                            originalItemIndex: idx,
-                            displayName: item.name
-                        });
-                    });
-                }
-            });
-        }
-
-        // --- RIGHT PANE (Player) ---
+        // --- RIGHT PANE (Player) - POPULATE FIRST for Top-to-Bottom Logic ---
         // Hands
         this.gameState.inventory.handSlots.forEach((item, index) => {
             if (item) addItemToPane(item, rightList, {
@@ -896,6 +873,29 @@ class InventoryManager {
                 if (entry.x >= px - R && entry.x <= px + R && entry.y >= py - R && entry.y <= py + R && entry.z === pz) {
                     addItemToPane(entry.item, rightList, {
                         equipped: false, source: 'floor', originalFloorItemEntry: entry, displayName: entry.item.name
+                    });
+                }
+            });
+        }
+
+        // --- LEFT PANE (Container) - POPULATE SECOND for Bottom Placement ---
+        if (hasWorldContainer) {
+            this.gameState.worldContainers.forEach(container => {
+                if (!container.items || container.items.length === 0) {
+                    addItemToPane({ id: `empty_${container.id}`, name: "(Empty)" }, leftList, {
+                        source: 'worldContainer',
+                        containerRef: container,
+                        isPlaceholder: true,
+                        displayName: "(Empty)"
+                    });
+                } else {
+                    container.items.forEach((item, idx) => {
+                        addItemToPane(item, leftList, {
+                            source: 'worldContainer',
+                            containerRef: container,
+                            originalItemIndex: idx,
+                            displayName: item.name
+                        });
                     });
                 }
             });

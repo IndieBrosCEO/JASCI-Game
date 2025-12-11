@@ -697,7 +697,7 @@ window.mapRenderer = {
                                         ? tileData.tileId
                                         : tileData;
 
-                                    if (baseTileId && assetManagerInstance && assetManagerInstance.tilesets && assetManagerInstance.items) {
+                                    if (baseTileId && assetManagerInstance && assetManagerInstance.tilesets && assetManagerInstance.itemsById) {
                                         const tileDef = assetManagerInstance.tilesets[baseTileId];
                                         if (tileDef && tileDef.tags && tileDef.tags.includes('container')) {
                                             // Instance properties like uniqueID, contents should be on tileData if it's an object
@@ -707,8 +707,8 @@ window.mapRenderer = {
                                             let itemName = tileDef.name;
                                             const linkedItemId = tileDef.itemLink;
 
-                                            if (linkedItemId && assetManagerInstance.items[linkedItemId]) {
-                                                const itemDef = assetManagerInstance.items[linkedItemId];
+                                            if (linkedItemId && assetManagerInstance.itemsById[linkedItemId]) {
+                                                const itemDef = assetManagerInstance.itemsById[linkedItemId];
                                                 if (itemDef && typeof itemDef.capacity === 'number' && itemDef.capacity > 0) {
                                                     capacity = itemDef.capacity;
                                                     itemName = itemDef.name || tileDef.name;
@@ -756,7 +756,8 @@ window.mapRenderer = {
                                                 items: existingItems // Initialize with items from map data
                                             };
                                             // Check if a container with the same position already exists
-                                            const existingContainer = gameState.containers.find(c => c.x === c && c.y === r && c.z === z);
+                                            // Fix: Rename find callback variable to 'cont' to avoid shadowing loop variable 'c'
+                                            const existingContainer = gameState.containers.find(cont => cont.x === c && cont.y === r && cont.z === z);
                                             if (!existingContainer) {
                                                 console.log(`MAP_RENDERER: Creating container instance: ID ${containerInstance.id}, TileID: ${containerInstance.tileId}, Name: ${containerInstance.name}, Pos: (${containerInstance.x},${containerInstance.y}, Z:${containerInstance.z}), Capacity: ${containerInstance.capacity}, Pre-filled items: ${containerInstance.items.length}`);
                                                 gameState.containers.push(containerInstance);
