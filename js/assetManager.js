@@ -263,6 +263,25 @@ class AssetManager {
         this.itemsById = tempItemsById; // All items are now consolidated into itemsById
         console.log("AssetManager: All items loaded:", this.itemsById);
 
+        // Auto-generate tile definitions for items that have sprites but are not in tilesets
+        for (const itemId in this.itemsById) {
+            const item = this.itemsById[itemId];
+            if (item.sprite && !this.tilesets[itemId]) {
+                this.tilesets[itemId] = {
+                    sprite: item.sprite,
+                    color: item.color || '#ffffff',
+                    name: item.name,
+                    tags: ['item', 'interactive', 'generated_from_item']
+                };
+                if (item.tags) {
+                    item.tags.forEach(t => {
+                        if (!this.tilesets[itemId].tags.includes(t)) this.tilesets[itemId].tags.push(t);
+                    });
+                }
+                // console.log(`Generated tile definition for item: ${itemId}`);
+            }
+        }
+
         // Populate familyItems map
         for (const itemId in this.itemsById) {
             const item = this.itemsById[itemId];

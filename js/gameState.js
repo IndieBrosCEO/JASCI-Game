@@ -131,6 +131,9 @@ const gameState = {
     perkRanks: {}, // e.g., { "perkId1": 1, "perkId2": 2 }
     processedIdempotencyKeys: new Set(),
 
+    // Containers
+    containers: [], // Stores active container instances on the current map
+    nextContainerId: 1, // ID counter for containers
 
     //Inventory
     inventory: { // Modified as per subtask instructions
