@@ -201,10 +201,10 @@ th, td {
 /* Inventory Split View */
 .inventory-split-view {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     gap: 5px;
-    height: 300px;
-    overflow: hidden;
+    /* height: 300px; Removed fixed height to allow vertical stacking */
+    /* overflow: hidden; Removed to allow container to grow */
 }
 
 .inventory-pane {
