@@ -2053,33 +2053,26 @@
             if (determinedImpactTile) {
                 explosionProcessed = true;
                 const burstRadiusTiles = Math.ceil(explosiveProps.burstRadiusFt / 5);
-                logToConsole(`EXPLOSION: ${explosiveProps.name} detonates. Radius: ${burstRadiusTiles}t`, 'orangered');
-                if (window.audioManager) {
-                    let explosionSound = 'ui_error_01.wav'; // Default loud placeholder
-                    if (burstRadiusTiles <= 2) { // Example threshold: 2 tiles (10ft) or less is "small"
-                        explosionSound = 'ui_error_01.wav'; // TODO: Play explosion_small_01.wav when available
-                    } else {
-                        explosionSound = 'ui_error_01.wav'; // TODO: Play explosion_large_01.wav when available
+
+                const explosionOptions = {
+                    canDodge: isThrownExplosive,
+                    attackRoll: attackResult.roll,
+                    dodgeEligibilityCallback: (char) => {
+                        return (char !== defender || (char === defender && !hit));
                     }
-                    window.audioManager.playSoundAtLocation(explosionSound, determinedImpactTile, {}, { volume: 1.0 });
-                    // Placeholder for explosion_debris_01.wav (missing)
-                    window.audioManager.playSoundAtLocation('ui_click_01.wav', determinedImpactTile, {}, { volume: 0.6, delay: 100 }); // Delayed debris sound (using placeholder)
-                }
-                if (window.animationManager) window.animationManager.playAnimation('explosion', { centerPos: determinedImpactTile, radius: burstRadiusTiles, duration: 1000, sourceWeapon: weapon });
-                this.getCharactersInBlastRadius(determinedImpactTile, burstRadiusTiles).forEach(char => {
-                    let affectedByBlast = true;
-                    const charNameForLog = char === this.gameState ? "Player" : (char.name || char.id);
-                    if (isThrownExplosive && (char !== defender || (char === defender && !hit))) {
-                        if ((rollDie(20) + getStatModifier("Dexterity", char)) >= attackResult.roll) { // Dodge roll vs original attack roll for scatter
-                            affectedByBlast = false; logToConsole(`${charNameForLog} dodged blast!`, 'lightgreen');
-                        } else logToConsole(`${charNameForLog} failed to dodge blast.`, 'orange');
-                    }
-                    if (affectedByBlast) {
-                        // Distribute damage randomly to body parts
-                        const damageToDistribute = rollDiceNotation(parseDiceNotation(explosiveProps.damage));
-                        this.distributeExplosionDamage(attacker, char, damageToDistribute, explosiveProps.damageType, explosiveProps);
-                    }
-                });
+                };
+
+                this.handleExplosion(
+                    determinedImpactTile.x,
+                    determinedImpactTile.y,
+                    determinedImpactTile.z,
+                    burstRadiusTiles,
+                    explosiveProps.damage,
+                    explosiveProps.damageType,
+                    attacker,
+                    weapon,
+                    explosionOptions
+                );
             }
         }
         // Consume Aiming Effect if used
@@ -2818,20 +2811,56 @@
         }
     }
 
-    handleExplosion(x, y, z, radius, damage, damageType) {
-        logToConsole(`Creating a custom explosion at (${x},${y},${z}) with radius ${radius}, damage ${damage}, and type ${damageType}.`, 'orange');
+    handleExplosion(x, y, z, radius, damage, damageType, attacker = { name: "Console" }, weapon = { name: "Explosion" }, options = {}) {
+        const impactTile = { x, y, z };
+        const burstRadiusTiles = radius;
 
-        const impactTile = { x: x, y: y, z: z };
-        const characters = this.getCharactersInBlastRadius(impactTile, radius);
+        if (weapon && weapon.name !== "Explosion") {
+             logToConsole(`EXPLOSION: ${weapon.name} detonates at (${x},${y},${z}). Radius: ${burstRadiusTiles}t`, 'orangered');
+        } else {
+             logToConsole(`Creating an explosion at (${x},${y},${z}) with radius ${radius}, damage ${damage}, and type ${damageType}.`, 'orange');
+        }
 
-        characters.forEach(char => {
-            const totalDamage = rollDiceNotation(parseDiceNotation(damage));
-            this.distributeExplosionDamage({ name: "Console" }, char, totalDamage, damageType, { name: "Explosion" });
-        });
+        if (window.audioManager) {
+             let explosionSound = 'ui_error_01.wav';
+             if (burstRadiusTiles <= 2) explosionSound = 'ui_error_01.wav'; // Small
+             else explosionSound = 'ui_error_01.wav'; // Large
+             window.audioManager.playSoundAtLocation(explosionSound, impactTile, {}, { volume: 1.0 });
+             window.audioManager.playSoundAtLocation('ui_click_01.wav', impactTile, {}, { volume: 0.6, delay: 100 }); // Debris
+        }
 
         if (window.animationManager) {
-            window.animationManager.playAnimation('explosion', { centerPos: impactTile, radius: radius, duration: 1000 });
+            window.animationManager.playAnimation('explosion', { centerPos: impactTile, radius: radius, duration: 1000, sourceWeapon: weapon });
         }
+
+        const characters = this.getCharactersInBlastRadius(impactTile, radius);
+        characters.forEach(char => {
+            let affectedByBlast = true;
+
+            // Optional Dodge Logic (if passed in options)
+            if (options.canDodge && options.attackRoll) {
+                 const charNameForLog = char === this.gameState ? "Player" : (char.name || char.id);
+                 // Check if char is eligible to dodge (e.g. not direct target or attack missed)
+                 let canDodge = true;
+                 if (options.dodgeEligibilityCallback) {
+                     canDodge = options.dodgeEligibilityCallback(char);
+                 }
+
+                 if (canDodge) {
+                      if ((rollDie(20) + getStatModifier("Dexterity", char)) >= options.attackRoll) {
+                           affectedByBlast = false;
+                           logToConsole(`${charNameForLog} dodged blast!`, 'lightgreen');
+                      } else {
+                           logToConsole(`${charNameForLog} failed to dodge blast.`, 'orange');
+                      }
+                 }
+            }
+
+            if (affectedByBlast) {
+                const totalDamage = rollDiceNotation(parseDiceNotation(damage));
+                this.distributeExplosionDamage(attacker, char, totalDamage, damageType, weapon);
+            }
+        });
     }
 
     async processBackgroundRound() {
