@@ -1864,9 +1864,9 @@
   "RGD_V": { "sprite": "H", "name": "Garage Door Vt", "color": "#708090", "tags": ["door", "middle", "metal", "closed", "impassable", "interactive", "garage_door"], "opensToTileId": "RGD_VO" },
   "RGD_HO": { "sprite": "_", "name": "Garage Door Hz Open", "color": "#708090", "tags": ["door", "middle", "metal", "open", "interactive", "permeable", "garage_door", "allows_vision"] },
   "RGD_VO": { "sprite": "'", "name": "Garage Door Vt Open", "color": "#708090", "tags": ["door", "middle", "metal", "open", "interactive", "permeable", "garage_door", "allows_vision"] },
-  "JCB_H": { "sprite": "║", "name": "Jail Cell Bars Hz", "color": "#708090", "tags": ["structure", "middle", "metal", "impassable", "transparent", "jail"] },
+  "JCB_H": { "sprite": "═", "name": "Jail Cell Bars Hz", "color": "#708090", "tags": ["structure", "middle", "metal", "impassable", "transparent", "jail"] },
   "JCB_V": { "sprite": "║", "name": "Jail Cell Bars Vt", "color": "#708090", "tags": ["structure", "middle", "metal", "impassable", "transparent", "jail"] },
-  "JCD_H": { "sprite": "║", "name": "Jail Cell Door Hz", "color": "#708090", "tags": ["door", "middle", "metal", "closed", "impassable", "transparent", "interactive", "jail"], "opensToTileId": "JCD_HO", "isLocked": true, "lockDifficulty": 25 },
+  "JCD_H": { "sprite": "═", "name": "Jail Cell Door Hz", "color": "#708090", "tags": ["door", "middle", "metal", "closed", "impassable", "transparent", "interactive", "jail"], "opensToTileId": "JCD_HO", "isLocked": true, "lockDifficulty": 25 },
   "JCD_V": { "sprite": "║", "name": "Jail Cell Door Vt", "color": "#708090", "tags": ["door", "middle", "metal", "closed", "impassable", "transparent", "interactive", "jail"], "opensToTileId": "JCD_VO", "isLocked": true, "lockDifficulty": 25 },
   "JCD_HO": { "sprite": "_", "name": "Jail Cell Door Hz Open", "color": "#708090", "tags": ["door", "middle", "metal", "open", "transparent", "interactive", "permeable", "jail"] },
   "JCD_VO": { "sprite": "'", "name": "Jail Cell Door Vt Open", "color": "#708090", "tags": ["door", "middle", "metal", "open", "transparent", "interactive", "permeable", "jail"] }
