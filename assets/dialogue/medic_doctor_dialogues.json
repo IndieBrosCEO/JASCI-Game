@@ -21,8 +21,25 @@
             "type": "skillCheck",
             "expression": "skill:FirstAid>6"
         }
+      },
+      {
+        "text": "I'm looking for allies. Would you consider joining me?",
+        "goTo": "recruit_offer",
+        "condition": {
+            "type": "canRecruit"
+        }
       }
     ]
+  },
+  "recruit_offer": {
+      "text": "I suppose I could. Keeping you alive might be the best way to help people around here.",
+      "actions": ["recruit"],
+      "choices": [
+          {
+              "text": "Glad to have you aboard, Doc.",
+              "goTo": "end"
+          }
+      ]
   },
   "neutral_response": {
     "text": "Alright, but be careful out there. A small wound can become a big problem if left untreated.",

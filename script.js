@@ -1125,11 +1125,6 @@ async function handleKeyDown(event) {
                     window.inventoryManager.handleTransferKey();
                 }
                 event.preventDefault(); return;
-            case 'e': case 'E':
-                if (typeof window.inventoryManager.handleTransferKey === 'function') {
-                    window.inventoryManager.handleTransferKey();
-                }
-                event.preventDefault(); return;
             default:
                 return; // Other keys do nothing if inventory is open
         }
@@ -2050,7 +2045,6 @@ function populateKeybinds() {
         "--- Inventory Menu ---",
         "Navigate Items: ArrowUp / ArrowDown / W / S",
         "Use/Equip/Take Item: F / Enter",
-        "Exchange Item (with container): E / T",
         "Drop Item (from container/hands): Shift + F",
         "",
         "--- Targeting Mode (Ranged/Melee) ---",

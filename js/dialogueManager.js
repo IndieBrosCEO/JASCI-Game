@@ -202,6 +202,12 @@ class DialogueManager {
         }
 
         // Add other condition types here (e.g., item check, quest status)
+        if (condition.type === 'canRecruit') {
+            if (window.companionManager && this.currentNpc) {
+                return window.companionManager.canRecruitNpc(this.currentNpc.id);
+            }
+            return false;
+        }
 
         return true; // Default to true if condition type is unknown
     }
@@ -258,6 +264,16 @@ class DialogueManager {
                         const qTarget = params[2];
                         const qAmt = params.length > 3 ? parseInt(params[3]) : 1;
                         window.questManager.updateObjective(qType, qTarget, qAmt);
+                    }
+                    break;
+                case 'recruit':
+                    if (window.companionManager && this.currentNpc) {
+                        const result = window.companionManager.attemptRecruitNpc(this.currentNpc.id);
+                        if (result.success) {
+                            console.log(`Recruited ${this.currentNpc.name}`);
+                        } else {
+                            console.warn(`Failed to recruit ${this.currentNpc.name}: ${result.reason}`);
+                        }
                     }
                     break;
                 // Add more actions here
