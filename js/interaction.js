@@ -2,7 +2,11 @@
 
 const DOOR_OPEN_MAP = {
     "WDH": "WOH", "WDV": "WOV", "MDH": "MOH", "MDV": "MOV",
-    "WinCH": "WinOH", "WinCV": "WinOV"
+    "WinCH": "WinOH", "WinCV": "WinOV",
+    "CLFG_H": "CLFG_HO", "CLFG_V": "CLFG_VO",
+    "WDFG_H": "WDFG_HO", "WDFG_V": "WDFG_VO",
+    "RGD_H": "RGD_HO", "RGD_V": "RGD_VO",
+    "JCD_H": "JCD_HO", "JCD_V": "JCD_VO"
 };
 
 const DOOR_CLOSE_MAP = Object.fromEntries(
@@ -17,6 +21,48 @@ const DOOR_BREAK_MAP = {
 
 // --- Internal Helper Functions ---
 // (Prefixed with _ to indicate they are intended for internal use within this module)
+
+function _propagateGarageDoorState(startX, startY, layer, oldId, newId) {
+    const visited = new Set([`${startX},${startY}`]);
+    const stack = [{x: startX, y: startY}];
+
+    // Determine search directions based on tile ID/tags could be robust, but simply checking all orthogonal
+    // neighbors for the EXACT same oldId is sufficient for contiguous linear structures like garage doors.
+    const directions = [
+        {dx: 1, dy: 0}, {dx: -1, dy: 0},
+        {dx: 0, dy: 1}, {dx: 0, dy: -1}
+    ];
+
+    while (stack.length > 0) {
+        const {x, y} = stack.pop();
+
+        for (const dir of directions) {
+            const nx = x + dir.dx;
+            const ny = y + dir.dy;
+            const key = `${nx},${ny}`;
+
+            if (visited.has(key)) continue;
+
+            // Check bounds
+            if (!layer[ny] || layer[ny][nx] === undefined) continue;
+
+            const tile = layer[ny][nx];
+            const tId = (typeof tile === 'object' && tile !== null) ? tile.tileId : tile;
+
+            if (tId === oldId) {
+                // Update the neighbor
+                if (typeof tile === 'object' && tile !== null) {
+                    tile.tileId = newId;
+                } else {
+                    layer[ny][nx] = newId;
+                }
+                visited.add(key);
+                stack.push({x: nx, y: ny});
+            }
+        }
+    }
+}
+
 function _getActionsForItem(it) {
     if (!assetManagerInstance || !assetManagerInstance.tilesets) { // Added check for tilesets
         console.error("Interaction module or assetManagerInstance.tilesets not ready for _getActionsForItem.");
@@ -411,9 +457,15 @@ function _performAction(action, it) {
     } else if (action === "Open" && DOOR_OPEN_MAP[currentTileIdOnMap]) {
         levelData.middle[y][x] = DOOR_OPEN_MAP[currentTileIdOnMap];
         logToConsole(`Opened ${tileName}`);
+        if (tileDef && tileDef.tags && tileDef.tags.includes('garage_door')) {
+            _propagateGarageDoorState(x, y, levelData.middle, currentTileIdOnMap, DOOR_OPEN_MAP[currentTileIdOnMap]);
+        }
     } else if (action === "Close" && DOOR_CLOSE_MAP[currentTileIdOnMap]) {
         levelData.middle[y][x] = DOOR_CLOSE_MAP[currentTileIdOnMap];
         logToConsole(`Closed ${tileName}`);
+        if (tileDef && tileDef.tags && tileDef.tags.includes('garage_door')) {
+            _propagateGarageDoorState(x, y, levelData.middle, currentTileIdOnMap, DOOR_CLOSE_MAP[currentTileIdOnMap]);
+        }
     } else if (action === "Break Down" && DOOR_BREAK_MAP[currentTileIdOnMap]) {
         levelData.middle[y][x] = DOOR_BREAK_MAP[currentTileIdOnMap];
         logToConsole(`Broke ${tileName}`);
