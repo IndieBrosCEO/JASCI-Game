@@ -467,60 +467,29 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
 
     // Companion Logic
     if (npc.isFollowingPlayer) {
-        const FOLLOW_DISTANCE_THRESHOLD = 3; // Tiles
+        // Use companionSettings if available, fallback to legacy currentOrders
+        const settings = npc.companionSettings || {};
+        const followMode = settings.followMode || (npc.currentOrders === "wait_here" ? "wait" : "follow");
+        const followDistance = settings.followDistance || "close"; // 'close' (3) or 'far' (8)
+
+        let distThreshold = 3;
+        if (followDistance === 'far') distThreshold = 8;
+
         const SCAVENGE_RADIUS = 5;
 
-        switch (npc.currentOrders) {
-            case "follow_close":
-                const playerPos = gameState.playerPos;
-                const distToPlayer = getDistance3D(npc.mapPos, playerPos);
-                if (distToPlayer > FOLLOW_DISTANCE_THRESHOLD) {
-                    pathfindingTarget = { ...playerPos };
-                    // logToConsole(`NPC_OOC Companion ${npcName}: Following player. Target: (${playerPos.x},${playerPos.y},${playerPos.z})`, 'lime');
-                } else {
-                    // logToConsole(`NPC_OOC Companion ${npcName}: Close to player. Idling.`, 'lime');
-                    npc.memory.explorationTarget = null; // Clear any old exploration target
-                }
-                break;
-            case "wait_here":
-                // logToConsole(`NPC_OOC Companion ${npcName}: Waiting at (${npc.mapPos.x},${npc.mapPos.y},${npc.mapPos.z}).`, 'lime');
+        if (followMode === "wait") {
+             // Stay put
+             npc.memory.explorationTarget = null;
+        } else {
+            // Follow logic
+            const playerPos = gameState.playerPos;
+            const distToPlayer = getDistance3D(npc.mapPos, playerPos);
+
+            if (distToPlayer > distThreshold) {
+                pathfindingTarget = { ...playerPos };
+            } else {
                 npc.memory.explorationTarget = null;
-                // No movement, pathfindingTarget remains null.
-                break;
-            case "scavenge_area":
-                if (!npc.memory.explorationTarget || (npc.mapPos.x === npc.memory.explorationTarget.x && npc.mapPos.y === npc.memory.explorationTarget.y && npc.mapPos.z === npc.memory.explorationTarget.z)) {
-                    // Pick a new random point within SCAVENGE_RADIUS of current position
-                    const mapData = window.mapRenderer.getCurrentMapData();
-                    if (mapData && mapData.dimensions) {
-                        let attempts = 0;
-                        while (attempts < MAX_EXPLORATION_TARGET_ATTEMPTS) {
-                            const angle = Math.random() * 2 * Math.PI;
-                            const radius = 1 + Math.floor(Math.random() * (SCAVENGE_RADIUS - 1));
-                            const targetX = Math.max(0, Math.min(mapData.dimensions.width - 1, Math.floor(npc.mapPos.x + Math.cos(angle) * radius)));
-                            const targetY = Math.max(0, Math.min(mapData.dimensions.height - 1, Math.floor(npc.mapPos.y + Math.sin(angle) * radius)));
-                            const targetZ = npc.mapPos.z; // Scavenge on same Z for now
-                            if (window.mapRenderer.isWalkable(targetX, targetY, targetZ) && !_isTileOccupied(targetX, targetY, targetZ, gameState, npc.id)) {
-                                npc.memory.explorationTarget = { x: targetX, y: targetY, z: targetZ };
-                                break;
-                            }
-                            attempts++;
-                        }
-                    }
-                }
-                pathfindingTarget = npc.memory.explorationTarget;
-                if (pathfindingTarget) {
-                    // logToConsole(`NPC_OOC Companion ${npcName}: Scavenging towards (${pathfindingTarget.x},${pathfindingTarget.y},${pathfindingTarget.z}).`, 'lime');
-                } else {
-                    // logToConsole(`NPC_OOC Companion ${npcName}: Scavenging, but no valid exploration target found. Idling.`, 'lime');
-                }
-                break;
-            default: // Same as follow_close
-                const defaultPlayerPos = gameState.playerPos;
-                const defaultDistToPlayer = getDistance3D(npc.mapPos, defaultPlayerPos);
-                if (defaultDistToPlayer > FOLLOW_DISTANCE_THRESHOLD) {
-                    pathfindingTarget = { ...defaultPlayerPos };
-                }
-                break;
+            }
         }
 
         // If player enters combat, companions should be aware and potentially join
@@ -899,6 +868,8 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
     if (npc.isFollowingPlayer) {
         const player = gameState; // Assuming player is always gameState for now
         const companions = gameState.companions.map(id => gameState.npcs.find(n => n.id === id)).filter(c => c);
+        const settings = npc.companionSettings || {};
+        const isPassive = settings.combatMode === 'passive';
 
         potentialTargets.forEach(pt => {
             pt.score = 0;
@@ -910,21 +881,35 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
             }
 
             // Is target attacking player or a companion?
-            // This is hard to determine directly without knowing who *target* is targeting.
-            // Simplified: if target is close to player/companion and hostile, it's a threat.
+            let isThreateningAlly = false;
             if (pt.entity !== player && !companions.includes(pt.entity)) { // Target is an enemy
-                const distToPlayer = getDistance3D(pt.pos, player.playerPos);
-                if (distToPlayer <= 5) pt.score += 50; // Threatening player
+                // Check aggro lists if available to see if they target player
+                if (pt.entity.aggroList && pt.entity.aggroList.some(a => a.entityRef === player || companions.includes(a.entityRef))) {
+                    isThreateningAlly = true;
+                } else {
+                    // Fallback to proximity
+                    const distToPlayer = getDistance3D(pt.pos, player.playerPos);
+                    if (distToPlayer <= 5) isThreateningAlly = true;
 
-                companions.forEach(comp => {
-                    if (comp && comp.mapPos) {
-                        const distToComp = getDistance3D(pt.pos, comp.mapPos);
-                        if (distToComp <= 3) pt.score += 30; // Threatening other companion
-                    }
-                });
+                    companions.forEach(comp => {
+                        if (comp && comp.mapPos) {
+                            const distToComp = getDistance3D(pt.pos, comp.mapPos);
+                            if (distToComp <= 3) isThreateningAlly = true;
+                        }
+                    });
+                }
+
+                if (isThreateningAlly) pt.score += 50;
             }
-            // TODO: Add logic for companionBehaviorProfile (e.g., "healer_support" might de-prioritize attacking if allies need healing)
+
+            // Passive Mode Filter: Significantly reduce score if not threatening ally and not self-defense
+            if (isPassive && !isThreateningAlly && pt.type !== 'aggro') {
+                pt.score -= 1000; // Deprioritize unprovoked attacks
+            }
         });
+
+        // Filter out targets with very low scores (passive ignores safe enemies)
+        potentialTargets = potentialTargets.filter(pt => pt.score > -500);
         // TODO: Add more sophisticated target prioritization (e.g., wounded, high threat, squishy)
         // Example enhancements to pt.score:
         // - If pt.entity is "wounded" (e.g., <30% HP), pt.score += 20
@@ -1198,7 +1183,56 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
         }
         // ------------------------
 
-        const weaponToUse = npc.equippedWeaponId ? assetManager.getItem(npc.equippedWeaponId) : null;
+        // Weapon Selection Logic (Respect Combat Style)
+        let equippedWeaponId = npc.equippedWeaponId;
+        const settings = npc.companionSettings || {};
+        const preferredStyle = settings.combatStyle || 'melee'; // 'melee' or 'ranged'
+
+        // Check current weapon
+        const currentWeapon = equippedWeaponId ? assetManager.getItem(equippedWeaponId) : null;
+        const currentIsRanged = currentWeapon && (currentWeapon.type.includes("firearm") || currentWeapon.type.includes("bow"));
+        const currentIsMelee = !currentIsRanged; // Simplified (unarmed is melee)
+
+        // Attempt swap if mismatch
+        if (preferredStyle === 'ranged' && !currentIsRanged) {
+            // Look for ranged in inventory
+            if (npc.inventory && npc.inventory.container) {
+                const rangedWeapon = npc.inventory.container.items.find(i => {
+                    const def = assetManager.getItem(i.id);
+                    return def && (def.type.includes("firearm") || def.type.includes("bow"));
+                });
+                if (rangedWeapon) {
+                    // Swap
+                    if (window.inventoryManager) {
+                        if (currentWeapon) window.inventoryManager.unequipItem(0, npc.inventory.container.items, npc.inventory.handSlots);
+                        window.inventoryManager.equipItem(rangedWeapon.name, 0, npc.inventory.container.items, npc.inventory.handSlots);
+                        equippedWeaponId = rangedWeapon.id;
+                        npc.equippedWeaponId = equippedWeaponId;
+                        logToConsole(`${npcName} swaps to ranged weapon: ${rangedWeapon.name}.`, 'cyan');
+                    }
+                }
+            }
+        } else if (preferredStyle === 'melee' && !currentIsMelee) {
+             // Look for melee in inventory
+             if (npc.inventory && npc.inventory.container) {
+                const meleeWeapon = npc.inventory.container.items.find(i => {
+                    const def = assetManager.getItem(i.id);
+                    return def && def.type.includes("melee");
+                });
+                if (meleeWeapon) {
+                    // Swap
+                    if (window.inventoryManager) {
+                        if (currentWeapon) window.inventoryManager.unequipItem(0, npc.inventory.container.items, npc.inventory.handSlots);
+                        window.inventoryManager.equipItem(meleeWeapon.name, 0, npc.inventory.container.items, npc.inventory.handSlots);
+                        equippedWeaponId = meleeWeapon.id;
+                        npc.equippedWeaponId = equippedWeaponId;
+                        logToConsole(`${npcName} swaps to melee weapon: ${meleeWeapon.name}.`, 'cyan');
+                    }
+                }
+            }
+        }
+
+        const weaponToUse = equippedWeaponId ? assetManager.getItem(equippedWeaponId) : null;
         const attackType = weaponToUse ? (weaponToUse.type.includes("melee") ? "melee" : (weaponToUse.type.includes("firearm") || weaponToUse.type.includes("bow") || weaponToUse.type.includes("crossbow") || weaponToUse.type.includes("weapon_ranged_other") || weaponToUse.type.includes("thrown") ? "ranged" : "melee")) : "melee";
         const fireMode = weaponToUse?.fireModes?.includes("burst") ? "burst" : (weaponToUse?.fireModes?.[0] || "single");
         const distanceToTarget3D = npc.mapPos && currentTargetPos ? getDistance3D(npc.mapPos, currentTargetPos) : Infinity;

@@ -89,8 +89,26 @@ function _getActionsForItem(it) {
     if (it.itemType === "npc") {
         actions.push("Talk"); // Default talk action
         if (window.companionManager && window.companionManager.isCompanion(it.id)) {
-            actions.push("Orders", "Dismiss");
-            // "Talk (Companion)" could be a specific dialogue branch triggered from default "Talk"
+            actions.push("Trade");
+            actions.push("Heal");
+
+            // Add toggles for companion settings
+            const companion = window.companionManager.getCompanionById(it.id);
+            if (companion && companion.companionSettings) {
+                const s = companion.companionSettings;
+                actions.push(`Toggle Wait/Follow (Curr: ${s.followMode})`);
+                actions.push(`Toggle Close/Far (Curr: ${s.followDistance})`);
+                actions.push(`Toggle Passive/Aggressive (Curr: ${s.combatMode})`);
+                actions.push(`Toggle Melee/Ranged (Curr: ${s.combatStyle})`);
+            } else {
+                // Fallback or initialization
+                actions.push("Toggle Wait/Follow");
+                actions.push("Toggle Close/Far");
+                actions.push("Toggle Passive/Aggressive");
+                actions.push("Toggle Melee/Ranged");
+            }
+
+            actions.push("Dismiss");
         }
         // Recruitment is handled via dialogue initiated by "Talk"
     }
@@ -341,18 +359,36 @@ function _performAction(action, it) {
             } else {
                 logToConsole(`DialogueManager not available. Cannot talk to ${npc.name}.`, "warn");
             }
-        } else if (action === "Orders") {
+        } else if (action === "Trade") {
             if (window.companionManager && window.companionManager.isCompanion(npc.id)) {
-                // Basic cycle orders for now
-                const orders = ["follow_close", "wait_here", "attack_aggressively"]; // Example cycle
-                let currentOrderIndex = orders.indexOf(npc.currentOrders);
-                if (currentOrderIndex === -1) currentOrderIndex = 0; // Default to first if unknown
-                const nextOrderIndex = (currentOrderIndex + 1) % orders.length;
-                window.companionManager.setCompanionOrder(npc.id, orders[nextOrderIndex]);
-                if (window.renderCharacterInfo) window.renderCharacterInfo(); // Update companion list in UI
+                if (window.inventoryManager && typeof window.inventoryManager.toggleInventoryMenu === 'function') {
+                    window.inventoryManager.toggleInventoryMenu(npc); // Open inventory with companion as target
+                }
             } else {
-                logToConsole(`Cannot give orders to ${npc.name}, not a companion.`, "warn");
+                logToConsole(`Cannot trade with ${npc.name}, not a companion.`, "warn");
             }
+        } else if (action === "Heal") {
+            if (window.companionManager && window.companionManager.isCompanion(npc.id)) {
+                if (typeof window.openMedicalModalForEntity === 'function') {
+                    window.openMedicalModalForEntity(npc);
+                } else {
+                    logToConsole("Medical interface not available.", "error");
+                }
+            } else {
+                logToConsole(`Cannot heal ${npc.name}, not a companion.`, "warn");
+            }
+        } else if (action.startsWith("Toggle Wait/Follow")) {
+            window.companionManager.toggleCompanionSetting(npc.id, 'followMode');
+            if (window.renderCharacterInfo) window.renderCharacterInfo();
+        } else if (action.startsWith("Toggle Close/Far")) {
+            window.companionManager.toggleCompanionSetting(npc.id, 'followDistance');
+            if (window.renderCharacterInfo) window.renderCharacterInfo();
+        } else if (action.startsWith("Toggle Passive/Aggressive")) {
+            window.companionManager.toggleCompanionSetting(npc.id, 'combatMode');
+            if (window.renderCharacterInfo) window.renderCharacterInfo();
+        } else if (action.startsWith("Toggle Melee/Ranged")) {
+            window.companionManager.toggleCompanionSetting(npc.id, 'combatStyle');
+            if (window.renderCharacterInfo) window.renderCharacterInfo();
         } else if (action === "Dismiss") {
             if (window.companionManager && window.companionManager.isCompanion(npc.id)) {
                 window.companionManager.dismissCompanion(npc.id);

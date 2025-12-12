@@ -120,7 +120,20 @@ class CompanionManager {
         // Add to companions
         this.gameState.companions.push(npcId);
         npc.isFollowingPlayer = true;
-        npc.currentOrders = "follow_close"; // Default order
+        npc.currentOrders = "follow_close"; // Legacy support
+
+        // New granular behaviors
+        npc.companionSettings = {
+            followMode: 'follow',       // 'follow', 'wait'
+            followDistance: 'close',    // 'close' (3), 'far' (8)
+            combatMode: 'passive',      // 'passive', 'aggressive'
+            combatStyle: 'melee'        // 'melee', 'ranged'
+        };
+
+        // Attempt to determine preferred combat style from stats/tags
+        if (npcDef.tags && npcDef.tags.includes('ranged')) npc.companionSettings.combatStyle = 'ranged';
+        else if (getSkillValue('Guns', npc) > getSkillValue('MeleeWeapons', npc)) npc.companionSettings.combatStyle = 'ranged';
+
         npc.loyalty = npcDef.initialLoyalty || 50; // Default loyalty or from definition
         npc.teamId = this.gameState.player.teamId; // Align team with player
 
@@ -189,19 +202,76 @@ class CompanionManager {
     setCompanionOrder(npcId, order) {
         const companion = this.getCompanionById(npcId);
         if (companion) {
-            const validOrders = ["follow_close", "wait_here", "attack_aggressively", "defend_point", "scavenge_area"]; // Add more as developed
-            if (validOrders.includes(order)) {
-                companion.currentOrders = order;
-                logToConsole(`${companion.name} new orders: ${order}.`, "info");
-                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.7 });
-                return true;
+            // Legacy mapping for compatibility
+            if (order === "follow_close") {
+                this.updateCompanionSetting(npcId, 'followMode', 'follow');
+                this.updateCompanionSetting(npcId, 'followDistance', 'close');
+            } else if (order === "wait_here") {
+                this.updateCompanionSetting(npcId, 'followMode', 'wait');
+            } else if (order === "attack_aggressively") {
+                this.updateCompanionSetting(npcId, 'combatMode', 'aggressive');
             } else {
-                logToConsole(`Invalid order "${order}" for ${companion.name}.`, "warn");
+                // Set legacy property for other systems
+                companion.currentOrders = order;
+            }
+            logToConsole(`${companion.name} legacy order set: ${order}.`, "info");
+            return true;
+        }
+        logToConsole(`setCompanionOrder: Companion ${npcId} not found.`, "warn");
+        return false;
+    }
+
+    updateCompanionSetting(npcId, setting, value) {
+        const companion = this.getCompanionById(npcId);
+        if (!companion) return false;
+
+        if (!companion.companionSettings) {
+            companion.companionSettings = {
+                followMode: 'follow',
+                followDistance: 'close',
+                combatMode: 'passive',
+                combatStyle: 'melee'
+            };
+        }
+
+        // Validation logic
+        if (setting === 'combatStyle' && value === 'ranged') {
+            // Check if they can use guns (e.g. not a dog)
+            const npcDef = this.getNpcDefinition(companion.definitionId);
+            if (npcDef && npcDef.tags && npcDef.tags.includes('animal')) {
+                logToConsole(`${companion.name} cannot use ranged weapons.`, "warn");
                 return false;
             }
         }
-        logToConsole(`setCompanionOrder: Companion ${npcId} not found or not currently in party.`, "warn");
-        return false;
+
+        companion.companionSettings[setting] = value;
+        logToConsole(`${companion.name}: ${setting} set to ${value}.`, "info");
+        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.7 });
+        return true;
+    }
+
+    toggleCompanionSetting(npcId, setting) {
+        const companion = this.getCompanionById(npcId);
+        if (!companion || !companion.companionSettings) return;
+
+        let newValue;
+        switch (setting) {
+            case 'followMode':
+                newValue = companion.companionSettings.followMode === 'follow' ? 'wait' : 'follow';
+                break;
+            case 'followDistance':
+                newValue = companion.companionSettings.followDistance === 'close' ? 'far' : 'close';
+                break;
+            case 'combatMode':
+                newValue = companion.companionSettings.combatMode === 'passive' ? 'aggressive' : 'passive';
+                break;
+            case 'combatStyle':
+                newValue = companion.companionSettings.combatStyle === 'melee' ? 'ranged' : 'melee';
+                break;
+        }
+        if (newValue) {
+            this.updateCompanionSetting(npcId, setting, newValue);
+        }
     }
 
     adjustLoyalty(npcId, amount, reason = "") {
