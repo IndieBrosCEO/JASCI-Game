@@ -241,6 +241,9 @@ async function handleMapSelectionChangeWrapper(mapId) { // Made async to handle 
 
             spawnNpcsFromMapData(loadedMapData); // spawnNpcsFromMapData will need to handle npc.pos.z
             spawnVehiclesFromMapData(loadedMapData); // NEW: Spawn vehicles
+            if (window.trapManager && typeof window.trapManager.loadTrapsFromMapData === 'function') {
+                window.trapManager.loadTrapsFromMapData(loadedMapData);
+            }
 
             mapRenderer.scheduleRender();
             interaction.detectInteractableItems();
@@ -2231,6 +2234,9 @@ async function initialize() { // Made async
                 console.log("Initial map loaded:", loadedMapData.name, "ID:", gameState.currentMapId, "Player Z:", gameState.playerPos.z);
                 spawnNpcsFromMapData(loadedMapData);
                 spawnVehiclesFromMapData(loadedMapData); // NEW: Spawn vehicles
+                if (window.trapManager && typeof window.trapManager.loadTrapsFromMapData === 'function') {
+                    window.trapManager.loadTrapsFromMapData(loadedMapData);
+                }
                 // FOW calculation moved to startGame
             } else {
                 console.error(`Failed to load initial map: ${initialMapId}`);

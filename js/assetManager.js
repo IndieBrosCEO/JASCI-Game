@@ -465,6 +465,7 @@ class AssetManager {
         processedMapData.startPos = mapJsonData.startPos || { x: 0, y: 0, z: 0 }; // Include Z in startPos
 
         processedMapData.portals = mapJsonData.portals || [];
+        processedMapData.traps = mapJsonData.traps || []; // Load traps from map data
         // Ensure NPCs have Z coordinate, default to 0 if missing from old map formats during transition
         processedMapData.npcs = (mapJsonData.npcs || []).map(npc => {
             // Prioritize npc.mapPos (from map maker format), then npc.pos (older/other format), then default.
