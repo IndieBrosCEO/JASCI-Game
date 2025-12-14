@@ -1,0 +1,58 @@
+{
+  "start": {
+    "text": "The dog looks at you curiously, wagging its tail slightly.",
+    "choices": [
+      {
+        "text": "Hey there, boy. Want to come with me?",
+        "goTo": "join_response",
+        "condition": {
+            "type": "canRecruit"
+        }
+      },
+      {
+        "text": "Who's a good boy?",
+        "goTo": "happy_response"
+      },
+      {
+        "text": "Shoo!",
+        "goTo": "scared_response"
+      },
+      {
+        "text": "[Leave]",
+        "goTo": "end"
+      }
+    ]
+  },
+  "join_response": {
+    "text": "The dog barks happily and trots over to your side.",
+    "actions": ["recruit"],
+    "choices": [
+      {
+        "text": "Let's go, buddy.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "happy_response": {
+    "text": "The dog pants excitedly and licks your hand.",
+    "choices": [
+      {
+        "text": "Good dog.",
+        "goTo": "start"
+      }
+    ]
+  },
+  "scared_response": {
+    "text": "The dog whines and backs away.",
+    "choices": [
+      {
+        "text": "[End Interaction]",
+        "goTo": "end"
+      }
+    ]
+  },
+  "end": {
+    "text": "",
+    "choices": []
+  }
+}

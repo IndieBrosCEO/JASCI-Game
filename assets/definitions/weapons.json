@@ -2203,5 +2203,27 @@
     "ammoType": "4gauge",
     "properties": { "type": "gun", "caliber": "4gauge", "action": "single-shot" },
     "canEquip": true
+  },
+  {
+    "id": "dog_bite",
+    "name": "Dog Bite",
+    "description": "A vicious bite from a canine.",
+    "family": "melee_weapon",
+    "properties": {
+      "type": "natural",
+      "size": "small"
+    },
+    "type": "weapon_melee",
+    "size": 0,
+    "weightLbs": 0,
+    "tags": [
+      "weapon",
+      "melee",
+      "piercing",
+      "natural"
+    ],
+    "damage": "1d6",
+    "damageType": "Piercing",
+    "canEquip": false
   }
 ]
