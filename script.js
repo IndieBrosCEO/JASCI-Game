@@ -1815,6 +1815,15 @@ async function handleKeyDown(event) {
                 event.preventDefault();
                 return;
             }
+            if (gameState.isTrapPlacementMode) {
+                gameState.isTrapPlacementMode = false;
+                gameState.placingTrapItemId = null;
+                gameState.trapGhostCoords = null;
+                logToConsole("Exited trap placement mode.", "info");
+                window.mapRenderer.scheduleRender();
+                event.preventDefault();
+                return;
+            }
             if (gameState.isTargetingMode) { // Specific check for targeting mode escape
                 gameState.isTargetingMode = false;
                 gameState.targetingType = null;
@@ -2453,6 +2462,41 @@ async function initialize() { // Made async
                         if (window.ConstructionUI) window.ConstructionUI.exitPlacementMode();
                     }
 
+                } else if (gameState.isTrapPlacementMode && window.trapManager) {
+                    const rect = mapContainerElement.getBoundingClientRect();
+                    const scrollLeft = mapContainerElement.scrollLeft;
+                    const scrollTop = mapContainerElement.scrollTop;
+                    let tileWidth = 10; let tileHeight = 18;
+                    const tempSpan = document.createElement('span');
+                    tempSpan.style.fontFamily = getComputedStyle(mapContainerElement).fontFamily;
+                    tempSpan.style.fontSize = getComputedStyle(mapContainerElement).fontSize;
+                    tempSpan.style.lineHeight = getComputedStyle(mapContainerElement).lineHeight;
+                    tempSpan.style.position = 'absolute'; tempSpan.style.visibility = 'hidden';
+                    tempSpan.textContent = 'M';
+                    document.body.appendChild(tempSpan);
+                    tileWidth = tempSpan.offsetWidth;
+                    tileHeight = tempSpan.offsetHeight;
+                    document.body.removeChild(tempSpan);
+                    if (tileWidth === 0 || tileHeight === 0) { tileWidth = 10; tileHeight = 18; }
+
+                    const x = Math.floor((event.clientX - rect.left + scrollLeft) / tileWidth);
+                    const y = Math.floor((event.clientY - rect.top + scrollTop) / tileHeight);
+                    const z = gameState.currentViewZ;
+
+                    const trapItemId = gameState.placingTrapItemId;
+                    logToConsole(`Attempting to place trap (Item: ${trapItemId}) at (${x},${y},${z})`, "info");
+
+                    const success = window.trapManager.attemptPlaceTrap(trapItemId, x, y, z, gameState.player);
+                    if (success) {
+                        gameState.isTrapPlacementMode = false;
+                        gameState.placingTrapItemId = null;
+                        gameState.trapGhostCoords = null;
+                        window.mapRenderer.scheduleRender();
+                    } else {
+                        // Keep mode active on failure? Usually yes for UX.
+                        // attemptPlaceTrap logs the specific error.
+                    }
+
                 } else if (gameState.isRetargeting && combatManager) {
                     const rect = mapContainerElement.getBoundingClientRect();
                     const scrollLeft = mapContainerElement.scrollLeft;
@@ -2511,7 +2555,7 @@ async function initialize() { // Made async
                     window.showLookTooltip(event, gameState, window.mapRenderer, window.assetManager);
                 }
 
-                if (gameState.isConstructionModeActive) {
+                if (gameState.isConstructionModeActive || gameState.isTrapPlacementMode) {
                     const rect = mapContainerElement.getBoundingClientRect();
                     const scrollLeft = mapContainerElement.scrollLeft;
                     const scrollTop = mapContainerElement.scrollTop;
@@ -2548,11 +2592,17 @@ async function initialize() { // Made async
                     const y = Math.floor((event.clientY - rect.top + scrollTop) / tileHeight);
                     const z = gameState.currentViewZ;
 
-                    if (gameState.constructionGhostCoords && gameState.constructionGhostCoords.x === x && gameState.constructionGhostCoords.y === y && gameState.constructionGhostCoords.z === z) {
-                        return; // No change
+                    if (gameState.isConstructionModeActive) {
+                        if (gameState.constructionGhostCoords && gameState.constructionGhostCoords.x === x && gameState.constructionGhostCoords.y === y && gameState.constructionGhostCoords.z === z) {
+                            return; // No change
+                        }
+                        gameState.constructionGhostCoords = { x, y, z };
+                    } else if (gameState.isTrapPlacementMode) {
+                        if (gameState.trapGhostCoords && gameState.trapGhostCoords.x === x && gameState.trapGhostCoords.y === y && gameState.trapGhostCoords.z === z) {
+                            return; // No change
+                        }
+                        gameState.trapGhostCoords = { x, y, z };
                     }
-
-                    gameState.constructionGhostCoords = { x, y, z };
                     window.mapRenderer.scheduleRender();
                 }
             });
@@ -2562,6 +2612,10 @@ async function initialize() { // Made async
                 }
                 if (gameState.isConstructionModeActive) {
                     gameState.constructionGhostCoords = null;
+                    window.mapRenderer.scheduleRender();
+                }
+                if (gameState.isTrapPlacementMode) {
+                    gameState.trapGhostCoords = null;
                     window.mapRenderer.scheduleRender();
                 }
             });

@@ -1345,6 +1345,11 @@ class InventoryManager {
         // Logic for Transfer Key (T) is handled separately in handleTransferKey
         // Enter key (Interact) defaults to Use/Equip for player items.
 
+        if (selectedDisplayItem.type === "TRAP_ITEM" && !selectedDisplayItem.equipped) {
+            this.initiateTrapPlacement(selectedDisplayItem.id);
+            return;
+        }
+
         if (selectedDisplayItem.isConsumable && selectedDisplayItem.effects && !selectedDisplayItem.equipped) {
             let consumed = false; const maxNeeds = 24;
             if (typeof this.gameState.playerHunger === 'undefined') this.gameState.playerHunger = maxNeeds;
@@ -1441,6 +1446,18 @@ class InventoryManager {
     clearInventoryHighlight() {
         document.querySelectorAll("#inventoryList .selected")
             .forEach(el => el.classList.remove("selected"));
+    }
+
+    initiateTrapPlacement(itemId) {
+        this.toggleInventoryMenu(); // Close inventory
+        this.gameState.isTrapPlacementMode = true;
+        this.gameState.placingTrapItemId = itemId;
+        // Optionally center ghost on player initially?
+        // Or wait for mouse move.
+        logToConsole("Entering trap placement mode. Click to place.", "info");
+        if (window.uiManager && typeof window.uiManager.showToastNotification === 'function') {
+            window.uiManager.showToastNotification("Placement Mode: Click to place trap.", "info");
+        }
     }
 }
 

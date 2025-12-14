@@ -180,6 +180,11 @@ const gameState = {
     targetConfirmed: false,
     selectedTargetEntity: null,
 
+    // Trap Placement State
+    isTrapPlacementMode: false,
+    placingTrapItemId: null,
+    trapGhostCoords: null,
+
     // Animation System State (NEW)
     activeAnimations: [],
     isAnimationPlaying: false,

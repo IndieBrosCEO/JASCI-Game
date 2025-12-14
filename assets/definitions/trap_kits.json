@@ -5,7 +5,8 @@
     "description": "A kit for a pressure-plate triggered dart trap.",
     "family": "trap_kit",
     "properties": { "id": "pressure_plate_dart_trap_kit" },
-    "type": "consumable", "size": 3, "weightLbs": 4.0, "value": 40,
+    "type": "TRAP_ITEM", "size": 3, "weightLbs": 4.0, "value": 40,
+    "placesTrapId": "pressure_plate_darts",
     "stackable": true, "maxStack": 5, "sprite": "T", "color": "brown",
     "tags": [ "trap", "kit", "mechanical" ],
     "recipe": {
@@ -26,7 +27,8 @@
     "description": "A kit to set up a simple tripwire alarm that creates noise.",
     "family": "trap_kit",
     "properties": { "id": "tripwire_alarm_kit" },
-    "type": "consumable", "size": 2, "weightLbs": 1.5, "value": 25,
+    "type": "TRAP_ITEM", "size": 2, "weightLbs": 1.5, "value": 25,
+    "placesTrapId": "tripwire_alarm",
     "stackable": true, "maxStack": 10, "sprite": "T", "color": "gray",
     "tags": [ "trap", "kit", "alarm" ],
     "recipe": {
