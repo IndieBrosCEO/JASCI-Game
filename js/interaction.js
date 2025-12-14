@@ -290,12 +290,11 @@ function _performAction(action, it) {
                 logToConsole("You are not in this vehicle to exit.", "warn");
             }
         } else if (action === "Access Cargo") {
-            // TODO: Implement a dedicated Vehicle Cargo UI. For now, log and do nothing functional.
-            logToConsole(`Accessing cargo of ${vehicle.name}... (Dedicated Vehicle Cargo UI to be implemented).`, "info");
-            if (window.uiManager && typeof window.uiManager.openVehicleCargoUI === 'function') { // Check if a generic UI manager exists
-                // window.uiManager.openVehicleCargoUI(vehicle.id); // This function does not exist yet
+            logToConsole(`Accessing cargo of ${vehicle.name}...`, "info");
+            if (window.inventoryManager && typeof window.inventoryManager.toggleInventoryMenu === 'function') {
+                window.inventoryManager.toggleInventoryMenu(vehicle);
             } else {
-                logToConsole("No dedicated Vehicle Cargo UI or generic UIManager to handle this yet.", "warn");
+                logToConsole("InventoryManager not available.", "error");
             }
         } else if (action === "Refuel") {
             // TODO: Implement UI to select fuel item from player inventory.

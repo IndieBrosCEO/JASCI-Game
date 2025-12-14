@@ -792,7 +792,8 @@ class InventoryManager {
 
         // --- 2. Determine View Mode ---
         const hasWorldContainer = this.gameState.worldContainers.length > 0;
-        const isTrading = !!targetEntity;
+        const isTrading = !!targetEntity && !targetEntity.cargoDetails; // Exclude vehicles from "Trading" logic (companions)
+        const isVehicle = !!targetEntity && !!targetEntity.cargoDetails;
 
         if (isTrading) {
             splitContainer.style.display = "flex";
@@ -814,6 +815,17 @@ class InventoryManager {
                     };
                     header.appendChild(autoEquipBtn);
                 }
+            }
+        } else if (isVehicle) {
+            splitContainer.style.display = "flex";
+            leftPane.style.display = "flex";
+            const header = leftPane.querySelector("h4");
+            if (header) {
+                const capacity = targetEntity.cargoDetails.capacity || 0;
+                const used = targetEntity.cargoDetails.items ? targetEntity.cargoDetails.items.length : 0;
+                header.textContent = `${targetEntity.name} Cargo (${used}/${capacity})`;
+                const btn = document.getElementById("autoEquipBtn");
+                if (btn) btn.remove();
             }
         } else if (hasWorldContainer) {
             splitContainer.style.display = "flex";
@@ -909,7 +921,7 @@ class InventoryManager {
             });
         }
 
-        // --- LEFT PANE (Container OR Companion) - POPULATE SECOND for Bottom Placement ---
+        // --- LEFT PANE (Container OR Companion OR Vehicle) - POPULATE SECOND for Bottom Placement ---
         if (isTrading) {
             // Companion Inventory (Hands)
             if (targetEntity.inventory && targetEntity.inventory.handSlots) {
@@ -936,6 +948,26 @@ class InventoryManager {
                     });
                 });
             }
+        } else if (isVehicle) {
+             if (targetEntity.cargoDetails && targetEntity.cargoDetails.items) {
+                 if (targetEntity.cargoDetails.items.length === 0) {
+                      addItemToPane({ id: `empty_vehicle_${targetEntity.id}`, name: "(Empty)" }, leftList, {
+                        source: 'vehicle',
+                        targetEntity: targetEntity,
+                        isPlaceholder: true,
+                        displayName: "(Empty)"
+                    });
+                 } else {
+                     targetEntity.cargoDetails.items.forEach((item, idx) => {
+                        addItemToPane(item, leftList, {
+                            source: 'vehicle',
+                            targetEntity: targetEntity,
+                            originalItemIndex: idx,
+                            displayName: item.name
+                        });
+                    });
+                 }
+             }
         } else if (hasWorldContainer) {
             this.gameState.worldContainers.forEach(container => {
                 if (!container.items || container.items.length === 0) {
@@ -973,7 +1005,7 @@ class InventoryManager {
         // Highlight Active Pane based on Cursor
         const currentItem = this.gameState.inventory.currentlyDisplayedItems[this.gameState.inventory.cursor];
         if (currentItem) {
-            if (currentItem.source === 'worldContainer') {
+            if (currentItem.source === 'worldContainer' || currentItem.source === 'companion' || currentItem.source === 'vehicle') {
                 leftPane.classList.add("active-pane");
                 rightPane.classList.remove("active-pane");
             } else {
@@ -996,6 +1028,7 @@ class InventoryManager {
     toggleInventoryMenu(targetEntity = null) {
         // If opening with a new target, ensure we open. If closing, or toggling same state, toggle.
         if (targetEntity) {
+            logToConsole(`Opening inventory for target: ${targetEntity.name || targetEntity.id}`, "dev");
             if (!this.gameState.inventory.open) {
                 this.gameState.inventory.open = true;
             }
@@ -1184,18 +1217,20 @@ class InventoryManager {
 
     navigateLeft() {
         // Switch focus to Container Pane (Left)
-        // Find the first item that is a worldContainer item
-        const firstContainerIndex = this.gameState.inventory.currentlyDisplayedItems.findIndex(i => i.source === 'worldContainer');
-        if (firstContainerIndex !== -1) {
-            this.gameState.inventory.cursor = firstContainerIndex;
+        // Find the first item that is NOT a player item (worldContainer, companion, vehicle)
+        const firstLeftPaneIndex = this.gameState.inventory.currentlyDisplayedItems.findIndex(i =>
+            i.source === 'worldContainer' || i.source === 'companion' || i.source === 'vehicle');
+        if (firstLeftPaneIndex !== -1) {
+            this.gameState.inventory.cursor = firstLeftPaneIndex;
             this.renderInventoryMenu();
         }
     }
 
     navigateRight() {
         // Switch focus to Player Pane (Right)
-        // Find the first item that is NOT a worldContainer item
-        const firstPlayerIndex = this.gameState.inventory.currentlyDisplayedItems.findIndex(i => i.source !== 'worldContainer');
+        // Find the first item that IS a player item (not worldContainer, companion, vehicle)
+        const firstPlayerIndex = this.gameState.inventory.currentlyDisplayedItems.findIndex(i =>
+            i.source !== 'worldContainer' && i.source !== 'companion' && i.source !== 'vehicle');
         if (firstPlayerIndex !== -1) {
             this.gameState.inventory.cursor = firstPlayerIndex;
             this.renderInventoryMenu();
@@ -1210,31 +1245,26 @@ class InventoryManager {
 
         if (!selectedDisplayItem) return;
 
-        // --- Logic for World Container OR Companion ---
+        // --- Logic for World Container OR Companion OR Vehicle ---
         const targetEntity = this.gameState.inventory.targetEntity;
 
-        // 1. Item is in the "Left Pane" (World Container or Companion) -> Take/Transfer to Player
-        if (selectedDisplayItem.source === 'worldContainer' || selectedDisplayItem.source === 'companion') {
-            // Logic duplicated/adapted from interactInventoryItem for "taking" from secondary source
-            const sourceContainer = selectedDisplayItem.containerRef ||
-                                    (selectedDisplayItem.targetEntity ? selectedDisplayItem.targetEntity.inventory.container : null);
-
-            // For companion hand/clothing items, we need specific references if they aren't in a container array
-            // But renderInventoryMenu's display items for hand/clothing don't map neatly back to a simple array index
-            // the way container items do if we want to "take" them via transfer key.
-            // Actually, handleTransferKey is for "Transfer" action (T).
-            // interactInventoryItem (Enter/Click) handles "Use/Take".
-            // The logic here in handleTransferKey calling interactInventoryItem is meant to make 'T' act as 'Take'
-            // when focus is on the container side.
-
+        // 1. Item is in the "Left Pane" (World Container, Companion, Vehicle) -> Take/Transfer to Player
+        if (selectedDisplayItem.source === 'worldContainer' || selectedDisplayItem.source === 'companion' || selectedDisplayItem.source === 'vehicle') {
+            // Interact handles "taking" from secondary source
             this.interactInventoryItem();
             return;
         }
 
-        // 2. Item is in Player Inventory -> Transfer to Target (World Container or Companion)
+        // 2. Item is in Player Inventory -> Transfer to Target
         let targetContainer = null;
-        if (targetEntity && targetEntity.inventory && targetEntity.inventory.container) {
-            targetContainer = targetEntity.inventory.container;
+        if (targetEntity) {
+            if (targetEntity.inventory && targetEntity.inventory.container) {
+                // Companion
+                targetContainer = targetEntity.inventory.container;
+            } else if (targetEntity.cargoDetails) {
+                // Vehicle
+                targetContainer = targetEntity.cargoDetails; // treated as container { items: [], capacity: X }
+            }
         } else if (this.gameState.worldContainers && this.gameState.worldContainers.length === 1) {
             targetContainer = this.gameState.worldContainers[0];
         }
@@ -1257,7 +1287,7 @@ class InventoryManager {
             if (this.gameState.worldContainers && this.gameState.worldContainers.length > 1) {
                 logToConsole("Multiple containers open. Cannot determine target.", "warn");
             } else {
-                logToConsole("No open container or companion to transfer to.", "info");
+                logToConsole("No open container, companion, or vehicle to transfer to.", "info");
             }
         }
     }
@@ -1337,6 +1367,24 @@ class InventoryManager {
                 } else {
                     logToConsole(`Not enough space to take ${actualItem.name}.`, "orange");
                 }
+            }
+            if (this.gameState.inventory.open) this.renderInventoryMenu();
+            return;
+        } else if (selectedDisplayItem.source === 'vehicle') {
+            const targetEntity = selectedDisplayItem.targetEntity;
+            if (!targetEntity || !targetEntity.cargoDetails) return;
+
+            if (selectedDisplayItem.originalItemIndex !== undefined && targetEntity.cargoDetails.items) {
+                 const items = targetEntity.cargoDetails.items;
+                 const actualItem = items[selectedDisplayItem.originalItemIndex];
+                 if (actualItem) {
+                     if (this.addItem(actualItem)) {
+                         items.splice(selectedDisplayItem.originalItemIndex, 1);
+                         logToConsole(`Took ${actualItem.name} from ${targetEntity.name}.`);
+                     } else {
+                         logToConsole(`Not enough space to take ${actualItem.name}.`, "orange");
+                     }
+                 }
             }
             if (this.gameState.inventory.open) this.renderInventoryMenu();
             return;
