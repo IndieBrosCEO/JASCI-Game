@@ -3,6 +3,7 @@
 // Assumes gameState, logToConsole, window.mapRenderer, window.interaction, window.character are globally available
 
 let localAssetManager = null; // To store the assetManager instance
+let isEndingTurn = false; // Flag to prevent re-entrant calls to endTurn
 
 // Define movement costs for automatic Z-stepping
 const Z_STEP_UP_COST = 2;
@@ -49,6 +50,37 @@ function updateTurnUI_internal() {
             vehicleUI.style.display = "none";
         }
     }
+
+    // Auto-end turn logic
+    if (gameState.gameStarted && !isEndingTurn && !gameState.isWaiting) {
+        // Ensure settings exist (defaults to true if missing for some reason, though initialized in gameState)
+        const settings = gameState.settings || { autoEndTurnAtZeroAP: true, autoEndTurnAtZeroMP: true };
+        const autoEndAP = settings.autoEndTurnAtZeroAP;
+        const autoEndMP = settings.autoEndTurnAtZeroMP;
+
+        const apZero = gameState.actionPointsRemaining <= 0;
+        const mpZero = gameState.movementPointsRemaining <= 0;
+
+        // "If both are checked, the turn should end when either Action Points or Movement Points reach 0."
+        // "If the Action Points box is checked, the turn ends automatically when the player has 0 Action Points."
+        // "If the Movement Points box is checked, the turn ends automatically when the player has 0 Movement Points."
+        if ((autoEndAP && apZero) || (autoEndMP && mpZero)) {
+            // Check if player is not in the middle of something that should block this?
+            // e.g. target selection?
+            // If we are in targeting mode, maybe we shouldn't auto-end turn?
+            // But usually you can't be in targeting mode if you have 0 AP (attacks cost AP).
+            // However, 0 MP while targeting (if you moved) -> auto end?
+            // If I move 6 steps (0 MP), then try to target (has AP), but MP triggered auto-end.
+            // That would be annoying if "Auto End MP" is on.
+            // The prompt says "If the Movement Points box is checked, the turn ends automatically when the player has 0 Movement Points."
+            // So if I have 1 AP left but 0 MP, and that box is checked, it ends my turn.
+            // This seems to be the requested behavior.
+
+            // Avoid logging spam or loops
+            // logToConsole("Auto-ending turn based on settings.", "info");
+            endTurn_internal();
+        }
+    }
 }
 
 function startTurn_internal() {
@@ -89,6 +121,12 @@ function dash_internal() {
 }
 
 async function endTurn_internal() { // Make async
+    if (isEndingTurn) {
+        // Prevent re-entry if already ending turn
+        return;
+    }
+    isEndingTurn = true;
+
     let waitCount = 0; // Counter for stuck log
     // Wait for any ongoing animations to complete (e.g. player movement)
     if (window.animationManager) {
@@ -189,6 +227,8 @@ async function endTurn_internal() { // Make async
     startTurn_internal(); // Call internal startTurn
     window.mapRenderer.scheduleRender();
     updateTurnUI_internal(); // Call internal updateTurnUI
+
+    isEndingTurn = false; // Reset flag after turn transition is effectively handed off
 }
 
 // Make move_internal async
