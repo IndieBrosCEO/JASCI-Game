@@ -1417,19 +1417,6 @@ class InventoryManager {
             }
         }
 
-        // Context-sensitive 'F' Key: Transfer if container/companion is open and item is in player inventory
-        if (!selectedDisplayItem.equipped && (this.gameState.inventory.targetEntity || (this.gameState.worldContainers && this.gameState.worldContainers.length === 1))) {
-             let targetContainer = null;
-             if (this.gameState.inventory.targetEntity) targetContainer = this.gameState.inventory.targetEntity.inventory.container;
-             else targetContainer = this.gameState.worldContainers[0];
-
-             const actualItem = this.gameState.inventory.container.items.find(i => i.id === selectedDisplayItem.id);
-             if (actualItem && selectedDisplayItem.source === 'container') {
-                 this.transferItem(actualItem, targetContainer);
-                 return; // Stop further processing
-             }
-        }
-
         if (selectedDisplayItem.equipped) {
             if (selectedDisplayItem.source === 'clothing' && selectedDisplayItem.originalLayer) {
                 this.unequipClothing(selectedDisplayItem.originalLayer);
