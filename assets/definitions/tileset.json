@@ -1837,13 +1837,50 @@
     "isLocked": false,
     "lockDifficulty": 5
   },
-  "SWLK": { "sprite": "▒", "name": "Sidewalk", "color": "#D3D3D3", "tags": ["landscape", "bottom", "floor", "concrete"] },
-  "CWH": { "sprite": "═", "name": "Concrete Wall Hz", "color": "#808080", "tags": ["wall", "middle", "concrete", "impassable", "building"], "coverBonus": 8 },
-  "CWV": { "sprite": "║", "name": "Concrete Wall Vt", "color": "#808080", "tags": ["wall", "middle", "concrete", "impassable", "building"], "coverBonus": 8 },
-  "CWCTL": { "sprite": "╔", "name": "Concrete Wall Corner TL", "color": "#808080", "tags": ["wall", "middle", "concrete", "impassable", "building"] },
-  "CWCTR": { "sprite": "╗", "name": "Concrete Wall Corner TR", "color": "#808080", "tags": ["wall", "middle", "concrete", "impassable", "building"] },
-  "CWCBL": { "sprite": "╚", "name": "Concrete Wall Corner BL", "color": "#808080", "tags": ["wall", "middle", "concrete", "impassable", "building"] },
-  "CWCBR": { "sprite": "╝", "name": "Concrete Wall Corner BR", "color": "#808080", "tags": ["wall", "middle", "concrete", "impassable", "building"] },
+  "SWLK": {
+    "sprite": "▒",
+    "name": "Sidewalk",
+    "color": "#a6a19a",
+    "tags": [ "landscape", "bottom", "floor", "concrete" ]
+  },
+  "CWH": {
+    "sprite": "═",
+    "name": "Concrete Wall Hz",
+    "color": "#a6a19a",
+    "tags": [ "wall", "middle", "concrete", "impassable", "building" ],
+    "coverBonus": 8
+  },
+  "CWV": {
+    "sprite": "║",
+    "name": "Concrete Wall Vt",
+    "color": "#a6a19a",
+    "tags": [ "wall", "middle", "concrete", "impassable", "building" ],
+    "coverBonus": 8
+  },
+  "CWCTL": {
+    "sprite": "╔",
+    "name": "Concrete Wall Corner TL",
+    "color": "#a6a19a",
+    "tags": [ "wall", "middle", "concrete", "impassable", "building" ]
+  },
+  "CWCTR": {
+    "sprite": "╗",
+    "name": "Concrete Wall Corner TR",
+    "color": "#a6a19a",
+    "tags": [ "wall", "middle", "concrete", "impassable", "building" ]
+  },
+  "CWCBL": {
+    "sprite": "╚",
+    "name": "Concrete Wall Corner BL",
+    "color": "#a6a19a",
+    "tags": [ "wall", "middle", "concrete", "impassable", "building" ]
+  },
+  "CWCBR": {
+    "sprite": "╝",
+    "name": "Concrete Wall Corner BR",
+    "color": "#a6a19a",
+    "tags": [ "wall", "middle", "concrete", "impassable", "building" ]
+  },
   "IWH": { "sprite": "═", "name": "Interior Wall Hz", "color": "#E0E0E0", "tags": ["wall", "middle", "impassable", "building"], "coverBonus": 3 },
   "IWV": { "sprite": "║", "name": "Interior Wall Vt", "color": "#E0E0E0", "tags": ["wall", "middle", "impassable", "building"], "coverBonus": 3 },
   "PILW": { "sprite": "I", "name": "Wood Pillar", "color": "#A1662F", "tags": ["structure", "middle", "wood", "impassable", "building", "transparent"], "coverBonus": 2 },
