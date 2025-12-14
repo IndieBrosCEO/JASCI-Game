@@ -1247,14 +1247,6 @@ window.mapRenderer = {
                 // Check if current tile (x, y) is within ghost bounds
                 if (x >= gx && x < gx + size.width && y >= gy && y < gy + size.height) {
                     // It is part of the ghost!
-                    // Determine validity (once per render cycle or just recalculate?)
-                    // For performance, isValidPlacement is a bit heavy to call per tile.
-                    // But we only do it for tiles in ghost.
-                    // Let's call it for the origin once per frame/update?
-                    // Better: Assume valid unless we implement caching of validity.
-                    // Let's just check validity for the ORIGIN (gx, gy) because that's what placeConstruction does.
-                    // And we can reuse that boolean for all tiles in the ghost.
-
                     if (window.mapRenderer._lastGhostValidityCheckTime !== Date.now() ||
                         window.mapRenderer._lastGhostX !== gx || window.mapRenderer._lastGhostY !== gy) {
 
@@ -1278,123 +1270,50 @@ window.mapRenderer = {
                     // Tint color based on validity
                     if (isValid) {
                         finalColorForTile = 'rgba(0, 255, 0, 0.7)'; // Greenish tint
-                        // Or blend ghostColor with green?
-                        // finalColorForTile = blendColors(ghostColor, '#00FF00', 0.5);
                     } else {
                         finalColorForTile = 'rgba(255, 0, 0, 0.7)'; // Reddish tint
-                        // finalColorForTile = blendColors(ghostColor, '#FF0000', 0.5);
                     }
                     finalDisplayIdForTile = 'CONSTRUCTION_GHOST';
                 }
             }
         }
 
-        if (gameState.isConstructionModeActive && gameState.constructionGhostCoords &&
-            gameState.constructionGhostCoords.z === currentZ) {
+        if (gameState.isTrapPlacementMode && gameState.trapGhostCoords &&
+            gameState.trapGhostCoords.z === currentZ) {
 
-            const defId = gameState.selectedConstructionId;
-            const def = window.constructionManager && window.constructionManager.constructionDefinitions ? window.constructionManager.constructionDefinitions[defId] : null;
-            if (def) {
-                const gx = gameState.constructionGhostCoords.x;
-                const gy = gameState.constructionGhostCoords.y;
-                const size = def.size || { width: 1, height: 1 };
-
-                // Check if current tile (x, y) is within ghost bounds
-                if (x >= gx && x < gx + size.width && y >= gy && y < gy + size.height) {
-                    // It is part of the ghost!
-                    // Determine validity (once per render cycle or just recalculate?)
-                    // For performance, isValidPlacement is a bit heavy to call per tile.
-                    // But we only do it for tiles in ghost.
-                    // Let's call it for the origin once per frame/update?
-                    // Better: Assume valid unless we implement caching of validity.
-                    // Let's just check validity for the ORIGIN (gx, gy) because that's what placeConstruction does.
-                    // And we can reuse that boolean for all tiles in the ghost.
-
-                    if (window.mapRenderer._lastGhostValidityCheckTime !== Date.now() ||
-                        window.mapRenderer._lastGhostX !== gx || window.mapRenderer._lastGhostY !== gy) {
-
-                        window.mapRenderer._lastGhostValidity = window.constructionManager.isValidPlacement(def, { x: gx, y: gy, z: currentZ });
-                        window.mapRenderer._lastGhostValidityCheckTime = Date.now();
-                        window.mapRenderer._lastGhostX = gx;
-                        window.mapRenderer._lastGhostY = gy;
-                    }
-                    const isValid = window.mapRenderer._lastGhostValidity;
-
-                    // Get sprite from definition
-                    let ghostSprite = '?';
-                    let ghostColor = '#FFFFFF';
-                    if (def.tileIdPlaced && assetManagerInstance.tilesets[def.tileIdPlaced]) {
-                        const tileDef = assetManagerInstance.tilesets[def.tileIdPlaced];
-                        ghostSprite = tileDef.sprite;
-                        ghostColor = tileDef.color;
-                    }
-
-                    finalSpriteForTile = ghostSprite;
-                    // Tint color based on validity
-                    if (isValid) {
-                        finalColorForTile = 'rgba(0, 255, 0, 0.7)'; // Greenish tint
-                        // Or blend ghostColor with green?
-                        // finalColorForTile = blendColors(ghostColor, '#00FF00', 0.5);
-                    } else {
-                        finalColorForTile = 'rgba(255, 0, 0, 0.7)'; // Reddish tint
-                        // finalColorForTile = blendColors(ghostColor, '#FF0000', 0.5);
-                    }
-                    finalDisplayIdForTile = 'CONSTRUCTION_GHOST';
-                }
+            const trapItemId = gameState.placingTrapItemId;
+            // Need to look up trap definition from item -> placesTrapId -> TrapManager
+            const trapItemDef = assetManagerInstance.getItem(trapItemId);
+            let trapDef = null;
+            if (trapItemDef && trapItemDef.placesTrapId && window.trapManager) {
+                trapDef = window.trapManager.getTrapDefinition(trapItemDef.placesTrapId);
             }
-        }
 
-        if (gameState.isConstructionModeActive && gameState.constructionGhostCoords &&
-            gameState.constructionGhostCoords.z === currentZ) {
+            if (trapDef) {
+                const tx = gameState.trapGhostCoords.x;
+                const ty = gameState.trapGhostCoords.y;
 
-            const defId = gameState.selectedConstructionId;
-            const def = window.constructionManager && window.constructionManager.constructionDefinitions ? window.constructionManager.constructionDefinitions[defId] : null;
-            if (def) {
-                const gx = gameState.constructionGhostCoords.x;
-                const gy = gameState.constructionGhostCoords.y;
-                const size = def.size || { width: 1, height: 1 };
+                if (x === tx && y === ty) {
+                    // Simple validation for ghost (similar to construction)
+                    // We can reuse mapManager.isTilePassable(x, y, z, placer, ignoreEntities) for basic check
+                    // But we want visual feedback.
+                    const isValid = (window.mapUtils ? window.mapUtils.isTilePassable(tx, ty, currentZ, gameState.player, false) : true) && !window.trapManager.getTrapAt(tx, ty, currentZ);
 
-                // Check if current tile (x, y) is within ghost bounds
-                if (x >= gx && x < gx + size.width && y >= gy && y < gy + size.height) {
-                    // It is part of the ghost!
-                    // Determine validity (once per render cycle or just recalculate?)
-                    // For performance, isValidPlacement is a bit heavy to call per tile.
-                    // But we only do it for tiles in ghost.
-                    // Let's call it for the origin once per frame/update?
-                    // Better: Assume valid unless we implement caching of validity.
-                    // Let's just check validity for the ORIGIN (gx, gy) because that's what placeConstruction does.
-                    // And we can reuse that boolean for all tiles in the ghost.
-
-                    if (window.mapRenderer._lastGhostValidityCheckTime !== Date.now() ||
-                        window.mapRenderer._lastGhostX !== gx || window.mapRenderer._lastGhostY !== gy) {
-
-                        window.mapRenderer._lastGhostValidity = window.constructionManager.isValidPlacement(def, { x: gx, y: gy, z: currentZ });
-                        window.mapRenderer._lastGhostValidityCheckTime = Date.now();
-                        window.mapRenderer._lastGhostX = gx;
-                        window.mapRenderer._lastGhostY = gy;
-                    }
-                    const isValid = window.mapRenderer._lastGhostValidity;
-
-                    // Get sprite from definition
-                    let ghostSprite = '?';
-                    let ghostColor = '#FFFFFF';
-                    if (def.tileIdPlaced && assetManagerInstance.tilesets[def.tileIdPlaced]) {
-                        const tileDef = assetManagerInstance.tilesets[def.tileIdPlaced];
-                        ghostSprite = tileDef.sprite;
-                        ghostColor = tileDef.color;
+                    let ghostSprite = 'T'; // Default trap sprite
+                    // If trapDef has a sprite for 'hidden' state (unlikely to be visible) or 'detected', use that.
+                    // Or if tileset has definition.
+                    // Let's assume we want to show what it looks like.
+                    if (trapDef.spriteDetected && assetManagerInstance.tilesets[trapDef.spriteDetected]) {
+                         ghostSprite = assetManagerInstance.tilesets[trapDef.spriteDetected].sprite;
                     }
 
                     finalSpriteForTile = ghostSprite;
-                    // Tint color based on validity
                     if (isValid) {
-                        finalColorForTile = 'rgba(0, 255, 0, 0.7)'; // Greenish tint
-                        // Or blend ghostColor with green?
-                        // finalColorForTile = blendColors(ghostColor, '#00FF00', 0.5);
+                        finalColorForTile = 'rgba(0, 255, 0, 0.7)';
                     } else {
-                        finalColorForTile = 'rgba(255, 0, 0, 0.7)'; // Reddish tint
-                        // finalColorForTile = blendColors(ghostColor, '#FF0000', 0.5);
+                        finalColorForTile = 'rgba(255, 0, 0, 0.7)';
                     }
-                    finalDisplayIdForTile = 'CONSTRUCTION_GHOST';
+                    finalDisplayIdForTile = 'TRAP_PLACEMENT_GHOST';
                 }
             }
         }
@@ -1775,6 +1694,100 @@ window.mapRenderer = {
             }
         }
         // --- End Onion Skinning Logic ---
+
+        // Construction Ghost
+        if (gameState.isConstructionModeActive && gameState.constructionGhostCoords &&
+            gameState.constructionGhostCoords.z === currentZ) {
+
+            const defId = gameState.selectedConstructionId;
+            const def = window.constructionManager && window.constructionManager.constructionDefinitions ? window.constructionManager.constructionDefinitions[defId] : null;
+            if (def) {
+                const gx = gameState.constructionGhostCoords.x;
+                const gy = gameState.constructionGhostCoords.y;
+                const size = def.size || { width: 1, height: 1 };
+
+                // Check if current tile (x, y) is within ghost bounds
+                if (x >= gx && x < gx + size.width && y >= gy && y < gy + size.height) {
+                    // It is part of the ghost!
+                    // Determine validity (once per render cycle or just recalculate?)
+                    // For performance, isValidPlacement is a bit heavy to call per tile.
+                    // But we only do it for tiles in ghost.
+                    // Let's call it for the origin once per frame/update?
+                    // Better: Assume valid unless we implement caching of validity.
+                    // Let's just check validity for the ORIGIN (gx, gy) because that's what placeConstruction does.
+                    // And we can reuse that boolean for all tiles in the ghost.
+
+                    if (window.mapRenderer._lastGhostValidityCheckTime !== Date.now() ||
+                        window.mapRenderer._lastGhostX !== gx || window.mapRenderer._lastGhostY !== gy) {
+
+                        window.mapRenderer._lastGhostValidity = window.constructionManager.isValidPlacement(def, { x: gx, y: gy, z: currentZ });
+                        window.mapRenderer._lastGhostValidityCheckTime = Date.now();
+                        window.mapRenderer._lastGhostX = gx;
+                        window.mapRenderer._lastGhostY = gy;
+                    }
+                    const isValid = window.mapRenderer._lastGhostValidity;
+
+                    // Get sprite from definition
+                    let ghostSprite = '?';
+                    let ghostColor = '#FFFFFF';
+                    if (def.tileIdPlaced && assetManagerInstance.tilesets[def.tileIdPlaced]) {
+                        const tileDef = assetManagerInstance.tilesets[def.tileIdPlaced];
+                        ghostSprite = tileDef.sprite;
+                        ghostColor = tileDef.color;
+                    }
+
+                    finalSpriteForTile = ghostSprite;
+                    // Tint color based on validity
+                    if (isValid) {
+                        finalColorForTile = 'rgba(0, 255, 0, 0.7)'; // Greenish tint
+                    } else {
+                        finalColorForTile = 'rgba(255, 0, 0, 0.7)'; // Reddish tint
+                    }
+                    finalDisplayIdForTile = 'CONSTRUCTION_GHOST';
+                }
+            }
+        }
+
+        // Trap Placement Ghost
+        if (gameState.isTrapPlacementMode && gameState.trapGhostCoords &&
+            gameState.trapGhostCoords.z === currentZ) {
+
+            const trapItemId = gameState.placingTrapItemId;
+            // Need to look up trap definition from item -> placesTrapId -> TrapManager
+            const trapItemDef = assetManagerInstance.getItem(trapItemId);
+            let trapDef = null;
+            if (trapItemDef && trapItemDef.placesTrapId && window.trapManager) {
+                trapDef = window.trapManager.getTrapDefinition(trapItemDef.placesTrapId);
+            }
+
+            if (trapDef) {
+                const tx = gameState.trapGhostCoords.x;
+                const ty = gameState.trapGhostCoords.y;
+
+                if (x === tx && y === ty) {
+                    // Simple validation for ghost (similar to construction)
+                    // We can reuse mapManager.isTilePassable(x, y, z, placer, ignoreEntities) for basic check
+                    // But we want visual feedback.
+                    const isValid = (window.mapUtils ? window.mapUtils.isTilePassable(tx, ty, currentZ, gameState.player, false) : true) && !window.trapManager.getTrapAt(tx, ty, currentZ);
+
+                    let ghostSprite = 'T'; // Default trap sprite
+                    // If trapDef has a sprite for 'hidden' state (unlikely to be visible) or 'detected', use that.
+                    // Or if tileset has definition.
+                    // Let's assume we want to show what it looks like.
+                    if (trapDef.spriteDetected && assetManagerInstance.tilesets[trapDef.spriteDetected]) {
+                         ghostSprite = assetManagerInstance.tilesets[trapDef.spriteDetected].sprite;
+                    }
+
+                    finalSpriteForTile = ghostSprite;
+                    if (isValid) {
+                        finalColorForTile = 'rgba(0, 255, 0, 0.7)';
+                    } else {
+                        finalColorForTile = 'rgba(255, 0, 0, 0.7)';
+                    }
+                    finalDisplayIdForTile = 'TRAP_PLACEMENT_GHOST';
+                }
+            }
+        }
 
 
         // Ranged Attack Line (Viewport Aware)

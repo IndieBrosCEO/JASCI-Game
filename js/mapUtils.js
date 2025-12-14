@@ -204,6 +204,31 @@ class MapUtils {
         }
         return tiles;
     }
+
+    /**
+     * Checks if a tile is generally passable for placement (e.g. traps, construction).
+     * @param {number} x - The x-coordinate of the tile.
+     * @param {number} y - The y-coordinate of the tile.
+     * @param {number} z - The z-coordinate of the tile.
+     * @param {object} entity - The entity checking (optional).
+     * @param {boolean} ignoreEntities - Whether to ignore dynamic entities (default false).
+     * @returns {boolean} True if the tile is passable.
+     */
+    isTilePassable(x, y, z, entity = null, ignoreEntities = false) {
+        if (!this.mapRenderer) return false;
+
+        // Check static map passability (walls, terrain) using isWalkable
+        if (!this.mapRenderer.isWalkable(x, y, z)) {
+            return false;
+        }
+
+        // Check dynamic entities if not ignored
+        if (!ignoreEntities && this.isTileOccupied(x, y, z)) {
+            return false;
+        }
+
+        return true;
+    }
 }
 
 // Make globally accessible if needed by other modules directly, or instantiate in script.js

@@ -419,7 +419,16 @@ class TrapManager {
      * @returns {boolean} True if placement was successful, false otherwise.
      */
     attemptPlaceTrap(trapItemId, x, y, z, placerEntity) {
-        if (!placerEntity || !placerEntity.inventory || !placerEntity.mapPos) {
+        // Handle Player entity vs NPC entity structure difference
+        let inventoryToUse = placerEntity.inventory;
+        let mapPosToUse = placerEntity.mapPos;
+
+        if (placerEntity === this.gameState.player) {
+             inventoryToUse = this.gameState.inventory;
+             mapPosToUse = this.gameState.playerPos;
+        }
+
+        if (!placerEntity || !inventoryToUse || !mapPosToUse) {
             logToConsole(`${this.logPrefix} Invalid placer entity for trap placement.`, 'red');
             return false;
         }
@@ -439,7 +448,7 @@ class TrapManager {
         }
 
         // 1. Validate location (e.g., valid surface, not on existing trap/object, not in wall)
-        if (!window.mapManager.isTilePassable(x, y, z, placerEntity, false)) { // Check if generally placeable, ignore entities for now
+        if (window.mapUtils && !window.mapUtils.isTilePassable(x, y, z, placerEntity, false)) { // Check if generally placeable, ignore entities for now
             logToConsole(`${this.logPrefix} Cannot place trap at (${x},${y},${z}): Location not suitable (e.g. wall).`, 'orange');
             if (window.uiManager) window.uiManager.showToastNotification("Cannot place trap there (obstructed).", "warning");
             return false;
@@ -464,7 +473,7 @@ class TrapManager {
             if (window.uiManager && placerEntity === this.gameState.player) window.uiManager.showToastNotification(`Failed to place ${trapDef.name} (skill check).`, "warning");
             // Optional: Consume item even on failure? Or only on critical failure?
             if (rollDie(4) === 1) { // 25% chance to consume item on placement failure
-                window.inventoryManager.removeItemsFromInventory(trapItemId, 1, placerEntity.inventory.container.items);
+                window.inventoryManager.removeItems(trapItemId, 1, inventoryToUse.container.items);
                 if (window.uiManager && placerEntity === this.gameState.player) window.uiManager.showToastNotification(`${trapItemDef.name} was wasted!`, "error");
             }
             if (window.audioManager) window.audioManager.playSoundAtLocation('trap_place_fail_01.wav', { x, y, z }, {}, { falloff: 'linear', maxDistance: 10 });
@@ -472,7 +481,7 @@ class TrapManager {
         }
 
         // 3. Consume the trap item.
-        if (!window.inventoryManager.removeItemsFromInventory(trapItemId, 1, placerEntity.inventory.container.items)) {
+        if (!window.inventoryManager.removeItems(trapItemId, 1, inventoryToUse.container.items)) {
             logToConsole(`${this.logPrefix} Failed to place trap: Could not remove ${trapItemId} from inventory (should not happen if hasItem was checked prior).`, 'red');
             return false; // Should have been checked before calling this
         }
