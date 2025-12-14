@@ -219,6 +219,140 @@ class ConstructionManager {
         return true;
     }
 
+    async dismantleStructure(uniqueId) {
+        const structureIndex = this.gameState.mapStructures.findIndex(s => s.uniqueId === uniqueId);
+        if (structureIndex === -1) {
+            logToConsole(`${this.logPrefix} Cannot dismantle: Structure with ID ${uniqueId} not found.`, 'error');
+            return false;
+        }
+        const structure = this.gameState.mapStructures[structureIndex];
+        const definition = structure.definition;
+
+        if (!definition) {
+             logToConsole(`${this.logPrefix} Cannot dismantle: Definition missing for structure.`, 'error');
+             return false;
+        }
+
+        logToConsole(`${this.logPrefix} Dismantling ${definition.name} at (${structure.x}, ${structure.y}, ${structure.z})...`, 'info');
+
+        // 1. Calculate and Refund Materials
+        const recipe = definition.recipe || definition;
+        if (recipe && recipe.components) {
+            for (const component of recipe.components) {
+                const qty = component.quantity || 1;
+                // Refund 50%
+                let refundQty = Math.floor(qty / 2);
+                if (qty === 1 && Math.random() < 0.5) refundQty = 1; // Chance to save single items
+
+                if (refundQty > 0) {
+                    // Find an item definition that matches the component requirement
+                    let itemToRefundId = null;
+
+                    // Case A: Component specifies itemId (simple/legacy recipes)
+                    if (component.itemId) {
+                        itemToRefundId = component.itemId;
+                    }
+                    // Case B: Component specifies family/require (new system)
+                    else if (component.family) {
+                        // We need to find an item in this family that meets requirements
+                         const familyItems = this.assetManager.findItemsByFamily(component.family);
+                         const match = familyItems.find(item => {
+                             // Check requirements
+                             if (component.require) {
+                                 for (const key in component.require) {
+                                     if (item[key] !== component.require[key]) return false;
+                                 }
+                             }
+                             return true;
+                         });
+                         if (match) itemToRefundId = match.id;
+                    }
+
+                    if (itemToRefundId) {
+                        const itemDef = this.assetManager.getItem(itemToRefundId);
+                        if (itemDef) {
+                            // Try to add to inventory
+                             const itemInstance = new window.Item(itemDef);
+                             itemInstance.quantity = refundQty;
+                             if (!this.inventoryManager.addItem(itemInstance)) {
+                                 // Inventory full, drop to floor
+                                 if (!this.gameState.floorItems) this.gameState.floorItems = [];
+                                 this.gameState.floorItems.push({
+                                     x: this.gameState.playerPos.x,
+                                     y: this.gameState.playerPos.y,
+                                     z: this.gameState.playerPos.z,
+                                     item: itemInstance
+                                 });
+                                 logToConsole(`Inventory full. Dropped ${refundQty}x ${itemDef.name} on the ground.`, 'orange');
+                             } else {
+                                 logToConsole(`Refunded ${refundQty}x ${itemDef.name}.`, 'green');
+                             }
+                        }
+                    } else {
+                        logToConsole(`${this.logPrefix} Warning: Could not determine item to refund for family '${component.family}'.`, 'warn');
+                    }
+                }
+            }
+        }
+
+        // 2. Clear Map Tiles
+        const size = definition.size || { width: 1, height: 1 };
+        const targetLayer = definition.targetLayer || 'middle';
+
+        // We use the structure's origin (x,y,z)
+        const mapData = window.mapRenderer.getCurrentMapData();
+        const levelData = mapData.levels[structure.z.toString()];
+
+        if (levelData) {
+             for (let dy = 0; dy < size.height; dy++) {
+                for (let dx = 0; dx < size.width; dx++) {
+                    const cx = structure.x + dx;
+                    const cy = structure.y + dy;
+
+                    // Clear target layer
+                    if (levelData[targetLayer] && levelData[targetLayer][cy]) {
+                        // Check if the tile actually matches what we expect (optional safety)
+                        // But for now, just clear it.
+                        // We set it to "" (empty string) which represents empty in this system
+                        levelData[targetLayer][cy][cx] = "";
+                    }
+
+                    // Also clear 'building' layer if it was used (legacy safety, similar to placement logic)
+                    if (targetLayer === 'middle' && levelData.building && levelData.building[cy]) {
+                         const bTile = levelData.building[cy][cx];
+                         // Only clear if it looks like our tile? Or just force clear?
+                         // To be safe, maybe only clear if it matches tileIdPlaced?
+                         // Let's just assume the structure occupies this space.
+                         // Actually, we should check if tileIdPlaced matches.
+                         // But for now, forceful clear is probably what "Dismantle" implies.
+                         // Let's stick to targetLayer primarily.
+                    }
+                }
+            }
+        }
+
+        // 3. Remove Trap if applicable
+        if (definition.trapToPlace && this.trapManager) {
+             // Find and remove the trap instance associated with this location
+             // Traps are stored in gameState.currentMapTraps
+             const trapIndex = this.gameState.currentMapTraps.findIndex(t => t.x === structure.x && t.y === structure.y && t.z === structure.z && t.trapDefId === definition.trapToPlace);
+             if (trapIndex !== -1) {
+                 this.gameState.currentMapTraps.splice(trapIndex, 1);
+                 logToConsole(`${this.logPrefix} Removed associated trap.`, 'info');
+             }
+        }
+
+        // 4. Remove from mapStructures
+        this.gameState.mapStructures.splice(structureIndex, 1);
+
+        // 5. Update UI/Render
+        if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
+        if (window.mapRenderer) window.mapRenderer.scheduleRender();
+        if (window.audioManager) window.audioManager.playUiSound('ui_construction_complete_01.wav'); // Reuse sound or find a deconstruct one
+
+        return true;
+    }
+
 
     /**
      * Attempts to place a construction on the map.
