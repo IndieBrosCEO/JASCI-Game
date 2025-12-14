@@ -74,6 +74,12 @@ const gameState = {
     playerHunger: 24,
     playerThirst: 24,
 
+    // Settings
+    settings: {
+        autoEndTurnAtZeroAP: true,
+        autoEndTurnAtZeroMP: true
+    },
+
     // Turn-based properties
     currentTurn: 1,
     movementPointsRemaining: 6,

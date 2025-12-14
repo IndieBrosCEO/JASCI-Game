@@ -2820,9 +2820,16 @@ async function initialize() { // Made async
         const settingsModal = document.getElementById('settingsModal');
         const musicVolumeSlider = document.getElementById('musicVolume');
         const sfxVolumeSlider = document.getElementById('sfxVolume');
+        const autoEndTurnAPCheckbox = document.getElementById('autoEndTurnAP');
+        const autoEndTurnMPCheckbox = document.getElementById('autoEndTurnMP');
 
         if (openSettingsButton && closeSettingsButton && settingsModal) {
             openSettingsButton.addEventListener('click', () => {
+                // Update checkbox states from gameState when opening modal
+                if (gameState.settings) {
+                    if (autoEndTurnAPCheckbox) autoEndTurnAPCheckbox.checked = gameState.settings.autoEndTurnAtZeroAP;
+                    if (autoEndTurnMPCheckbox) autoEndTurnMPCheckbox.checked = gameState.settings.autoEndTurnAtZeroMP;
+                }
                 settingsModal.classList.remove('hidden');
                 if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
             });
@@ -2846,6 +2853,22 @@ async function initialize() { // Made async
             sfxVolumeSlider.value = window.audioManager.getSfxVolume();
             sfxVolumeSlider.addEventListener('input', (event) => {
                 window.audioManager.setSfxVolume(parseFloat(event.target.value));
+            });
+        }
+
+        if (autoEndTurnAPCheckbox) {
+            autoEndTurnAPCheckbox.addEventListener('change', (event) => {
+                if (!gameState.settings) gameState.settings = {};
+                gameState.settings.autoEndTurnAtZeroAP = event.target.checked;
+                logToConsole(`Auto End Turn at 0 AP: ${gameState.settings.autoEndTurnAtZeroAP ? 'ON' : 'OFF'}`);
+            });
+        }
+
+        if (autoEndTurnMPCheckbox) {
+            autoEndTurnMPCheckbox.addEventListener('change', (event) => {
+                if (!gameState.settings) gameState.settings = {};
+                gameState.settings.autoEndTurnAtZeroMP = event.target.checked;
+                logToConsole(`Auto End Turn at 0 MP: ${gameState.settings.autoEndTurnAtZeroMP ? 'ON' : 'OFF'}`);
             });
         }
 
@@ -2924,6 +2947,11 @@ function loadGame() {
 
             // After loading, re-initialize parts of the game that depend on the new state
             // or that are not part of the JSON (like DOM elements, caches, etc.)
+
+            // Ensure settings object exists if loading old save
+            if (!gameState.settings) {
+                gameState.settings = { autoEndTurnAtZeroAP: true, autoEndTurnAtZeroMP: true };
+            }
 
             // Re-initialize asset-dependent parts if map changed or assets are dynamic
             // For now, assume assets are static and loaded at init.
