@@ -85,6 +85,7 @@ class AssetManager {
         const definitionFiles = [
             'level_curve.json',
             'tileset.json',
+            'water_absorption.json',
             'npcs.json',
             'weapons.json',
             'ammunition.json',
@@ -126,6 +127,9 @@ class AssetManager {
                     } else {
                         console.warn(`AssetManager: Expected array from level_curve.json, but got ${typeof parsedJson}. Skipping file.`);
                     }
+                } else if (filename === 'water_absorption.json') {
+                    this.waterAbsorptionRules = parsedJson.mappings || [];
+                    console.log(`AssetManager: Loaded ${this.waterAbsorptionRules.length} water absorption rules.`);
                 } else if (filename === 'tileset.json') {
                     this.tilesets = parsedJson;
                     // Inject harvest tags programmatically if missing (temporary fix for JSON edit issues)

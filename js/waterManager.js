@@ -196,29 +196,34 @@ class WaterManager {
 
     _processAbsorption(x, y, z, water) {
         const mapData = window.mapRenderer.getCurrentMapData();
-        if (!mapData || !mapData.levels || !mapData.levels[z]) return false;
+        if (!mapData || !mapData.levels) return false;
 
-        const levelData = mapData.levels[z];
         let absorbed = false;
+        const absorptionRules = window.assetManager && window.assetManager.waterAbsorptionRules
+            ? window.assetManager.waterAbsorptionRules
+            : []; // Default to empty if not loaded
 
-        // Bottom tile at Z
-        let bottomTile = levelData.bottom?.[y]?.[x];
-        if (bottomTile && typeof bottomTile === 'object') bottomTile = bottomTile.tileId;
+        for (const rule of absorptionRules) {
+            if (absorbed) break; // If already absorbed by a rule, stop processing?
+            // Or allow multiple rules? Usually one absorption event per unit of water.
+            // If water count > 1, maybe multiple? But function returns boolean absorbed.
+            // Assuming one absorption event consumes the unit.
 
-        // "Certain bottom tiles... GR or TSL -> MF"
-        // TODO: Move these mappings to a config if possible, but hardcoding for now based on previous code.
-        if (bottomTile === 'GR' || bottomTile === 'TSL') {
-            window.mapRenderer.updateTileOnLayer(x, y, z, 'bottom', 'MF');
-            absorbed = true;
-        }
+            const targetZ = z + (rule.zOffset || 0);
+            if (!mapData.levels[targetZ]) continue;
 
-        // Middle layer one level below (Z-1)
-        if (!absorbed && mapData.levels[z - 1]) {
-            let belowMiddle = mapData.levels[z - 1].middle?.[y]?.[x];
-            if (belowMiddle && typeof belowMiddle === 'object') belowMiddle = belowMiddle.tileId;
-            // "DI -> MU"
-            if (belowMiddle === 'DI') {
-                window.mapRenderer.updateTileOnLayer(x, y, z - 1, 'middle', 'MU');
+            const layer = rule.layer || 'bottom'; // Default check layer
+            const sourceTileId = rule.sourceTileId;
+
+            // Get the tile at the location specified by the rule
+            let tileAtLoc = mapData.levels[targetZ][layer]?.[y]?.[x];
+            if (tileAtLoc && typeof tileAtLoc === 'object') tileAtLoc = tileAtLoc.tileId;
+
+            if (tileAtLoc === sourceTileId) {
+                const targetLayer = rule.targetLayer || layer;
+                const resultTileId = rule.targetTileId;
+
+                window.mapRenderer.updateTileOnLayer(x, y, targetZ, targetLayer, resultTileId);
                 absorbed = true;
             }
         }

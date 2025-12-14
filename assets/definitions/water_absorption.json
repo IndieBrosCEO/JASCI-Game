@@ -1,0 +1,28 @@
+{
+  "mappings": [
+    {
+      "comment": "Grass or Tilled Soil on bottom layer converts to Muddy Ground (MF) when water absorbs.",
+      "sourceTileId": "GR",
+      "layer": "bottom",
+      "targetTileId": "MF",
+      "targetLayer": "bottom",
+      "zOffset": 0
+    },
+    {
+      "comment": "Grass or Tilled Soil on bottom layer converts to Muddy Ground (MF) when water absorbs.",
+      "sourceTileId": "TSL",
+      "layer": "bottom",
+      "targetTileId": "MF",
+      "targetLayer": "bottom",
+      "zOffset": 0
+    },
+    {
+      "comment": "Dirt on middle layer (one level below) converts to Mud (MU) when water absorbs from above.",
+      "sourceTileId": "DI",
+      "layer": "middle",
+      "targetTileId": "MU",
+      "targetLayer": "middle",
+      "zOffset": -1
+    }
+  ]
+}
