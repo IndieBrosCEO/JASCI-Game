@@ -372,9 +372,11 @@ function _performAction(action, it) {
                 }
             }
         } else if (action === "Dismantle") {
-            logToConsole(`Dismantling ${def.name}... (Not implemented yet - would return some materials)`, "info");
-            // TODO: Implement constructionManager.dismantleStructure(it.id);
-            // This would remove from mapStructures, clear map tile, return some % of components.
+            if (window.constructionManager && typeof window.constructionManager.dismantleStructure === 'function') {
+                window.constructionManager.dismantleStructure(it.id);
+            } else {
+                logToConsole("ConstructionManager not available to dismantle.", "error");
+            }
         }
         // AP cost for construction interactions is handled by performSelectedAction caller
 
