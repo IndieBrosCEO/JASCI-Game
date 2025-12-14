@@ -11213,7 +11213,128 @@
       ]
     }
   },
-  "npcs": [],
+  "npcs": [
+    {
+      "id": "npc_0",
+      "name": "Stray Dog",
+      "sprite": "d",
+      "color": "brown",
+      "factionId": "creature_neutral",
+      "health": {
+        "head": {
+          "max": 10,
+          "current": 10,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "torso": {
+          "max": 15,
+          "current": 15,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "leftArm": {
+          "max": 8,
+          "current": 8,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "rightArm": {
+          "max": 8,
+          "current": 8,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "leftLeg": {
+          "max": 8,
+          "current": 8,
+          "armor": 0,
+          "crisisTimer": 0
+        },
+        "rightLeg": {
+          "max": 8,
+          "current": 8,
+          "armor": 0,
+          "crisisTimer": 0
+        }
+      },
+      "stats": [
+        {
+          "name": "Strength",
+          "points": 4
+        },
+        {
+          "name": "Dexterity",
+          "points": 6
+        },
+        {
+          "name": "Constitution",
+          "points": 5
+        },
+        {
+          "name": "Perception",
+          "points": 8
+        },
+        {
+          "name": "Willpower",
+          "points": 4
+        },
+        {
+          "name": "Charisma",
+          "points": 6
+        }
+      ],
+      "skills": {
+        "Unarmed": 30,
+        "Stealth": 20,
+        "Survival": 40
+      },
+      "equippedWeaponId": "dog_bite",
+      "defaultActionPoints": 1,
+      "defaultMovementPoints": 8,
+      "tags": [
+        "animal",
+        "canine",
+        "neutral_friendly"
+      ],
+      "teamId": 90,
+      "cr": 0.5,
+      "asciiPortrait": "<span style=\"color:brown\">.</span><span style=\"color:black\">@</span><br><span style=\"color:brown\">/ \\</span>",
+      "dialogueFile": "dog_dialogue.json",
+      "isRecruitable": true,
+      "mapPos": {
+        "x": 10,
+        "y": 8,
+        "z": 0
+      },
+      "definitionId": "animal_dog",
+      "faceData": {
+        "headWidth": 7,
+        "headHeight": 8,
+        "eyeSize": 3,
+        "browHeight": 0,
+        "browAngle": 1,
+        "browWidth": 1,
+        "noseWidth": 2,
+        "noseHeight": 2,
+        "mouthWidth": 4,
+        "mouthFullness": 1,
+        "hairstyle": "medium",
+        "facialHair": "beard",
+        "glasses": "none",
+        "glassesColor": "#707070",
+        "skinColor": "#f5deb3",
+        "hairColor": "#c0c0c0",
+        "eyebrowColor": "#E6E6FA",
+        "eyeColor": "#606060",
+        "lipColor": "#d2691e",
+        "eyesOpen": true,
+        "mouthExpression": "neutral",
+        "asciiFace": "&nbsp;&nbsp;&nbsp;<span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span>&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;<span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span>&nbsp;&nbsp;<br>&nbsp;&nbsp;<span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#f5deb3; background-color:#93856b; margin-left: 0;\">/</span><span style=\"color:#f5deb3; background-color:#93856b; margin-left: 0;\">-</span><span style=\"color:#f5deb3; background-color:#93856b; margin-left: 0;\">-</span><span style=\"color:#ffffcd; background-color:#99997b; margin-left: 0;\">-</span><span style=\"color:#ffffdb; background-color:#999983; margin-left: 0;\">-</span><span style=\"color:#ffffdb; background-color:#999983; margin-left: 0;\">-</span><span style=\"color:#ffffdb; background-color:#999983; margin-left: 0;\">\\</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span>&nbsp;&nbsp;<br>&nbsp;&nbsp;<span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#f5deb3; background-color:#93856b; margin-left: 0;\">|</span><span style=\"color:#E6E6FA; background-color:#8a8a96; margin-left: 0;\">/</span><span style=\"color:#f5deb3; background-color:#93856b; margin-left: 0;\">#</span><span style=\"color:#ffffcd; background-color:#99997b; margin-left: 0;\">#</span><span style=\"color:#ffffdb; background-color:#999983; margin-left: 0;\">#</span><span style=\"color:#E6E6FA; background-color:#8a8a96; margin-left: 0;\">\\</span><span style=\"color:#ffffdb; background-color:#999983; margin-left: 0;\">|</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span>&nbsp;&nbsp;<br>&nbsp;&nbsp;<span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#f5deb3; background-color:#93856b; margin-left: 0;\">|</span><span class=\"face-eye\" style=\"color:#606060; background-color:#393939; margin-left: 0;\">O</span><span style=\"color:#f5deb3; background-color:#93856b; margin-left: 0;\">#</span><span style=\"color:#ffffcd; background-color:#99997b; margin-left: 0;\">#</span><span style=\"color:#ffffdb; background-color:#999983; margin-left: 0;\">#</span><span class=\"face-eye\" style=\"color:#606060; background-color:#393939; margin-left: 0;\">O</span><span style=\"color:#ffffdb; background-color:#999983; margin-left: 0;\">|</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span>&nbsp;&nbsp;<br>&nbsp;&nbsp;<span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#d0bc98; background-color:#7c705b; margin-left: 0;\">|</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#ffffe8; background-color:#99998b; margin-left: 0;\">.</span><span style=\"color:#ffffe8; background-color:#99998b; margin-left: 0;\">.</span><span style=\"color:#ffffcd; background-color:#99997b; margin-left: 0;\">#</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#ffffcd; background-color:#99997b; margin-left: 0;\">|</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span>&nbsp;&nbsp;<br>&nbsp;&nbsp;<span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#d0bc98; background-color:#7c705b; margin-left: 0;\">|</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#ffffcd; background-color:#99997b; margin-left: 0;\">|</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span>&nbsp;&nbsp;<br>&nbsp;&nbsp;<span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#bdac8a; background-color:#716752; margin-left: 0;\">|</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span class=\"face-mouth\" style=\"color:#d2691e; background-color:#7e3f12; margin-left: 0;\">-</span><span class=\"face-mouth\" style=\"color:#d2691e; background-color:#7e3f12; margin-left: 0;\">-</span><span class=\"face-mouth\" style=\"color:#d2691e; background-color:#7e3f12; margin-left: 0;\">-</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#f5deb3; background-color:#93856b; margin-left: 0;\">|</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span>&nbsp;&nbsp;<br>&nbsp;&nbsp;<span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#bdac8a; background-color:#716752; margin-left: 0;\">|</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#f5deb3; background-color:#93856b; margin-left: 0;\">|</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span>&nbsp;&nbsp;<br>&nbsp;&nbsp;<span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#bdac8a; background-color:#716752; margin-left: 0;\">\\</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#f5deb3; background-color:#93856b; margin-left: 0;\">/</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span><span style=\"color:#c0c0c0; background-color:#737373; margin-left: 0;\">\"</span>&nbsp;&nbsp;"
+      },
+      "wieldedWeapon": "Unarmed"
+    }
+  ],
   "portals": [],
   "description": "",
   "author": "",
