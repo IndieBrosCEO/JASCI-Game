@@ -25,34 +25,34 @@ class TrapManager {
     }
 
     /**
-     * Loads traps for the current map.
-     * This would typically read trap placements from the map data.
-     * For now, it can include hardcoded traps for testing.
-     * @param {string} mapId - The ID of the map being loaded.
+     * Loads traps for the current map from the provided map data.
+     * @param {object} mapData - The loaded map data object containing a 'traps' array.
      */
-    loadTrapsForMap(mapId) {
+    loadTrapsFromMapData(mapData) {
         this.gameState.currentMapTraps = []; // Clear traps from previous map
 
-        // TODO: Replace this with actual map data loading
-        // Example hardcoded traps for testing:
-        if (mapId === "test_map_with_traps") { // Assume a mapId where we want to test traps
-            this.gameState.currentMapTraps.push(
-                { trapDefId: "spike_pit_simple", x: 5, y: 5, z: 0, state: "hidden", uniqueId: `trap_${Date.now()}_${Math.random()}` },
-                { trapDefId: "pressure_plate_darts", x: 7, y: 7, z: 0, state: "hidden", uniqueId: `trap_${Date.now()}_${Math.random() + 1}` }
-            );
-            logToConsole(`${this.logPrefix} Loaded hardcoded traps for map '${mapId}'. Count: ${this.gameState.currentMapTraps.length}`, 'blue');
-        } else if (mapId === "tutorial_map") { // Example for another map
-            this.gameState.currentMapTraps.push(
-                { trapDefId: "tripwire_alarm", x: 3, y: 8, z: 0, state: "hidden", uniqueId: `trap_${Date.now()}_${Math.random() + 2}` }
-            );
-            logToConsole(`${this.logPrefix} Loaded hardcoded traps for tutorial_map. Count: ${this.gameState.currentMapTraps.length}`, 'blue');
-        }
-        // Ensure all traps have a unique ID for easier reference
-        this.gameState.currentMapTraps.forEach((trap, index) => {
-            if (!trap.uniqueId) {
-                trap.uniqueId = `trap_${mapId}_${index}_${trap.x}_${trap.y}_${trap.z}`;
+        if (mapData && mapData.traps && Array.isArray(mapData.traps)) {
+            mapData.traps.forEach(trapData => {
+                const newTrap = { ...trapData }; // Clone data
+                // Ensure Z coordinate defaults to 0 if missing
+                if (newTrap.z === undefined) {
+                    newTrap.z = 0;
+                }
+                if (!newTrap.uniqueId) {
+                    newTrap.uniqueId = `trap_${mapData.id}_${this.gameState.currentMapTraps.length}_${newTrap.x}_${newTrap.y}_${newTrap.z}_${Date.now()}`;
+                }
+                // Ensure state defaults to hidden if not specified
+                if (!newTrap.state) {
+                    newTrap.state = "hidden";
+                }
+                this.gameState.currentMapTraps.push(newTrap);
+            });
+            if (this.gameState.currentMapTraps.length > 0) {
+                logToConsole(`${this.logPrefix} Loaded ${this.gameState.currentMapTraps.length} traps for map '${mapData.id}'.`, 'blue');
             }
-        });
+        } else {
+            // logToConsole(`${this.logPrefix} No traps found in map data for '${mapData ? mapData.id : "unknown"}'.`, 'grey');
+        }
     }
 
     getTrapAt(x, y, z) {
