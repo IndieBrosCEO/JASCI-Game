@@ -2191,5 +2191,43 @@
     ],
     "teamId": 5,
     "cr": 2
+  },
+  {
+    "id": "animal_dog",
+    "name": "Stray Dog",
+    "sprite": "d",
+    "color": "brown",
+    "factionId": "creature_neutral",
+    "behavior": "wander_dog",
+    "health": {
+      "head": { "max": 10, "current": 10, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 15, "current": 15, "armor": 0, "crisisTimer": 0 },
+      "leftArm": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 }
+    },
+    "stats": [
+      { "name": "Strength", "points": 4 },
+      { "name": "Dexterity", "points": 6 },
+      { "name": "Constitution", "points": 5 },
+      { "name": "Perception", "points": 8 },
+      { "name": "Willpower", "points": 4 },
+      { "name": "Charisma", "points": 6 }
+    ],
+    "skills": {
+      "Unarmed": 30,
+      "Stealth": 20,
+      "Survival": 40
+    },
+    "equippedWeaponId": "dog_bite",
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 8,
+    "tags": ["animal", "canine", "neutral_friendly"],
+    "teamId": 90,
+    "cr": 0.5,
+    "asciiPortrait": "<span style=\"color:brown\">.</span><span style=\"color:black\">@</span><br><span style=\"color:brown\">/ \\</span>",
+    "dialogueFile": "dog_dialogue.json",
+    "isRecruitable": true
   }
 ]
