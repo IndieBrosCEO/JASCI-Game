@@ -449,7 +449,34 @@ class TrapManager {
             if (window.uiManager) window.uiManager.showToastNotification("Another trap is already here.", "warning");
             return false;
         }
-        // TODO: Add more checks, e.g., specific required terrain from trapDef.placeableOnTerrain = ["floor", "dirt"]
+
+        // Validate terrain requirements
+        if (trapDef.placeableOnTerrain && Array.isArray(trapDef.placeableOnTerrain)) {
+            const tileData = window.mapManager.getTileAt(x, y, z, 'bottom'); // Check bottom layer for terrain type
+            let isValidTerrain = false;
+
+            if (tileData) {
+                // tileData can be a string ID or an object { tileId: "ID", ... }
+                const tileId = (typeof tileData === 'object' && tileData.tileId) ? tileData.tileId : tileData;
+                if (tileId && this.assetManager.tilesets[tileId]) {
+                    const tileDef = this.assetManager.tilesets[tileId];
+                    const tileTags = tileDef.tags || [];
+                    // Check if any required terrain tag matches the tile's tags
+                    isValidTerrain = trapDef.placeableOnTerrain.some(reqTag => tileTags.includes(reqTag));
+                }
+            } else {
+                // If checking tags directly from a mock or simple data structure (fallback)
+                if (tileData && tileData.tags) {
+                    isValidTerrain = trapDef.placeableOnTerrain.some(reqTag => tileData.tags.includes(reqTag));
+                }
+            }
+
+            if (!isValidTerrain) {
+                logToConsole(`${this.logPrefix} Cannot place trap at (${x},${y},${z}): Terrain not suitable. Requires: ${trapDef.placeableOnTerrain.join(', ')}`, 'orange');
+                if (window.uiManager) window.uiManager.showToastNotification(`Must be placed on: ${trapDef.placeableOnTerrain.join(' or ')}`, "warning");
+                return false;
+            }
+        }
 
         // 2. Skill Check (e.g., Traps/Survival) for successful placement or effectiveness.
         const skillToUse = trapDef.placementSkill || "Survival"; // Or "Traps" if such a skill exists
