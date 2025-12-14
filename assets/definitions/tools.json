@@ -143,7 +143,8 @@
       ],
       "skills_required": [ { "skill": "Survival", "level": 2 } ],
       "time_to_craft": 10,
-      "batch_size": 1
+      "batch_size": 1,
+      "xp": 10
     }
   },
   {

@@ -169,8 +169,7 @@ class CraftingManager {
         }
 
         // Award XP
-        // TODO: Consider making xpAward data-driven from recipe definition itself.
-        const xpGainedFromCrafting = 5; // Small fixed amount for now
+        const xpGainedFromCrafting = (typeof recipe.xp === 'number') ? recipe.xp : 5;
         if (this.xpManager && typeof this.xpManager.awardXp === 'function') {
             this.xpManager.awardXp(xpGainedFromCrafting, this.gameState);
         } else {
