@@ -77,9 +77,21 @@ class ProceduralQuestManager {
             if (playerReputation < minRepStatus.minThreshold) return false;
             if (playerReputation > maxRepStatus.maxThreshold) return false; // Assumes maxThreshold is upper bound of the status
 
-            // TODO: Add more conditions: player level, active quests of this type, global flags
-            // Example: if (template.minPlayerLevel && this.gameState.playerLevel < template.minPlayerLevel) return false;
-            // Example: if (template.requiresGlobalFlag && !this.gameState.globalFlags[template.requiresGlobalFlag]) return false;
+            // Player Level Check
+            if (template.minPlayerLevel && this.gameState.level < template.minPlayerLevel) return false;
+
+            // Global Flag Check
+            if (template.requiresGlobalFlag) {
+                if (!this.gameState.globalFlags || !this.gameState.globalFlags[template.requiresGlobalFlag]) return false;
+            }
+
+            // Max Active Check (checks both active and available offers)
+            if (template.maxActive) {
+                const activeCount = (this.gameState.activeQuests || []).filter(q => q.templateId === template.id && q.status === "active").length;
+                const offeredCount = (this.gameState.availableProceduralQuests || []).filter(q => q.templateId === template.id).length;
+                if ((activeCount + offeredCount) >= template.maxActive) return false;
+            }
+
             return true;
         });
 

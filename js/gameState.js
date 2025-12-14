@@ -205,6 +205,7 @@ const gameState = {
     // Each: { questInstanceId, templateId, factionId, generatedDetails: {}, offerTimeTicks }
     activeQuests: [], // Stores active quests, including procedural ones.
     // gameState.questFlags (existing object) will be used by dynamic events and quests.
+    globalFlags: {}, // Global flags for quest and event conditions.
 
     playerReputation: {}, // Stores player's reputation with different factions { factionId: score }. Initialized as empty, populated by factionManager or game start.
     factionData: { // To store global faction standings if needed beyond default pair-wise
