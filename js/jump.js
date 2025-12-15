@@ -171,13 +171,13 @@ function getJumpLandingSpot(startPos, targetPos, jumpRange) {
             // Check Bottom (Ceiling)
             const tileOnBottomRaw = levelData.bottom?.[point.y]?.[point.x];
             const effBot = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw?.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
-            if (effBot && window.assetManagerInstance.tilesets[effBot]?.tags?.includes('floor')) {
+            if (effBot && window.assetManager.tilesets[effBot]?.tags?.includes('floor')) {
                  return { isValid: false, reason: "Jump path is blocked by low ceiling.", spot: null };
             }
             // Check Middle (Obstacle)
             const tileOnMiddleRaw = levelData.middle?.[point.y]?.[point.x];
             const effMid = (typeof tileOnMiddleRaw === 'object' && tileOnMiddleRaw?.tileId !== undefined) ? tileOnMiddleRaw.tileId : tileOnMiddleRaw;
-             if (effMid && window.assetManagerInstance.tilesets[effMid]?.tags?.includes('impassable')) {
+             if (effMid && window.assetManager.tilesets[effMid]?.tags?.includes('impassable')) {
                  return { isValid: false, reason: "Jump path is blocked from above.", spot: null };
             }
         }
