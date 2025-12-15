@@ -401,9 +401,17 @@ class VehicleManager {
             return false;
         }
 
-        // TODO: Consume fuel item (fuelItemId) from player inventory.
-        // Example: if (!window.inventoryManager.removeItemByNameOrId(fuelItemId, 1)) { logToConsole("Fuel item not found in inventory."); return false; }
-        // The 'fuelAmount' would ideally come from the fuelItem's definition.
+        // Consume fuel item (fuelItemId) from player inventory.
+        if (window.inventoryManager) {
+             if (!window.inventoryManager.removeItem(fuelItemId, 1)) {
+                 logToConsole("Fuel item not found in inventory.", "warn");
+                 return false;
+             }
+        } else {
+            // Fallback if inventory manager not globally available (should generally not happen)
+             logToConsole("Inventory Manager not available to consume fuel.", "error");
+             return false;
+        }
 
         vehicle.fuel = Math.min(vehicle.maxFuel, vehicle.fuel + fuelAmount);
         logToConsole(`VehicleManager: Vehicle "${vehicle.name}" refueled. Current fuel: ${vehicle.fuel}/${vehicle.maxFuel}.`, "info");
