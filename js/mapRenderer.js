@@ -913,15 +913,6 @@ window.mapRenderer = {
                     // Ensure 'this' context is correct for the method call
                     profileFunction("mapRenderer.renderMapLayers", () => window.mapRenderer.renderMapLayers(), ...arguments);
                 }
-
-                // Update Surroundings UI
-                if (window.SurroundingsUI) {
-                    if (!window.surroundingsUI) {
-                        window.surroundingsUI = new window.SurroundingsUI();
-                    }
-                    window.surroundingsUI.update();
-                }
-
                 gameState.renderScheduled = false;
             });
         }

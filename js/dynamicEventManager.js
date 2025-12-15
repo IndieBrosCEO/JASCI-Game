@@ -51,13 +51,18 @@ class DynamicEventManager {
 
     checkForNewEvents(currentTick) {
         logToConsole("DynamicEventManager: Checking for new events...", "debug");
-
-        const candidates = [];
-        let totalWeight = 0;
-
-        // 1. Identify valid candidates and calculate weights
         for (const templateId in this.eventTemplates) {
             const template = this.eventTemplates[templateId];
+
+            // Basic frequency check (simplified)
+            // TODO: Implement proper weighted random chance based on frequency ("common", "uncommon", "rare")
+            let roll = Math.random();
+            let chance = 0.1; // Base chance for any event per check cycle
+            if (template.frequency === "common") chance = 0.25;
+            else if (template.frequency === "uncommon") chance = 0.1;
+            else if (template.frequency === "rare") chance = 0.05;
+
+            if (roll > chance) continue;
 
             // Check player level
             if (template.minPlayerLevel && this.gameState.level < template.minPlayerLevel) {
@@ -66,6 +71,7 @@ class DynamicEventManager {
 
             // Check if a similar event is already active (e.g., don't stack multiple raids of same type)
             if (this.gameState.activeDynamicEvents.some(ev => ev.templateId === templateId)) {
+                // logToConsole(`Event ${templateId} skipped, an instance is already active.`, "debug");
                 continue;
             }
 
@@ -83,45 +89,17 @@ class DynamicEventManager {
                             allGlobalConditionsMet = false; break;
                         }
                     } else {
-                        logToConsole(`${this.logPrefix || "DynamicEventManager:"} Unknown global condition type '${condition.type}' for event '${template.id}'. Skipping condition.`, "warn");
+                        logToConsole(`${this.logPrefix} Unknown global condition type '${condition.type}' for event '${template.id}'. Skipping condition.`, "warn");
                     }
                 }
             }
 
             if (!allGlobalConditionsMet) {
+                // logToConsole(`${this.logPrefix} Event ${template.id} skipped, global conditions not met.`, "debug");
                 continue;
             }
 
-            // Calculate Weight
-            let weight = 10; // Default
-            if (template.frequency === "common") weight = 50;
-            else if (template.frequency === "uncommon") weight = 20;
-            else if (template.frequency === "rare") weight = 5;
-            else if (template.frequency === "very_rare") weight = 1;
-
-            candidates.push({ template, weight });
-            totalWeight += weight;
-        }
-
-        if (candidates.length === 0) {
-            return;
-        }
-
-        // 2. Decide if ANY event triggers
-        // Fixed chance per check interval (e.g., 40%) to avoid event spam as more templates are added.
-        const EVENT_SPAWN_CHANCE = 0.4;
-        if (Math.random() > EVENT_SPAWN_CHANCE) {
-            return;
-        }
-
-        // 3. Select one event based on weighted random chance
-        let randomValue = Math.random() * totalWeight;
-        for (const candidate of candidates) {
-            randomValue -= candidate.weight;
-            if (randomValue <= 0) {
-                this.triggerEvent(candidate.template, currentTick);
-                break;
-            }
+            this.triggerEvent(template, currentTick);
         }
     }
 
@@ -183,11 +161,8 @@ class DynamicEventManager {
                 break;
             case "broadcast_message":
                 logToConsole(`EVENT BROADCAST (${effect.channel || 'general'}): ${effect.message}`, "event-critical");
-                // TODO: Show this to player via a more prominent UI notification. 
-                // Currently logged prominently. A dedicated game UI manager with toast/modal capability would be needed for more.
-                // The existing check for window.uiManager.showToastNotification likely refers to a mapMaker UI or a planned game UI manager.
-                if (window.uiManager && typeof window.uiManager.showToastNotification === 'function') { // This uiManager might be from mapMaker or a non-existent game one
-                    window.uiManager.showToastNotification(effect.message, 'event', 6000);
+                if (window.uiManager && typeof window.uiManager.showToastNotification === 'function') {
+                    window.uiManager.showToastNotification(effect.message, 'event-critical', 6000);
                 }
                 break;
             case "force_weather":

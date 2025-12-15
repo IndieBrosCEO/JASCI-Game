@@ -640,10 +640,6 @@ button.preset-swatch { /* More specific selector */
     font-family: 'DwarfFortress', monospace;
 }
 
-#questLogUI.hidden {
-    display: none !important;
-}
-
 #questLogUI h2 {
     margin-top: 0;
     text-align: center;

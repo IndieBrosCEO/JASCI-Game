@@ -1,4 +1,4 @@
-class SurroundingsUI {
+﻿class SurroundingsUI {
     constructor() {
         this.container = document.getElementById('surroundingsGrid');
         this.cells = [];
@@ -122,8 +122,8 @@ class SurroundingsUI {
             if (!hasMidContent && levelData && levelData.middle) {
                 const midTileRaw = levelData.middle[targetY]?.[targetX];
                 const midTileId = (typeof midTileRaw === 'object' && midTileRaw !== null && midTileRaw.tileId !== undefined)
-                                  ? midTileRaw.tileId
-                                  : midTileRaw;
+                    ? midTileRaw.tileId
+                    : midTileRaw;
 
                 if (midTileId && midTileId !== "") {
                     const tileDef = this.getTileDef(midTileId);
@@ -160,8 +160,8 @@ class SurroundingsUI {
             if (levelData && levelData.bottom) {
                 const botTileRaw = levelData.bottom[targetY]?.[targetX];
                 const botTileId = (typeof botTileRaw === 'object' && botTileRaw !== null && botTileRaw.tileId !== undefined)
-                                  ? botTileRaw.tileId
-                                  : botTileRaw;
+                    ? botTileRaw.tileId
+                    : botTileRaw;
 
                 if (botTileId && botTileId !== "") {
                     const tileDef = this.getTileDef(botTileId);
