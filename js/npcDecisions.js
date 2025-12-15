@@ -1,4 +1,4 @@
-﻿// js/npcDecisions.js
+// js/npcDecisions.js
 
 // This file will contain NPC-specific decision-making logic, like whether to take a risky fall.
 
@@ -1084,56 +1084,8 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
         }
     }
 
-    // TODO: Overall NPC Combat AI Enhancements:
-    // - Fleeing Behavior: If health is critically low (e.g., < 25%) and/or morale is broken (if morale system added),
-    //   NPC should prioritize moving away from threats to a safe distance or off-map.
-    //   This might involve finding the furthest valid tile from the highest threat.
-    // - Alert Ally Behavior: If NPC encounters a threat and has allies nearby not in combat,
-    //   it could spend an action/turn to "alert" them. Alerted allies would then join combat or become aware.
-    //   Requires defining alert range and mechanism.
-    // - Nuanced "Can't Reach" Logic: If pathfinding to primary target fails or no direct attack is possible:
-    //   - Consider switching to a secondary target if available.
-    //   - Reposition: Move to get better LOS, flank, or reach cover.
-    //   - Use ranged attacks if melee is blocked, or vice-versa if possible.
-    //   - If truly stuck, take defensive action or wait/delay turn.
-    // - Utility Actions: If no good attack, consider:
-    //   - Reloading: If weapon needs it (already partially handled in _handleRangedAttack).
-    //   - Using beneficial items: Stimpacks if injured, combat drugs if available.
-    //   - Using tactical items: Smoke grenades for cover, flashbangs to disorient.
-    // - Out of Ammo Logic: If primary ranged weapon is out of all ammo (not just current mag):
-    //   - Switch to secondary weapon (if any).
-    //   - Switch to melee weapon (if any).
-    //   - Attempt to find more ammo on the map (if scavenging AI is advanced).
-    //   - Flee.
-    // - Sophisticated Defensive Choices (in _handleDefensiveAction or similar):
-    //   - Seek Cover: Identify nearby tiles offering cover from current threats and move there.
-    //   - Use Defensive Items: e.g., painkiller, medkit if injured and safe to do so.
-    //   - Fall Back: If outnumbered or taking heavy fire, move to a more defensible position.
-
-    // Target selection using the function now in npcDecisions.js
-    // selectNpcCombatTarget needs initiativeTracker, which combatManager holds.
-    // This is a bit awkward. combatManager.executeNpcCombatTurn could pass its initiativeTracker.
-    // For now, let's assume combatManager calls selectNpcCombatTarget itself before calling handleNpcCombatTurn,
-    // or selectNpcCombatTarget is passed the tracker.
-    // Plan update: selectNpcCombatTarget now takes initiativeTracker.
-    // We'll need to ensure combatManager.initiativeTracker is passed here.
-    // For now, this function will assume targeting is done if gameState.combatCurrentDefender is set.
-
     if (!gameState.combatCurrentDefender && !selectNpcCombatTarget(npc, gameState, combatManager.initiativeTracker, assetManager)) {
-            // logToConsole(`NPC ${npcName}: No primary combat target found. Considering secondary objectives or fallback movement.`, 'gold');
-
-        // TODO: If no primary target, consider secondary objectives:
-        // 1. Guard Point: If npc.behavior === "guard" and npc.guardPoint defined, move towards/scan around it.
-        //    (Partially handled if handleNpcOutOfCombatTurn considers npc.memory.lastKnownSafePos as a guard point)
-        // 2. Assist Ally: If allies are in combat nearby, move to support.
-        //    - Find nearest ally in combat.
-        //    - If ally is engaged in melee, consider moving to engage their attacker if possible.
-        //    - If ally is ranged, consider moving to a position that offers covering fire or better LOS on ally's target.
-        // 3. Use Item: If low health and has healing items, use one. If tactical advantage, use grenade/smoke.
-        //    (Requires inventory and item use AI)
-        // 4. Fallback to current behavior: exploration/memory movement (handleNpcOutOfCombatTurn).
-
-        // Current fallback: OOC-like movement (exploration or returning to a point).
+        // Fallback: OOC-like movement (exploration or returning to a point).
         const oocMoveBudget = Math.min(npc.currentMovementPoints, 2);
         if (oocMoveBudget > 0) {
             const tempOOCPoints = npc.currentMovementPoints;
@@ -1166,9 +1118,20 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
 
         let actionTakenInIter = false;
 
+        // --- Call for Help Check ---
+        // Only attempt once per turn, and if AP available
+        if (npc.currentActionPoints > 0 && !npc.hasCalledForHelpThisTurn) {
+             if (attemptCallForHelp(npc, gameState, combatManager)) {
+                 npc.currentActionPoints--;
+                 npc.hasCalledForHelpThisTurn = true;
+                 actionTakenInIter = true;
+                 continue; // Re-evaluate loop
+             }
+        }
+
         // --- Flee Logic Check ---
         if (shouldNpcFlee(npc) && npc.currentMovementPoints > 0) {
-            logToConsole(`NPC ${npcName} is a prey/passive type. Attempting to flee from threat at (${currentTargetPos.x}, ${currentTargetPos.y}).`, 'cyan');
+            logToConsole(`NPC ${npcName} is fleeing (HP: ${npc.health?.torso?.current}/${npc.health?.torso?.max}).`, 'cyan');
             const fleeTarget = getFleeTarget(npc, currentTargetPos);
             if (fleeTarget) {
                 // Pass animation duration for fleeing
@@ -1249,23 +1212,6 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
 
         const canAttack = ((attackType === 'melee' && distanceToTarget3D <= 1.8) || (attackType === 'ranged' && hasLOStoTarget));
 
-        // TODO: Consider if NPC should use special abilities or items if available
-        // - Check npc.abilities (if defined in their definition) for usable combat abilities (cooldowns, conditions).
-        // - Check npc.inventory for usable items (grenades, stimpacks, special ammo).
-        // - Decision logic:
-        //   - If low health & has heal item -> use heal.
-        //   - If multiple enemies clustered & has grenade -> use grenade.
-        //   - If special attack available & conditions met (e.g., target flanked, NPC buffed) -> use ability.
-        //   - Otherwise, standard weapon attack.
-        // This would involve setting gameState.pendingCombatAction to a different actionType.
-
-        // If fleeing, we skip attacking unless cornered?
-        // For now, shouldNpcFlee logic above handles movement.
-        // If they moved, actionTakenInIter is true, loop continues.
-        // If they are out of MP, they stop.
-        // If they still have AP and are cornered (didn't move), maybe they attack?
-        // But the requirement is "prey should run away... not go towards them".
-        // If they are strictly prey (neutral_flees), they probably shouldn't attack.
         const isStrictlyPassive = shouldNpcFlee(npc);
 
         if (canAttack && npc.currentActionPoints > 0 && !isStrictlyPassive) {
@@ -1279,6 +1225,13 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
             actionTakenInIter = true;
             return true; // Attack initiated, combatManager should handle the rest of the sequence
         } else if (npc.currentMovementPoints > 0) { // Try to move if cannot attack or need better position
+            // Try Flanking First
+            const flankSuccess = await attemptFlankingMove(npc, currentTarget, gameState, assetManager);
+            if (flankSuccess) {
+                actionTakenInIter = true;
+                continue;
+            }
+
             let moveTargetPos = currentTargetPos; // Default move towards current combat target
 
             if (npc.isFollowingPlayer) {
@@ -1339,6 +1292,9 @@ async function executeNpcTurn(npc, gameState, combatManager, assetManager) {
     }
 
     if (gameState.isInCombat) {
+        // Reset turn-specific flags
+        npc.hasCalledForHelpThisTurn = false;
+
         // logToConsole(`NPC ${npc.id || npc.name}: Executing COMBAT turn.`);
         // Placeholder for actual combat logic call which will be moved here
         // await handleNpcCombatTurn(npc, gameState, combatManager, assetManager);
@@ -1357,6 +1313,23 @@ window.executeNpcTurn = executeNpcTurn;
 // Helper function to check if NPC should flee
 function shouldNpcFlee(npc) {
     if (!npc.tags) return false;
+
+    // Override: Brave/Fanatic NPCs never flee
+    if (npc.tags.includes("brave") || npc.tags.includes("fanatic") || npc.tags.includes("zombie")) return false;
+
+    // 1. Critical Health Fleeing
+    if (npc.health && npc.health.torso) {
+        const currentHP = npc.health.torso.current;
+        const maxHP = npc.health.torso.max;
+        const hpPercent = currentHP / maxHP;
+
+        // Flee if HP < 25%
+        if (hpPercent < 0.25) {
+             // logToConsole(`${npc.name} is critically wounded (${(hpPercent*100).toFixed(0)}%) and trying to flee!`, 'orange');
+             return true;
+        }
+    }
+
     // Check for explicit flee tags
     if (npc.tags.includes("neutral_flees")) return true;
 
@@ -1419,3 +1392,142 @@ function getFleeTarget(npc, threatPos) {
     return { x: clampedX, y: clampedY, z };
 }
 window.getFleeTarget = getFleeTarget;
+
+// New Helper: Call for Help
+function attemptCallForHelp(npc, gameState, combatManager) {
+    if (!npc.tags || npc.tags.includes("loner")) return false;
+    // Only intelligent NPCs or pack animals call for help?
+    // Let's assume anyone with a teamId can try, unless 'loner'.
+
+    const helpRadius = 15;
+    const nearbyAllies = gameState.npcs.filter(ally =>
+        ally !== npc &&
+        ally.teamId === npc.teamId &&
+        ally.health.torso.current > 0 &&
+        getDistance3D(npc.mapPos, ally.mapPos) <= helpRadius
+    );
+
+    let calledHelp = false;
+    const alliesToAlert = [];
+
+    nearbyAllies.forEach(ally => {
+        // Check if ally is already in combat
+        const isInCombat = combatManager.initiativeTracker.some(e => e.entity === ally);
+        if (!isInCombat) {
+            alliesToAlert.push(ally);
+        } else {
+            // Already in combat. If they have no target, maybe we give them ours?
+            // Usually combat logic handles targeting.
+        }
+    });
+
+    if (alliesToAlert.length > 0) {
+        logToConsole(`${npc.name} calls for help! Alerting ${alliesToAlert.length} allies.`, 'red');
+
+        const currentActor = combatManager.initiativeTracker[combatManager.currentTurnIndex]?.entity;
+
+        alliesToAlert.forEach(ally => {
+            const init = rollDie(20) + getStatModifier("Dexterity", ally);
+            combatManager.initiativeTracker.push({
+                entity: ally,
+                initiative: init,
+                tieBreaker: Math.random(),
+                isPlayer: false
+            });
+            // Switch idle behavior to combat-ready if needed
+            // The next time their turn comes up, handleNpcCombatTurn will select a target.
+        });
+
+        combatManager.initiativeTracker.sort((a, b) => b.initiative - a.initiative || b.tieBreaker - a.tieBreaker);
+
+        // Update UI
+        combatManager.updateInitiativeDisplay();
+
+        // Fix currentTurnIndex
+        if (currentActor) {
+            const newIndex = combatManager.initiativeTracker.findIndex(e => e.entity === currentActor);
+            if (newIndex !== -1) {
+                combatManager.currentTurnIndex = newIndex;
+            }
+        }
+
+        calledHelp = true;
+    }
+    return calledHelp;
+}
+if (typeof window !== 'undefined') window.attemptCallForHelp = attemptCallForHelp;
+
+// New Helper: Flanking Movement
+async function attemptFlankingMove(npc, target, gameState, assetManager) {
+    // Check if we have an ally already adjacent to target or engaging target
+    if (!target) return false;
+
+    const alliesEngaging = gameState.npcs.filter(ally =>
+        ally !== npc &&
+        ally.teamId === npc.teamId &&
+        ally.health.torso.current > 0 &&
+        getDistance3D(ally.mapPos, target.mapPos) <= 1.5 // Melee range ally
+    );
+
+    if (alliesEngaging.length === 0) return false; // No one to flank with
+
+    // Find a spot around target that is:
+    // 1. Adjacent to target (or optimal range?)
+    // 2. "Opposite" to an ally or at least different.
+    // Simple heuristic: Find an empty adjacent tile to target that maximizes distance to the nearest engaging ally.
+
+    const validTiles = [];
+    const mapData = window.mapRenderer.getCurrentMapData();
+    const targetPos = target.mapPos;
+
+    for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+            if (dx === 0 && dy === 0) continue;
+            const tx = targetPos.x + dx;
+            const ty = targetPos.y + dy;
+            const tz = targetPos.z;
+
+            // Check bounds
+            if (tx < 0 || tx >= mapData.dimensions.width || ty < 0 || ty >= mapData.dimensions.height) continue;
+
+            // Check walkability and occupancy
+            if (window.mapRenderer.isWalkable(tx, ty, tz) && window.mapRenderer.isTileEmpty(tx, ty, tz)) {
+                validTiles.push({ x: tx, y: ty, z: tz });
+            }
+        }
+    }
+
+    if (validTiles.length === 0) return false;
+
+    // Score tiles
+    let bestTile = null;
+    let maxScore = -Infinity;
+
+    validTiles.forEach(tile => {
+        let score = 0;
+        // Distance to allies (maximize min distance)
+        let minAllyDist = Infinity;
+        alliesEngaging.forEach(ally => {
+            const d = getDistance3D(tile, ally.mapPos);
+            if (d < minAllyDist) minAllyDist = d;
+        });
+
+        score += minAllyDist * 10;
+        // Distance from self (minimize movement cost)
+        const distFromSelf = getDistance3D(tile, npc.mapPos);
+        score -= distFromSelf;
+
+        if (score > maxScore) {
+            maxScore = score;
+            bestTile = tile;
+        }
+    });
+
+    if (bestTile && getDistance3D(bestTile, npc.mapPos) > 0) {
+        logToConsole(`${npc.name} attempting flank maneuver to (${bestTile.x}, ${bestTile.y}).`, 'cyan');
+        return await moveNpcTowardsTarget(npc, bestTile, gameState, assetManager, 300);
+    }
+
+    return false;
+}
+if (typeof window !== 'undefined') window.attemptFlankingMove = attemptFlankingMove;
