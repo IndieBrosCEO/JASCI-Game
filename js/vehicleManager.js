@@ -386,7 +386,7 @@ class VehicleManager {
         vehicle.durability[partIdToRepair] = Math.min(maxDurability, vehicle.durability[partIdToRepair] + amountToHeal);
 
         logToConsole(`VehicleManager: Part "${partDef.name}" on vehicle "${vehicle.name}" repaired. Current durability: ${vehicle.durability[partIdToRepair]}/${maxDurability}.`, "info");
-        // TODO: Play sound effect for repair
+        if (window.audioManager) window.audioManager.playSound("repair_01.wav");
         return true;
     }
 

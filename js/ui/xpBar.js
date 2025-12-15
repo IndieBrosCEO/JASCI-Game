@@ -41,7 +41,6 @@ if (window.EventManager) {
         updateXpBar();
         if (window.renderCharacterInfo) window.renderCharacterInfo();
         if (window.levelUpUI && window.levelUpUI.isVisible) window.levelUpUI.updateDisplay();
-        // TODO: Play level up sound
-        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.8 });
+        if (window.audioManager) window.audioManager.playUiSound('level_up_01.wav', { volume: 0.8 });
     });
 }
