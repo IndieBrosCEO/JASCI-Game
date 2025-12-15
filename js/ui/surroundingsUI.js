@@ -62,7 +62,7 @@
         if (!window.gameState || !window.gameState.player) return;
         if (!this.container) return;
 
-        // Ensure the container is visible if it was hidden
+         // Ensure the container is visible if it was hidden
         if (this.container.classList.contains('hidden')) {
             this.container.classList.remove('hidden');
         }
@@ -81,9 +81,9 @@
 
             // Bounds check
             if (targetX < 0 || targetY < 0 || targetX >= mapData.dimensions.width || targetY >= mapData.dimensions.height) {
-                cellInfo.top.innerHTML = "Bound";
-                cellInfo.bottom.innerHTML = "Bound";
-                return;
+                 cellInfo.top.innerHTML = "Bound";
+                 cellInfo.bottom.innerHTML = "Bound";
+                 return;
             }
 
             // Highlight center cell (player)
@@ -133,7 +133,7 @@
                         midName = tileDef.name || midTileId;
                         hasMidContent = true;
                     } else {
-                        // Fallback if definition missing but ID present
+                         // Fallback if definition missing but ID present
                         midSprite = '?';
                         midColor = '#ccc';
                         midName = midTileId;
@@ -143,12 +143,12 @@
             }
 
             // Format HTML for Middle
-            if (hasMidContent) {
-                cellInfo.top.innerHTML = `<span style="color: ${midColor}; font-family: 'DwarfFortress', monospace;">${midSprite}</span>:${midName}`;
-            } else {
-                // Empty Middle Layer
-                cellInfo.top.innerHTML = `<span style="color: #333; font-family: 'DwarfFortress', monospace;">.</span>:Empty`;
-            }
+             if (hasMidContent) {
+                 cellInfo.top.innerHTML = `<span style="color: ${midColor}; font-family: 'DwarfFortress', monospace;">${midSprite}</span>:${midName}`;
+             } else {
+                 // Empty Middle Layer
+                 cellInfo.top.innerHTML = `<span style="color: #333; font-family: 'DwarfFortress', monospace;">.</span>:Empty`;
+             }
 
 
             // --- Bottom Layer ---

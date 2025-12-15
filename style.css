@@ -710,6 +710,6 @@ button.preset-swatch { /* More specific selector */
     padding: 2px;
 }
 
-    #surroundingsGrid div {
-        /* Style for individual cells if needed globally, but inline styles cover most */
-    }
+#surroundingsGrid div {
+    /* Style for individual cells if needed globally, but inline styles cover most */
+}
