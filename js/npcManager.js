@@ -130,12 +130,65 @@ class NpcManager {
                         }
                     }
 
+                    // Handle Hostility
+                    // 1. Explicit Player Hostility
                     if (targetFactionIdForHostility === "player_faction_or_local" || targetFactionIdForHostility === "player") {
                         if (newNpcInstance.teamId !== this.gameState.player.teamId) {
                             newNpcInstance.aggroList.push({ entityRef: this.gameState.player, threat: 500 });
                         }
                     }
-                    // TODO: More complex hostility based on targetFactionIdForHostility
+
+                    // 2. Faction-Based Hostility (using FactionManager)
+                    if (window.factionManager && typeof window.factionManager.getFactionRelationship === 'function') {
+                        // A. Check hostility towards Player based on Faction Reputation/Relations
+                        const playerRel = window.factionManager.getFactionRelationship(newNpcInstance.factionId, 'player', this.gameState.playerReputation);
+                        if (playerRel === "hostile" && newNpcInstance.teamId !== this.gameState.player.teamId) {
+                             if (!newNpcInstance.aggroList.find(a => a.entityRef === this.gameState.player)) {
+                                 newNpcInstance.aggroList.push({ entityRef: this.gameState.player, threat: 300 });
+                             }
+                        }
+
+                        // B. Check against existing NPCs (Mutual Hostility)
+                        if (this.gameState.npcs) {
+                            this.gameState.npcs.forEach(otherNpc => {
+                                if (otherNpc === newNpcInstance) return;
+                                if (otherNpc.health && otherNpc.health.torso && otherNpc.health.torso.current <= 0) return; // Ignore dead
+
+                                let isHostile = false;
+
+                                // Check if this new NPC is explicitly targeted against the other's faction
+                                if (targetFactionIdForHostility && targetFactionIdForHostility === otherNpc.factionId) {
+                                    isHostile = true;
+                                }
+                                // Check standard faction relationships
+                                else {
+                                    const rel = window.factionManager.getFactionRelationship(newNpcInstance.factionId, otherNpc.factionId);
+                                    if (rel === "hostile") {
+                                        isHostile = true;
+                                    }
+                                }
+
+                                if (isHostile) {
+                                    // Add other NPC to new NPC's aggro list
+                                    if (!newNpcInstance.aggroList.find(a => a.entityRef === otherNpc)) {
+                                        newNpcInstance.aggroList.push({ entityRef: otherNpc, threat: 200 });
+                                    }
+
+                                    // Mutual: Add new NPC to other NPC's aggro list (they notice the new threat)
+                                    // Only if the other NPC would also consider this one hostile (symmetric check usually, but let's re-verify)
+                                    const reverseRel = window.factionManager.getFactionRelationship(otherNpc.factionId, newNpcInstance.factionId);
+                                    // Or if we forced hostility via explicit target, the other guy might not hate back instantly unless faction logic says so.
+                                    // But typically combat is mutual. Let's assume mutual faction hatred applies or if the new one is aggressive.
+                                    if (reverseRel === "hostile" || isHostile) {
+                                        if (!otherNpc.aggroList) otherNpc.aggroList = [];
+                                        if (!otherNpc.aggroList.find(a => a.entityRef === newNpcInstance)) {
+                                            otherNpc.aggroList.push({ entityRef: newNpcInstance, threat: 200 });
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
 
                     this.gameState.npcs.push(newNpcInstance);
                     spawnedNpcIds.push(newNpcInstance.id);
