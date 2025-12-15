@@ -1,4 +1,4 @@
-class UIManager {
+class ToastUIManager {
     constructor() {
         this.toastContainer = null;
         this.toasts = [];
@@ -104,4 +104,4 @@ class UIManager {
 }
 
 // Make globally available
-window.UIManager = UIManager;
+window.ToastUIManager = ToastUIManager;

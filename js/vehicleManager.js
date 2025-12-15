@@ -139,8 +139,6 @@ class VehicleManager {
         let totalCargoCapacity = 0;
         let maxFuel = 0;
         let tractionFactor = 1.0; // Average or minimum traction from wheels
-        let totalFuelConsumption = 0;
-        let engineCount = 0;
 
         // Include chassis weight
         const chassisDef = this.vehicleParts[vehicle.chassis];
@@ -162,12 +160,6 @@ class VehicleManager {
                 if (partDef.type === "engine") {
                     totalPower += (partDef.effects && partDef.effects.power) || 0;
                     maxFuel += partDef.maxFuel || 0;
-                    if (partDef.effects && typeof partDef.effects.fuelEfficiency !== 'undefined') {
-                        totalFuelConsumption += partDef.effects.fuelEfficiency;
-                    } else {
-                        totalFuelConsumption += 0.1; // Default consumption if not specified
-                    }
-                    engineCount++;
                 }
                 if (partDef.type.startsWith("armor") && partDef.effects && partDef.effects.armorValue) {
                     totalArmor += partDef.effects.armorValue; // Simple sum for now
@@ -191,7 +183,6 @@ class VehicleManager {
             speed: totalPower > 0 && totalWeight > 0 ? Math.max(1, Math.floor((totalPower / totalWeight) * 600 * tractionFactor)) : 0, // Adjusted constant to 600 for higher speed values
             armor: totalArmor, // Overall armor rating
             cargoCapacity: totalCargoCapacity,
-            fuelEfficiency: engineCount > 0 ? totalFuelConsumption / engineCount : 0, // Average consumption
         };
         vehicle.maxFuel = maxFuel; // Update max fuel based on engine(s)
         if (vehicle.cargoDetails) { // Update cargo capacity if storage parts provide it
@@ -225,37 +216,31 @@ class VehicleManager {
         const vehicle = this.getVehicleById(vehicleId);
         if (!vehicle) return false;
 
+        // Calculate efficiency based on engines
         let efficiency = 0;
-        // Use cached stats if available
-        if (vehicle.calculatedStats && typeof vehicle.calculatedStats.fuelEfficiency !== 'undefined') {
-            efficiency = vehicle.calculatedStats.fuelEfficiency;
-        } else {
-            // Fallback: Calculate efficiency based on engines
-            const allPartIds = new Set();
-            Object.values(vehicle.attachedParts).forEach(slotArray => {
-                slotArray.forEach(partId => {
-                    if (partId) allPartIds.add(partId);
-                });
+        const allPartIds = new Set();
+        Object.values(vehicle.attachedParts).forEach(slotArray => {
+            slotArray.forEach(partId => {
+                if (partId) allPartIds.add(partId);
             });
+        });
 
-            let engineCount = 0;
-            allPartIds.forEach(partId => {
-                const partDef = this.vehicleParts[partId];
-                if (partDef && partDef.type === "engine") {
-                    if (partDef.effects && typeof partDef.effects.fuelEfficiency !== 'undefined') {
-                        efficiency += partDef.effects.fuelEfficiency;
-                    } else {
-                        efficiency += 0.1;
-                    }
-                    engineCount++;
+        let engineCount = 0;
+        allPartIds.forEach(partId => {
+            const partDef = this.vehicleParts[partId];
+            if (partDef && partDef.type === "engine") {
+                if (partDef.effects && typeof partDef.effects.fuelEfficiency !== 'undefined') {
+                    efficiency += partDef.effects.fuelEfficiency;
+                } else {
+                    efficiency += 0.1;
                 }
-            });
+                engineCount++;
+            }
+        });
 
-            if (engineCount > 0) efficiency /= engineCount; // Average efficiency
-        }
+        if (engineCount > 0) efficiency /= engineCount; // Average efficiency
 
         const fuelConsumed = distance * efficiency;
-        // Support floating point fuel
         if (vehicle.fuel >= fuelConsumed) {
             vehicle.fuel -= fuelConsumed;
             if (vehicle.fuel < 0) vehicle.fuel = 0; // Should not happen due to check
