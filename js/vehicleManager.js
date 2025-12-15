@@ -455,7 +455,10 @@ class VehicleManager {
             // e.g., if partDef.type === "engine", vehicle.isImmobilized = true;
             this.calculateVehicleStats(vehicleId); // Recalculate stats as destroyed parts might affect them (e.g. if destroyed engine has 0 power)
         }
-        // TODO: Play sound effect for damage
+        // Play sound effect for damage
+        if (window.audioManager) {
+            window.audioManager.playSoundAtLocation('car_damage_01.wav', vehicle.mapPos, {}, { maxDistance: 30 });
+        }
     }
 }
 
