@@ -8,6 +8,11 @@ class SurroundingsUI {
     initializeGrid() {
         if (!this.container) return;
 
+        // Ensure the container is visible if it was hidden
+        if (this.container.classList.contains('hidden')) {
+            this.container.classList.remove('hidden');
+        }
+
         this.container.innerHTML = '';
         this.container.style.display = 'grid';
         this.container.style.gridTemplateColumns = 'repeat(3, 1fr)';
@@ -34,14 +39,14 @@ class SurroundingsUI {
                 topHalf.style.padding = '2px';
                 topHalf.style.backgroundColor = '#1a1a2a'; // Dark blueish
                 topHalf.style.color = '#ccc';
-                topHalf.textContent = 'Mid';
+                // topHalf.innerHTML will be set in update()
 
                 const bottomHalf = document.createElement('div');
                 bottomHalf.style.flex = '1';
                 bottomHalf.style.padding = '2px';
                 bottomHalf.style.backgroundColor = '#2a1a1a'; // Dark reddish
                 bottomHalf.style.color = '#888';
-                bottomHalf.textContent = 'Bot';
+                // bottomHalf.innerHTML will be set in update()
 
                 cell.appendChild(topHalf);
                 cell.appendChild(bottomHalf);
@@ -57,12 +62,18 @@ class SurroundingsUI {
         if (!window.gameState || !window.gameState.player) return;
         if (!this.container) return;
 
+         // Ensure the container is visible if it was hidden
+        if (this.container.classList.contains('hidden')) {
+            this.container.classList.remove('hidden');
+        }
+
         // Use mapRenderer's current map data to ensure we have the latest loaded map
         const mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
         if (!mapData || !mapData.levels) return;
 
         const playerPos = window.gameState.player;
         const currentZ = (playerPos.z !== undefined && playerPos.z !== null) ? playerPos.z : 0;
+        const levelData = mapData.levels[currentZ.toString()];
 
         this.cells.forEach(cellInfo => {
             const targetX = playerPos.x + cellInfo.dx;
@@ -70,8 +81,8 @@ class SurroundingsUI {
 
             // Bounds check
             if (targetX < 0 || targetY < 0 || targetX >= mapData.dimensions.width || targetY >= mapData.dimensions.height) {
-                 cellInfo.top.textContent = "Bound";
-                 cellInfo.bottom.textContent = "Bound";
+                 cellInfo.top.innerHTML = "Bound";
+                 cellInfo.bottom.innerHTML = "Bound";
                  return;
             }
 
@@ -82,64 +93,98 @@ class SurroundingsUI {
                 cellInfo.element.style.borderColor = '#333';
             }
 
-            // Get Middle Layer info (z)
-            // Objects, Walls, Entities
-            let midText = "Empty";
+            // --- Middle Layer ---
+            let midSprite = '&nbsp;';
+            let midColor = '#ccc';
+            let midName = 'Empty';
+            let hasMidContent = false;
 
-            // Check for entities first (usually on top)
-            let entityName = null;
+            // 1. Entities (Player, NPC)
+            // Priority: Player > NPC > Tile
             if (cellInfo.dx === 0 && cellInfo.dy === 0) {
-                entityName = "You";
+                // Determine Player Sprite and Color if possible, otherwise default
+                midSprite = '☻';
+                midColor = 'green'; // Default player color
+                midName = 'You';
+                hasMidContent = true;
             } else {
                 const npc = window.gameState.npcs ? window.gameState.npcs.find(n => n.mapPos && n.mapPos.x === targetX && n.mapPos.y === targetY && n.mapPos.z === currentZ) : null;
-                if (npc) entityName = npc.name;
+                if (npc) {
+                    midSprite = npc.sprite || '?';
+                    midColor = npc.color || 'red';
+                    midName = npc.name || 'NPC';
+                    hasMidContent = true;
+                }
             }
 
-            // Check map objects/walls
-            let mapObject = null;
-            const levelData = mapData.levels[currentZ.toString()];
-            if (levelData && levelData.middle) {
-                // Correct indexing: [y][x]
+            // 2. Middle Map Object (if no entity found yet)
+            // If an entity is present, we prioritize showing the entity as the "content" of the cell's middle layer space.
+            if (!hasMidContent && levelData && levelData.middle) {
                 const midTileRaw = levelData.middle[targetY]?.[targetX];
-
-                // Extract tile ID whether it's a string or object
                 const midTileId = (typeof midTileRaw === 'object' && midTileRaw !== null && midTileRaw.tileId !== undefined)
                                   ? midTileRaw.tileId
                                   : midTileRaw;
 
                 if (midTileId && midTileId !== "") {
                     const tileDef = this.getTileDef(midTileId);
-                    mapObject = tileDef ? tileDef.name : midTileId;
+                    if (tileDef) {
+                        midSprite = tileDef.sprite || midTileId[0];
+                        midColor = tileDef.color || '#ccc';
+                        midName = tileDef.name || midTileId;
+                        hasMidContent = true;
+                    } else {
+                         // Fallback if definition missing but ID present
+                        midSprite = '?';
+                        midColor = '#ccc';
+                        midName = midTileId;
+                        hasMidContent = true;
+                    }
                 }
             }
 
-            if (entityName) {
-                midText = entityName;
-                if (mapObject) midText += ` on ${mapObject}`;
-            } else if (mapObject) {
-                midText = mapObject;
-            }
+            // Format HTML for Middle
+             if (hasMidContent) {
+                 cellInfo.top.innerHTML = `<span style="color: ${midColor}; font-family: 'DwarfFortress', monospace;">${midSprite}</span>:${midName}`;
+             } else {
+                 // Empty Middle Layer
+                 cellInfo.top.innerHTML = `<span style="color: #333; font-family: 'DwarfFortress', monospace;">.</span>:Empty`;
+             }
 
-            cellInfo.top.textContent = midText;
-            cellInfo.top.title = midText; // Tooltip for full text
 
-            // Get Bottom Layer info (z)
-            let botText = "Void";
+            // --- Bottom Layer ---
+            let botSprite = '&nbsp;';
+            let botColor = '#888';
+            let botName = 'Void';
+            let hasBotContent = false;
+
             if (levelData && levelData.bottom) {
-                // Correct indexing: [y][x]
                 const botTileRaw = levelData.bottom[targetY]?.[targetX];
-
                 const botTileId = (typeof botTileRaw === 'object' && botTileRaw !== null && botTileRaw.tileId !== undefined)
                                   ? botTileRaw.tileId
                                   : botTileRaw;
 
                 if (botTileId && botTileId !== "") {
                     const tileDef = this.getTileDef(botTileId);
-                    botText = tileDef ? tileDef.name : botTileId;
+                    if (tileDef) {
+                        botSprite = tileDef.sprite || botTileId[0];
+                        botColor = tileDef.color || '#888';
+                        botName = tileDef.name || botTileId;
+                        hasBotContent = true;
+                    } else {
+                        botSprite = '?';
+                        botColor = '#888';
+                        botName = botTileId;
+                        hasBotContent = true;
+                    }
                 }
             }
-            cellInfo.bottom.textContent = botText;
-            cellInfo.bottom.title = botText;
+
+            // Format HTML for Bottom
+            if (hasBotContent) {
+                cellInfo.bottom.innerHTML = `<span style="color: ${botColor}; font-family: 'DwarfFortress', monospace;">${botSprite}</span>:${botName}`;
+            } else {
+                cellInfo.bottom.innerHTML = `<span style="color: #333; font-family: 'DwarfFortress', monospace;">.</span>:Void`;
+            }
         });
     }
 
