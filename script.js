@@ -2413,6 +2413,14 @@ async function initialize() { // Made async
              console.error("SCRIPT.JS: QuestLogUIManager or dependencies not available.");
         }
 
+    // UIManager
+    if (window.UIManager) {
+        window.uiManager = new window.UIManager();
+        logToConsole("UIManager instance created and assigned to window.", "info");
+    } else {
+        console.error("SCRIPT.JS: UIManager class not available.");
+    }
+
         if (window.companionManager && typeof window.companionManager.initialize === 'function') {
             window.companionManager.initialize(); // Synchronous
         }

@@ -183,11 +183,8 @@ class DynamicEventManager {
                 break;
             case "broadcast_message":
                 logToConsole(`EVENT BROADCAST (${effect.channel || 'general'}): ${effect.message}`, "event-critical");
-                // TODO: Show this to player via a more prominent UI notification. 
-                // Currently logged prominently. A dedicated game UI manager with toast/modal capability would be needed for more.
-                // The existing check for window.uiManager.showToastNotification likely refers to a mapMaker UI or a planned game UI manager.
-                if (window.uiManager && typeof window.uiManager.showToastNotification === 'function') { // This uiManager might be from mapMaker or a non-existent game one
-                    window.uiManager.showToastNotification(effect.message, 'event', 6000);
+                if (window.uiManager && typeof window.uiManager.showToastNotification === 'function') {
+                    window.uiManager.showToastNotification(effect.message, 'event-critical', 6000);
                 }
                 break;
             case "force_weather":
