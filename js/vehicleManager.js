@@ -415,7 +415,8 @@ class VehicleManager {
 
         vehicle.fuel = Math.min(vehicle.maxFuel, vehicle.fuel + fuelAmount);
         logToConsole(`VehicleManager: Vehicle "${vehicle.name}" refueled. Current fuel: ${vehicle.fuel}/${vehicle.maxFuel}.`, "info");
-        // TODO: Play sound effect for refueling
+        // Play sound effect for refueling
+        if (window.audioManager) window.audioManager.playSoundAtLocation('liquid_filling_01.wav', vehicle.mapPos, {}, { maxDistance: 15 });
         return true;
     }
 
