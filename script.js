@@ -2388,6 +2388,14 @@ async function initialize() { // Made async
             window.VehicleModificationUI.initialize();
         }
 
+    // Initialize UI Manager
+    if (window.UIManager) {
+        window.uiManager = new window.UIManager();
+        logToConsole("UIManager initialized.", "info");
+    } else {
+        console.error("SCRIPT.JS: UIManager class not available.");
+    }
+
         // Initialize QuestLogUI
         if (window.QuestLogUIManager && window.questManager && window.proceduralQuestManager && window.gameState) {
             window.QuestLogUI = new window.QuestLogUIManager(window.questManager, window.proceduralQuestManager, window.gameState);
