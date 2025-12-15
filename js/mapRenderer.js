@@ -913,6 +913,15 @@ window.mapRenderer = {
                     // Ensure 'this' context is correct for the method call
                     profileFunction("mapRenderer.renderMapLayers", () => window.mapRenderer.renderMapLayers(), ...arguments);
                 }
+
+                // Update Surroundings UI
+                if (window.SurroundingsUI) {
+                    if (!window.surroundingsUI) {
+                        window.surroundingsUI = new window.SurroundingsUI();
+                    }
+                    window.surroundingsUI.update();
+                }
+
                 gameState.renderScheduled = false;
             });
         }
@@ -1234,89 +1243,89 @@ window.mapRenderer = {
                 let finalColorForTile = displayColor;
                 let finalDisplayIdForTile = displayId;
 
-        if (gameState.isConstructionModeActive && gameState.constructionGhostCoords &&
-            gameState.constructionGhostCoords.z === currentZ) {
+                if (gameState.isConstructionModeActive && gameState.constructionGhostCoords &&
+                    gameState.constructionGhostCoords.z === currentZ) {
 
-            const defId = gameState.selectedConstructionId;
-            const def = window.constructionManager && window.constructionManager.constructionDefinitions ? window.constructionManager.constructionDefinitions[defId] : null;
-            if (def) {
-                const gx = gameState.constructionGhostCoords.x;
-                const gy = gameState.constructionGhostCoords.y;
-                const size = def.size || { width: 1, height: 1 };
+                    const defId = gameState.selectedConstructionId;
+                    const def = window.constructionManager && window.constructionManager.constructionDefinitions ? window.constructionManager.constructionDefinitions[defId] : null;
+                    if (def) {
+                        const gx = gameState.constructionGhostCoords.x;
+                        const gy = gameState.constructionGhostCoords.y;
+                        const size = def.size || { width: 1, height: 1 };
 
-                // Check if current tile (x, y) is within ghost bounds
-                if (x >= gx && x < gx + size.width && y >= gy && y < gy + size.height) {
-                    // It is part of the ghost!
-                    if (window.mapRenderer._lastGhostValidityCheckTime !== Date.now() ||
-                        window.mapRenderer._lastGhostX !== gx || window.mapRenderer._lastGhostY !== gy) {
+                        // Check if current tile (x, y) is within ghost bounds
+                        if (x >= gx && x < gx + size.width && y >= gy && y < gy + size.height) {
+                            // It is part of the ghost!
+                            if (window.mapRenderer._lastGhostValidityCheckTime !== Date.now() ||
+                                window.mapRenderer._lastGhostX !== gx || window.mapRenderer._lastGhostY !== gy) {
 
-                        window.mapRenderer._lastGhostValidity = window.constructionManager.isValidPlacement(def, { x: gx, y: gy, z: currentZ });
-                        window.mapRenderer._lastGhostValidityCheckTime = Date.now();
-                        window.mapRenderer._lastGhostX = gx;
-                        window.mapRenderer._lastGhostY = gy;
+                                window.mapRenderer._lastGhostValidity = window.constructionManager.isValidPlacement(def, { x: gx, y: gy, z: currentZ });
+                                window.mapRenderer._lastGhostValidityCheckTime = Date.now();
+                                window.mapRenderer._lastGhostX = gx;
+                                window.mapRenderer._lastGhostY = gy;
+                            }
+                            const isValid = window.mapRenderer._lastGhostValidity;
+
+                            // Get sprite from definition
+                            let ghostSprite = '?';
+                            let ghostColor = '#FFFFFF';
+                            if (def.tileIdPlaced && assetManagerInstance.tilesets[def.tileIdPlaced]) {
+                                const tileDef = assetManagerInstance.tilesets[def.tileIdPlaced];
+                                ghostSprite = tileDef.sprite;
+                                ghostColor = tileDef.color;
+                            }
+
+                            finalSpriteForTile = ghostSprite;
+                            // Tint color based on validity
+                            if (isValid) {
+                                finalColorForTile = 'rgba(0, 255, 0, 0.7)'; // Greenish tint
+                            } else {
+                                finalColorForTile = 'rgba(255, 0, 0, 0.7)'; // Reddish tint
+                            }
+                            finalDisplayIdForTile = 'CONSTRUCTION_GHOST';
+                        }
                     }
-                    const isValid = window.mapRenderer._lastGhostValidity;
-
-                    // Get sprite from definition
-                    let ghostSprite = '?';
-                    let ghostColor = '#FFFFFF';
-                    if (def.tileIdPlaced && assetManagerInstance.tilesets[def.tileIdPlaced]) {
-                        const tileDef = assetManagerInstance.tilesets[def.tileIdPlaced];
-                        ghostSprite = tileDef.sprite;
-                        ghostColor = tileDef.color;
-                    }
-
-                    finalSpriteForTile = ghostSprite;
-                    // Tint color based on validity
-                    if (isValid) {
-                        finalColorForTile = 'rgba(0, 255, 0, 0.7)'; // Greenish tint
-                    } else {
-                        finalColorForTile = 'rgba(255, 0, 0, 0.7)'; // Reddish tint
-                    }
-                    finalDisplayIdForTile = 'CONSTRUCTION_GHOST';
                 }
-            }
-        }
 
-        if (gameState.isTrapPlacementMode && gameState.trapGhostCoords &&
-            gameState.trapGhostCoords.z === currentZ) {
+                if (gameState.isTrapPlacementMode && gameState.trapGhostCoords &&
+                    gameState.trapGhostCoords.z === currentZ) {
 
-            const trapItemId = gameState.placingTrapItemId;
-            // Need to look up trap definition from item -> placesTrapId -> TrapManager
-            const trapItemDef = assetManagerInstance.getItem(trapItemId);
-            let trapDef = null;
-            if (trapItemDef && trapItemDef.placesTrapId && window.trapManager) {
-                trapDef = window.trapManager.getTrapDefinition(trapItemDef.placesTrapId);
-            }
-
-            if (trapDef) {
-                const tx = gameState.trapGhostCoords.x;
-                const ty = gameState.trapGhostCoords.y;
-
-                if (x === tx && y === ty) {
-                    // Simple validation for ghost (similar to construction)
-                    // We can reuse mapManager.isTilePassable(x, y, z, placer, ignoreEntities) for basic check
-                    // But we want visual feedback.
-                    const isValid = (window.mapUtils ? window.mapUtils.isTilePassable(tx, ty, currentZ, gameState.player, false) : true) && !window.trapManager.getTrapAt(tx, ty, currentZ);
-
-                    let ghostSprite = 'T'; // Default trap sprite
-                    // If trapDef has a sprite for 'hidden' state (unlikely to be visible) or 'detected', use that.
-                    // Or if tileset has definition.
-                    // Let's assume we want to show what it looks like.
-                    if (trapDef.spriteDetected && assetManagerInstance.tilesets[trapDef.spriteDetected]) {
-                         ghostSprite = assetManagerInstance.tilesets[trapDef.spriteDetected].sprite;
+                    const trapItemId = gameState.placingTrapItemId;
+                    // Need to look up trap definition from item -> placesTrapId -> TrapManager
+                    const trapItemDef = assetManagerInstance.getItem(trapItemId);
+                    let trapDef = null;
+                    if (trapItemDef && trapItemDef.placesTrapId && window.trapManager) {
+                        trapDef = window.trapManager.getTrapDefinition(trapItemDef.placesTrapId);
                     }
 
-                    finalSpriteForTile = ghostSprite;
-                    if (isValid) {
-                        finalColorForTile = 'rgba(0, 255, 0, 0.7)';
-                    } else {
-                        finalColorForTile = 'rgba(255, 0, 0, 0.7)';
+                    if (trapDef) {
+                        const tx = gameState.trapGhostCoords.x;
+                        const ty = gameState.trapGhostCoords.y;
+
+                        if (x === tx && y === ty) {
+                            // Simple validation for ghost (similar to construction)
+                            // We can reuse mapManager.isTilePassable(x, y, z, placer, ignoreEntities) for basic check
+                            // But we want visual feedback.
+                            const isValid = (window.mapUtils ? window.mapUtils.isTilePassable(tx, ty, currentZ, gameState.player, false) : true) && !window.trapManager.getTrapAt(tx, ty, currentZ);
+
+                            let ghostSprite = 'T'; // Default trap sprite
+                            // If trapDef has a sprite for 'hidden' state (unlikely to be visible) or 'detected', use that.
+                            // Or if tileset has definition.
+                            // Let's assume we want to show what it looks like.
+                            if (trapDef.spriteDetected && assetManagerInstance.tilesets[trapDef.spriteDetected]) {
+                                ghostSprite = assetManagerInstance.tilesets[trapDef.spriteDetected].sprite;
+                            }
+
+                            finalSpriteForTile = ghostSprite;
+                            if (isValid) {
+                                finalColorForTile = 'rgba(0, 255, 0, 0.7)';
+                            } else {
+                                finalColorForTile = 'rgba(255, 0, 0, 0.7)';
+                            }
+                            finalDisplayIdForTile = 'TRAP_PLACEMENT_GHOST';
+                        }
                     }
-                    finalDisplayIdForTile = 'TRAP_PLACEMENT_GHOST';
                 }
-            }
-        }
 
                 if (gameState.isTargetingMode && x === gameState.targetingCoords.x && y === gameState.targetingCoords.y && currentZ === gameState.targetingCoords.z) {
                     finalSpriteForTile = 'X';
@@ -1775,7 +1784,7 @@ window.mapRenderer = {
                     // Or if tileset has definition.
                     // Let's assume we want to show what it looks like.
                     if (trapDef.spriteDetected && assetManagerInstance.tilesets[trapDef.spriteDetected]) {
-                         ghostSprite = assetManagerInstance.tilesets[trapDef.spriteDetected].sprite;
+                        ghostSprite = assetManagerInstance.tilesets[trapDef.spriteDetected].sprite;
                     }
 
                     finalSpriteForTile = ghostSprite;
