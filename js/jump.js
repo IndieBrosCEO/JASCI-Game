@@ -100,6 +100,8 @@ if (typeof window !== 'undefined') {
     window.handleJumpKeyPress = handleJumpKeyPress;
     window.toggleJumpTargeting = toggleJumpTargeting;
     window.updateJumpTargetValidation = updateJumpTargetValidation;
+    // Export calculateJumpRange for testing and external verification
+    window.calculateJumpRange = calculateJumpRange;
 }
 
 
@@ -110,7 +112,9 @@ if (typeof window !== 'undefined') {
  * @returns {{horizontal: number, verticalUp: number}} - An object with max horizontal and vertical up distances.
  */
 function calculateJumpRange(character) {
+    // Log the strength modifier to ensure it's being read correctly
     const strengthModifier = window.getStatModifier("Strength", character);
+    // logToConsole(`Debug: Calculating Jump Range. Str Mod: ${strengthModifier}`, "dev");
 
     // Horizontal jump: 1 tile + STR modifier, with a minimum of 1.
     const horizontal = Math.max(1, 1 + strengthModifier);
@@ -213,6 +217,14 @@ function getJumpLandingSpot(startPos, targetPos, jumpRange) {
  * @param {number} cost - The movement point cost of the jump.
  */
 async function performJump(startPos, landingSpot, cost) {
+    // Exit ALL targeting modes IMMEDIATELY upon starting jump to prevent UI artifacts
+    window.gameState.isTargetingMode = false;
+    window.gameState.isJumpTargetingMode = false;
+    window.gameState.targetingType = null;
+    if (window.updateTargetingInfoUI) {
+        window.updateTargetingInfoUI();
+    }
+
     // Animate the jump
     if (window.animationManager) {
         window.animationManager.addJumpAnimation(window.gameState.player, landingSpot, 300);
@@ -244,12 +256,10 @@ async function performJump(startPos, landingSpot, cost) {
     window.interaction.showInteractableItems();
     logToConsole(`Jumped to (${landingSpot.x}, ${landingSpot.y}, ${landingSpot.z}).`);
 
-    // Exit ALL targeting modes after jump
+    // Ensure flags are cleared at the end as well, just in case
     window.gameState.isTargetingMode = false;
     window.gameState.isJumpTargetingMode = false;
     window.gameState.targetingType = null;
-    if (window.updateTargetingInfoUI) {
-        window.updateTargetingInfoUI();
-    }
+
     window.gameState.isAnimationPlaying = false;
 }
