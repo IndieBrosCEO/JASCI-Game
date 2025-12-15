@@ -699,3 +699,17 @@ button.preset-swatch { /* More specific selector */
     align-self: center;
     padding: 5px 20px;
 }
+
+/* Surroundings Grid Styles */
+#surroundingsGrid {
+    font-family: 'DwarfFortress', monospace;
+    /* Ensure it has a height so it's not collapsed */
+    min-height: 200px;
+    background-color: #111;
+    border: 1px solid #444;
+    padding: 2px;
+}
+
+    #surroundingsGrid div {
+        /* Style for individual cells if needed globally, but inline styles cover most */
+    }
