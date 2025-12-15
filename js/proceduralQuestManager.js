@@ -16,7 +16,7 @@ class ProceduralQuestManager {
         //       Current system uses actions in dialogue choices. More dynamic text and NPC reactions needed.
         // TODO: Better reward generation (specific items, XP amounts based on difficulty, faction standing changes).
         //       Currently uses fixed rewards from templates.
-        // TODO: Implement a proper Quest Tracking UI for the player.
+        // Quest Tracking UI implemented (QuestLogUIManager).
         //       Currently, quests are logged to console or managed via dialogue.
         // TODO: Enhance persistence of active/completed quests, especially if target entities/items are dynamic
         //       and need specific state restoration on game load beyond what gameState serialization provides.
@@ -241,7 +241,8 @@ class ProceduralQuestManager {
                 }
             }
         }
-        // TODO: Update Quest Log UI
+        // Update Quest Log UI
+        if (window.QuestLogUI) window.QuestLogUI.refreshQuestLog();
         return true;
     }
 
@@ -303,7 +304,7 @@ class ProceduralQuestManager {
                     this.factionManager.adjustPlayerReputation(targetFactionId, repChange.amount, `quest_failed_${quest.templateId}`);
                 }
             }
-            // TODO: Update Quest Log UI
+            // Update Quest Log UI
             if (window.QuestLogUI) window.QuestLogUI.refreshQuestLog();
         }
     }
@@ -448,7 +449,7 @@ class ProceduralQuestManager {
             }
             if (window.renderCharacterInfo) window.renderCharacterInfo(); // For XP updates
             if (window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay(); // For gold updates
-            // TODO: Update Quest Log UI more explicitly here if it exists.
+        // Update Quest Log UI explicitly here.
             if (window.QuestLogUI) window.QuestLogUI.refreshQuestLog();
             if (window.uiManager) window.uiManager.showToastNotification(`Quest Completed: ${quest.displayName}`, "success", 5000);
 

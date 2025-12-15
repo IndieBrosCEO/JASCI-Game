@@ -64,6 +64,7 @@ const questManager = new QuestManager(gameState, assetManager);
 // const CraftingUI = new CraftingUIManager(craftingManager, inventoryManager, assetManager, gameState); // Instantiated later
 // const ConstructionUI = new ConstructionUIManager(constructionManager, inventoryManager, assetManager, gameState, mapRenderer); // Instantiated later
 const VehicleModificationUI = new VehicleModificationUIManager(vehicleManager, inventoryManager, assetManager, gameState);
+// QuestLogUI will be instantiated in initialize() to ensure dependencies are ready
 // Ensure all managers are explicitly attached to window object
 window.assetManager = assetManager;
 window.animationManager = animationManager;
@@ -2385,6 +2386,14 @@ async function initialize() { // Made async
         }
         if (window.VehicleModificationUI && typeof window.VehicleModificationUI.initialize === 'function') {
             window.VehicleModificationUI.initialize();
+        }
+
+        // Initialize QuestLogUI
+        if (window.QuestLogUIManager && window.questManager && window.proceduralQuestManager && window.gameState) {
+            window.QuestLogUI = new window.QuestLogUIManager(window.questManager, window.proceduralQuestManager, window.gameState);
+            logToConsole("QuestLogUI initialized.", "info");
+        } else {
+             console.error("SCRIPT.JS: QuestLogUIManager or dependencies not available.");
         }
 
         if (window.companionManager && typeof window.companionManager.initialize === 'function') {
