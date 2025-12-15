@@ -258,7 +258,11 @@ async function move_internal(direction) {
 
         // Vehicle movement cost & fuel
         const vehicleMoveCost = window.vehicleManager.getVehicleMovementCost(vehicleId);
-        const fuelPerMove = 1;   // TODO: Base this on vehicle.calculatedStats.fuelEfficiency or engine type
+        // Base this on vehicle.calculatedStats.fuelEfficiency if available, else 1
+        let fuelPerMove = 1;
+        if (vehicle.calculatedStats && typeof vehicle.calculatedStats.fuelEfficiency !== 'undefined') {
+            fuelPerMove = vehicle.calculatedStats.fuelEfficiency;
+        }
 
         if (vehicle.currentMovementPoints === undefined) vehicle.currentMovementPoints = 6; // Fallback initialization
 

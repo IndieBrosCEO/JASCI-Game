@@ -1568,6 +1568,14 @@ async function handleKeyDown(event) {
             }
             event.preventDefault(); return;
         }
+        if (event.key.toLowerCase() === 'q' && canPerformRestrictedAction && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive && !gameState.isConstructionModeActive) { // 'Q' for Quest Log
+            if (window.QuestLogUI && typeof window.QuestLogUI.toggle === 'function') {
+                window.QuestLogUI.toggle();
+            } else {
+                logToConsole("QuestLogUI or its toggle method is not available.", "error");
+            }
+            event.preventDefault(); return;
+        }
         // Removed duplicate block for 'c' and 'b' that was here
         if (event.key.toLowerCase() === 'k') { // Crouch (using 'k' as 'c' is for melee targeting)
             if (gameState.playerPosture === 'crouching') {
@@ -2047,6 +2055,7 @@ function populateKeybinds() {
         "Open/Close Console: ` (Backquote/Tilde)",
         "Open/Close Crafting Menu: C",
         "Open/Close Construction Menu: B",
+        "Open/Close Quest Log: Q",
         "Open/Close Level Up Menu: U",
         "Change View Z-Level Down: < / , (Comma)",
         "Change View Z-Level Up: > / . (Period)",
@@ -2387,6 +2396,14 @@ async function initialize() { // Made async
         if (window.VehicleModificationUI && typeof window.VehicleModificationUI.initialize === 'function') {
             window.VehicleModificationUI.initialize();
         }
+
+    // Initialize UI Manager
+    if (window.UIManager) {
+        window.uiManager = new window.UIManager();
+        logToConsole("UIManager initialized.", "info");
+    } else {
+        console.error("SCRIPT.JS: UIManager class not available.");
+    }
 
         // Initialize QuestLogUI
         if (window.QuestLogUIManager && window.questManager && window.proceduralQuestManager && window.gameState) {

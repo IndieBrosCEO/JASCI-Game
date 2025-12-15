@@ -143,21 +143,64 @@ class ProceduralQuestManager {
             const itemDef = this.assetManager.getItem(itemToDeliverId);
             generatedDetails.actualItemId = itemToDeliverId; // Store the chosen item
 
-            // TODO: Find/designate recipient NPC and destination location
-            //       Ensure NPC is essential or persistent if the quest is long.
-            //       Ensure destination is reachable and makes sense for the NPC.
-            //       Consider using mapUtils to find a suitable named location or dynamic point.
-            const recipientNpc = this.npcManager.findNpcByTagOrId(generatedDetails.recipientNpcTag, generatedDetails.destinationAreaKey);
-            const destinationLocation = this.mapUtils.getNamedLocationCoords(generatedDetails.destinationAreaKey) || this.mapUtils.findRandomPointInAreaType(generatedDetails.destinationAreaType || "any_settlement", 5, recipientNpc ? { x: recipientNpc.x, y: recipientNpc.y, z: recipientNpc.z } : null);
+            // Find or designate recipient NPC and destination location
+            let recipientNpc = this.npcManager.findNpcByTagOrId(generatedDetails.recipientNpcTag, generatedDetails.destinationAreaKey);
+            let destinationLocation = null;
 
+            // If NPC not found, try to spawn one at the intended destination
+            if (!recipientNpc && (generatedDetails.destinationAreaKey || generatedDetails.destinationAreaType)) {
+                logToConsole(`PQM: Recipient ${generatedDetails.recipientNpcTag} not found. Attempting to spawn/designate.`, "info");
+
+                // Determine spawn location key
+                let spawnAreaKey = generatedDetails.destinationAreaKey;
+
+                // If no specific key, but we have a type, try to find a named location of that type first
+                // Note: mapUtils.findRandomPointInAreaType returns coords, not a key usable by spawnNpcGroupInArea directly unless modified.
+                // However, spawnNpcGroupInArea typically needs an 'areaKey' string.
+                // If mapUtils doesn't support "getAreaKeyByType", we might default to vicinity or a known hub.
+                // For now, if strictly type is given without key, we might fall back to vicinity if we can't resolve it.
+                if (!spawnAreaKey && generatedDetails.destinationAreaType) {
+                     // TODO: Ideally mapUtils should provide a way to get an area key by type.
+                     // For now, we use a placeholder or fallback.
+                     spawnAreaKey = "player_vicinity_event";
+                }
+
+                // Determine Definition ID to spawn (tag might be ID or Tag)
+                let spawnDefId = generatedDetails.recipientNpcTag;
+                const potentialDefs = this.assetManager.getNpcsByTag(generatedDetails.recipientNpcTag);
+                if (potentialDefs && potentialDefs.length > 0) {
+                     spawnDefId = potentialDefs[0].id; // Pick first valid def for tag
+                }
+
+                // Attempt spawn
+                // Pass null for eventInstanceId as questInstanceId is not yet generated
+                const spawnedIds = this.npcManager.spawnNpcGroupInArea(spawnDefId, spawnAreaKey, 1, null, null);
+                if (spawnedIds.length > 0) {
+                    recipientNpc = this.npcManager.getNpcById(spawnedIds[0]);
+                }
+            }
+
+            if (recipientNpc) {
+                // Ensure NPC is persistent and tracked
+                recipientNpc.isPersistent = true;
+                recipientNpc.isEssential = true;
+                if (!recipientNpc.tags) recipientNpc.tags = [];
+                if (!recipientNpc.tags.includes("quest_target")) recipientNpc.tags.push("quest_target");
+
+                // Set destination to where the NPC actually is
+                destinationLocation = { x: recipientNpc.mapPos.x, y: recipientNpc.mapPos.y, z: recipientNpc.mapPos.z, name: this.mapUtils.getAreaDescription(recipientNpc.mapPos) };
+            }
 
             if (!itemDef || !recipientNpc || !destinationLocation) {
                 logToConsole(`PQM Error: Could not generate details for delivery quest ${selectedTemplate.id} (item, NPC, or location missing/unfound).`, "error");
                 return null;
             }
+
             generatedDetails.recipientNpcId = recipientNpc.id;
-            generatedDetails.destinationCoords = destinationLocation.coords || destinationLocation; // destinationLocation might be coords directly if from findRandomPoint
-            generatedDetails.destinationName = destinationLocation.name || `area near ${Math.round(generatedDetails.destinationCoords.x)},${Math.round(generatedDetails.destinationCoords.y)}`;
+            generatedDetails.destinationCoords = destinationLocation;
+            // Prefer named location from mapUtils if available for the area key, otherwise use generic description
+            const namedLoc = generatedDetails.destinationAreaKey ? this.mapUtils.getNamedLocationCoords(generatedDetails.destinationAreaKey) : null;
+            generatedDetails.destinationName = (namedLoc && namedLoc.name) ? namedLoc.name : (destinationLocation.name || `area near ${Math.round(destinationLocation.x)},${Math.round(destinationLocation.y)}`);
 
 
             finalDescription = finalDescription.replace("{itemName}", itemDef.name)
