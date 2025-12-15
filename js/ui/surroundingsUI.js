@@ -57,13 +57,23 @@ class SurroundingsUI {
         if (!window.gameState || !window.gameState.player) return;
         if (!this.container) return;
 
+        // Use mapRenderer's current map data to ensure we have the latest loaded map
+        const mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
+        if (!mapData || !mapData.levels) return;
+
         const playerPos = window.gameState.player;
-        const mapData = window.mapData; // Assuming this is global as per memory/mapRenderer usage
+        const currentZ = (playerPos.z !== undefined && playerPos.z !== null) ? playerPos.z : 0;
 
         this.cells.forEach(cellInfo => {
             const targetX = playerPos.x + cellInfo.dx;
             const targetY = playerPos.y + cellInfo.dy;
-            const z = playerPos.z;
+
+            // Bounds check
+            if (targetX < 0 || targetY < 0 || targetX >= mapData.dimensions.width || targetY >= mapData.dimensions.height) {
+                 cellInfo.top.textContent = "Bound";
+                 cellInfo.bottom.textContent = "Bound";
+                 return;
+            }
 
             // Highlight center cell (player)
             if (cellInfo.dx === 0 && cellInfo.dy === 0) {
@@ -77,28 +87,29 @@ class SurroundingsUI {
             let midText = "Empty";
 
             // Check for entities first (usually on top)
-            // Simplified entity check - ideally utilize mapUtils or similar if available,
-            // but for now checking gameState.npcs and player.
             let entityName = null;
             if (cellInfo.dx === 0 && cellInfo.dy === 0) {
                 entityName = "You";
             } else {
-                const npc = window.gameState.npcs.find(n => n.x === targetX && n.y === targetY && n.z === z);
+                const npc = window.gameState.npcs ? window.gameState.npcs.find(n => n.mapPos && n.mapPos.x === targetX && n.mapPos.y === targetY && n.mapPos.z === currentZ) : null;
                 if (npc) entityName = npc.name;
             }
 
             // Check map objects/walls
             let mapObject = null;
-            const levelData = mapData?.levels?.[z];
-            if (levelData) {
-                const midTile = levelData.middle?.[`${targetX},${targetY}`];
-                if (midTile) {
-                    // Try to resolve tile name from tileset if possible, or use char
-                    // window.assetManager.tilesets might have definitions.
-                    // But usually mapData stores chars.
-                    // We need to look up definition.
-                    const tileDef = this.getTileDef(midTile.char);
-                    mapObject = tileDef ? tileDef.name : midTile.char;
+            const levelData = mapData.levels[currentZ.toString()];
+            if (levelData && levelData.middle) {
+                // Correct indexing: [y][x]
+                const midTileRaw = levelData.middle[targetY]?.[targetX];
+
+                // Extract tile ID whether it's a string or object
+                const midTileId = (typeof midTileRaw === 'object' && midTileRaw !== null && midTileRaw.tileId !== undefined)
+                                  ? midTileRaw.tileId
+                                  : midTileRaw;
+
+                if (midTileId && midTileId !== "") {
+                    const tileDef = this.getTileDef(midTileId);
+                    mapObject = tileDef ? tileDef.name : midTileId;
                 }
             }
 
@@ -112,15 +123,19 @@ class SurroundingsUI {
             cellInfo.top.textContent = midText;
             cellInfo.top.title = midText; // Tooltip for full text
 
-            // Get Bottom Layer info (z) - Actually standing logic says support comes from bottom(z) OR middle(z-1)
-            // But prompt says "bottom half describing what is on the bottom layer".
-            // So we strictly show bottom layer at current Z.
+            // Get Bottom Layer info (z)
             let botText = "Void";
-            if (levelData) {
-                const botTile = levelData.bottom?.[`${targetX},${targetY}`];
-                if (botTile) {
-                    const tileDef = this.getTileDef(botTile.char);
-                    botText = tileDef ? tileDef.name : botTile.char;
+            if (levelData && levelData.bottom) {
+                // Correct indexing: [y][x]
+                const botTileRaw = levelData.bottom[targetY]?.[targetX];
+
+                const botTileId = (typeof botTileRaw === 'object' && botTileRaw !== null && botTileRaw.tileId !== undefined)
+                                  ? botTileRaw.tileId
+                                  : botTileRaw;
+
+                if (botTileId && botTileId !== "") {
+                    const tileDef = this.getTileDef(botTileId);
+                    botText = tileDef ? tileDef.name : botTileId;
                 }
             }
             cellInfo.bottom.textContent = botText;
@@ -128,25 +143,10 @@ class SurroundingsUI {
         });
     }
 
-    getTileDef(char) {
+    getTileDef(tileId) {
         if (!window.assetManager || !window.assetManager.tilesets) return null;
-        // Tileset is array of tile definitions. We need to find one matching the char.
-        // Assuming 'biome_0' or 'dungeon_0' or similar is loaded.
-        // Actually assetManager.tilesets is an object where keys are names?
-        // Let's check how mapRenderer does it.
-
-        // mapRenderer uses this.tilesets which comes from assetManager.tilesets.
-        // It seems to iterate or lookup.
-        // Let's iterate all tilesets to find the char.
-        for (const tilesetName in window.assetManager.tilesets) {
-            const tileset = window.assetManager.tilesets[tilesetName];
-             // tileset is likely an array of objects
-             if (Array.isArray(tileset)) {
-                 const found = tileset.find(t => t.char === char);
-                 if (found) return found;
-             }
-        }
-        return null;
+        // Direct lookup by ID
+        return window.assetManager.tilesets[tileId] || null;
     }
 }
 
