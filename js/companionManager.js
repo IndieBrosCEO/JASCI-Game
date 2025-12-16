@@ -234,6 +234,20 @@ class CompanionManager {
             };
         }
 
+        // Loyalty Checks: Refuse dangerous/unwanted orders if loyalty is too low
+        if (typeof companion.loyalty === 'number') {
+            if (setting === 'combatMode' && value === 'aggressive' && companion.loyalty < 25) {
+                logToConsole(`${companion.name} refuses to be aggressive! (Loyalty too low: ${companion.loyalty})`, "warn");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+                return false;
+            }
+            if (setting === 'followMode' && value === 'wait' && companion.loyalty < 20) {
+                logToConsole(`${companion.name} refuses to stay behind! (Loyalty too low: ${companion.loyalty})`, "warn");
+                if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+                return false;
+            }
+        }
+
         // Validation logic
         if (setting === 'combatStyle' && value === 'ranged') {
             // Check if they can use guns (e.g. not a dog)
@@ -298,7 +312,7 @@ class CompanionManager {
             } else if (companion.loyalty <= 15) { // Warning threshold
                 logToConsole(`${companion.name} is very unhappy (Loyalty: ${companion.loyalty}) and might leave if it drops further!`, "warn");
             }
-            // TODO: Implement further loyalty effects (e.g., combat bonuses if high, refusing certain orders if low but not critical).
+            // Note: Loyalty effects like order refusal and combat bonuses are implemented in updateCompanionSetting and CombatManager.
             return true;
         }
         logToConsole(`adjustLoyalty: Companion ${npcId} not found.`, "warn");
