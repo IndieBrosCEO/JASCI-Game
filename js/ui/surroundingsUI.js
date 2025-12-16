@@ -1,4 +1,4 @@
-﻿class SurroundingsUI {
+class SurroundingsUI {
     constructor() {
         this.container = document.getElementById('surroundingsGrid');
         this.cells = [];
@@ -134,9 +134,9 @@
                         hasMidContent = true;
                     } else {
                          // Fallback if definition missing but ID present
-                        midSprite = '?';
+                        midSprite = (midTileId && midTileId.length > 0) ? midTileId[0] : '?';
                         midColor = '#ccc';
-                        midName = midTileId;
+                        midName = midTileId || 'Unknown';
                         hasMidContent = true;
                     }
                 }
@@ -171,9 +171,9 @@
                         botName = tileDef.name || botTileId;
                         hasBotContent = true;
                     } else {
-                        botSprite = '?';
+                        botSprite = (botTileId && botTileId.length > 0) ? botTileId[0] : '?';
                         botColor = '#888';
-                        botName = botTileId;
+                        botName = botTileId || 'Unknown';
                         hasBotContent = true;
                     }
                 }
