@@ -97,10 +97,9 @@ class DialogueManager {
     }
 
     selectChoice(choice) {
-        // TODO: Implement actions
-        // if (choice.actions) {
-        //     this.executeActions(choice.actions);
-        // }
+        if (choice.actions) {
+            this.executeActions(choice.actions);
+        }
 
         if (choice.goTo) {
             this.displayNode(choice.goTo);
@@ -216,17 +215,35 @@ class DialogueManager {
         if (!actions) return;
 
         actions.forEach(actionString => {
-            const [action, ...args] = actionString.split(':');
-            const params = args.length > 0 ? args.join(':').split(',') : [];
+            // Split by ':' to get action and potential arguments
+            // If the format is action:arg1:arg2, args will be [arg1, arg2]
+            // If the format is action:arg1,arg2 (legacy/mixed), we might need to handle it, but
+            // the comments suggest colon separation (e.g. advanceQuest:id:type...).
+            // The previous logic joined by ':' then split by ',' which implies it expected action:arg1,arg2.
+            // We will support both: if args contains commas, split by comma. Otherwise use colon splits.
+
+            const parts = actionString.split(':');
+            const action = parts[0];
+            let params = parts.slice(1);
+
+            // Compatibility check: if only one param exists and it has a comma, split it
+            if (params.length === 1 && params[0].includes(',')) {
+                params = params[0].split(',');
+            }
 
             switch (action) {
                 case 'giveItem':
                     if (params.length === 2) {
                         const itemId = params[0];
                         const quantity = parseInt(params[1], 10);
-                        // Assuming you have a global inventoryManager
                         if (window.inventoryManager) {
-                            window.inventoryManager.addItem(itemId, quantity);
+                            // Check if addItemToInventoryById is available (preferred for string IDs)
+                            if (typeof window.inventoryManager.addItemToInventoryById === 'function') {
+                                window.inventoryManager.addItemToInventoryById(itemId, quantity);
+                            } else {
+                                // Fallback or if addItem is robust enough (though inventoryManager.addItem expects object)
+                                window.inventoryManager.addItem(itemId, quantity);
+                            }
                             console.log(`Gave player ${quantity} of ${itemId}`);
                         } else {
                             console.warn("inventoryManager not found, cannot give item.");
