@@ -164,15 +164,21 @@ class TrapManager {
         // TODO: Implement trap disarming mechanics (skill checks, tools)
         // This section is the primary implementation of the TODO.
 
-        const skillToUse = trapDef.disarmSkill || "Thievery"; // Changed default to Thievery as it's common in RPGs
+        const skillToUse = trapDef.disarmSkill || "Sleight of Hand"; // Changed default from "Thievery" (invalid) to "Sleight of Hand"
         const dc = trapDef.disarmDC || 15;
         let skillModifier = getSkillModifier(skillToUse, entity); // Assumes getSkillModifier is globally available
         let toolUsed = null;
 
+        // Resolve inventory to use (Player uses gameState.inventory, NPCs use entity.inventory)
+        let inventoryItems = entity.inventory?.container?.items;
+        if (entity === this.gameState.player) {
+            inventoryItems = this.gameState.inventory.container ? this.gameState.inventory.container.items : null;
+        }
+
         // Check for required tool and apply bonus/consumption
         if (trapDef.toolRequiredToDisarm) {
             const toolDef = trapDef.toolRequiredToDisarm;
-            if (!window.inventoryManager || !window.inventoryManager.hasItem(toolDef.itemId, 1, entity.inventory?.container?.items)) {
+            if (!window.inventoryManager || !window.inventoryManager.hasItem(toolDef.itemId, 1, inventoryItems)) {
                 const toolName = window.assetManager ? (window.assetManager.getItem(toolDef.itemId)?.name || toolDef.itemId) : toolDef.itemId;
                 logToConsole(`${this.logPrefix} Cannot attempt to disarm '${trapDef.name}'. Missing tool: ${toolName}.`, 'orange');
                 if (window.uiManager && entity === this.gameState.player) window.uiManager.showToastNotification(`Missing ${toolName} to disarm!`, "error");
@@ -253,7 +259,7 @@ class TrapManager {
             }
 
             if (consumeTool && window.inventoryManager) {
-                window.inventoryManager.removeItemsFromInventory(toolUsed, 1, entity.inventory.container.items);
+                window.inventoryManager.removeItems(toolUsed, 1, inventoryItems);
                 const toolName = window.assetManager ? (window.assetManager.getItem(toolUsed)?.name || toolUsed) : toolUsed;
                 logToConsole(`${this.logPrefix} Tool ${toolName} consumed.`, "grey");
                 if (window.uiManager && entity === this.gameState.player) window.uiManager.showToastNotification(`${toolName} consumed.`, "info_minor");
