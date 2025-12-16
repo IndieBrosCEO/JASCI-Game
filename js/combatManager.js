@@ -1100,8 +1100,19 @@
 
         if (actionContext.attackerMovementPenalty !== 0) actionContext.detailedModifiers.push({ text: `Movement: ${actionContext.attackerMovementPenalty}`, value: actionContext.attackerMovementPenalty, type: 'negative' });
 
+        // Companion Loyalty Bonuses
+        let loyaltyBonus = 0;
+        if (attacker.isFollowingPlayer && typeof attacker.loyalty === 'number') {
+            if (attacker.loyalty >= 90) {
+                loyaltyBonus = 2;
+                actionContext.detailedModifiers.push({ text: "Devoted Companion", value: 2, type: 'positive' });
+            } else if (attacker.loyalty >= 75) {
+                loyaltyBonus = 1;
+                actionContext.detailedModifiers.push({ text: "Loyal Companion", value: 1, type: 'positive' });
+            }
+        }
 
-        const totalAttackRoll = baseRoll + skillBasedModifier + actionContext.bodyPartModifier + finalRangeMod + effectiveFireModeMod + actionContext.attackerMovementPenalty + lightingPenalty + statusEffectAttackPenalty;
+        const totalAttackRoll = baseRoll + skillBasedModifier + actionContext.bodyPartModifier + finalRangeMod + effectiveFireModeMod + actionContext.attackerMovementPenalty + lightingPenalty + statusEffectAttackPenalty + loyaltyBonus;
         actionContext.statusEffectAttackPenalty = statusEffectAttackPenalty; // Keep for logging
         actionContext.lightingPenaltyApplied = lightingPenalty; // Keep for logging
 
