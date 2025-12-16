@@ -450,11 +450,15 @@ class VehicleManager {
         const currentPartHP = vehicle.durability[partToDamageId];
         const partMaxHP = this.vehicleParts[partToDamageId] ? this.vehicleParts[partToDamageId].durability : 0;
 
-        // TODO: Consider armor of the part or vehicle section.
-        // For now, direct damage.
-        let actualDamage = damageAmount;
+        // Consider armor of the vehicle section.
+        const armor = vehicle.calculatedStats ? (vehicle.calculatedStats.armor || 0) : 0;
+        let actualDamage = Math.max(0, damageAmount - armor);
 
         vehicle.durability[partToDamageId] = Math.max(0, currentPartHP - actualDamage);
+
+        if (armor > 0) {
+             logToConsole(`Vehicle Armor (${armor}) reduced damage from ${damageAmount} to ${actualDamage}.`, "combat");
+        }
         logToConsole(`VehicleManager: ${actualDamage} ${damageType} damage applied to ${partDef ? partDef.name : partToDamageId} on vehicle "${vehicle.name}". HP: ${vehicle.durability[partToDamageId]}/${partMaxHP}.`, "combat");
 
         if (vehicle.durability[partToDamageId] <= 0) {
