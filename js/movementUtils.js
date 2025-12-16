@@ -42,8 +42,9 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
     let vehicleId = null;
     if (isPlayer && window.gameState.player.isInVehicle) {
         vehicleId = window.gameState.player.isInVehicle;
+    } else if (!isPlayer && character.isInVehicle) {
+        vehicleId = character.isInVehicle;
     }
-    // TODO: Add NPC vehicle check if NPCs can drive.
 
     let movementPointsOwner = isPlayer ? window.gameState : character;
     let currentMovementPoints = isPlayer ? movementPointsOwner.movementPointsRemaining : movementPointsOwner.currentMovementPoints;
