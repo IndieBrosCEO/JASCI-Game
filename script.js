@@ -1558,6 +1558,14 @@ async function handleKeyDown(event) {
             }
             event.preventDefault(); return;
         }
+        if (event.key.toLowerCase() === 'q' && canPerformRestrictedAction && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'Q' for Quest Log
+            if (window.QuestLogUI && typeof window.QuestLogUI.toggle === 'function') {
+                window.QuestLogUI.toggle();
+            } else {
+                logToConsole("QuestLogUI not available.", "error");
+            }
+            event.preventDefault(); return;
+        }
         if (event.key.toLowerCase() === 'b' && canPerformRestrictedAction && !gameState.isTargetingMode && !isConsoleOpen && !gameState.inventory.open && !gameState.isActionMenuActive && !gameState.isDialogueActive) { // 'B' for Build/Construction
             if (window.ConstructionUI) {
                 if (gameState.isConstructionModeActive) { // If already in placement mode, 'B' can also cancel it.
@@ -2048,6 +2056,7 @@ function populateKeybinds() {
         "Open/Close Crafting Menu: C",
         "Open/Close Construction Menu: B",
         "Open/Close Level Up Menu: U",
+        "Open/Close Quest Log: Q",
         "Change View Z-Level Down: < / , (Comma)",
         "Change View Z-Level Up: > / . (Period)",
         "Reset View to Player Z-Level: / (Forward Slash)",
