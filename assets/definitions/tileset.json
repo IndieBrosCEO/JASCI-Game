@@ -1906,5 +1906,41 @@
   "JCD_H": { "sprite": "═", "name": "Jail Cell Door Hz", "color": "#708090", "tags": ["door", "middle", "metal", "closed", "impassable", "transparent", "interactive", "jail"], "opensToTileId": "JCD_HO", "isLocked": true, "lockDifficulty": 25 },
   "JCD_V": { "sprite": "║", "name": "Jail Cell Door Vt", "color": "#708090", "tags": ["door", "middle", "metal", "closed", "impassable", "transparent", "interactive", "jail"], "opensToTileId": "JCD_VO", "isLocked": true, "lockDifficulty": 25 },
   "JCD_HO": { "sprite": "_", "name": "Jail Cell Door Hz Open", "color": "#708090", "tags": ["door", "middle", "metal", "open", "transparent", "interactive", "permeable", "jail"] },
-  "JCD_VO": { "sprite": "'", "name": "Jail Cell Door Vt Open", "color": "#708090", "tags": ["door", "middle", "metal", "open", "transparent", "interactive", "permeable", "jail"] }
+  "JCD_VO": { "sprite": "'", "name": "Jail Cell Door Vt Open", "color": "#708090", "tags": ["door", "middle", "metal", "open", "transparent", "interactive", "permeable", "jail"] },
+  "sandstone": {
+    "sprite": "▓",
+    "name": "Sandstone",
+    "color": "#D2B48C",
+    "tags": ["landscape", "middle", "solid_terrain_top", "impassable", "cave", "sandstone"]
+  },
+  "sandstone_stalactite": {
+    "sprite": "▼",
+    "name": "Sandstone Stalactite",
+    "color": "#D2B48C",
+    "tags": ["rock_formation", "middle", "sandstone", "impassable", "cave"]
+  },
+  "sandstone_stalagmite": {
+    "sprite": "▲",
+    "name": "Sandstone Stalagmite",
+    "color": "#D2B48C",
+    "tags": ["rock_formation", "middle", "sandstone", "impassable", "cave", "sharp", "stalagmite"]
+  },
+  "limestone": {
+    "sprite": "▓",
+    "name": "Limestone",
+    "color": "#C0C0C0",
+    "tags": ["landscape", "middle", "solid_terrain_top", "impassable", "cave", "limestone"]
+  },
+  "limestone_stalactite": {
+    "sprite": "▼",
+    "name": "Limestone Stalactite",
+    "color": "#C0C0C0",
+    "tags": ["rock_formation", "middle", "limestone", "impassable", "cave"]
+  },
+  "limestone_stalagmite": {
+    "sprite": "▲",
+    "name": "Limestone Stalagmite",
+    "color": "#C0C0C0",
+    "tags": ["rock_formation", "middle", "limestone", "impassable", "cave", "sharp", "stalagmite"]
+  }
 }
