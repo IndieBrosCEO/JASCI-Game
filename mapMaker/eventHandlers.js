@@ -14,7 +14,7 @@ import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerS
 import { handlePlayerStartTool, handlePortalToolClick, handleSelectInspectTool, floodFill2D, floodFill3D, drawLine, drawRect, defineStamp, applyStamp, handleNpcToolClick, handleVehicleToolClick } from './toolManager.js'; // Added handleVehicleToolClick
 
 // Configuration and Utilities
-import { LAYER_TYPES, LOG_MSG, ERROR_MSG, DEFAULT_3D_DEPTH, NPC_ID_PREFIX, VEHICLE_ID_PREFIX } from './config.js'; // Added VEHICLE_ID_PREFIX
+import { LAYER_TYPES, LOG_MSG, ERROR_MSG, DEFAULT_3D_DEPTH, NPC_ID_PREFIX, VEHICLE_ID_PREFIX, DEFAULT_LOCK_DC } from './config.js'; // Added VEHICLE_ID_PREFIX
 import { logToConsole } from './config.js'; // Assuming logToConsole is also in config.js or a utility module
 
 // Import/Export Logic
