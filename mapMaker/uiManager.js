@@ -2,7 +2,7 @@
 "use strict";
 
 import { getMapData, getPlayerStart } from './mapDataManager.js'; // For mapData access
-import { LAYER_TYPES, PLAYER_START_SPRITE, PLAYER_START_COLOR, PLAYER_START_BG_COLOR, ONION_BELOW_COLOR, ONION_ABOVE_COLOR, ERROR_MSG, LOG_MSG, DEFAULT_3D_DEPTH, DEFAULT_ONION_LAYERS_BELOW, DEFAULT_ONION_LAYERS_ABOVE } from './config.js';
+import { LAYER_TYPES, PLAYER_START_SPRITE, PLAYER_START_COLOR, PLAYER_START_BG_COLOR, ONION_BELOW_COLOR, ONION_ABOVE_COLOR, ERROR_MSG, LOG_MSG, DEFAULT_3D_DEPTH, DEFAULT_ONION_LAYERS_BELOW, DEFAULT_ONION_LAYERS_ABOVE, DEFAULT_LOCK_DC } from './config.js';
 import { getEffectiveTileForDisplay } from './tileManager.js'; // For rendering logic
 import { logToConsole } from './config.js';
 
