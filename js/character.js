@@ -1415,13 +1415,55 @@ window.handleFalling = handleFalling;
  * @param {number} levelsFallen - The number of Z-levels fallen.
  */
 function calculateAndApplyFallDamage(characterOrGameState, levelsFallen) {
-    if (levelsFallen < 2) return; // No damage for falls less than 2 levels
+    // Determine landing position to check for hazards
+    let pos = (characterOrGameState === window.gameState) ? window.gameState.playerPos : characterOrGameState.mapPos;
+    let landedOnSharp = false;
+    let landingTileName = "";
+
+    if (window.mapRenderer && pos && window.assetManager && window.assetManager.tilesets) {
+        const mapData = window.mapRenderer.getCurrentMapData();
+        if (mapData && mapData.levels && mapData.levels[pos.z]) {
+            // Check middle layer first (e.g. stalagmites are on middle layer)
+            const tileOnMiddle = mapData.levels[pos.z].middle?.[pos.y]?.[pos.x];
+            const effectiveTileIdMiddle = (typeof tileOnMiddle === 'object' && tileOnMiddle !== null && tileOnMiddle.tileId) ? tileOnMiddle.tileId : tileOnMiddle;
+
+            if (effectiveTileIdMiddle) {
+                const tileDef = window.assetManager.tilesets[effectiveTileIdMiddle];
+                if (tileDef && tileDef.tags && tileDef.tags.includes("sharp")) {
+                    landedOnSharp = true;
+                    landingTileName = tileDef.name;
+                }
+            }
+
+            // Check bottom layer (e.g. spikes might be on bottom)
+            if (!landedOnSharp) {
+                const tileOnBottom = mapData.levels[pos.z].bottom?.[pos.y]?.[pos.x];
+                const effectiveTileIdBottom = (typeof tileOnBottom === 'object' && tileOnBottom !== null && tileOnBottom.tileId) ? tileOnBottom.tileId : tileOnBottom;
+
+                if (effectiveTileIdBottom) {
+                    const tileDef = window.assetManager.tilesets[effectiveTileIdBottom];
+                    if (tileDef && tileDef.tags && tileDef.tags.includes("sharp")) {
+                        landedOnSharp = true;
+                        landingTileName = tileDef.name;
+                    }
+                }
+            }
+        }
+    }
+
+    if (levelsFallen < 2 && !landedOnSharp) return; // No damage for falls less than 2 levels, unless sharp
 
     // Damage starts at 1d3 for 2 levels.
     // Every additional 2 levels adds another d3.
     // So, 2-3 levels = 1d3; 4-5 levels = 2d3; 6-7 levels = 3d3, etc.
     let numDice = Math.floor(levelsFallen / 2);
-    numDice = Math.min(numDice, 20); // Max 20d3
+
+    if (landedOnSharp) {
+        logToConsole(`Landed on ${landingTileName}! Fall damage increased.`, "red");
+        numDice += 2; // Add 2 extra dice for sharp objects (approx +4 avg damage)
+    }
+
+    numDice = Math.min(numDice, 30); // Max 20d3 -> 30d3 to allow for bonus
 
     if (numDice <= 0) return;
 
@@ -1439,7 +1481,7 @@ function calculateAndApplyFallDamage(characterOrGameState, levelsFallen) {
         // This could be played in addition to or instead of just a hard landing, if damage is significant.
     }
 
-    const health = characterOrGameState.health;
+    const health = (characterOrGameState === window.gameState && window.gameState.player) ? window.gameState.player.health : characterOrGameState.health;
     if (!health || !health.leftLeg || !health.rightLeg) {
         logToConsole("Cannot apply fall damage: Character health.legs not defined.", "error");
         return;
