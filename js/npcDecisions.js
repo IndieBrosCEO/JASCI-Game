@@ -1249,15 +1249,88 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
 
         const canAttack = ((attackType === 'melee' && distanceToTarget3D <= 1.8) || (attackType === 'ranged' && hasLOStoTarget));
 
-        // TODO: Consider if NPC should use special abilities or items if available
-        // - Check npc.abilities (if defined in their definition) for usable combat abilities (cooldowns, conditions).
-        // - Check npc.inventory for usable items (grenades, stimpacks, special ammo).
-        // - Decision logic:
-        //   - If low health & has heal item -> use heal.
-        //   - If multiple enemies clustered & has grenade -> use grenade.
-        //   - If special attack available & conditions met (e.g., target flanked, NPC buffed) -> use ability.
-        //   - Otherwise, standard weapon attack.
-        // This would involve setting gameState.pendingCombatAction to a different actionType.
+        // --- NPC Item / Ability Usage Logic ---
+        if (npc.currentActionPoints > 0) {
+            // 1. Healing Logic (Priority High if low health)
+            const healthPercent = (npc.health?.torso?.current || 0) / (npc.health?.torso?.max || 1);
+            if (healthPercent < 0.5 && npc.inventory && npc.inventory.container) {
+                // Find a healing item
+                const healItem = npc.inventory.container.items.find(i => {
+                    const def = assetManager.getItem(i.id);
+                    return def && def.effects && (def.effects.health > 0 || def.effects.heal_limbs > 0);
+                });
+
+                if (healItem) {
+                    logToConsole(`NPC DECISIONS: ${npcName} is injured (${(healthPercent * 100).toFixed(0)}%) and decides to use ${healItem.name}.`, 'gold');
+                    gameState.pendingCombatAction = {
+                        actionType: "use_item",
+                        item: healItem,
+                        entity: npc,
+                        actionDescription: `uses ${healItem.name}`
+                    };
+                    // No decrement here, processAttack handles AP cost for use_item
+                    actionTakenInIter = true;
+                    return true;
+                }
+            }
+
+            // 2. Grenade / AoE Logic
+            // Check if we have a grenade
+            if (npc.inventory && npc.inventory.container) {
+                const grenade = npc.inventory.container.items.find(i => {
+                    const def = assetManager.getItem(i.id);
+                    return def && def.type === "weapon_thrown_explosive";
+                });
+
+                if (grenade) {
+                    // Evaluate potential targets for grenade
+                    // We want a cluster of enemies (player + allied NPCs)
+                    // Simplified: Check if current target has allies nearby.
+                    const grenadeDef = assetManager.getItem(grenade.id);
+                    const burstRadius = Math.ceil((grenadeDef.burstRadiusFt || 5) / 5);
+                    const throwRange = 10; // Approx throw range
+
+                    // Find a cluster. Ideally we iterate all valid target tiles near enemies.
+                    // Simple approach: Check the current target's position.
+                    // If target is valid and in range:
+                    if (currentTargetPos && distanceToTarget3D <= throwRange) {
+                        // Count enemies in burst radius of target pos
+                        const enemiesInRadius = window.combatManager.initiativeTracker.filter(e => {
+                            const ent = e.entity;
+                            if (ent === npc || ent.teamId === npc.teamId) return false; // Ignore allies
+                            if (!ent.health || ent.health.torso.current <= 0) return false;
+                            const entPos = ent === gameState ? gameState.playerPos : ent.mapPos;
+                            if (!entPos) return false;
+                            const dist = getDistance3D(currentTargetPos, entPos);
+                            return dist <= burstRadius;
+                        });
+
+                        // Threshold: If > 1 enemy hit, or target is player (high value), use grenade.
+                        // Or if 1 enemy but it's a strong one and we have plenty of grenades?
+                        const hitCount = enemiesInRadius.length;
+                        const hitsPlayer = enemiesInRadius.some(e => e.entity === gameState);
+
+                        if (hitCount >= 2 || (hitCount >= 1 && hitsPlayer)) {
+                             logToConsole(`NPC DECISIONS: ${npcName} decides to throw ${grenade.name} at cluster (Size: ${hitCount}).`, 'gold');
+                             gameState.pendingCombatAction = {
+                                target: currentTarget, // Primary target for logic, but we target tile
+                                targetTile: { ...currentTargetPos }, // Explicit tile target
+                                weapon: grenade,
+                                attackType: "ranged", // Thrown is treated as ranged/attack in processAttack
+                                fireMode: "single",
+                                actionType: "attack",
+                                entity: npc,
+                                skillToUse: "Explosives",
+                                actionDescription: `throws ${grenade.name}`
+                             };
+                             npc.currentActionPoints--;
+                             actionTakenInIter = true;
+                             return true;
+                        }
+                    }
+                }
+            }
+        }
 
         // If fleeing, we skip attacking unless cornered?
         // For now, shouldNpcFlee logic above handles movement.
