@@ -674,6 +674,7 @@ export function updateLockPropertiesUI(selectedTile, tileData, tileDef) {
     }
 
     const isLockable = tileDef.tags?.includes('door') || tileDef.tags?.includes('window') || tileDef.tags?.includes('container');
+    const isDoor = tileDef.tags?.includes('door');
 
     if (!isLockable) {
         lockControlsDiv.style.display = 'none';
@@ -681,16 +682,32 @@ export function updateLockPropertiesUI(selectedTile, tileData, tileDef) {
     }
     lockControlsDiv.style.display = 'block'; // Show lock controls
 
+    const doorCodeContainer = document.getElementById('doorCodeContainer');
+    const doorCodeInput = document.getElementById('doorCodeInput');
+
+    // Only show door code input for doors
+    if (doorCodeContainer) {
+        doorCodeContainer.style.display = isDoor ? 'block' : 'none';
+    }
+
     // If tileData is an object, it might have lock properties.
     // If it's a string ID, it's considered not locked by default, or needs conversion to object.
     if (typeof tileData === 'object' && tileData !== null) {
         isLockedCheckbox.checked = tileData.isLocked || false;
         lockDifficultyInput.value = tileData.lockDC ?? DEFAULT_LOCK_DC; // Use configured default
         lockDifficultyInput.disabled = !isLockedCheckbox.checked;
+        if (doorCodeInput) {
+            doorCodeInput.value = tileData.doorCode || '';
+            doorCodeInput.disabled = !isLockedCheckbox.checked; // Disable if not locked, though maybe codes exist on unlocked doors? Usually locked.
+        }
     } else {
         isLockedCheckbox.checked = false;
         lockDifficultyInput.value = DEFAULT_LOCK_DC;
         lockDifficultyInput.disabled = true;
+        if (doorCodeInput) {
+            doorCodeInput.value = '';
+            doorCodeInput.disabled = true;
+        }
     }
 }
 

@@ -512,6 +512,7 @@ function setupButtonEventListeners() {
     el('addItemToContainerBtn', 'click', handleAddItemToContainerClick);
     el('isLockedCheckbox', 'change', handleToggleLockStateClick);
     el('lockDifficultyInput', 'input', handleChangeLockDcInput);
+    el('doorCodeInput', 'input', handleChangeDoorCodeInput);
 
     // Vehicle Properties
     el('saveVehiclePropertiesBtn', 'click', handleSaveVehiclePropertiesClick);
@@ -959,6 +960,25 @@ function handleChangeLockDcInput(event) {
     snapshot();
     tileObject.lockDC = parseInt(lockDifficultyInput.value, 10) || 0;
     logToConsole(`Lock DC for tile at (${x},${y},Z${z}) changed to ${tileObject.lockDC}.`);
+}
+
+function handleChangeDoorCodeInput(event) {
+    const mapData = getMapData();
+    const doorCodeInput = event.target;
+    if (!appState.selectedTileForInventory || doorCodeInput.disabled || !mapData) return;
+    const { x, y, z, layerName } = appState.selectedTileForInventory;
+
+    let tileObject = ensureTileIsObject(x, y, z, layerName, mapData);
+    if (!tileObject) { logToConsole(ERROR_MSG.INVALID_TILE_FOR_LOCK_ERROR(x, y, z)); return; }
+
+    snapshot();
+    const code = doorCodeInput.value.trim();
+    if (code) {
+        tileObject.doorCode = code;
+    } else {
+        delete tileObject.doorCode;
+    }
+    logToConsole(`Door Code for tile at (${x},${y},Z${z}) changed to ${tileObject.doorCode || '(none)'}.`);
 }
 
 function handleSavePortalPropertiesClick() {
