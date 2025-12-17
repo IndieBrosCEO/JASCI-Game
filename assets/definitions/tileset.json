@@ -1907,17 +1907,11 @@
   "JCD_V": { "sprite": "║", "name": "Jail Cell Door Vt", "color": "#708090", "tags": ["door", "middle", "metal", "closed", "impassable", "transparent", "interactive", "jail"], "opensToTileId": "JCD_VO", "isLocked": true, "lockDifficulty": 25 },
   "JCD_HO": { "sprite": "_", "name": "Jail Cell Door Hz Open", "color": "#708090", "tags": ["door", "middle", "metal", "open", "transparent", "interactive", "permeable", "jail"] },
   "JCD_VO": { "sprite": "'", "name": "Jail Cell Door Vt Open", "color": "#708090", "tags": ["door", "middle", "metal", "open", "transparent", "interactive", "permeable", "jail"] },
-  "sandstone_cave_wall": {
-    "sprite": "#",
-    "name": "Sandstone Cave Wall",
+  "sandstone": {
+    "sprite": "▓",
+    "name": "Sandstone",
     "color": "#D2B48C",
-    "tags": ["wall", "middle", "sandstone", "impassable", "cave"]
-  },
-  "sandstone_cave_floor": {
-    "sprite": ".",
-    "name": "Sandstone Cave Floor",
-    "color": "#D2B48C",
-    "tags": ["floor", "bottom", "sandstone", "cave"]
+    "tags": ["landscape", "middle", "solid_terrain_top", "impassable", "cave", "sandstone"]
   },
   "sandstone_stalactite": {
     "sprite": "▼",
@@ -1931,17 +1925,11 @@
     "color": "#D2B48C",
     "tags": ["rock_formation", "middle", "sandstone", "impassable", "cave", "sharp", "stalagmite"]
   },
-  "limestone_cave_wall": {
-    "sprite": "#",
-    "name": "Limestone Cave Wall",
+  "limestone": {
+    "sprite": "▓",
+    "name": "Limestone",
     "color": "#C0C0C0",
-    "tags": ["wall", "middle", "limestone", "impassable", "cave"]
-  },
-  "limestone_cave_floor": {
-    "sprite": ".",
-    "name": "Limestone Cave Floor",
-    "color": "#C0C0C0",
-    "tags": ["floor", "bottom", "limestone", "cave"]
+    "tags": ["landscape", "middle", "solid_terrain_top", "impassable", "cave", "limestone"]
   },
   "limestone_stalactite": {
     "sprite": "▼",
