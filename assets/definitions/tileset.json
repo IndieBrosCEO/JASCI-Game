@@ -1942,5 +1942,103 @@
     "name": "Limestone Stalagmite",
     "color": "#C0C0C0",
     "tags": ["rock_formation", "middle", "limestone", "impassable", "cave", "sharp", "stalagmite"]
+  },
+  "MSL_U": {
+    "sprite": "▲",
+    "name": "Mud Slope Up",
+    "color": "#731D1D",
+    "tags": [
+      "landscape",
+      "z_transition",
+      "slope",
+      "mud_slope",
+      "middle"
+    ],
+    "target_dz": 1,
+    "z_cost": 2
+  },
+  "SSL_U": {
+    "sprite": "▲",
+    "name": "Sand Slope Up",
+    "color": "#F0E68C",
+    "tags": [
+      "landscape",
+      "z_transition",
+      "slope",
+      "sand_slope",
+      "middle"
+    ],
+    "target_dz": 1,
+    "z_cost": 2
+  },
+  "GSL_U": {
+    "sprite": "▲",
+    "name": "Gravel Slope Up",
+    "color": "#D3D3D3",
+    "tags": [
+      "landscape",
+      "z_transition",
+      "slope",
+      "gravel_slope",
+      "middle"
+    ],
+    "target_dz": 1,
+    "z_cost": 2
+  },
+  "ARSL_U": {
+    "sprite": "▲",
+    "name": "Asphalt Road Slope Up",
+    "color": "#808080",
+    "tags": [
+      "landscape",
+      "z_transition",
+      "slope",
+      "road_slope",
+      "middle"
+    ],
+    "target_dz": 1,
+    "z_cost": 2
+  },
+  "DRSL_U": {
+    "sprite": "▲",
+    "name": "Dirt Road Slope Up",
+    "color": "#A0522D",
+    "tags": [
+      "landscape",
+      "z_transition",
+      "slope",
+      "road_slope",
+      "middle"
+    ],
+    "target_dz": 1,
+    "z_cost": 2
+  },
+  "SNDSL_U": {
+    "sprite": "▲",
+    "name": "Sandstone Slope Up",
+    "color": "#D2B48C",
+    "tags": [
+      "landscape",
+      "z_transition",
+      "slope",
+      "sandstone_slope",
+      "middle"
+    ],
+    "target_dz": 1,
+    "z_cost": 2
+  },
+  "LMSL_U": {
+    "sprite": "▲",
+    "name": "Limestone Slope Up",
+    "color": "#C0C0C0",
+    "tags": [
+      "landscape",
+      "z_transition",
+      "slope",
+      "limestone_slope",
+      "middle"
+    ],
+    "target_dz": 1,
+    "z_cost": 2
   }
 }
