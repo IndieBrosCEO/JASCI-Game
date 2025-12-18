@@ -3,7 +3,7 @@
     "templateId": "generic_guard_melee",
     "name": "Guard",
     "sprite": "G",
-    "color": "#70809f",
+    "color": "#fbd35f",
     "health": {
       "head": {
         "max": 15,
@@ -60,11 +60,7 @@
     },
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
-    "tags": [
-      "humanoid",
-      "guard",
-      "melee_focused"
-    ],
+    "tags": [ "humanoid", "guard", "melee_focused" ],
     "factionId": "guard",
     "behavior": "patrol",
     "patrolPoints": [],
@@ -74,7 +70,7 @@
     "templateId": "generic_civilian",
     "name": "Civilian",
     "sprite": "c",
-    "color": "#d3d3f7",
+    "color": "#fbd35f",
     "health": {
       "head": {
         "max": 10,
@@ -129,10 +125,7 @@
     },
     "defaultActionPoints": 1,
     "defaultMovementPoints": 4,
-    "tags": [
-      "humanoid",
-      "civilian"
-    ],
+    "tags": [ "humanoid", "civilian" ],
     "factionId": "civilian",
     "behavior": "idle",
     "patrolPoints": [],

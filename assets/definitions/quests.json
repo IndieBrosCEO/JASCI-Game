@@ -54,9 +54,7 @@
     "rewards": {
       "xp": 500,
       "gold": 100,
-      "items": [
-        "medkit_basic"
-      ]
+      "items": ["medkit_basic"]
     }
   }
 ]

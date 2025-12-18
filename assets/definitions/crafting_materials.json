@@ -38,7 +38,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "=",
-    "color": "#cd8545",
+    "color": "#098511",
     "tags": [
       "material",
       "crafting",
@@ -114,7 +114,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "&",
-    "color": "#a9a9c4",
+    "color": "#f9a9c1",
     "tags": [
       "material",
       "crafting",
@@ -139,7 +139,7 @@
     "value": 2,
     "stackable": true,
     "maxStack": 100,
-    "sprite": "¡",
+    "sprite": "\u00a1",
     "color": "#c0c0c0",
     "tags": [
       "material",
@@ -210,7 +210,7 @@
     "name": "Metal Ingot",
     "description": "A refined bar of generic metal, ready for more complex crafting.",
     "type": "crafting_material",
-    "weightLbs": 1,
+    "weightLbs": 1.0,
     "size": 1,
     "value": 5,
     "stackable": true,
@@ -311,8 +311,8 @@
     "value": 1,
     "stackable": true,
     "maxStack": 10,
-    "sprite": "ü",
-    "color": "#ffff05",
+    "sprite": "\u00fc",
+    "color": "#27ff8b",
     "tags": [
       "material",
       "crafting",
@@ -331,12 +331,12 @@
     "name": "Gasoline (Partial Canister)",
     "description": "A canister containing some flammable gasoline.",
     "type": "crafting_material",
-    "weightLbs": 1,
+    "weightLbs": 1.0,
     "size": 2,
     "value": 10,
     "stackable": false,
     "sprite": "g",
-    "color": "#ffa509",
+    "color": "#13a546",
     "tags": [
       "material",
       "crafting",
@@ -361,7 +361,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "#",
-    "color": "#a9a9ac",
+    "color": "#bda9ef",
     "tags": [
       "material",
       "crafting",
@@ -416,7 +416,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": ".",
-    "color": "#ffff06",
+    "color": "#ffff00",
     "tags": [
       "seed",
       "gardening",
@@ -445,7 +445,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": ",",
-    "color": "#ffa506",
+    "color": "#13a546",
     "tags": [
       "seed",
       "gardening",
@@ -504,7 +504,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "=",
-    "color": "#b0c4e1",
+    "color": "#c4c424",
     "tags": [
       "material",
       "crafting",
@@ -535,7 +535,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "#",
-    "color": "#a05230",
+    "color": "#b45273",
     "tags": [
       "material",
       "crafting",
@@ -623,7 +623,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "%",
-    "color": "#d3d3d9",
+    "color": "#0fd3a5",
     "tags": [
       "material",
       "crafting",
@@ -654,7 +654,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "*",
-    "color": "#f0e692",
+    "color": "#18e618",
     "tags": [
       "material",
       "crafting",
@@ -707,7 +707,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "o",
-    "color": "#fffff3",
+    "color": "#13ff36",
     "tags": [
       "material",
       "crafting",
@@ -734,8 +734,8 @@
     "value": 25,
     "stackable": true,
     "maxStack": 10,
-    "sprite": "♦",
-    "color": "#00ff02",
+    "sprite": "\u2666",
+    "color": "#28ff8b",
     "tags": [
       "material",
       "crafting",
@@ -763,7 +763,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "$",
-    "color": "#ffd703",
+    "color": "#13d746",
     "tags": [
       "material",
       "crafting",
@@ -792,7 +792,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "*",
-    "color": "#c0c0c3",
+    "color": "#d4c006",
     "tags": [
       "material",
       "crafting",
@@ -912,7 +912,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "#",
-    "color": "#00800c",
+    "color": "#008000",
     "tags": [
       "material",
       "crafting",
@@ -997,7 +997,7 @@
     "value": 18,
     "stackable": false,
     "sprite": "R",
-    "color": "#f5f5df",
+    "color": "#09f522",
     "tags": [
       "material",
       "crafting",
@@ -1029,7 +1029,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "%",
-    "color": "#ffff02",
+    "color": "#13ff45",
     "tags": [
       "material",
       "crafting",
@@ -1058,7 +1058,7 @@
     "stackable": true,
     "maxStack": 30,
     "sprite": "/",
-    "color": "#a05236",
+    "color": "#f05245",
     "tags": [
       "material",
       "crafting",
@@ -1085,7 +1085,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "L",
-    "color": "#8b4516",
+    "color": "#b3459f",
     "tags": [
       "material",
       "crafting",
@@ -1138,7 +1138,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": ">",
-    "color": "#69696c",
+    "color": "#7d69af",
     "tags": [
       "material",
       "crafting",
@@ -1191,7 +1191,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "~",
-    "color": "#fffff6",
+    "color": "#13ff36",
     "tags": [
       "material",
       "crafting",
@@ -1216,7 +1216,7 @@
     "stackable": true,
     "maxStack": 100,
     "sprite": "^",
-    "color": "#d3d3e2",
+    "color": "#fbd35f",
     "tags": [
       "material",
       "crafting",
@@ -1266,7 +1266,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": ":",
-    "color": "#f0e68f",
+    "color": "#04e6d2",
     "tags": [
       "material",
       "crafting",
@@ -1291,7 +1291,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "c",
-    "color": "#000006",
+    "color": "#000000",
     "tags": [
       "material",
       "crafting",
@@ -1338,7 +1338,7 @@
     "stackable": true,
     "maxStack": 100,
     "sprite": "*",
-    "color": "#a9a9ca",
+    "color": "#f9a9c1",
     "tags": [
       "material",
       "crafting",
@@ -1561,7 +1561,7 @@
     "stackable": true,
     "maxStack": 100,
     "sprite": "u",
-    "color": "#ff0012",
+    "color": "#130046",
     "tags": [
       "material",
       "crafting",
@@ -1584,7 +1584,7 @@
     "stackable": true,
     "maxStack": 100,
     "sprite": "u",
-    "color": "#8b0009",
+    "color": "#9f0046",
     "tags": [
       "material",
       "crafting",
@@ -1607,7 +1607,7 @@
     "stackable": true,
     "maxStack": 500,
     "sprite": ".",
-    "color": "#c0c0d5",
+    "color": "#10c0d8",
     "tags": [
       "material",
       "crafting",
@@ -1631,7 +1631,7 @@
     "stackable": true,
     "maxStack": 500,
     "sprite": ".",
-    "color": "#8080aa",
+    "color": "#e480de",
     "tags": [
       "material",
       "crafting",
@@ -1655,7 +1655,7 @@
     "stackable": true,
     "maxStack": 500,
     "sprite": ",",
-    "color": "#c0c0d8",
+    "color": "#10c0d8",
     "tags": [
       "material",
       "crafting",
@@ -1679,7 +1679,7 @@
     "stackable": true,
     "maxStack": 500,
     "sprite": ",",
-    "color": "#8080ad",
+    "color": "#e480de",
     "tags": [
       "material",
       "crafting",
@@ -1703,7 +1703,7 @@
     "stackable": true,
     "maxStack": 500,
     "sprite": ":",
-    "color": "#c0c0db",
+    "color": "#10c0d8",
     "tags": [
       "material",
       "crafting",
@@ -1726,7 +1726,7 @@
     "stackable": true,
     "maxStack": 200,
     "sprite": "*",
-    "color": "#80809e",
+    "color": "#e480de",
     "tags": [
       "material",
       "crafting",
@@ -1751,7 +1751,7 @@
     "stackable": true,
     "maxStack": 200,
     "sprite": "*",
-    "color": "#a9a9b8",
+    "color": "#f9a9c1",
     "tags": [
       "material",
       "crafting",
@@ -1776,7 +1776,7 @@
     "stackable": true,
     "maxStack": 200,
     "sprite": "o",
-    "color": "#80809b",
+    "color": "#e480de",
     "tags": [
       "material",
       "crafting",
@@ -1801,7 +1801,7 @@
     "stackable": true,
     "maxStack": 100,
     "sprite": "O",
-    "color": "#a9a9bb",
+    "color": "#f9a9c1",
     "tags": [
       "material",
       "crafting",
@@ -1826,7 +1826,7 @@
     "stackable": true,
     "maxStack": 500,
     "sprite": ".",
-    "color": "#808098",
+    "color": "#e480de",
     "tags": [
       "material",
       "crafting",
@@ -1851,7 +1851,7 @@
     "stackable": true,
     "maxStack": 200,
     "sprite": "^",
-    "color": "#cd8548",
+    "color": "#f585cb",
     "tags": [
       "material",
       "crafting",
@@ -1877,7 +1877,7 @@
     "stackable": true,
     "maxStack": 200,
     "sprite": "^",
-    "color": "#8b4519",
+    "color": "#9f4559",
     "tags": [
       "material",
       "crafting",
@@ -1930,7 +1930,7 @@
     "stackable": true,
     "maxStack": 100,
     "sprite": ":",
-    "color": "#a9a9d0",
+    "color": "#f9a9c1",
     "tags": [
       "material",
       "crafting",
@@ -1954,7 +1954,7 @@
     "stackable": true,
     "maxStack": 200,
     "sprite": "-",
-    "color": "#d3d3fa",
+    "color": "#fbd35f",
     "tags": [
       "material",
       "crafting",
@@ -1977,7 +1977,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "|",
-    "color": "#deb88a",
+    "color": "#06b813",
     "tags": [
       "material",
       "crafting",
@@ -2001,7 +2001,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "|",
-    "color": "#a05236",
+    "color": "#f05245",
     "tags": [
       "material",
       "crafting",
@@ -2025,7 +2025,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": ">",
-    "color": "#80808c",
+    "color": "#d08098",
     "tags": [
       "material",
       "crafting",
@@ -2100,7 +2100,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "%",
-    "color": "#ff4503",
+    "color": "#134546",
     "tags": [
       "material",
       "crafting",
@@ -2150,7 +2150,7 @@
     "stackable": true,
     "maxStack": 30,
     "sprite": "f",
-    "color": "#a9a9c7",
+    "color": "#f9a9c1",
     "tags": [
       "material",
       "crafting",
@@ -2222,7 +2222,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": ";",
-    "color": "#bdb76e",
+    "color": "#d1b7b1",
     "tags": [
       "material",
       "crafting",
@@ -2266,7 +2266,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "#",
-    "color": "#d2b48f",
+    "color": "#e6b4d2",
     "tags": [
       "material",
       "crafting",
@@ -2312,7 +2312,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "s",
-    "color": "#cd8542",
+    "color": "#e18585",
     "tags": [
       "material",
       "crafting",
@@ -2415,7 +2415,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "_",
-    "color": "#d3d3d6",
+    "color": "#e7d319",
     "tags": [
       "material",
       "crafting",
@@ -2463,7 +2463,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "~",
-    "color": "#a9a9ac",
+    "color": "#bda9ef",
     "tags": [
       "material",
       "crafting",
@@ -2513,7 +2513,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "p",
-    "color": "#add8e9",
+    "color": "#c1d82c",
     "tags": [
       "material",
       "crafting",
@@ -2560,7 +2560,7 @@
     "stackable": true,
     "maxStack": 100,
     "sprite": "*",
-    "color": "#ff000c",
+    "color": "#130046",
     "tags": [
       "material",
       "crafting",
@@ -2610,7 +2610,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "b",
-    "color": "#c0c0d2",
+    "color": "#10c0d8",
     "tags": [
       "material",
       "crafting",
@@ -2635,7 +2635,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "{",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "material",
       "crafting",
@@ -2661,7 +2661,7 @@
     "stackable": true,
     "maxStack": 100,
     "sprite": ".",
-    "color": "#a9a9ac",
+    "color": "#bda9ef",
     "tags": [
       "material",
       "crafting",
@@ -2687,7 +2687,7 @@
     "stackable": true,
     "maxStack": 30,
     "sprite": "&",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "material",
       "crafting",
@@ -2737,7 +2737,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "s",
-    "color": "#ffff03",
+    "color": "#ffff00",
     "tags": [
       "material",
       "crafting",
@@ -2760,7 +2760,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "s",
-    "color": "#ffff14",
+    "color": "#3bffd1",
     "tags": [
       "material",
       "crafting",
@@ -2784,7 +2784,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "t",
-    "color": "#8b4525",
+    "color": "#9f4559",
     "tags": [
       "material",
       "crafting",
@@ -2809,7 +2809,7 @@
     "stackable": true,
     "maxStack": 100,
     "sprite": "'",
-    "color": "#f5f5f8",
+    "color": "#f5f5f5",
     "tags": [
       "material",
       "crafting",
@@ -2832,7 +2832,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "p",
-    "color": "#008003",
+    "color": "#008000",
     "tags": [
       "material",
       "crafting",
@@ -2856,7 +2856,7 @@
     "stackable": true,
     "maxStack": 30,
     "sprite": "*",
-    "color": "#deb88d",
+    "color": "#f2b8cd",
     "tags": [
       "material",
       "crafting",
@@ -2880,7 +2880,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "m",
-    "color": "#a9a9ac",
+    "color": "#bda9ef",
     "tags": [
       "material",
       "crafting",
@@ -2937,7 +2937,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "=",
-    "color": "#000012",
+    "color": "#000000",
     "tags": [
       "material",
       "crafting",
@@ -2983,7 +2983,7 @@
     "stackable": true,
     "maxStack": 2,
     "sprite": "O",
-    "color": "#00000c",
+    "color": "#000000",
     "tags": [
       "material",
       "salvage",
@@ -3006,7 +3006,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "=",
-    "color": "#708096",
+    "color": "#98801c",
     "tags": [
       "material",
       "crafting",
@@ -3033,7 +3033,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "\\",
-    "color": "#cd8545",
+    "color": "#098511",
     "tags": [
       "material",
       "crafting",
@@ -3107,7 +3107,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "%",
-    "color": "#d3d3d9",
+    "color": "#0fd3a5",
     "tags": [
       "material",
       "crafting",
@@ -3181,12 +3181,12 @@
     "description": "A sheet of woven Kevlar, offering excellent protection against projectiles and shrapnel.",
     "type": "crafting_material",
     "size": 2,
-    "weightLbs": 1,
+    "weightLbs": 1.0,
     "value": 50,
     "stackable": true,
     "maxStack": 5,
     "sprite": "#",
-    "color": "#ffd706",
+    "color": "#27d78c",
     "tags": [
       "material",
       "crafting",
@@ -3236,7 +3236,7 @@
     "description": "A large, thick piece of animal hide that has been cured. Sturdy and suitable for armor or heavy goods.",
     "type": "crafting_material",
     "size": 3,
-    "weightLbs": 3,
+    "weightLbs": 3.0,
     "value": 15,
     "stackable": true,
     "maxStack": 5,
@@ -3261,12 +3261,12 @@
     "description": "A versatile piece of tanned leather, suitable for clothing, bags, and lighter armor.",
     "type": "crafting_material",
     "size": 2,
-    "weightLbs": 2,
+    "weightLbs": 2.0,
     "value": 12,
     "stackable": true,
     "maxStack": 8,
     "sprite": "h",
-    "color": "#a05230",
+    "color": "#b45273",
     "tags": [
       "material",
       "crafting",
@@ -3315,7 +3315,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "[",
-    "color": "#808089",
+    "color": "#bc8052",
     "tags": [
       "material",
       "crafting",
@@ -3340,7 +3340,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "[",
-    "color": "#a9a9af",
+    "color": "#d1a935",
     "tags": [
       "material",
       "crafting",
@@ -3390,7 +3390,7 @@
     "stackable": true,
     "maxStack": 4,
     "sprite": "{",
-    "color": "#708093",
+    "color": "#8480d6",
     "tags": [
       "material",
       "crafting",
@@ -3415,7 +3415,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "#",
-    "color": "#00640c",
+    "color": "#006400",
     "tags": [
       "material",
       "crafting",
@@ -3466,7 +3466,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "m",
-    "color": "#00000b",
+    "color": "#140045",
     "tags": [
       "material",
       "crafting",
@@ -3491,7 +3491,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "Y",
-    "color": "#c0c0cf",
+    "color": "#10c0d8",
     "tags": [
       "material",
       "crafting",
@@ -3516,7 +3516,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "F",
-    "color": "#ff0009",
+    "color": "#130046",
     "tags": [
       "material",
       "crafting",
@@ -3535,12 +3535,12 @@
     "description": "A thick, heavy steel plate specifically manufactured for vehicle armor.",
     "type": "crafting_material",
     "size": 3,
-    "weightLbs": 20,
+    "weightLbs": 20.0,
     "value": 40,
     "stackable": true,
     "maxStack": 2,
     "sprite": "S",
-    "color": "#2f4f52",
+    "color": "#434f95",
     "tags": [
       "material",
       "crafting",
@@ -3560,12 +3560,12 @@
     "description": "The main structure of a small engine, cast from metal.",
     "type": "crafting_material",
     "size": 2,
-    "weightLbs": 15,
+    "weightLbs": 15.0,
     "value": 30,
     "stackable": true,
     "maxStack": 1,
     "sprite": "E",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "material",
       "crafting",
@@ -3585,7 +3585,7 @@
     "description": "A set of pistons and connecting rods for a small internal combustion engine.",
     "type": "crafting_material",
     "size": 1,
-    "weightLbs": 2,
+    "weightLbs": 2.0,
     "value": 25,
     "stackable": true,
     "maxStack": 4,
@@ -3610,12 +3610,12 @@
     "description": "A forged or cast crankshaft for a small engine.",
     "type": "crafting_material",
     "size": 2,
-    "weightLbs": 5,
+    "weightLbs": 5.0,
     "value": 20,
     "stackable": true,
     "maxStack": 2,
     "sprite": "c",
-    "color": "#708093",
+    "color": "#8480d6",
     "tags": [
       "material",
       "crafting",
@@ -3635,12 +3635,12 @@
     "description": "A thick sheet of rubber, often with tread patterns, salvaged from tires. Good for durable surfaces or patches.",
     "type": "crafting_material",
     "size": 2,
-    "weightLbs": 3,
+    "weightLbs": 3.0,
     "value": 5,
     "stackable": true,
     "maxStack": 5,
     "sprite": "=",
-    "color": "#00000f",
+    "color": "#000000",
     "tags": [
       "material",
       "crafting",
@@ -3690,7 +3690,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "m",
-    "color": "#00640f",
+    "color": "#006400",
     "tags": [
       "material",
       "crafting",
@@ -3715,7 +3715,7 @@
     "stackable": true,
     "maxStack": 8,
     "sprite": "s",
-    "color": "#000011",
+    "color": "#140045",
     "tags": [
       "material",
       "crafting",
@@ -3742,7 +3742,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "j",
-    "color": "#808089",
+    "color": "#bc8052",
     "tags": [
       "material",
       "junk",
@@ -3765,7 +3765,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "'",
-    "color": "#c0c0c6",
+    "color": "#e8c04c",
     "tags": [
       "material",
       "crafting",
@@ -3813,7 +3813,7 @@
     "stackable": true,
     "maxStack": 30,
     "sprite": "!",
-    "color": "#c0c0c6",
+    "color": "#e8c04c",
     "tags": [
       "material",
       "crafting",
@@ -3918,7 +3918,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "l",
-    "color": "#00801b",
+    "color": "#008000",
     "tags": [
       "material",
       "organic",
@@ -3927,7 +3927,7 @@
     ],
     "family": "pigment",
     "properties": {
-      "color": "#00801b",
+      "color": "#008000",
       "source": "plant"
     }
   },
@@ -3942,7 +3942,7 @@
     "stackable": true,
     "maxStack": 30,
     "sprite": "b",
-    "color": "#a05233",
+    "color": "#dc52ff",
     "tags": [
       "material",
       "organic",
@@ -3951,7 +3951,7 @@
     ],
     "family": "pigment",
     "properties": {
-      "color": "#a52a30",
+      "color": "#dc52ff",
       "source": "bark"
     }
   },
@@ -3966,7 +3966,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "d",
-    "color": "#006409",
+    "color": "#006400",
     "tags": [
       "material",
       "crafting",
@@ -3980,7 +3980,7 @@
           "quantity": 5,
           "family": "pigment",
           "require": {
-            "color": "#00800f"
+            "color": "#006400"
           }
         },
         {
@@ -4007,7 +4007,7 @@
     },
     "family": "dye",
     "properties": {
-      "color": "#00800f",
+      "color": "#006400",
       "source": "natural"
     }
   },
@@ -4022,7 +4022,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "d",
-    "color": "#8b451c",
+    "color": "#9f4559",
     "tags": [
       "material",
       "crafting",
@@ -4036,7 +4036,7 @@
           "quantity": 3,
           "family": "pigment",
           "require": {
-            "color": "#a52a4e"
+            "color": "#9f4559"
           }
         },
         {
@@ -4063,7 +4063,7 @@
     },
     "family": "dye",
     "properties": {
-      "color": "#a52a4e",
+      "color": "#9f4559",
       "source": "natural"
     }
   },
@@ -4078,7 +4078,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "#",
-    "color": "#808083",
+    "color": "#9480c6",
     "tags": [
       "material",
       "crafting",
@@ -4123,7 +4123,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "w",
-    "color": "#000002",
+    "color": "#28008b",
     "tags": [
       "material",
       "crafting",
@@ -4147,7 +4147,7 @@
     "stackable": true,
     "maxStack": 2,
     "sprite": "R",
-    "color": "#a9a9b2",
+    "color": "#e5a97b",
     "tags": [
       "material",
       "natural",
@@ -4170,7 +4170,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "S",
-    "color": "#80808c",
+    "color": "#d08098",
     "tags": [
       "material",
       "crafting",
@@ -4218,7 +4218,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "=",
-    "color": "#a9a9ac",
+    "color": "#bda9ef",
     "tags": [
       "material",
       "crafting",
@@ -4317,7 +4317,7 @@
     "stackable": true,
     "maxStack": 3,
     "sprite": "~",
-    "color": "#000017",
+    "color": "#140045",
     "tags": [
       "material",
       "crafting",
@@ -4372,7 +4372,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "|",
-    "color": "#cd8545",
+    "color": "#098511",
     "tags": [
       "material",
       "crafting",
@@ -4467,12 +4467,12 @@
     "description": "A thin, carefully prepared animal hide, suitable for making parchment or fine leather items.",
     "type": "crafting_material",
     "size": 2,
-    "weightLbs": 1,
+    "weightLbs": 1.0,
     "value": 4,
     "stackable": true,
     "maxStack": 10,
     "sprite": "h",
-    "color": "#f5f5e2",
+    "color": "#1df568",
     "tags": [
       "material",
       "organic",
@@ -4496,7 +4496,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "s",
-    "color": "#ffffe3",
+    "color": "#ffffe0",
     "tags": [
       "material",
       "crafting",
@@ -4598,7 +4598,7 @@
     "stackable": true,
     "maxStack": 2,
     "sprite": "#",
-    "color": "#00ffff",
+    "color": "#14ff45",
     "tags": [
       "material",
       "crafting",
@@ -4624,7 +4624,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "M",
-    "color": "#a9a9ac",
+    "color": "#bda9ef",
     "tags": [
       "material",
       "crafting",
@@ -4764,12 +4764,12 @@
     "description": "A long, straight, and sturdy wooden shaft, suitable for spears or javelins.",
     "type": "crafting_material",
     "size": 3,
-    "weightLbs": 1,
+    "weightLbs": 1.0,
     "value": 2,
     "stackable": true,
     "maxStack": 10,
     "sprite": "/",
-    "color": "#cd8545",
+    "color": "#098511",
     "tags": [
       "material",
       "crafting",
@@ -4968,7 +4968,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "=",
-    "color": "#cd8545",
+    "color": "#098511",
     "tags": [
       "material",
       "crafting",
@@ -5082,7 +5082,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "/",
-    "color": "#a9a9ac",
+    "color": "#bda9ef",
     "tags": [
       "material",
       "crafting",
@@ -5133,7 +5133,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "e",
-    "color": "#008012",
+    "color": "#008000",
     "tags": [
       "material",
       "crafting",

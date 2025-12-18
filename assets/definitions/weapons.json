@@ -148,7 +148,7 @@
     "size": 1,
     "value": 5,
     "sprite": "¡",
-    "color": "#d3d3f4",
+    "color": "#fbd35f",
     "tags": [
       "weapon",
       "melee",
@@ -1779,11 +1779,7 @@
     "weightLbs": 0,
     "damage": "1",
     "damageType": "Physical",
-    "tags": [
-      "weapon",
-      "melee",
-      "natural"
-    ],
+    "tags": ["weapon", "melee", "natural"],
     "specialEffect": "Digestive Clamp",
     "canEquip": false
   },
@@ -1796,11 +1792,7 @@
     "weightLbs": 0,
     "damage": "1",
     "damageType": "Physical",
-    "tags": [
-      "weapon",
-      "melee",
-      "natural"
-    ],
+    "tags": ["weapon", "melee", "natural"],
     "specialEffect": "Digestive Clamp Taser",
     "canEquip": false
   },
@@ -1816,19 +1808,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 5,
-    "tags": [
-      "weapon",
-      "firearm",
-      "rifle",
-      "heavy",
-      "anti_tank"
-    ],
+    "tags": ["weapon", "firearm", "rifle", "heavy", "anti_tank"],
     "ammoType": "20mm",
-    "properties": {
-      "type": "gun",
-      "caliber": "20mm",
-      "action": "semi-auto"
-    },
+    "properties": { "type": "gun", "caliber": "20mm", "action": "semi-auto" },
     "canEquip": true
   },
   {
@@ -1843,18 +1825,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 1,
-    "tags": [
-      "weapon",
-      "firearm",
-      "rifle",
-      "heavy"
-    ],
+    "tags": ["weapon", "firearm", "rifle", "heavy"],
     "ammoType": ".950JDJ",
-    "properties": {
-      "type": "gun",
-      "caliber": ".950JDJ",
-      "action": "single-shot"
-    },
+    "properties": { "type": "gun", "caliber": ".950JDJ", "action": "single-shot" },
     "canEquip": true
   },
   {
@@ -1869,19 +1842,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 5,
-    "tags": [
-      "weapon",
-      "firearm",
-      "rifle",
-      "heavy",
-      "anti_tank"
-    ],
+    "tags": ["weapon", "firearm", "rifle", "heavy", "anti_tank"],
     "ammoType": ".55Boys",
-    "properties": {
-      "type": "gun",
-      "caliber": ".55Boys",
-      "action": "bolt-action"
-    },
+    "properties": { "type": "gun", "caliber": ".55Boys", "action": "bolt-action" },
     "canEquip": true
   },
   {
@@ -1896,18 +1859,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 2,
-    "tags": [
-      "weapon",
-      "firearm",
-      "rifle",
-      "hunting"
-    ],
+    "tags": ["weapon", "firearm", "rifle", "hunting"],
     "ammoType": ".700NE",
-    "properties": {
-      "type": "gun",
-      "caliber": ".700NE",
-      "action": "break-action"
-    },
+    "properties": { "type": "gun", "caliber": ".700NE", "action": "break-action" },
     "canEquip": true
   },
   {
@@ -1922,18 +1876,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 3,
-    "tags": [
-      "weapon",
-      "firearm",
-      "rifle",
-      "hunting"
-    ],
+    "tags": ["weapon", "firearm", "rifle", "hunting"],
     "ammoType": ".577Tyr",
-    "properties": {
-      "type": "gun",
-      "caliber": ".577Tyr",
-      "action": "bolt-action"
-    },
+    "properties": { "type": "gun", "caliber": ".577Tyr", "action": "bolt-action" },
     "canEquip": true
   },
   {
@@ -1948,18 +1893,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 2,
-    "tags": [
-      "weapon",
-      "firearm",
-      "rifle",
-      "antique"
-    ],
+    "tags": ["weapon", "firearm", "rifle", "antique"],
     "ammoType": "4bore",
-    "properties": {
-      "type": "gun",
-      "caliber": "4bore",
-      "action": "double-barrel"
-    },
+    "properties": { "type": "gun", "caliber": "4bore", "action": "double-barrel" },
     "canEquip": true
   },
   {
@@ -1974,18 +1910,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 1,
-    "tags": [
-      "weapon",
-      "firearm",
-      "antique",
-      "shotgun"
-    ],
+    "tags": ["weapon", "firearm", "antique", "shotgun"],
     "ammoType": "blunderbuss_shot",
-    "properties": {
-      "type": "gun",
-      "caliber": "blunderbuss",
-      "action": "muzzle-loader"
-    },
+    "properties": { "type": "gun", "caliber": "blunderbuss", "action": "muzzle-loader" },
     "canEquip": true
   },
   {
@@ -2000,19 +1927,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 1,
-    "tags": [
-      "weapon",
-      "firearm",
-      "shotgun",
-      "heavy",
-      "antique"
-    ],
+    "tags": ["weapon", "firearm", "shotgun", "heavy", "antique"],
     "ammoType": "punt_gun_shot",
-    "properties": {
-      "type": "gun",
-      "caliber": "punt_gun",
-      "action": "muzzle-loader"
-    },
+    "properties": { "type": "gun", "caliber": "punt_gun", "action": "muzzle-loader" },
     "canEquip": true
   },
   {
@@ -2027,18 +1944,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 9,
-    "tags": [
-      "weapon",
-      "firearm",
-      "rifle",
-      "modern"
-    ],
+    "tags": ["weapon", "firearm", "rifle", "modern"],
     "ammoType": ".500AutoMax",
-    "properties": {
-      "type": "gun",
-      "caliber": ".500AutoMax",
-      "action": "semi-auto"
-    },
+    "properties": { "type": "gun", "caliber": ".500AutoMax", "action": "semi-auto" },
     "canEquip": true
   },
   {
@@ -2053,19 +1961,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 1,
-    "tags": [
-      "weapon",
-      "firearm",
-      "pistol",
-      "heavy",
-      "meme"
-    ],
+    "tags": ["weapon", "firearm", "pistol", "heavy", "meme"],
     "ammoType": ".50BMG",
-    "properties": {
-      "type": "gun",
-      "caliber": ".50BMG",
-      "action": "single-shot"
-    },
+    "properties": { "type": "gun", "caliber": ".50BMG", "action": "single-shot" },
     "canEquip": true
   },
   {
@@ -2080,19 +1978,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 6,
-    "tags": [
-      "weapon",
-      "firearm",
-      "pistol",
-      "revolver",
-      "magnum"
-    ],
+    "tags": ["weapon", "firearm", "pistol", "revolver", "magnum"],
     "ammoType": ".454Casull",
-    "properties": {
-      "type": "gun",
-      "caliber": ".454Casull",
-      "action": "revolver"
-    },
+    "properties": { "type": "gun", "caliber": ".454Casull", "action": "revolver" },
     "canEquip": true
   },
   {
@@ -2107,19 +1995,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 5,
-    "tags": [
-      "weapon",
-      "firearm",
-      "pistol",
-      "revolver",
-      "magnum"
-    ],
+    "tags": ["weapon", "firearm", "pistol", "revolver", "magnum"],
     "ammoType": ".500SW",
-    "properties": {
-      "type": "gun",
-      "caliber": ".500SW",
-      "action": "revolver"
-    },
+    "properties": { "type": "gun", "caliber": ".500SW", "action": "revolver" },
     "canEquip": true
   },
   {
@@ -2134,19 +2012,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 5,
-    "tags": [
-      "weapon",
-      "firearm",
-      "pistol",
-      "revolver",
-      "magnum"
-    ],
+    "tags": ["weapon", "firearm", "pistol", "revolver", "magnum"],
     "ammoType": ".460SW",
-    "properties": {
-      "type": "gun",
-      "caliber": ".460SW",
-      "action": "revolver"
-    },
+    "properties": { "type": "gun", "caliber": ".460SW", "action": "revolver" },
     "canEquip": true
   },
   {
@@ -2161,19 +2029,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 5,
-    "tags": [
-      "weapon",
-      "firearm",
-      "pistol",
-      "revolver",
-      "hunting"
-    ],
+    "tags": ["weapon", "firearm", "pistol", "revolver", "hunting"],
     "ammoType": ".30-30",
-    "properties": {
-      "type": "gun",
-      "caliber": ".30-30",
-      "action": "revolver"
-    },
+    "properties": { "type": "gun", "caliber": ".30-30", "action": "revolver" },
     "canEquip": true
   },
   {
@@ -2188,19 +2046,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 5,
-    "tags": [
-      "weapon",
-      "firearm",
-      "pistol",
-      "revolver",
-      "hunting"
-    ],
+    "tags": ["weapon", "firearm", "pistol", "revolver", "hunting"],
     "ammoType": ".45-70",
-    "properties": {
-      "type": "gun",
-      "caliber": ".45-70",
-      "action": "revolver"
-    },
+    "properties": { "type": "gun", "caliber": ".45-70", "action": "revolver" },
     "canEquip": true
   },
   {
@@ -2215,19 +2063,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 5,
-    "tags": [
-      "weapon",
-      "firearm",
-      "pistol",
-      "revolver",
-      "hunting"
-    ],
+    "tags": ["weapon", "firearm", "pistol", "revolver", "hunting"],
     "ammoType": ".450Marlin",
-    "properties": {
-      "type": "gun",
-      "caliber": ".450Marlin",
-      "action": "revolver"
-    },
+    "properties": { "type": "gun", "caliber": ".450Marlin", "action": "revolver" },
     "canEquip": true
   },
   {
@@ -2242,19 +2080,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 5,
-    "tags": [
-      "weapon",
-      "firearm",
-      "pistol",
-      "revolver",
-      "hunting"
-    ],
+    "tags": ["weapon", "firearm", "pistol", "revolver", "hunting"],
     "ammoType": ".500SW",
-    "properties": {
-      "type": "gun",
-      "caliber": ".500SW",
-      "action": "revolver"
-    },
+    "properties": { "type": "gun", "caliber": ".500SW", "action": "revolver" },
     "canEquip": true
   },
   {
@@ -2269,18 +2097,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 5,
-    "tags": [
-      "weapon",
-      "firearm",
-      "rifle",
-      "sniper"
-    ],
+    "tags": ["weapon", "firearm", "rifle", "sniper"],
     "ammoType": ".338Lapua",
-    "properties": {
-      "type": "gun",
-      "caliber": ".338Lapua",
-      "action": "bolt-action"
-    },
+    "properties": { "type": "gun", "caliber": ".338Lapua", "action": "bolt-action" },
     "canEquip": true
   },
   {
@@ -2295,18 +2114,9 @@
     "family": "firearm",
     "rateOfFire": "S,A",
     "magazineSize": 20,
-    "tags": [
-      "weapon",
-      "firearm",
-      "rifle",
-      "modern"
-    ],
+    "tags": ["weapon", "firearm", "rifle", "modern"],
     "ammoType": ".458SOCOM",
-    "properties": {
-      "type": "gun",
-      "caliber": ".458SOCOM",
-      "action": "automatic"
-    },
+    "properties": { "type": "gun", "caliber": ".458SOCOM", "action": "automatic" },
     "canEquip": true
   },
   {
@@ -2321,18 +2131,9 @@
     "family": "firearm",
     "rateOfFire": "S,A",
     "magazineSize": 30,
-    "tags": [
-      "weapon",
-      "firearm",
-      "smg",
-      "suppressed"
-    ],
+    "tags": ["weapon", "firearm", "smg", "suppressed"],
     "ammoType": "9mm",
-    "properties": {
-      "type": "gun",
-      "caliber": "9mm",
-      "action": "automatic"
-    },
+    "properties": { "type": "gun", "caliber": "9mm", "action": "automatic" },
     "canEquip": true
   },
   {
@@ -2347,18 +2148,9 @@
     "family": "firearm",
     "rateOfFire": "A",
     "magazineSize": 1000,
-    "tags": [
-      "weapon",
-      "firearm",
-      "heavy",
-      "machine_gun"
-    ],
+    "tags": ["weapon", "firearm", "heavy", "machine_gun"],
     "ammoType": "generic_ammo",
-    "properties": {
-      "type": "gun",
-      "caliber": "generic_ammo",
-      "action": "automatic"
-    },
+    "properties": { "type": "gun", "caliber": "generic_ammo", "action": "automatic" },
     "canEquip": true
   },
   {
@@ -2373,19 +2165,9 @@
     "family": "firearm",
     "rateOfFire": "A",
     "magazineSize": 2000,
-    "tags": [
-      "weapon",
-      "firearm",
-      "heavy",
-      "machine_gun",
-      "modern"
-    ],
+    "tags": ["weapon", "firearm", "heavy", "machine_gun", "modern"],
     "ammoType": "generic_ammo",
-    "properties": {
-      "type": "gun",
-      "caliber": "generic_ammo",
-      "action": "automatic"
-    },
+    "properties": { "type": "gun", "caliber": "generic_ammo", "action": "automatic" },
     "canEquip": true
   },
   {
@@ -2400,18 +2182,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 1,
-    "tags": [
-      "weapon",
-      "firearm",
-      "launcher",
-      "improvised"
-    ],
+    "tags": ["weapon", "firearm", "launcher", "improvised"],
     "ammoType": "soda_can",
-    "properties": {
-      "type": "gun",
-      "caliber": "soda_can",
-      "action": "single-shot"
-    },
+    "properties": { "type": "gun", "caliber": "soda_can", "action": "single-shot" },
     "canEquip": true
   },
   {
@@ -2426,18 +2199,9 @@
     "family": "firearm",
     "rateOfFire": "S",
     "magazineSize": 1,
-    "tags": [
-      "weapon",
-      "firearm",
-      "shotgun",
-      "heavy"
-    ],
+    "tags": ["weapon", "firearm", "shotgun", "heavy"],
     "ammoType": "4gauge",
-    "properties": {
-      "type": "gun",
-      "caliber": "4gauge",
-      "action": "single-shot"
-    },
+    "properties": { "type": "gun", "caliber": "4gauge", "action": "single-shot" },
     "canEquip": true
   },
   {

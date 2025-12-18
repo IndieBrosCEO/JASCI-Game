@@ -465,7 +465,7 @@
       "hunger": 8
     },
     "sprite": "i",
-    "color": "#a52a3f",
+    "color": "#cd2ab6",
     "canEquip": false,
     "isClothing": false,
     "weightLbs": 0.5,
@@ -491,7 +491,7 @@
       "thirst": 10
     },
     "sprite": "i",
-    "color": "#000002",
+    "color": "#28008b",
     "canEquip": false,
     "isClothing": false,
     "weightLbs": 0.5,
@@ -775,7 +775,7 @@
     "effects": {
       "resource_ink": 100
     },
-    "color": "#000009",
+    "color": "#000000",
     "recipe": {
       "id": "ink_pot_black",
       "description": "Mix soot and a binder to create black ink.",
@@ -818,7 +818,7 @@
     },
     "family": "ink",
     "properties": {
-      "color": "#000009"
+      "color": "#000000"
     }
   },
   {
@@ -965,7 +965,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "+",
-    "color": "#ffff08",
+    "color": "#3bffd1",
     "tags": [
       "medical",
       "healing",

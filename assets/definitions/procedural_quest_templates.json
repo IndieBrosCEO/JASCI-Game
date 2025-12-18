@@ -9,10 +9,7 @@
     "objectiveDetails": {
       "type": "kill_tagged_npcs_in_area",
       "npcTag": "hostile_critter",
-      "countRange": [
-        3,
-        5
-      ],
+      "countRange": [ 3, 5 ],
       "areaType": "wilderness_nearby_faction_base",
       "areaRadius": 20
     },
@@ -35,10 +32,7 @@
     "minReputation": "neutral",
     "objectiveDetails": {
       "type": "deliver_item_to_npc_at_location",
-      "itemPool": [
-        "medical_supplies_small_package",
-        "chems_painkillers_package"
-      ],
+      "itemPool": [ "medical_supplies_small_package", "chems_painkillers_package" ],
       "itemQuantity": 1,
       "recipientNpcTag": "faction_contact_pd",
       "destinationAreaKey": "fallbrook_pd_hq_interior",
@@ -85,10 +79,7 @@
     "minReputation": "friendly",
     "objectiveDetails": {
       "type": "retrieve_item_from_area_or_npcs",
-      "itemPool": [
-        "valuable_tech_component",
-        "faction_intel_documents"
-      ],
+      "itemPool": [ "valuable_tech_component", "faction_intel_documents" ],
       "targetNpcTag": "bandit_leader_small_camp",
       "targetAreaType": "bandit_camp_nearby",
       "itemPlacement": "container_in_area_or_npc_inventory"
@@ -100,10 +91,7 @@
         "factionIdSource": true,
         "amount": 20
       },
-      "itemPoolReward": [
-        "generic_ammo_cache_small",
-        "weapon_parts_cache_small"
-      ]
+      "itemPoolReward": [ "generic_ammo_cache_small", "weapon_parts_cache_small" ]
     },
     "timeLimitTicks": 14400,
     "weight": 4
