@@ -1908,10 +1908,10 @@
   "JCD_HO": { "sprite": "_", "name": "Jail Cell Door Hz Open", "color": "#708090", "tags": ["door", "middle", "metal", "open", "transparent", "interactive", "permeable", "jail"] },
   "JCD_VO": { "sprite": "'", "name": "Jail Cell Door Vt Open", "color": "#708090", "tags": ["door", "middle", "metal", "open", "transparent", "interactive", "permeable", "jail"] },
   "sandstone": {
-    "sprite": "▓",
+    "sprite": "░",
     "name": "Sandstone",
     "color": "#D2B48C",
-    "tags": ["landscape", "middle", "solid_terrain_top", "impassable", "cave", "sandstone"]
+    "tags": [ "landscape", "middle", "solid_terrain_top", "impassable", "cave", "sandstone" ]
   },
   "sandstone_stalactite": {
     "sprite": "▼",
@@ -1926,10 +1926,10 @@
     "tags": ["rock_formation", "middle", "sandstone", "impassable", "cave", "sharp", "stalagmite"]
   },
   "limestone": {
-    "sprite": "▓",
+    "sprite": "░",
     "name": "Limestone",
     "color": "#C0C0C0",
-    "tags": ["landscape", "middle", "solid_terrain_top", "impassable", "cave", "limestone"]
+    "tags": [ "landscape", "middle", "solid_terrain_top", "impassable", "cave", "limestone" ]
   },
   "limestone_stalactite": {
     "sprite": "▼",
