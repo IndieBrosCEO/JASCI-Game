@@ -1,23 +1,70 @@
 [
-    {
+  {
     "id": "small_backpack_container",
     "name": "Small Backpack",
     "description": "A simple backpack with a few extra pockets. Increases carrying capacity.",
     "family": "container",
-    "properties": { "type": "backpack", "size": "small" },
-    "type": "clothing_container", "isClothing": true, "canEquip": true,
-    "layer": "backpack", "capacity": 12, "weightLbs": 1.5, "size": 3, "value": 25,
-    "sprite": "b", "color": "saddlebrown", "tags": [ "container", "wearable", "backpack", "clothing" ],
+    "properties": {
+      "type": "backpack",
+      "size": "small"
+    },
+    "type": "clothing_container",
+    "isClothing": true,
+    "canEquip": true,
+    "layer": "backpack",
+    "capacity": 12,
+    "weightLbs": 1.5,
+    "size": 3,
+    "value": 25,
+    "sprite": "b",
+    "color": "#8b4522",
+    "tags": [
+      "container",
+      "wearable",
+      "backpack",
+      "clothing"
+    ],
     "recipe": {
       "description": "Sew a small, durable backpack from canvas and leather straps.",
       "components": [
-        { "family": "fabric", "quantity": 2, "require": { "material": "canvas", "grade": "sturdy" } },
-        { "family": "leather", "quantity": 2, "require": { "size": "strip" } },
-        { "family": "thread", "quantity": 2 },
-        { "family": "fastener", "quantity": 2, "require": { "type": "buckle" } }
+        {
+          "family": "fabric",
+          "quantity": 2,
+          "require": {
+            "material": "canvas",
+            "grade": "sturdy"
+          }
+        },
+        {
+          "family": "leather",
+          "quantity": 2,
+          "require": {
+            "size": "strip"
+          }
+        },
+        {
+          "family": "thread",
+          "quantity": 2
+        },
+        {
+          "family": "fastener",
+          "quantity": 2,
+          "require": {
+            "type": "buckle"
+          }
+        }
       ],
-      "skills_required": [ { "skill": "Repair", "level": 3 } ],
-      "tools_required": [ "sewing_kit_heavy" ], "time_to_craft": 50, "batch_size": 1
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "sewing_kit_heavy"
+      ],
+      "time_to_craft": 50,
+      "batch_size": 1
     }
   }
 ]

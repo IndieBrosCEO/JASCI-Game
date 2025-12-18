@@ -5,7 +5,10 @@
     "description": "A couple of lenses taped to a tube. Might improve accuracy at range.",
     "type": "weapon_mod",
     "modType": "scope",
-    "appliesToWeaponCategory": [ "rifle", "crossbow" ],
+    "appliesToWeaponCategory": [
+      "rifle",
+      "crossbow"
+    ],
     "effects": {
       "accuracyBonus": 1,
       "optimalRangeBonus": 5,
@@ -16,8 +19,13 @@
     "size": 1,
     "value": 20,
     "sprite": "¤",
-    "color": "gray",
-    "tags": [ "weapon_mod", "scope", "ranged_enhancement", "makeshift" ],
+    "color": "#8080b0",
+    "tags": [
+      "weapon_mod",
+      "scope",
+      "ranged_enhancement",
+      "makeshift"
+    ],
     "recipe": {
       "description": "Assemble a crude scope from basic lenses and a tube.",
       "components": [
@@ -66,7 +74,9 @@
     "description": "A muzzle device that redirects propellant gases to counter recoil and muzzle rise.",
     "type": "weapon_mod",
     "modType": "muzzle",
-    "appliesToWeaponCategory": [ "pistol" ],
+    "appliesToWeaponCategory": [
+      "pistol"
+    ],
     "effects": {
       "accuracyBonus": 1
     },
@@ -74,8 +84,12 @@
     "size": 1,
     "value": 40,
     "sprite": ">",
-    "color": "darkgray",
-    "tags": [ "weapon_mod", "muzzle", "pistol_enhancement" ],
+    "color": "#a9a9be",
+    "tags": [
+      "weapon_mod",
+      "muzzle",
+      "pistol_enhancement"
+    ],
     "recipe": {
       "description": "Machine a simple pistol compensator.",
       "components": [
@@ -94,7 +108,10 @@
           "level": 4
         }
       ],
-      "tools_required": [ "tap_and_die_set", "file_small_metal" ],
+      "tools_required": [
+        "tap_and_die_set",
+        "file_small_metal"
+      ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 30,
       "batch_size": 1
@@ -106,7 +123,9 @@
     "description": "A larger capacity magazine for 9mm pistols.",
     "type": "weapon_mod",
     "modType": "magazine",
-    "appliesToWeaponCategory": [ "pistol" ],
+    "appliesToWeaponCategory": [
+      "pistol"
+    ],
     "appliesToAmmoType": "9mm",
     "effects": {
       "magazineSizeBonus": 5
@@ -115,8 +134,13 @@
     "size": 1,
     "value": 30,
     "sprite": "M",
-    "color": "dimgray",
-    "tags": [ "weapon_mod", "magazine", "pistol_enhancement", "ammo_capacity" ],
+    "color": "#696972",
+    "tags": [
+      "weapon_mod",
+      "magazine",
+      "pistol_enhancement",
+      "ammo_capacity"
+    ],
     "recipe": {
       "description": "Fabricate a simple extended magazine for 9mm pistols.",
       "components": [
@@ -142,7 +166,10 @@
           "level": 3
         }
       ],
-      "tools_required": [ "tin_snips", "pliers_set" ],
+      "tools_required": [
+        "tin_snips",
+        "pliers_set"
+      ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 25,
       "batch_size": 1
