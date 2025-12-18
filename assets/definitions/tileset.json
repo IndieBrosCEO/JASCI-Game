@@ -2,70 +2,64 @@
   "MB": {
     "sprite": "▒",
     "name": "Map Boundary",
-    "color": "#ffff1d",
+    "color": "#3bffd1",
     "tags": [
       "landscape",
       "impassable",
       "middle"
-    ],
-    "id": "MB"
+    ]
   },
   "DI": {
     "sprite": ".",
     "name": "Dirt",
-    "color": "#A52A2A",
+    "color": "#a52a2a",
     "tags": [
       "landscape",
       "solid_terrain_top",
       "impassable",
       "middle"
-    ],
-    "id": "DI"
+    ]
   },
   "GR": {
     "sprite": ",",
     "name": "Grass",
-    "color": "#008000",
+    "color": "#148046",
     "tags": [
       "landscape",
       "bottom",
       "flammable"
-    ],
-    "id": "GR"
+    ]
   },
   "MU": {
     "sprite": ",",
     "name": "Mud",
-    "color": "#731D1D",
+    "color": "#731d1d",
     "tags": [
       "landscape",
       "middle",
       "solid_terrain_top",
       "impassable"
-    ],
-    "id": "MU"
+    ]
   },
   "MF": {
     "sprite": ",",
     "name": "Muddy Ground",
-    "color": "#5D4037",
+    "color": "#5d4037",
     "tags": [
       "landscape",
       "bottom",
       "mud"
-    ],
-    "id": "MF"
+    ]
   },
   "TGR": {
     "sprite": "W",
     "name": "Tall Grass",
-    "color": "#008000",
+    "color": "#148046",
     "tags": [
       "landscape",
       "bottom",
       "flammable"
-    ],
-    "id": "TGR"
+    ]
   },
   "MSH": {
     "sprite": "w",
@@ -74,95 +68,87 @@
     "tags": [
       "landscape",
       "bottom"
-    ],
-    "id": "MSH"
+    ]
   },
   "BOG": {
     "sprite": "~",
     "name": "Bog",
-    "color": "#006403",
+    "color": "#006400",
     "tags": [
       "landscape",
       "bottom"
-    ],
-    "id": "BOG"
+    ]
   },
   "SA": {
     "sprite": ":",
     "name": "Sand",
-    "color": "#f0e68f",
+    "color": "#04e6d2",
     "tags": [
       "landscape",
       "middle",
       "solid_terrain_top",
       "impassable"
-    ],
-    "id": "SA"
+    ]
   },
   "GV": {
     "sprite": ";",
     "name": "Gravel",
-    "color": "#d3d3ee",
+    "color": "#fbd35f",
     "tags": [
       "landscape",
       "middle",
       "solid_terrain_top",
       "impassable"
-    ],
-    "id": "GV"
+    ]
   },
   "WS": {
     "sprite": "~",
     "name": "Shallow Water",
-    "color": "#000002",
+    "color": "#28008b",
     "tags": [
       "landscape",
       "water",
       "bottom",
       "floor"
-    ],
-    "id": "WS"
+    ]
   },
   "WD": {
     "sprite": "~",
     "name": "Deep Water",
-    "color": "#00008B",
+    "color": "#00008b",
     "tags": [
       "landscape",
       "water",
       "bottom",
       "floor"
-    ],
-    "id": "WD"
+    ]
   },
   "AR": {
     "sprite": "=",
     "name": "Asphalt Road",
-    "color": "#808092",
+    "color": "#e480de",
     "tags": [
       "landscape",
       "middle",
       "solid_terrain_top",
       "impassable"
-    ],
-    "id": "AR"
+    ]
   },
   "DRO": {
     "sprite": ":",
     "name": "Dirt Road",
-    "color": "#A0522D",
+    "color": "#a0522d",
     "tags": [
       "landscape",
       "middle",
       "solid_terrain_top",
       "impassable"
-    ],
-    "id": "DRO"
+    ]
   },
   "TRK": {
     "sprite": "|",
     "name": "Tree Trunk",
-    "color": "#a52a30",
+    "color": "#e12afc",
     "tags": [
       "landscape",
       "middle",
@@ -170,62 +156,56 @@
       "impassable",
       "solid_terrain_top"
     ],
-    "coverBonus": 2,
-    "id": "TRK"
+    "coverBonus": 2
   },
   "BSH": {
     "sprite": "*",
     "name": "Bush",
-    "color": "#008000",
+    "color": "#148046",
     "tags": [
       "landscape",
       "vegetation",
       "bottom",
       "flammable"
-    ],
-    "id": "BSH"
+    ]
   },
   "BLK": {
     "sprite": "O",
     "name": "Boulder",
-    "color": "#d3d3dc",
+    "color": "#fbd35f",
     "tags": [
       "landscape",
       "impassable",
       "middle",
       "solid_terrain_top"
     ],
-    "coverBonus": 10,
-    "id": "BLK"
+    "coverBonus": 10
   },
   "SPK": {
     "sprite": "^",
     "name": "Spikes",
-    "color": "#8080b9",
+    "color": "#e480de",
     "tags": [
       "bottom"
-    ],
-    "id": "SPK"
+    ]
   },
   "MH": {
     "sprite": "o",
     "name": "Manhole",
-    "color": "#a9a9cd",
+    "color": "#f9a9c1",
     "tags": [
       "bottom"
-    ],
-    "id": "MH"
+    ]
   },
   "FL": {
     "sprite": "+",
     "name": "Tile Flooring",
-    "color": "#d3d3e5",
+    "color": "#fbd35f",
     "tags": [
       "bottom",
       "building",
       "floor"
-    ],
-    "id": "FL"
+    ]
   },
   "CF": {
     "sprite": "░",
@@ -235,50 +215,46 @@
       "bottom",
       "building",
       "floor"
-    ],
-    "id": "CF"
+    ]
   },
   "WF": {
     "sprite": "-",
     "name": "Wood Flooring",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "bottom",
       "wood",
       "building",
       "floor",
       "flammable"
-    ],
-    "id": "WF"
+    ]
   },
   "MTF": {
     "sprite": "-",
     "name": "Metal Flooring",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "bottom",
       "metal",
       "building",
       "floor",
       "flammable"
-    ],
-    "id": "MTF"
+    ]
   },
   "CT": {
     "sprite": "░",
     "name": "Carpet Floor",
-    "color": "#D0B59A",
+    "color": "#d0b59a",
     "tags": [
       "bottom",
       "building",
       "floor"
-    ],
-    "id": "CT"
+    ]
   },
   "WWH": {
     "sprite": "═",
     "name": "Wood Wall Hz",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "wall",
       "middle",
@@ -287,13 +263,12 @@
       "building",
       "flammable"
     ],
-    "coverBonus": 4,
-    "id": "WWH"
+    "coverBonus": 4
   },
   "WWV": {
     "sprite": "║",
     "name": "Wood Wall Vt",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "wall",
       "middle",
@@ -301,13 +276,12 @@
       "impassable",
       "building",
       "flammable"
-    ],
-    "id": "WWV"
+    ]
   },
   "WWCTL": {
     "sprite": "╔",
     "name": "Wood Wall Corner TL",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "wall",
       "middle",
@@ -315,13 +289,12 @@
       "impassable",
       "building",
       "flammable"
-    ],
-    "id": "WWCTL"
+    ]
   },
   "WWCTR": {
     "sprite": "╗",
     "name": "Wood Wall Corner TR",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "wall",
       "middle",
@@ -329,13 +302,12 @@
       "impassable",
       "building",
       "flammable"
-    ],
-    "id": "WWCTR"
+    ]
   },
   "WWCBL": {
     "sprite": "╚",
     "name": "Wood Wall Corner BL",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "wall",
       "middle",
@@ -343,13 +315,12 @@
       "impassable",
       "building",
       "flammable"
-    ],
-    "id": "WWCBL"
+    ]
   },
   "WWCBR": {
     "sprite": "╝",
     "name": "Wood Wall Corner BR",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "wall",
       "middle",
@@ -357,13 +328,12 @@
       "impassable",
       "building",
       "flammable"
-    ],
-    "id": "WWCBR"
+    ]
   },
   "WWTE": {
     "sprite": "╠",
     "name": "Wood Wall T–East",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "wall",
       "middle",
@@ -371,13 +341,12 @@
       "impassable",
       "building",
       "flammable"
-    ],
-    "id": "WWTE"
+    ]
   },
   "WWTW": {
     "sprite": "╣",
     "name": "Wood Wall T–West",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "wall",
       "middle",
@@ -385,13 +354,12 @@
       "impassable",
       "building",
       "flammable"
-    ],
-    "id": "WWTW"
+    ]
   },
   "WWTS": {
     "sprite": "╦",
     "name": "Wood Wall T–South",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "wall",
       "middle",
@@ -399,13 +367,12 @@
       "impassable",
       "building",
       "flammable"
-    ],
-    "id": "WWTS"
+    ]
   },
   "WWTN": {
     "sprite": "╩",
     "name": "Wood Wall T–North",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "wall",
       "middle",
@@ -413,13 +380,12 @@
       "impassable",
       "building",
       "flammable"
-    ],
-    "id": "WWTN"
+    ]
   },
   "WWC": {
     "sprite": "╬",
     "name": "Wood Wall Cross",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "wall",
       "middle",
@@ -427,13 +393,12 @@
       "impassable",
       "building",
       "flammable"
-    ],
-    "id": "WWC"
+    ]
   },
   "MWH": {
     "sprite": "═",
     "name": "Metal Wall Hz",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "wall",
       "middle",
@@ -441,143 +406,132 @@
       "impassable",
       "building"
     ],
-    "coverBonus": 7,
-    "id": "MWH"
+    "coverBonus": 7
   },
   "MWV": {
     "sprite": "║",
     "name": "Metal Wall Vt",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "wall",
       "middle",
       "metal",
       "impassable",
       "building"
-    ],
-    "id": "MWV"
+    ]
   },
   "MWCTL": {
     "sprite": "╔",
     "name": "Metal Wall Corner TL",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "wall",
       "middle",
       "metal",
       "impassable",
       "building"
-    ],
-    "id": "MWCTL"
+    ]
   },
   "MWCTR": {
     "sprite": "╗",
     "name": "Metal Wall Corner TR",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "wall",
       "middle",
       "metal",
       "impassable",
       "building"
-    ],
-    "id": "MWCTR"
+    ]
   },
   "MWCBL": {
     "sprite": "╚",
     "name": "Metal Wall Corner BL",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "wall",
       "middle",
       "metal",
       "impassable",
       "building"
-    ],
-    "id": "MWCBL"
+    ]
   },
   "MWCBR": {
     "sprite": "╝",
     "name": "Metal Wall Corner BR",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "wall",
       "middle",
       "metal",
       "impassable",
       "building"
-    ],
-    "id": "MWCBR"
+    ]
   },
   "MWTE": {
     "sprite": "╠",
     "name": "Metal Wall T–East",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "wall",
       "middle",
       "metal",
       "impassable",
       "building"
-    ],
-    "id": "MWTE"
+    ]
   },
   "MWTW": {
     "sprite": "╣",
     "name": "Metal Wall T–West",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "wall",
       "middle",
       "metal",
       "impassable",
       "building"
-    ],
-    "id": "MWTW"
+    ]
   },
   "MWTS": {
     "sprite": "╦",
     "name": "Metal Wall T–South",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "wall",
       "middle",
       "metal",
       "impassable",
       "building"
-    ],
-    "id": "MWTS"
+    ]
   },
   "MWTN": {
     "sprite": "╩",
     "name": "Metal Wall T–North",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "wall",
       "middle",
       "metal",
       "impassable",
       "building"
-    ],
-    "id": "MWTN"
+    ]
   },
   "MWC": {
     "sprite": "╬",
     "name": "Metal Wall Cross",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "wall",
       "middle",
       "metal",
       "impassable",
       "building"
-    ],
-    "id": "MWC"
+    ]
   },
   "WDH": {
     "sprite": "─",
     "name": "Wood Door Hz",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "door",
       "middle",
@@ -590,13 +544,12 @@
       "flammable"
     ],
     "opensToTileId": "WOH",
-    "isLocked": false,
-    "id": "WDH"
+    "isLocked": false
   },
   "WDV": {
     "sprite": "│",
     "name": "Wood Door Vt",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "door",
       "middle",
@@ -609,13 +562,12 @@
       "flammable"
     ],
     "opensToTileId": "WOV",
-    "isLocked": false,
-    "id": "WDV"
+    "isLocked": false
   },
   "WOH": {
     "sprite": "_",
     "name": "Wood Door Hz Open",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "door",
       "middle",
@@ -627,13 +579,12 @@
       "allows_vision",
       "flammable",
       "permeable"
-    ],
-    "id": "WOH"
+    ]
   },
   "WOV": {
     "sprite": "'",
     "name": "Wood Door Vt Open",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "door",
       "middle",
@@ -645,13 +596,12 @@
       "allows_vision",
       "flammable",
       "permeable"
-    ],
-    "id": "WOV"
+    ]
   },
   "WDB": {
     "sprite": ">",
     "name": "Wood Door Broken",
-    "color": "#A1662F",
+    "color": "#a1662f",
     "tags": [
       "door",
       "middle",
@@ -662,13 +612,12 @@
       "allows_vision",
       "flammable",
       "permeable"
-    ],
-    "id": "WDB"
+    ]
   },
   "MDH": {
     "sprite": "─",
     "name": "Metal Door Hz",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "door",
       "middle",
@@ -680,13 +629,12 @@
       "building"
     ],
     "opensToTileId": "MOH",
-    "isLocked": false,
-    "id": "MDH"
+    "isLocked": false
   },
   "MDV": {
     "sprite": "│",
     "name": "Metal Door Vt",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "door",
       "middle",
@@ -698,13 +646,12 @@
       "building"
     ],
     "opensToTileId": "MOV",
-    "isLocked": false,
-    "id": "MDV"
+    "isLocked": false
   },
   "MOH": {
     "sprite": "_",
     "name": "Metal Door Hz Open",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "door",
       "middle",
@@ -715,13 +662,12 @@
       "building",
       "allows_vision",
       "permeable"
-    ],
-    "id": "MOH"
+    ]
   },
   "MOV": {
     "sprite": "'",
     "name": "Metal Door Vt Open",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "door",
       "middle",
@@ -732,13 +678,12 @@
       "building",
       "allows_vision",
       "permeable"
-    ],
-    "id": "MOV"
+    ]
   },
   "MDB": {
     "sprite": ">",
     "name": "Metal Door Broken",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "door",
       "middle",
@@ -748,13 +693,12 @@
       "building",
       "allows_vision",
       "permeable"
-    ],
-    "id": "MDB"
+    ]
   },
   "WinCH": {
     "sprite": "─",
     "name": "Window Hz Closed",
-    "color": "#00ff0b",
+    "color": "#addbed",
     "tags": [
       "window",
       "middle",
@@ -764,13 +708,12 @@
       "breakable",
       "building",
       "transparent"
-    ],
-    "id": "WinCH"
+    ]
   },
   "WinCV": {
     "sprite": "│",
     "name": "Window Vt Closed",
-    "color": "#00ff0e",
+    "color": "#addbed",
     "tags": [
       "window",
       "middle",
@@ -780,13 +723,12 @@
       "breakable",
       "building",
       "transparent"
-    ],
-    "id": "WinCV"
+    ]
   },
   "WinOH": {
     "sprite": "=",
     "name": "Window Hz Open",
-    "color": "#00ff11",
+    "color": "#addbed",
     "tags": [
       "window",
       "middle",
@@ -795,13 +737,12 @@
       "breakable",
       "building",
       "transparent"
-    ],
-    "id": "WinOH"
+    ]
   },
   "WinOV": {
     "sprite": "\"",
     "name": "Window Vt Open",
-    "color": "#00ff14",
+    "color": "#addbed",
     "tags": [
       "window",
       "middle",
@@ -810,13 +751,12 @@
       "breakable",
       "building",
       "transparent"
-    ],
-    "id": "WinOV"
+    ]
   },
   "WinB": {
     "sprite": ">",
     "name": "Window Broken",
-    "color": "#00ff08",
+    "color": "#addbed",
     "tags": [
       "window",
       "middle",
@@ -825,59 +765,54 @@
       "building",
       "allows_vision",
       "permeable"
-    ],
-    "id": "WinB"
+    ]
   },
   "RW": {
     "sprite": "#",
     "name": "Roof (Wood)",
-    "color": "#a52a36",
+    "color": "#092a88",
     "tags": [
       "roof",
       "bottom",
       "impassable",
       "middle",
       "flammable"
-    ],
-    "id": "RW"
+    ]
   },
   "RM": {
     "sprite": "#",
     "name": "Roof (Metal)",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "roof",
       "bottom",
       "impassable"
-    ],
-    "id": "RM"
+    ]
   },
   "TRF": {
     "sprite": "Y",
     "name": "Tree Leaves",
-    "color": "#008000",
+    "color": "#148046",
     "tags": [
       "roof",
       "vegetation",
       "middle"
-    ],
-    "id": "TRF"
+    ]
   },
   "CN": {
     "sprite": "∩",
     "name": "Counter",
-    "color": "#d3d3df",
+    "color": "#fbd35f",
     "tags": [
       "building",
       "impassable",
       "middle"
-    ],
-    "id": "CN"
+    ]
   },
   "CB": {
     "sprite": "□",
     "name": "Cabinet",
-    "color": "#a52a42",
+    "color": "#cd2ab6",
     "tags": [
       "interactive",
       "container",
@@ -893,24 +828,22 @@
     "capacity": 20,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": "",
-    "id": "CB"
+    "uniqueID": ""
   },
   "SN": {
     "sprite": "s",
     "name": "Sink",
-    "color": "#c0c0de",
+    "color": "#10c0d8",
     "tags": [
       "building",
       "interactive",
       "middle"
-    ],
-    "id": "SN"
+    ]
   },
   "DR": {
     "sprite": "π",
     "name": "Drawer",
-    "color": "#a52a48",
+    "color": "#cd2ab6",
     "tags": [
       "interactive",
       "container",
@@ -924,13 +857,12 @@
     "capacity": 5,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": "",
-    "id": "DR"
+    "uniqueID": ""
   },
   "GC": {
     "sprite": "Æ",
     "name": "Gun Case",
-    "color": "#808003",
+    "color": "#948046",
     "tags": [
       "interactive",
       "container",
@@ -945,13 +877,12 @@
     "capacity": 5,
     "isLocked": false,
     "lockDifficulty": 10,
-    "uniqueID": "",
-    "id": "GC"
+    "uniqueID": ""
   },
   "TC": {
     "sprite": "u",
     "name": "Trash Can",
-    "color": "#8080bf",
+    "color": "#e480de",
     "tags": [
       "interactive",
       "container",
@@ -963,13 +894,12 @@
     "capacity": 5,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": "",
-    "id": "TC"
+    "uniqueID": ""
   },
   "SF": {
     "sprite": "#",
     "name": "Safe",
-    "color": "#808086",
+    "color": "#a8800c",
     "tags": [
       "interactive",
       "container",
@@ -985,13 +915,12 @@
     "capacity": 10,
     "isLocked": true,
     "lockDifficulty": 15,
-    "uniqueID": "",
-    "id": "SF"
+    "uniqueID": ""
   },
   "RF": {
     "sprite": "║",
     "name": "Refrigerator",
-    "color": "#d3d3f1",
+    "color": "#fbd35f",
     "tags": [
       "interactive",
       "container",
@@ -1007,13 +936,12 @@
     "capacity": 25,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": "",
-    "id": "RF"
+    "uniqueID": ""
   },
   "ST": {
     "sprite": "S",
     "name": "Stove/Oven",
-    "color": "#8080bc",
+    "color": "#e480de",
     "tags": [
       "interactive",
       "container",
@@ -1029,13 +957,12 @@
     "capacity": 5,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": "",
-    "id": "ST"
+    "uniqueID": ""
   },
   "MW": {
     "sprite": "m",
     "name": "Microwave",
-    "color": "#8080a4",
+    "color": "#e480de",
     "tags": [
       "interactive",
       "container",
@@ -1049,20 +976,18 @@
     "capacity": 5,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": "",
-    "id": "MW"
+    "uniqueID": ""
   },
   "SF2": {
     "sprite": "H",
     "name": "Sofa",
-    "color": "#800003",
+    "color": "#800000",
     "tags": [
       "item",
       "interactive",
       "middle",
       "flammable"
-    ],
-    "id": "SF2"
+    ]
   },
   "CH": {
     "sprite": "h",
@@ -1073,36 +998,33 @@
       "interactive",
       "middle",
       "flammable"
-    ],
-    "id": "CH"
+    ]
   },
   "TB": {
     "sprite": "n",
     "name": "Coffee Table",
-    "color": "#a52a57",
+    "color": "#cd2ab6",
     "tags": [
       "item",
       "impassable",
       "middle",
       "flammable"
-    ],
-    "id": "TB"
+    ]
   },
   "TV": {
     "sprite": "T",
     "name": "Television",
-    "color": "#8080c8",
+    "color": "#e480de",
     "tags": [
       "item",
       "interactive",
       "middle"
-    ],
-    "id": "TV"
+    ]
   },
   "STL": {
     "sprite": "⌠",
     "name": "Bookshelf",
-    "color": "#DEB887",
+    "color": "#deb887",
     "tags": [
       "interactive",
       "container",
@@ -1118,24 +1040,22 @@
     "capacity": 15,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": "",
-    "id": "STL"
+    "uniqueID": ""
   },
   "BD": {
     "sprite": "╬",
     "name": "Bed",
-    "color": "#ff0003",
+    "color": "#130046",
     "tags": [
       "building",
       "interactive",
       "middle"
-    ],
-    "id": "BD"
+    ]
   },
   "NK": {
     "sprite": "#",
     "name": "Nightstand",
-    "color": "#a52a51",
+    "color": "#cd2ab6",
     "tags": [
       "interactive",
       "container",
@@ -1149,13 +1069,12 @@
     "capacity": 5,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": "",
-    "id": "NK"
+    "uniqueID": ""
   },
   "DRS": {
     "sprite": "D",
     "name": "Dresser",
-    "color": "#a52a4b",
+    "color": "#cd2ab6",
     "tags": [
       "interactive",
       "container",
@@ -1171,13 +1090,12 @@
     "capacity": 10,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": "",
-    "id": "DRS"
+    "uniqueID": ""
   },
   "DSK": {
     "sprite": "⌂",
     "name": "Desk",
-    "color": "#8080a1",
+    "color": "#e480de",
     "tags": [
       "interactive",
       "container",
@@ -1193,58 +1111,53 @@
     "capacity": 10,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": "",
-    "id": "DSK"
+    "uniqueID": ""
   },
   "CR": {
     "sprite": "c",
     "name": "Chair",
-    "color": "#a52a45",
+    "color": "#cd2ab6",
     "tags": [
       "item",
       "interactive",
       "middle",
       "flammable"
-    ],
-    "id": "CR"
+    ]
   },
   "TW": {
     "sprite": "‖",
     "name": "Toilet",
-    "color": "#ffff20",
+    "color": "#3bffd1",
     "tags": [
       "item",
       "interactive",
       "middle"
-    ],
-    "id": "TW"
+    ]
   },
   "SH": {
     "sprite": "/",
     "name": "Shower",
-    "color": "#000014",
+    "color": "#140045",
     "tags": [
       "item",
       "interactive",
       "middle"
-    ],
-    "id": "SH"
+    ]
   },
   "BTB": {
     "sprite": "b",
     "name": "Bathtub",
-    "color": "#ffff0e",
+    "color": "#3bffd1",
     "tags": [
       "item",
       "interactive",
       "middle"
-    ],
-    "id": "BTB"
+    ]
   },
   "FLR": {
     "sprite": "f",
     "name": "Floor Lamp",
-    "color": "#ffff09",
+    "color": "#ffff00",
     "tags": [
       "item",
       "interactive",
@@ -1253,92 +1166,84 @@
     "emitsLight": true,
     "lightRadius": 5,
     "lightIntensity": 1,
-    "lightColor": "#FFFFE0",
-    "id": "FLR"
+    "lightColor": "#FFFFE0"
   },
   "PL": {
     "sprite": "#",
     "name": "Potted Plant",
-    "color": "#008018",
+    "color": "#008000",
     "tags": [
       "item",
       "middle"
-    ],
-    "id": "PL"
+    ]
   },
   "CP": {
     "sprite": "k",
     "name": "Computer",
-    "color": "#a9a9c1",
+    "color": "#f9a9c1",
     "tags": [
       "item",
       "interactive",
       "middle"
-    ],
-    "id": "CP"
+    ]
   },
   "PR": {
     "sprite": "p",
     "name": "Printer",
-    "color": "#8080a7",
+    "color": "#e480de",
     "tags": [
       "item",
       "interactive",
       "middle"
-    ],
-    "id": "PR"
+    ]
   },
   "WM": {
     "sprite": "W",
     "name": "Washer",
-    "color": "#ffff23",
+    "color": "#3bffd1",
     "tags": [
       "item",
       "interactive",
       "impassable",
       "middle"
-    ],
-    "id": "WM"
+    ]
   },
   "DRY": {
     "sprite": "d",
     "name": "Dryer",
-    "color": "#ffff17",
+    "color": "#3bffd1",
     "tags": [
       "item",
       "interactive",
       "impassable",
       "middle"
-    ],
-    "id": "DRY"
+    ]
   },
   "FT": {
     "sprite": "♣",
     "name": "Fireplace",
-    "color": "#ff0006",
+    "color": "#130046",
     "tags": [
       "building",
       "interactive",
       "middle"
-    ],
-    "id": "FT"
+    ]
   },
   "TSL": {
     "sprite": "≈",
     "name": "Tilled Soil",
-    "color": "#8b452b",
+    "color": "#9f4559",
     "tags": [
       "landscape",
       "bottom",
       "farmland",
       "plantable"
-    ],
-    "id": "TSL"
+    ]
   },
   "WBD": {
     "sprite": "X",
     "name": "Wooden Barricade",
-    "color": "#deb88a",
+    "color": "#06b813",
     "tags": [
       "structure",
       "impassable",
@@ -1347,13 +1252,12 @@
       "breakable",
       "middle",
       "flammable"
-    ],
-    "id": "WBD"
+    ]
   },
   "TOR": {
     "sprite": "~",
     "name": "Torch",
-    "color": "#ffa50c",
+    "color": "#13a546",
     "tags": [
       "item",
       "interactive",
@@ -1362,13 +1266,12 @@
     "emitsLight": true,
     "lightRadius": 5,
     "lightIntensity": 1,
-    "lightColor": "#FFDD33",
-    "id": "TOR"
+    "lightColor": "#FFDD33"
   },
   "FLT": {
     "sprite": "Î",
     "name": "Floor Torch",
-    "color": "#a05239",
+    "color": "#c852b9",
     "tags": [
       "item",
       "interactive",
@@ -1377,13 +1280,12 @@
     "emitsLight": true,
     "lightColor": "#FFA500",
     "lightRadius": 6,
-    "lightIntensity": 0.9,
-    "id": "FLT"
+    "lightIntensity": 0.9
   },
   "SLN": {
     "sprite": "Ħ",
     "name": "Standing Lantern",
-    "color": "#8080b3",
+    "color": "#e480de",
     "tags": [
       "item",
       "middle"
@@ -1391,13 +1293,12 @@
     "emitsLight": true,
     "lightColor": "#FFFFE0",
     "lightRadius": 7,
-    "lightIntensity": 0.8,
-    "id": "SLN"
+    "lightIntensity": 0.8
   },
   "TLN_P": {
     "sprite": "ñ",
     "name": "Table Lantern (Placed)",
-    "color": "#a52a5a",
+    "color": "#cd2ab6",
     "tags": [
       "item",
       "middle"
@@ -1405,13 +1306,12 @@
     "emitsLight": true,
     "lightColor": "#FFFFE0",
     "lightRadius": 4,
-    "lightIntensity": 0.7,
-    "id": "TLN_P"
+    "lightIntensity": 0.7
   },
   "CDL_P": {
     "sprite": "¦",
     "name": "Candle (Placed)",
-    "color": "#ffff11",
+    "color": "#3bffd1",
     "tags": [
       "item",
       "middle"
@@ -1419,13 +1319,12 @@
     "emitsLight": true,
     "lightColor": "#FFFFE0",
     "lightRadius": 3,
-    "lightIntensity": 0.5,
-    "id": "CDL_P"
+    "lightIntensity": 0.5
   },
   "STLMP": {
     "sprite": "¶",
     "name": "Streetlamp",
-    "color": "#a9a9b5",
+    "color": "#0da907",
     "tags": [
       "structure",
       "impassable",
@@ -1434,13 +1333,12 @@
     "emitsLight": true,
     "lightColor": "#FFFF00",
     "lightRadius": 12,
-    "lightIntensity": 0.9,
-    "id": "STLMP"
+    "lightIntensity": 0.9
   },
   "FLDL": {
     "sprite": "Θ",
     "name": "Floodlight",
-    "color": "#d3d3e8",
+    "color": "#fbd35f",
     "tags": [
       "structure",
       "middle"
@@ -1448,13 +1346,12 @@
     "emitsLight": true,
     "lightColor": "#FFFFFF",
     "lightRadius": 15,
-    "lightIntensity": 1,
-    "id": "FLDL"
+    "lightIntensity": 1
   },
   "NEON_R": {
     "sprite": "§",
     "name": "Neon Sign (Red)",
-    "color": "#ff000f",
+    "color": "#130046",
     "tags": [
       "item",
       "decorative",
@@ -1463,13 +1360,12 @@
     "emitsLight": true,
     "lightColor": "#FF0000",
     "lightRadius": 3,
-    "lightIntensity": 0.6,
-    "id": "NEON_R"
+    "lightIntensity": 0.6
   },
   "NEON_B": {
     "sprite": "§",
     "name": "Neon Sign (Blue)",
-    "color": "#00000e",
+    "color": "#140045",
     "tags": [
       "item",
       "decorative",
@@ -1478,13 +1374,12 @@
     "emitsLight": true,
     "lightColor": "#0000FF",
     "lightRadius": 3,
-    "lightIntensity": 0.6,
-    "id": "NEON_B"
+    "lightIntensity": 0.6
   },
   "NEON_G": {
     "sprite": "§",
     "name": "Neon Sign (Green)",
-    "color": "#008015",
+    "color": "#008000",
     "tags": [
       "item",
       "decorative",
@@ -1493,13 +1388,12 @@
     "emitsLight": true,
     "lightColor": "#008000",
     "lightRadius": 3,
-    "lightIntensity": 0.6,
-    "id": "NEON_G"
+    "lightIntensity": 0.6
   },
   "SOLG": {
     "sprite": "þ",
     "name": "Solar Garden Lamp",
-    "color": "#8080b6",
+    "color": "#e480de",
     "tags": [
       "item",
       "emits_at_night",
@@ -1508,13 +1402,12 @@
     "emitsLight": true,
     "lightColor": "#F0FFF0",
     "lightRadius": 3,
-    "lightIntensity": 0.5,
-    "id": "SOLG"
+    "lightIntensity": 0.5
   },
   "EMBCN": {
     "sprite": "!",
     "name": "Emergency Beacon",
-    "color": "#B22222",
+    "color": "#b22222",
     "tags": [
       "item",
       "flashing_effect",
@@ -1523,13 +1416,12 @@
     "emitsLight": true,
     "lightColor": "#FF0000",
     "lightRadius": 5,
-    "lightIntensity": 0.8,
-    "id": "EMBCN"
+    "lightIntensity": 0.8
   },
   "ST_U": {
     "sprite": "▲",
     "name": "Stairs Up",
-    "color": "#c0c0e1",
+    "color": "#10c0d8",
     "tags": [
       "building",
       "z_transition",
@@ -1537,13 +1429,12 @@
       "middle"
     ],
     "target_dz": 1,
-    "z_cost": 2,
-    "id": "ST_U"
+    "z_cost": 2
   },
   "ST_D": {
     "sprite": "▼",
     "name": "Stairs Down",
-    "color": "#A0A0A0",
+    "color": "#a0a0a0",
     "tags": [
       "building",
       "z_transition",
@@ -1551,8 +1442,7 @@
       "middle"
     ],
     "target_dz": -1,
-    "z_cost": 1,
-    "id": "ST_D"
+    "z_cost": 1
   },
   "HOLE": {
     "sprite": "O",
@@ -1567,13 +1457,12 @@
       "bottom"
     ],
     "target_dz": -1,
-    "z_cost": 1,
-    "id": "HOLE"
+    "z_cost": 1
   },
   "DSL_U": {
     "sprite": "▲",
     "name": "Dirt Slope Up",
-    "color": "#A52A2A",
+    "color": "#a52a2a",
     "tags": [
       "landscape",
       "z_transition",
@@ -1582,13 +1471,12 @@
       "middle"
     ],
     "target_dz": 1,
-    "z_cost": 2,
-    "id": "DSL_U"
+    "z_cost": 2
   },
   "DSL_D": {
     "sprite": "▼",
     "name": "Dirt Slope Down",
-    "color": "#A52A2A",
+    "color": "#a52a2a",
     "tags": [
       "landscape",
       "z_transition",
@@ -1597,14 +1485,13 @@
       "middle"
     ],
     "target_dz": -1,
-    "z_cost": 1,
-    "id": "DSL_D"
+    "z_cost": 1
   },
   "LADR": {
     "id": "LADR",
     "name": "Ladder",
     "sprite": "H",
-    "color": "#964B00",
+    "color": "#964b00",
     "tags": [
       "z_transition",
       "climbable",
@@ -1620,7 +1507,7 @@
   "workbench_basic_tile": {
     "sprite": "W",
     "name": "Basic Workbench",
-    "color": "#deb893",
+    "color": "#f2b8cd",
     "tags": [
       "interactive",
       "crafting_station",
@@ -1631,13 +1518,12 @@
       "impassable"
     ],
     "description": "A sturdy table for basic crafting and repairs.",
-    "stationType": "workbench_general",
-    "id": "workbench_basic_tile"
+    "stationType": "workbench_general"
   },
   "forge_simple_tile": {
     "sprite": "F",
     "name": "Simple Forge",
-    "color": "#ff4506",
+    "color": "#134546",
     "tags": [
       "interactive",
       "crafting_station",
@@ -1653,13 +1539,12 @@
     "emitsLight": true,
     "lightColor": "#FFA500",
     "lightRadius": 3,
-    "lightIntensity": 0.7,
-    "id": "forge_simple_tile"
+    "lightIntensity": 0.7
   },
   "chemistry_set_tile": {
     "sprite": "C",
     "name": "Chemistry Set",
-    "color": "#add8ec",
+    "color": "#d5d872",
     "tags": [
       "interactive",
       "crafting_station",
@@ -1670,13 +1555,12 @@
       "impassable"
     ],
     "description": "Allows for basic chemical reactions and crafting.",
-    "stationType": "chemistry_bench",
-    "id": "chemistry_set_tile"
+    "stationType": "chemistry_bench"
   },
   "campfire_basic_tile": {
     "sprite": "c",
     "name": "Basic Campfire",
-    "color": "#FF8C00",
+    "color": "#ff8c00",
     "tags": [
       "interactive",
       "crafting_station",
@@ -1691,13 +1575,12 @@
     "emitsLight": true,
     "lightColor": "#FFA500",
     "lightRadius": 4,
-    "lightIntensity": 0.8,
-    "id": "campfire_basic_tile"
+    "lightIntensity": 0.8
   },
   "reloading_bench_tile": {
     "sprite": "R",
     "name": "Reloading Bench",
-    "color": "#a0523c",
+    "color": "#c852b9",
     "tags": [
       "interactive",
       "crafting_station",
@@ -1709,13 +1592,12 @@
       "gunsmithing"
     ],
     "description": "A sturdy bench equipped with presses and measures for reloading ammunition.",
-    "stationType": "reloading_general",
-    "id": "reloading_bench_tile"
+    "stationType": "reloading_general"
   },
   "munitions_bench_tile": {
     "sprite": "M",
     "name": "Munitions Crafting Bench",
-    "color": "#556b35",
+    "color": "#696b75",
     "tags": [
       "interactive",
       "crafting_station",
@@ -1727,13 +1609,12 @@
       "explosives_work"
     ],
     "description": "A specialized workbench for safely assembling explosives and advanced ammunition.",
-    "stationType": "munitions_assembly",
-    "id": "munitions_bench_tile"
+    "stationType": "munitions_assembly"
   },
   "armor_jig_tile": {
     "sprite": "A",
     "name": "Armor Crafting Jig",
-    "color": "#708099",
+    "color": "#ac8062",
     "tags": [
       "interactive",
       "crafting_station",
@@ -1745,13 +1626,12 @@
       "armor_crafting"
     ],
     "description": "A specialized jig for working with heavy armor components.",
-    "stationType": "armor_station",
-    "id": "armor_jig_tile"
+    "stationType": "armor_station"
   },
   "lathe_tile": {
     "sprite": "L",
     "name": "Machine Shop Lathe",
-    "color": "#b0c4e4",
+    "color": "#d8c46a",
     "tags": [
       "interactive",
       "crafting_station",
@@ -1765,13 +1645,12 @@
       "precision_work"
     ],
     "description": "A machine tool for shaping metal or wood.",
-    "stationType": "machining_lathe",
-    "id": "lathe_tile"
+    "stationType": "machining_lathe"
   },
   "vehicle_bay_tile": {
     "sprite": "V",
     "name": "Vehicle Assembly Bay",
-    "color": "#696975",
+    "color": "#9169f5",
     "tags": [
       "interactive",
       "crafting_station",
@@ -1784,13 +1663,12 @@
       "large_construction"
     ],
     "description": "A large bay for constructing and modifying vehicles.",
-    "stationType": "vehicle_assembly",
-    "id": "vehicle_bay_tile"
+    "stationType": "vehicle_assembly"
   },
   "engine_jig_tile": {
     "sprite": "E",
     "name": "Engine Assembly Jig",
-    "color": "#77889c",
+    "color": "#8b88df",
     "tags": [
       "interactive",
       "crafting_station",
@@ -1802,13 +1680,12 @@
       "mechanical"
     ],
     "description": "A specialized jig for assembling engines.",
-    "stationType": "engine_work",
-    "id": "engine_jig_tile"
+    "stationType": "engine_work"
   },
   "loom_tile": {
     "sprite": "H",
     "name": "Simple Loom",
-    "color": "#d2b498",
+    "color": "#0eb45e",
     "tags": [
       "interactive",
       "crafting_station",
@@ -1820,13 +1697,12 @@
       "textile_work"
     ],
     "description": "A basic loom for weaving cloth.",
-    "stationType": "weaving",
-    "id": "loom_tile"
+    "stationType": "weaving"
   },
   "tanning_rack_tile": {
     "sprite": "T",
     "name": "Simple Tanning Rack",
-    "color": "#8b4528",
+    "color": "#9f4559",
     "tags": [
       "interactive",
       "crafting_station",
@@ -1838,51 +1714,47 @@
       "leather_work"
     ],
     "description": "A wooden frame for stretching hides.",
-    "stationType": "tanning",
-    "id": "tanning_rack_tile"
+    "stationType": "tanning"
   },
   "trap_tripwire_set_tile": {
     "sprite": "/",
     "name": "Set Tripwire",
-    "color": "#ff0015",
+    "color": "#130046",
     "tags": [
       "trap_visible",
       "interactive",
       "bottom"
     ],
-    "description": "A nearly invisible tripwire has been set here.",
-    "id": "trap_tripwire_set_tile"
+    "description": "A nearly invisible tripwire has been set here."
   },
   "floor_stone_plate_hidden": {
     "sprite": ".",
     "name": "Stone Floor (Hidden Plate)",
-    "color": "#a9a9b2",
+    "color": "#e5a97b",
     "tags": [
       "floor",
       "building",
       "bottom",
       "trap_concealing"
     ],
-    "description": "A stone floor tile. Something seems off about this one.",
-    "id": "floor_stone_plate_hidden"
+    "description": "A stone floor tile. Something seems off about this one."
   },
   "trap_spikes_hidden_map_tile": {
     "sprite": ".",
     "name": "Dirt Floor (Hidden Spikes)",
-    "color": "#A52A2A",
+    "color": "#a52a2a",
     "tags": [
       "floor",
       "landscape",
       "bottom",
       "trap_concealing"
     ],
-    "description": "A patch of dirt. The ground feels uneven.",
-    "id": "trap_spikes_hidden_map_tile"
+    "description": "A patch of dirt. The ground feels uneven."
   },
   "electronics_bench_adv_tile": {
     "sprite": "e",
     "name": "Advanced Electronics Bench",
-    "color": "#AFEEEE",
+    "color": "#afeeee",
     "tags": [
       "interactive",
       "crafting_station",
@@ -1894,8 +1766,7 @@
       "requires_power_grid"
     ],
     "description": "A bench with specialized tools for complex electronics work.",
-    "stationType": "electronics_advanced",
-    "id": "electronics_bench_adv_tile"
+    "stationType": "electronics_advanced"
   },
   "ASH": {
     "sprite": "≈",
@@ -1905,23 +1776,21 @@
       "landscape",
       "bottom",
       "inert"
-    ],
-    "id": "ASH"
+    ]
   },
   "RB": {
     "sprite": ".",
     "name": "Riverbed",
-    "color": "#3E2723",
+    "color": "#3e2723",
     "tags": [
       "landscape",
       "bottom"
-    ],
-    "id": "RB"
+    ]
   },
   "barricade_metal_tile": {
     "sprite": "X",
     "name": "Metal Barricade",
-    "color": "#a9a9ac",
+    "color": "#bda9ef",
     "tags": [
       "structure",
       "impassable",
@@ -1930,13 +1799,12 @@
       "breakable",
       "middle"
     ],
-    "description": "A sturdy metal barricade offering good cover.",
-    "id": "barricade_metal_tile"
+    "description": "A sturdy metal barricade offering good cover."
   },
   "rain_collector_small_tile": {
     "sprite": "Y",
     "name": "Small Rain Collector",
-    "color": "#4682B4",
+    "color": "#4682b4",
     "tags": [
       "structure",
       "impassable",
@@ -1948,8 +1816,7 @@
     "description": "Collects rainwater over time.",
     "producesItemId": "bottled_water_drink",
     "productionRatePerTick": 0.001,
-    "storageCapacity": 5,
-    "id": "rain_collector_small_tile"
+    "storageCapacity": 5
   },
   "storage_locker_small_tile": {
     "sprite": "L",
@@ -1968,591 +1835,118 @@
     "contents": [],
     "capacity": 15,
     "isLocked": false,
-    "lockDifficulty": 5,
-    "id": "storage_locker_small_tile"
+    "lockDifficulty": 5
   },
   "SWLK": {
     "sprite": "▒",
     "name": "Sidewalk",
     "color": "#a6a19a",
-    "tags": [
-      "landscape",
-      "bottom",
-      "floor",
-      "concrete"
-    ],
-    "id": "SWLK"
+    "tags": [ "landscape", "bottom", "floor", "concrete" ]
   },
   "CWH": {
     "sprite": "═",
     "name": "Concrete Wall Hz",
     "color": "#a6a19a",
-    "tags": [
-      "wall",
-      "middle",
-      "concrete",
-      "impassable",
-      "building"
-    ],
-    "coverBonus": 8,
-    "id": "CWH"
+    "tags": [ "wall", "middle", "concrete", "impassable", "building" ],
+    "coverBonus": 8
   },
   "CWV": {
     "sprite": "║",
     "name": "Concrete Wall Vt",
     "color": "#a6a19a",
-    "tags": [
-      "wall",
-      "middle",
-      "concrete",
-      "impassable",
-      "building"
-    ],
-    "coverBonus": 8,
-    "id": "CWV"
+    "tags": [ "wall", "middle", "concrete", "impassable", "building" ],
+    "coverBonus": 8
   },
   "CWCTL": {
     "sprite": "╔",
     "name": "Concrete Wall Corner TL",
     "color": "#a6a19a",
-    "tags": [
-      "wall",
-      "middle",
-      "concrete",
-      "impassable",
-      "building"
-    ],
-    "id": "CWCTL"
+    "tags": [ "wall", "middle", "concrete", "impassable", "building" ]
   },
   "CWCTR": {
     "sprite": "╗",
     "name": "Concrete Wall Corner TR",
     "color": "#a6a19a",
-    "tags": [
-      "wall",
-      "middle",
-      "concrete",
-      "impassable",
-      "building"
-    ],
-    "id": "CWCTR"
+    "tags": [ "wall", "middle", "concrete", "impassable", "building" ]
   },
   "CWCBL": {
     "sprite": "╚",
     "name": "Concrete Wall Corner BL",
     "color": "#a6a19a",
-    "tags": [
-      "wall",
-      "middle",
-      "concrete",
-      "impassable",
-      "building"
-    ],
-    "id": "CWCBL"
+    "tags": [ "wall", "middle", "concrete", "impassable", "building" ]
   },
   "CWCBR": {
     "sprite": "╝",
     "name": "Concrete Wall Corner BR",
     "color": "#a6a19a",
-    "tags": [
-      "wall",
-      "middle",
-      "concrete",
-      "impassable",
-      "building"
-    ],
-    "id": "CWCBR"
+    "tags": [ "wall", "middle", "concrete", "impassable", "building" ]
   },
-  "IWH": {
-    "sprite": "═",
-    "name": "Interior Wall Hz",
-    "color": "#E0E0E0",
-    "tags": [
-      "wall",
-      "middle",
-      "impassable",
-      "building"
-    ],
-    "coverBonus": 3,
-    "id": "IWH"
-  },
-  "IWV": {
-    "sprite": "║",
-    "name": "Interior Wall Vt",
-    "color": "#e0e0e3",
-    "tags": [
-      "wall",
-      "middle",
-      "impassable",
-      "building"
-    ],
-    "coverBonus": 3,
-    "id": "IWV"
-  },
-  "PILW": {
-    "sprite": "I",
-    "name": "Wood Pillar",
-    "color": "#A1662F",
-    "tags": [
-      "structure",
-      "middle",
-      "wood",
-      "impassable",
-      "building",
-      "transparent"
-    ],
-    "coverBonus": 2,
-    "id": "PILW"
-  },
-  "PILM": {
-    "sprite": "I",
-    "name": "Metal Pillar",
-    "color": "#708093",
-    "tags": [
-      "structure",
-      "middle",
-      "metal",
-      "impassable",
-      "building",
-      "transparent"
-    ],
-    "coverBonus": 4,
-    "id": "PILM"
-  },
-  "CLF_H": {
-    "sprite": "x",
-    "name": "Chain Link Fence Hz",
-    "color": "#C0C0C0",
-    "tags": [
-      "structure",
-      "middle",
-      "metal",
-      "impassable",
-      "transparent",
-      "fence"
-    ],
-    "id": "CLF_H"
-  },
-  "CLF_V": {
-    "sprite": "x",
-    "name": "Chain Link Fence Vt",
-    "color": "#C0C0C0",
-    "tags": [
-      "structure",
-      "middle",
-      "metal",
-      "impassable",
-      "transparent",
-      "fence"
-    ],
-    "id": "CLF_V"
-  },
-  "CLFG_H": {
-    "sprite": "x",
-    "name": "Chain Link Gate Hz",
-    "color": "#C0C0C0",
-    "tags": [
-      "door",
-      "middle",
-      "metal",
-      "closed",
-      "impassable",
-      "transparent",
-      "interactive",
-      "fence"
-    ],
-    "opensToTileId": "CLFG_HO",
-    "id": "CLFG_H"
-  },
-  "CLFG_V": {
-    "sprite": "x",
-    "name": "Chain Link Gate Vt",
-    "color": "#C0C0C0",
-    "tags": [
-      "door",
-      "middle",
-      "metal",
-      "closed",
-      "impassable",
-      "transparent",
-      "interactive",
-      "fence"
-    ],
-    "opensToTileId": "CLFG_VO",
-    "id": "CLFG_V"
-  },
-  "CLFG_HO": {
-    "sprite": "_",
-    "name": "Chain Link Gate Hz Open",
-    "color": "#C0C0C0",
-    "tags": [
-      "door",
-      "middle",
-      "metal",
-      "open",
-      "transparent",
-      "interactive",
-      "permeable",
-      "fence"
-    ],
-    "id": "CLFG_HO"
-  },
-  "CLFG_VO": {
-    "sprite": "'",
-    "name": "Chain Link Gate Vt Open",
-    "color": "#C0C0C0",
-    "tags": [
-      "door",
-      "middle",
-      "metal",
-      "open",
-      "transparent",
-      "interactive",
-      "permeable",
-      "fence"
-    ],
-    "id": "CLFG_VO"
-  },
-  "WDF_H": {
-    "sprite": "#",
-    "name": "Wooden Fence Hz",
-    "color": "#8b4516",
-    "tags": [
-      "structure",
-      "middle",
-      "wood",
-      "impassable",
-      "fence"
-    ],
-    "id": "WDF_H"
-  },
-  "WDF_V": {
-    "sprite": "#",
-    "name": "Wooden Fence Vt",
-    "color": "#8b4516",
-    "tags": [
-      "structure",
-      "middle",
-      "wood",
-      "impassable",
-      "fence"
-    ],
-    "id": "WDF_V"
-  },
-  "WDFG_H": {
-    "sprite": "+",
-    "name": "Wooden Fence Gate Hz",
-    "color": "#8b4516",
-    "tags": [
-      "door",
-      "middle",
-      "wood",
-      "closed",
-      "impassable",
-      "interactive",
-      "fence"
-    ],
-    "opensToTileId": "WDFG_HO",
-    "id": "WDFG_H"
-  },
-  "WDFG_V": {
-    "sprite": "+",
-    "name": "Wooden Fence Gate Vt",
-    "color": "#8b4516",
-    "tags": [
-      "door",
-      "middle",
-      "wood",
-      "closed",
-      "impassable",
-      "interactive",
-      "fence"
-    ],
-    "opensToTileId": "WDFG_VO",
-    "id": "WDFG_V"
-  },
-  "WDFG_HO": {
-    "sprite": "_",
-    "name": "Wooden Fence Gate Hz Open",
-    "color": "#8b4516",
-    "tags": [
-      "door",
-      "middle",
-      "wood",
-      "open",
-      "allows_vision",
-      "interactive",
-      "permeable",
-      "fence"
-    ],
-    "id": "WDFG_HO"
-  },
-  "WDFG_VO": {
-    "sprite": "'",
-    "name": "Wooden Fence Gate Vt Open",
-    "color": "#8b4516",
-    "tags": [
-      "door",
-      "middle",
-      "wood",
-      "open",
-      "allows_vision",
-      "interactive",
-      "permeable",
-      "fence"
-    ],
-    "id": "WDFG_VO"
-  },
-  "RGD_H": {
-    "sprite": "=",
-    "name": "Garage Door Hz",
-    "color": "#708093",
-    "tags": [
-      "door",
-      "middle",
-      "metal",
-      "closed",
-      "impassable",
-      "interactive",
-      "garage_door"
-    ],
-    "opensToTileId": "RGD_HO",
-    "id": "RGD_H"
-  },
-  "RGD_V": {
-    "sprite": "H",
-    "name": "Garage Door Vt",
-    "color": "#708093",
-    "tags": [
-      "door",
-      "middle",
-      "metal",
-      "closed",
-      "impassable",
-      "interactive",
-      "garage_door"
-    ],
-    "opensToTileId": "RGD_VO",
-    "id": "RGD_V"
-  },
-  "RGD_HO": {
-    "sprite": "_",
-    "name": "Garage Door Hz Open",
-    "color": "#708093",
-    "tags": [
-      "door",
-      "middle",
-      "metal",
-      "open",
-      "interactive",
-      "permeable",
-      "garage_door",
-      "allows_vision"
-    ],
-    "id": "RGD_HO"
-  },
-  "RGD_VO": {
-    "sprite": "'",
-    "name": "Garage Door Vt Open",
-    "color": "#708093",
-    "tags": [
-      "door",
-      "middle",
-      "metal",
-      "open",
-      "interactive",
-      "permeable",
-      "garage_door",
-      "allows_vision"
-    ],
-    "id": "RGD_VO"
-  },
-  "JCB_H": {
-    "sprite": "═",
-    "name": "Jail Cell Bars Hz",
-    "color": "#708093",
-    "tags": [
-      "structure",
-      "middle",
-      "metal",
-      "impassable",
-      "transparent",
-      "jail"
-    ],
-    "id": "JCB_H"
-  },
-  "JCB_V": {
-    "sprite": "║",
-    "name": "Jail Cell Bars Vt",
-    "color": "#708093",
-    "tags": [
-      "structure",
-      "middle",
-      "metal",
-      "impassable",
-      "transparent",
-      "jail"
-    ],
-    "id": "JCB_V"
-  },
-  "JCD_H": {
-    "sprite": "═",
-    "name": "Jail Cell Door Hz",
-    "color": "#708093",
-    "tags": [
-      "door",
-      "middle",
-      "metal",
-      "closed",
-      "impassable",
-      "transparent",
-      "interactive",
-      "jail"
-    ],
-    "opensToTileId": "JCD_HO",
-    "isLocked": true,
-    "lockDifficulty": 25,
-    "id": "JCD_H"
-  },
-  "JCD_V": {
-    "sprite": "║",
-    "name": "Jail Cell Door Vt",
-    "color": "#708093",
-    "tags": [
-      "door",
-      "middle",
-      "metal",
-      "closed",
-      "impassable",
-      "transparent",
-      "interactive",
-      "jail"
-    ],
-    "opensToTileId": "JCD_VO",
-    "isLocked": true,
-    "lockDifficulty": 25,
-    "id": "JCD_V"
-  },
-  "JCD_HO": {
-    "sprite": "_",
-    "name": "Jail Cell Door Hz Open",
-    "color": "#708093",
-    "tags": [
-      "door",
-      "middle",
-      "metal",
-      "open",
-      "transparent",
-      "interactive",
-      "permeable",
-      "jail"
-    ],
-    "id": "JCD_HO"
-  },
-  "JCD_VO": {
-    "sprite": "'",
-    "name": "Jail Cell Door Vt Open",
-    "color": "#708093",
-    "tags": [
-      "door",
-      "middle",
-      "metal",
-      "open",
-      "transparent",
-      "interactive",
-      "permeable",
-      "jail"
-    ],
-    "id": "JCD_VO"
-  },
+  "IWH": { "sprite": "═", "name": "Interior Wall Hz", "color": "#e0e0e0", "tags": ["wall", "middle", "impassable", "building"], "coverBonus": 3 },
+  "IWV": { "sprite": "║", "name": "Interior Wall Vt", "color": "#e0e0e0", "tags": ["wall", "middle", "impassable", "building"], "coverBonus": 3 },
+  "PILW": { "sprite": "I", "name": "Wood Pillar", "color": "#a1662f", "tags": ["structure", "middle", "wood", "impassable", "building", "transparent"], "coverBonus": 2 },
+  "PILM": { "sprite": "I", "name": "Metal Pillar", "color": "#8480d6", "tags": ["structure", "middle", "metal", "impassable", "building", "transparent"], "coverBonus": 4 },
+  "CLF_H": { "sprite": "x", "name": "Chain Link Fence Hz", "color": "#c0c0c0", "tags": ["structure", "middle", "metal", "impassable", "transparent", "fence"] },
+  "CLF_V": { "sprite": "x", "name": "Chain Link Fence Vt", "color": "#c0c0c0", "tags": ["structure", "middle", "metal", "impassable", "transparent", "fence"] },
+  "CLFG_H": { "sprite": "x", "name": "Chain Link Gate Hz", "color": "#c0c0c0", "tags": ["door", "middle", "metal", "closed", "impassable", "transparent", "interactive", "fence"], "opensToTileId": "CLFG_HO" },
+  "CLFG_V": { "sprite": "x", "name": "Chain Link Gate Vt", "color": "#c0c0c0", "tags": ["door", "middle", "metal", "closed", "impassable", "transparent", "interactive", "fence"], "opensToTileId": "CLFG_VO" },
+  "CLFG_HO": { "sprite": "_", "name": "Chain Link Gate Hz Open", "color": "#c0c0c0", "tags": ["door", "middle", "metal", "open", "transparent", "interactive", "permeable", "fence"] },
+  "CLFG_VO": { "sprite": "'", "name": "Chain Link Gate Vt Open", "color": "#c0c0c0", "tags": ["door", "middle", "metal", "open", "transparent", "interactive", "permeable", "fence"] },
+  "WDF_H": { "sprite": "#", "name": "Wooden Fence Hz", "color": "#b3459f", "tags": ["structure", "middle", "wood", "impassable", "fence"] },
+  "WDF_V": { "sprite": "#", "name": "Wooden Fence Vt", "color": "#b3459f", "tags": ["structure", "middle", "wood", "impassable", "fence"] },
+  "WDFG_H": { "sprite": "+", "name": "Wooden Fence Gate Hz", "color": "#b3459f", "tags": ["door", "middle", "wood", "closed", "impassable", "interactive", "fence"], "opensToTileId": "WDFG_HO" },
+  "WDFG_V": { "sprite": "+", "name": "Wooden Fence Gate Vt", "color": "#b3459f", "tags": ["door", "middle", "wood", "closed", "impassable", "interactive", "fence"], "opensToTileId": "WDFG_VO" },
+  "WDFG_HO": { "sprite": "_", "name": "Wooden Fence Gate Hz Open", "color": "#b3459f", "tags": ["door", "middle", "wood", "open", "allows_vision", "interactive", "permeable", "fence"] },
+  "WDFG_VO": { "sprite": "'", "name": "Wooden Fence Gate Vt Open", "color": "#b3459f", "tags": ["door", "middle", "wood", "open", "allows_vision", "interactive", "permeable", "fence"] },
+  "RGD_H": { "sprite": "=", "name": "Garage Door Hz", "color": "#8480d6", "tags": ["door", "middle", "metal", "closed", "impassable", "interactive", "garage_door"], "opensToTileId": "RGD_HO" },
+  "RGD_V": { "sprite": "H", "name": "Garage Door Vt", "color": "#8480d6", "tags": ["door", "middle", "metal", "closed", "impassable", "interactive", "garage_door"], "opensToTileId": "RGD_VO" },
+  "RGD_HO": { "sprite": "_", "name": "Garage Door Hz Open", "color": "#8480d6", "tags": ["door", "middle", "metal", "open", "interactive", "permeable", "garage_door", "allows_vision"] },
+  "RGD_VO": { "sprite": "'", "name": "Garage Door Vt Open", "color": "#8480d6", "tags": ["door", "middle", "metal", "open", "interactive", "permeable", "garage_door", "allows_vision"] },
+  "JCB_H": { "sprite": "═", "name": "Jail Cell Bars Hz", "color": "#8480d6", "tags": ["structure", "middle", "metal", "impassable", "transparent", "jail"] },
+  "JCB_V": { "sprite": "║", "name": "Jail Cell Bars Vt", "color": "#8480d6", "tags": ["structure", "middle", "metal", "impassable", "transparent", "jail"] },
+  "JCD_H": { "sprite": "═", "name": "Jail Cell Door Hz", "color": "#8480d6", "tags": ["door", "middle", "metal", "closed", "impassable", "transparent", "interactive", "jail"], "opensToTileId": "JCD_HO", "isLocked": true, "lockDifficulty": 25 },
+  "JCD_V": { "sprite": "║", "name": "Jail Cell Door Vt", "color": "#8480d6", "tags": ["door", "middle", "metal", "closed", "impassable", "transparent", "interactive", "jail"], "opensToTileId": "JCD_VO", "isLocked": true, "lockDifficulty": 25 },
+  "JCD_HO": { "sprite": "_", "name": "Jail Cell Door Hz Open", "color": "#8480d6", "tags": ["door", "middle", "metal", "open", "transparent", "interactive", "permeable", "jail"] },
+  "JCD_VO": { "sprite": "'", "name": "Jail Cell Door Vt Open", "color": "#8480d6", "tags": ["door", "middle", "metal", "open", "transparent", "interactive", "permeable", "jail"] },
   "sandstone": {
     "sprite": "░",
     "name": "Sandstone",
-    "color": "#d2b492",
-    "tags": [
-      "landscape",
-      "middle",
-      "solid_terrain_top",
-      "impassable",
-      "cave",
-      "sandstone"
-    ],
-    "id": "sandstone"
+    "color": "#fab418",
+    "tags": [ "landscape", "middle", "solid_terrain_top", "impassable", "cave", "sandstone" ]
   },
   "sandstone_stalactite": {
     "sprite": "▼",
     "name": "Sandstone Stalactite",
-    "color": "#d2b492",
-    "tags": [
-      "rock_formation",
-      "middle",
-      "sandstone",
-      "impassable",
-      "cave"
-    ],
-    "id": "sandstone_stalactite"
+    "color": "#fab418",
+    "tags": ["rock_formation", "middle", "sandstone", "impassable", "cave"]
   },
   "sandstone_stalagmite": {
     "sprite": "▲",
     "name": "Sandstone Stalagmite",
-    "color": "#d2b492",
-    "tags": [
-      "rock_formation",
-      "middle",
-      "sandstone",
-      "impassable",
-      "cave",
-      "sharp",
-      "stalagmite"
-    ],
-    "id": "sandstone_stalagmite"
+    "color": "#fab418",
+    "tags": ["rock_formation", "middle", "sandstone", "impassable", "cave", "sharp", "stalagmite"]
   },
   "limestone": {
     "sprite": "░",
     "name": "Limestone",
-    "color": "#c0c0c9",
-    "tags": [
-      "landscape",
-      "middle",
-      "solid_terrain_top",
-      "impassable",
-      "cave",
-      "limestone"
-    ],
-    "id": "limestone"
+    "color": "#fcc092",
+    "tags": [ "landscape", "middle", "solid_terrain_top", "impassable", "cave", "limestone" ]
   },
   "limestone_stalactite": {
     "sprite": "▼",
     "name": "Limestone Stalactite",
-    "color": "#c0c0c9",
-    "tags": [
-      "rock_formation",
-      "middle",
-      "limestone",
-      "impassable",
-      "cave"
-    ],
-    "id": "limestone_stalactite"
+    "color": "#fcc092",
+    "tags": ["rock_formation", "middle", "limestone", "impassable", "cave"]
   },
   "limestone_stalagmite": {
     "sprite": "▲",
     "name": "Limestone Stalagmite",
-    "color": "#c0c0c9",
-    "tags": [
-      "rock_formation",
-      "middle",
-      "limestone",
-      "impassable",
-      "cave",
-      "sharp",
-      "stalagmite"
-    ],
-    "id": "limestone_stalagmite"
+    "color": "#fcc092",
+    "tags": ["rock_formation", "middle", "limestone", "impassable", "cave", "sharp", "stalagmite"]
   },
   "MSL_U": {
     "sprite": "▲",
     "name": "Mud Slope Up",
-    "color": "#731D1D",
+    "color": "#731d1d",
     "tags": [
       "landscape",
       "z_transition",
@@ -2561,13 +1955,12 @@
       "middle"
     ],
     "target_dz": 1,
-    "z_cost": 2,
-    "id": "MSL_U"
+    "z_cost": 2
   },
   "SSL_U": {
     "sprite": "▲",
     "name": "Sand Slope Up",
-    "color": "#f0e68f",
+    "color": "#04e6d2",
     "tags": [
       "landscape",
       "z_transition",
@@ -2576,13 +1969,12 @@
       "middle"
     ],
     "target_dz": 1,
-    "z_cost": 2,
-    "id": "SSL_U"
+    "z_cost": 2
   },
   "GSL_U": {
     "sprite": "▲",
     "name": "Gravel Slope Up",
-    "color": "#d3d3eb",
+    "color": "#fbd35f",
     "tags": [
       "landscape",
       "z_transition",
@@ -2591,13 +1983,12 @@
       "middle"
     ],
     "target_dz": 1,
-    "z_cost": 2,
-    "id": "GSL_U"
+    "z_cost": 2
   },
   "ARSL_U": {
     "sprite": "▲",
     "name": "Asphalt Road Slope Up",
-    "color": "#808095",
+    "color": "#e480de",
     "tags": [
       "landscape",
       "z_transition",
@@ -2606,13 +1997,12 @@
       "middle"
     ],
     "target_dz": 1,
-    "z_cost": 2,
-    "id": "ARSL_U"
+    "z_cost": 2
   },
   "DRSL_U": {
     "sprite": "▲",
     "name": "Dirt Road Slope Up",
-    "color": "#A0522D",
+    "color": "#a0522d",
     "tags": [
       "landscape",
       "z_transition",
@@ -2621,13 +2011,12 @@
       "middle"
     ],
     "target_dz": 1,
-    "z_cost": 2,
-    "id": "DRSL_U"
+    "z_cost": 2
   },
   "SNDSL_U": {
     "sprite": "▲",
     "name": "Sandstone Slope Up",
-    "color": "#d2b492",
+    "color": "#fab418",
     "tags": [
       "landscape",
       "z_transition",
@@ -2636,13 +2025,12 @@
       "middle"
     ],
     "target_dz": 1,
-    "z_cost": 2,
-    "id": "SNDSL_U"
+    "z_cost": 2
   },
   "LMSL_U": {
     "sprite": "▲",
     "name": "Limestone Slope Up",
-    "color": "#c0c0c9",
+    "color": "#fcc092",
     "tags": [
       "landscape",
       "z_transition",
@@ -2651,7 +2039,6 @@
       "middle"
     ],
     "target_dz": 1,
-    "z_cost": 2,
-    "id": "LMSL_U"
+    "z_cost": 2
   }
 }

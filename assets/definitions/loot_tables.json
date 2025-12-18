@@ -1,510 +1,120 @@
 {
   "harvest:wood": [
-    {
-      "itemId": "wood_log",
-      "chance": 0.4,
-      "min": 1,
-      "max": 2
-    },
-    {
-      "itemId": "wood_stick",
-      "chance": 0.5,
-      "min": 1,
-      "max": 4
-    },
-    {
-      "itemId": "plant_fibers_strong",
-      "chance": 0.2,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "tree_bark_brown_pigment",
-      "chance": 0.1,
-      "min": 1,
-      "max": 2
-    }
+    { "itemId": "wood_log", "chance": 0.4, "min": 1, "max": 2 },
+    { "itemId": "wood_stick", "chance": 0.5, "min": 1, "max": 4 },
+    { "itemId": "plant_fibers_strong", "chance": 0.2, "min": 1, "max": 3 },
+    { "itemId": "tree_bark_brown_pigment", "chance": 0.1, "min": 1, "max": 2 }
   ],
   "harvest:stone": [
-    {
-      "itemId": "stone_chunk",
-      "chance": 0.6,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "stone_sharp_fragment",
-      "chance": 0.3,
-      "min": 1,
-      "max": 2
-    },
-    {
-      "itemId": "iron_ore",
-      "chance": 0.05,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "copper_ore",
-      "chance": 0.05,
-      "min": 1,
-      "max": 1
-    }
+    { "itemId": "stone_chunk", "chance": 0.6, "min": 1, "max": 3 },
+    { "itemId": "stone_sharp_fragment", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "iron_ore", "chance": 0.05, "min": 1, "max": 1 },
+    { "itemId": "copper_ore", "chance": 0.05, "min": 1, "max": 1 }
   ],
   "harvest:plant": [
-    {
-      "itemId": "plant_fibers_strong",
-      "chance": 0.6,
-      "min": 1,
-      "max": 4
-    },
-    {
-      "itemId": "plant_leaves_green_pigment",
-      "chance": 0.3,
-      "min": 1,
-      "max": 2
-    },
-    {
-      "itemId": "medicinal_herb_comfrey",
-      "chance": 0.1,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "tomato_seeds",
-      "chance": 0.05,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "carrot_seeds",
-      "chance": 0.05,
-      "min": 1,
-      "max": 1
-    }
+    { "itemId": "plant_fibers_strong", "chance": 0.6, "min": 1, "max": 4 },
+    { "itemId": "plant_leaves_green_pigment", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "medicinal_herb_comfrey", "chance": 0.1, "min": 1, "max": 1 },
+    { "itemId": "tomato_seeds", "chance": 0.05, "min": 1, "max": 1 },
+    { "itemId": "carrot_seeds", "chance": 0.05, "min": 1, "max": 1 }
   ],
   "harvest:sand": [
-    {
-      "itemId": "sand_pile",
-      "chance": 0.8,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "clay_lump",
-      "chance": 0.1,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "stone_sharp_fragment",
-      "chance": 0.1,
-      "min": 1,
-      "max": 1
-    }
+    { "itemId": "sand_pile", "chance": 0.8, "min": 1, "max": 3 },
+    { "itemId": "clay_lump", "chance": 0.1, "min": 1, "max": 1 },
+    { "itemId": "stone_sharp_fragment", "chance": 0.1, "min": 1, "max": 1 }
   ],
   "scavenge:furniture": [
-    {
-      "itemId": "nails",
-      "chance": 0.4,
-      "min": 1,
-      "max": 5
-    },
-    {
-      "itemId": "wood_planks",
-      "chance": 0.2,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "cloth_scrap",
-      "chance": 0.3,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "spring_small_metal",
-      "chance": 0.1,
-      "min": 1,
-      "max": 2
-    }
+    { "itemId": "nails", "chance": 0.4, "min": 1, "max": 5 },
+    { "itemId": "wood_planks", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "cloth_scrap", "chance": 0.3, "min": 1, "max": 3 },
+    { "itemId": "spring_small_metal", "chance": 0.1, "min": 1, "max": 2 }
   ],
   "scavenge:machinery": [
-    {
-      "itemId": "scrap_metal",
-      "chance": 0.4,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "gears_assorted",
-      "chance": 0.2,
-      "min": 1,
-      "max": 2
-    },
-    {
-      "itemId": "mechanical_parts_simple",
-      "chance": 0.1,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "metal_bits_small",
-      "chance": 0.3,
-      "min": 2,
-      "max": 10
-    }
+    { "itemId": "scrap_metal", "chance": 0.4, "min": 1, "max": 3 },
+    { "itemId": "gears_assorted", "chance": 0.2, "min": 1, "max": 2 },
+    { "itemId": "mechanical_parts_simple", "chance": 0.1, "min": 1, "max": 1 },
+    { "itemId": "metal_bits_small", "chance": 0.3, "min": 2, "max": 10 }
   ],
   "harvest:mud": [
-    {
-      "itemId": "clay_lump",
-      "chance": 0.5,
-      "min": 1,
-      "max": 2
-    },
-    {
-      "itemId": "stone_sharp_fragment",
-      "chance": 0.2,
-      "min": 1,
-      "max": 1
-    }
+    { "itemId": "clay_lump", "chance": 0.5, "min": 1, "max": 2 },
+    { "itemId": "stone_sharp_fragment", "chance": 0.2, "min": 1, "max": 1 }
   ],
   "harvest:gravel": [
-    {
-      "itemId": "stone_sharp_fragment",
-      "chance": 0.6,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "sand_pile",
-      "chance": 0.3,
-      "min": 1,
-      "max": 2
-    }
+    { "itemId": "stone_sharp_fragment", "chance": 0.6, "min": 1, "max": 3 },
+    { "itemId": "sand_pile", "chance": 0.3, "min": 1, "max": 2 }
   ],
   "scavenge:electronics": [
-    {
-      "itemId": "electronic_scrap",
-      "chance": 0.5,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "wire_insulated_thin",
-      "chance": 0.4,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "circuit_board_blank",
-      "chance": 0.2,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "led_basic",
-      "chance": 0.3,
-      "min": 1,
-      "max": 2
-    },
-    {
-      "itemId": "battery_cell_small",
-      "chance": 0.2,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "memory_chip_basic",
-      "chance": 0.1,
-      "min": 1,
-      "max": 1
-    }
+    { "itemId": "electronic_scrap", "chance": 0.5, "min": 1, "max": 3 },
+    { "itemId": "wire_insulated_thin", "chance": 0.4, "min": 1, "max": 3 },
+    { "itemId": "circuit_board_blank", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "led_basic", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "battery_cell_small", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "memory_chip_basic", "chance": 0.1, "min": 1, "max": 1 }
   ],
   "scavenge:appliance": [
-    {
-      "itemId": "scrap_metal",
-      "chance": 0.5,
-      "min": 1,
-      "max": 4
-    },
-    {
-      "itemId": "motor_small_electric",
-      "chance": 0.2,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "heating_element_nichrome_wire",
-      "chance": 0.2,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "rubber_hose_section",
-      "chance": 0.2,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "wire_insulated_thin",
-      "chance": 0.3,
-      "min": 1,
-      "max": 3
-    }
+    { "itemId": "scrap_metal", "chance": 0.5, "min": 1, "max": 4 },
+    { "itemId": "motor_small_electric", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "heating_element_nichrome_wire", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "rubber_hose_section", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "wire_insulated_thin", "chance": 0.3, "min": 1, "max": 3 }
   ],
   "scavenge:glass": [
-    {
-      "itemId": "sharp_glass",
-      "chance": 0.8,
-      "min": 1,
-      "max": 3
-    }
+    { "itemId": "sharp_glass", "chance": 0.8, "min": 1, "max": 3 }
   ],
   "scavenge:generic": [
-    {
-      "itemId": "scrap_metal",
-      "chance": 0.3,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "plastic_junk_item",
-      "chance": 0.3,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "cloth_scrap",
-      "chance": 0.2,
-      "min": 1,
-      "max": 4
-    },
-    {
-      "itemId": "glass_bottle_empty",
-      "chance": 0.1,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "nails",
-      "chance": 0.15,
-      "min": 2,
-      "max": 10
-    },
-    {
-      "itemId": "duct_tape",
-      "chance": 0.05,
-      "min": 1,
-      "max": 1
-    }
+    { "itemId": "scrap_metal", "chance": 0.3, "min": 1, "max": 3 },
+    { "itemId": "plastic_junk_item", "chance": 0.3, "min": 1, "max": 3 },
+    { "itemId": "cloth_scrap", "chance": 0.2, "min": 1, "max": 4 },
+    { "itemId": "glass_bottle_empty", "chance": 0.1, "min": 1, "max": 1 },
+    { "itemId": "nails", "chance": 0.15, "min": 2, "max": 10 },
+    { "itemId": "duct_tape", "chance": 0.05, "min": 1, "max": 1 }
   ],
   "scavenge:junk": [
-    {
-      "itemId": "scrap_metal",
-      "chance": 0.5,
-      "min": 1,
-      "max": 5
-    },
-    {
-      "itemId": "plastic_junk_item",
-      "chance": 0.4,
-      "min": 1,
-      "max": 4
-    },
-    {
-      "itemId": "wire_insulated_thin",
-      "chance": 0.2,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "electronic_scrap",
-      "chance": 0.1,
-      "min": 1,
-      "max": 2
-    }
+      { "itemId": "scrap_metal", "chance": 0.5, "min": 1, "max": 5 },
+      { "itemId": "plastic_junk_item", "chance": 0.4, "min": 1, "max": 4 },
+      { "itemId": "wire_insulated_thin", "chance": 0.2, "min": 1, "max": 3 },
+      { "itemId": "electronic_scrap", "chance": 0.1, "min": 1, "max": 2 }
   ],
   "butcher:corpse": [
-    {
-      "itemId": "raw_meat",
-      "chance": 1,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "bone",
-      "chance": 0.5,
-      "min": 1,
-      "max": 2
-    },
-    {
-      "itemId": "animal_hide_raw_small",
-      "chance": 0.3,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "sinew_animal",
-      "chance": 0.2,
-      "min": 1,
-      "max": 2
-    }
+      { "itemId": "raw_meat", "chance": 1.0, "min": 1, "max": 3 },
+      { "itemId": "bone", "chance": 0.5, "min": 1, "max": 2 },
+      { "itemId": "animal_hide_raw_small", "chance": 0.3, "min": 1, "max": 1 },
+      { "itemId": "sinew_animal", "chance": 0.2, "min": 1, "max": 2 }
   ],
   "container:generic": [
-    {
-      "itemId": "scrap_metal",
-      "chance": 0.3,
-      "min": 1,
-      "max": 2
-    },
-    {
-      "itemId": "rag_dirty",
-      "chance": 0.3,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "plastic_junk_item",
-      "chance": 0.2,
-      "min": 1,
-      "max": 2
-    },
-    {
-      "itemId": "glass_bottle_empty",
-      "chance": 0.1,
-      "min": 1,
-      "max": 1
-    }
+    { "itemId": "scrap_metal", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "rag_dirty", "chance": 0.3, "min": 1, "max": 3 },
+    { "itemId": "plastic_junk_item", "chance": 0.2, "min": 1, "max": 2 },
+    { "itemId": "glass_bottle_empty", "chance": 0.1, "min": 1, "max": 1 }
   ],
   "container:cabinet": [
-    {
-      "itemId": "canned_beans_food",
-      "chance": 0.3,
-      "min": 1,
-      "max": 2
-    },
-    {
-      "itemId": "bottled_water_drink",
-      "chance": 0.3,
-      "min": 1,
-      "max": 2
-    },
-    {
-      "itemId": "rag_clean",
-      "chance": 0.2,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "matches_box",
-      "chance": 0.1,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "painkillers_weak",
-      "chance": 0.05,
-      "min": 1,
-      "max": 1
-    }
+    { "itemId": "canned_beans_food", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "bottled_water_drink", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "rag_clean", "chance": 0.2, "min": 1, "max": 3 },
+    { "itemId": "matches_box", "chance": 0.1, "min": 1, "max": 1 },
+    { "itemId": "painkillers_weak", "chance": 0.05, "min": 1, "max": 1 }
   ],
   "container:fridge": [
-    {
-      "itemId": "bottled_water_drink",
-      "chance": 0.5,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "canned_meat_food",
-      "chance": 0.3,
-      "min": 1,
-      "max": 2
-    },
-    {
-      "itemId": "soda_can_cola",
-      "chance": 0.2,
-      "min": 1,
-      "max": 2
-    }
+    { "itemId": "bottled_water_drink", "chance": 0.5, "min": 1, "max": 3 },
+    { "itemId": "canned_meat_food", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "soda_can_cola", "chance": 0.2, "min": 1, "max": 2 }
   ],
   "container:medical": [
-    {
-      "itemId": "bandage_cloth",
-      "chance": 0.5,
-      "min": 1,
-      "max": 3
-    },
-    {
-      "itemId": "antiseptic_bottle",
-      "chance": 0.3,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "antibiotics_pills",
-      "chance": 0.2,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "first_aid_kit_basic",
-      "chance": 0.05,
-      "min": 1,
-      "max": 1
-    }
+    { "itemId": "bandage_cloth", "chance": 0.5, "min": 1, "max": 3 },
+    { "itemId": "antiseptic_bottle", "chance": 0.3, "min": 1, "max": 1 },
+    { "itemId": "antibiotics_pills", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "first_aid_kit_basic", "chance": 0.05, "min": 1, "max": 1 }
   ],
   "container:desk": [
-    {
-      "itemId": "paper_sheet",
-      "chance": 0.5,
-      "min": 1,
-      "max": 5
-    },
-    {
-      "itemId": "pen_black",
-      "chance": 0.3,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "battery_cell_small",
-      "chance": 0.2,
-      "min": 1,
-      "max": 2
-    },
-    {
-      "itemId": "flashlight_small",
-      "chance": 0.1,
-      "min": 1,
-      "max": 1
-    }
+    { "itemId": "paper_sheet", "chance": 0.5, "min": 1, "max": 5 },
+    { "itemId": "pen_black", "chance": 0.3, "min": 1, "max": 1 },
+    { "itemId": "battery_cell_small", "chance": 0.2, "min": 1, "max": 2 },
+    { "itemId": "flashlight_small", "chance": 0.1, "min": 1, "max": 1 }
   ],
   "container:locker": [
-    {
-      "itemId": "jacket_denim",
-      "chance": 0.1,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "boots_work",
-      "chance": 0.1,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "baseball_bat",
-      "chance": 0.05,
-      "min": 1,
-      "max": 1
-    },
-    {
-      "itemId": "crowbar_tool",
-      "chance": 0.05,
-      "min": 1,
-      "max": 1
-    }
+    { "itemId": "jacket_denim", "chance": 0.1, "min": 1, "max": 1 },
+    { "itemId": "boots_work", "chance": 0.1, "min": 1, "max": 1 },
+    { "itemId": "baseball_bat", "chance": 0.05, "min": 1, "max": 1 },
+    { "itemId": "crowbar_tool", "chance": 0.05, "min": 1, "max": 1 }
   ]
 }

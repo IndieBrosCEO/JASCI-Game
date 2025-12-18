@@ -114,9 +114,7 @@
         "type": "remove_map_effect",
         "effectType": "minor_periodic_damage_outdoors"
       },
-      {
-        "type": "restore_weather"
-      }
+      { "type": "restore_weather" }
     ]
   },
   {

@@ -3,7 +3,7 @@
     "id": "training_dummy",
     "name": "Training Dummy",
     "sprite": "D",
-    "color": "#8080c2",
+    "color": "#e480de",
     "factionId": "neutral",
     "behavior": "idle",
     "patrolPoints": [],
@@ -76,7 +76,7 @@
     "id": "hostile_scavenger",
     "name": "Hostile Scavenger",
     "sprite": "S",
-    "color": "#8b0003",
+    "color": "#9f0046",
     "factionId": "scavenger",
     "behavior": "patrol_aggressive",
     "patrolPoints": [],
@@ -150,7 +150,7 @@
     "id": "hostile_scavenger_2",
     "name": "Hostile Scavenger (Ally)",
     "sprite": "s",
-    "color": "#8b0006",
+    "color": "#9f0046",
     "factionId": "scavenger",
     "behavior": "follow_ally",
     "followTargetId": "hostile_scavenger",
@@ -225,7 +225,7 @@
     "id": "militia_man",
     "name": "Militia Man",
     "sprite": "M",
-    "color": "#000008",
+    "color": "#140045",
     "factionId": "militia",
     "behavior": "guard_area",
     "patrolPoints": [],
@@ -299,7 +299,7 @@
     "id": "civilian_militia",
     "name": "Civilian Militia",
     "sprite": "C",
-    "color": "#000005",
+    "color": "#140045",
     "factionId": "militia",
     "behavior": "patrol",
     "patrolPoints": [],
@@ -373,7 +373,7 @@
     "id": "bandit_archer",
     "name": "Bandit Archer",
     "sprite": "A",
-    "color": "#008006",
+    "color": "#008000",
     "factionId": "bandit",
     "behavior": "ranged_attack",
     "patrolPoints": [],
@@ -447,7 +447,7 @@
     "id": "bandit_thug",
     "name": "Bandit Thug",
     "sprite": "T",
-    "color": "#008009",
+    "color": "#008000",
     "factionId": "bandit",
     "behavior": "melee_attack",
     "patrolPoints": [],
@@ -521,7 +521,7 @@
     "id": "cellar_dweller",
     "name": "Cellar Dweller",
     "sprite": "c",
-    "color": "#006406",
+    "color": "#006400",
     "factionId": "mutant",
     "behavior": "ambush",
     "patrolPoints": [],
@@ -668,7 +668,7 @@
     "id": "hired_gun_merc",
     "name": "Hired Gun",
     "sprite": "H",
-    "color": "#70809c",
+    "color": "#ac8062",
     "factionId": "bandit",
     "behavior": "guard_aggressive",
     "patrolPoints": [],
@@ -819,7 +819,7 @@
     "id": "soldier_grunt",
     "name": "Soldier",
     "sprite": "R",
-    "color": "#808006",
+    "color": "#948046",
     "factionId": "militia",
     "behavior": "patrol_aggressive",
     "patrolPoints": [],
@@ -894,7 +894,7 @@
     "id": "outlaw_desperado",
     "name": "Outlaw",
     "sprite": "O",
-    "color": "#8b451f",
+    "color": "#9f4559",
     "factionId": "bandit",
     "behavior": "ranged_opportunist",
     "patrolPoints": [],
@@ -1057,7 +1057,7 @@
     "id": "zealot_cultist",
     "name": "Zealot",
     "sprite": "Z",
-    "color": "#800083",
+    "color": "#800080",
     "factionId": "cultist",
     "behavior": "melee_fanatic",
     "patrolPoints": [],
@@ -1203,7 +1203,7 @@
     "id": "animal_mountain_lion",
     "name": "Mountain Lion",
     "sprite": "L",
-    "color": "#daa523",
+    "color": "#eea566",
     "factionId": "creature_predator",
     "behavior": "hunt_aggressive",
     "patrolPoints": [],
@@ -1247,7 +1247,7 @@
     "id": "animal_bobcat",
     "name": "Bobcat",
     "sprite": "b",
-    "color": "#d2b495",
+    "color": "#0eb45e",
     "factionId": "creature_predator",
     "behavior": "hunt_cautious",
     "patrolPoints": [],
@@ -1291,7 +1291,7 @@
     "id": "animal_coyote",
     "name": "Coyote",
     "sprite": "y",
-    "color": "#80808f",
+    "color": "#e480de",
     "factionId": "creature_predator",
     "behavior": "pack_hunt",
     "patrolPoints": [],
@@ -1336,7 +1336,7 @@
     "id": "animal_raccoon",
     "name": "Raccoon",
     "sprite": "r",
-    "color": "#69696f",
+    "color": "#9169f5",
     "factionId": "creature_neutral",
     "behavior": "wander_scavenge",
     "patrolPoints": [],
@@ -1381,7 +1381,7 @@
     "id": "animal_red_tailed_hawk",
     "name": "Red-tailed Hawk",
     "sprite": "h",
-    "color": "#a52a3c",
+    "color": "#cd2ab6",
     "factionId": "creature_predator",
     "behavior": "hunt_aerial",
     "patrolPoints": [],
@@ -1425,7 +1425,7 @@
     "id": "animal_turkey_vulture",
     "name": "Turkey Vulture",
     "sprite": "v",
-    "color": "#000003",
+    "color": "#000000",
     "factionId": "creature_neutral",
     "behavior": "wander_scavenge_aerial",
     "patrolPoints": [],
@@ -1513,7 +1513,7 @@
     "id": "animal_mule_deer",
     "name": "Mule Deer",
     "sprite": "d",
-    "color": "#bc8f92",
+    "color": "#d08fd5",
     "factionId": "creature_prey",
     "behavior": "flee_graze",
     "patrolPoints": [],
@@ -1602,7 +1602,7 @@
     "id": "animal_ca_ground_squirrel",
     "name": "California Ground Squirrel",
     "sprite": "g",
-    "color": "#deb890",
+    "color": "#f2b8cd",
     "factionId": "creature_prey",
     "behavior": "flee_burrow",
     "patrolPoints": [],
@@ -1647,7 +1647,7 @@
     "id": "animal_western_fence_lizard",
     "name": "Western Fence Lizard",
     "sprite": "l",
-    "color": "#556b32",
+    "color": "#696b75",
     "factionId": "creature_prey",
     "behavior": "flee_quick",
     "patrolPoints": [],
@@ -1823,7 +1823,7 @@
     "id": "animal_monarch_butterfly",
     "name": "Monarch Butterfly",
     "sprite": "B",
-    "color": "#ffa503",
+    "color": "#13a546",
     "factionId": "creature_neutral",
     "behavior": "wander_flutter",
     "patrolPoints": [],
@@ -2001,7 +2001,7 @@
     "id": "animal_rainbow_trout",
     "name": "Rainbow Trout",
     "sprite": "<",
-    "color": "#c0c0cc",
+    "color": "#10c0d8",
     "factionId": "creature_prey",
     "behavior": "flee_aquatic",
     "patrolPoints": [],
@@ -2045,7 +2045,7 @@
     "id": "fish_joe",
     "name": "Fish Joe",
     "sprite": "F",
-    "color": "#00ff05",
+    "color": "#3cffd1",
     "factionId": "civilian",
     "behavior": "fish",
     "health": {
@@ -2124,12 +2124,7 @@
     "behavior": "melee_aggressive",
     "patrolPoints": [],
     "health": {
-      "torso": {
-        "max": 2,
-        "current": 2,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "torso": { "max": 2, "current": 2, "armor": 0, "crisisTimer": 0 }
     },
     "stats": {
       "Strength": 2,
@@ -2168,12 +2163,7 @@
     "behavior": "melee_aggressive",
     "patrolPoints": [],
     "health": {
-      "torso": {
-        "max": 10,
-        "current": 10,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "torso": { "max": 10, "current": 10, "armor": 0, "crisisTimer": 0 }
     },
     "stats": {
       "Strength": 4,
@@ -2206,72 +2196,24 @@
     "id": "animal_dog",
     "name": "Stray Dog",
     "sprite": "d",
-    "color": "#a52a39",
+    "color": "#cd2ab6",
     "factionId": "creature_neutral",
     "behavior": "wander_dog",
     "health": {
-      "head": {
-        "max": 10,
-        "current": 10,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "torso": {
-        "max": 15,
-        "current": 15,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftArm": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightArm": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "leftLeg": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      },
-      "rightLeg": {
-        "max": 8,
-        "current": 8,
-        "armor": 0,
-        "crisisTimer": 0
-      }
+      "head": { "max": 10, "current": 10, "armor": 0, "crisisTimer": 0 },
+      "torso": { "max": 15, "current": 15, "armor": 0, "crisisTimer": 0 },
+      "leftArm": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "rightArm": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "leftLeg": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
+      "rightLeg": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 }
     },
     "stats": [
-      {
-        "name": "Strength",
-        "points": 4
-      },
-      {
-        "name": "Dexterity",
-        "points": 6
-      },
-      {
-        "name": "Constitution",
-        "points": 5
-      },
-      {
-        "name": "Perception",
-        "points": 8
-      },
-      {
-        "name": "Willpower",
-        "points": 4
-      },
-      {
-        "name": "Charisma",
-        "points": 6
-      }
+      { "name": "Strength", "points": 4 },
+      { "name": "Dexterity", "points": 6 },
+      { "name": "Constitution", "points": 5 },
+      { "name": "Perception", "points": 8 },
+      { "name": "Willpower", "points": 4 },
+      { "name": "Charisma", "points": 6 }
     ],
     "skills": {
       "Unarmed": 30,
@@ -2281,11 +2223,7 @@
     "equippedWeaponId": "dog_bite",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 8,
-    "tags": [
-      "animal",
-      "canine",
-      "neutral_friendly"
-    ],
+    "tags": ["animal", "canine", "neutral_friendly"],
     "teamId": 90,
     "cr": 0.5,
     "asciiPortrait": "<span style=\"color:brown\">.</span><span style=\"color:black\">@</span><br><span style=\"color:brown\">/ \\</span>",

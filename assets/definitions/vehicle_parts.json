@@ -30,11 +30,7 @@
           "level": 20
         }
       ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "wrench_set",
-        "rivet_gun_manual"
-      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "wrench_set", "rivet_gun_manual" ],
       "station_required": "vehicle_assembly_station",
       "time_to_craft": 1200,
       "batch_size": 1
@@ -78,10 +74,7 @@
           "level": 10
         }
       ],
-      "tools_required": [
-        "wrench_set",
-        "welding_torch_oxyacetylene"
-      ],
+      "tools_required": [ "wrench_set", "welding_torch_oxyacetylene" ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 400,
       "batch_size": 1
@@ -128,11 +121,7 @@
           "level": 10
         }
       ],
-      "tools_required": [
-        "wrench_set",
-        "screwdriver_set_multi",
-        "precision_oil_can"
-      ],
+      "tools_required": [ "wrench_set", "screwdriver_set_multi", "precision_oil_can" ],
       "station_required": "engine_assembly_jig",
       "time_to_craft": 900,
       "batch_size": 1
@@ -173,10 +162,7 @@
           "level": 25
         }
       ],
-      "tools_required": [
-        "wrench_set",
-        "hoist"
-      ],
+      "tools_required": [ "wrench_set", "hoist" ],
       "station_required": "engine_assembly_jig",
       "time_to_craft": 1200,
       "batch_size": 1
@@ -217,9 +203,7 @@
           "level": 10
         }
       ],
-      "tools_required": [
-        "wrench_set"
-      ],
+      "tools_required": [ "wrench_set" ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 300,
       "batch_size": 1
@@ -260,10 +244,7 @@
           "level": 5
         }
       ],
-      "tools_required": [
-        "wrench_set",
-        "tire_iron"
-      ],
+      "tools_required": [ "wrench_set", "tire_iron" ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 40,
       "batch_size": 1
@@ -302,10 +283,7 @@
           "level": 5
         }
       ],
-      "tools_required": [
-        "wrench_set",
-        "tire_iron"
-      ],
+      "tools_required": [ "wrench_set", "tire_iron" ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 25,
       "batch_size": 1
@@ -338,10 +316,7 @@
           "level": 25
         }
       ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "blacksmith_hammer"
-      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "blacksmith_hammer" ],
       "station_required": "forge_advanced",
       "time_to_craft": 300,
       "batch_size": 1
@@ -387,11 +362,7 @@
           "level": 10
         }
       ],
-      "tools_required": [
-        "hand_saw_wood",
-        "hammer_peen",
-        "metal_snips_heavy"
-      ],
+      "tools_required": [ "hand_saw_wood", "hammer_peen", "metal_snips_heavy" ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 90,
       "batch_size": 1
@@ -439,11 +410,7 @@
           "level": 30
         }
       ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "wrench_set",
-        "hand_drill"
-      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "wrench_set", "hand_drill" ],
       "station_required": "machine_shop_lathe",
       "time_to_craft": 400,
       "batch_size": 1
@@ -499,10 +466,7 @@
           "level": 10
         }
       ],
-      "tools_required": [
-        "soldering_iron_kit",
-        "screwdriver_set_multi"
-      ],
+      "tools_required": [ "soldering_iron_kit", "screwdriver_set_multi" ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 60,
       "batch_size": 1
@@ -542,10 +506,7 @@
           "level": 5
         }
       ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "hacksaw"
-      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "hacksaw" ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 200,
       "batch_size": 1
@@ -589,10 +550,7 @@
           "level": 15
         }
       ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "pipe_bender"
-      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "pipe_bender" ],
       "station_required": "garage_bay",
       "time_to_craft": 600,
       "batch_size": 1
@@ -636,16 +594,14 @@
           "level": 1
         }
       ],
-      "tools_required": [
-        "wrench_set"
-      ],
+      "tools_required": [ "wrench_set" ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 60,
       "batch_size": 1
     },
     "effects": {
       "power": 5,
-      "fuelEfficiency": 0
+      "fuelEfficiency": 0.0
     },
     "maxFuel": 0
   },
@@ -679,10 +635,7 @@
           "level": 20
         }
       ],
-      "tools_required": [
-        "wrench_set",
-        "screwdriver_set_multi"
-      ],
+      "tools_required": [ "wrench_set", "screwdriver_set_multi" ],
       "station_required": "engine_assembly_jig",
       "time_to_craft": 500,
       "batch_size": 1
@@ -723,9 +676,7 @@
           "level": 1
         }
       ],
-      "tools_required": [
-        "wrench_set"
-      ],
+      "tools_required": [ "wrench_set" ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 30,
       "batch_size": 1
@@ -764,10 +715,7 @@
           "level": 10
         }
       ],
-      "tools_required": [
-        "wrench_set",
-        "tire_iron"
-      ],
+      "tools_required": [ "wrench_set", "tire_iron" ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 60,
       "batch_size": 1
@@ -806,10 +754,7 @@
           "level": 10
         }
       ],
-      "tools_required": [
-        "wrench_set",
-        "tire_iron"
-      ],
+      "tools_required": [ "wrench_set", "tire_iron" ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 80,
       "batch_size": 1
@@ -849,10 +794,7 @@
           "level": 20
         }
       ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "hoist"
-      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "hoist" ],
       "station_required": "garage_bay",
       "time_to_craft": 1500,
       "batch_size": 1
@@ -898,10 +840,7 @@
           "level": 25
         }
       ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "hoist"
-      ],
+      "tools_required": [ "welding_torch_oxyacetylene", "hoist" ],
       "station_required": "garage_bay",
       "time_to_craft": 2000,
       "batch_size": 1
@@ -939,9 +878,7 @@
           "level": 15
         }
       ],
-      "tools_required": [
-        "welding_torch_oxyacetylene"
-      ],
+      "tools_required": [ "welding_torch_oxyacetylene" ],
       "station_required": "workbench_basic_tile",
       "time_to_craft": 200,
       "batch_size": 1

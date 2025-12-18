@@ -1,351 +1,242 @@
 {
-  "Strength": [
-    {
-      "name": "Grapple Specialist",
-      "description": "+2 to Unarmed checks to start or break grapples.",
-      "effects": [
+    "Strength": [
         {
-          "type": "grapple_bonus",
-          "value": 2
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Breaker",
-      "description": "Your melee attacks ignore 1 point of armor reduction on the hit body part.",
-      "effects": [
-        {
-          "type": "armor_penetration",
-          "value": 1
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Heavy Carrier",
-      "description": "+6 total inventory slots (after containers).",
-      "effects": [
-        {
-          "type": "inventory_slots_bonus",
-          "value": 6
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Clinch Fighter",
-      "description": "While grappling, you gain +2 to Block (Unarmed).",
-      "effects": [
-        {
-          "type": "grapple_block_bonus",
-          "value": 2
-        }
-      ],
-      "tier": 1
-    }
-  ],
-  "Intelligence": [
-    {
-      "name": "Field Medic",
-      "description": "+2 to Medicine when treating a Health Crisis or applying rest treatment.",
-      "effects": [
-        {
-          "type": "skill_bonus",
-          "skill": "Medicine",
-          "condition": "treatment",
-          "value": 2
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Tinkerer",
-      "description": "+2 to Repair; clearing a weapon jam gains +2.",
-      "effects": [
-        {
-          "type": "skill_bonus",
-          "skill": "Repair",
-          "value": 2
+            "name": "Grapple Specialist",
+            "description": "+2 to Unarmed checks to start or break grapples.",
+            "effects": [
+                { "type": "grapple_bonus", "value": 2 }
+            ],
+            "tier": 1
         },
         {
-          "type": "clear_jam_bonus",
-          "value": 2
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Sapper",
-      "description": "On missed thrown explosives, reduce scatter by 1 tile.",
-      "effects": [
-        {
-          "type": "reduce_explosive_scatter",
-          "value": 1
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Circuit Ghost",
-      "description": "+2 to Electronics/Lockpick when bypassing powered doors or locks.",
-      "effects": [
-        {
-          "type": "skill_bonus",
-          "skill": "Electronics",
-          "condition": "bypassing",
-          "value": 2
+            "name": "Breaker",
+            "description": "Your melee attacks ignore 1 point of armor reduction on the hit body part.",
+            "effects": [
+                { "type": "armor_penetration", "value": 1 }
+            ],
+            "tier": 1
         },
         {
-          "type": "skill_bonus",
-          "skill": "Lockpick",
-          "condition": "bypassing",
-          "value": 2
-        }
-      ],
-      "tier": 1
-    }
-  ],
-  "Dexterity": [
-    {
-      "name": "Evasive Footwork",
-      "description": "+1 to Dodge.",
-      "effects": [
+            "name": "Heavy Carrier",
+            "description": "+6 total inventory slots (after containers).",
+            "effects": [
+                { "type": "inventory_slots_bonus", "value": 6 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "dodge_bonus",
-          "value": 1
+            "name": "Clinch Fighter",
+            "description": "While grappling, you gain +2 to Block (Unarmed).",
+            "effects": [
+                { "type": "grapple_block_bonus", "value": 2 }
+            ],
+            "tier": 1
         }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Quickdraw",
-      "description": "Once per turn, you may swap a hand‑held item for free.",
-      "effects": [
+    ],
+    "Intelligence": [
         {
-          "type": "free_item_swap",
-          "value": 1
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Controlled Burst",
-      "description": "Reduce Burst and Auto fire penalties by 2.",
-      "effects": [
+            "name": "Field Medic",
+            "description": "+2 to Medicine when treating a Health Crisis or applying rest treatment.",
+            "effects": [
+                { "type": "skill_bonus", "skill": "Medicine", "condition": "treatment", "value": 2 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "reduce_burst_penalty",
-          "value": 2
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Catfoot",
-      "description": "If you end your turn in cover, gain +1 to defense until your next turn.",
-      "effects": [
+            "name": "Tinkerer",
+            "description": "+2 to Repair; clearing a weapon jam gains +2.",
+            "effects": [
+                { "type": "skill_bonus", "skill": "Repair", "value": 2 },
+                { "type": "clear_jam_bonus", "value": 2 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "cover_defense_bonus",
-          "value": 1
-        }
-      ],
-      "tier": 1
-    }
-  ],
-  "Constitution": [
-    {
-      "name": "Crisis Manager",
-      "description": "Your personal Health Crisis timer is +1 turn longer.",
-      "effects": [
+            "name": "Sapper",
+            "description": "On missed thrown explosives, reduce scatter by 1 tile.",
+            "effects": [
+                { "type": "reduce_explosive_scatter", "value": 1 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "crisis_timer_bonus",
-          "value": 1
+            "name": "Circuit Ghost",
+            "description": "+2 to Electronics/Lockpick when bypassing powered doors or locks.",
+            "effects": [
+                { "type": "skill_bonus", "skill": "Electronics", "condition": "bypassing", "value": 2 },
+                { "type": "skill_bonus", "skill": "Lockpick", "condition": "bypassing", "value": 2 }
+            ],
+            "tier": 1
         }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Thick‑Skinned",
-      "description": "Reduce incoming Fire, Explosive, and Acid damage by 1 (before limb split).",
-      "effects": [
+    ],
+    "Dexterity": [
         {
-          "type": "damage_reduction",
-          "damageTypes": [
-            "Fire",
-            "Explosive",
-            "Acid"
-          ],
-          "value": 1
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Endure",
-      "description": "Reduce hunger/thirst damage by 1 when it would be applied.",
-      "effects": [
+            "name": "Evasive Footwork",
+            "description": "+1 to Dodge.",
+            "effects": [
+                { "type": "dodge_bonus", "value": 1 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "hunger_thirst_reduction",
-          "value": 1
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Fortified Frame",
-      "description": "+1 max HP to all body parts.",
-      "effects": [
+            "name": "Quickdraw",
+            "description": "Once per turn, you may swap a hand‑held item for free.",
+            "effects": [
+                { "type": "free_item_swap", "value": 1 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "max_hp_bonus",
-          "value": 1
-        }
-      ],
-      "tier": 1
-    }
-  ],
-  "Perception": [
-    {
-      "name": "Eagle Eye",
-      "description": "+1 tile to vision radius in adequate light.",
-      "effects": [
+            "name": "Controlled Burst",
+            "description": "Reduce Burst and Auto fire penalties by 2.",
+            "effects": [
+                { "type": "reduce_burst_penalty", "value": 2 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "vision_radius_bonus",
-          "value": 1
+            "name": "Catfoot",
+            "description": "If you end your turn in cover, gain +1 to defense until your next turn.",
+            "effects": [
+                { "type": "cover_defense_bonus", "value": 1 }
+            ],
+            "tier": 1
         }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Rangefinder",
-      "description": "Reduce non‑close range penalties by 1 (Long/Very Long/Extremely Long).",
-      "effects": [
+    ],
+    "Constitution": [
         {
-          "type": "reduce_range_penalty",
-          "value": 1
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Spotter",
-      "description": "+2 to Investigation checks to detect traps or hidden containers.",
-      "effects": [
+            "name": "Crisis Manager",
+            "description": "Your personal Health Crisis timer is +1 turn longer.",
+            "effects": [
+                { "type": "crisis_timer_bonus", "value": 1 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "skill_bonus",
-          "skill": "Investigation",
-          "condition": "detecting",
-          "value": 2
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "True Call",
-      "description": "Reduce called‑shot penalties by 1 (e.g., head −4 → −3).",
-      "effects": [
+            "name": "Thick‑Skinned",
+            "description": "Reduce incoming Fire, Explosive, and Acid damage by 1 (before limb split).",
+            "effects": [
+                { "type": "damage_reduction", "damageTypes": ["Fire", "Explosive", "Acid"], "value": 1 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "reduce_called_shot_penalty",
-          "value": 1
-        }
-      ],
-      "tier": 1
-    }
-  ],
-  "Willpower": [
-    {
-      "name": "Steadfast",
-      "description": "+2 to Willpower checks to resist fear/panic‑like effects.",
-      "effects": [
+            "name": "Endure",
+            "description": "Reduce hunger/thirst damage by 1 when it would be applied.",
+            "effects": [
+                { "type": "hunger_thirst_reduction", "value": 1 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "stat_check_bonus",
-          "stat": "Willpower",
-          "condition": "fear",
-          "value": 2
+            "name": "Fortified Frame",
+            "description": "+1 max HP to all body parts.",
+            "effects": [
+                { "type": "max_hp_bonus", "value": 1 }
+            ],
+            "tier": 1
         }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Battle Focus",
-      "description": "Aim grants +1 additional bonus.",
-      "effects": [
+    ],
+    "Perception": [
         {
-          "type": "aim_bonus",
-          "value": 1
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Unshakable",
-      "description": "+1 to defense while at 50% total HP or lower.",
-      "effects": [
+            "name": "Eagle Eye",
+            "description": "+1 tile to vision radius in adequate light.",
+            "effects": [
+                { "type": "vision_radius_bonus", "value": 1 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "low_hp_defense_bonus",
-          "value": 1
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Last Push",
-      "description": "The first time you would gain Exhaustion in a combat, delay it until combat ends.",
-      "effects": [
+            "name": "Rangefinder",
+            "description": "Reduce non‑close range penalties by 1 (Long/Very Long/Extremely Long).",
+            "effects": [
+                { "type": "reduce_range_penalty", "value": 1 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "delay_exhaustion",
-          "value": 1
-        }
-      ],
-      "tier": 1
-    }
-  ],
-  "Charisma": [
-    {
-      "name": "Silver Tongue",
-      "description": "+2 to Persuasion checks.",
-      "effects": [
+            "name": "Spotter",
+            "description": "+2 to Investigation checks to detect traps or hidden containers.",
+            "effects": [
+                { "type": "skill_bonus", "skill": "Investigation", "condition": "detecting", "value": 2 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "skill_bonus",
-          "skill": "Persuasion",
-          "value": 2
+            "name": "True Call",
+            "description": "Reduce called‑shot penalties by 1 (e.g., head −4 → −3).",
+            "effects": [
+                { "type": "reduce_called_shot_penalty", "value": 1 }
+            ],
+            "tier": 1
         }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Menacing Presence",
-      "description": "+2 to Intimidation checks.",
-      "effects": [
+    ],
+    "Willpower": [
         {
-          "type": "skill_bonus",
-          "skill": "Intimidation",
-          "value": 2
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Quartermaster",
-      "description": "Buy/sell prices improve by 10%.",
-      "effects": [
+            "name": "Steadfast",
+            "description": "+2 to Willpower checks to resist fear/panic‑like effects.",
+            "effects": [
+                { "type": "stat_check_bonus", "stat": "Willpower", "condition": "fear", "value": 2 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "trade_bonus",
-          "value": 0.1
-        }
-      ],
-      "tier": 1
-    },
-    {
-      "name": "Squad Leader",
-      "description": "Allies within 5 tiles increase their cover bonus by +1 (to a max of +1 from this perk).",
-      "effects": [
+            "name": "Battle Focus",
+            "description": "Aim grants +1 additional bonus.",
+            "effects": [
+                { "type": "aim_bonus", "value": 1 }
+            ],
+            "tier": 1
+        },
         {
-          "type": "ally_cover_bonus",
-          "radius": 5,
-          "value": 1
+            "name": "Unshakable",
+            "description": "+1 to defense while at 50% total HP or lower.",
+            "effects": [
+                { "type": "low_hp_defense_bonus", "value": 1 }
+            ],
+            "tier": 1
+        },
+        {
+            "name": "Last Push",
+            "description": "The first time you would gain Exhaustion in a combat, delay it until combat ends.",
+            "effects": [
+                { "type": "delay_exhaustion", "value": 1 }
+            ],
+            "tier": 1
         }
-      ],
-      "tier": 1
-    }
-  ]
+    ],
+    "Charisma": [
+        {
+            "name": "Silver Tongue",
+            "description": "+2 to Persuasion checks.",
+            "effects": [
+                { "type": "skill_bonus", "skill": "Persuasion", "value": 2 }
+            ],
+            "tier": 1
+        },
+        {
+            "name": "Menacing Presence",
+            "description": "+2 to Intimidation checks.",
+            "effects": [
+                { "type": "skill_bonus", "skill": "Intimidation", "value": 2 }
+            ],
+            "tier": 1
+        },
+        {
+            "name": "Quartermaster",
+            "description": "Buy/sell prices improve by 10%.",
+            "effects": [
+                { "type": "trade_bonus", "value": 0.10 }
+            ],
+            "tier": 1
+        },
+        {
+            "name": "Squad Leader",
+            "description": "Allies within 5 tiles increase their cover bonus by +1 (to a max of +1 from this perk).",
+            "effects": [
+                { "type": "ally_cover_bonus", "radius": 5, "value": 1 }
+            ],
+            "tier": 1
+        }
+    ]
 }
