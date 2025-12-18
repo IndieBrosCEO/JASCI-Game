@@ -399,5 +399,35 @@
     "type": "tool", "size": 1, "weightLbs": 1, "tags": [ "tool", "crafting" ],
     "equipSlots": [ "hand" ],
     "canEquip": true
+  },
+  {
+    "id": "pickaxe",
+    "name": "Pickaxe",
+    "family": "tool",
+    "properties": { "type": "pickaxe" },
+    "description": "A heavy tool for breaking rock.",
+    "type": "tool", "size": 3, "weightLbs": 5, "tags": [ "tool", "mining" ],
+    "equipSlots": [ "hand" ], "action": "mine",
+    "canEquip": true
+  },
+  {
+    "id": "hoe",
+    "name": "Hoe",
+    "family": "tool",
+    "properties": { "type": "hoe" },
+    "description": "A tool used for tilling soil.",
+    "type": "tool", "size": 3, "weightLbs": 3, "tags": [ "tool", "farming" ],
+    "equipSlots": [ "hand" ], "action": "till",
+    "canEquip": true
+  },
+  {
+    "id": "axe_wood",
+    "name": "Wood Axe",
+    "family": "tool",
+    "properties": { "type": "axe" },
+    "description": "A heavy axe designed for felling trees.",
+    "type": "tool", "size": 3, "weightLbs": 4, "tags": [ "tool", "chopping" ],
+    "equipSlots": [ "hand" ], "action": "chop",
+    "canEquip": true
   }
 ]

@@ -104,6 +104,11 @@ function _getActionsForItem(it) {
     if (tags.includes("harvest:mud")) actions.push("Harvest Mud");
     if (tags.includes("harvest:gravel")) actions.push("Harvest Gravel");
 
+    // Tilling Soil
+    if (it.id === "DI" || it.id === "GR" || it.id === "TGR" || it.id === "MF" || it.id === "MU") {
+        actions.push("Till Soil");
+    }
+
     // Scavenging
     if (tags.includes("scavenge:generic") || tags.includes("scavenge:junk")) actions.push("Scavenge");
     if (tags.includes("scavenge:furniture")) actions.push("Scavenge Furniture"); // Or just "Scavenge" if generic is preferred
@@ -619,6 +624,54 @@ function _performAction(action, it) {
     } else if (action === "Fish") {
         if (window.fishingManager) {
             window.fishingManager.startFishing(window.gameState);
+        }
+    } else if (action === "Till Soil") {
+        if (!window.inventoryManager.hasItem("hoe")) {
+            logToConsole("You need a hoe to till soil.", "orange");
+            if (window.audioManager) window.audioManager.playUiSound("ui_error_01.wav");
+        } else {
+            // Perform tilling
+            let changed = false;
+            // Check middle layer for DI, MU (blocks/walls) -> destroy block and make floor tilled
+            // Or Check bottom layer for GR, TGR, MF (floor) -> change floor to tilled
+            // 'it' coordinates are x,y,z
+            const currentMap = window.mapRenderer.getCurrentMapData();
+            const zStr = it.z.toString();
+            const levelData = currentMap.levels[zStr];
+
+            // If it's a middle layer block (DI, MU)
+            if (levelData.middle && levelData.middle[it.y] && levelData.middle[it.y][it.x]) {
+                const midTile = levelData.middle[it.y][it.x];
+                const midId = (typeof midTile === 'object') ? midTile.tileId : midTile;
+                if (midId === "DI" || midId === "MU") {
+                    // Remove from middle, set bottom to TSL
+                    levelData.middle[it.y][it.x] = null; // Clear obstacle
+                    // Ensure bottom layer array exists
+                    if (!levelData.bottom) levelData.bottom = [];
+                    if (!levelData.bottom[it.y]) levelData.bottom[it.y] = [];
+                    levelData.bottom[it.y][it.x] = "TSL";
+                    changed = true;
+                }
+            }
+
+            // If it wasn't handled in middle, check bottom (GR, TGR, MF)
+            if (!changed && levelData.bottom && levelData.bottom[it.y] && levelData.bottom[it.y][it.x]) {
+                 const botTile = levelData.bottom[it.y][it.x];
+                 const botId = (typeof botTile === 'object') ? botTile.tileId : botTile;
+                 if (botId === "GR" || botId === "TGR" || botId === "MF") {
+                     levelData.bottom[it.y][it.x] = "TSL";
+                     changed = true;
+                 }
+            }
+
+            if (changed) {
+                logToConsole("You till the soil.", "success");
+                if (window.audioManager) window.audioManager.playUiSound("ui_action_01.wav"); // Placeholder
+                // Redraw
+                window.mapRenderer.scheduleRender();
+            } else {
+                logToConsole("This soil cannot be tilled further.", "neutral");
+            }
         }
     } else if (action === "Harvest Wood" || action === "Mine Stone" || action === "Scavenge" || action === "Butcher" ||
                action === "Harvest Plant" || action === "Harvest Sand" || action === "Harvest Mud" || action === "Harvest Gravel" ||
