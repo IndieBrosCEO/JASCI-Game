@@ -4,21 +4,59 @@
     "name": "Dart Trap Kit",
     "description": "A kit for a pressure-plate triggered dart trap.",
     "family": "trap_kit",
-    "properties": { "id": "pressure_plate_dart_trap_kit" },
-    "type": "TRAP_ITEM", "size": 3, "weightLbs": 4.0, "value": 40,
+    "properties": {
+      "id": "pressure_plate_dart_trap_kit"
+    },
+    "type": "TRAP_ITEM",
+    "size": 3,
+    "weightLbs": 4,
+    "value": 40,
     "placesTrapId": "pressure_plate_darts",
-    "stackable": true, "maxStack": 5, "sprite": "T", "color": "brown",
-    "tags": [ "trap", "kit", "mechanical" ],
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "T",
+    "color": "#a52a54",
+    "tags": [
+      "trap",
+      "kit",
+      "mechanical"
+    ],
     "recipe": {
-        "description": "Assemble a kit for a pressure-plate dart trap.",
-        "components": [
-            { "family": "wood", "quantity": 2, "require": { "type": "stick" } },
-            { "family": "metal", "quantity": 1, "require": { "type": "scrap" } },
-            { "family": "fastener", "quantity": 4, "require": { "type": "nail" } }
-        ],
-        "skills_required": [ { "skill": "Repair", "level": 4 } ],
-        "tools_required": [ "hammer_peen" ],
-        "time_to_craft": 25, "batch_size": 1
+      "description": "Assemble a kit for a pressure-plate dart trap.",
+      "components": [
+        {
+          "family": "wood",
+          "quantity": 2,
+          "require": {
+            "type": "stick"
+          }
+        },
+        {
+          "family": "metal",
+          "quantity": 1,
+          "require": {
+            "type": "scrap"
+          }
+        },
+        {
+          "family": "fastener",
+          "quantity": 4,
+          "require": {
+            "type": "nail"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        }
+      ],
+      "tools_required": [
+        "hammer_peen"
+      ],
+      "time_to_craft": 25,
+      "batch_size": 1
     }
   },
   {
@@ -26,20 +64,52 @@
     "name": "Tripwire Alarm Kit",
     "description": "A kit to set up a simple tripwire alarm that creates noise.",
     "family": "trap_kit",
-    "properties": { "id": "tripwire_alarm_kit" },
-    "type": "TRAP_ITEM", "size": 2, "weightLbs": 1.5, "value": 25,
+    "properties": {
+      "id": "tripwire_alarm_kit"
+    },
+    "type": "TRAP_ITEM",
+    "size": 2,
+    "weightLbs": 1.5,
+    "value": 25,
     "placesTrapId": "tripwire_alarm",
-    "stackable": true, "maxStack": 10, "sprite": "T", "color": "gray",
-    "tags": [ "trap", "kit", "alarm" ],
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "T",
+    "color": "#8080c5",
+    "tags": [
+      "trap",
+      "kit",
+      "alarm"
+    ],
     "recipe": {
-        "description": "Assemble a kit for a simple tripwire alarm.",
-        "components": [
-            { "family": "wire", "quantity": 2, "require": { "material": "metal" } },
-            { "family": "metal", "quantity": 2, "require": { "type": "scrap" } }
-        ],
-        "skills_required": [ { "skill": "Repair", "level": 2 } ],
-        "tools_required": [ "pliers_set" ],
-        "time_to_craft": 15, "batch_size": 1
+      "description": "Assemble a kit for a simple tripwire alarm.",
+      "components": [
+        {
+          "family": "wire",
+          "quantity": 2,
+          "require": {
+            "material": "metal"
+          }
+        },
+        {
+          "family": "metal",
+          "quantity": 2,
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "pliers_set"
+      ],
+      "time_to_craft": 15,
+      "batch_size": 1
     }
   }
 ]

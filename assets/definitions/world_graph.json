@@ -3,7 +3,10 @@
     {
       "id": "fallbrook_hub",
       "displayName": "Fallbrook",
-      "worldPos": { "x": 100, "y": 100 },
+      "worldPos": {
+        "x": 100,
+        "y": 100
+      },
       "climate": "temperate",
       "danger": "low",
       "defaultAreaId": "fallbrook_pd"
@@ -11,7 +14,10 @@
     {
       "id": "outskirts",
       "displayName": "Outskirts",
-      "worldPos": { "x": 120, "y": 110 },
+      "worldPos": {
+        "x": 120,
+        "y": 110
+      },
       "climate": "arid",
       "danger": "medium",
       "defaultAreaId": "wasteland_camp"

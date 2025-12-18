@@ -1,416 +1,1287 @@
 {
-    "metal": {
-        "properties": {
-            "type": { "type": "string", "enum": ["scrap", "ingot", "dust", "nugget", "bits", "rod", "sheet"] },
-            "material": { "type": "string", "enum": ["generic", "iron", "steel", "copper", "gold", "silver"] },
-            "grade": { "type": "any", "enum": [1, 2, 3, "tool"] },
-            "size": { "type": "string", "enum": ["thin", "small"] }
-        }
-    },
-    "wood": {
-        "properties": {
-            "type": { "type": "string", "enum": ["plank", "log", "stick", "splinter"] },
-            "grade": { "type": "integer" }
-        }
-    },
-    "fabric": {
-        "properties": {
-            "type": { "type": "string", "enum": ["scrap", "bolt", "roll", "sheet"] },
-            "material": { "type": "string", "enum": ["cotton", "wool", "fiberglass", "plant_fiber", "canvas", "nylon", "kevlar", "burlap"] },
-            "grade": { "type": "any", "enum": [1, 2, "fine", "sturdy", "tough", "ballistic", "rough"] }
-        }
-    },
-    "adhesive": {
-        "properties": {
-            "type": { "type": "string", "enum": ["tape", "paste", "epoxy"] },
-            "grade": { "type": "integer" }
-        }
-    },
-    "fastener": {
-        "properties": {
-            "type": { "type": "string", "enum": ["nail", "rivet", "buckle", "bolts_and_nuts"] },
-            "material": { "type": "string", "enum": ["metal"] },
-            "size": { "type": "string", "enum": ["small"] }
-        }
-    },
-    "blade": {
-        "properties": {
-            "type": { "type": "string", "enum": ["shard"] },
-            "material": { "type": "string", "enum": ["glass", "stone"] }
-        }
-    },
-    "leather": {
-        "properties": {
-            "type": { "type": "string", "enum": ["strip", "rawhide", "tanned", "raw", "cured", "cured_hide", "tanned_hide"] },
-            "grade": { "type": "integer" },
-            "size": { "type": "string", "enum": ["small", "fine"] },
-            "thickness": { "type": "string", "enum": ["thick", "medium"] }
-        }
-    },
-    "container": {
-        "properties": {
-            "type": { "type": "string", "enum": ["bottle"] },
-            "material": { "type": "string", "enum": ["glass"] },
-            "size": { "type": "string", "enum": ["small"] }
-        }
-    },
-    "fuel": {
-        "properties": {
-            "type": { "type": "string", "enum": ["gasoline", "charcoal"] },
-            "grade": { "type": "integer" }
-        }
-    },
-    "armor_plate": {
-        "properties": {
-            "material": { "type": "string", "enum": ["metal", "steel"] },
-            "grade": { "type": "any", "enum": [1, "vehicle"] }
-        }
-    },
-    "seed": {
-        "properties": {
-            "plant": { "type": "string", "enum": ["tomato", "corn", "carrot"] }
-        }
-    },
-    "wax": {
-        "properties": {
-            "type": { "type": "string", "enum": ["beeswax"] }
-        }
-    },
-    "chemical": {
-        "properties": {
-            "type": { "type": "string", "enum": ["lye", "resin", "sulfur", "saltpeter", "iodine", "lime_solution", "reagent"] },
-            "material": { "type": "string", "enum": ["fiberglass"] },
-            "grade": { "type": "string", "enum": ["generic"] }
-        }
-    },
-    "organic": {
-        "properties": {
-            "type": { "type": "string", "enum": ["fat", "plant_fiber", "sinew", "feather"] }
-        }
-    },
-    "gemstone": {
-        "properties": {
-            "type": { "type": "string", "enum": ["uncut"] },
-            "size": { "type": "string", "enum": ["small"] }
-        }
-    },
-    "wire": {
-        "properties": {
-            "material": { "type": "string", "enum": ["copper", "metal"] },
-            "insulated": { "type": "boolean" },
-            "stiffness": { "type": "string", "enum": ["stiff"] },
-            "size": { "type": "string", "enum": ["thin"] }
-        }
-    },
-    "component": {
-        "properties": {
-            "type": { "type": "string", "enum": ["hose", "gears", "circuit_board", "wad", "led", "spring", "wick", "mechanical_parts", "heating_element", "antenna", "memory_chip", "sensor", "safety_pin_assembly"] },
-            "material": { "type": "string", "enum": ["rubber", "metal", "nichrome"] },
-            "populated": { "type": "boolean" },
-            "for": { "type": "string", "enum": ["shotgun", "radio"] },
-            "size": { "type": "string", "enum": ["small"] },
-            "grade": { "type": "any", "enum": [1, "vehicle"] }
-        }
-    },
-    "construction_material": {
-        "properties": {
-            "type": { "type": "string", "enum": ["concrete_mix", "sand", "stone_block"] }
-        }
-    },
-    "ceramic": {
-        "properties": {
-            "type": { "type": "string", "enum": ["clay"] }
-        }
-    },
-    "explosive": {
-        "properties": {
-            "type": { "type": "string", "enum": ["gunpowder", "generic_b", "plastic", "det_cord", "dynamite"] },
-            "grade": { "type": "integer" }
-        }
-    },
-    "casing": {
-        "properties": {
-            "type": { "type": "string", "enum": ["pistol", "rifle", "grenade", "device"] },
-            "size": { "type": "string", "enum": ["small", "large", "medium", "40mm", "hand"] },
-            "material": { "type": "string", "enum": ["brass", "metal", "plastic"] }
-        }
-    },
-    "shotshell_hull": {
-        "properties": {
-            "gauge": { "type": "integer", "enum": [10, 12] }
-        }
-    },
-    "primer": {
-        "properties": {
-            "type": { "type": "string", "enum": ["pistol", "rifle", "shotgun"] },
-            "size": { "type": "string", "enum": ["small", "large"] }
-        }
-    },
-    "projectile": {
-        "properties": {
-            "caliber": { "type": "string" },
-            "type": { "type": "string", "enum": ["bullet", "pistol_bullet", "buckshot"] }
-        }
-    },
-    "arrow_shaft": {
-        "properties": {
-            "material": { "type": "string", "enum": ["wood"] },
-            "type": { "type": "string", "enum": ["arrow", "bolt"] }
-        }
-    },
-    "arrowhead": {
-        "properties": {
-            "material": { "type": "string", "enum": ["stone", "metal"] },
-            "grade": { "type": "integer" }
-        }
-    },
-    "bolthead": {
-        "properties": {
-            "material": { "type": "string", "enum": ["metal"] },
-            "grade": { "type": "integer" }
-        }
-    },
-    "fuze": {
-        "properties": {
-            "type": { "type": "string", "enum": ["grenade", "advanced"] },
-            "trigger": { "type": "array", "items": { "type": "string", "enum": ["timed", "impact"] } }
-        }
-    },
-    "thread": {
-        "properties": {
-            "material": { "type": "string", "enum": ["plant_fiber", "synthetic"] },
-            "grade": { "type": "integer" }
-        }
-    },
-    "cordage": {
-        "properties": {
-            "material": { "type": "string", "enum": ["plant_fiber"] },
-            "grade": { "type": "integer" }
-        }
-    },
-    "metal_sheet": {
-        "properties": {
-            "thickness": { "type": "string", "enum": ["thin", "sturdy"] }
-        }
-    },
-    "plastic": {
-        "properties": {
-            "type": { "type": "string", "enum": ["scrap", "sheet"] },
-            "processed": { "type": "boolean" },
-            "material": { "type": "string", "enum": ["plexiglass"] },
-            "thickness": { "type": "string", "enum": ["thick"] }
-        }
-    },
-    "power_source": {
-        "properties": {
-            "type": { "type": "string", "enum": ["battery"] },
-            "size": { "type": "string", "enum": ["small"] }
-        }
-    },
-    "lens": {
-        "properties": {
-            "material": { "type": "string", "enum": ["glass"] },
-            "grade": { "type": "any", "enum": [1, "optical"] }
-        }
-    },
-    "tannin": {
-        "properties": {
-            "source": { "type": "string", "enum": ["bark"] },
-            "grade": { "type": "integer" }
-        }
-    },
-    "medicinal": {
-        "properties": {
-            "type": { "type": "string", "enum": ["antiseptic_pulp", "herb"] },
-            "source": { "type": "string", "enum": ["herbal"] },
-            "name": { "type": "string", "enum": ["comfrey"] }
-        }
-    },
-    "rubber": {
-        "properties": {
-            "form": { "type": "string", "enum": ["strips_chunks", "sheet"] },
-            "source": { "type": "string", "enum": ["tire"] }
-        }
-    },
-    "salvage": {
-        "properties": {
-            "type": { "type": "string", "enum": ["tire", "plastic_junk"] }
-        }
-    },
-    "handle": {
-        "properties": {
-            "material": { "type": "string", "enum": ["wood"] },
-            "grade": { "type": "integer" },
-            "type": { "type": "string", "enum": ["scales"] }
-        }
-    },
-    "padding": {
-        "properties": {
-            "material": { "type": "string", "enum": ["foam"] }
-        }
-    },
-    "motor": {
-        "properties": {
-            "type": { "type": "string", "enum": ["electric"] },
-            "size": { "type": "string", "enum": ["small", "large"] }
-        }
-    },
-    "engine_component": {
-        "properties": {
-            "type": { "type": "string", "enum": ["block", "piston_set", "crankshaft"] },
-            "size": { "type": "string", "enum": ["small"] }
-        }
-    },
-    "needle": {
-        "properties": {
-            "material": { "type": "string", "enum": ["steel"] },
-            "size": { "type": "string", "enum": ["standard", "heavy"] }
-        }
-    },
-    "pigment": {
-        "properties": {
-            "color": { "type": "string", "enum": ["green", "brown"] },
-            "source": { "type": "string", "enum": ["plant", "bark"] }
-        }
-    },
-    "dye": {
-        "properties": {
-            "color": { "type": "string", "enum": ["green", "brown"] },
-            "source": { "type": "string", "enum": ["natural"] }
-        }
-    },
-    "netting": {
-        "properties": {
-            "strength": { "type": "string", "enum": ["strong"] }
-        }
-    },
-    "liquid": {
-        "properties": {
-            "type": { "type": "string", "enum": ["water"] },
-            "quality": { "type": "string", "enum": ["clean"] }
-        }
-    },
-    "stone": {
-        "properties": {
-            "type": { "type": "string", "enum": ["rock"] },
-            "size": { "type": "string", "enum": ["large"] }
-        }
-    },
-    "shelter": {
-        "properties": {
-            "type": { "type": "string", "enum": ["tarp"] },
-            "grade": { "type": "integer" }
-        }
-    },
-    "medical": {
-        "properties": {
-            "type": { "type": "string", "enum": ["splint", "bandage", "kit", "purification_tablets", "pharmaceutical", "stimulant", "antidote", "salve"] },
-            "material": { "type": "string", "enum": ["wood"] },
-            "grade": { "type": "any", "enum": [1, 2, "combat", "basic"] },
-            "effect": { "type": "string", "enum": ["antibiotic", "painkiller", "healing"] },
-            "strength": { "type": "string", "enum": ["strong"] },
-            "source": { "type": "string", "enum": ["herbal"] }
-        }
-    },
-    "hook": {
-        "properties": {
-            "material": { "type": "string", "enum": ["metal"] },
-            "size": { "type": "string", "enum": ["small"] }
-        }
-    },
-    "engine_kit": {
-        "properties": {
-            "type": { "type": "string", "enum": ["v4"] }
-        }
-    },
-    "pole": {
-        "properties": {
-            "material": { "type": "string", "enum": ["wood"] },
-            "length": { "type": "string", "enum": ["long"] }
-        }
-    },
-    "blade_blank": {
-        "properties": {
-            "material": { "type": "string", "enum": ["metal"] },
-            "size": { "type": "string", "enum": ["small", "large"] }
-        }
-    },
-    "food": {
-        "properties": {
-            "type": { "type": "string", "enum": ["canned", "bar", "mre", "paste"] },
-            "content": { "type": "string", "enum": ["beans"] },
-            "effect": { "type": "string", "enum": ["energy"] },
-            "container": { "type": "string", "enum": ["tube"] }
-        }
-    },
-    "drink": {
-        "properties": {
-            "type": { "type": "string", "enum": ["water"] },
-            "container": { "type": "string", "enum": ["bottle", "canteen"] }
-        }
-    },
-    "ink": {
-        "properties": {
-            "color": { "type": "string", "enum": ["black"] }
-        }
-    },
-    "writing_surface": {
-        "properties": {
-            "type": { "type": "string", "enum": ["parchment"] }
-        }
-    },
-    "ritual": {
-        "properties": {
-            "type": { "type": "string", "enum": ["incense", "herbs"] },
-            "scent": { "type": "string", "enum": ["sandalwood"] },
-            "grade": { "type": "string", "enum": ["sacred"] }
-        }
-    },
-    "wall": {
-        "properties": {
-            "material": { "type": "string", "enum": ["wood"] },
-            "grade": { "type": "integer" }
-        }
-    },
-    "door": {
-        "properties": {
-            "material": { "type": "string", "enum": ["wood"] },
-            "grade": { "type": "integer" }
-        }
-    },
-    "trap_construction": {
-        "properties": {
-            "type": { "type": "string", "enum": ["spike_pit"] }
-        }
-    },
-    "crafting_station": {
-        "properties": {
-            "type": { "type": "string", "enum": ["workbench", "forge", "chemistry_set", "reloading_bench", "munitions_bench", "armor_jig", "lathe", "vehicle_bay", "engine_jig", "loom", "tanning_rack"] },
-            "grade": { "type": "any", "enum": [1, 2, "industrial"] }
-        }
-    },
-    "barricade": {
-        "properties": {
-            "material": { "type": "string", "enum": ["metal"] },
-            "grade": { "type": "integer" }
-        }
-    },
-    "utility": {
-        "properties": {
-            "type": { "type": "string", "enum": ["rain_collector"] },
-            "size": { "type": "string", "enum": ["small"] }
-        }
-    },
-    "storage": {
-        "properties": {
-            "type": { "type": "string", "enum": ["locker"] },
-            "size": { "type": "string", "enum": ["small"] }
-        }
-    },
-    "firearm": { "properties": { "type": { "type": "string" }, "caliber": { "type": "string" }, "action": { "type": "string" } } },
-    "melee_weapon": { "properties": { "type": { "type": "string" }, "size": { "type": "string" }, "quality": { "type": "string" } } },
-    "ammunition": { "properties": { "caliber": { "type": "string" }, "type": { "type": "string" } } },
-    "clothing": { "properties": { "type": { "type": "string" }, "style": { "type": "string" }, "material": { "type": "string" } } },
-    "tool": { "properties": { "type": { "type": "string" } } },
-    "trap_kit": { "properties": { "id": { "type": "string" } } }
+  "metal": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "scrap",
+          "ingot",
+          "dust",
+          "nugget",
+          "bits",
+          "rod",
+          "sheet"
+        ]
+      },
+      "material": {
+        "type": "string",
+        "enum": [
+          "generic",
+          "iron",
+          "steel",
+          "copper",
+          "gold",
+          "silver"
+        ]
+      },
+      "grade": {
+        "type": "any",
+        "enum": [
+          1,
+          2,
+          3,
+          "tool"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "thin",
+          "small"
+        ]
+      }
+    }
+  },
+  "wood": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "plank",
+          "log",
+          "stick",
+          "splinter"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      }
+    }
+  },
+  "fabric": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "scrap",
+          "bolt",
+          "roll",
+          "sheet"
+        ]
+      },
+      "material": {
+        "type": "string",
+        "enum": [
+          "cotton",
+          "wool",
+          "fiberglass",
+          "plant_fiber",
+          "canvas",
+          "nylon",
+          "kevlar",
+          "burlap"
+        ]
+      },
+      "grade": {
+        "type": "any",
+        "enum": [
+          1,
+          2,
+          "fine",
+          "sturdy",
+          "tough",
+          "ballistic",
+          "rough"
+        ]
+      }
+    }
+  },
+  "adhesive": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "tape",
+          "paste",
+          "epoxy"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      }
+    }
+  },
+  "fastener": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "nail",
+          "rivet",
+          "buckle",
+          "bolts_and_nuts"
+        ]
+      },
+      "material": {
+        "type": "string",
+        "enum": [
+          "metal"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small"
+        ]
+      }
+    }
+  },
+  "blade": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "shard"
+        ]
+      },
+      "material": {
+        "type": "string",
+        "enum": [
+          "glass",
+          "stone"
+        ]
+      }
+    }
+  },
+  "leather": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "strip",
+          "rawhide",
+          "tanned",
+          "raw",
+          "cured",
+          "cured_hide",
+          "tanned_hide"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small",
+          "fine"
+        ]
+      },
+      "thickness": {
+        "type": "string",
+        "enum": [
+          "thick",
+          "medium"
+        ]
+      }
+    }
+  },
+  "container": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "bottle"
+        ]
+      },
+      "material": {
+        "type": "string",
+        "enum": [
+          "glass"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small"
+        ]
+      }
+    }
+  },
+  "fuel": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "gasoline",
+          "charcoal"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      }
+    }
+  },
+  "armor_plate": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "metal",
+          "steel"
+        ]
+      },
+      "grade": {
+        "type": "any",
+        "enum": [
+          1,
+          "vehicle"
+        ]
+      }
+    }
+  },
+  "seed": {
+    "properties": {
+      "plant": {
+        "type": "string",
+        "enum": [
+          "tomato",
+          "corn",
+          "carrot"
+        ]
+      }
+    }
+  },
+  "wax": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "beeswax"
+        ]
+      }
+    }
+  },
+  "chemical": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "lye",
+          "resin",
+          "sulfur",
+          "saltpeter",
+          "iodine",
+          "lime_solution",
+          "reagent"
+        ]
+      },
+      "material": {
+        "type": "string",
+        "enum": [
+          "fiberglass"
+        ]
+      },
+      "grade": {
+        "type": "string",
+        "enum": [
+          "generic"
+        ]
+      }
+    }
+  },
+  "organic": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "fat",
+          "plant_fiber",
+          "sinew",
+          "feather"
+        ]
+      }
+    }
+  },
+  "gemstone": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "uncut"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small"
+        ]
+      }
+    }
+  },
+  "wire": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "copper",
+          "metal"
+        ]
+      },
+      "insulated": {
+        "type": "boolean"
+      },
+      "stiffness": {
+        "type": "string",
+        "enum": [
+          "stiff"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "thin"
+        ]
+      }
+    }
+  },
+  "component": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "hose",
+          "gears",
+          "circuit_board",
+          "wad",
+          "led",
+          "spring",
+          "wick",
+          "mechanical_parts",
+          "heating_element",
+          "antenna",
+          "memory_chip",
+          "sensor",
+          "safety_pin_assembly"
+        ]
+      },
+      "material": {
+        "type": "string",
+        "enum": [
+          "rubber",
+          "metal",
+          "nichrome"
+        ]
+      },
+      "populated": {
+        "type": "boolean"
+      },
+      "for": {
+        "type": "string",
+        "enum": [
+          "shotgun",
+          "radio"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small"
+        ]
+      },
+      "grade": {
+        "type": "any",
+        "enum": [
+          1,
+          "vehicle"
+        ]
+      }
+    }
+  },
+  "construction_material": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "concrete_mix",
+          "sand",
+          "stone_block"
+        ]
+      }
+    }
+  },
+  "ceramic": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "clay"
+        ]
+      }
+    }
+  },
+  "explosive": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "gunpowder",
+          "generic_b",
+          "plastic",
+          "det_cord",
+          "dynamite"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      }
+    }
+  },
+  "casing": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "pistol",
+          "rifle",
+          "grenade",
+          "device"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small",
+          "large",
+          "medium",
+          "40mm",
+          "hand"
+        ]
+      },
+      "material": {
+        "type": "string",
+        "enum": [
+          "brass",
+          "metal",
+          "plastic"
+        ]
+      }
+    }
+  },
+  "shotshell_hull": {
+    "properties": {
+      "gauge": {
+        "type": "integer",
+        "enum": [
+          10,
+          12
+        ]
+      }
+    }
+  },
+  "primer": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "pistol",
+          "rifle",
+          "shotgun"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small",
+          "large"
+        ]
+      }
+    }
+  },
+  "projectile": {
+    "properties": {
+      "caliber": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string",
+        "enum": [
+          "bullet",
+          "pistol_bullet",
+          "buckshot"
+        ]
+      }
+    }
+  },
+  "arrow_shaft": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "wood"
+        ]
+      },
+      "type": {
+        "type": "string",
+        "enum": [
+          "arrow",
+          "bolt"
+        ]
+      }
+    }
+  },
+  "arrowhead": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "stone",
+          "metal"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      }
+    }
+  },
+  "bolthead": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "metal"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      }
+    }
+  },
+  "fuze": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "grenade",
+          "advanced"
+        ]
+      },
+      "trigger": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "timed",
+            "impact"
+          ]
+        }
+      }
+    }
+  },
+  "thread": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "plant_fiber",
+          "synthetic"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      }
+    }
+  },
+  "cordage": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "plant_fiber"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      }
+    }
+  },
+  "metal_sheet": {
+    "properties": {
+      "thickness": {
+        "type": "string",
+        "enum": [
+          "thin",
+          "sturdy"
+        ]
+      }
+    }
+  },
+  "plastic": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "scrap",
+          "sheet"
+        ]
+      },
+      "processed": {
+        "type": "boolean"
+      },
+      "material": {
+        "type": "string",
+        "enum": [
+          "plexiglass"
+        ]
+      },
+      "thickness": {
+        "type": "string",
+        "enum": [
+          "thick"
+        ]
+      }
+    }
+  },
+  "power_source": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "battery"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small"
+        ]
+      }
+    }
+  },
+  "lens": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "glass"
+        ]
+      },
+      "grade": {
+        "type": "any",
+        "enum": [
+          1,
+          "optical"
+        ]
+      }
+    }
+  },
+  "tannin": {
+    "properties": {
+      "source": {
+        "type": "string",
+        "enum": [
+          "bark"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      }
+    }
+  },
+  "medicinal": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "antiseptic_pulp",
+          "herb"
+        ]
+      },
+      "source": {
+        "type": "string",
+        "enum": [
+          "herbal"
+        ]
+      },
+      "name": {
+        "type": "string",
+        "enum": [
+          "comfrey"
+        ]
+      }
+    }
+  },
+  "rubber": {
+    "properties": {
+      "form": {
+        "type": "string",
+        "enum": [
+          "strips_chunks",
+          "sheet"
+        ]
+      },
+      "source": {
+        "type": "string",
+        "enum": [
+          "tire"
+        ]
+      }
+    }
+  },
+  "salvage": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "tire",
+          "plastic_junk"
+        ]
+      }
+    }
+  },
+  "handle": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "wood"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      },
+      "type": {
+        "type": "string",
+        "enum": [
+          "scales"
+        ]
+      }
+    }
+  },
+  "padding": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "foam"
+        ]
+      }
+    }
+  },
+  "motor": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "electric"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small",
+          "large"
+        ]
+      }
+    }
+  },
+  "engine_component": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "block",
+          "piston_set",
+          "crankshaft"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small"
+        ]
+      }
+    }
+  },
+  "needle": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "steel"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "standard",
+          "heavy"
+        ]
+      }
+    }
+  },
+  "pigment": {
+    "properties": {
+      "color": {
+        "type": "string",
+        "enum": [
+          "green",
+          "brown"
+        ]
+      },
+      "source": {
+        "type": "string",
+        "enum": [
+          "plant",
+          "bark"
+        ]
+      }
+    }
+  },
+  "dye": {
+    "properties": {
+      "color": {
+        "type": "string",
+        "enum": [
+          "green",
+          "brown"
+        ]
+      },
+      "source": {
+        "type": "string",
+        "enum": [
+          "natural"
+        ]
+      }
+    }
+  },
+  "netting": {
+    "properties": {
+      "strength": {
+        "type": "string",
+        "enum": [
+          "strong"
+        ]
+      }
+    }
+  },
+  "liquid": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "water"
+        ]
+      },
+      "quality": {
+        "type": "string",
+        "enum": [
+          "clean"
+        ]
+      }
+    }
+  },
+  "stone": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "rock"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "large"
+        ]
+      }
+    }
+  },
+  "shelter": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "tarp"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      }
+    }
+  },
+  "medical": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "splint",
+          "bandage",
+          "kit",
+          "purification_tablets",
+          "pharmaceutical",
+          "stimulant",
+          "antidote",
+          "salve"
+        ]
+      },
+      "material": {
+        "type": "string",
+        "enum": [
+          "wood"
+        ]
+      },
+      "grade": {
+        "type": "any",
+        "enum": [
+          1,
+          2,
+          "combat",
+          "basic"
+        ]
+      },
+      "effect": {
+        "type": "string",
+        "enum": [
+          "antibiotic",
+          "painkiller",
+          "healing"
+        ]
+      },
+      "strength": {
+        "type": "string",
+        "enum": [
+          "strong"
+        ]
+      },
+      "source": {
+        "type": "string",
+        "enum": [
+          "herbal"
+        ]
+      }
+    }
+  },
+  "hook": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "metal"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small"
+        ]
+      }
+    }
+  },
+  "engine_kit": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "v4"
+        ]
+      }
+    }
+  },
+  "pole": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "wood"
+        ]
+      },
+      "length": {
+        "type": "string",
+        "enum": [
+          "long"
+        ]
+      }
+    }
+  },
+  "blade_blank": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "metal"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small",
+          "large"
+        ]
+      }
+    }
+  },
+  "food": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "canned",
+          "bar",
+          "mre",
+          "paste"
+        ]
+      },
+      "content": {
+        "type": "string",
+        "enum": [
+          "beans"
+        ]
+      },
+      "effect": {
+        "type": "string",
+        "enum": [
+          "energy"
+        ]
+      },
+      "container": {
+        "type": "string",
+        "enum": [
+          "tube"
+        ]
+      }
+    }
+  },
+  "drink": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "water"
+        ]
+      },
+      "container": {
+        "type": "string",
+        "enum": [
+          "bottle",
+          "canteen"
+        ]
+      }
+    }
+  },
+  "ink": {
+    "properties": {
+      "color": {
+        "type": "string",
+        "enum": [
+          "black"
+        ]
+      }
+    }
+  },
+  "writing_surface": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "parchment"
+        ]
+      }
+    }
+  },
+  "ritual": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "incense",
+          "herbs"
+        ]
+      },
+      "scent": {
+        "type": "string",
+        "enum": [
+          "sandalwood"
+        ]
+      },
+      "grade": {
+        "type": "string",
+        "enum": [
+          "sacred"
+        ]
+      }
+    }
+  },
+  "wall": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "wood"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      }
+    }
+  },
+  "door": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "wood"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      }
+    }
+  },
+  "trap_construction": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "spike_pit"
+        ]
+      }
+    }
+  },
+  "crafting_station": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "workbench",
+          "forge",
+          "chemistry_set",
+          "reloading_bench",
+          "munitions_bench",
+          "armor_jig",
+          "lathe",
+          "vehicle_bay",
+          "engine_jig",
+          "loom",
+          "tanning_rack"
+        ]
+      },
+      "grade": {
+        "type": "any",
+        "enum": [
+          1,
+          2,
+          "industrial"
+        ]
+      }
+    }
+  },
+  "barricade": {
+    "properties": {
+      "material": {
+        "type": "string",
+        "enum": [
+          "metal"
+        ]
+      },
+      "grade": {
+        "type": "integer"
+      }
+    }
+  },
+  "utility": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "rain_collector"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small"
+        ]
+      }
+    }
+  },
+  "storage": {
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "locker"
+        ]
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "small"
+        ]
+      }
+    }
+  },
+  "firearm": {
+    "properties": {
+      "type": {
+        "type": "string"
+      },
+      "caliber": {
+        "type": "string"
+      },
+      "action": {
+        "type": "string"
+      }
+    }
+  },
+  "melee_weapon": {
+    "properties": {
+      "type": {
+        "type": "string"
+      },
+      "size": {
+        "type": "string"
+      },
+      "quality": {
+        "type": "string"
+      }
+    }
+  },
+  "ammunition": {
+    "properties": {
+      "caliber": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      }
+    }
+  },
+  "clothing": {
+    "properties": {
+      "type": {
+        "type": "string"
+      },
+      "style": {
+        "type": "string"
+      },
+      "material": {
+        "type": "string"
+      }
+    }
+  },
+  "tool": {
+    "properties": {
+      "type": {
+        "type": "string"
+      }
+    }
+  },
+  "trap_kit": {
+    "properties": {
+      "id": {
+        "type": "string"
+      }
+    }
+  }
 }

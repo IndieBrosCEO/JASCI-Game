@@ -421,11 +421,17 @@
     "name": "20mm Rounds",
     "description": "Massive 20mm anti-tank rounds.",
     "family": "ammunition",
-    "properties": { "caliber": "20mm" },
+    "properties": {
+      "caliber": "20mm"
+    },
     "type": "ammunition",
     "size": 2,
-    "weightLbs": 1.0,
-    "tags": ["ammo", "heavy", "anti_tank"],
+    "weightLbs": 1,
+    "tags": [
+      "ammo",
+      "heavy",
+      "anti_tank"
+    ],
     "ammoType": "20mm",
     "quantity": 5
   },
@@ -434,11 +440,16 @@
     "name": ".950 JDJ Rounds",
     "description": "Enormous .950 JDJ cartridges.",
     "family": "ammunition",
-    "properties": { "caliber": ".950JDJ" },
+    "properties": {
+      "caliber": ".950JDJ"
+    },
     "type": "ammunition",
     "size": 2,
     "weightLbs": 0.8,
-    "tags": ["ammo", "heavy"],
+    "tags": [
+      "ammo",
+      "heavy"
+    ],
     "ammoType": ".950JDJ",
     "quantity": 1
   },
@@ -447,11 +458,17 @@
     "name": ".55 Boys Rounds",
     "description": ".55 caliber anti-tank rifle rounds.",
     "family": "ammunition",
-    "properties": { "caliber": ".55Boys" },
+    "properties": {
+      "caliber": ".55Boys"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.4,
-    "tags": ["ammo", "heavy", "anti_tank"],
+    "tags": [
+      "ammo",
+      "heavy",
+      "anti_tank"
+    ],
     "ammoType": ".55Boys",
     "quantity": 5
   },
@@ -460,11 +477,16 @@
     "name": ".700 Nitro Express Rounds",
     "description": "Powerful big game hunting cartridges.",
     "family": "ammunition",
-    "properties": { "caliber": ".700NE" },
+    "properties": {
+      "caliber": ".700NE"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.3,
-    "tags": ["ammo", "hunting"],
+    "tags": [
+      "ammo",
+      "hunting"
+    ],
     "ammoType": ".700NE",
     "quantity": 2
   },
@@ -473,11 +495,16 @@
     "name": ".577 Tyrannosaur Rounds",
     "description": "Heavy stopping rifle cartridges.",
     "family": "ammunition",
-    "properties": { "caliber": ".577Tyr" },
+    "properties": {
+      "caliber": ".577Tyr"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.3,
-    "tags": ["ammo", "hunting"],
+    "tags": [
+      "ammo",
+      "hunting"
+    ],
     "ammoType": ".577Tyr",
     "quantity": 3
   },
@@ -486,11 +513,17 @@
     "name": "4-Bore Rounds",
     "description": "Massive black powder era cartridges.",
     "family": "ammunition",
-    "properties": { "caliber": "4bore" },
+    "properties": {
+      "caliber": "4bore"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.5,
-    "tags": ["ammo", "antique", "heavy"],
+    "tags": [
+      "ammo",
+      "antique",
+      "heavy"
+    ],
     "ammoType": "4bore",
     "quantity": 2
   },
@@ -499,11 +532,17 @@
     "name": "Blunderbuss Shot",
     "description": "A bag of scrap and lead shot for a blunderbuss.",
     "family": "ammunition",
-    "properties": { "caliber": "blunderbuss" },
+    "properties": {
+      "caliber": "blunderbuss"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.5,
-    "tags": ["ammo", "antique", "shot"],
+    "tags": [
+      "ammo",
+      "antique",
+      "shot"
+    ],
     "ammoType": "blunderbuss_shot",
     "quantity": 5
   },
@@ -512,11 +551,17 @@
     "name": "Punt Gun Shot",
     "description": "A massive charge of shot for a punt gun.",
     "family": "ammunition",
-    "properties": { "caliber": "punt_gun" },
+    "properties": {
+      "caliber": "punt_gun"
+    },
     "type": "ammunition",
     "size": 2,
-    "weightLbs": 2.0,
-    "tags": ["ammo", "antique", "heavy"],
+    "weightLbs": 2,
+    "tags": [
+      "ammo",
+      "antique",
+      "heavy"
+    ],
     "ammoType": "punt_gun_shot",
     "quantity": 1
   },
@@ -525,11 +570,16 @@
     "name": ".500 Auto Max Rounds",
     "description": "Big bore semi-auto rifle cartridges.",
     "family": "ammunition",
-    "properties": { "caliber": ".500AutoMax" },
+    "properties": {
+      "caliber": ".500AutoMax"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.2,
-    "tags": ["ammo", "modern"],
+    "tags": [
+      "ammo",
+      "modern"
+    ],
     "ammoType": ".500AutoMax",
     "quantity": 10
   },
@@ -538,11 +588,17 @@
     "name": ".454 Casull Rounds",
     "description": "High pressure magnum revolver cartridges.",
     "family": "ammunition",
-    "properties": { "caliber": ".454Casull" },
+    "properties": {
+      "caliber": ".454Casull"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.1,
-    "tags": ["ammo", "modern", "revolver"],
+    "tags": [
+      "ammo",
+      "modern",
+      "revolver"
+    ],
     "ammoType": ".454Casull",
     "quantity": 6
   },
@@ -551,11 +607,17 @@
     "name": ".500 S&W Rounds",
     "description": "The most powerful production revolver cartridge.",
     "family": "ammunition",
-    "properties": { "caliber": ".500SW" },
+    "properties": {
+      "caliber": ".500SW"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.2,
-    "tags": ["ammo", "modern", "revolver"],
+    "tags": [
+      "ammo",
+      "modern",
+      "revolver"
+    ],
     "ammoType": ".500SW",
     "quantity": 5
   },
@@ -564,11 +626,17 @@
     "name": ".460 S&W Magnum Rounds",
     "description": "High velocity magnum revolver cartridges.",
     "family": "ammunition",
-    "properties": { "caliber": ".460SW" },
+    "properties": {
+      "caliber": ".460SW"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.2,
-    "tags": ["ammo", "modern", "revolver"],
+    "tags": [
+      "ammo",
+      "modern",
+      "revolver"
+    ],
     "ammoType": ".460SW",
     "quantity": 5
   },
@@ -577,11 +645,17 @@
     "name": ".30-30 Winchester Rounds",
     "description": "Classic lever-action rifle cartridges.",
     "family": "ammunition",
-    "properties": { "caliber": ".30-30" },
+    "properties": {
+      "caliber": ".30-30"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.1,
-    "tags": ["ammo", "classic", "rifle"],
+    "tags": [
+      "ammo",
+      "classic",
+      "rifle"
+    ],
     "ammoType": ".30-30",
     "quantity": 20
   },
@@ -590,11 +664,17 @@
     "name": ".45-70 Government Rounds",
     "description": "Heavy hitting rifle cartridges.",
     "family": "ammunition",
-    "properties": { "caliber": ".45-70" },
+    "properties": {
+      "caliber": ".45-70"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.2,
-    "tags": ["ammo", "classic", "rifle"],
+    "tags": [
+      "ammo",
+      "classic",
+      "rifle"
+    ],
     "ammoType": ".45-70",
     "quantity": 10
   },
@@ -603,11 +683,17 @@
     "name": ".450 Marlin Rounds",
     "description": "Modern heavy rifle cartridges.",
     "family": "ammunition",
-    "properties": { "caliber": ".450Marlin" },
+    "properties": {
+      "caliber": ".450Marlin"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.2,
-    "tags": ["ammo", "modern", "rifle"],
+    "tags": [
+      "ammo",
+      "modern",
+      "rifle"
+    ],
     "ammoType": ".450Marlin",
     "quantity": 10
   },
@@ -616,11 +702,17 @@
     "name": ".338 Lapua Magnum Rounds",
     "description": "Long range sniper cartridges.",
     "family": "ammunition",
-    "properties": { "caliber": ".338Lapua" },
+    "properties": {
+      "caliber": ".338Lapua"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.3,
-    "tags": ["ammo", "modern", "sniper"],
+    "tags": [
+      "ammo",
+      "modern",
+      "sniper"
+    ],
     "ammoType": ".338Lapua",
     "quantity": 5
   },
@@ -629,11 +721,17 @@
     "name": ".458 SOCOM Rounds",
     "description": "Heavy rounds designed for AR platforms.",
     "family": "ammunition",
-    "properties": { "caliber": ".458SOCOM" },
+    "properties": {
+      "caliber": ".458SOCOM"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.2,
-    "tags": ["ammo", "modern", "rifle"],
+    "tags": [
+      "ammo",
+      "modern",
+      "rifle"
+    ],
     "ammoType": ".458SOCOM",
     "quantity": 10
   },
@@ -642,11 +740,17 @@
     "name": "4-Gauge Shells",
     "description": "Massive shotgun shells.",
     "family": "ammunition",
-    "properties": { "caliber": "4gauge" },
+    "properties": {
+      "caliber": "4gauge"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.4,
-    "tags": ["ammo", "heavy", "shotgun"],
+    "tags": [
+      "ammo",
+      "heavy",
+      "shotgun"
+    ],
     "ammoType": "4gauge",
     "quantity": 1
   },
@@ -655,11 +759,16 @@
     "name": "Soda Cans (Ammo)",
     "description": "Full soda cans, used as heavy projectiles.",
     "family": "ammunition",
-    "properties": { "caliber": "soda_can" },
+    "properties": {
+      "caliber": "soda_can"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.8,
-    "tags": ["ammo", "improvised"],
+    "tags": [
+      "ammo",
+      "improvised"
+    ],
     "ammoType": "soda_can",
     "quantity": 6
   },
@@ -668,11 +777,16 @@
     "name": "Generic Ammo Box",
     "description": "A mix of assorted ammunition for various weapons.",
     "family": "ammunition",
-    "properties": { "caliber": "generic" },
+    "properties": {
+      "caliber": "generic"
+    },
     "type": "ammunition",
     "size": 1,
     "weightLbs": 0.1,
-    "tags": ["ammo", "generic"],
+    "tags": [
+      "ammo",
+      "generic"
+    ],
     "ammoType": "generic_ammo",
     "quantity": 100
   }
