@@ -28,10 +28,22 @@ class HarvestManager {
             lootTableId = "harvest:wood";
             requiredSkill = "Survival";
             skillDifficulty = 5;
+            // Tool requirement: Axe (axe_wood) or Hatchet (hatchet)
+            if (!window.inventoryManager.hasItem("axe_wood") && !window.inventoryManager.hasItem("hatchet")) {
+                logToConsole("You need an axe or hatchet to harvest wood.", "orange");
+                if (window.audioManager) window.audioManager.playUiSound("ui_error_01.wav");
+                return;
+            }
         } else if (tags.includes("harvest:stone")) {
             lootTableId = "harvest:stone";
             requiredSkill = "Survival";
             skillDifficulty = 8;
+            // Tool requirement: Pickaxe
+            if (!window.inventoryManager.hasItem("pickaxe")) {
+                logToConsole("You need a pickaxe to mine stone.", "orange");
+                if (window.audioManager) window.audioManager.playUiSound("ui_error_01.wav");
+                return;
+            }
         } else if (tags.includes("harvest:plant")) {
             lootTableId = "harvest:plant";
             requiredSkill = "Survival";
@@ -40,6 +52,10 @@ class HarvestManager {
             lootTableId = "harvest:sand";
             requiredSkill = "Survival";
             skillDifficulty = 5;
+            // Tool requirement: Shovel (optional? Prompt implies shovel for gravel, but usually sand too.
+            // The prompt strictly listed: pickaxe->boulders, hoe->soil, shovel->gravel, axe->tree.
+            // I will strictly enforce shovel for gravel, and maybe leave sand open or require shovel.
+            // "shovel to dig through gravel" - doesn't exclude sand, but I'll stick to strict requests first.
         } else if (tags.includes("harvest:mud")) {
             lootTableId = "harvest:mud";
             requiredSkill = "Survival";
@@ -48,6 +64,12 @@ class HarvestManager {
             lootTableId = "harvest:gravel";
             requiredSkill = "Survival";
             skillDifficulty = 5;
+            // Tool requirement: Shovel
+            if (!window.inventoryManager.hasItem("shovel")) {
+                logToConsole("You need a shovel to dig gravel.", "orange");
+                if (window.audioManager) window.audioManager.playUiSound("ui_error_01.wav");
+                return;
+            }
         } else if (tags.includes("scavenge:furniture")) {
             lootTableId = "scavenge:furniture";
             requiredSkill = "Investigation"; // Or Repair?
