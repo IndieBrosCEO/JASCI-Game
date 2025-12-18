@@ -38,7 +38,7 @@
     "stackable": true,
     "maxStack": 20,
     "sprite": "=",
-    "color": "#098511",
+    "color": "#deb887",
     "tags": [
       "material",
       "crafting",
@@ -114,7 +114,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "&",
-    "color": "#f9a9c1",
+    "color": "#c0c0c0",
     "tags": [
       "material",
       "crafting",
@@ -192,7 +192,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "/",
-    "color": "#f4a460",
+    "color": "#deb887",
     "tags": [
       "debris",
       "sharp",
@@ -312,7 +312,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "\u00fc",
-    "color": "#27ff8b",
+    "color": "#e0ffff",
     "tags": [
       "material",
       "crafting",
@@ -1085,7 +1085,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "L",
-    "color": "#b3459f",
+    "color": "#8b4513",
     "tags": [
       "material",
       "crafting",
@@ -1266,7 +1266,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": ":",
-    "color": "#04e6d2",
+    "color": "#f4a460",
     "tags": [
       "material",
       "crafting",
@@ -1338,7 +1338,7 @@
     "stackable": true,
     "maxStack": 100,
     "sprite": "*",
-    "color": "#f9a9c1",
+    "color": "#696969",
     "tags": [
       "material",
       "crafting",
@@ -1607,7 +1607,7 @@
     "stackable": true,
     "maxStack": 500,
     "sprite": ".",
-    "color": "#10c0d8",
+    "color": "#c0c0c0",
     "tags": [
       "material",
       "crafting",
@@ -1631,7 +1631,7 @@
     "stackable": true,
     "maxStack": 500,
     "sprite": ".",
-    "color": "#e480de",
+    "color": "#c0c0c0",
     "tags": [
       "material",
       "crafting",
@@ -1655,7 +1655,7 @@
     "stackable": true,
     "maxStack": 500,
     "sprite": ",",
-    "color": "#10c0d8",
+    "color": "#d2b48c",
     "tags": [
       "material",
       "crafting",
@@ -1679,7 +1679,7 @@
     "stackable": true,
     "maxStack": 500,
     "sprite": ",",
-    "color": "#e480de",
+    "color": "#d2b48c",
     "tags": [
       "material",
       "crafting",
@@ -1703,7 +1703,7 @@
     "stackable": true,
     "maxStack": 500,
     "sprite": ":",
-    "color": "#10c0d8",
+    "color": "#daa520",
     "tags": [
       "material",
       "crafting",
@@ -1726,7 +1726,7 @@
     "stackable": true,
     "maxStack": 200,
     "sprite": "*",
-    "color": "#e480de",
+    "color": "#b87333",
     "tags": [
       "material",
       "crafting",
@@ -1751,7 +1751,7 @@
     "stackable": true,
     "maxStack": 200,
     "sprite": "*",
-    "color": "#f9a9c1",
+    "color": "#b87333",
     "tags": [
       "material",
       "crafting",
@@ -1776,7 +1776,7 @@
     "stackable": true,
     "maxStack": 200,
     "sprite": "o",
-    "color": "#e480de",
+    "color": "#708090",
     "tags": [
       "material",
       "crafting",
@@ -1801,7 +1801,7 @@
     "stackable": true,
     "maxStack": 100,
     "sprite": "O",
-    "color": "#f9a9c1",
+    "color": "#708090",
     "tags": [
       "material",
       "crafting",
@@ -1826,7 +1826,7 @@
     "stackable": true,
     "maxStack": 500,
     "sprite": ".",
-    "color": "#e480de",
+    "color": "#708090",
     "tags": [
       "material",
       "crafting",
@@ -1851,7 +1851,7 @@
     "stackable": true,
     "maxStack": 200,
     "sprite": "^",
-    "color": "#f585cb",
+    "color": "#b87333",
     "tags": [
       "material",
       "crafting",
@@ -1877,7 +1877,7 @@
     "stackable": true,
     "maxStack": 200,
     "sprite": "^",
-    "color": "#9f4559",
+    "color": "#b87333",
     "tags": [
       "material",
       "crafting",
@@ -1930,7 +1930,7 @@
     "stackable": true,
     "maxStack": 100,
     "sprite": ":",
-    "color": "#f9a9c1",
+    "color": "#708090",
     "tags": [
       "material",
       "crafting",
@@ -2150,7 +2150,7 @@
     "stackable": true,
     "maxStack": 30,
     "sprite": "f",
-    "color": "#f9a9c1",
+    "color": "#a9a9a9",
     "tags": [
       "material",
       "crafting",
@@ -2415,7 +2415,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "_",
-    "color": "#e7d319",
+    "color": "#c0c0c0",
     "tags": [
       "material",
       "crafting",
@@ -3390,7 +3390,7 @@
     "stackable": true,
     "maxStack": 4,
     "sprite": "{",
-    "color": "#8480d6",
+    "color": "#708090",
     "tags": [
       "material",
       "crafting",
@@ -3863,7 +3863,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "'",
-    "color": "#e0ffff",
+    "color": "#afeeee",
     "tags": [
       "material",
       "crafting",
@@ -3942,7 +3942,7 @@
     "stackable": true,
     "maxStack": 30,
     "sprite": "b",
-    "color": "#dc52ff",
+    "color": "#8b4513",
     "tags": [
       "material",
       "organic",
@@ -4078,7 +4078,7 @@
     "stackable": true,
     "maxStack": 5,
     "sprite": "#",
-    "color": "#9480c6",
+    "color": "#ffd700",
     "tags": [
       "material",
       "crafting",
@@ -5133,7 +5133,7 @@
     "stackable": true,
     "maxStack": 50,
     "sprite": "e",
-    "color": "#008000",
+    "color": "#556b2f",
     "tags": [
       "material",
       "crafting",

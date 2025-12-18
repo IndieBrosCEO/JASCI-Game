@@ -465,7 +465,7 @@
       "hunger": 8
     },
     "sprite": "i",
-    "color": "#cd2ab6",
+    "color": "#b22222",
     "canEquip": false,
     "isClothing": false,
     "weightLbs": 0.5,
@@ -965,7 +965,7 @@
     "stackable": true,
     "maxStack": 10,
     "sprite": "+",
-    "color": "#3bffd1",
+    "color": "#f5f5f5",
     "tags": [
       "medical",
       "healing",
