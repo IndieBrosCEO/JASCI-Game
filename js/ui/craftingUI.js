@@ -160,11 +160,7 @@ class CraftingUIManager {
         }
 
         recipesToShow.forEach((recipe, index) => {
-            // Enhanced logging for each item before the check
-            logToConsole(`[CraftingUI] Processing recipe at index ${index}:`, recipe);
-            if (recipe && typeof recipe.id !== 'undefined') {
-                logToConsole(`[CraftingUI]   Recipe ID: ${recipe.id}, Name: ${recipe.name}`);
-            } else {
+            if (!recipe || typeof recipe.id === 'undefined') {
                 logToConsole(`[CraftingUI]   Recipe at index ${index} is undefined or has no id. Skipping.`, 'orange');
                 return; // Skip this iteration if fundamental properties are missing
             }
