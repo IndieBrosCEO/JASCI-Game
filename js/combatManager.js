@@ -1470,6 +1470,34 @@
         if (!this.gameState.pendingCombatAction?.actionType) {
             if (attacker === this.gameState) this.promptPlayerAttackDeclaration(); else this.nextTurn(); return;
         }
+        if (actionType === "use_item") {
+            const item = this.gameState.pendingCombatAction.item;
+
+            // Call InventoryManager to handle effects and removal
+            if (window.inventoryManager && typeof window.inventoryManager.consumeItem === 'function') {
+                const consumed = window.inventoryManager.consumeItem(item, attacker);
+                if (!consumed) {
+                    logToConsole(`${attacker === this.gameState ? "Player" : attacker.name} tried to use ${item.name} but failed.`, 'orange');
+                }
+            } else {
+                logToConsole("Error: InventoryManager not found for item use.", "red");
+            }
+
+            if (attacker === this.gameState) {
+                if (this.gameState.actionPointsRemaining <= 0) { this.promptPlayerAttackDeclaration(); return; }
+                this.gameState.actionPointsRemaining--; window.turnManager.updateTurnUI();
+            } else {
+                if (attacker.currentActionPoints > 0) attacker.currentActionPoints--;
+            }
+
+            if (attacker === this.gameState) {
+                if (this.gameState.actionPointsRemaining > 0) this.promptPlayerAttackDeclaration();
+                else if (this.gameState.movementPointsRemaining > 0) this.gameState.combatPhase = 'playerPostAction';
+                else await this.nextTurn(attacker);
+            } else await this.nextTurn(attacker);
+            return;
+        }
+
         if (actionType === "Reload") {
             logToConsole(`${attacker === this.gameState ? "Player" : attacker.name} reloads ${this.gameState.pendingCombatAction.weapon?.name || 'weapon'}.`, attacker === this.gameState ? 'lightgreen' : 'gold');
             if (window.audioManager && (attacker.mapPos || attacker === this.gameState)) {
@@ -1493,8 +1521,14 @@
             if (weapon && (weapon.type.includes("firearm") || weapon.type.includes("bow") || weapon.type.includes("crossbow"))) {
                 const ammoTypeNeeded = weapon.ammoType;
                 let ammoFoundInInventory = false;
-                if (this.gameState.inventory && this.gameState.inventory.container && this.gameState.inventory.container.items) {
-                    const inventoryItems = this.gameState.inventory.container.items;
+
+                // Determine inventory to check
+                const invContainer = (attacker === this.gameState) ?
+                    this.gameState.inventory.container :
+                    (attacker.inventory ? attacker.inventory.container : null);
+
+                if (invContainer && invContainer.items) {
+                    const inventoryItems = invContainer.items;
                     for (let i = 0; i < inventoryItems.length; i++) {
                         const invItem = inventoryItems[i];
                         if (invItem.type === "ammunition" && invItem.ammoType === ammoTypeNeeded && invItem.quantity > 0) {
@@ -1508,7 +1542,7 @@
                             }
                             ammoFoundInInventory = true;
                             logToConsole(`${weapon.name} reloaded. Ammo: ${weapon.currentAmmo}/${weapon.magazineSize}`, 'lightgreen');
-                            if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI(); // Refresh inventory display
+                            if (attacker === this.gameState && window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
                             break;
                         }
                     }
@@ -1523,10 +1557,13 @@
             if (attacker === this.gameState) {
                 if (this.gameState.actionPointsRemaining <= 0) { this.promptPlayerAttackDeclaration(); return; }
                 this.gameState.actionPointsRemaining--; window.turnManager.updateTurnUI();
+            } else {
+                // Deduct AP for NPC
+                if (attacker.currentActionPoints > 0) attacker.currentActionPoints--;
             }
 
             // After reload, refresh weapon select to show updated ammo count
-            this.populateWeaponSelect();
+            if (attacker === this.gameState) this.populateWeaponSelect();
 
             if (attacker === this.gameState) {
                 if (this.gameState.actionPointsRemaining > 0) this.promptPlayerAttackDeclaration();

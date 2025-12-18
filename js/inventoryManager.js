@@ -1399,74 +1399,19 @@ class InventoryManager {
         }
 
         if (selectedDisplayItem.isConsumable && selectedDisplayItem.effects && !selectedDisplayItem.equipped) {
-            let consumed = false; const maxNeeds = 24;
-            if (typeof this.gameState.playerHunger === 'undefined') this.gameState.playerHunger = maxNeeds;
-            if (typeof this.gameState.playerThirst === 'undefined') this.gameState.playerThirst = maxNeeds;
-
-            // Food/Drink
-            if (selectedDisplayItem.effects.hunger) {
-                this.gameState.playerHunger = Math.min(this.gameState.playerHunger + selectedDisplayItem.effects.hunger, maxNeeds);
-                consumed = true;
-            }
-            if (selectedDisplayItem.effects.thirst) {
-                this.gameState.playerThirst = Math.min(this.gameState.playerThirst + selectedDisplayItem.effects.thirst, maxNeeds);
-                consumed = true;
-            }
-
-            // Healing (Medical Items)
-            if (selectedDisplayItem.effects.health) {
-                const healAmount = selectedDisplayItem.effects.health;
-                // Find most damaged body part
-                let worstPart = null;
-                let minHpPercent = 1.0;
-                const health = this.gameState.player.health;
-
-                if (health) {
-                    for (const partName in health) {
-                        const part = health[partName];
-                        if (part.current < part.max) {
-                            const hpPercent = part.current / part.max;
-                            if (hpPercent < minHpPercent) {
-                                minHpPercent = hpPercent;
-                                worstPart = partName;
-                            }
-                        }
-                    }
+            // Use the centralized consumeItem method
+            // selectedDisplayItem here is a display wrapper, but usually has item properties merged or accessible.
+            // We pass the ID to consumeItem which will find the actual item in inventory to remove.
+            // Wait, consumeItem takes an item instance and removes it. selectedDisplayItem is a mix.
+            // Let's find the real item in player inventory.
+            const realItem = this.gameState.inventory.container.items.find(i => i.id === selectedDisplayItem.id);
+            if (realItem) {
+                if (this.consumeItem(realItem, this.gameState.player)) { // Assuming player target
+                     if (this.gameState.inventory.open) this.renderInventoryMenu();
+                     return;
                 }
-
-                if (worstPart) {
-                    const part = health[worstPart];
-                    const oldHp = part.current;
-                    part.current = Math.min(part.current + healAmount, part.max);
-                    const healed = part.current - oldHp;
-
-                    // Handle bleeding if applicable
-                    if (selectedDisplayItem.effects.stopBleeding) {
-                        // Assuming bleeding is tracked in statusEffects or similar.
-                        // For now, just log it as per prompt request "update... interaction...".
-                        // Real implementation would check/remove 'bleeding' status.
-                        logToConsole("Stops bleeding (if any).");
-                    }
-
-                    logToConsole(`You used ${selectedDisplayItem.displayName} on your ${worstPart}. Healed ${healed} HP. (${part.current}/${part.max})`);
-                    consumed = true;
-
-                    if (window.renderHealthTable) window.renderHealthTable(this.gameState.player);
-                } else {
-                    logToConsole(`You are already at full health. Save the ${selectedDisplayItem.displayName}.`, "info");
-                    return; // Don't consume if full health
-                }
-            }
-
-            if (consumed) {
-                if (!selectedDisplayItem.effects.health) { // Only log consumption for food/drink here, healing logged above
-                    logToConsole(`You consumed ${selectedDisplayItem.displayName}. Hunger: ${this.gameState.playerHunger}, Thirst: ${this.gameState.playerThirst}`);
-                }
-                if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.6 });
-                this.removeItem(selectedDisplayItem.id, 1);
-                if (window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
-                if (this.gameState.inventory.open) this.renderInventoryMenu();
-                return;
+            } else {
+                logToConsole("Error: Item not found in inventory.", "error");
             }
         }
 
@@ -1489,6 +1434,121 @@ class InventoryManager {
             }
         }
         if (this.gameState.inventory.open) this.renderInventoryMenu();
+    }
+
+    consumeItem(item, entity) {
+        if (!item || !item.effects) return false;
+        const entityName = (entity === this.gameState || entity === this.gameState.player) ? "You" : (entity.name || entity.id);
+        const isPlayer = (entity === this.gameState || entity === this.gameState.player); // Normalize check
+        // Correct entity reference for stat modification
+        const targetEntity = isPlayer ? this.gameState.player : entity;
+        // For hunger/thirst, player uses gameState globals currently?
+        // Yes: if (typeof this.gameState.playerHunger === 'undefined')
+        // We should support entity.hunger too for NPCs?
+        // Existing NPC logic in handleNpcOutOfCombatTurn uses npc.hunger.
+
+        let consumed = false;
+        const maxNeeds = 24;
+
+        // Food/Drink
+        if (item.effects.hunger) {
+            if (isPlayer) {
+                if (typeof this.gameState.playerHunger === 'undefined') this.gameState.playerHunger = maxNeeds;
+                this.gameState.playerHunger = Math.min(this.gameState.playerHunger + item.effects.hunger, maxNeeds);
+            } else {
+                if (typeof targetEntity.hunger === 'undefined') targetEntity.hunger = 0;
+                // NPC hunger: higher is hungrier? In player, hunger is satiety (max 24 is full)?
+                // Wait, logic says playerHunger + effect. Effect is positive?
+                // Let's check player logic: `applyHungerThirstDamage`: hunger--. If 0 -> starve.
+                // So hunger 24 = Full. hunger 0 = Starving.
+                // NPC logic `handleNpcOutOfCombatTurn`: npc.hunger += 1. Threshold 50.
+                // So NPC hunger is "Hunger Level" (0 = full, high = hungry).
+                // Player hunger is "Satiety" (24 = full, 0 = hungry).
+                // This is an inconsistency.
+                // Let's stick to player logic for now as this function serves player primarily,
+                // but we need to handle NPC correctly if they use it.
+                // If Item effect is positive (e.g. +5), it adds Satiety.
+                // For NPC, we should DECREASE hunger level.
+                if (targetEntity.hunger !== undefined) {
+                    targetEntity.hunger = Math.max(0, targetEntity.hunger - (item.effects.hunger * 10)); // Scale up? 1 food = ?
+                    // Let's just subtract raw value for now.
+                }
+            }
+            consumed = true;
+        }
+        if (item.effects.thirst) {
+            if (isPlayer) {
+                if (typeof this.gameState.playerThirst === 'undefined') this.gameState.playerThirst = maxNeeds;
+                this.gameState.playerThirst = Math.min(this.gameState.playerThirst + item.effects.thirst, maxNeeds);
+            }
+            consumed = true;
+        }
+
+        // Healing (Medical Items)
+        if (item.effects.health || item.effects.heal_limbs) {
+            const healAmount = item.effects.health || item.effects.heal_limbs;
+            // Find most damaged body part
+            let worstPart = null;
+            let minHpPercent = 1.0;
+            const health = targetEntity.health;
+
+            if (health) {
+                for (const partName in health) {
+                    const part = health[partName];
+                    if (part.current < part.max) {
+                        const hpPercent = part.current / part.max;
+                        if (hpPercent < minHpPercent) {
+                            minHpPercent = hpPercent;
+                            worstPart = partName;
+                        }
+                    }
+                }
+            }
+
+            if (worstPart) {
+                const part = health[worstPart];
+                const oldHp = part.current;
+                part.current = Math.min(part.current + healAmount, part.max);
+                const healed = part.current - oldHp;
+
+                // Handle bleeding if applicable
+                if (item.effects.stopBleeding) {
+                    logToConsole("Stops bleeding (if any).");
+                    // TODO: Implement actual bleeding removal
+                }
+
+                logToConsole(`${entityName} used ${item.name || item.displayName} on ${worstPart}. Healed ${healed} HP. (${part.current}/${part.max})`, 'green');
+                consumed = true;
+
+                if (isPlayer && window.renderHealthTable) window.renderHealthTable(this.gameState.player);
+            } else {
+                logToConsole(`${entityName} is already at full health.`, "info");
+                return false; // Don't consume if full health
+            }
+        }
+
+        if (consumed) {
+            if (!item.effects.health && isPlayer) { // Only log consumption for food/drink here, healing logged above
+                logToConsole(`You consumed ${item.name || item.displayName}.`);
+            } else if (!item.effects.health && !isPlayer) {
+                logToConsole(`${entityName} consumed ${item.name || item.displayName}.`);
+            }
+
+            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.6 });
+
+            // Remove the item from source inventory
+            // We assume item comes from entity inventory.
+            if (entity.inventory && entity.inventory.container && entity.inventory.container.items) {
+                 this.removeItems(item.id, 1, entity.inventory.container.items);
+            } else if (isPlayer) {
+                 // Fallback for player if entity structure differs
+                 this.removeItem(item.id, 1);
+            }
+
+            if (isPlayer && window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
+            return true;
+        }
+        return false;
     }
 
     clearInventoryHighlight() {
