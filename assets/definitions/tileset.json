@@ -232,7 +232,7 @@
   "MTF": {
     "sprite": "-",
     "name": "Metal Flooring",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "bottom",
       "metal",
@@ -398,7 +398,7 @@
   "MWH": {
     "sprite": "═",
     "name": "Metal Wall Hz",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "wall",
       "middle",
@@ -411,7 +411,7 @@
   "MWV": {
     "sprite": "║",
     "name": "Metal Wall Vt",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "wall",
       "middle",
@@ -423,7 +423,7 @@
   "MWCTL": {
     "sprite": "╔",
     "name": "Metal Wall Corner TL",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "wall",
       "middle",
@@ -435,7 +435,7 @@
   "MWCTR": {
     "sprite": "╗",
     "name": "Metal Wall Corner TR",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "wall",
       "middle",
@@ -447,7 +447,7 @@
   "MWCBL": {
     "sprite": "╚",
     "name": "Metal Wall Corner BL",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "wall",
       "middle",
@@ -459,7 +459,7 @@
   "MWCBR": {
     "sprite": "╝",
     "name": "Metal Wall Corner BR",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "wall",
       "middle",
@@ -471,7 +471,7 @@
   "MWTE": {
     "sprite": "╠",
     "name": "Metal Wall T–East",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "wall",
       "middle",
@@ -483,7 +483,7 @@
   "MWTW": {
     "sprite": "╣",
     "name": "Metal Wall T–West",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "wall",
       "middle",
@@ -495,7 +495,7 @@
   "MWTS": {
     "sprite": "╦",
     "name": "Metal Wall T–South",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "wall",
       "middle",
@@ -507,7 +507,7 @@
   "MWTN": {
     "sprite": "╩",
     "name": "Metal Wall T–North",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "wall",
       "middle",
@@ -519,7 +519,7 @@
   "MWC": {
     "sprite": "╬",
     "name": "Metal Wall Cross",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "wall",
       "middle",
@@ -617,7 +617,7 @@
   "MDH": {
     "sprite": "─",
     "name": "Metal Door Hz",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "door",
       "middle",
@@ -634,7 +634,7 @@
   "MDV": {
     "sprite": "│",
     "name": "Metal Door Vt",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "door",
       "middle",
@@ -651,7 +651,7 @@
   "MOH": {
     "sprite": "_",
     "name": "Metal Door Hz Open",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "door",
       "middle",
@@ -667,7 +667,7 @@
   "MOV": {
     "sprite": "'",
     "name": "Metal Door Vt Open",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "door",
       "middle",
@@ -683,7 +683,7 @@
   "MDB": {
     "sprite": ">",
     "name": "Metal Door Broken",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "door",
       "middle",
@@ -782,7 +782,7 @@
   "RM": {
     "sprite": "#",
     "name": "Roof (Metal)",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "roof",
       "bottom",
@@ -899,7 +899,7 @@
   "SF": {
     "sprite": "#",
     "name": "Safe",
-    "color": "#A8800C",
+    "color": "#C0C0C0",
     "tags": [
       "interactive",
       "container",
@@ -1821,7 +1821,7 @@
   "storage_locker_small_tile": {
     "sprite": "L",
     "name": "Small Storage Locker",
-    "color": "#778899",
+    "color": "#C0C0C0",
     "tags": [
       "interactive",
       "container",
@@ -1963,7 +1963,7 @@
   "PILM": {
     "sprite": "I",
     "name": "Metal Pillar",
-    "color": "#708090",
+    "color": "#C0C0C0",
     "tags": [
       "structure",
       "middle",
@@ -2149,7 +2149,7 @@
   "RGD_H": {
     "sprite": "=",
     "name": "Garage Door Hz",
-    "color": "#778899",
+    "color": "#C0C0C0",
     "tags": [
       "door",
       "middle",
@@ -2164,7 +2164,7 @@
   "RGD_V": {
     "sprite": "H",
     "name": "Garage Door Vt",
-    "color": "#778899",
+    "color": "#C0C0C0",
     "tags": [
       "door",
       "middle",
@@ -2179,7 +2179,7 @@
   "RGD_HO": {
     "sprite": "_",
     "name": "Garage Door Hz Open",
-    "color": "#778899",
+    "color": "#C0C0C0",
     "tags": [
       "door",
       "middle",
@@ -2194,7 +2194,7 @@
   "RGD_VO": {
     "sprite": "'",
     "name": "Garage Door Vt Open",
-    "color": "#778899",
+    "color": "#C0C0C0",
     "tags": [
       "door",
       "middle",
@@ -2209,7 +2209,7 @@
   "JCB_H": {
     "sprite": "═",
     "name": "Jail Cell Bars Hz",
-    "color": "#708090",
+    "color": "#C0C0C0",
     "tags": [
       "structure",
       "middle",
@@ -2222,7 +2222,7 @@
   "JCB_V": {
     "sprite": "║",
     "name": "Jail Cell Bars Vt",
-    "color": "#708090",
+    "color": "#C0C0C0",
     "tags": [
       "structure",
       "middle",
@@ -2235,7 +2235,7 @@
   "JCD_H": {
     "sprite": "═",
     "name": "Jail Cell Door Hz",
-    "color": "#708090",
+    "color": "#C0C0C0",
     "tags": [
       "door",
       "middle",
@@ -2253,7 +2253,7 @@
   "JCD_V": {
     "sprite": "║",
     "name": "Jail Cell Door Vt",
-    "color": "#708090",
+    "color": "#C0C0C0",
     "tags": [
       "door",
       "middle",
@@ -2271,7 +2271,7 @@
   "JCD_HO": {
     "sprite": "_",
     "name": "Jail Cell Door Hz Open",
-    "color": "#708090",
+    "color": "#C0C0C0",
     "tags": [
       "door",
       "middle",
@@ -2286,7 +2286,7 @@
   "JCD_VO": {
     "sprite": "'",
     "name": "Jail Cell Door Vt Open",
-    "color": "#708090",
+    "color": "#C0C0C0",
     "tags": [
       "door",
       "middle",
