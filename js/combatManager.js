@@ -294,8 +294,8 @@
         const debtCostTiles = 2; // 10 ft
 
         const canDodge = (currentDebtTiles + debtCostTiles) <= maxSpeedTiles &&
-                         !this.gameState.statusEffects?.isGrappled &&
-                         this.gameState.playerPosture !== 'prone'; // Restrained check implies grappled or similar
+            !this.gameState.statusEffects?.isGrappled &&
+            this.gameState.playerPosture !== 'prone'; // Restrained check implies grappled or similar
 
         const dodgeOption = defenseTypeSelect.querySelector('option[value="Dodge"]');
         if (dodgeOption) {
@@ -310,7 +310,7 @@
 
         // Default selection logic
         if (defenseTypeSelect.value === "Dodge" && !canDodge) {
-             defenseTypeSelect.value = "BlockUnarmed"; // Fallback
+            defenseTypeSelect.value = "BlockUnarmed"; // Fallback
         }
 
         // Initial UI State based on current selection
@@ -389,8 +389,8 @@
         if (participants.some(p => p === this.gameState || p === this.gameState.player)) {
             this.nextTurn();
         } else {
-             logToConsole("Combat started in background. Waiting for turn tick.", 'grey');
-             this.turnsToProcess = 0;
+            logToConsole("Combat started in background. Waiting for turn tick.", 'grey');
+            this.turnsToProcess = 0;
         }
     }
 
@@ -413,53 +413,53 @@
 
         // Apply End of Turn Environmental Damage (Gas) for the entity who just finished their turn
         if (previousAttackerEntity && this.gameState.environmentalEffects?.tearGasTiles) {
-             const entityPos = previousAttackerEntity === this.gameState ? this.gameState.playerPos : previousAttackerEntity.mapPos;
-             if (entityPos) {
-                 const isOnTearGasTile = this.gameState.environmentalEffects.tearGasTiles.some(t => t.x === entityPos.x && t.y === entityPos.y);
-                 if (isOnTearGasTile) {
-                     const entName = previousAttackerEntity === this.gameState ? "Player" : (previousAttackerEntity.name || previousAttackerEntity.id);
-                     const tearGasDamage = Math.max(0, rollDiceNotation(parseDiceNotation("1d2-1")));
-                     if (tearGasDamage > 0) {
-                         logToConsole(`${entName} ends turn in tear gas and takes ${tearGasDamage} damage.`, 'red');
-                         // We must bypass the isProcessingTurn check for applyDamage or handle it carefully.
-                         // applyDamage doesn't use the lock, but death logic might call nextTurn/endCombat.
-                         // Since we are at the start of nextTurn and about to acquire lock, let's process damage.
-                         // However, if they die, we need to handle removal from initiative before proceeding.
+            const entityPos = previousAttackerEntity === this.gameState ? this.gameState.playerPos : previousAttackerEntity.mapPos;
+            if (entityPos) {
+                const isOnTearGasTile = this.gameState.environmentalEffects.tearGasTiles.some(t => t.x === entityPos.x && t.y === entityPos.y);
+                if (isOnTearGasTile) {
+                    const entName = previousAttackerEntity === this.gameState ? "Player" : (previousAttackerEntity.name || previousAttackerEntity.id);
+                    const tearGasDamage = Math.max(0, rollDiceNotation(parseDiceNotation("1d2-1")));
+                    if (tearGasDamage > 0) {
+                        logToConsole(`${entName} ends turn in tear gas and takes ${tearGasDamage} damage.`, 'red');
+                        // We must bypass the isProcessingTurn check for applyDamage or handle it carefully.
+                        // applyDamage doesn't use the lock, but death logic might call nextTurn/endCombat.
+                        // Since we are at the start of nextTurn and about to acquire lock, let's process damage.
+                        // However, if they die, we need to handle removal from initiative before proceeding.
 
-                         // Note: We haven't set isProcessingTurn = true yet.
-                         this.applyDamage({ name: "Tear Gas" }, previousAttackerEntity, "torso", tearGasDamage, "Chemical", { name: "Tear Gas Cloud" });
+                        // Note: We haven't set isProcessingTurn = true yet.
+                        this.applyDamage({ name: "Tear Gas" }, previousAttackerEntity, "torso", tearGasDamage, "Chemical", { name: "Tear Gas Cloud" });
 
-                         const healthEntity = previousAttackerEntity === this.gameState ? this.gameState.player : previousAttackerEntity;
-                         if (healthEntity.health.torso.current <= 0 || healthEntity.health.head.current <= 0) {
-                             logToConsole(`DEFEATED: ${entName} succumbed to tear gas at end of turn!`, 'darkred');
-                             if (previousAttackerEntity === this.gameState) {
-                                 this.endCombat();
-                                 window.gameOver(this.gameState);
-                                 return;
-                             } else {
-                                 // NPC died from end-of-turn damage.
-                                 // applyDamage handles dropInventory and XP.
-                                 // We just need to remove them from initiative so they don't get selected again if loop wraps.
-                                 // Adjust currentTurnIndex if we remove the current/previous entity to prevent skipping the next one
-                                 const idxToRemove = this.initiativeTracker.findIndex(e => e.entity === previousAttackerEntity);
-                                 this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== previousAttackerEntity);
-                                 this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== previousAttackerEntity);
+                        const healthEntity = previousAttackerEntity === this.gameState ? this.gameState.player : previousAttackerEntity;
+                        if (healthEntity.health.torso.current <= 0 || healthEntity.health.head.current <= 0) {
+                            logToConsole(`DEFEATED: ${entName} succumbed to tear gas at end of turn!`, 'darkred');
+                            if (previousAttackerEntity === this.gameState) {
+                                this.endCombat();
+                                window.gameOver(this.gameState);
+                                return;
+                            } else {
+                                // NPC died from end-of-turn damage.
+                                // applyDamage handles dropInventory and XP.
+                                // We just need to remove them from initiative so they don't get selected again if loop wraps.
+                                // Adjust currentTurnIndex if we remove the current/previous entity to prevent skipping the next one
+                                const idxToRemove = this.initiativeTracker.findIndex(e => e.entity === previousAttackerEntity);
+                                this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== previousAttackerEntity);
+                                this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== previousAttackerEntity);
 
-                                 if (idxToRemove !== -1 && idxToRemove <= this.currentTurnIndex) {
-                                     this.currentTurnIndex--;
-                                 }
+                                if (idxToRemove !== -1 && idxToRemove <= this.currentTurnIndex) {
+                                    this.currentTurnIndex--;
+                                }
 
-                                 window.mapRenderer.scheduleRender();
-                                 if (!this.initiativeTracker.some(e => !e.isPlayer && e.entity.health?.torso?.current > 0)) {
-                                     this.endCombat();
-                                     return;
-                                 }
-                                 // Entity removed, proceed to next turn normal logic
-                             }
-                         }
-                     }
-                 }
-             }
+                                window.mapRenderer.scheduleRender();
+                                if (!this.initiativeTracker.some(e => !e.isPlayer && e.entity.health?.torso?.current > 0)) {
+                                    this.endCombat();
+                                    return;
+                                }
+                                // Entity removed, proceed to next turn normal logic
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // Background Combat Flow Control
@@ -664,7 +664,7 @@
                     }
                     // Damage removed from here
                 } else if (currentTearGasStatus && !isOnTearGasTile) {
-                     // Status wears off naturally if duration was from tile (duration 1)
+                    // Status wears off naturally if duration was from tile (duration 1)
                 }
                 if (combatant === this.gameState && window.renderCharacterInfo) window.renderCharacterInfo();
                 if (combatant === this.gameState && window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
@@ -970,7 +970,7 @@
     calculateAttackRoll(attacker, weapon, targetBodyPartArg, actionContext = {}) {
         const attackerNameForLog = (attacker === this.gameState || attacker === this.gameState.player) ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id);
         let skillName, skillBasedModifier;
-        actionContext.attackerMovementPenalty = (attacker === this.gameState && this.gameState.playerMovedThisTurn) || (attacker !== this.gameState && attacker.movedThisTurn) ? -2 : 0;
+        actionContext.attackerMovementPenalty = 0;
         const rangeModifier = actionContext.rangeModifier || 0;
         const attackModifierForFireMode = actionContext.attackModifier || 0;
 
@@ -1098,8 +1098,6 @@
         const effectiveFireModeMod = Math.min(0, attackModifierForFireMode + burstReducer);
         if (effectiveFireModeMod !== 0) actionContext.detailedModifiers.push({ text: `Mode: ${effectiveFireModeMod}`, value: effectiveFireModeMod, type: 'negative' });
 
-        if (actionContext.attackerMovementPenalty !== 0) actionContext.detailedModifiers.push({ text: `Movement: ${actionContext.attackerMovementPenalty}`, value: actionContext.attackerMovementPenalty, type: 'negative' });
-
         // Companion Loyalty Bonuses
         let loyaltyBonus = 0;
         if (attacker.isFollowingPlayer && typeof attacker.loyalty === 'number') {
@@ -1162,8 +1160,7 @@
             actionContext.detailedModifiers.push({ text: "Perk (Evasive Footwork): +1", value: 1, type: 'positive' });
         }
 
-        let defenderMovementBonus = (defender === this.gameState && this.gameState.playerMovedThisTurn) || (defender !== this.gameState && defender.movedThisTurn) ? 2 : 0;
-        if (defenderMovementBonus !== 0) actionContext.detailedModifiers.push({ text: `Movement: +${defenderMovementBonus}`, value: defenderMovementBonus, type: 'positive' });
+        let defenderMovementBonus = 0;
         if (coverBonus !== 0) actionContext.detailedModifiers.push({ text: `Cover: +${coverBonus}`, value: coverBonus, type: 'positive' });
 
 
@@ -1292,7 +1289,7 @@
 
                 if (effectString === "Digestive Clamp Taser") {
                     // Apply Grapple
-                   if (!entity.statusEffects.isGrappled) {
+                    if (!entity.statusEffects.isGrappled) {
                         entity.statusEffects.isGrappled = true;
                         entity.statusEffects.grappledBy = (attacker === this.gameState) ? "player" : (attacker.id || "npc");
                         logToConsole(`${entityName} is grappled by Digestive Clamp!`, 'red');
@@ -1300,15 +1297,15 @@
                     // Apply Digestive Enzyme DOT
                     let clampEffect = entity.statusEffects["digestive_clamp"];
                     if (!clampEffect) {
-                         entity.statusEffects["digestive_clamp"] = { id: "digestive_clamp", displayName: "Digestive Clamp", duration: 10, sourceItemId: item.id, damagePerTurn: 1, damageType: "Acid", description: "Digesting, 1 damage/turn." };
+                        entity.statusEffects["digestive_clamp"] = { id: "digestive_clamp", displayName: "Digestive Clamp", duration: 10, sourceItemId: item.id, damagePerTurn: 1, damageType: "Acid", description: "Digesting, 1 damage/turn." };
                     } else {
                         clampEffect.duration = 10;
                     }
                 }
             } else if (effectString === "Digestive Clamp") {
-                 // Apply Grapple
-                 if (!entity.statusEffects) entity.statusEffects = {};
-                 if (!entity.statusEffects.isGrappled) {
+                // Apply Grapple
+                if (!entity.statusEffects) entity.statusEffects = {};
+                if (!entity.statusEffects.isGrappled) {
                     entity.statusEffects.isGrappled = true;
                     entity.statusEffects.grappledBy = (attacker === this.gameState) ? "player" : (attacker.id || "npc");
                     logToConsole(`${entityName} is grappled by Digestive Clamp!`, 'red');
@@ -1316,7 +1313,7 @@
                 // Apply Digestive Enzyme DOT
                 let clampEffect = entity.statusEffects["digestive_clamp"];
                 if (!clampEffect) {
-                     entity.statusEffects["digestive_clamp"] = { id: "digestive_clamp", displayName: "Digestive Clamp", duration: 10, sourceItemId: item.id, damagePerTurn: 1, damageType: "Acid", description: "Digesting, 1 damage/turn." };
+                    entity.statusEffects["digestive_clamp"] = { id: "digestive_clamp", displayName: "Digestive Clamp", duration: 10, sourceItemId: item.id, damagePerTurn: 1, damageType: "Acid", description: "Digesting, 1 damage/turn." };
                 } else {
                     clampEffect.duration = 10;
                 }
@@ -1699,7 +1696,7 @@
                     }
 
                     // 2. Entity Effects
-                    const entity = this.getCharactersInBlastRadius({x: tile.x, y: tile.y, z: tileZ}, 0)[0]; // radius 0 = exact tile
+                    const entity = this.getCharactersInBlastRadius({ x: tile.x, y: tile.y, z: tileZ }, 0)[0]; // radius 0 = exact tile
                     if (entity && entity !== attacker) {
                         if (weapon.id === 'flamethrower') {
                             const damage = rollDiceNotation(parseDiceNotation(weapon.damage));
@@ -2009,19 +2006,19 @@
 
         // Unarmed Block Failure Logic
         if (hit && defender && ((defender === this.gameState ? this.gameState.playerDefenseChoice?.type : this.gameState.npcDefenseChoice) || "Dodge") === "BlockUnarmed") {
-             if (defenseResult.naturalRoll <= 5) { // Failed by <= 5 margin logic, simplified to roll check as requested "On a failed unarmed block by <=5" usually implies margin, but natural roll is easier to track.
-                 // Actually, user said: "On a failed unarmed block by <=5, the blocking limb takes the hit, by >=6, the intended target is hit."
-                 // This usually means Margin of Failure. Failure Margin = Attack Roll - Defense Roll.
-                 // If I missed (Attack > Defense), then Margin = Attack - Defense.
-                 const margin = attackResult.roll - defenseResult.roll;
-                 if (margin <= 5) {
-                     const blockingLimb = (defender === this.gameState ? this.gameState.playerDefenseChoice?.blockingLimb : null) || "leftArm"; // Default limb
-                     intendedBodyPart = blockingLimb;
-                     logToConsole(`Block partially failed (Margin ${margin}). Damage redirected to blocking limb (${blockingLimb}).`, 'orange');
-                 } else {
-                     logToConsole(`Block failed significantly (Margin ${margin}). Hit connects to intended target (${intendedBodyPart}).`, 'red');
-                 }
-             }
+            if (defenseResult.naturalRoll <= 5) { // Failed by <= 5 margin logic, simplified to roll check as requested "On a failed unarmed block by <=5" usually implies margin, but natural roll is easier to track.
+                // Actually, user said: "On a failed unarmed block by <=5, the blocking limb takes the hit, by >=6, the intended target is hit."
+                // This usually means Margin of Failure. Failure Margin = Attack Roll - Defense Roll.
+                // If I missed (Attack > Defense), then Margin = Attack - Defense.
+                const margin = attackResult.roll - defenseResult.roll;
+                if (margin <= 5) {
+                    const blockingLimb = (defender === this.gameState ? this.gameState.playerDefenseChoice?.blockingLimb : null) || "leftArm"; // Default limb
+                    intendedBodyPart = blockingLimb;
+                    logToConsole(`Block partially failed (Margin ${margin}). Damage redirected to blocking limb (${blockingLimb}).`, 'orange');
+                } else {
+                    logToConsole(`Block failed significantly (Margin ${margin}). Hit connects to intended target (${intendedBodyPart}).`, 'red');
+                }
+            }
         }
 
         // Fire Source Logic (Ignition)
@@ -2031,7 +2028,7 @@
                 // Ignite center
                 window.fireManager.igniteTile(targetTile.x, targetTile.y, targetTile.z);
                 // Ignite neighbors (Area Effect on Impact)
-                const neighbors = [{dx:0, dy:-1}, {dx:0, dy:1}, {dx:-1, dy:0}, {dx:1, dy:0}];
+                const neighbors = [{ dx: 0, dy: -1 }, { dx: 0, dy: 1 }, { dx: -1, dy: 0 }, { dx: 1, dy: 0 }];
                 neighbors.forEach(n => {
                     window.fireManager.igniteTile(targetTile.x + n.dx, targetTile.y + n.dy, targetTile.z);
                 });
@@ -2191,7 +2188,7 @@
                 for (let dx = -burstRadiusTiles; dx <= burstRadiusTiles; dx++) {
                     for (let dy = -burstRadiusTiles; dy <= burstRadiusTiles; dy++) {
                         if (Math.sqrt(dx * dx + dy * dy) <= burstRadiusTiles) {
-                             window.fireManager.igniteTile(impactTileThermite.x + dx, impactTileThermite.y + dy, impactTileThermite.z);
+                            window.fireManager.igniteTile(impactTileThermite.x + dx, impactTileThermite.y + dy, impactTileThermite.z);
                         }
                     }
                 }
@@ -2629,16 +2626,16 @@
 
         // Physical Impact Vulnerability (e.g. Bio-Muncher)
         if (entity.tags?.includes("vulnerable_physical_rupture") && (damageType === "Bludgeoning" || damageType === "Physical") && damageAmount >= 5) {
-             // Rupture effect: Prevent enzymes/incapacitate
-             if (!entity.statusEffects) entity.statusEffects = {};
-             if (!entity.statusEffects["ruptured"]) {
-                 entity.statusEffects["ruptured"] = { id: "ruptured", displayName: "Ruptured", duration: 3, description: "Ruptured. Enzymes disabled. Incapacitated." };
-                 // Stun logic is separate, but we can add "stunned" status too or just rely on Ruptured logic in AI
-                 entity.statusEffects["stunned"] = { id: "stunned", displayName: "Stunned (Ruptured)", duration: 2, description: "Incapacitated by rupture." };
-                 if (entity !== this.gameState) entity.currentActionPoints = 0;
-                 else this.gameState.actionPointsRemaining = 0;
-                 logToConsole(`${entityName} ruptures from heavy impact! Incapacitated.`, 'magenta');
-             }
+            // Rupture effect: Prevent enzymes/incapacitate
+            if (!entity.statusEffects) entity.statusEffects = {};
+            if (!entity.statusEffects["ruptured"]) {
+                entity.statusEffects["ruptured"] = { id: "ruptured", displayName: "Ruptured", duration: 3, description: "Ruptured. Enzymes disabled. Incapacitated." };
+                // Stun logic is separate, but we can add "stunned" status too or just rely on Ruptured logic in AI
+                entity.statusEffects["stunned"] = { id: "stunned", displayName: "Stunned (Ruptured)", duration: 2, description: "Incapacitated by rupture." };
+                if (entity !== this.gameState) entity.currentActionPoints = 0;
+                else this.gameState.actionPointsRemaining = 0;
+                logToConsole(`${entityName} ruptures from heavy impact! Incapacitated.`, 'magenta');
+            }
         }
 
         const reducedDamage = Math.max(0, damageAmount - effectiveArmor - damageReduction);
@@ -2864,17 +2861,17 @@
         const burstRadiusTiles = radius;
 
         if (weapon && weapon.name !== "Explosion") {
-             logToConsole(`EXPLOSION: ${weapon.name} detonates at (${x},${y},${z}). Radius: ${burstRadiusTiles}t`, 'orangered');
+            logToConsole(`EXPLOSION: ${weapon.name} detonates at (${x},${y},${z}). Radius: ${burstRadiusTiles}t`, 'orangered');
         } else {
-             logToConsole(`Creating an explosion at (${x},${y},${z}) with radius ${radius}, damage ${damage}, and type ${damageType}.`, 'orange');
+            logToConsole(`Creating an explosion at (${x},${y},${z}) with radius ${radius}, damage ${damage}, and type ${damageType}.`, 'orange');
         }
 
         if (window.audioManager) {
-             let explosionSound = 'ui_error_01.wav';
-             if (burstRadiusTiles <= 2) explosionSound = 'ui_error_01.wav'; // Small
-             else explosionSound = 'ui_error_01.wav'; // Large
-             window.audioManager.playSoundAtLocation(explosionSound, impactTile, {}, { volume: 1.0 });
-             window.audioManager.playSoundAtLocation('ui_click_01.wav', impactTile, {}, { volume: 0.6, delay: 100 }); // Debris
+            let explosionSound = 'ui_error_01.wav';
+            if (burstRadiusTiles <= 2) explosionSound = 'ui_error_01.wav'; // Small
+            else explosionSound = 'ui_error_01.wav'; // Large
+            window.audioManager.playSoundAtLocation(explosionSound, impactTile, {}, { volume: 1.0 });
+            window.audioManager.playSoundAtLocation('ui_click_01.wav', impactTile, {}, { volume: 0.6, delay: 100 }); // Debris
         }
 
         if (window.animationManager) {
@@ -2887,21 +2884,21 @@
 
             // Optional Dodge Logic (if passed in options)
             if (options.canDodge && options.attackRoll) {
-                 const charNameForLog = char === this.gameState ? "Player" : (char.name || char.id);
-                 // Check if char is eligible to dodge (e.g. not direct target or attack missed)
-                 let canDodge = true;
-                 if (options.dodgeEligibilityCallback) {
-                     canDodge = options.dodgeEligibilityCallback(char);
-                 }
+                const charNameForLog = char === this.gameState ? "Player" : (char.name || char.id);
+                // Check if char is eligible to dodge (e.g. not direct target or attack missed)
+                let canDodge = true;
+                if (options.dodgeEligibilityCallback) {
+                    canDodge = options.dodgeEligibilityCallback(char);
+                }
 
-                 if (canDodge) {
-                      if ((rollDie(20) + getStatModifier("Dexterity", char)) >= options.attackRoll) {
-                           affectedByBlast = false;
-                           logToConsole(`${charNameForLog} dodged blast!`, 'lightgreen');
-                      } else {
-                           logToConsole(`${charNameForLog} failed to dodge blast.`, 'orange');
-                      }
-                 }
+                if (canDodge) {
+                    if ((rollDie(20) + getStatModifier("Dexterity", char)) >= options.attackRoll) {
+                        affectedByBlast = false;
+                        logToConsole(`${charNameForLog} dodged blast!`, 'lightgreen');
+                    } else {
+                        logToConsole(`${charNameForLog} failed to dodge blast.`, 'orange');
+                    }
+                }
             }
 
             if (affectedByBlast) {
