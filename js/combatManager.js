@@ -970,7 +970,7 @@
     calculateAttackRoll(attacker, weapon, targetBodyPartArg, actionContext = {}) {
         const attackerNameForLog = (attacker === this.gameState || attacker === this.gameState.player) ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id);
         let skillName, skillBasedModifier;
-        actionContext.attackerMovementPenalty = (attacker === this.gameState && this.gameState.playerMovedThisTurn) || (attacker !== this.gameState && attacker.movedThisTurn) ? -2 : 0;
+        actionContext.attackerMovementPenalty = 0;
         const rangeModifier = actionContext.rangeModifier || 0;
         const attackModifierForFireMode = actionContext.attackModifier || 0;
 
@@ -1098,8 +1098,6 @@
         const effectiveFireModeMod = Math.min(0, attackModifierForFireMode + burstReducer);
         if (effectiveFireModeMod !== 0) actionContext.detailedModifiers.push({ text: `Mode: ${effectiveFireModeMod}`, value: effectiveFireModeMod, type: 'negative' });
 
-        if (actionContext.attackerMovementPenalty !== 0) actionContext.detailedModifiers.push({ text: `Movement: ${actionContext.attackerMovementPenalty}`, value: actionContext.attackerMovementPenalty, type: 'negative' });
-
         // Companion Loyalty Bonuses
         let loyaltyBonus = 0;
         if (attacker.isFollowingPlayer && typeof attacker.loyalty === 'number') {
@@ -1162,8 +1160,7 @@
             actionContext.detailedModifiers.push({ text: "Perk (Evasive Footwork): +1", value: 1, type: 'positive' });
         }
 
-        let defenderMovementBonus = (defender === this.gameState && this.gameState.playerMovedThisTurn) || (defender !== this.gameState && defender.movedThisTurn) ? 2 : 0;
-        if (defenderMovementBonus !== 0) actionContext.detailedModifiers.push({ text: `Movement: +${defenderMovementBonus}`, value: defenderMovementBonus, type: 'positive' });
+        let defenderMovementBonus = 0;
         if (coverBonus !== 0) actionContext.detailedModifiers.push({ text: `Cover: +${coverBonus}`, value: coverBonus, type: 'positive' });
 
 
