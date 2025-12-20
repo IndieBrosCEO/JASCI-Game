@@ -2,91 +2,79 @@
 const fs = require('fs');
 const path = require('path');
 
-// Mock Browser Environment
+// Mock window and global objects
 global.window = {};
 global.document = {
-    getElementById: (id) => {
-        if (id === 'surroundingsGrid') {
-            return {
-                style: {},
-                classList: { contains: () => false, remove: () => {} },
-                appendChild: () => {},
-                innerHTML: ''
-            };
-        }
-        return null;
-    },
-    createElement: (tag) => {
+    getElementById: () => ({
+        classList: { contains: () => false, remove: () => {} },
+        style: {},
+        appendChild: () => {},
+        innerHTML: ""
+    }),
+    createElement: () => {
         return {
             style: {},
             appendChild: () => {},
-            innerHTML: '', // This property will be written to
-            children: []
+            innerHTML: ""
         };
     }
 };
 
-// Mock Game State and Managers
-global.window.gameState = {
-    player: { x: 5, y: 5, z: 0 },
+// Mock dependencies
+class AssetManager {
+    constructor() {
+        this.tilesets = {};
+    }
+    async loadDefinitions() {
+        // Load tileset.json directly for testing
+        const tilesetPath = path.join(__dirname, 'assets/definitions/tileset.json');
+        this.tilesets = JSON.parse(fs.readFileSync(tilesetPath, 'utf8'));
+    }
+}
+
+global.assetManager = new AssetManager();
+global.gameState = {
+    player: { x: 10, y: 10, z: 0 },
     npcs: []
 };
 
-global.window.assetManager = {
-    tilesets: {
-        "GR": { name: "Grass", sprite: ",", color: "green" },
-        "WALL": { name: "Stone Wall", sprite: "#", color: "grey" },
-        "VOID": { name: "Void", sprite: " ", color: "black" }
-    }
-};
-
-global.window.mapRenderer = {
+// Mock MapRenderer
+global.mapRenderer = {
     getCurrentMapData: () => {
         return {
-            dimensions: { width: 10, height: 10 },
+            dimensions: { width: 20, height: 20 },
             levels: {
                 "0": {
-                    middle: [
-                        [], [], [], [], [],
-                        [null, null, null, null, null, null, "WALL"], // y=5. x=6 is WALL
-                        []
-                    ],
-                    bottom: [
-                        [], [], [], [], [],
-                        [null, null, null, null, null, "GR", "GR"], // y=5. x=5 is GR, x=6 is GR
-                        []
-                    ]
+                    middle: Array(20).fill().map(() => Array(20).fill("")),
+                    bottom: Array(20).fill().map(() => Array(20).fill("GR")) // Fill with Grass
                 }
             }
         };
     }
 };
 
-// Load SurroundingsUI code
-const surroundingsUICode = fs.readFileSync('js/ui/surroundingsUI.js', 'utf8');
-eval(surroundingsUICode);
+// Load SurroundingsUI code manually since it's not a module
+const uiCode = fs.readFileSync(path.join(__dirname, 'js/ui/surroundingsUI.js'), 'utf8');
+// We need to eval it to add SurroundingsUI to window
+eval(uiCode);
 
-// Instantiate and Test
-const ui = new window.SurroundingsUI();
+async function runTest() {
+    await global.assetManager.loadDefinitions();
+    // console.log("Tileset loaded. GR definition:", global.assetManager.tilesets["GR"]);
 
-// Force update
-ui.update();
+    const ui = new global.window.SurroundingsUI();
 
-console.log("--- SurroundingsUI Verification ---");
-ui.cells.forEach((cell, index) => {
-    // Cell (1,0) [Right of Player] -> x=6, y=5
-    // Middle: WALL ("Stone Wall"), Bottom: GR ("Grass")
-    if (cell.dx === 1 && cell.dy === 0) {
-        console.log(`Cell (1,0) [Right of Player]:`);
-        console.log(`Top HTML: ${cell.top.innerHTML}`);
-        console.log(`Bottom HTML: ${cell.bottom.innerHTML}`);
-    }
+    ui.update();
 
-    // Cell (0,0) [Player] -> x=5, y=5
-    // Middle: You, Bottom: GR ("Grass")
-    if (cell.dx === 0 && cell.dy === 0) {
-        console.log(`Cell (0,0) [Player]:`);
-        console.log(`Top HTML: ${cell.top.innerHTML}`);
-        console.log(`Bottom HTML: ${cell.bottom.innerHTML}`);
-    }
-});
+    // Check the cell corresponding to (0,0) relative (center)
+    const centerCell = ui.cells.find(c => c.dx === 0 && c.dy === 0);
+    console.log("Center Cell Top HTML:", centerCell.top.innerHTML);
+    console.log("Center Cell Bottom HTML:", centerCell.bottom.innerHTML);
+
+    // Check a neighbor cell (1,0)
+    const neighborCell = ui.cells.find(c => c.dx === 1 && c.dy === 0);
+    console.log("Neighbor Cell Top HTML:", neighborCell.top.innerHTML);
+    console.log("Neighbor Cell Bottom HTML:", neighborCell.bottom.innerHTML);
+}
+
+runTest();
