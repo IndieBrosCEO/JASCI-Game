@@ -1,205 +1,234 @@
-
+const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-// --- SMART MOCK DOM ---
-
-class MockElement {
-    constructor(tagName) {
-        this.tagName = tagName.toUpperCase();
-        this.style = {};
-        this.children = [];
-        this._innerHTML = "";
-    }
-
-    get innerHTML() {
-        if (this.children.length > 0) {
-            return this.children.map(c => c.innerHTML).join("");
-        }
-        return this._innerHTML;
-    }
-
-    set innerHTML(val) {
-        this._innerHTML = val;
-        this.children = []; // Clear children
-    }
-
-    appendChild(child) {
-        this.children.push(child);
-    }
-
-    get classList() {
-        return {
-            contains: () => false,
-            remove: () => {}
-        }
-    }
-}
-
+// --- MOCK ENVIRONMENT ---
 global.window = {};
-global.document = {
-    getElementById: (id) => new MockElement("DIV"),
-    createElement: (tag) => new MockElement(tag)
-};
 
-// --- MOCK DEPENDENCIES ---
-
-// Mock AssetManager
-class MockAssetManager {
-    constructor() {
-        this.tilesets = {
-            "GR": { sprite: ",", color: "green", name: "Grass" },
-            "WS": { sprite: "~", color: "blue", name: "Shallow Water" },
-            "WD": { sprite: "~", color: "darkblue", name: "Deep Water" },
-            "TB": { sprite: "T", color: "brown", name: "Table" },
-            "WALL": { sprite: "#", color: "grey", name: "Brick Wall", tags: ["solid_terrain_top"] },
-            "apple": { sprite: "o", color: "red", name: "Apple" }
-        };
-    }
-    getItem(id) {
-        return this.tilesets[id];
-    }
+// Mock Element Factory
+function createMockElement(tagName) {
+    return {
+        tagName: tagName.toUpperCase(),
+        style: {},
+        classList: {
+            contains: () => false,
+            remove: () => {},
+            add: () => {}
+        },
+        children: [],
+        _innerHTML: '',
+        get innerHTML() { return this._innerHTML; },
+        set innerHTML(val) {
+            this._innerHTML = val;
+            if (val === '') this.children = [];
+        },
+        appendChild: function(child) {
+            this.children.push(child);
+        }
+    };
 }
-global.assetManager = new MockAssetManager();
-global.window.assetManager = global.assetManager;
 
-// Mock GameState
-global.gameState = {
-    // Player Entity (Mocking sync issue where coordinates might be missing/stale on this object)
-    player: { name: "Player" },
-    // Player Position State (Source of Truth)
-    playerPos: { x: 5, y: 5, z: 0 },
-    npcs: [],
-    vehicles: [],
-    floorItems: []
-};
-global.window.gameState = global.gameState;
-
-// Mock WaterManager
-global.waterManager = {
-    getWaterAt: (x, y, z) => {
-        // Assume water at (6, 5)
-        if (x === 6 && y === 5 && z === 0) return { depth: 1 }; // Shallow
-        if (x === 7 && y === 5 && z === 0) return { depth: 2 }; // Deep
-        return null;
+global.document = {
+    getElementById: (id) => {
+        if (!global.mockElements[id]) {
+            global.mockElements[id] = createMockElement('DIV');
+            global.mockElements[id].id = id;
+        }
+        return global.mockElements[id];
+    },
+    createElement: (tag) => {
+        return createMockElement(tag);
     }
 };
-global.window.waterManager = global.waterManager;
-
-// Mock VehicleManager
-global.vehicleManager = {
-    vehicleTemplates: {},
-    vehicleParts: {}
-};
-global.window.vehicleManager = global.vehicleManager;
-
-// Mock MapRenderer
-global.mapRenderer = {
-    getCurrentMapData: () => {
-        const width = 10;
-        const height = 10;
-        const createLayer = (fill) => Array(height).fill().map(() => Array(width).fill(fill));
-
-        return {
-            dimensions: { width, height },
-            levels: {
-                "0": {
-                    // Scenario 1: Grass everywhere (bottom)
-                    bottom: createLayer("GR"),
-                    // Scenario 2: Table at (4, 5) (middle)
-                    middle: (() => {
-                        const l = createLayer("");
-                        l[5][4] = "TB";
-                        l[5][3] = "WALL"; // Wall at (3,5)
-                        return l;
-                    })(),
-                },
-                "1": {
-                    // Scenario 4: Z=1, Standing on Wall at (3,5)
-                    // Bottom is Empty
-                    bottom: createLayer(""),
-                    // Middle is Empty
-                    middle: createLayer(""),
-                }
-            }
-        };
-    }
-};
-global.window.mapRenderer = global.mapRenderer;
+global.mockElements = {};
 
 // --- LOAD UI CODE ---
 const uiPath = path.resolve(__dirname, '../js/ui/surroundingsUI.js');
 const uiCode = fs.readFileSync(uiPath, 'utf8');
 eval(uiCode);
 
-// --- TESTS ---
-
-function assert(condition, message) {
-    if (!condition) {
-        console.error(`FAIL: ${message}`);
-        process.exit(1);
-    } else {
-        console.log(`PASS: ${message}`);
-    }
-}
-
+// --- TEST SUITE ---
 async function runTests() {
-    console.log("Starting SurroundingsUI Tests (Multi-Row)...");
-    const ui = new global.window.SurroundingsUI();
+    console.log("Starting SurroundingsUI Tests (Multi-Row with Labels)...");
 
-    // 1. Test Center Cell (Player)
-    // NOTE: This test also verifies that we are using gameState.playerPos for coordinates,
-    // not gameState.player (which we mocked as missing coords above).
+    // Setup Mock Game State
+    global.window.gameState = {
+        playerPos: { x: 5, y: 5, z: 0 },
+        floorItems: [],
+        npcs: [],
+        vehicles: []
+    };
+
+    // Mock AssetManager
+    global.window.assetManager = {
+        tilesets: {
+            'grass': { sprite: '.', color: 'green', name: 'Grass' },
+            'wall': { sprite: '#', color: 'grey', name: 'Wall' },
+            'water': { sprite: '~', color: 'blue', name: 'Water' },
+            'stone': { sprite: '=', color: 'grey', name: 'Stone' },
+            'rock_wall': { sprite: 'X', color: 'darkgrey', name: 'Rock Wall', tags: ['solid_terrain_top'] },
+            'rock_floor': { sprite: '_', color: 'darkgrey', name: 'Rock Floor' },
+            'sword': { sprite: '/', color: 'silver', name: 'Sword' },
+            'WD': { sprite: '~', color: 'darkblue', name: 'Deep Water' },
+            'WS': { sprite: '~', color: 'lightblue', name: 'Shallow Water' }
+        },
+        getItem: (id) => {
+            if (id === 'sword') return global.window.assetManager.tilesets['sword'];
+            return null;
+        }
+    };
+
+    // Mock MapRenderer
+    global.window.mapRenderer = {
+        getCurrentMapData: () => {
+            return {
+                dimensions: { width: 10, height: 10 },
+                levels: {
+                    '0': {
+                        bottom: [
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, null, null, null, null, null, null],
+                            // Updated: Index 4 is null to allow Z-1 check
+                            [null, null, null, null, null, 'grass', 'grass', null, null, null], // Row 5
+                            [null, null, null, null, 'grass', 'grass', 'grass', null, null, null], // Row 6
+                            [null, null, null, null, 'grass', 'grass', 'grass', null, null, null], // Row 7
+                        ],
+                        middle: [
+                             // Let's put a wall at 6,5 (Right of player)
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, null, null, 'wall', null, null, null], // Row 5
+                        ]
+                    },
+                    '-1': {
+                        // Z-1 for falling checks
+                         middle: [
+                            // 5,5 is empty bottom at Z=0? No, it's grass.
+                            // Let's make 4,5 (Left) empty at Z=0, but have a wall at Z=-1
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, null, null, null, null, null, null],
+                            [null, null, null, null, 'rock_wall', null, null, null, null, null], // Row 5 (x=4)
+                        ]
+                    }
+                }
+            };
+        }
+    };
+
+    // Mock WaterManager
+    global.window.waterManager = {
+        getWaterAt: (x, y, z) => {
+             if (x === 5 && y === 6 && z === 0) return { depth: 1 }; // South = Shallow
+             if (x === 6 && y === 6 && z === 0) return { depth: 3 }; // SouthEast = Deep
+             return null;
+        }
+    };
+
+    // Instantiate UI
+    const ui = new window.SurroundingsUI();
+
+    // 1. Test Center Cell (Player + Grass)
+    // Player at 5,5,0.
+    // Map data has 'grass' at 5,5 bottom.
     ui.update();
-    const centerCell = ui.cells.find(c => c.dx === 0 && c.dy === 0);
-    // Should have rows for Player and Grass
 
-    // DEBUG: Print innerHTML
-    if (!centerCell.element.innerHTML.includes("You")) {
-        console.log("DEBUG: Center Cell HTML:", centerCell.element.innerHTML);
+    // The center cell is index 4 (0,1,2, 3,4,5, 6,7,8 for 3x3 grid)
+    const centerCell = ui.cells.find(c => c.dx === 0 && c.dy === 0).element;
+
+    // Helper to verify mock content
+    function getCellText(cell) {
+        if (!cell.children || cell.children.length === 0) return cell.innerHTML;
+        return cell.children.map(row => row.innerHTML).join(' | ');
     }
 
-    assert(centerCell.element.innerHTML.includes("You"), "Center should show 'You'");
-    assert(centerCell.element.innerHTML.includes("Grass"), "Center should show 'Grass'");
+    const centerText = getCellText(centerCell);
+    console.log("Center Cell Content:", centerText);
 
-    // 2. Test Neighbor with Water (Shallow) at (6, 5). Player is at (5, 5). dx=1, dy=0.
-    const waterCell = ui.cells.find(c => c.dx === 1 && c.dy === 0); // (6, 5)
-    // Water is shallow, so it's Bottom content. Top should be empty?
-    // Wait, Shallow Water overrides Bottom.
-    assert(waterCell.element.innerHTML.includes("Shallow Water"), "Cell (6,5) should show 'Shallow Water'");
-    assert(!waterCell.element.innerHTML.includes("Empty"), "Cell (6,5) should not be 'Empty' overall");
+    if (!centerText.includes('You')) throw new Error("Center should show 'You'");
+    if (!centerText.includes('Entity:')) throw new Error("Center should label 'Entity'");
+    if (!centerText.includes('Grass')) throw new Error("Center should show 'Grass'");
+    if (!centerText.includes('Bottom:')) throw new Error("Center should label 'Bottom'");
 
-    // 3. Test Neighbor with Table at (4, 5). dx=-1, dy=0.
-    const tableCell = ui.cells.find(c => c.dx === -1 && c.dy === 0);
-    // Table is in 'middle' layer
-    assert(tableCell.element.innerHTML.includes("Table"), "Cell (4,5) should show 'Table'");
-    assert(tableCell.element.innerHTML.includes("Grass"), "Cell (4,5) should show 'Grass'");
+    console.log("PASS: Center Cell (Player + Grass)");
 
-    // 4. Test Floor Item (Apple) at (5, 4). dx=0, dy=-1.
-    global.gameState.floorItems = [{ id: "apple", x: 5, y: 4, z: 0, name: "Apple" }];
+
+    // 2. Test Right Cell (Wall + Grass)
+    // 6,5. Middle has 'wall'. Bottom has 'grass'.
+    const rightCell = ui.cells.find(c => c.dx === 1 && c.dy === 0).element;
+    const rightText = getCellText(rightCell);
+    console.log("Right Cell Content:", rightText);
+
+    if (!rightText.includes('Wall')) throw new Error("Right should show 'Wall'");
+    if (!rightText.includes('Middle:')) throw new Error("Right should label 'Middle'");
+    if (!rightText.includes('Grass')) throw new Error("Right should show 'Grass'");
+    if (!rightText.includes('Bottom:')) throw new Error("Right should label 'Bottom'");
+
+    console.log("PASS: Right Cell (Wall + Grass)");
+
+
+    // 3. Test Left Cell (Z-1 Support)
+    // 4,5. Z=0 Bottom is null. Z=-1 Middle is 'rock_wall' (solid_terrain_top).
+    const leftCell = ui.cells.find(c => c.dx === -1 && c.dy === 0).element;
+    const leftText = getCellText(leftCell);
+    console.log("Left Cell Content:", leftText);
+
+    if (!leftText.includes('Rock Wall')) throw new Error("Left should show 'Rock Wall' from Z-1");
+    if (!leftText.includes('Below:')) throw new Error("Left should label 'Below'");
+
+    console.log("PASS: Left Cell (Z-1 Support)");
+
+
+    // 4. Test South Cell (Shallow Water)
+    // 5,6. Water Depth 1.
+    const southCell = ui.cells.find(c => c.dx === 0 && c.dy === 1).element;
+    const southText = getCellText(southCell);
+    console.log("South Cell Content:", southText);
+
+    if (!southText.includes('Shallow Water')) throw new Error("South should show 'Shallow Water'");
+    if (!southText.includes('Bottom:')) throw new Error("South should label 'Bottom'");
+
+    console.log("PASS: South Cell (Shallow Water)");
+
+
+    // 5. Test SouthEast Cell (Deep Water)
+    // 6,6. Water Depth 3. Should be Middle layer.
+    const seCell = ui.cells.find(c => c.dx === 1 && c.dy === 1).element;
+    const seText = getCellText(seCell);
+    console.log("SE Cell Content:", seText);
+
+    if (!seText.includes('Deep Water')) throw new Error("SE should show 'Deep Water'");
+    if (!seText.includes('Middle:')) throw new Error("SE should label 'Middle'");
+
+    console.log("PASS: SE Cell (Deep Water)");
+
+
+    // 6. Test Item Stacking
+    // Add item to 5,5 (Center)
+    global.window.gameState.floorItems.push({ x: 5, y: 5, z: 0, id: 'sword', name: 'Excalibur' });
     ui.update();
-    const itemCell = ui.cells.find(c => c.dx === 0 && c.dy === -1);
-    assert(itemCell.element.innerHTML.includes("Apple"), "Cell (5,4) should show 'Apple' (Floor Item)");
-    assert(itemCell.element.innerHTML.includes("Grass"), "Cell (5,4) should show 'Grass'");
 
-    // 5. Test Multiple Items
-    global.gameState.floorItems.push({ id: "apple", x: 5, y: 4, z: 0, name: "Another Apple" });
-    ui.update();
-    // Should show two apple rows
-    const matches = itemCell.element.innerHTML.match(/Apple/g);
-    assert(matches && matches.length >= 2, "Cell (5,4) should show multiple apples");
+    const centerTextWithItem = getCellText(centerCell);
+    console.log("Center Cell Content (Item):", centerTextWithItem);
 
-    // 6. Test Standing Logic (Z-1 Fallback)
-    // Update playerPos, not player entity coords
-    global.gameState.playerPos = { x: 3, y: 5, z: 1 };
+    if (!centerTextWithItem.includes('Sword')) throw new Error("Center should show Sword (Generic Name from Def)");
+    if (!centerTextWithItem.includes('Item:')) throw new Error("Center should label 'Item'");
+    if (!centerTextWithItem.includes('You')) throw new Error("Center should still show 'You'");
 
-    ui.update();
-    const z1Cell = ui.cells.find(c => c.dx === 0 && c.dy === 0); // Player pos
-
-    assert(z1Cell.element.innerHTML.includes("You"), "Z=1 Player should show 'You'");
-    assert(z1Cell.element.innerHTML.includes("Brick Wall"), `Z=1 Player should show 'Brick Wall' (Support from Z=0). Actual: ${z1Cell.element.innerHTML}`);
+    console.log("PASS: Item Stacking");
 
     console.log("All Tests Passed!");
 }
 
-runTests();
+runTests().catch(err => {
+    console.error("FAIL:", err.message);
+    process.exit(1);
+});

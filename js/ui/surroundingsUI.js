@@ -92,7 +92,7 @@ class SurroundingsUI {
 
             // Player
             if (targetX === playerPos.x && targetY === playerPos.y && currentZ === playerPos.z) {
-                contents.push({ sprite: '☻', color: 'green', name: 'You' });
+                contents.push({ layer: 'Entity', sprite: '☻', color: 'green', name: 'You' });
             }
 
             // NPCs
@@ -100,6 +100,7 @@ class SurroundingsUI {
                 window.gameState.npcs.forEach(npc => {
                     if (npc.mapPos && npc.mapPos.x === targetX && npc.mapPos.y === targetY && npc.mapPos.z === currentZ) {
                         contents.push({
+                            layer: 'Entity',
                             sprite: npc.sprite || '?',
                             color: npc.color || 'red',
                             name: npc.name || 'NPC'
@@ -128,7 +129,7 @@ class SurroundingsUI {
                                 }
                             }
                          }
-                         contents.push({ sprite: vehicleSprite, color: vehicleColor, name: vehicleName });
+                         contents.push({ layer: 'Entity', sprite: vehicleSprite, color: vehicleColor, name: vehicleName });
                     }
                 });
             }
@@ -147,7 +148,7 @@ class SurroundingsUI {
                             color = itemDef.color || color;
                             name = itemDef.name || name;
                          }
-                         contents.push({ sprite, color, name });
+                         contents.push({ layer: 'Item', sprite, color, name });
                     }
                 });
             }
@@ -161,6 +162,7 @@ class SurroundingsUI {
                 if (water && water.depth >= 2) {
                      const wdDef = this.getTileDef('WD');
                      contents.push({
+                         layer: 'Middle',
                          sprite: wdDef ? wdDef.sprite : '~',
                          color: wdDef ? wdDef.color : '#00008b',
                          name: wdDef ? wdDef.name : 'Deep Water'
@@ -182,6 +184,7 @@ class SurroundingsUI {
                 if (midTileId && midTileId !== "") {
                     const tileDef = this.getTileDef(midTileId);
                     contents.push({
+                        layer: 'Middle',
                         sprite: tileDef ? (tileDef.sprite || midTileId[0]) : (midTileId[0] || '?'),
                         color: tileDef ? (tileDef.color || '#ccc') : '#ccc',
                         name: tileDef ? (tileDef.name || midTileId) : (midTileId || 'Unknown')
@@ -199,6 +202,7 @@ class SurroundingsUI {
                 if (water && water.depth === 1) {
                      const wsDef = this.getTileDef('WS');
                      contents.push({
+                         layer: 'Bottom',
                          sprite: wsDef ? wsDef.sprite : '~',
                          color: wsDef ? wsDef.color : '#1E90FF',
                          name: wsDef ? wsDef.name : 'Shallow Water'
@@ -220,6 +224,7 @@ class SurroundingsUI {
                 if (botTileId && botTileId !== "") {
                     const tileDef = this.getTileDef(botTileId);
                     contents.push({
+                        layer: 'Bottom',
                         sprite: tileDef ? (tileDef.sprite || botTileId[0]) : (botTileId[0] || '?'),
                         color: tileDef ? (tileDef.color || '#888') : '#888',
                         name: tileDef ? (tileDef.name || botTileId) : (botTileId || 'Unknown')
@@ -243,6 +248,7 @@ class SurroundingsUI {
                     const tileDefBelow = this.getTileDef(midBelowId);
                     if (tileDefBelow && tileDefBelow.tags && tileDefBelow.tags.includes('solid_terrain_top')) {
                         contents.push({
+                            layer: 'Below',
                             sprite: tileDefBelow.sprite || midBelowId[0],
                             color: tileDefBelow.color || '#888',
                             name: tileDefBelow.name || midBelowId
@@ -253,7 +259,7 @@ class SurroundingsUI {
             }
 
             if (!foundBottom) {
-                 contents.push({ sprite: '.', color: '#333', name: 'Void' });
+                 contents.push({ layer: 'Bottom', sprite: '.', color: '#333', name: 'Void' });
             }
 
             // Render Rows
@@ -266,7 +272,10 @@ class SurroundingsUI {
                     row.style.whiteSpace = 'nowrap';
                     row.style.overflow = 'hidden';
                     row.style.textOverflow = 'ellipsis';
-                    row.innerHTML = `<span style="color: ${item.color}; font-family: 'DwarfFortress', monospace;">${item.sprite}</span>:${item.name}`;
+
+                    // Added Layer Label
+                    row.innerHTML = `<span style="color:#666; font-size:0.8em; margin-right:4px;">${item.layer}:</span>` +
+                                    `<span style="color: ${item.color}; font-family: 'DwarfFortress', monospace;">${item.sprite}</span>:${item.name}`;
                     cell.appendChild(row);
                 });
             }
