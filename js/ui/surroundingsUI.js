@@ -44,7 +44,7 @@ class SurroundingsUI {
     }
 
     update() {
-        if (!window.gameState || !window.gameState.player) return;
+        if (!window.gameState || !window.gameState.playerPos) return;
         if (!this.container) return;
 
          // Ensure the container is visible if it was hidden
@@ -56,7 +56,8 @@ class SurroundingsUI {
         const mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
         if (!mapData || !mapData.levels) return;
 
-        const playerPos = window.gameState.player;
+        // Use gameState.playerPos for coordinates, as gameState.player may not be synced
+        const playerPos = window.gameState.playerPos;
         const currentZ = (playerPos.z !== undefined && playerPos.z !== null) ? playerPos.z : 0;
         const levelData = mapData.levels[currentZ.toString()];
 
@@ -90,7 +91,7 @@ class SurroundingsUI {
             // --- 1. Entities ---
 
             // Player
-            if (targetX === playerPos.x && targetY === playerPos.y && currentZ === currentZ) {
+            if (targetX === playerPos.x && targetY === playerPos.y && currentZ === playerPos.z) {
                 contents.push({ sprite: '☻', color: 'green', name: 'You' });
             }
 
@@ -175,7 +176,8 @@ class SurroundingsUI {
                      return (typeof raw === 'object' && raw !== null && raw.tileId !== undefined) ? raw.tileId : raw;
                 };
 
-                const midTileId = getTileIdFromLayer('middle') || getTileIdFromLayer('item') || getTileIdFromLayer('building');
+                // Strictly use 'middle' layer, legacy layers removed
+                const midTileId = getTileIdFromLayer('middle');
 
                 if (midTileId && midTileId !== "") {
                     const tileDef = this.getTileDef(midTileId);
@@ -212,7 +214,8 @@ class SurroundingsUI {
                      return (typeof raw === 'object' && raw !== null && raw.tileId !== undefined) ? raw.tileId : raw;
                  };
 
-                 const botTileId = getTileIdFromLayer('bottom') || getTileIdFromLayer('landscape');
+                 // Strictly use 'bottom' layer, legacy layers removed
+                 const botTileId = getTileIdFromLayer('bottom');
 
                 if (botTileId && botTileId !== "") {
                     const tileDef = this.getTileDef(botTileId);
@@ -233,7 +236,8 @@ class SurroundingsUI {
                      return (typeof raw === 'object' && raw !== null && raw.tileId !== undefined) ? raw.tileId : raw;
                 };
 
-                const midBelowId = getTileIdFromLayerBelow('middle') || getTileIdFromLayerBelow('building');
+                // Check 'middle' layer at Z-1 for support
+                const midBelowId = getTileIdFromLayerBelow('middle');
 
                 if (midBelowId && midBelowId !== "") {
                     const tileDefBelow = this.getTileDef(midBelowId);

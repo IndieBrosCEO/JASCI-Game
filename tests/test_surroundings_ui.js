@@ -65,7 +65,10 @@ global.window.assetManager = global.assetManager;
 
 // Mock GameState
 global.gameState = {
-    player: { x: 5, y: 5, z: 0 },
+    // Player Entity (Mocking sync issue where coordinates might be missing/stale on this object)
+    player: { name: "Player" },
+    // Player Position State (Source of Truth)
+    playerPos: { x: 5, y: 5, z: 0 },
     npcs: [],
     vehicles: [],
     floorItems: []
@@ -101,28 +104,22 @@ global.mapRenderer = {
             dimensions: { width, height },
             levels: {
                 "0": {
-                    // Scenario 1: Grass everywhere (landscape)
-                    landscape: createLayer("GR"),
-                    // Scenario 2: Table at (4, 5) (building)
-                    building: (() => {
+                    // Scenario 1: Grass everywhere (bottom)
+                    bottom: createLayer("GR"),
+                    // Scenario 2: Table at (4, 5) (middle)
+                    middle: (() => {
                         const l = createLayer("");
                         l[5][4] = "TB";
                         l[5][3] = "WALL"; // Wall at (3,5)
                         return l;
                     })(),
-                    // Scenario 3: Item layer empty, but we might test fallback
-                    item: createLayer(""),
-                    // Ensure middle/bottom are checked if landscape/building fail
-                    middle: createLayer(""), // Should populate from building/item in real map loader, but here explicit
-                    bottom: createLayer("GR")
                 },
                 "1": {
                     // Scenario 4: Z=1, Standing on Wall at (3,5)
-                    landscape: createLayer(""),
-                    building: createLayer(""),
-                    item: createLayer(""),
+                    // Bottom is Empty
+                    bottom: createLayer(""),
+                    // Middle is Empty
                     middle: createLayer(""),
-                    bottom: createLayer("") // Empty bottom
                 }
             }
         };
@@ -151,6 +148,8 @@ async function runTests() {
     const ui = new global.window.SurroundingsUI();
 
     // 1. Test Center Cell (Player)
+    // NOTE: This test also verifies that we are using gameState.playerPos for coordinates,
+    // not gameState.player (which we mocked as missing coords above).
     ui.update();
     const centerCell = ui.cells.find(c => c.dx === 0 && c.dy === 0);
     // Should have rows for Player and Grass
@@ -172,7 +171,7 @@ async function runTests() {
 
     // 3. Test Neighbor with Table at (4, 5). dx=-1, dy=0.
     const tableCell = ui.cells.find(c => c.dx === -1 && c.dy === 0);
-    // Table is in 'building' layer
+    // Table is in 'middle' layer
     assert(tableCell.element.innerHTML.includes("Table"), "Cell (4,5) should show 'Table'");
     assert(tableCell.element.innerHTML.includes("Grass"), "Cell (4,5) should show 'Grass'");
 
@@ -191,7 +190,8 @@ async function runTests() {
     assert(matches && matches.length >= 2, "Cell (5,4) should show multiple apples");
 
     // 6. Test Standing Logic (Z-1 Fallback)
-    global.gameState.player = { x: 3, y: 5, z: 1 };
+    // Update playerPos, not player entity coords
+    global.gameState.playerPos = { x: 3, y: 5, z: 1 };
 
     ui.update();
     const z1Cell = ui.cells.find(c => c.dx === 0 && c.dy === 0); // Player pos
