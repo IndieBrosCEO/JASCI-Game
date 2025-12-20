@@ -2224,7 +2224,7 @@
     "defaultActionPoints": 1,
     "defaultMovementPoints": 8,
     "tags": ["animal", "canine", "neutral_friendly"],
-    "teamId": 90,
+    "teamId": 0,
     "cr": 0.5,
     "asciiPortrait": "<span style=\"color:brown\">.</span><span style=\"color:black\">@</span><br><span style=\"color:brown\">/ \\</span>",
     "dialogueFile": "dog_dialogue.json",
