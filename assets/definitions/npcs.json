@@ -1325,7 +1325,9 @@
       "predator",
       "scavenger",
       "pack_animal",
-      "hostile_if_threatened"
+      "hostile_if_threatened",
+      "behavior_pack",
+      "fear_fire"
     ],
     "teamId": 51,
     "cr": 0.5,
@@ -1546,7 +1548,8 @@
       "mammal",
       "herbivore",
       "prey",
-      "neutral_flees"
+      "neutral_flees",
+      "fear_fire"
     ],
     "teamId": 52,
     "cr": 0.5,
@@ -2223,7 +2226,7 @@
     "equippedWeaponId": "dog_bite",
     "defaultActionPoints": 1,
     "defaultMovementPoints": 8,
-    "tags": ["animal", "canine", "neutral_friendly"],
+    "tags": ["animal", "canine", "neutral_friendly", "behavior_pack", "predator", "fear_fire"],
     "teamId": 90,
     "cr": 0.5,
     "asciiPortrait": "<span style=\"color:brown\">.</span><span style=\"color:black\">@</span><br><span style=\"color:brown\">/ \\</span>",

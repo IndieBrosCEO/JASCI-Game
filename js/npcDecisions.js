@@ -327,6 +327,110 @@ async function attemptOpenDoor(npc, doorPos, gameState, assetManager) {
 window.attemptOpenDoor = attemptOpenDoor;
 
 
+// Helper: Handle Fire Avoidance (Flee logic)
+async function handleFireAvoidance(npc, gameState, assetManager) {
+    if (!npc.tags || !npc.tags.includes("fear_fire")) return false;
+    if (!gameState.activeFires || gameState.activeFires.length === 0) return false;
+
+    const panicDistance = 5;
+    let closestFire = null;
+    let minDist = Infinity;
+
+    for (const fire of gameState.activeFires) {
+        if (fire.z !== npc.mapPos.z) continue;
+        const d = getDistance3D(npc.mapPos, fire);
+        if (d < minDist) {
+            minDist = d;
+            closestFire = fire;
+        }
+    }
+
+    if (closestFire && minDist <= panicDistance) {
+        const fleeTarget = window.getFleeTarget(npc, closestFire);
+        if (fleeTarget) {
+             if (window.logToConsole) logToConsole(`NPC ${npc.name || npc.id} flees from fire!`, 'orange');
+             return window.moveNpcTowardsTarget(npc, fleeTarget, gameState, assetManager, 100);
+        }
+    }
+    return false;
+}
+
+// Helper: Handle Predator Feeding
+async function handlePredatorFeeding(npc, gameState, assetManager) {
+    if (!npc.tags || !npc.tags.includes("predator")) return false;
+    // Hunger check (threshold 20)
+    if (npc.hunger < 20) return false;
+
+    if (!gameState.floorItems) return false;
+
+    let bestCorpse = null;
+    let bestDist = Infinity;
+    const smellRadius = 15;
+
+    for (const item of gameState.floorItems) {
+        if (item.z !== npc.mapPos.z) continue;
+        const def = assetManager.getItem(item.item.id);
+        // Check for corpse or meat tag
+        if (def && (def.type === "corpse" || (def.tags && def.tags.includes("meat")))) {
+             const d = getDistance3D(npc.mapPos, item);
+             if (d < bestDist && d <= smellRadius) {
+                 bestDist = d;
+                 bestCorpse = item;
+             }
+        }
+    }
+
+    if (bestCorpse) {
+        if (bestDist <= 1.5) {
+            if (window.logToConsole) logToConsole(`NPC ${npc.name || npc.id} eats ${bestCorpse.item.name}.`, 'green');
+            // Remove item
+            const idx = gameState.floorItems.indexOf(bestCorpse);
+            if (idx > -1) gameState.floorItems.splice(idx, 1);
+
+            // Heal and reduce hunger
+            npc.hunger = Math.max(0, npc.hunger - 50);
+            if (npc.health && npc.health.torso) {
+                npc.health.torso.current = Math.min(npc.health.torso.max, npc.health.torso.current + 10);
+            }
+            npc.memory.actionCooldown = 10; // Busy eating
+            if (window.mapRenderer) window.mapRenderer.scheduleRender();
+            return true;
+        } else {
+            // Move towards it
+            return window.moveNpcTowardsTarget(npc, bestCorpse, gameState, assetManager);
+        }
+    }
+    return false;
+}
+
+// Helper: Handle Pack Following
+function getPackFollowTarget(npc, gameState) {
+    if (!npc.tags || !npc.tags.includes("behavior_pack")) return null;
+
+    let bestAlly = null;
+    let bestDist = Infinity;
+    const packRadius = 15;
+
+    for (const other of gameState.npcs) {
+        if (other === npc) continue;
+        if (other.definitionId === npc.definitionId && other.health.torso.current > 0) {
+            const d = getDistance3D(npc.mapPos, other.mapPos);
+            // Follow if somewhat far (maintain group coherence) but not if already very close
+            if (d <= packRadius && d < bestDist) {
+                bestDist = d;
+                bestAlly = other;
+            }
+        }
+    }
+
+    // If ally found and distance is > 3, move closer.
+    // If < 3, consider "arrived" at pack, so no target needed (idle near them).
+    if (bestAlly && bestDist > 3) {
+        return bestAlly.mapPos;
+    }
+    return null;
+}
+
 // Helper to find nearest tile with specific tag or property
 function findNearestInterestingTile(npc, gameState, assetManager, criteriaFn, radius = 20) {
     const mapData = window.mapRenderer.getCurrentMapData();
@@ -389,6 +493,9 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
         npc.memory.actionCooldown--;
         if (npc.memory.actionCooldown > 0) return; // Busy performing action
     }
+
+    // --- High Priority Safety Checks ---
+    if (await handleFireAvoidance(npc, gameState, assetManager)) return;
 
     // --- Hunger Update ---
     if (npc.hunger !== undefined) {
@@ -455,6 +562,10 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
             }
         }
     }
+
+    // --- Feeding Check (Predators) ---
+    if (await handlePredatorFeeding(npc, gameState, assetManager)) return;
+
 
     // Ensure companion specific fields are present if they are following
     if (npc.isFollowingPlayer && npc.currentOrders === undefined) {
@@ -651,6 +762,12 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
                  logToConsole(`NPC ${npcName} found someone.`, 'cyan');
                  npc.memory.actionCooldown = 5; // Chatting?
                  return;
+             }
+        } else if (npcBehavior === "idle") {
+             // Check for Pack Behavior override during idle
+             const packTarget = getPackFollowTarget(npc, gameState);
+             if (packTarget) {
+                 goalTarget = packTarget;
              }
         }
 
