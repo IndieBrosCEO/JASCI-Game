@@ -269,9 +269,9 @@ class SurroundingsUI {
                 contents.forEach(item => {
                     const row = document.createElement('div');
                     // Style row (compact)
-                    row.style.whiteSpace = 'nowrap';
-                    row.style.overflow = 'hidden';
-                    row.style.textOverflow = 'ellipsis';
+                    row.style.whiteSpace = 'normal'; // Allow wrapping
+                    row.style.overflow = 'visible';
+                    // row.style.textOverflow = 'ellipsis'; // Removed truncation
 
                     // Added Layer Label
                     row.innerHTML = `<span style="color:#666; font-size:0.8em; margin-right:4px;">${item.layer}:</span>` +
