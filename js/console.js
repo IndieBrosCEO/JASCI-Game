@@ -186,10 +186,6 @@ const commandHelpInfo = {
         syntax: 'benchmark [maxSize]',
         description: 'Runs a rendering performance benchmark. Warning: May freeze game briefly.'
     },
-    'testweapons': {
-        syntax: 'testweapons',
-        description: 'Runs a test to ensure all weapons can be added to inventory and equipped.'
-    },
     'harvest_help': {
         syntax: 'harvest_help',
         description: 'Displays a tutorial on how to harvest resources.'
@@ -1447,14 +1443,6 @@ function processConsoleCommand(commandText) {
                 }
             }, 100);
             break;
-        case 'testweapons':
-            if (typeof testAllWeapons === 'function') {
-                testAllWeapons();
-            } else {
-                logToConsoleUI("Error: testAllWeapons function not found.", 'error');
-            }
-            break;
-
         case 'harvest_help':
             logToConsoleUI("=== Harvesting Tutorial ===", 'info');
             logToConsoleUI("1. Wood: Find a Tree or Bush. Stand adjacent. Press 'F' or click 'Interact'. Select 'Harvest Wood'. (Skill: Survival)", 'info');
