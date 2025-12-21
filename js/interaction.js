@@ -70,7 +70,7 @@ function _getActionsForItem(it) {
     }
 
     const tileDef = assetManagerInstance.tilesets[it.id];
-    if (it.itemType !== 'npc' && it.itemType !== 'vehicle' && it.itemType !== 'construction_instance' && !tileDef) return ["Cancel"];
+    if (it.itemType !== 'npc' && it.itemType !== 'vehicle' && it.itemType !== 'construction_instance' && it.itemType !== 'floor_item' && !tileDef) return ["Cancel"];
 
     const tags = tileDef ? tileDef.tags || [] : [];
     console.log(`_getActionsForItem: ID=${it.id}, Tags=${JSON.stringify(tags)}`);
@@ -115,6 +115,11 @@ function _getActionsForItem(it) {
     // Butchery
     if (it.itemType === "corpse") {
         actions.push("Butcher");
+    }
+
+    // Pick Up Floor Items
+    if (it.itemType === "floor_item") {
+        actions.push("Pick Up");
     }
 
     // Added for traps
@@ -629,6 +634,26 @@ function _performAction(action, it) {
         } else {
             console.error("HarvestManager not initialized.");
         }
+    } else if (action === "Pick Up" && it.itemType === "floor_item") {
+        if (window.inventoryManager && typeof window.inventoryManager.addItem === 'function') {
+             // Try to add the item to inventory
+             const success = window.inventoryManager.addItem(it.originalItem);
+             if (success) {
+                 // Remove from floorItems
+                 const index = window.gameState.floorItems.findIndex(fi => fi.item === it.originalItem);
+                 if (index !== -1) {
+                     window.gameState.floorItems.splice(index, 1);
+                     logToConsole(`Picked up ${it.name}.`);
+                     if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+                 } else {
+                     logToConsole("Error: Item not found on floor.", "error");
+                 }
+             } else {
+                 logToConsole(`Inventory full. Cannot pick up ${it.name}.`, "warn");
+             }
+        } else {
+             logToConsole("InventoryManager not available.", "error");
+        }
     }
 
 
@@ -802,6 +827,24 @@ window.interaction = {
             });
         } else {
             console.log("detectInteractableItems: No gameState.vehicles array found to iterate.");
+        }
+
+        // Detect Floor Items
+        if (window.gameState && window.gameState.floorItems) {
+            window.gameState.floorItems.forEach((entry) => {
+                 if (entry.z === currentZ) {
+                     const dist = Math.max(Math.abs(entry.x - px), Math.abs(entry.y - py));
+                     if (dist <= R) {
+                         window.gameState.interactableItems.push({
+                             x: entry.x, y: entry.y, z: entry.z,
+                             id: entry.item.id,
+                             name: entry.item.name || "Unknown Item",
+                             itemType: "floor_item",
+                             originalItem: entry.item
+                         });
+                     }
+                 }
+            });
         }
 
         // Detect Placed Constructions
