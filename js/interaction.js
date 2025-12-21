@@ -122,6 +122,11 @@ function _getActionsForItem(it) {
         actions.push("Pick Up");
     }
 
+    // Pick Up Generated Map Items (items placed in map maker)
+    if (tags.includes("generated_from_item")) {
+        actions.push("Pick Up");
+    }
+
     // Added for traps
     if (it.itemType === "trap" && it.trapState === "detected") {
         actions.push("Examine Trap", "Attempt to Disarm");
@@ -634,25 +639,80 @@ function _performAction(action, it) {
         } else {
             console.error("HarvestManager not initialized.");
         }
-    } else if (action === "Pick Up" && it.itemType === "floor_item") {
-        if (window.inventoryManager && typeof window.inventoryManager.addItem === 'function') {
-             // Try to add the item to inventory
-             const success = window.inventoryManager.addItem(it.originalItem);
-             if (success) {
-                 // Remove from floorItems
-                 const index = window.gameState.floorItems.findIndex(fi => fi.item === it.originalItem);
-                 if (index !== -1) {
-                     window.gameState.floorItems.splice(index, 1);
-                     logToConsole(`Picked up ${it.name}.`);
-                     if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-                 } else {
-                     logToConsole("Error: Item not found on floor.", "error");
-                 }
-             } else {
-                 logToConsole(`Inventory full. Cannot pick up ${it.name}.`, "warn");
-             }
-        } else {
-             logToConsole("InventoryManager not available.", "error");
+    } else if (action === "Pick Up") {
+        if (it.itemType === "floor_item") {
+            if (window.inventoryManager && typeof window.inventoryManager.addItem === 'function') {
+                // Try to add the item to inventory
+                const success = window.inventoryManager.addItem(it.originalItem);
+                if (success) {
+                    // Remove from floorItems
+                    const index = window.gameState.floorItems.findIndex(fi => fi.item === it.originalItem);
+                    if (index !== -1) {
+                        window.gameState.floorItems.splice(index, 1);
+                        logToConsole(`Picked up ${it.name}.`);
+                        if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+                    } else {
+                        logToConsole("Error: Item not found on floor.", "error");
+                    }
+                } else {
+                    logToConsole(`Inventory full. Cannot pick up ${it.name}.`, "warn");
+                }
+            } else {
+                logToConsole("InventoryManager not available.", "error");
+            }
+        } else if (tileDef && tileDef.tags && tileDef.tags.includes("generated_from_item")) {
+            // Logic for picking up a generated map tile (placed via map maker)
+            if (window.inventoryManager && typeof window.inventoryManager.addItem === 'function') {
+                const itemDef = assetManagerInstance.itemsById[it.id];
+                if (itemDef) {
+                    // Create a fresh item instance from definition
+                    const newItem = JSON.parse(JSON.stringify(itemDef)); // Deep copy to be safe
+                    // Try to add to inventory
+                    const success = window.inventoryManager.addItem(newItem);
+                    if (success) {
+                        // Remove tile from map
+                        // Determine which layer the item is on.
+                        // We check middle first, then bottom.
+                        // If it's on bottom, we replace it with null, which might leave a hole.
+                        // But usually generated items are on middle.
+                        let removed = false;
+
+                        // Check Middle Layer
+                        if (levelData.middle && levelData.middle[y] && levelData.middle[y][x]) {
+                            const tileAtLoc = levelData.middle[y][x];
+                            const tileIdAtLoc = (typeof tileAtLoc === 'object' && tileAtLoc !== null) ? tileAtLoc.tileId : tileAtLoc;
+                            if (tileIdAtLoc === it.id) {
+                                levelData.middle[y][x] = null;
+                                removed = true;
+                            }
+                        }
+
+                        // Check Bottom Layer if not found/removed on middle
+                        if (!removed && levelData.bottom && levelData.bottom[y] && levelData.bottom[y][x]) {
+                            const tileAtLoc = levelData.bottom[y][x];
+                            const tileIdAtLoc = (typeof tileAtLoc === 'object' && tileAtLoc !== null) ? tileAtLoc.tileId : tileAtLoc;
+                            if (tileIdAtLoc === it.id) {
+                                levelData.bottom[y][x] = null; // Warning: This might create a hole if it was the floor
+                                removed = true;
+                                logToConsole(`Warning: Picked up item from bottom layer, which may leave a hole.`, "debug");
+                            }
+                        }
+
+                        if (removed) {
+                            logToConsole(`Picked up ${it.name}.`);
+                            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
+                        } else {
+                            logToConsole(`Error: Could not find the tile to remove for ${it.name}.`, "error");
+                        }
+                    } else {
+                        logToConsole(`Inventory full. Cannot pick up ${it.name}.`, "warn");
+                    }
+                } else {
+                    logToConsole(`Error: Item definition not found for ${it.id}.`, "error");
+                }
+            } else {
+                logToConsole("InventoryManager not available.", "error");
+            }
         }
     }
 
