@@ -87,25 +87,25 @@ class AssetManager {
             'tileset.json',
             'water_absorption.json',
             'npcs.json',
-            'weapons.json',
-            'ammunition.json',
-            'consumables.json',
-            'clothing.json',
+            'items/weapons.json',
+            'items/ammunition.json',
+            'items/consumables.json',
+            'items/clothing.json',
             'fish.json',
-            'tools.json',
-            'crafting_materials.json',
-            'containers.json',
-            'trap_kits.json',
-            'vehicle_parts.json',
+            'items/tools.json',
+            'items/crafting_materials.json',
+            'items/containers.json',
+            'items/trap_kits.json',
+            'items/vehicle_parts.json',
             'vehicle_templates.json',
             'dynamic_event_templates.json',
             'procedural_quest_templates.json',
             'quests.json', // Added quests.json
-            'traps.json', // Added traps.json
+            'items/traps.json', // Added traps.json
             'constructions.json', // Added constructions.json
             'families.json', // Added families.json
             'perks.json', // Added perks.json
-            'harvest_resources.json', // Added harvest resources
+            'items/harvest_resources.json', // Added harvest resources
             'loot_tables.json', // Added loot tables
             'world_graph.json',
             'areas.json'
@@ -173,7 +173,7 @@ class AssetManager {
                     this.npcDefinitions = Object.fromEntries(parsedJson.map(npc => [npc.id, npc]));
                 } else if (filename === 'fish.json') {
                     this.fishDefinitions = parsedJson;
-                } else if (filename === 'vehicle_parts.json') {
+                } else if (filename === 'items/vehicle_parts.json') {
                     if (Array.isArray(parsedJson)) {
                         this.vehiclePartDefinitions = Object.fromEntries(parsedJson.map(part => [part.id, part]));
                         console.log(`AssetManager: Loaded ${Object.keys(this.vehiclePartDefinitions).length} vehicle parts.`);
@@ -210,7 +210,7 @@ class AssetManager {
                     } else {
                         console.warn(`AssetManager: Expected array from quests.json, but got ${typeof parsedJson}. Skipping file.`);
                     }
-                } else if (filename === 'traps.json') {
+                } else if (filename === 'items/traps.json') {
                     if (typeof parsedJson === 'object' && !Array.isArray(parsedJson)) {
                         this.trapDefinitionsData = parsedJson; // Directly assign the object
                         // Optionally, validate that each trap has an 'id' matching its key, or add it if missing.
@@ -246,7 +246,7 @@ class AssetManager {
                 } else if (filename === 'areas.json') {
                     this.areas = parsedJson;
                     console.log(`AssetManager: Loaded areas.`);
-                } else if (['weapons.json', 'ammunition.json', 'consumables.json', 'clothing.json', 'tools.json', 'crafting_materials.json', 'containers.json', 'trap_kits.json', 'harvest_resources.json'].includes(filename)) {
+                } else if (['items/weapons.json', 'items/ammunition.json', 'items/consumables.json', 'items/clothing.json', 'items/tools.json', 'items/crafting_materials.json', 'items/containers.json', 'items/trap_kits.json', 'items/harvest_resources.json'].includes(filename)) {
                     // All new item files are arrays of items
                     if (Array.isArray(parsedJson)) {
                         parsedJson.forEach(item => {
