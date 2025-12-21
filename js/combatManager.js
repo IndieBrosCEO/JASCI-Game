@@ -970,7 +970,7 @@
     calculateAttackRoll(attacker, weapon, targetBodyPartArg, actionContext = {}) {
         const attackerNameForLog = (attacker === this.gameState || attacker === this.gameState.player) ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id);
         let skillName, skillBasedModifier;
-        actionContext.attackerMovementPenalty = 0;
+        actionContext.attackerMovementPenalty = (attacker === this.gameState && this.gameState.playerMovedThisTurn) || (attacker !== this.gameState && attacker.movedThisTurn) ? -2 : 0;
         const rangeModifier = actionContext.rangeModifier || 0;
         const attackModifierForFireMode = actionContext.attackModifier || 0;
 
@@ -1098,6 +1098,8 @@
         const effectiveFireModeMod = Math.min(0, attackModifierForFireMode + burstReducer);
         if (effectiveFireModeMod !== 0) actionContext.detailedModifiers.push({ text: `Mode: ${effectiveFireModeMod}`, value: effectiveFireModeMod, type: 'negative' });
 
+        if (actionContext.attackerMovementPenalty !== 0) actionContext.detailedModifiers.push({ text: `Movement: ${actionContext.attackerMovementPenalty}`, value: actionContext.attackerMovementPenalty, type: 'negative' });
+
         // Companion Loyalty Bonuses
         let loyaltyBonus = 0;
         if (attacker.isFollowingPlayer && typeof attacker.loyalty === 'number') {
@@ -1160,7 +1162,8 @@
             actionContext.detailedModifiers.push({ text: "Perk (Evasive Footwork): +1", value: 1, type: 'positive' });
         }
 
-        let defenderMovementBonus = 0;
+        let defenderMovementBonus = (defender === this.gameState && this.gameState.playerMovedThisTurn) || (defender !== this.gameState && defender.movedThisTurn) ? 2 : 0;
+        if (defenderMovementBonus !== 0) actionContext.detailedModifiers.push({ text: `Movement: +${defenderMovementBonus}`, value: defenderMovementBonus, type: 'positive' });
         if (coverBonus !== 0) actionContext.detailedModifiers.push({ text: `Cover: +${coverBonus}`, value: coverBonus, type: 'positive' });
 
 
@@ -1400,16 +1403,25 @@
             }
         }
 
-        await window.animationManager.playAnimation('diceRoll', {
-            diceNotation: damageDiceNotation,
-            rollingEntityName: `${attackerName} Damage Roll (${weapon ? weapon.name : 'Unarmed'})`,
-            entity: target, // Animation appears near target
-            modifiers: damageModifiers, // Pass any applicable damage modifiers
-            onComplete: (rolledDamage) => {
-                damageAmount = rolledDamage;
-                logToConsole(`Rolled Damage for ${weapon ? weapon.name : 'Unarmed'}: ${damageAmount} (Notation: ${damageDiceNotation})`, 'grey');
-            }
-        });
+        const isPlayerInvolved = (attacker === this.gameState || attacker === this.gameState.player) || (target === this.gameState || target === this.gameState.player);
+
+        if (isPlayerInvolved) {
+            await window.animationManager.playAnimation('diceRoll', {
+                diceNotation: damageDiceNotation,
+                rollingEntityName: `${attackerName} Damage Roll (${weapon ? weapon.name : 'Unarmed'})`,
+                entity: target, // Animation appears near target
+                modifiers: damageModifiers, // Pass any applicable damage modifiers
+                onComplete: (rolledDamage) => {
+                    damageAmount = rolledDamage;
+                    logToConsole(`Rolled Damage for ${weapon ? weapon.name : 'Unarmed'}: ${damageAmount} (Notation: ${damageDiceNotation})`, 'grey');
+                }
+            });
+        } else {
+            const parsed = parseDiceNotation(damageDiceNotation);
+            damageAmount = rollDiceNotation(parsed);
+            damageAmount = Math.max(0, damageAmount);
+            logToConsole(`Rolled Damage for ${weapon ? weapon.name : 'Unarmed'}: ${damageAmount} (Notation: ${damageDiceNotation})`, 'grey');
+        }
 
         if (document.getElementById('damageResult')) document.getElementById('damageResult').textContent = `Raw Damage: ${damageAmount} ${damageType} (${damageDiceNotation})`;
         this.applyDamage(attacker, target, targetBodyPartForDamage, damageAmount, damageType, weapon);
@@ -1434,16 +1446,25 @@
             // For now, assuming damageModifiers for ranged are empty unless specified by weapon type (e.g. critical hit bonus)
             const damageModifiers = [];
 
-            await window.animationManager.playAnimation('diceRoll', {
-                diceNotation: damageDiceNotation,
-                rollingEntityName: `${attackerName} Damage (Hit ${i + 1}/${numHits}, ${weaponName})`,
-                entity: target, // Animation appears near target
-                modifiers: damageModifiers,
-                onComplete: (rolledDamage) => {
-                    damageAmountThisBullet = rolledDamage;
-                    logToConsole(`Rolled Damage (Hit ${i + 1}): ${damageAmountThisBullet} for ${weaponName}`, 'grey');
-                }
-            });
+            const isPlayerInvolved = (attacker === this.gameState || attacker === this.gameState.player) || (target === this.gameState || target === this.gameState.player);
+
+            if (isPlayerInvolved) {
+                await window.animationManager.playAnimation('diceRoll', {
+                    diceNotation: damageDiceNotation,
+                    rollingEntityName: `${attackerName} Damage (Hit ${i + 1}/${numHits}, ${weaponName})`,
+                    entity: target, // Animation appears near target
+                    modifiers: damageModifiers,
+                    onComplete: (rolledDamage) => {
+                        damageAmountThisBullet = rolledDamage;
+                        logToConsole(`Rolled Damage (Hit ${i + 1}): ${damageAmountThisBullet} for ${weaponName}`, 'grey');
+                    }
+                });
+            } else {
+                const parsed = parseDiceNotation(damageDiceNotation);
+                damageAmountThisBullet = rollDiceNotation(parsed);
+                damageAmountThisBullet = Math.max(0, damageAmountThisBullet);
+                logToConsole(`Rolled Damage (Hit ${i + 1}): ${damageAmountThisBullet} for ${weaponName}`, 'grey');
+            }
 
             totalDamageThisVolley += damageAmountThisBullet;
             if (window.audioManager && targetPosition) {
@@ -1908,19 +1929,25 @@
         actionContext.detailedModifiers = []; // Ensure it's reset for attacker
         attackResult = this.calculateAttackRoll(attacker, weapon, defender ? intendedBodyPart : null, actionContext);
 
-        const attackerDisplayPromise = window.animationManager.playAnimation('diceRoll', {
-            diceNotation: '1d20', // This is mostly for display if fixedNaturalRoll is provided
-            fixedNaturalRoll: attackResult.naturalRoll,
-            fixedResult: attackResult.roll,
-            rollingEntityName: `${attackerName} Attack`,
-            entity: attacker,
-            modifiers: attackResult.detailedModifiers,
-            duration: 1500 + (attackResult.detailedModifiers.length * 500),
-            onComplete: (finalDisplayValue) => { // finalDisplayValue should match attackResult.roll
-                logToConsole(`ATTACK: ${attackerName} targets ${defender ? defenderName + "'s " + intendedBodyPart : "tile"} with ${weapon ? weapon.name : 'Unarmed'}. Final Roll: ${finalDisplayValue} (Natural: ${attackResult.naturalRoll})`);
-            }
-        });
-        animationPromises.push(attackerDisplayPromise);
+        const isPlayerInvolved = (attacker === this.gameState || attacker === this.gameState.player) || (defender && (defender === this.gameState || defender === this.gameState.player));
+
+        if (isPlayerInvolved) {
+            const attackerDisplayPromise = window.animationManager.playAnimation('diceRoll', {
+                diceNotation: '1d20', // This is mostly for display if fixedNaturalRoll is provided
+                fixedNaturalRoll: attackResult.naturalRoll,
+                fixedResult: attackResult.roll,
+                rollingEntityName: `${attackerName} Attack`,
+                entity: attacker,
+                modifiers: attackResult.detailedModifiers,
+                duration: 1500 + (attackResult.detailedModifiers.length * 500),
+                onComplete: (finalDisplayValue) => { // finalDisplayValue should match attackResult.roll
+                    logToConsole(`ATTACK: ${attackerName} targets ${defender ? defenderName + "'s " + intendedBodyPart : "tile"} with ${weapon ? weapon.name : 'Unarmed'}. Final Roll: ${finalDisplayValue} (Natural: ${attackResult.naturalRoll})`);
+                }
+            });
+            animationPromises.push(attackerDisplayPromise);
+        } else {
+            logToConsole(`ATTACK: ${attackerName} targets ${defender ? defenderName + "'s " + intendedBodyPart : "tile"} with ${weapon ? weapon.name : 'Unarmed'}. Final Roll: ${attackResult.roll} (Natural: ${attackResult.naturalRoll})`);
+        }
         await Promise.all(animationPromises);
         animationPromises.length = 0;
 
@@ -1933,25 +1960,30 @@
             if (defChoiceType !== "None") {
                 defenseResult = this.calculateDefenseRoll(defender, defChoiceType, weapon, coverBonus, defenderActionContext);
 
-                const defenderDisplayPromise = window.animationManager.playAnimation('diceRoll', {
-                    diceNotation: '1d20',
-                    fixedNaturalRoll: defenseResult.naturalRoll,
-                    fixedResult: defenseResult.roll,
-                    rollingEntityName: `${defenderName} Defense`,
-                    entity: defender,
-                    modifiers: defenseResult.detailedModifiers,
-                    duration: 1500 + (defenseResult.detailedModifiers.length * 500),
-                    onComplete: (finalDisplayValue) => {
-                        logToConsole(`DEFENSE: ${defenderName} (${defChoiceType} - ${defenseResult.defenseSkillName}). Final Roll: ${finalDisplayValue} (Natural: ${defenseResult.naturalRoll})`);
-                        if (defChoiceType.toLowerCase().includes("block") && window.audioManager && (defender.mapPos || defender === this.gameState)) { /* ... play block sound ... */ }
-                    }
-                });
-                animationPromises.push(defenderDisplayPromise);
+                if (isPlayerInvolved) {
+                    const defenderDisplayPromise = window.animationManager.playAnimation('diceRoll', {
+                        diceNotation: '1d20',
+                        fixedNaturalRoll: defenseResult.naturalRoll,
+                        fixedResult: defenseResult.roll,
+                        rollingEntityName: `${defenderName} Defense`,
+                        entity: defender,
+                        modifiers: defenseResult.detailedModifiers,
+                        duration: 1500 + (defenseResult.detailedModifiers.length * 500),
+                        onComplete: (finalDisplayValue) => {
+                            logToConsole(`DEFENSE: ${defenderName} (${defChoiceType} - ${defenseResult.defenseSkillName}). Final Roll: ${finalDisplayValue} (Natural: ${defenseResult.naturalRoll})`);
+                            if (defChoiceType.toLowerCase().includes("block") && window.audioManager && (defender.mapPos || defender === this.gameState)) { /* ... play block sound ... */ }
+                        }
+                    });
+                    animationPromises.push(defenderDisplayPromise);
+                } else {
+                    logToConsole(`DEFENSE: ${defenderName} (${defChoiceType} - ${defenseResult.defenseSkillName}). Final Roll: ${defenseResult.roll} (Natural: ${defenseResult.naturalRoll})`);
+                    if (defChoiceType.toLowerCase().includes("block") && window.audioManager && (defender.mapPos || defender === this.gameState)) { /* ... play block sound ... */ }
+                }
             } else { // Passive defense
                 defenseResult = this.calculateDefenseRoll(defender, "None", weapon, coverBonus, defenderActionContext);
                 logToConsole(`DEFENSE: ${defenderName} (None - Ranged). Effective defense from cover: ${defenseResult.roll}`, defender === this.gameState ? 'lightblue' : 'gold');
                 // Optionally, animate passive defense value if desired, e.g., with a simpler ModifierPopupAnimation
-                if (defenseResult.roll !== 0 && defenseResult.detailedModifiers.length > 0) {
+                if (isPlayerInvolved && defenseResult.roll !== 0 && defenseResult.detailedModifiers.length > 0) {
                     animationPromises.push(window.animationManager.playAnimation('modifierPopup', {
                         text: `Passive Defense: ${defenseResult.roll}`,
                         position: { x: '60%', y: '40%' }, // Example position
@@ -1971,16 +2003,21 @@
             else if (defenseResult.isCriticalSuccess && defChoiceType !== "None" && !attackResult.isCriticalHit) hit = false;
             else hit = attackResult.roll > defenseResult.roll;
 
-            animationPromises.push(
-                window.animationManager.playAnimation('hitMissLabel', {
-                    text: hit ? "Hit!" : "Miss!",
-                    position: { x: '50%', y: '50%' }, // Centered
-                    entity: defender // Show near defender
-                }).then(() => {
-                    logToConsole(hit ? `RESULT: Hit! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.` : `RESULT: Miss! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.`, hit ? (attacker === this.gameState ? 'lightgreen' : 'orange') : (attacker === this.gameState ? 'orange' : 'lightgreen'));
-                    if (window.audioManager && (attackerPos || defender?.mapPos)) { /* ... play crit sounds ... */ }
-                })
-            );
+            if (isPlayerInvolved) {
+                animationPromises.push(
+                    window.animationManager.playAnimation('hitMissLabel', {
+                        text: hit ? "Hit!" : "Miss!",
+                        position: { x: '50%', y: '50%' }, // Centered
+                        entity: defender // Show near defender
+                    }).then(() => {
+                        logToConsole(hit ? `RESULT: Hit! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.` : `RESULT: Miss! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.`, hit ? (attacker === this.gameState ? 'lightgreen' : 'orange') : (attacker === this.gameState ? 'orange' : 'lightgreen'));
+                        if (window.audioManager && (attackerPos || defender?.mapPos)) { /* ... play crit sounds ... */ }
+                    })
+                );
+            } else {
+                logToConsole(hit ? `RESULT: Hit! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.` : `RESULT: Miss! Attack ${attackResult.roll} vs Defense ${defenseResult.roll}.`, hit ? (attacker === this.gameState ? 'lightgreen' : 'orange') : (attacker === this.gameState ? 'orange' : 'lightgreen'));
+                if (window.audioManager && (attackerPos || defender?.mapPos)) { /* ... play crit sounds ... */ }
+            }
             await Promise.all(animationPromises);
             animationPromises.length = 0;
 
@@ -2574,7 +2611,7 @@
         // Ensure bodyPartName matches the camelCase keys used in initializeHealth (e.g., "leftArm")
         // The bodyPartName coming from UI or random distribution should already be in correct camelCase.
         // Convert to lowercase for reliable access, as health object keys are lowercase.
-        const accessKey = bodyPartName;
+        let accessKey = bodyPartName;
         // logToConsole(`[applyDamage Debug] Received bodyPartName: "${bodyPartName}", Access Key: "${accessKey}" for ${entity.name || entity.id || 'Player'}`, 'purple'); // DIAGNOSTIC LOG
 
         const entityName = (entity === this.gameState || entity === this.gameState.player) ? "Player" : (entity.name || entity.id);
