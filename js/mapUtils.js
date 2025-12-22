@@ -229,6 +229,139 @@ class MapUtils {
 
         return true;
     }
+
+    /**
+     * Calculates the occupied cells (footprint) of an entity based on position, dimensions, and facing.
+     * @param {object} entity - The entity object (must have mapPos, dimensions, facing).
+     * @param {object} [overridePos] - Optional position to use instead of entity.mapPos.
+     * @param {string} [overrideFacing] - Optional facing to use instead of entity.facing.
+     * @returns {Array<object>} Array of {x, y, z} coordinates occupied by the entity.
+     */
+    getEntityFootprint(entity, overridePos = null, overrideFacing = null) {
+        const pos = overridePos || (entity.mapPos ? { ...entity.mapPos } : (entity === this.gameState.player || entity === this.gameState ? this.gameState.playerPos : null));
+        // Fallback for player object passed as gameState or direct player object
+
+        if (!pos) return [];
+
+        const dims = entity.dimensions || (entity === this.gameState ? this.gameState.player.dimensions : null) || { width: 1, length: 1, height: 1 };
+        const facing = overrideFacing || entity.facing || (entity === this.gameState ? this.gameState.player.facing : 'down');
+
+        const footprint = [];
+        let sizeX = dims.width;
+        let sizeY = dims.length;
+
+        // Swap dimensions if facing sideways (East/West)
+        if (facing === 'left' || facing === 'right' || facing === 'west' || facing === 'east') {
+            sizeX = dims.length;
+            sizeY = dims.width;
+        }
+
+        // Assuming pos is top-left-bottom (minX, minY, minZ) anchor
+        for (let z = 0; z < dims.height; z++) {
+            for (let y = 0; y < sizeY; y++) {
+                for (let x = 0; x < sizeX; x++) {
+                    footprint.push({
+                        x: pos.x + x,
+                        y: pos.y + y,
+                        z: pos.z + z
+                    });
+                }
+            }
+        }
+        return footprint;
+    }
+
+    /**
+     * Checks if a footprint is valid (all tiles walkable and not blocked by static map or other entities).
+     * @param {Array<object>} footprint - Array of {x, y, z} coordinates.
+     * @param {object} ignoreEntity - Entity to ignore during collision checks (usually self).
+     * @returns {boolean} True if the footprint is valid and free.
+     */
+    isFootprintWalkable(footprint, ignoreEntity = null) {
+        if (!footprint || footprint.length === 0) return false;
+
+        for (const tile of footprint) {
+            // Check map boundaries and static walkability
+            if (!this.mapRenderer.isWalkable(tile.x, tile.y, tile.z)) {
+                return false;
+            }
+
+            // Check dynamic entities (excluding self)
+            if (this.isTileOccupied(tile.x, tile.y, tile.z, ignoreEntity)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks if a specific tile is occupied by a character (player or NPC).
+     * Updated to support multi-tile entities.
+     * @param {number} x - The x-coordinate.
+     * @param {number} y - The y-coordinate.
+     * @param {number} z - The z-coordinate.
+     * @param {object} [ignoreEntity] - Entity to ignore (self).
+     * @returns {boolean} True if occupied.
+     */
+    isTileOccupied(x, y, z, ignoreEntity = null) {
+        // Helper to check intersection
+        const checkEntity = (ent) => {
+            if (ent === ignoreEntity) return false;
+            // Check simplified bounds first for speed?
+            // Or just check full footprint.
+            // Since we don't cache footprints, calculating on fly might be slow if many entities.
+            // But we only check one tile against many entities.
+
+            // Optimization: Quick AABB check
+            const pos = ent.mapPos || (ent === this.gameState || ent === this.gameState.player ? this.gameState.playerPos : null);
+            if (!pos) return false;
+
+            // Resolve dimensions and facing
+            const isPlayer = (ent === this.gameState || ent === this.gameState.player);
+            const dims = ent.dimensions || (isPlayer ? this.gameState.player.dimensions : { width: 1, length: 1, height: 1 });
+            const facing = ent.facing || (isPlayer ? this.gameState.player.facing : 'down');
+
+            let sizeX = dims.width;
+            let sizeY = dims.length;
+            if (facing === 'left' || facing === 'right' || facing === 'west' || facing === 'east') {
+                sizeX = dims.length;
+                sizeY = dims.width;
+            }
+
+            // Check if (x,y,z) is inside the bounding box [pos.x, pos.x + sizeX) etc.
+            if (x >= pos.x && x < pos.x + sizeX &&
+                y >= pos.y && y < pos.y + sizeY &&
+                z >= pos.z && z < pos.z + dims.height) {
+
+                // If we need precise shape (e.g. L-shaped), we'd check actual footprint here.
+                // But current spec is rectangular box.
+                return true;
+            }
+            return false;
+        };
+
+        // Check player
+        if (checkEntity(this.gameState.player) || checkEntity(this.gameState)) return true;
+
+        // Check NPCs
+        for (const npc of this.gameState.npcs) {
+            if (npc.health && npc.health.torso && npc.health.torso.current <= 0) continue; // Ignore dead bodies for collision? Usually yes.
+            if (checkEntity(npc)) return true;
+        }
+
+        // Check Vehicles
+        if (this.gameState.vehicles) {
+            for (const vehicle of this.gameState.vehicles) {
+                // Vehicles might be multi-tile too?
+                // Currently vehicles use templates but 'mapPos' is single point.
+                // Assuming vehicles are 1x1 or we need to add dimension support to them too.
+                // For now, assume 1x1 unless they have dimensions.
+                if (checkEntity(vehicle)) return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 // Make globally accessible if needed by other modules directly, or instantiate in script.js

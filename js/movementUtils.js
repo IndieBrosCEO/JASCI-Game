@@ -118,11 +118,25 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
     const originalPos = isPlayer ? { ...window.gameState.playerPos } : { ...character.mapPos };
     let targetX = originalPos.x;
     let targetY = originalPos.y;
+    let newFacing = isPlayer ? window.gameState.player.facing : character.facing;
 
     switch (direction) {
-        case 'up': case 'w': case 'ArrowUp': targetY--; break;
-        case 'down': case 's': case 'ArrowDown': targetY++; break;
-        case 'left': case 'a': case 'ArrowLeft': targetX--; break;
+        case 'up': case 'w': case 'ArrowUp':
+            targetY--;
+            newFacing = 'up';
+            break;
+        case 'down': case 's': case 'ArrowDown':
+            targetY++;
+            newFacing = 'down';
+            break;
+        case 'left': case 'a': case 'ArrowLeft':
+            targetX--;
+            newFacing = 'left';
+            break;
+        case 'right': case 'd': case 'ArrowRight':
+            targetX++;
+            newFacing = 'right';
+            break;
         case 'right': case 'd': case 'ArrowRight': targetX++; break;
         case 'up_z': /* Z handled later */ break;
         case 'down_z': /* Z handled later */ break;
@@ -566,7 +580,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         if (isPlayer) {
             entityBlockingHorizontalTarget = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === originalPos.z && npc.health?.torso?.current > 0);
         } else {
-            if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === originalPos.z) entityBlockingHorizontalTarget = true;
+            if (window.gameState.playerPos && window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === originalPos.z) entityBlockingHorizontalTarget = true;
             if (!entityBlockingHorizontalTarget) {
                 entityBlockingHorizontalTarget = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === originalPos.z && otherNpc.health?.torso?.current > 0);
             }
@@ -605,6 +619,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
 
                     if (isPlayer) {
                         window.gameState.playerPos = { x: targetX, y: targetY, z: originalPos.z };
+                        window.gameState.player.facing = newFacing; // Update facing
                         if (vehicleId) {
                             const vehicle = window.vehicleManager.getVehicleById(vehicleId);
                             if (vehicle) vehicle.currentMovementPoints -= actualMoveCost;
@@ -613,6 +628,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                         }
                     } else {
                         character.mapPos = { x: targetX, y: targetY, z: originalPos.z };
+                        character.facing = newFacing; // Update facing
                         character.currentMovementPoints -= actualMoveCost;
                     }
                     logToConsole(`${logPrefix} Moved horizontally to (${targetX},${targetY},Z:${originalPos.z}). Cost: ${actualMoveCost} MP.`);
