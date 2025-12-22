@@ -2229,5 +2229,68 @@
     "asciiPortrait": "<span style=\"color:brown\">.</span><span style=\"color:black\">@</span><br><span style=\"color:brown\">/ \\</span>",
     "dialogueFile": "dog_dialogue.json",
     "isRecruitable": true
+  },
+  {
+    "id": "gelatinous_cube",
+    "name": "Gelatinous Cube",
+    "sprite": "#",
+    "color": "#00ffff",
+    "factionId": "monster",
+    "behavior": "melee_aggressive",
+    "dimensions": { "width": 2, "length": 2, "height": 2 },
+    "health": {
+      "body": { "max": 50, "current": 50, "armor": 0, "crisisTimer": 0 }
+    },
+    "stats": {
+      "Strength": 5, "Intelligence": 1, "Dexterity": 1, "Constitution": 8, "Perception": 1, "Willpower": 10, "Charisma": 1, "Marksmanship": 0
+    },
+    "skills": { "Unarmed": 5 },
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 4,
+    "tags": ["monster", "slime", "hostile"],
+    "teamId": 99,
+    "cr": 3
+  },
+  {
+    "id": "horse",
+    "name": "Horse",
+    "sprite": "H",
+    "color": "#8B4513",
+    "factionId": "neutral",
+    "behavior": "wander_slow",
+    "dimensions": { "width": 1, "length": 2, "height": 1 },
+    "health": {
+      "body": { "max": 30, "current": 30, "armor": 0, "crisisTimer": 0 }
+    },
+    "stats": {
+      "Strength": 6, "Intelligence": 2, "Dexterity": 4, "Constitution": 5, "Perception": 4, "Willpower": 3, "Charisma": 2, "Marksmanship": 0
+    },
+    "skills": { "Unarmed": 10 },
+    "defaultActionPoints": 1,
+    "defaultMovementPoints": 10,
+    "tags": ["animal", "mammal", "mount", "neutral"],
+    "teamId": 50,
+    "cr": 1
+  },
+  {
+    "id": "dragon",
+    "name": "Dragon",
+    "sprite": "D",
+    "color": "#FF0000",
+    "factionId": "monster",
+    "behavior": "hunt_aerial",
+    "dimensions": { "width": 3, "length": 3, "height": 3 },
+    "health": {
+      "body": { "max": 200, "current": 200, "armor": 5, "crisisTimer": 0 }
+    },
+    "stats": {
+      "Strength": 10, "Intelligence": 6, "Dexterity": 4, "Constitution": 10, "Perception": 8, "Willpower": 8, "Charisma": 6, "Marksmanship": 0
+    },
+    "skills": { "Unarmed": 50 },
+    "defaultActionPoints": 2,
+    "defaultMovementPoints": 12,
+    "tags": ["monster", "dragon", "flying", "hostile", "boss"],
+    "teamId": 99,
+    "cr": 10
   }
 ]
