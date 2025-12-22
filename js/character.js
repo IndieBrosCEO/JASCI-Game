@@ -1263,6 +1263,13 @@ window.characterCanStandAt = characterCanStandAt;
  * @returns {boolean} True if a fall occurred and position was updated, false otherwise.
  */
 async function handleFalling(characterOrGameState, startX, startY, initialAirZ) { // Made async
+    // Flying Check
+    const character = (characterOrGameState === window.gameState) ? window.gameState.player : characterOrGameState;
+    if (character.tags && character.tags.includes('flying')) {
+        // Flying entities don't fall
+        return false;
+    }
+
     if (typeof window.mapRenderer?.isWalkable !== 'function' || typeof window.mapRenderer?.getCurrentMapData !== 'function') {
         console.error("handleFalling: mapRenderer.isWalkable or getCurrentMapData is not available.");
         return false;

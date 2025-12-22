@@ -25,7 +25,8 @@
 async function attemptCharacterMove(character, direction, assetManagerInstance, moveCostOverride = null, animationDurationOverride = null) {
     const isPlayer = (character === window.gameState);
     const logPrefix = isPlayer ? "[PlayerMovement]" : `[NPCMovement ${character.id || 'UnknownNPC'}]`;
-    console.log(`${logPrefix} attemptCharacterMove called with direction: ${direction}`);
+    const isFlying = !isPlayer && character.tags && character.tags.includes('flying'); // Player flying logic can be added later if needed
+    console.log(`${logPrefix} attemptCharacterMove called with direction: ${direction}. Flying: ${isFlying}`);
 
     if (isPlayer && window.gameState.isActionMenuActive) {
         logToConsole(`${logPrefix} Cannot move: Action menu active.`, "orange");
@@ -201,7 +202,37 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
     // We'll treat slopes as valid for vehicles, but stairs/ladders as invalid.
 
     // --- Movement Logic Order ---
-    // 0. Swimming (Vertical Movement in Deep Water)
+
+    // 0. Flying Vertical Movement
+    if (isFlying && (direction === 'up_z' || direction === 'down_z') && !moveSuccessful) {
+        const targetZ = originalPos.z + (direction === 'up_z' ? 1 : -1);
+        // Basic check for map bounds (assuming Z-levels are generally reasonable, strict check depends on map implementation)
+        // For now, we allow flying into any Z that isn't strictly impassable.
+        const targetImpassableInfo = isTileStrictlyImpassable(targetX, targetY, targetZ);
+
+        if (!targetImpassableInfo.impassable) {
+            // Check entity collision at destination
+            let entityAtDest = false;
+            // NPCs checking against player and other NPCs (Flying is currently NPC only in this implementation)
+            if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === targetZ) entityAtDest = true;
+            if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZ && otherNpc.health?.torso?.current > 0);
+
+            if (!entityAtDest) {
+                character.mapPos = { x: targetX, y: targetY, z: targetZ };
+                character.currentMovementPoints -= actualMoveCost;
+                logToConsole(`${logPrefix} Flying ${direction === 'up_z' ? 'Up' : 'Down'} to Z:${targetZ}.`, "cyan");
+                moveSuccessful = true;
+                // If view follows NPC z (usually not for player view), but render update is needed.
+                return true;
+            } else {
+                logToConsole(`${logPrefix} Flying blocked: Destination occupied.`);
+            }
+        } else {
+            logToConsole(`${logPrefix} Flying blocked by ${targetImpassableInfo.name}.`);
+        }
+    }
+
+    // 0.5. Swimming (Vertical Movement in Deep Water)
     if ((direction === 'up_z' || direction === 'down_z') && !moveSuccessful) {
         if (window.waterManager && window.waterManager.isWaterDeep(originalPos.x, originalPos.y, originalPos.z)) {
             const targetZ = originalPos.z + (direction === 'up_z' ? 1 : -1);
@@ -236,7 +267,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                 logToConsole(`${logPrefix} Swimming blocked by ${targetImpassableInfo.name}.`);
             }
         } else {
-            logToConsole(`${logPrefix} Cannot swim vertical: Not in deep water.`);
+            // logToConsole(`${logPrefix} Cannot swim vertical: Not in deep water.`);
         }
     }
 
@@ -593,8 +624,10 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
             if (isPlayer) return false;
         }
 
-        // If not blocked by an entity AND the tile is walkable at the same Z.
-        if (!entityBlockingHorizontalTarget && window.mapRenderer.isWalkable(targetX, targetY, originalPos.z)) {
+        // If not blocked by an entity AND (the tile is walkable OR entity is flying).
+        // Note: targetStrictlyImpassableInfo.impassable check above already handles walls.
+        // isWalkable handles "floor presence". Flying entities don't need floors, but must respect walls.
+        if (!entityBlockingHorizontalTarget && (window.mapRenderer.isWalkable(targetX, targetY, originalPos.z) || (isFlying && !targetStrictlyImpassableInfo.impassable))) {
             if (!(targetX === originalPos.x && targetY === originalPos.y)) { // Ensure actual movement
                 // const cost = 1; // Standard horizontal move cost
                 let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
