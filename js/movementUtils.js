@@ -118,7 +118,8 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
     const originalPos = isPlayer ? { ...window.gameState.playerPos } : { ...character.mapPos };
     let targetX = originalPos.x;
     let targetY = originalPos.y;
-    let newFacing = isPlayer ? window.gameState.player.facing : character.facing;
+    // Get current facing, default to 'down' if missing
+    let newFacing = isPlayer ? (window.gameState.player.facing || 'down') : (character.facing || 'down');
 
     switch (direction) {
         case 'up': case 'w': case 'ArrowUp':
@@ -137,7 +138,6 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
             targetX++;
             newFacing = 'right';
             break;
-        case 'right': case 'd': case 'ArrowRight': targetX++; break;
         case 'up_z': /* Z handled later */ break;
         case 'down_z': /* Z handled later */ break;
         default:
@@ -148,6 +148,35 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
     if (targetX < 0 || targetX >= width || targetY < 0 || targetY >= height) {
         logToConsole(`${logPrefix} Can't move that way (map boundary).`);
         return false;
+    }
+
+    // --- Multi-tile Rotation/Collision Check ---
+    if (window.mapUtils) {
+        const ent = isPlayer ? window.gameState.player : character;
+        const targetFootprint = window.mapUtils.getEntityFootprint(ent, { x: targetX, y: targetY, z: originalPos.z }, newFacing);
+
+        // 1. Check Static Geometry (Walls/Map Bounds)
+        // If ANY part of the footprint is in a wall, block immediately.
+        for (const tile of targetFootprint) {
+            if (!window.mapRenderer.isWalkable(tile.x, tile.y, tile.z)) {
+                logToConsole(`${logPrefix} Cannot move: Footprint blocked by static map at (${tile.x},${tile.y}).`);
+                return false;
+            }
+        }
+
+        // 2. Check Entity Collision (but allow interaction with primary target)
+        // We allow the move to proceed IF the only obstruction is at (targetX, targetY),
+        // because the existing logic below handles "bumping" into an interactable/hostile there.
+        // If there is an obstruction elsewhere in the footprint, we block.
+        for (const tile of targetFootprint) {
+             // Skip check for the "primary" tile where interaction happens
+             if (tile.x === targetX && tile.y === targetY && tile.z === originalPos.z) continue;
+
+             if (window.mapUtils.isTileOccupied(tile.x, tile.y, tile.z, ent)) {
+                 logToConsole(`${logPrefix} Cannot move: Footprint collision at (${tile.x},${tile.y}) with non-target entity.`);
+                 return false;
+             }
+        }
     }
 
     // Water Movement Cost

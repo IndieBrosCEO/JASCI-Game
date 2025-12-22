@@ -306,21 +306,53 @@ function renderOverlays(gridContainer, mapData, currentEditingZ, selectedPortal,
 
     // NPCs
     (mapData.npcs || []).forEach(npc => {
-        if (npc.mapPos?.z === currentEditingZ) {
-            const cell = gridContainer.querySelector(`.cell[data-x='${npc.mapPos.x}'][data-y='${npc.mapPos.y}'][data-z='${currentEditingZ}']`);
-            if (cell) {
-                const npcMarker = document.createElement('div');
-                npcMarker.className = 'npc-marker';
-                const npcBaseDef = assetManagerInstance.npcDefinitions?.[npc.definitionId];
-                npcMarker.textContent = npc.sprite || npcBaseDef?.sprite || 'N'; // Instance sprite, then base sprite, then fallback
-                npcMarker.style.color = npc.color || npcBaseDef?.color || 'purple'; // Instance color, then base color, then fallback
-                npcMarker.title = `NPC: ${npc.name || npcBaseDef?.name || npc.id} (Def: ${npc.definitionId})`;
-                if (selectedNpc?.id === npc.id) {
-                    cell.classList.add('selected-npc-cell'); // CSS handles the outline for selected NPC
-                } else {
-                    cell.classList.remove('selected-npc-cell'); // Ensure it's removed if not selected
+        const npcBaseDef = assetManagerInstance.npcDefinitions?.[npc.definitionId];
+        const dims = npc.dimensions || npcBaseDef?.dimensions || { width: 1, length: 1, height: 1 };
+        const facing = npc.facing || 'down';
+
+        let sizeX = dims.width;
+        let sizeY = dims.length;
+        // Swap dimensions if facing sideways
+        if (facing === 'left' || facing === 'right' || facing === 'west' || facing === 'east') {
+            sizeX = dims.length;
+            sizeY = dims.width;
+        }
+
+        // Iterate over footprint
+        for (let ix = 0; ix < sizeX; ix++) {
+            for (let iy = 0; iy < sizeY; iy++) {
+                const tileX = npc.mapPos.x + ix;
+                const tileY = npc.mapPos.y + iy;
+
+                // Check if this part of the NPC is on the current Z-level
+                // Assumes NPC height covers Z to Z+height-1.
+                // If mapMaker only edits one Z at a time, we check if currentEditingZ is within [npcZ, npcZ + height)
+                const npcZ = npc.mapPos.z;
+                if (currentEditingZ >= npcZ && currentEditingZ < npcZ + dims.height) {
+                    const cell = gridContainer.querySelector(`.cell[data-x='${tileX}'][data-y='${tileY}'][data-z='${currentEditingZ}']`);
+                    if (cell) {
+                        const npcMarker = document.createElement('div');
+                        npcMarker.className = 'npc-marker';
+                        npcMarker.textContent = npc.sprite || npcBaseDef?.sprite || 'N';
+                        npcMarker.style.color = npc.color || npcBaseDef?.color || 'purple';
+
+                        // Differentiate primary tile vs body
+                        if (ix === 0 && iy === 0 && currentEditingZ === npcZ) {
+                            npcMarker.style.border = "1px solid white"; // Highlight anchor
+                        } else {
+                            npcMarker.style.opacity = "0.7";
+                        }
+
+                        npcMarker.title = `NPC: ${npc.name || npcBaseDef?.name || npc.id} (Def: ${npc.definitionId})\nPart: ${ix},${iy}`;
+
+                        if (selectedNpc?.id === npc.id) {
+                            cell.classList.add('selected-npc-cell');
+                        } else {
+                            cell.classList.remove('selected-npc-cell');
+                        }
+                        cell.appendChild(npcMarker);
+                    }
                 }
-                cell.appendChild(npcMarker);
             }
         }
     });

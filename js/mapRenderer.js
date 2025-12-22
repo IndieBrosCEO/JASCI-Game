@@ -1742,54 +1742,68 @@ window.mapRenderer = {
         // NPC Rendering (Viewport Aware)
         if (gameState.npcs && gameState.npcs.length > 0 && tileCacheData) {
             gameState.npcs.forEach(npc => {
-                if (!npc.mapPos || npc.mapPos.z !== currentZ) return;
-                const npcX = npc.mapPos.x; // absolute map X
-                const npcY = npc.mapPos.y; // absolute map Y
-                if (npcX >= startCol && npcX <= endCol && npcY >= startRow && npcY <= endRow) {
-                    let isBeingAnimated = false;
-                    // ... (animation check remains same) ...
-                    if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
-                        const npcMoveAnim = gameState.activeAnimations.find(anim =>
-                            anim.type === 'movement' && anim.data.entity === npc && anim.visible &&
-                            (anim.z === undefined || anim.z === currentZ)
-                        );
-                        if (npcMoveAnim) isBeingAnimated = true;
-                    }
+                if (!npc.mapPos) return;
 
-                    if (!isBeingAnimated) {
-                        const roofObscures = gameState.showRoof && currentLevelData.roof?.[npcY]?.[npcX];
-                        const playerIsHere = (npcX === gameState.playerPos.x && npcY === gameState.playerPos.y && gameState.playerPos.z === currentZ);
-                        const isTargetingCursorHere = gameState.isTargetingMode && npcX === gameState.targetingCoords.x && npcY === gameState.targetingCoords.y && gameState.targetingCoords.z === currentZ;
-                        const cachedCell = tileCacheData[npcY]?.[npcX]; // Absolute coords for cache
-                        const playerAlreadyRenderedOnTile = cachedCell?.displayedId === "PLAYER_STATIC" || cachedCell?.displayedId === "PLAYER_FALLING";
+                // Calculate footprint. Fallback to single tile if mapUtils not ready (though it should be)
+                let footprint = [{ x: npc.mapPos.x, y: npc.mapPos.y, z: npc.mapPos.z }];
+                if (window.mapUtils && typeof window.mapUtils.getEntityFootprint === 'function') {
+                    footprint = window.mapUtils.getEntityFootprint(npc);
+                }
 
-                        if (!roofObscures && !playerIsHere && !isTargetingCursorHere && !playerAlreadyRenderedOnTile) {
-                            const npcTileFowStatus = currentFowData?.[npcY]?.[npcX] || 'hidden';
-                            if (npc.displayZ !== undefined && npc.displayZ === currentZ) { // Falling
-                                if (cachedCell && cachedCell.span && (npcTileFowStatus === 'visible' || npcTileFowStatus === 'visited')) {
-                                    cachedCell.span.textContent = npc.sprite;
-                                    cachedCell.span.style.color = npc.color;
-                                    cachedCell.sprite = npc.sprite;
-                                    cachedCell.color = npc.color;
-                                }
-                            } else if (npcTileFowStatus === 'visible') {
-                                if (cachedCell && cachedCell.span) {
-                                    cachedCell.span.textContent = npc.sprite;
-                                    cachedCell.span.style.color = npc.color;
-                                    cachedCell.sprite = npc.sprite;
-                                    cachedCell.color = npc.color;
-                                }
-                            } else if (npcTileFowStatus === 'visited') {
-                                if (cachedCell && cachedCell.span) {
-                                    cachedCell.span.textContent = npc.sprite;
-                                    cachedCell.span.style.color = darkenColor(npc.color, 0.6);
-                                    cachedCell.sprite = npc.sprite;
-                                    cachedCell.color = darkenColor(npc.color, 0.6);
+                // Iterate over all tiles in the footprint
+                footprint.forEach(tile => {
+                    // Check Z-level
+                    if (tile.z !== currentZ) return;
+
+                    const npcX = tile.x;
+                    const npcY = tile.y;
+
+                    // Check Viewport
+                    if (npcX >= startCol && npcX <= endCol && npcY >= startRow && npcY <= endRow) {
+                        let isBeingAnimated = false;
+                        if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
+                            const npcMoveAnim = gameState.activeAnimations.find(anim =>
+                                anim.type === 'movement' && anim.data.entity === npc && anim.visible &&
+                                (anim.z === undefined || anim.z === currentZ)
+                            );
+                            if (npcMoveAnim) isBeingAnimated = true;
+                        }
+
+                        if (!isBeingAnimated) {
+                            const roofObscures = gameState.showRoof && currentLevelData.roof?.[npcY]?.[npcX];
+                            const playerIsHere = (npcX === gameState.playerPos.x && npcY === gameState.playerPos.y && gameState.playerPos.z === currentZ);
+                            const isTargetingCursorHere = gameState.isTargetingMode && npcX === gameState.targetingCoords.x && npcY === gameState.targetingCoords.y && gameState.targetingCoords.z === currentZ;
+                            const cachedCell = tileCacheData[npcY]?.[npcX]; // Absolute coords for cache
+                            const playerAlreadyRenderedOnTile = cachedCell?.displayedId === "PLAYER_STATIC" || cachedCell?.displayedId === "PLAYER_FALLING";
+
+                            if (!roofObscures && !playerIsHere && !isTargetingCursorHere && !playerAlreadyRenderedOnTile) {
+                                const npcTileFowStatus = currentFowData?.[npcY]?.[npcX] || 'hidden';
+                                if (npc.displayZ !== undefined && npc.displayZ === currentZ) { // Falling
+                                    if (cachedCell && cachedCell.span && (npcTileFowStatus === 'visible' || npcTileFowStatus === 'visited')) {
+                                        cachedCell.span.textContent = npc.sprite;
+                                        cachedCell.span.style.color = npc.color;
+                                        cachedCell.sprite = npc.sprite;
+                                        cachedCell.color = npc.color;
+                                    }
+                                } else if (npcTileFowStatus === 'visible') {
+                                    if (cachedCell && cachedCell.span) {
+                                        cachedCell.span.textContent = npc.sprite;
+                                        cachedCell.span.style.color = npc.color;
+                                        cachedCell.sprite = npc.sprite;
+                                        cachedCell.color = npc.color;
+                                    }
+                                } else if (npcTileFowStatus === 'visited') {
+                                    if (cachedCell && cachedCell.span) {
+                                        cachedCell.span.textContent = npc.sprite;
+                                        cachedCell.span.style.color = darkenColor(npc.color, 0.6);
+                                        cachedCell.sprite = npc.sprite;
+                                        cachedCell.color = darkenColor(npc.color, 0.6);
+                                    }
                                 }
                             }
                         }
                     }
-                }
+                });
             });
         }
 
