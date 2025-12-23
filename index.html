@@ -242,6 +242,9 @@
                 <button id="startGameButton">Start Game</button>
                 <button onclick="saveGame()">Save Game</button>
                 <button onclick="loadGame()">Load Game</button>
+                <button onclick="exportSaveGame()">Export Save</button>
+                <button onclick="document.getElementById('importSaveInput').click()">Import Save</button>
+                <input type="file" id="importSaveInput" style="display:none" onchange="window.importSaveGame(this)">
             </div>
 
             <!-- Vehicle Modification UI (Initially Hidden) -->

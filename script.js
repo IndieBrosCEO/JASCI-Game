@@ -2994,7 +2994,81 @@ async function initialize() { // Made async
         }
     }
 }
-// --- Save/Load Game Functions ---
+// --- Save/Load Game Helpers & Functions ---
+
+// Helper to serialize Sets (like processedIdempotencyKeys)
+function saveReplacer(key, value) {
+    if (key === 'processedIdempotencyKeys' && value instanceof Set) {
+        return Array.from(value);
+    }
+    return value;
+}
+
+// Helper to deserialize Sets
+function loadReviver(key, value) {
+    if (key === 'processedIdempotencyKeys') {
+        if (Array.isArray(value)) {
+            return new Set(value);
+        }
+        // Fallback for old saves where it might be {}
+        return new Set();
+    }
+    return value;
+}
+
+// Centralized function to refresh UI and state after a load (from any source)
+function refreshUIFromGameState() {
+    // Safety check for critical Set objects if reviver didn't catch them (e.g. direct Object.assign)
+    if (!(gameState.processedIdempotencyKeys instanceof Set)) {
+        gameState.processedIdempotencyKeys = new Set();
+    }
+
+    // Ensure settings object exists
+    if (!gameState.settings) {
+        gameState.settings = { autoEndTurnAtZeroAP: true, autoEndTurnAtZeroMP: true };
+    }
+
+    if (gameState.gameStarted) {
+        const characterCreator = document.getElementById('character-creator');
+        const characterInfoPanel = document.getElementById('character-info-panel');
+        if (characterCreator) characterCreator.classList.add('hidden');
+        if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
+
+        renderCharacterInfo(); // Update character display
+        if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI(); // Update inventory display
+
+        // Correctly pass the player object to renderHealthTable
+        if (gameState.player) {
+            window.renderHealthTable(gameState.player);
+        }
+
+        updatePlayerStatusDisplay(); // Update clock, needs, Z-levels
+        if (window.turnManager) window.turnManager.updateTurnUI(); // Update turn info
+
+        // Map related UI and state
+        if (window.mapRenderer) {
+            // Assume mapLevels in gameState is the source of truth
+            window.mapRenderer.scheduleRender();
+        }
+
+        if (window.interaction) {
+            window.interaction.detectInteractableItems();
+            window.interaction.showInteractableItems();
+        }
+
+        // Restore gas manager state if available
+        if (window.gasManager && typeof window.gasManager.init === 'function') {
+            window.gasManager.init(gameState);
+        }
+
+    } else {
+        logToConsole("Loaded game state indicates game was not started. UI may be inconsistent.", "warn");
+        const characterCreator = document.getElementById('character-creator');
+        if (characterCreator) characterCreator.classList.remove('hidden');
+        window.renderTables(gameState); // Re-render char creation tables
+    }
+}
+
 function saveGame() {
     if (!gameState.gameStarted) {
         alert("Game has not started yet. Cannot save.");
@@ -3002,7 +3076,7 @@ function saveGame() {
         return;
     }
     try {
-        const gameStateString = JSON.stringify(gameState);
+        const gameStateString = JSON.stringify(gameState, saveReplacer);
         localStorage.setItem('jasciGameSave', gameStateString);
         alert("Game Saved!");
         logToConsole("Game state saved to localStorage.", "info");
@@ -3019,72 +3093,16 @@ function loadGame() {
     try {
         const savedGameStateString = localStorage.getItem('jasciGameSave');
         if (savedGameStateString) {
-            const loadedState = JSON.parse(savedGameStateString);
+            const loadedState = JSON.parse(savedGameStateString, loadReviver);
 
-            // Deep merge or careful assignment is needed here.
-            // For a simple overwrite of the entire gameState:
             Object.assign(gameState, loadedState);
+            refreshUIFromGameState();
 
-            // After loading, re-initialize parts of the game that depend on the new state
-            // or that are not part of the JSON (like DOM elements, caches, etc.)
-
-            // Ensure settings object exists if loading old save
-            if (!gameState.settings) {
-                gameState.settings = { autoEndTurnAtZeroAP: true, autoEndTurnAtZeroMP: true };
-            }
-
-            // Re-initialize asset-dependent parts if map changed or assets are dynamic
-            // For now, assume assets are static and loaded at init.
-
-            // Refresh UI elements
             if (gameState.gameStarted) {
-                const characterCreator = document.getElementById('character-creator');
-                const characterInfoPanel = document.getElementById('character-info-panel');
-                if (characterCreator) characterCreator.classList.add('hidden');
-                if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
-
-                renderCharacterInfo(); // Update character display
-                if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI(); // Update inventory display
-                window.renderHealthTable(gameState); // Update health display
-                updatePlayerStatusDisplay(); // Update clock, needs, Z-levels
-                window.turnManager.updateTurnUI(); // Update turn info
-
-                // Map related UI and state
-                if (window.mapRenderer) {
-                    // If map data itself is part of gameState and needs to be re-applied to mapRenderer
-                    // This depends on how mapRenderer stores/gets its map data.
-                    // If mapRenderer.currentMapData is not directly part of gameState,
-                    // it might need to be reloaded or re-initialized.
-                    // For now, let's assume mapLevels in gameState is the source of truth
-                    // and mapRenderer will use it.
-                    // It's crucial that mapRenderer's internal state is consistent with loaded gameState.mapLevels.
-                    // A function like `mapRenderer.setCurrentMapFromGameState(gameState)` might be needed.
-                    // For now, we'll just schedule a render.
-                    window.mapRenderer.scheduleRender();
-                }
-
-                window.interaction.detectInteractableItems();
-                window.interaction.showInteractableItems();
-
-                // Re-establish NPC references or re-initialize them if they have complex states not in JSON
-                // For now, assuming NPCs are fully serialized. If not, they might need:
-                // gameState.npcs.forEach(npc => initializeNpcFace(npc)); // If face generation is needed
-
                 logToConsole("Game state loaded from localStorage.", "info");
                 alert("Game Loaded!");
                 if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
-
-            } else {
-                // If the loaded game state indicates game was not started (e.g. save from char creator)
-                // Reset to character creator or initial menu.
-                // For now, just log it. A more robust system would handle this.
-                logToConsole("Loaded game state indicates game was not started. UI may be inconsistent.", "warn");
-                // Potentially show character creator again
-                const characterCreator = document.getElementById('character-creator');
-                if (characterCreator) characterCreator.classList.remove('hidden');
-                window.renderTables(gameState); // Re-render char creation tables
             }
-
         } else {
             alert("No saved game found.");
             logToConsole("Load attempt: No saved game found in localStorage.", "info");
@@ -3097,6 +3115,58 @@ function loadGame() {
         if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
     }
 }
+
+function exportSaveGame() {
+    if (!gameState.gameStarted) {
+        alert("Game has not started yet. Cannot export save.");
+        return;
+    }
+    try {
+        const gameStateString = JSON.stringify(gameState, saveReplacer);
+        const blob = new Blob([gameStateString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        a.download = `jasci_save_${timestamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        logToConsole("Game save exported.", "info");
+        if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+    } catch (error) {
+        console.error("Error exporting save:", error);
+        alert("Failed to export save.");
+    }
+}
+window.exportSaveGame = exportSaveGame;
+
+function importSaveGame(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const loadedState = JSON.parse(e.target.result, loadReviver);
+            Object.assign(gameState, loadedState);
+            refreshUIFromGameState();
+
+            logToConsole("Game save imported from file.", "info");
+            alert("Game Imported Successfully!");
+            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav');
+        } catch (error) {
+            console.error("Error importing save:", error);
+            alert("Failed to import save file. The file may be corrupted or invalid.");
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+        }
+    };
+    reader.readAsText(file);
+    // Reset input so same file can be selected again if needed
+    input.value = '';
+}
+window.importSaveGame = importSaveGame;
 
 document.addEventListener('DOMContentLoaded', initialize); // Changed to call new async initialize
 
