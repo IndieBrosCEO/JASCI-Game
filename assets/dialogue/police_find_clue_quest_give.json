@@ -1,0 +1,31 @@
+{
+  "start": {
+    "text": "Hello, {playerName}! I'm {npcName}. Please recover a vital clue that I misplaced at the local fountain. Clumsy me.",
+    "choices": [
+      {
+        "text": "Yes.",
+        "goTo": "give_quest"
+      },
+      {
+        "text": "No.",
+        "goTo": "end"
+      }
+    ]
+  },
+  "end": {
+    "text": "Farewell!",
+    "choices": []
+  },
+  "give_quest": {
+    "text": "Thanks a lot!",
+    "choices": [
+      {
+        "text": "No problem.",
+        "goTo": "end"
+      }
+    ],
+    "actions": [
+      "giveQuest:police_find_clue"
+    ]
+  }
+}

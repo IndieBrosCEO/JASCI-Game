@@ -1,5 +1,9 @@
 ﻿[
   {
+    "id": "dragon",
+    "name": "dragon"
+  },
+  {
     "id": "Cave",
     "name": "Cave"
   },
