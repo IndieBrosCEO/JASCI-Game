@@ -2447,8 +2447,8 @@
             this.gameState.actionPointsRemaining--; window.turnManager.updateTurnUI();
             logToConsole(`AP spent for grapple. Remaining: ${this.gameState.actionPointsRemaining}`, 'lightblue');
         }
-        const attackerRoll = rollDie(20) + getSkillValue("Unarmed", attacker);
-        const defenderRoll = rollDie(20) + getSkillValue("Unarmed", defender);
+        const attackerRoll = rollDie(20) + getSkillModifier("Unarmed", attacker);
+        const defenderRoll = rollDie(20) + getSkillModifier("Unarmed", defender);
         logToConsole(`GRAPPLE: ${(attacker === this.gameState ? "Player" : attacker.name)} rolls ${attackerRoll} vs ${defender.name}'s ${defenderRoll}.`, 'grey');
 
         if (attackerRoll > defenderRoll) {

@@ -2,7 +2,7 @@
   {
     "id": "training_dummy",
     "name": "Training Dummy",
-    "sprite": "D",
+    "sprite": "8",
     "color": "#e480de",
     "factionId": "neutral",
     "behavior": "idle",
@@ -520,7 +520,7 @@
   {
     "id": "cellar_dweller",
     "name": "Cellar Dweller",
-    "sprite": "c",
+    "sprite": "w",
     "color": "#006400",
     "factionId": "mutant",
     "behavior": "ambush",
@@ -667,7 +667,7 @@
   {
     "id": "hired_gun_merc",
     "name": "Hired Gun",
-    "sprite": "H",
+    "sprite": "V",
     "color": "#ac8062",
     "factionId": "bandit",
     "behavior": "guard_aggressive",
@@ -1690,7 +1690,7 @@
   {
     "id": "animal_western_rattlesnake",
     "name": "Western Rattlesnake",
-    "sprite": "S",
+    "sprite": "&",
     "color": "#6b8e23",
     "factionId": "creature_predator",
     "behavior": "ambush_strike",
@@ -2157,7 +2157,7 @@
   {
     "id": "bio_static",
     "name": "Bio-Static",
-    "sprite": "M",
+    "sprite": "E",
     "color": "#7df9ff",
     "factionId": "mutant",
     "behavior": "melee_aggressive",
@@ -2176,7 +2176,7 @@
       "Marksmanship": 0
     },
     "skills": {
-      "Unarmed": 2,
+      "Unarmed": 20,
       "MeleeWeapons": 2,
       "Guns": 0
     },
@@ -2195,7 +2195,7 @@
   {
     "id": "animal_dog",
     "name": "Stray Dog",
-    "sprite": "d",
+    "sprite": "k",
     "color": "#cd2ab6",
     "factionId": "creature_neutral",
     "behavior": "wander_dog",
@@ -2207,14 +2207,14 @@
       "leftLeg": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 },
       "rightLeg": { "max": 8, "current": 8, "armor": 0, "crisisTimer": 0 }
     },
-    "stats": [
-      { "name": "Strength", "points": 4 },
-      { "name": "Dexterity", "points": 6 },
-      { "name": "Constitution", "points": 5 },
-      { "name": "Perception", "points": 8 },
-      { "name": "Willpower", "points": 4 },
-      { "name": "Charisma", "points": 6 }
-    ],
+    "stats": {
+      "Strength": 4,
+      "Dexterity": 6,
+      "Constitution": 5,
+      "Perception": 8,
+      "Willpower": 4,
+      "Charisma": 6
+    },
     "skills": {
       "Unarmed": 30,
       "Stealth": 20,
@@ -2233,7 +2233,7 @@
   {
     "id": "gelatinous_cube",
     "name": "Gelatinous Cube",
-    "sprite": "#",
+    "sprite": "Q",
     "color": "#00ffff",
     "factionId": "monster",
     "behavior": "melee_aggressive",
