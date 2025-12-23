@@ -187,10 +187,16 @@ class InventoryManager {
         const maxStack = itemDef.maxStack || 1;
         let remainingQuantityToAdd = quantity;
 
+        // Check for custom Quest Item ID
+        const questItemId = itemToAddInstance.questItemId;
+
         if (isStackable) {
             for (const existingItem of inventoryItems) {
                 if (remainingQuantityToAdd <= 0) break;
+                // Only stack if IDs match AND questItemId matches (both undefined or both same string)
                 if (existingItem.id === itemToAddInstance.id && (existingItem.quantity || 0) < maxStack) {
+                    if (existingItem.questItemId !== questItemId) continue; // Do not stack if quest IDs differ
+
                     const canAddToStack = maxStack - (existingItem.quantity || 0);
                     const amountToAddToStack = Math.min(remainingQuantityToAdd, canAddToStack);
                     existingItem.quantity = (existingItem.quantity || 0) + amountToAddToStack;
@@ -207,9 +213,15 @@ class InventoryManager {
             const amountForThisNewStack = isStackable ? Math.min(remainingQuantityToAdd, maxStack) : 1;
             const newItemStack = new Item(itemDef); // Use Item constructor
             newItemStack.quantity = amountForThisNewStack;
+
+            // Preserve custom properties
+            if (questItemId) {
+                newItemStack.questItemId = questItemId;
+            }
             if (itemToAddInstance.currentAmmo !== undefined && newItemStack.currentAmmo === undefined) {
                 newItemStack.currentAmmo = itemToAddInstance.currentAmmo;
             }
+
             inventoryItems.push(newItemStack);
             remainingQuantityToAdd -= amountForThisNewStack;
             if (!isStackable && remainingQuantityToAdd > 0) continue;
@@ -393,6 +405,9 @@ class InventoryManager {
 
                 if (window.questManager && typeof window.questManager.updateObjective === 'function') {
                     window.questManager.updateObjective("collect", itemInstance.id, quantityToAdd);
+                    if (itemInstance.questItemId) {
+                         window.questManager.updateObjective("collect", itemInstance.questItemId, quantityToAdd);
+                    }
                     if (itemInstance.tags) {
                         itemInstance.tags.forEach(tag => window.questManager.updateObjective("collect", tag, quantityToAdd));
                     }
