@@ -371,10 +371,18 @@ class VehicleManager {
             return false; // Already full
         }
 
-        // TODO: Skill Check (Mechanics)
-        // const mechanicsSkill = getSkillValue("Mechanics", this.gameState);
-        // const repairDC = partDef.repairDC || 10; // Assuming a repairDC on partDef
-        // if (rollDie(20) + getSkillModifier("Mechanics", this.gameState) < repairDC) { logToConsole("Repair failed skill check."); return false; }
+        // Skill Check (Mechanics)
+        const mechanicsSkillName = "Mechanics";
+        const skillModifier = (typeof window.getSkillModifier === 'function') ?
+            window.getSkillModifier(mechanicsSkillName, this.gameState.player) : 0;
+
+        const repairDC = partDef.repairDC || 10;
+        const roll = (typeof window.rollDie === 'function') ? window.rollDie(20) : Math.floor(Math.random() * 20) + 1;
+
+        if (roll + skillModifier < repairDC) {
+            logToConsole(`Repair failed. Skill Check (${mechanicsSkillName}): rolled ${roll} + ${skillModifier} = ${roll + skillModifier} (DC ${repairDC}).`, "warn");
+            return false;
+        }
 
         // TODO: Consume materials from player inventory
         // Example: materials = [{itemId: "metal_scraps", quantity: 2}]
