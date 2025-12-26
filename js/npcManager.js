@@ -46,10 +46,19 @@ class NpcManager {
 
         // Resolve areaKey to coordinates
         let centerX, centerY, centerZ;
-        const spawnRadius = 10; // Default radius if areaKey doesn't specify one
+        let spawnRadius = 10; // Default radius if areaKey doesn't specify one
 
+        // Check if areaKey is a direct coordinate object
+        if (typeof areaKey === 'object' && areaKey !== null && areaKey.x !== undefined) {
+            centerX = areaKey.x;
+            centerY = areaKey.y;
+            centerZ = areaKey.z;
+            if (areaKey.radius !== undefined) {
+                spawnRadius = areaKey.radius;
+            }
+        }
         // Example areaKey resolution (needs to be more robust using mapUtils)
-        if (areaKey === "player_vicinity_event") {
+        else if (areaKey === "player_vicinity_event") {
             centerX = this.gameState.playerPos.x;
             centerY = this.gameState.playerPos.y;
             centerZ = this.gameState.playerPos.z;

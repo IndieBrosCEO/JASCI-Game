@@ -424,27 +424,23 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
                     // we rely on window.npcManager.
                     if (window.npcManager && typeof window.npcManager.spawnNpcGroupInArea === 'function') {
                         logToConsole(`Reproduction: ${npc.name} and ${mate.name} produced offspring.`, 'green');
-                        // Spawn 1 new NPC near the parent
-                        // We use a custom areaKey logic or pass coordinates if supported,
-                        // but spawnNpcGroupInArea mainly takes area keys.
-                        // Let's assume we can't easily target exact coords via that method without a key.
-                        // However, we can create a temporary area key logic or just spawn near player if logic allows,
-                        // but better is to implement a specific spawn-near function or hack it.
-                        // For now, let's use "player_vicinity_event" but this places it near player, which is wrong if parents are far.
-                        // Correct fix: Add support to spawnNpcGroupInArea for direct coords or use a new helper.
-                        // Or simply push to gameState.npcs manually like spawnNpcGroupInArea does.
 
-                        const babyDef = assetManager.getNpc(npc.definitionId);
-                        if (babyDef) {
-                            const baby = JSON.parse(JSON.stringify(babyDef));
-                            baby.id = `bred_${npc.definitionId}_${Date.now()}`;
-                            baby.definitionId = npc.definitionId;
-                            baby.mapPos = { ...npc.mapPos }; // Spawn on parent
-                            baby.hunger = 0;
-                            baby.reproductionCooldown = 500; // Long cooldown for baby
-                            if (typeof window.initializeHealth === 'function') window.initializeHealth(baby);
-                            if (typeof window.initializeNpcFace === 'function') window.initializeNpcFace(baby);
-                            gameState.npcs.push(baby);
+                        // Use updated spawnNpcGroupInArea with direct coordinate support
+                        const babyIds = window.npcManager.spawnNpcGroupInArea(
+                            npc.definitionId,
+                            { x: npc.mapPos.x, y: npc.mapPos.y, z: npc.mapPos.z, radius: 2 },
+                            1
+                        );
+
+                        if (babyIds && babyIds.length > 0) {
+                            const baby = gameState.npcs.find(n => n.id === babyIds[0]);
+                            if (baby) {
+                                // Apply specific "baby" properties
+                                baby.id = `bred_${npc.definitionId}_${Date.now()}`; // Optional: override ID to indicate breeding
+                                baby.hunger = 0;
+                                baby.reproductionCooldown = 500; // Long cooldown for baby
+                                // initializeHealth and face are already called by spawnNpcGroupInArea
+                            }
 
                             // Reset parents cooldowns
                             npc.reproductionCooldown = 300;
