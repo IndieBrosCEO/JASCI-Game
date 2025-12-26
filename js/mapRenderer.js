@@ -757,7 +757,6 @@ window.mapRenderer = {
                                                 items: existingItems // Initialize with items from map data
                                             };
                                             // Check if a container with the same position already exists
-                                            // Fix: Rename find callback variable to 'cont' to avoid shadowing loop variable 'c'
                                             const existingContainer = gameState.containers.find(cont => cont.x === c && cont.y === r && cont.z === z);
                                             if (!existingContainer) {
                                                 console.log(`MAP_RENDERER: Creating container instance: ID ${containerInstance.id}, TileID: ${containerInstance.tileId}, Name: ${containerInstance.name}, Pos: (${containerInstance.x},${containerInstance.y}, Z:${containerInstance.z}), Capacity: ${containerInstance.capacity}, Pre-filled items: ${containerInstance.items.length}`);
