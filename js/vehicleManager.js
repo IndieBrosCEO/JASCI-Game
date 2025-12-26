@@ -371,16 +371,16 @@ class VehicleManager {
             return false; // Already full
         }
 
-        // Skill Check (Mechanics)
-        const mechanicsSkillName = "Mechanics";
+        // Skill Check (Repair)
+        const skillName = "Repair";
         const skillModifier = (typeof window.getSkillModifier === 'function') ?
-            window.getSkillModifier(mechanicsSkillName, this.gameState.player) : 0;
+            window.getSkillModifier(skillName, this.gameState.player) : 0;
 
         const repairDC = partDef.repairDC || 10;
         const roll = (typeof window.rollDie === 'function') ? window.rollDie(20) : Math.floor(Math.random() * 20) + 1;
 
         if (roll + skillModifier < repairDC) {
-            logToConsole(`Repair failed. Skill Check (${mechanicsSkillName}): rolled ${roll} + ${skillModifier} = ${roll + skillModifier} (DC ${repairDC}).`, "warn");
+            logToConsole(`Repair failed. Skill Check (${skillName}): rolled ${roll} + ${skillModifier} = ${roll + skillModifier} (DC ${repairDC}).`, "warn");
             return false;
         }
 
