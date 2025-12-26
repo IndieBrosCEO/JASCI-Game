@@ -1520,25 +1520,41 @@ class InventoryManager {
                 }
             }
 
+            // Determine if bleeding logic should run independently of healing need
+            const stopBleeding = item.effects.stopBleeding || (item.effects.stop_bleeding_chance && Math.random() < item.effects.stop_bleeding_chance);
+            let bleedingStopped = false;
+
+            if (stopBleeding) {
+                if (targetEntity.statusEffects) {
+                    const bleedingEffects = Object.keys(targetEntity.statusEffects).filter(key => key.includes('bleeding'));
+                    if (bleedingEffects.length > 0) {
+                        bleedingEffects.forEach(effectId => {
+                            delete targetEntity.statusEffects[effectId];
+                            logToConsole(`Stopped bleeding: ${effectId}`, 'green');
+                        });
+                        bleedingStopped = true;
+                    } else {
+                        // logToConsole("Stops bleeding (none found)."); // Optional logging
+                    }
+                }
+            }
+
             if (worstPart) {
                 const part = health[worstPart];
                 const oldHp = part.current;
                 part.current = Math.min(part.current + healAmount, part.max);
                 const healed = part.current - oldHp;
 
-                // Handle bleeding if applicable
-                if (item.effects.stopBleeding) {
-                    logToConsole("Stops bleeding (if any).");
-                    // TODO: Implement actual bleeding removal
-                }
-
                 logToConsole(`${entityName} used ${item.name || item.displayName} on ${worstPart}. Healed ${healed} HP. (${part.current}/${part.max})`, 'green');
                 consumed = true;
 
                 if (isPlayer && window.renderHealthTable) window.renderHealthTable(this.gameState.player);
+            } else if (bleedingStopped) {
+                 logToConsole(`${entityName} used ${item.name || item.displayName} to stop bleeding, but was already at full health.`, 'green');
+                 consumed = true;
             } else {
                 logToConsole(`${entityName} is already at full health.`, "info");
-                return false; // Don't consume if full health
+                return false; // Don't consume if full health AND no bleeding stopped
             }
         }
 
