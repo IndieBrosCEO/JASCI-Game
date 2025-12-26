@@ -404,7 +404,7 @@ function isTileBlockingVision(tileX, tileY, tileZ, playerZ) {
         // For binary "isBlocking" logic, we block only on high opacity.
     }
 
-    // Fix: Use window.assetManager directly to ensure global access, falling back to local instance
+    // Use window.assetManager directly to ensure global access, falling back to local instance
     const tilesets = (window.assetManager && window.assetManager.tilesets) ? window.assetManager.tilesets : (assetManagerInstance ? assetManagerInstance.tilesets : null);
     const mapData = window.mapRenderer ? window.mapRenderer.getCurrentMapData() : null;
 
