@@ -1525,20 +1525,26 @@ window.mapRenderer = {
                             else if (cloud.density > 0.4) effectSprite = '▒';
                             else effectSprite = '░';
 
+                            // Base color mapping
+                            let r = 255, g = 255, b = 255;
                             if (cloud.type === 'smoke') {
-                                effectColor = '#888888';
+                                r = 136; g = 136; b = 136; // #888888
                             } else if (cloud.type === 'tear_gas') {
-                                effectColor = '#B8B868'; // Yellowish green
+                                r = 184; g = 184; b = 104; // #B8B868
                             } else if (cloud.type === 'mustard_gas') {
-                                effectColor = '#9B870C'; // Dark yellow
+                                r = 155; g = 135; b = 12; // #9B870C
                             } else if (cloud.type === 'steam') {
-                                effectColor = '#EEEEEE'; // White/Grey
+                                r = 220; g = 220; b = 235; // Light blueish grey
                             }
+
+                            effectColor = `rgba(${r}, ${g}, ${b}, ${Math.min(1.0, cloud.density)})`;
 
                             // Only render if density is high enough to be visible
                             if (cloud.density > 0.1) {
                                 cachedCell.span.textContent = effectSprite;
                                 cachedCell.span.style.color = effectColor;
+                                // Add a subtle text shadow or background to make it pop against terrain?
+                                // cachedCell.span.style.textShadow = `0 0 2px ${effectColor}`;
                                 cachedCell.sprite = effectSprite; // Update cache
                                 cachedCell.color = effectColor;
                             }

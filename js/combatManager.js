@@ -607,69 +607,6 @@
             if (currentEntry.isPlayer && window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
         }
 
-        // Process environmental effects (Smoke and Tear Gas tiles)
-        if (this.gameState.environmentalEffects) {
-            let changed = false;
-            // Smoke Tiles
-            if (this.gameState.environmentalEffects.smokeTiles) {
-                for (let i = this.gameState.environmentalEffects.smokeTiles.length - 1; i >= 0; i--) {
-                    const smokeTile = this.gameState.environmentalEffects.smokeTiles[i];
-                    smokeTile.duration--;
-                    if (smokeTile.duration <= 0) {
-                        logToConsole(`Smoke dissipates at (${smokeTile.x}, ${smokeTile.y}).`, 'grey');
-                        this.gameState.environmentalEffects.smokeTiles.splice(i, 1); changed = true;
-                    }
-                }
-            }
-            // Tear Gas Tiles
-            if (this.gameState.environmentalEffects.tearGasTiles) {
-                for (let i = this.gameState.environmentalEffects.tearGasTiles.length - 1; i >= 0; i--) {
-                    const gasTile = this.gameState.environmentalEffects.tearGasTiles[i];
-                    gasTile.duration--;
-                    if (gasTile.duration <= 0) {
-                        logToConsole(`Tear gas dissipates at (${gasTile.x}, ${gasTile.y}).`, 'grey');
-                        this.gameState.environmentalEffects.tearGasTiles.splice(i, 1); changed = true;
-                    }
-                }
-            }
-            if (changed && window.mapRenderer) window.mapRenderer.scheduleRender();
-
-            // Update character statuses based on environmental effects (Presence Only)
-            // Damage is now handled when an entity ENDS their turn (Start of nextTurn logic)
-            this.initiativeTracker.map(e => e.entity).forEach(combatant => {
-                if (!combatant || (!combatant.mapPos && combatant !== this.gameState)) return;
-                const pos = (combatant === this.gameState) ? this.gameState.playerPos : combatant.mapPos; if (!pos) return;
-
-                // Smoke status
-                const isOnSmokeTile = this.gameState.environmentalEffects.smokeTiles?.some(s => s.x === pos.x && s.y === pos.y);
-                let currentInSmokeStatus = combatant.statusEffects ? combatant.statusEffects["in_smoke"] : null;
-                if (isOnSmokeTile) {
-                    if (!currentInSmokeStatus) {
-                        if (!combatant.statusEffects) combatant.statusEffects = {};
-                        combatant.statusEffects["in_smoke"] = { id: "in_smoke", displayName: "In Smoke", duration: 1, sourceItemId: "smoke_grenade_thrown", description: "Vision obscured. Attack -2." };
-                    } else currentInSmokeStatus.duration = Math.max(currentInSmokeStatus.duration, 1);
-                } else if (currentInSmokeStatus) delete combatant.statusEffects["in_smoke"];
-
-                // Tear Gas status (Irritation only, damage moved)
-                const isOnTearGasTile = this.gameState.environmentalEffects.tearGasTiles?.some(t => t.x === pos.x && t.y === pos.y);
-                let currentTearGasStatus = combatant.statusEffects ? combatant.statusEffects["irritated_tear_gas"] : null;
-                if (isOnTearGasTile) {
-                    const combatantName = combatant === this.gameState ? "Player" : (combatant.name || combatant.id);
-                    if (!currentTearGasStatus) {
-                        if (!combatant.statusEffects) combatant.statusEffects = {};
-                        combatant.statusEffects["irritated_tear_gas"] = { id: "irritated_tear_gas", displayName: "Irritated (Tear Gas)", duration: 1, sourceItemId: "tear_gas_grenade_thrown", accuracyPenalty: -2, description: "Eyes watering, coughing. Accuracy -2. Takes damage at end of turn." };
-                        logToConsole(`${combatantName} enters tear gas.`, 'orange');
-                    } else {
-                        currentTearGasStatus.duration = Math.max(currentTearGasStatus.duration, 1);
-                    }
-                    // Damage removed from here
-                } else if (currentTearGasStatus && !isOnTearGasTile) {
-                    // Status wears off naturally if duration was from tile (duration 1)
-                }
-                if (combatant === this.gameState && window.renderCharacterInfo) window.renderCharacterInfo();
-                if (combatant === this.gameState && window.updatePlayerStatusDisplay) window.updatePlayerStatusDisplay();
-            });
-        }
 
 
         if (currentEntry.isPlayer) {
@@ -777,10 +714,6 @@
 
         this.initiativeTracker.forEach(e => { if (e.entity?.statusEffects) { e.entity.statusEffects.isGrappled = false; e.entity.statusEffects.grappledBy = null; } });
         if (this.gameState.statusEffects) { this.gameState.statusEffects.isGrappled = false; this.gameState.statusEffects.grappledBy = null; }
-        if (this.gameState.environmentalEffects) {
-            this.gameState.environmentalEffects.smokeTiles = [];
-            this.gameState.environmentalEffects.tearGasTiles = [];
-        }
         this.initiativeTracker = []; this.currentTurnIndex = 0;
         const initiativeDisplay = document.getElementById('initiativeDisplay'); if (initiativeDisplay) { const h = initiativeDisplay.querySelector('h4'); initiativeDisplay.innerHTML = ''; if (h) initiativeDisplay.appendChild(h); }
         document.getElementById('attackDeclarationUI')?.classList.add('hidden');
