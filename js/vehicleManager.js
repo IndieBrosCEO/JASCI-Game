@@ -384,9 +384,23 @@ class VehicleManager {
             return false;
         }
 
-        // TODO: Consume materials from player inventory
-        // Example: materials = [{itemId: "metal_scraps", quantity: 2}]
-        // if (!window.inventoryManager.removeItems(materials)) { logToConsole("Not enough materials for repair."); return false; }
+        if (materials && Array.isArray(materials) && window.inventoryManager) {
+            // First, verify all materials are present
+            for (const mat of materials) {
+                if (!window.inventoryManager.hasItem(mat.itemId, mat.quantity)) {
+                    logToConsole(`Repair aborted: Missing material ${mat.itemId}.`, "warn");
+                    return false;
+                }
+            }
+            // If all present, consume them
+            for (const mat of materials) {
+                if (window.inventoryManager.removeItem(mat.itemId, mat.quantity) === null) {
+                    // This should theoretically not happen due to the check above, unless inventory state changed during execution
+                    logToConsole(`Error: Failed to consume repair material: ${mat.itemId} after verification.`, "error");
+                    return false;
+                }
+            }
+        }
 
         const maxDurability = partDef.durability;
         const amountToHeal = Math.floor(maxDurability * (repairAmountPercentage / 100));
