@@ -2473,5 +2473,21 @@
     ],
     "target_dz": 1,
     "z_cost": 2
+  },
+  "SMK_V": {
+    "sprite": "O",
+    "name": "Smoke Vent",
+    "color": "#696969",
+    "tags": [
+      "middle",
+      "impassable",
+      "structure"
+    ],
+    "emitsGas": {
+      "type": "smoke",
+      "density": 1.0,
+      "duration": 5,
+      "chance": 1.0
+    }
   }
 }
