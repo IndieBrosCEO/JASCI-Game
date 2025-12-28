@@ -577,8 +577,61 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
                 goalTarget = findNearestInterestingTile(npc, gameState, assetManager, (def) => def && (def.tags && (def.tags.includes('container'))));
                 if (goalTarget && getDistance3D(npc.mapPos, goalTarget) <= 1.5) {
                     logToConsole(`NPC ${npcName} is scavenging a container.`, 'cyan');
-                    // TODO: Actually loot items from the container if possible?
-                    // For now, just busy wait simulating searching.
+
+                    if (npc.inventory && npc.inventory.container && window.inventoryManager) {
+                        // Find or initialize the container object at this location
+                        let containerObj = gameState.containers.find(c => c.x === goalTarget.x && c.y === goalTarget.y && c.z === goalTarget.z);
+
+                        if (!containerObj) {
+                            // Container exists on map but not in memory (unopened). Initialize it.
+                            const mapData = window.mapRenderer.getCurrentMapData();
+                            const levelData = mapData.levels[goalTarget.z.toString()];
+                            // Check middle then bottom for the container tile ID
+                            let tileRaw = levelData.middle?.[goalTarget.y]?.[goalTarget.x];
+                            if (!tileRaw) tileRaw = levelData.bottom?.[goalTarget.y]?.[goalTarget.x];
+
+                            const tileId = (typeof tileRaw === 'object' && tileRaw.tileId) ? tileRaw.tileId : tileRaw;
+                            const tileDef = assetManager.tilesets[tileId];
+
+                            if (tileDef) {
+                                // Create new container
+                                if (window.InventoryContainer) {
+                                    containerObj = new window.InventoryContainer(tileDef.name || "Container", "S"); // Default size S
+                                    containerObj.x = goalTarget.x;
+                                    containerObj.y = goalTarget.y;
+                                    containerObj.z = goalTarget.z;
+                                    containerObj.tileId = tileId;
+                                    containerObj.id = `container_${gameState.nextContainerId++}`;
+
+                                    // Populate it using existing logic
+                                    if (window.populateContainer) {
+                                        window.populateContainer(containerObj);
+                                    }
+
+                                    gameState.containers.push(containerObj);
+                                    logToConsole(`NPC ${npcName} initialized a new container at (${goalTarget.x},${goalTarget.y}).`, 'grey');
+                                }
+                            }
+                        }
+
+                        // Now try to loot from containerObj
+                        if (containerObj && containerObj.items && containerObj.items.length > 0) {
+                            // Pick the first item
+                            const itemToLoot = containerObj.items[0];
+
+                            // Add to NPC inventory
+                            if (window.inventoryManager.addItem(itemToLoot, npc.inventory.container.items, npc.inventory.container.maxSlots)) {
+                                // Remove from container
+                                containerObj.items.splice(0, 1);
+                                logToConsole(`NPC ${npcName} looted ${itemToLoot.name} from ${containerObj.name}.`, 'cyan');
+                            } else {
+                                logToConsole(`NPC ${npcName} inventory full, could not loot ${itemToLoot.name}.`, 'orange');
+                            }
+                        } else {
+                             logToConsole(`NPC ${npcName} found the container empty.`, 'grey');
+                        }
+                    }
+
                     npc.memory.actionCooldown = 5;
                     return;
                 }
