@@ -185,7 +185,12 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         // 1. Check Static Geometry (Walls/Map Bounds)
         // If ANY part of the footprint is in a wall, block immediately.
         for (const tile of targetFootprint) {
-            if (!window.mapRenderer.isWalkable(tile.x, tile.y, tile.z)) {
+            // We check for STRICTLY impassable tiles (Walls, Obstacles).
+            // We do NOT check isWalkable here, because isWalkable returns false for Empty Air (lack of floor),
+            // and we want to allow movement into Air (to enable Falling or Flying).
+            const strictlyImpassableInfo = isTileStrictlyImpassable(tile.x, tile.y, tile.z);
+
+            if (strictlyImpassableInfo.impassable) {
                 // EXCEPTION: If character is on a slope, the target tile might be solid (the base of the next level),
                 // but the slope logic will lift the character to Z+1.
                 // We permit the check to fail here, relying on the Slope Logic (Step 1) to validate the destination.
@@ -842,7 +847,15 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
     }
 
     // 4. Fall Check
-    // ... (rest of Fall Check)
+    // If we reach here, it means:
+    // - No Z-transition or slope movement occurred.
+    // - The target tile (targetX, targetY, originalPos.z) was NOT strictly impassable (e.g., not a wall).
+    // - The target tile (targetX, targetY, originalPos.z) was either:
+    //   a) Occupied by an entity (if so, fall check might still be relevant if char *could* enter the space if entity wasn't there and it was a hole)
+    //   b) Not walkable for other reasons (e.g., empty air, a pit).
+
+    // A fall check should only occur if the target tile (targetX, targetY, originalPos.z) is NOT walkable
+    // AND it was NOT strictly impassable.
     if (!moveSuccessful && !window.mapRenderer.isWalkable(targetX, targetY, originalPos.z) && !targetStrictlyImpassableInfo.impassable) {
         logToConsole(`${logPrefix} Target (${targetX},${targetY},Z:${originalPos.z}) is not walkable and not strictly impassable. Evaluating potential fall.`);
 
