@@ -309,19 +309,41 @@ class TrapManager {
             window.audioManager.playSoundAtLocation(soundName, trapInstance, {}, { falloff: 'linear', maxDistance: 20 });
         }
 
-        // TODO: Visual effect for trap activation (e.g., via AnimationManager)
+        // Visual effect for trap activation (e.g., via AnimationManager)
         if (window.animationManager && trapDef.visualEffectOnTrigger) {
-            window.animationManager.playAnimation(
-                trapDef.visualEffectOnTrigger.type, // e.g., 'explosion_small', 'dart_flight'
-                {
-                    pos: { ...trapInstance }, // x, y, z
-                    targetPos: (trapDef.visualEffectOnTrigger.target === 'victim' && victimEntity) ? { ...victimEntity.mapPos } : null,
-                    sprite: trapDef.visualEffectOnTrigger.sprite,
-                    duration: trapDef.visualEffectOnTrigger.duration || 500,
-                    // ... other effect-specific parameters from trapDef.visualEffectOnTrigger
-                }
-            );
-            logToConsole(`${this.logPrefix} Playing visual effect '${trapDef.visualEffectOnTrigger.type}' for trap ${trapDef.name}.`, 'silver');
+            const effectDef = trapDef.visualEffectOnTrigger;
+            const animType = effectDef.type;
+
+            // Construct data object for animation manager, merging trap instance data with definition data
+            const animData = {
+                ...effectDef,
+                x: trapInstance.x,
+                y: trapInstance.y,
+                z: trapInstance.z,
+                centerPos: { x: trapInstance.x, y: trapInstance.y, z: trapInstance.z }, // For explosion/gas
+                startPos: { x: trapInstance.x, y: trapInstance.y, z: trapInstance.z }, // For projectiles
+                attacker: { mapPos: { x: trapInstance.x, y: trapInstance.y, z: trapInstance.z }, name: trapDef.name }, // Trap acts as attacker
+                entity: victimEntity // For effects on entity
+            };
+
+            // Determine target position
+            if (effectDef.target === 'victim' && victimEntity && victimEntity.mapPos) {
+                animData.targetPos = { ...victimEntity.mapPos };
+                animData.endPos = { ...victimEntity.mapPos };
+                animData.defender = victimEntity;
+            } else {
+                 // Default target/end to trap location if not victim (e.g. self-centered effect)
+                 animData.targetPos = { x: trapInstance.x, y: trapInstance.y, z: trapInstance.z };
+                 animData.endPos = { x: trapInstance.x, y: trapInstance.y, z: trapInstance.z };
+            }
+
+            // Specific overrides based on animation type if needed
+            if (animType === 'explosion') {
+                 animData.radius = effectDef.radius || 3;
+            }
+
+            window.animationManager.playAnimation(animType, animData);
+            logToConsole(`${this.logPrefix} Playing visual effect '${animType}' for trap ${trapDef.name}.`, 'silver');
         }
 
 
