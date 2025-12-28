@@ -151,6 +151,32 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         return false;
     }
 
+    // --- Determine Character's Current Tile Properties (Moved Up) ---
+    const charCurrentLevelData = currentMap.levels[originalPos.z.toString()];
+    let charIsOnZTransition = false;
+    let zTransitionDef = null;
+
+    if (charCurrentLevelData && localAssetManager?.tilesets) {
+        const checkTileForZTransition = (tileId) => {
+            if (tileId && localAssetManager.tilesets[tileId]) {
+                const def = localAssetManager.tilesets[tileId];
+                if (def.tags && def.tags.includes('z_transition')) {
+                    charIsOnZTransition = true;
+                    zTransitionDef = def;
+                }
+            }
+        };
+        let charTileOnMiddleRaw = charCurrentLevelData.middle?.[originalPos.y]?.[originalPos.x];
+        let charBaseIdMiddle = (typeof charTileOnMiddleRaw === 'object' && charTileOnMiddleRaw?.tileId !== undefined) ? charTileOnMiddleRaw.tileId : charTileOnMiddleRaw;
+        checkTileForZTransition(charBaseIdMiddle);
+
+        if (!charIsOnZTransition) {
+            let charTileOnBottomRaw = charCurrentLevelData.bottom?.[originalPos.y]?.[originalPos.x];
+            let charBaseIdBottom = (typeof charTileOnBottomRaw === 'object' && charTileOnBottomRaw?.tileId !== undefined) ? charTileOnBottomRaw.tileId : charTileOnBottomRaw;
+            checkTileForZTransition(charBaseIdBottom);
+        }
+    }
+
     // --- Multi-tile Rotation/Collision Check ---
     if (window.mapUtils) {
         const ent = isPlayer ? window.gameState.player : character;
@@ -160,6 +186,26 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         // If ANY part of the footprint is in a wall, block immediately.
         for (const tile of targetFootprint) {
             if (!window.mapRenderer.isWalkable(tile.x, tile.y, tile.z)) {
+                // EXCEPTION: If character is on a slope, the target tile might be solid (the base of the next level),
+                // but the slope logic will lift the character to Z+1.
+                // We permit the check to fail here, relying on the Slope Logic (Step 1) to validate the destination.
+                if (charIsOnZTransition && zTransitionDef && zTransitionDef.tags.includes('slope')) {
+                    // Safety Check: Ensure we are moving in the direction of the slope if specified in name
+                    const name = zTransitionDef.name ? zTransitionDef.name.toLowerCase() : "";
+                    let slopeDirMatches = true;
+
+                    // Map facing 'up'/'down'/'left'/'right' to slope names 'north'/'south'/'west'/'east'
+                    // Note: newFacing is normalized to 'up', 'down', 'left', 'right' earlier in function.
+                    if (name.includes('north') && newFacing !== 'up') slopeDirMatches = false;
+                    else if (name.includes('south') && newFacing !== 'down') slopeDirMatches = false;
+                    else if (name.includes('east') && newFacing !== 'right') slopeDirMatches = false;
+                    else if (name.includes('west') && newFacing !== 'left') slopeDirMatches = false;
+
+                    if (slopeDirMatches) {
+                        continue;
+                    }
+                }
+
                 logToConsole(`${logPrefix} Cannot move: Footprint blocked by static map at (${tile.x},${tile.y}).`);
                 return false;
             }
@@ -196,32 +242,6 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         logToConsole(`${logPrefix} Not enough movement points. Need ${actualMoveCost}, have ${currentMovementPoints}.`);
         if (isPlayer && window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return false;
-    }
-
-    // --- Determine Character's Current Tile Properties ---
-    const charCurrentLevelData = currentMap.levels[originalPos.z.toString()];
-    let charIsOnZTransition = false;
-    let zTransitionDef = null;
-
-    if (charCurrentLevelData && localAssetManager?.tilesets) {
-        const checkTileForZTransition = (tileId) => {
-            if (tileId && localAssetManager.tilesets[tileId]) {
-                const def = localAssetManager.tilesets[tileId];
-                if (def.tags && def.tags.includes('z_transition')) {
-                    charIsOnZTransition = true;
-                    zTransitionDef = def;
-                }
-            }
-        };
-        let charTileOnMiddleRaw = charCurrentLevelData.middle?.[originalPos.y]?.[originalPos.x];
-        let charBaseIdMiddle = (typeof charTileOnMiddleRaw === 'object' && charTileOnMiddleRaw?.tileId !== undefined) ? charTileOnMiddleRaw.tileId : charTileOnMiddleRaw;
-        checkTileForZTransition(charBaseIdMiddle);
-
-        if (!charIsOnZTransition) {
-            let charTileOnBottomRaw = charCurrentLevelData.bottom?.[originalPos.y]?.[originalPos.x];
-            let charBaseIdBottom = (typeof charTileOnBottomRaw === 'object' && charTileOnBottomRaw?.tileId !== undefined) ? charTileOnBottomRaw.tileId : charTileOnBottomRaw;
-            checkTileForZTransition(charBaseIdBottom);
-        }
     }
 
     let moveSuccessful = false; // Flag to track if any kind of position change or fall occurred
@@ -464,6 +484,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                     }
                 }
 
+                // ... (Step Down)
                 if (!moveSuccessful && !vehicleId) { // Vehicles cannot do standard Z-step downs
                     // Try Moving Down (standard z-transition step-down, e.g. into a hole)
                     const targetZDown = originalPos.z - 1;
@@ -565,8 +586,6 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         if (explicitZTransDefAtTarget) {
             logToConsole(`${logPrefix} Target tile (${targetX},${targetY},${originalPos.z}) is an Explicit Z-Transition: '${explicitZTransDefAtTarget.name}'.`);
             const cost = explicitZTransDefAtTarget.z_cost || 1;
-            let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
-
             // Re-check currentMP for Z transition as it might be vehicle MP
             let mpForZ = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;
             if (vehicleId) {
@@ -823,15 +842,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
     }
 
     // 4. Fall Check
-    // If we reach here, it means:
-    // - No Z-transition or slope movement occurred.
-    // - The target tile (targetX, targetY, originalPos.z) was NOT strictly impassable (e.g., not a wall).
-    // - The target tile (targetX, targetY, originalPos.z) was either:
-    //   a) Occupied by an entity (if so, fall check might still be relevant if char *could* enter the space if entity wasn't there and it was a hole)
-    //   b) Not walkable for other reasons (e.g., empty air, a pit).
-
-    // A fall check should only occur if the target tile (targetX, targetY, originalPos.z) is NOT walkable
-    // AND it was NOT strictly impassable.
+    // ... (rest of Fall Check)
     if (!moveSuccessful && !window.mapRenderer.isWalkable(targetX, targetY, originalPos.z) && !targetStrictlyImpassableInfo.impassable) {
         logToConsole(`${logPrefix} Target (${targetX},${targetY},Z:${originalPos.z}) is not walkable and not strictly impassable. Evaluating potential fall.`);
 
