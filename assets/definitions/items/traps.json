@@ -8,12 +8,6 @@
     "disarmDC": 12,
     "disarmSkill": "Investigation",
     "triggerType": "onEnter",
-    "visualEffectOnTrigger": {
-      "type": "meleeSwing",
-      "sprite": "^",
-      "duration": 500,
-      "target": "victim"
-    },
     "effects": [
       {
         "type": "damage",
@@ -46,13 +40,6 @@
     "disarmDC": 15,
     "disarmSkill": "Electronics",
     "triggerType": "onEnter",
-    "visualEffectOnTrigger": {
-      "type": "rangedBullet",
-      "sprite": "-",
-      "color": "white",
-      "duration": 300,
-      "target": "victim"
-    },
     "effects": [
       {
         "type": "damage",
@@ -87,13 +74,6 @@
     "disarmDC": 10,
     "disarmSkill": "Investigation",
     "triggerType": "onEnter",
-    "visualEffectOnTrigger": {
-      "type": "modifierPopup",
-      "text": "CLANG!",
-      "color": "red",
-      "duration": 1000,
-      "target": "victim"
-    },
     "effects": [
       {
         "type": "alert",

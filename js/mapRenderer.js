@@ -680,11 +680,6 @@ window.mapRenderer = {
                 logToConsole(`Initialized ${gameState.lightSources.length} static light sources from map tiles across all Z-levels.`);
             }
 
-            // Populate gas emitters from map tiles (scan all levels)
-            if (window.gasManager && typeof window.gasManager.scanForEmitters === 'function') {
-                window.gasManager.scanForEmitters(mapData);
-            }
-
             // Populate container instances from map tiles across all Z-levels
             for (const zLevelKey in mapData.levels) {
                 if (mapData.levels.hasOwnProperty(zLevelKey)) {

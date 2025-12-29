@@ -577,61 +577,8 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
                 goalTarget = findNearestInterestingTile(npc, gameState, assetManager, (def) => def && (def.tags && (def.tags.includes('container'))));
                 if (goalTarget && getDistance3D(npc.mapPos, goalTarget) <= 1.5) {
                     logToConsole(`NPC ${npcName} is scavenging a container.`, 'cyan');
-
-                    if (npc.inventory && npc.inventory.container && window.inventoryManager) {
-                        // Find or initialize the container object at this location
-                        let containerObj = gameState.containers.find(c => c.x === goalTarget.x && c.y === goalTarget.y && c.z === goalTarget.z);
-
-                        if (!containerObj) {
-                            // Container exists on map but not in memory (unopened). Initialize it.
-                            const mapData = window.mapRenderer.getCurrentMapData();
-                            const levelData = mapData.levels[goalTarget.z.toString()];
-                            // Check middle then bottom for the container tile ID
-                            let tileRaw = levelData.middle?.[goalTarget.y]?.[goalTarget.x];
-                            if (!tileRaw) tileRaw = levelData.bottom?.[goalTarget.y]?.[goalTarget.x];
-
-                            const tileId = (typeof tileRaw === 'object' && tileRaw.tileId) ? tileRaw.tileId : tileRaw;
-                            const tileDef = assetManager.tilesets[tileId];
-
-                            if (tileDef) {
-                                // Create new container
-                                if (window.InventoryContainer) {
-                                    containerObj = new window.InventoryContainer(tileDef.name || "Container", "S"); // Default size S
-                                    containerObj.x = goalTarget.x;
-                                    containerObj.y = goalTarget.y;
-                                    containerObj.z = goalTarget.z;
-                                    containerObj.tileId = tileId;
-                                    containerObj.id = `container_${gameState.nextContainerId++}`;
-
-                                    // Populate it using existing logic
-                                    if (window.populateContainer) {
-                                        window.populateContainer(containerObj);
-                                    }
-
-                                    gameState.containers.push(containerObj);
-                                    logToConsole(`NPC ${npcName} initialized a new container at (${goalTarget.x},${goalTarget.y}).`, 'grey');
-                                }
-                            }
-                        }
-
-                        // Now try to loot from containerObj
-                        if (containerObj && containerObj.items && containerObj.items.length > 0) {
-                            // Pick the first item
-                            const itemToLoot = containerObj.items[0];
-
-                            // Add to NPC inventory
-                            if (window.inventoryManager.addItem(itemToLoot, npc.inventory.container.items, npc.inventory.container.maxSlots)) {
-                                // Remove from container
-                                containerObj.items.splice(0, 1);
-                                logToConsole(`NPC ${npcName} looted ${itemToLoot.name} from ${containerObj.name}.`, 'cyan');
-                            } else {
-                                logToConsole(`NPC ${npcName} inventory full, could not loot ${itemToLoot.name}.`, 'orange');
-                            }
-                        } else {
-                             logToConsole(`NPC ${npcName} found the container empty.`, 'grey');
-                        }
-                    }
-
+                    // TODO: Actually loot items from the container if possible?
+                    // For now, just busy wait simulating searching.
                     npc.memory.actionCooldown = 5;
                     return;
                 }
@@ -854,8 +801,7 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
             if (target && target !== npc && targetHealth?.torso?.current > 0 && targetHealth?.head?.current > 0 &&
                 targetTeamId !== npc.teamId && targetPos && initiativeTracker.find(e => e.entity === target)) {
                 if (window.hasLineOfSight3D(npc.mapPos, targetPos, currentTilesets, currentMapData)) {
-                    const dist = getDistance3D(npc.mapPos, targetPos);
-                    potentialTargets.push({ entity: target, pos: targetPos, threat: aggroEntry.threat, distance: dist, type: 'aggro' });
+                    potentialTargets.push({ entity: target, pos: targetPos, threat: aggroEntry.threat, type: 'aggro' });
                 }
             }
         }
@@ -960,92 +906,29 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
 
         // Filter out targets with very low scores (passive ignores safe enemies)
         potentialTargets = potentialTargets.filter(pt => pt.score > -500);
-
-        // Sophisticated target prioritization for companions
-        potentialTargets.forEach(pt => {
-            let health = 0;
-            let maxHealth = 1;
-            const entity = pt.entity;
-            // Handle player vs NPC structure
-            if (entity === gameState || entity === gameState.player) {
-                health = gameState.player.health.torso.current;
-                maxHealth = gameState.player.health.torso.max;
-            } else {
-                health = entity.health.torso.current;
-                maxHealth = entity.health.torso.max;
-            }
-            const hpPercent = health / maxHealth;
-
-            // Wounded Priority
-            if (hpPercent <= 0.30) {
-                pt.score += 20; // Finish off wounded
-            }
-
-            // High Threat Priority
-            if (entity === gameState || entity === gameState.player || (entity.tags && entity.tags.includes("boss"))) {
-                pt.score += 30;
-            }
-
-            // Squishy Priority (Low Max HP)
-            if (maxHealth < 15) {
-                pt.score += 10;
-            }
-        });
+        // TODO: Add more sophisticated target prioritization (e.g., wounded, high threat, squishy)
+        // Example enhancements to pt.score:
+        // - If pt.entity is "wounded" (e.g., <30% HP), pt.score += 20
+        // - If pt.entity is "high_threat" (e.g., player, or specific NPC type), pt.score += 30
+        // - If pt.entity is "squishy" (e.g., low armor/HP), pt.score += 10 (to finish off)
+        // These would require access to target's health, definition, or dynamic threat assessment.
 
         potentialTargets.sort((a, b) => b.score - a.score); // Highest score first
 
-    } else { // Non-companion: sort by calculated priority score
-        potentialTargets.forEach(pt => {
-            pt.score = 0;
-
-            // Base priority: Aggro threat
-            if (pt.type === 'aggro') {
-                pt.score += (pt.threat || 0) * 5;
-            }
-
-            // Distance Factor (Closer is better, small penalty per tile)
-            pt.score -= (pt.distance || 0) * 2;
-
-            // Health / Wounded Factor
-            let health = 0;
-            let maxHealth = 1;
-            const entity = pt.entity;
-
-            if (entity === gameState || entity === gameState.player) {
-                health = gameState.player.health.torso.current;
-                maxHealth = gameState.player.health.torso.max;
-            } else {
-                health = entity.health.torso.current;
-                maxHealth = entity.health.torso.max;
-            }
-
-            const hpPercent = health / maxHealth;
-
-            if (hpPercent <= 0.25) {
-                pt.score += 30; // FINISH HIM! Critical targets
-            } else if (hpPercent <= 0.50) {
-                pt.score += 15; // Wounded targets
-            }
-
-            // High Threat Factor (Player is usually high threat)
-            if (entity === gameState || entity === gameState.player) {
-                pt.score += 20;
-            } else if (entity.equippedWeaponId && window.assetManager) {
-                // Check if target has a dangerous weapon
-                const weapon = window.assetManager.getItem(entity.equippedWeaponId);
-                if (weapon && (weapon.damage >= 8 || weapon.fireModes?.includes("burst"))) {
-                     pt.score += 10; // Armed and dangerous
-                }
-            }
-
-            // Squishy Factor (Low Max HP)
-            if (maxHealth < 15) {
-                pt.score += 10; // Easy kill
-            }
+    } else { // Non-companion: sort by threat then distance
+        // TODO: Add more sophisticated target prioritization here too for non-companions.
+        // Factors could include:
+        // - Target is "wounded": Prioritize finishing them off.
+        // - Target is "high threat": e.g., player character, heavily armed NPC.
+        // - Target is "squishy": Easier to kill.
+        // - Target is attacking NPC's allies (if NPC has allies and awareness).
+        // This would involve calculating a 'priority_score' for each potential target.
+        potentialTargets.sort((a, b) => {
+            if (a.type === 'aggro' && b.type !== 'aggro') return -1;
+            if (b.type === 'aggro' && a.type !== 'aggro') return 1;
+            if (a.type === 'aggro' && b.type === 'aggro') return b.threat - a.threat; // Higher threat first
+            return a.distance - b.distance; // Closer distance first for non-aggro
         });
-
-        // Sort by score descending
-        potentialTargets.sort((a, b) => b.score - a.score);
     }
 
     const bestTarget = potentialTargets[0];
