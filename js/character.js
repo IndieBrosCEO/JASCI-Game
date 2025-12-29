@@ -202,7 +202,8 @@ function startGame() {
 
     const characterCreator = document.getElementById('character-creator');
     const characterInfoPanel = document.getElementById('character-info-panel');
-    // const gameControls = document.getElementById('game-controls'); // This ID does not exist in index.html right-panel is used.
+    const middlePanel = document.getElementById('middle-panel');
+    const rightPanel = document.getElementById('right-panel');
 
     // Critical: Copy stats and skills from the character creator (gameState) to the player object.
     // This ensures the player starts with the stats configured by the user.
@@ -348,7 +349,8 @@ function startGame() {
 
     if (characterCreator) characterCreator.classList.add('hidden');
     if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
-    // if (gameControls) gameControls.classList.remove('hidden'); // As noted, this ID isn't in use
+    if (middlePanel) middlePanel.classList.remove('hidden');
+    if (rightPanel) rightPanel.classList.remove('hidden');
 
     // Switch the animation target to the in-game face display
     if (typeof window.setAnimatedFaceTarget === 'function') {

@@ -696,6 +696,34 @@ function handleUpdateSkill(name, value) {
 }
 window.handleUpdateSkill = handleUpdateSkill;
 
+function switchCharacterCreatorTab(tabName) {
+    const creatorContainer = document.getElementById('character-creator');
+    if (!creatorContainer) return;
+
+    // Hide all tab contents within character creator
+    const tabContents = creatorContainer.querySelectorAll('.tab-content');
+    tabContents.forEach(el => el.classList.add('hidden'));
+
+    // Deactivate all tab buttons within character creator
+    const tabButtons = creatorContainer.querySelectorAll('.tab-button');
+    tabButtons.forEach(el => el.classList.remove('active'));
+
+    // Show selected tab content
+    const selectedTab = document.getElementById(`tab-${tabName}`);
+    if (selectedTab) {
+        selectedTab.classList.remove('hidden');
+    }
+
+    // Activate selected button
+    for (let btn of tabButtons) {
+        if (btn.dataset.tab === tabName) {
+            btn.classList.add('active');
+            break;
+        }
+    }
+}
+window.switchCharacterCreatorTab = switchCharacterCreatorTab;
+
 /**************************************************************
  * Nearby Entities Panel
  **************************************************************/

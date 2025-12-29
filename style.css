@@ -255,6 +255,39 @@ th, td {
         margin-bottom: 10px;
     }
 
+/* Tabs */
+.tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #444;
+}
+
+.tab-button {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1.2em;
+    padding: 10px 20px;
+    transition: color 0.3s, border-bottom 0.3s;
+}
+
+.tab-button:hover {
+    color: #ccc;
+}
+
+.tab-button.active {
+    color: #fff;
+    border-bottom: 2px solid #fff;
+    font-weight: bold;
+}
+
+.tab-content {
+    /* Styles for tab content container */
+}
+
     #face-creator-panel div {
         margin-bottom: 8px;
         display: flex;
