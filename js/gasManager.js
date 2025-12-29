@@ -2,6 +2,7 @@
 class GasManager {
     constructor() {
         this.gasClouds = []; // Array of gas cloud objects
+        this.activeEmitters = []; // Array of active gas emitter locations {x, y, z, gasDef}
     }
 
     init(gameState) {
@@ -9,6 +10,44 @@ class GasManager {
             gameState.gasClouds = [];
         }
         this.gasClouds = gameState.gasClouds;
+        // Re-scan map for emitters if needed, but usually scanForEmitters is called by mapRenderer
+    }
+
+    scanForEmitters(mapData) {
+        this.activeEmitters = [];
+        if (!mapData || !mapData.levels) return;
+
+        // Iterate through all levels and tiles
+        Object.keys(mapData.levels).forEach(zKey => {
+            const z = parseInt(zKey);
+            const level = mapData.levels[zKey];
+
+            // Check middle layer for emitters
+            if (level.middle) {
+                level.middle.forEach((row, y) => {
+                    if (row) {
+                        row.forEach((tile, x) => {
+                            const tileId = (typeof tile === 'object' && tile !== null) ? tile.tileId : tile;
+                            if (tileId && window.assetManager && window.assetManager.tilesets[tileId]) {
+                                const tileDef = window.assetManager.tilesets[tileId];
+                                if (tileDef.emitsGas) {
+                                    this.activeEmitters.push({
+                                        x: x,
+                                        y: y,
+                                        z: z,
+                                        gasDef: tileDef.emitsGas
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        if (this.activeEmitters.length > 0 && window.logToConsole) {
+            window.logToConsole(`GasManager: Found ${this.activeEmitters.length} gas emitters on map.`, 'grey');
+        }
     }
 
     spawnGas(x, y, z, type, duration, density = 1.0) {
@@ -56,6 +95,21 @@ class GasManager {
     }
 
     processTurn() {
+        // 1. Process Active Emitters
+        if (this.activeEmitters.length > 0) {
+            this.activeEmitters.forEach(emitter => {
+                const def = emitter.gasDef;
+                // Check chance
+                if (def.chance === undefined || Math.random() < def.chance) {
+                    // Check if gas already exists at high density to prevent infinite stacking
+                    const existingGas = this.getGasAt(emitter.x, emitter.y, emitter.z);
+                    if (!existingGas || existingGas.density < (def.density || 1.0)) {
+                         this.spawnGas(emitter.x, emitter.y, emitter.z, def.type, def.duration, def.density || 1.0);
+                    }
+                }
+            });
+        }
+
         if (this.gasClouds.length === 0) return;
 
         const newClouds = [];
