@@ -123,19 +123,19 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
     let newFacing = isPlayer ? (window.gameState.player.facing || 'down') : (character.facing || 'down');
 
     switch (direction) {
-        case 'up': case 'w': case 'ArrowUp':
+        case 'up': case 'w': case 'W': case 'ArrowUp':
             targetY--;
             newFacing = 'up';
             break;
-        case 'down': case 's': case 'ArrowDown':
+        case 'down': case 's': case 'S': case 'ArrowDown':
             targetY++;
             newFacing = 'down';
             break;
-        case 'left': case 'a': case 'ArrowLeft':
+        case 'left': case 'a': case 'A': case 'ArrowLeft':
             targetX--;
             newFacing = 'left';
             break;
-        case 'right': case 'd': case 'ArrowRight':
+        case 'right': case 'd': case 'D': case 'ArrowRight':
             targetX++;
             newFacing = 'right';
             break;
