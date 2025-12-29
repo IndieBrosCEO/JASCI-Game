@@ -345,8 +345,8 @@ class VehicleManager {
 
         logToConsole(`VehicleManager: Part "${partDef ? partDef.name : partIdToRemove}" removed from vehicle "${vehicle.name}" from slot ${slotType}[${slotIndex}].`, "info");
         this.calculateVehicleStats(vehicleId);
-        // TODO: Play sound effect for removing part
-        if (window.audioManager) window.audioManager.playSoundAtLocation(partDef.soundOnRemove || 'vehicle_part_remove_01.wav', vehicle.mapPos, {}, { maxDistance: 15 });
+        // Play sound effect for removing part (using repair sound as fallback if specific remove sound is missing)
+        if (window.audioManager) window.audioManager.playSoundAtLocation((partDef && partDef.soundOnRemove) || 'repair_01.wav', vehicle.mapPos, {}, { maxDistance: 15 });
         return partDef; // Return the definition of the removed part
     }
 
