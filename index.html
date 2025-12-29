@@ -86,25 +86,34 @@
 
             <div id="character-creator">
                 <h2>Character Creator</h2>
-                <label>Character Name:</label>
-                <input type="text" id="charName" value="Name Here"><br>
-                <label>Level:</label>
-                <span id="level">1</span><br>
-                <label>XP:</label>
-                <span id="xp">0</span><br>
-                <h3>Stats (Stat Points: <span id="statPointsRemaining">14</span>)</h3>
-                <div id="statsBody"></div>
-                <h3>Skills (Skill Points: <span id="skillPoints">30</span>)</h3>
-                <div id="skillsBody"></div>
 
-                <div id="derivedStats" class="derived-stats-container">
-                    <h3>Derived Stats</h3>
-                    <!-- Derived stats will be populated here by JavaScript -->
+                <div class="tabs">
+                    <button class="tab-button active" onclick="switchCharacterCreatorTab('character')" data-tab="character">Character</button>
+                    <button class="tab-button" onclick="switchCharacterCreatorTab('appearance')" data-tab="appearance">Appearance</button>
                 </div>
 
-                <div id="face-creator-panel">
-                    <h3>Face Creator</h3>
-                    <div>
+                <div id="tab-character" class="tab-content">
+                    <label>Character Name:</label>
+                    <input type="text" id="charName" value="Name Here"><br>
+                    <label>Level:</label>
+                    <span id="level">1</span><br>
+                    <label>XP:</label>
+                    <span id="xp">0</span><br>
+                    <h3>Stats (Stat Points: <span id="statPointsRemaining">14</span>)</h3>
+                    <div id="statsBody"></div>
+                    <h3>Skills (Skill Points: <span id="skillPoints">30</span>)</h3>
+                    <div id="skillsBody"></div>
+
+                    <div id="derivedStats" class="derived-stats-container">
+                        <h3>Derived Stats</h3>
+                        <!-- Derived stats will be populated here by JavaScript -->
+                    </div>
+                </div>
+
+                <div id="tab-appearance" class="tab-content hidden">
+                    <div id="face-creator-panel">
+                        <h3>Face Creator</h3>
+                        <div>
                         <label for="headWidthRange">Head Width (5-12):</label>
                         <input type="range" id="headWidthRange" min="5" max="12" value="5">
                         <span id="headWidthValue">5</span>
@@ -237,14 +246,17 @@
                     <button type="button" id="randomizeFaceButton" style="margin-top: 10px; margin-bottom: 5px;">Randomize Face</button>
                     <h4>Preview:</h4>
                     <pre id="asciiFacePreview" style="border: 1px solid #ccc; padding: 5px; min-height: 100px; background-color: #111; margin-left: 0px;"></pre>
+                    </div>
                 </div>
 
-                <button id="startGameButton">Start Game</button>
-                <button onclick="saveGame()">Save Game</button>
-                <button onclick="loadGame()">Load Game</button>
-                <button onclick="exportSaveGame()">Export Save</button>
-                <button onclick="document.getElementById('importSaveInput').click()">Import Save</button>
-                <input type="file" id="importSaveInput" style="display:none" onchange="window.importSaveGame(this)">
+                <div class="character-creator-controls" style="margin-top: 20px; border-top: 1px solid #444; padding-top: 10px;">
+                    <button id="startGameButton">Start Game</button>
+                    <button onclick="saveGame()">Save Game</button>
+                    <button onclick="loadGame()">Load Game</button>
+                    <button onclick="exportSaveGame()">Export Save</button>
+                    <button onclick="document.getElementById('importSaveInput').click()">Import Save</button>
+                    <input type="file" id="importSaveInput" style="display:none" onchange="window.importSaveGame(this)">
+                </div>
             </div>
 
             <!-- Vehicle Modification UI (Initially Hidden) -->
@@ -294,7 +306,7 @@
         </div>
 
         <!-- Middle Column -->
-        <div id="middle-panel">
+        <div id="middle-panel" class="hidden">
             <div id="nearbyEntitiesPanel" class="hidden">
                 <h4>Nearby Entities</h4>
                 <div id="nearbyEntitiesList"></div>
@@ -381,7 +393,7 @@
         </div>
 
         <!-- Right Column -->
-        <div id="right-panel" class="menu-game-controls">
+        <div id="right-panel" class="menu-game-controls hidden">
             <h2>Game Controls</h2>
             <button id="openSettingsButton">Settings</button>
             <button onclick="window.mapRenderer.toggleRoof()">Toggle Roof</button>

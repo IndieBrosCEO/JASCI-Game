@@ -1,0 +1,148 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - heading "Character Creator" [level=2] [ref=e5]
+    - generic [ref=e6]:
+      - button "Character" [ref=e7] [cursor=pointer]
+      - button "Appearance" [ref=e8] [cursor=pointer]
+    - generic [ref=e9]:
+      - text: "Character Name:"
+      - textbox [ref=e10]: Name Here
+      - text: "Level: 1"
+      - text: "XP: 0"
+      - 'heading "Stats (Stat Points: 14)" [level=3] [ref=e11]'
+      - generic [ref=e12]:
+        - generic "Physical power." [ref=e13]:
+          - text: "Strength:"
+          - spinbutton [ref=e14]: "3"
+        - generic "Reasoning, memory, and knowledge." [ref=e15]:
+          - text: "Intelligence:"
+          - spinbutton [ref=e16]: "3"
+        - generic "Agility, speed, and nimbleness." [ref=e17]:
+          - text: "Dexterity:"
+          - spinbutton [ref=e18]: "3"
+        - generic "Toughness and health." [ref=e19]:
+          - text: "Constitution:"
+          - spinbutton [ref=e20]: "3"
+        - generic "Awareness and ability to spot hidden things." [ref=e21]:
+          - text: "Perception:"
+          - spinbutton [ref=e22]: "3"
+        - generic "Resistance to mental effects." [ref=e23]:
+          - text: "Willpower:"
+          - spinbutton [ref=e24]: "3"
+        - generic "Force of personality, persuasiveness, and social influence" [ref=e25]:
+          - text: "Charisma:"
+          - spinbutton [ref=e26]: "3"
+      - 'heading "Skills (Skill Points: 30)" [level=3] [ref=e27]'
+      - generic [ref=e28]:
+        - generic "Governs the ability to interact with and control animals." [ref=e29]:
+          - text: "Animal Handling:"
+          - spinbutton [ref=e30]: "0"
+        - generic "The ability to use, repair, and modify electronic devices." [ref=e31]:
+          - text: "Electronics:"
+          - spinbutton [ref=e32]: "0"
+        - generic "Skill in handling, identifying, and disarming explosive devices." [ref=e33]:
+          - text: "Explosives:"
+          - spinbutton [ref=e34]: "0"
+        - generic "Proficiency with all types of firearms." [ref=e35]:
+          - text: "Guns:"
+          - spinbutton [ref=e36]: "0"
+        - generic "The ability to influence others through fear and threats." [ref=e37]:
+          - text: "Intimidation:"
+          - spinbutton [ref=e38]: "0"
+        - generic "The skill of uncovering clues and solving mysteries." [ref=e39]:
+          - text: "Investigation:"
+          - spinbutton [ref=e40]: "0"
+        - generic "The ability to open locks without a key." [ref=e41]:
+          - text: "Lockpick:"
+          - spinbutton [ref=e42]: "0"
+        - generic "The skill of healing wounds and treating illnesses." [ref=e43]:
+          - text: "Medicine:"
+          - spinbutton [ref=e44]: "0"
+        - generic "Proficiency with all types of melee weapons." [ref=e45]:
+          - text: "Melee Weapons:"
+          - spinbutton [ref=e46]: "0"
+        - generic "The ability to influence others through diplomacy and reason." [ref=e47]:
+          - text: "Persuasion:"
+          - spinbutton [ref=e48]: "0"
+        - generic "The skill of fixing broken items and machinery." [ref=e49]:
+          - text: "Repair:"
+          - spinbutton [ref=e50]: "0"
+        - generic "The ability to perform feats of manual dexterity, such as picking pockets." [ref=e51]:
+          - text: "Sleight of Hand:"
+          - spinbutton [ref=e52]: "0"
+        - generic "The skill of moving quietly and avoiding detection." [ref=e53]:
+          - text: "Stealth:"
+          - spinbutton [ref=e54]: "0"
+        - generic "The ability to survive in the wilderness." [ref=e55]:
+          - text: "Survival:"
+          - spinbutton [ref=e56]: "0"
+        - generic "Proficiency in hand-to-hand combat." [ref=e57]:
+          - text: "Unarmed:"
+          - spinbutton [ref=e58]: "0"
+      - generic [ref=e59]:
+        - heading "Derived Stats" [level=3] [ref=e60]
+        - generic [ref=e61]: "Hit Points: 16"
+        - generic [ref=e62]: "Movement Speed: 30"
+        - generic [ref=e63]: "Carry Weight: 80"
+        - generic [ref=e64]: "Action Points: 1"
+    - generic [ref=e65]:
+      - button "Start Game" [ref=e66] [cursor=pointer]
+      - button "Save Game" [ref=e67] [cursor=pointer]
+      - button "Load Game" [ref=e68] [cursor=pointer]
+      - button "Export Save" [ref=e69] [cursor=pointer]
+      - button "Import Save" [ref=e70] [cursor=pointer]
+  - generic [ref=e75]:
+    - paragraph [ref=e76]: TimeManager initialized.
+    - paragraph [ref=e77]: Extended runAllBasicConnectionTests with testCombatInitiationWithGenericNpc.
+    - paragraph [ref=e78]: Extended runAllBasicConnectionTests with testPlayerTakesDamageWithArmor.
+    - paragraph [ref=e79]: XpManager instance created and assigned to window.
+    - paragraph [ref=e80]: PerkManager instance created and assigned to window.
+    - paragraph [ref=e81]: LevelUpUI instance created and assigned to window.
+    - paragraph [ref=e82]: "[CraftingManager] Initialized with 67 crafting recipes from item definitions."
+    - paragraph [ref=e83]: CraftingManager instance created, assigned to window, and initialized.
+    - paragraph [ref=e84]: "[ConstructionManager] Successfully referenced 68 construction definitions from AssetManager."
+    - paragraph [ref=e85]: "[ConstructionManager] this.constructionDefinitions content after referencing:"
+    - paragraph [ref=e86]: ConstructionManager instance created, assigned to window, and initialized.
+    - paragraph [ref=e87]: FireManager instance created and initialized.
+    - paragraph [ref=e88]: GasManager instance created and initialized.
+    - paragraph [ref=e89]: WaterManager instance created and initialized.
+    - paragraph [ref=e90]: "SCRIPT.JS: window.mapManager assigned to window.mapRenderer."
+    - paragraph [ref=e91]: FOW data initialized for Z-level 0.
+    - paragraph [ref=e92]: Bootstrapping water for map dragon.
+    - paragraph [ref=e93]: "Spawning NPCs from map data for map: dragon"
+    - paragraph [ref=e94]: NPC npc_0 stats overridden from map data.
+    - paragraph [ref=e95]: NPC npc_0 health specifics overridden from map data.
+    - paragraph [ref=e96]: "Spawned NPC: Dragon (ID: npc_0, Team: 99) at (X:11, Y:4, Z:0) - Face Initialized."
+    - paragraph [ref=e97]: "No vehicle data found in map data for map: dragon."
+    - paragraph [ref=e98]: Entity tooltip event listeners will be set up with other mapContainer listeners.
+    - paragraph [ref=e99]: InventoryManager initialized (or re-confirmed).
+    - paragraph [ref=e100]: "[CraftingManager] Initialized with 67 crafting recipes from item definitions."
+    - paragraph [ref=e101]: CraftingManager instance created, assigned to window, and initialized.
+    - paragraph [ref=e102]: "[ConstructionManager] Successfully referenced 68 construction definitions from AssetManager."
+    - paragraph [ref=e103]: "[ConstructionManager] this.constructionDefinitions content after referencing:"
+    - paragraph [ref=e104]: ConstructionManager instance created, assigned to window, and initialized.
+    - paragraph [ref=e105]: "[TrapManager] Initialized with 3 trap definitions."
+    - paragraph [ref=e106]: TrapManager instance created and initialized.
+    - paragraph [ref=e107]: HarvestManager instance created.
+    - paragraph [ref=e108]: "[CraftingUIManager] Initialized."
+    - paragraph [ref=e109]: CraftingUI instance created and initialized.
+    - paragraph [ref=e110]: "[ConstructionUIManager] Initialized."
+    - paragraph [ref=e111]: ConstructionUI instance created and initialized.
+    - paragraph [ref=e112]: "VehicleManager: Accessed 21 vehicle parts from AssetManager."
+    - paragraph [ref=e113]: "VehicleManager: Accessed 7 vehicle templates from AssetManager."
+    - paragraph [ref=e114]: VehicleManager initialized successfully.
+    - paragraph [ref=e115]: "[VehicleModificationUIManager] Initialized."
+    - paragraph [ref=e116]: QuestLogUI initialized.
+    - paragraph [ref=e117]: ToastUIManager instance created and assigned to window.uiManager.
+    - paragraph [ref=e118]: CompanionManager initialized.
+    - paragraph [ref=e119]: "DynamicEventManager: Loaded 3 event templates."
+    - paragraph [ref=e120]: DynamicEventManager initialized successfully.
+    - paragraph [ref=e121]: "[MapUtils] Initialized."
+    - paragraph [ref=e122]: MapUtils initialized.
+    - paragraph [ref=e123]: "ProceduralQuestManager: Accessed 4 quest templates from AssetManager."
+    - paragraph [ref=e124]: ProceduralQuestManager initialized successfully.
+    - paragraph [ref=e125]: "Map zoom controls initialized. Current map font size: 16px"
+```
