@@ -319,7 +319,8 @@ class VehicleManager {
 
         logToConsole(`VehicleManager: Part "${partDef.name}" added to vehicle "${vehicle.name}" in slot ${slotType}[${slotIndex}].`, "info");
         this.calculateVehicleStats(vehicleId);
-        // TODO: Play sound effect for adding part
+
+        // Play sound effect for adding part
         if (window.audioManager) window.audioManager.playSoundAtLocation(partDef.soundOnInstall || 'vehicle_part_install_01.wav', vehicle.mapPos, {}, { maxDistance: 15 });
         return true;
     }
@@ -345,8 +346,8 @@ class VehicleManager {
 
         logToConsole(`VehicleManager: Part "${partDef ? partDef.name : partIdToRemove}" removed from vehicle "${vehicle.name}" from slot ${slotType}[${slotIndex}].`, "info");
         this.calculateVehicleStats(vehicleId);
-        // TODO: Play sound effect for removing part
-        if (window.audioManager) window.audioManager.playSoundAtLocation(partDef.soundOnRemove || 'vehicle_part_remove_01.wav', vehicle.mapPos, {}, { maxDistance: 15 });
+        // Play sound effect for removing part (using repair sound as fallback if specific remove sound is missing)
+        if (window.audioManager) window.audioManager.playSoundAtLocation((partDef && partDef.soundOnRemove) || 'repair_01.wav', vehicle.mapPos, {}, { maxDistance: 15 });
         return partDef; // Return the definition of the removed part
     }
 
@@ -384,23 +385,9 @@ class VehicleManager {
             return false;
         }
 
-        if (materials && Array.isArray(materials) && window.inventoryManager) {
-            // First, verify all materials are present
-            for (const mat of materials) {
-                if (!window.inventoryManager.hasItem(mat.itemId, mat.quantity)) {
-                    logToConsole(`Repair aborted: Missing material ${mat.itemId}.`, "warn");
-                    return false;
-                }
-            }
-            // If all present, consume them
-            for (const mat of materials) {
-                if (window.inventoryManager.removeItem(mat.itemId, mat.quantity) === null) {
-                    // This should theoretically not happen due to the check above, unless inventory state changed during execution
-                    logToConsole(`Error: Failed to consume repair material: ${mat.itemId} after verification.`, "error");
-                    return false;
-                }
-            }
-        }
+        // TODO: Consume materials from player inventory
+        // Example: materials = [{itemId: "metal_scraps", quantity: 2}]
+        // if (!window.inventoryManager.removeItems(materials)) { logToConsole("Not enough materials for repair."); return false; }
 
         const maxDurability = partDef.durability;
         const amountToHeal = Math.floor(maxDurability * (repairAmountPercentage / 100));

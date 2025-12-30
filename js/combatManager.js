@@ -1580,9 +1580,9 @@
             if (window.audioManager && attackerPos && !this.isBackgroundSimulation) {
                 let launchSound = 'ui_error_01.wav'; // Generic loud placeholder
                 if (weapon.ammoType?.includes("rocket")) {
-                    launchSound = 'ui_error_01.wav'; // TODO: Play fire_rocket_01.wav when available
+                    launchSound = 'fire_rocket_01.wav';
                 } else { // Assuming other launchers (e.g., grenade launchers)
-                    launchSound = 'ui_error_01.wav'; // TODO: Play fire_launcher_01.wav when available
+                    launchSound = 'fire_launcher_01.wav';
                 }
                 window.audioManager.playSoundAtLocation(launchSound, attackerPos, {}, { volume: 1.0 });
             }
