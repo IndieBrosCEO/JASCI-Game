@@ -319,7 +319,8 @@ class VehicleManager {
 
         logToConsole(`VehicleManager: Part "${partDef.name}" added to vehicle "${vehicle.name}" in slot ${slotType}[${slotIndex}].`, "info");
         this.calculateVehicleStats(vehicleId);
-        // TODO: Play sound effect for adding part
+
+        // Play sound effect for adding part
         if (window.audioManager) window.audioManager.playSoundAtLocation(partDef.soundOnInstall || 'vehicle_part_install_01.wav', vehicle.mapPos, {}, { maxDistance: 15 });
         return true;
     }
