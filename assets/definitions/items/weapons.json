@@ -82,8 +82,8 @@
     "damage": "1d4",
     "damageType": "Piercing",
     "canEquip": true,
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "!",
+    "color": "#c0c0c0"
   },
   {
     "id": "club_melee",
@@ -134,8 +134,8 @@
       "time_to_craft": 10,
       "batch_size": 1
     },
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "|",
+    "color": "#deb887"
   },
   {
     "id": "shiv_melee",
@@ -155,7 +155,7 @@
     "weightLbs": 0.5,
     "size": 1,
     "value": 5,
-    "sprite": "¡",
+    "sprite": "!",
     "color": "#c0c0c0",
     "tags": [
       "weapon",
@@ -213,8 +213,8 @@
     "lightRadius": 5,
     "lightColor": "#FFA500",
     "canEquip": true,
-    "color": "#FF8C00",
-    "sprite": "/"
+    "color": "#deb887",
+    "sprite": "|"
   },
   {
     "id": "spear",
@@ -236,8 +236,8 @@
       "type": "melee",
       "size": "medium"
     },
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "|",
+    "color": "#8b4513"
   },
   {
     "id": "katana",
@@ -305,8 +305,8 @@
       "type": "melee",
       "size": "small"
     },
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "T",
+    "color": "#708090"
   },
   {
     "id": "rapier",
@@ -374,8 +374,8 @@
       "type": "melee",
       "size": "small"
     },
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "|",
+    "color": "#deb887"
   },
   {
     "id": "kama",
@@ -397,8 +397,8 @@
       "type": "melee",
       "size": "small"
     },
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "!",
+    "color": "#c0c0c0"
   },
   {
     "id": "machete",
@@ -466,8 +466,8 @@
       "type": "melee",
       "size": "medium"
     },
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "|",
+    "color": "#deb887"
   },
   {
     "id": "tonfa",
@@ -489,8 +489,8 @@
       "type": "melee",
       "size": "medium"
     },
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "|",
+    "color": "#deb887"
   },
   {
     "id": "nunchaku",
@@ -512,8 +512,8 @@
       "type": "melee",
       "size": "small"
     },
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "|",
+    "color": "#deb887"
   },
   {
     "id": "whip",
@@ -535,8 +535,8 @@
       "type": "melee",
       "size": "small"
     },
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "~",
+    "color": "#8b4513"
   },
   {
     "id": "chain_saw",
@@ -558,8 +558,8 @@
       "type": "melee",
       "size": "medium"
     },
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "{",
+    "color": "#ff0000"
   },
   {
     "id": "kukri",
@@ -581,8 +581,8 @@
       "type": "melee",
       "size": "small"
     },
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "!",
+    "color": "#c0c0c0"
   },
   {
     "id": "bayonet_fixed",
@@ -604,8 +604,8 @@
       "type": "melee",
       "size": "medium"
     },
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "!",
+    "color": "#c0c0c0"
   },
   {
     "id": "brass_knuckles",
@@ -627,7 +627,7 @@
       "type": "melee",
       "size": "medium"
     },
-    "sprite": "/",
+    "sprite": "o",
     "color": "#ffd700"
   },
   {
@@ -650,8 +650,8 @@
       "type": "melee",
       "size": "medium"
     },
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "!",
+    "color": "#c0c0c0"
   },
   {
     "id": "m_60",
@@ -787,7 +787,7 @@
       "action": "automatic"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#556b2f"
   },
   {
     "id": "akm_ak_47_7_62mmr_assault_rifle",
@@ -814,7 +814,7 @@
       "action": "automatic"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "m16a2_5_56mm_assault_rifle",
@@ -841,7 +841,7 @@
       "action": "automatic"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "m4_carbine_5_56mm_assault_rifle",
@@ -868,7 +868,7 @@
       "action": "automatic"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "steyr_aug_5_56mm_assault_rifle",
@@ -895,7 +895,7 @@
       "action": "automatic"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "skorpion_32_machine_pistol",
@@ -975,7 +975,7 @@
       "action": "automatic"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#556b2f"
   },
   {
     "id": "hk_g3_7_62mm_assault_rifle",
@@ -1002,7 +1002,7 @@
       "action": "automatic"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "glock_17_9mm_autoloader",
@@ -1106,7 +1106,7 @@
       "action": "automatic"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#556b2f"
   },
   {
     "id": "barrett_light_fifty_50_sniper_rifle",
@@ -1133,7 +1133,7 @@
       "action": "semi-auto"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "flamethrower",
@@ -1266,7 +1266,7 @@
       "action": "automatic"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#708090"
   },
   {
     "id": "walther_ppk_32_autoloader",
@@ -1345,7 +1345,7 @@
       "action": "semi-auto"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#708090"
   },
   {
     "id": "pathfinder_22_revolver",
@@ -1450,7 +1450,7 @@
       "action": "semi-auto"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "mossberg_12_gauge_shotgun",
@@ -1477,7 +1477,7 @@
       "action": "semi-auto"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#708090"
   },
   {
     "id": "browning_bps_10_gauge_shotgun",
@@ -1504,7 +1504,7 @@
       "action": "semi-auto"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#708090"
   },
   {
     "id": "hk_psg11_7_62mm_sniper_rifle",
@@ -1531,7 +1531,7 @@
       "action": "semi-auto"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "beretta_m3p_12_gauge_shotgun",
@@ -1558,7 +1558,7 @@
       "action": "semi-auto"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#708090"
   },
   {
     "id": "remington_700_7_62mm_hunting_rifle",
@@ -1585,7 +1585,7 @@
       "action": "semi-auto"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "derringer_45",
@@ -1638,7 +1638,7 @@
       "action": "semi-auto"
     },
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#708090"
   },
   {
     "id": "m72a3_law_rocket_launcher",
@@ -1663,8 +1663,8 @@
       "caliber": "generic_ammo",
       "action": "semi-auto"
     },
-    "sprite": "!",
-    "color": "#a9a9a9"
+    "sprite": "}",
+    "color": "#2f4f4f"
   },
   {
     "id": "m79_grenade_launcher",
@@ -1689,8 +1689,8 @@
       "caliber": "generic_ammo",
       "action": "semi-auto"
     },
-    "sprite": "o",
-    "color": "#006400"
+    "sprite": "}",
+    "color": "#2f4f4f"
   },
   {
     "id": "crossbow",
@@ -1715,8 +1715,8 @@
       "caliber": "generic_ammo",
       "action": "semi-auto"
     },
-    "sprite": "}",
-    "color": "#dcdcdc"
+    "sprite": ")",
+    "color": "#deb887"
   },
   {
     "id": "compound_bow",
@@ -1741,8 +1741,8 @@
       "caliber": "generic_ammo",
       "action": "semi-auto"
     },
-    "sprite": "}",
-    "color": "#dcdcdc"
+    "sprite": ")",
+    "color": "#deb887"
   },
   {
     "id": "javelin",
@@ -1767,8 +1767,8 @@
       "caliber": "generic_ammo",
       "action": "semi-auto"
     },
-    "sprite": "}",
-    "color": "#dcdcdc"
+    "sprite": "|",
+    "color": "#8b4513"
   },
   {
     "id": "shuriken",
@@ -1793,8 +1793,8 @@
       "caliber": "generic_ammo",
       "action": "semi-auto"
     },
-    "sprite": "}",
-    "color": "#dcdcdc"
+    "sprite": "*",
+    "color": "#c0c0c0"
   },
   {
     "id": "40mm_fragmentation_grenade",
@@ -1814,7 +1814,7 @@
       "explosive"
     ],
     "sprite": "o",
-    "color": "#006400"
+    "color": "#556b2f"
   },
   {
     "id": "fragmentation_grenade",
@@ -1834,7 +1834,7 @@
       "explosive"
     ],
     "sprite": "o",
-    "color": "#006400"
+    "color": "#556b2f"
   },
   {
     "id": "tear_gas_grenade",
@@ -1854,7 +1854,7 @@
       "explosive"
     ],
     "sprite": "o",
-    "color": "#006400"
+    "color": "#556b2f"
   },
   {
     "id": "thermite_grenade",
@@ -1874,7 +1874,7 @@
       "explosive"
     ],
     "sprite": "o",
-    "color": "#006400"
+    "color": "#556b2f"
   },
   {
     "id": "white_phosphorus_grenade",
@@ -1894,7 +1894,7 @@
       "explosive"
     ],
     "sprite": "o",
-    "color": "#006400"
+    "color": "#556b2f"
   },
   {
     "id": "acid_mild",
@@ -1913,8 +1913,8 @@
       "thrown",
       "explosive"
     ],
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "!",
+    "color": "#00ff00"
   },
   {
     "id": "digestive_clamp",
@@ -1932,8 +1932,8 @@
     ],
     "specialEffect": "Digestive Clamp",
     "canEquip": false,
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "x",
+    "color": "#8b0000"
   },
   {
     "id": "digestive_clamp_taser",
@@ -1951,8 +1951,8 @@
     ],
     "specialEffect": "Digestive Clamp Taser",
     "canEquip": false,
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "x",
+    "color": "#8b0000"
   },
   {
     "id": "solothurn_s18_1000",
@@ -1981,7 +1981,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "950_jdj_fat_mac",
@@ -2009,7 +2009,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "boys_anti_tank_rifle",
@@ -2038,7 +2038,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "700_nitro_express",
@@ -2066,7 +2066,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "577_tyrannosaur",
@@ -2094,7 +2094,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "4_bore_rifle",
@@ -2122,7 +2122,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "blunderbuss",
@@ -2150,7 +2150,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#708090"
   },
   {
     "id": "punt_gun",
@@ -2179,7 +2179,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#708090"
   },
   {
     "id": "big_horn_ar500",
@@ -2207,7 +2207,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "50_bmg_pistol",
@@ -2467,7 +2467,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "cmmg_mkw_15",
@@ -2495,7 +2495,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#8b4513"
   },
   {
     "id": "hk_mp5sd",
@@ -2523,7 +2523,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#556b2f"
   },
   {
     "id": "gatling_gun",
@@ -2551,7 +2551,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#556b2f"
   },
   {
     "id": "minigun",
@@ -2580,7 +2580,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#556b2f"
   },
   {
     "id": "mega_can_cannon",
@@ -2608,7 +2608,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#2f4f4f"
   },
   {
     "id": "bfg1_4gauge",
@@ -2636,7 +2636,7 @@
     },
     "canEquip": true,
     "sprite": "}",
-    "color": "#dcdcdc"
+    "color": "#708090"
   },
   {
     "id": "dog_bite",
@@ -2659,7 +2659,7 @@
     "damage": "1d6",
     "damageType": "Piercing",
     "canEquip": false,
-    "sprite": "/",
-    "color": "#dcdcdc"
+    "sprite": "x",
+    "color": "#8b0000"
   }
 ]

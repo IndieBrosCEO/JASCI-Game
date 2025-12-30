@@ -46,8 +46,8 @@
       "utility_small": 2,
       "storage_small": 1
     },
-    "sprite": "C",
-    "color": "#708090"
+    "sprite": "#",
+    "color": "#4682b4"
   },
   {
     "id": "chassis_scooter",
@@ -93,8 +93,8 @@
       "utility_small": 1,
       "storage_small": 1
     },
-    "sprite": "v",
-    "color": "#708090"
+    "sprite": "#",
+    "color": "#4682b4"
   },
   {
     "id": "engine_basic_v4",
@@ -144,7 +144,7 @@
       "fuelEfficiency": 0.1
     },
     "maxFuel": 200,
-    "sprite": "]",
+    "sprite": "#",
     "color": "#708090"
   },
   {
@@ -190,7 +190,7 @@
       "fuelEfficiency": 0.08
     },
     "maxFuel": 300,
-    "sprite": "]",
+    "sprite": "#",
     "color": "#708090"
   },
   {
@@ -235,7 +235,7 @@
       "fuelEfficiency": 0.3
     },
     "maxFuel": 50,
-    "sprite": "]",
+    "sprite": "#",
     "color": "#708090"
   },
   {
@@ -279,8 +279,8 @@
     "effects": {
       "traction": 0.8
     },
-    "sprite": "]",
-    "color": "#708090"
+    "sprite": "O",
+    "color": "#000000"
   },
   {
     "id": "wheel_scooter",
@@ -323,8 +323,8 @@
     "effects": {
       "traction": 0.7
     },
-    "sprite": "]",
-    "color": "#708090"
+    "sprite": "O",
+    "color": "#000000"
   },
   {
     "id": "armor_plate_steel",
@@ -361,8 +361,8 @@
     "effects": {
       "armorValue": 10
     },
-    "sprite": "]",
-    "color": "#c0c0c0"
+    "sprite": "#",
+    "color": "#2f4f4f"
   },
   {
     "id": "storage_box_small",
@@ -413,8 +413,8 @@
     "effects": {
       "cargoCapacity": 10
     },
-    "sprite": "]",
-    "color": "#708090"
+    "sprite": "#",
+    "color": "#8b4513"
   },
   {
     "id": "turret_mount_light",
@@ -576,8 +576,8 @@
       "utility_small": 1,
       "storage_small": 1
     },
-    "sprite": "b",
-    "color": "#708090"
+    "sprite": "#",
+    "color": "#4682b4"
   },
   {
     "id": "chassis_motorcycle",
@@ -625,7 +625,7 @@
       "storage_small": 2,
       "armor_light": 1
     },
-    "sprite": "m",
+    "sprite": "#",
     "color": "#708090"
   },
   {
@@ -716,7 +716,7 @@
       "fuelEfficiency": 0.15
     },
     "maxFuel": 100,
-    "sprite": "]",
+    "sprite": "#",
     "color": "#708090"
   },
   {
@@ -759,8 +759,8 @@
     "effects": {
       "traction": 0.6
     },
-    "sprite": "]",
-    "color": "#708090"
+    "sprite": "O",
+    "color": "#000000"
   },
   {
     "id": "wheel_motorcycle",
@@ -803,8 +803,8 @@
     "effects": {
       "traction": 0.85
     },
-    "sprite": "]",
-    "color": "#708090"
+    "sprite": "O",
+    "color": "#000000"
   },
   {
     "id": "wheel_car",
@@ -847,8 +847,8 @@
     "effects": {
       "traction": 0.9
     },
-    "sprite": "]",
-    "color": "#708090"
+    "sprite": "O",
+    "color": "#000000"
   },
   {
     "id": "chassis_hatchback",
@@ -897,8 +897,8 @@
       "armor_light": 2,
       "seat": 4
     },
-    "sprite": "h",
-    "color": "#708090"
+    "sprite": "#",
+    "color": "#4682b4"
   },
   {
     "id": "chassis_sedan",
@@ -947,8 +947,8 @@
       "armor_light": 4,
       "seat": 5
     },
-    "sprite": "s",
-    "color": "#708090"
+    "sprite": "#",
+    "color": "#4682b4"
   },
   {
     "id": "storage_trunk",
@@ -983,7 +983,7 @@
     "effects": {
       "cargoCapacity": 50
     },
-    "sprite": "]",
-    "color": "#708090"
+    "sprite": "#",
+    "color": "#8b4513"
   }
 ]

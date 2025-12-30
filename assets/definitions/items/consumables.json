@@ -66,7 +66,7 @@
     },
     "splashDamage": "2d6",
     "sprite": "%",
-    "color": "#ff69b4"
+    "color": "#ff0000"
   },
   {
     "id": "det_cord_explosive",
@@ -91,7 +91,7 @@
       "type": "det_cord"
     },
     "sprite": "%",
-    "color": "#ff69b4"
+    "color": "#ff0000"
   },
   {
     "id": "dynamite_explosive",
@@ -162,7 +162,7 @@
     },
     "splashDamage": "1d8",
     "sprite": "%",
-    "color": "#ff69b4"
+    "color": "#ff0000"
   },
   {
     "id": "bandage",
@@ -218,7 +218,7 @@
       "grade": 2
     },
     "sprite": "+",
-    "color": "#ff69b4"
+    "color": "#f5f5f5"
   },
   {
     "id": "first_aid_kit",
@@ -290,7 +290,7 @@
       "grade": 1
     },
     "sprite": "+",
-    "color": "#ff69b4"
+    "color": "#f5f5f5"
   },
   {
     "id": "canned_beans",
@@ -314,8 +314,8 @@
       "type": "canned",
       "content": "beans"
     },
-    "sprite": "%",
-    "color": "#ff69b4"
+    "sprite": "o",
+    "color": "#c0c0c0"
   },
   {
     "id": "energy_bar",
@@ -341,7 +341,7 @@
       "effect": "energy"
     },
     "sprite": "%",
-    "color": "#ff69b4"
+    "color": "#8b4513"
   },
   {
     "id": "mre",
@@ -367,7 +367,7 @@
       "type": "mre"
     },
     "sprite": "%",
-    "color": "#ff69b4"
+    "color": "#8b4513"
   },
   {
     "id": "bottled_water",
@@ -391,7 +391,7 @@
       "type": "water",
       "container": "bottle"
     },
-    "sprite": "%",
+    "sprite": "!",
     "color": "#0000ff"
   },
   {
@@ -417,8 +417,8 @@
       "type": "water",
       "container": "canteen"
     },
-    "sprite": "%",
-    "color": "#ff69b4"
+    "sprite": "o",
+    "color": "#c0c0c0"
   },
   {
     "id": "water_purification_tablets",
@@ -473,8 +473,8 @@
     "properties": {
       "type": "purification_tablets"
     },
-    "sprite": "%",
-    "color": "#0000ff"
+    "sprite": "!",
+    "color": "#ffffff"
   },
   {
     "id": "canned_beans_food",
@@ -486,8 +486,8 @@
     "effects": {
       "hunger": 8
     },
-    "sprite": "i",
-    "color": "#b22222",
+    "sprite": "o",
+    "color": "#c0c0c0",
     "canEquip": false,
     "isClothing": false,
     "weightLbs": 0.5,
@@ -512,8 +512,8 @@
     "effects": {
       "thirst": 10
     },
-    "sprite": "i",
-    "color": "#28008b",
+    "sprite": "!",
+    "color": "#0000ff",
     "canEquip": false,
     "isClothing": false,
     "weightLbs": 0.5,
@@ -555,8 +555,8 @@
       "type": "pharmaceutical",
       "effect": "antibiotic"
     },
-    "sprite": "+",
-    "color": "#ff69b4"
+    "sprite": "!",
+    "color": "#ffffff"
   },
   {
     "id": "painkillers_strong",
@@ -587,8 +587,8 @@
       "effect": "painkiller",
       "strength": "strong"
     },
-    "sprite": "+",
-    "color": "#ff69b4"
+    "sprite": "!",
+    "color": "#ffffff"
   },
   {
     "id": "stimulant_combat",
@@ -621,7 +621,7 @@
       "type": "stimulant",
       "grade": "combat"
     },
-    "sprite": "+",
+    "sprite": "!",
     "color": "#ff69b4"
   },
   {
@@ -651,8 +651,8 @@
       "type": "antidote",
       "grade": "basic"
     },
-    "sprite": "+",
-    "color": "#ff69b4"
+    "sprite": "!",
+    "color": "#ffffff"
   },
   {
     "id": "herbal_salve_healing",
@@ -727,8 +727,8 @@
       "source": "herbal",
       "effect": "healing"
     },
-    "sprite": "+",
-    "color": "#ff69b4"
+    "sprite": "~",
+    "color": "#98fb98"
   },
   {
     "id": "chemical_reagent_generic",
@@ -757,8 +757,8 @@
       "type": "reagent",
       "grade": "generic"
     },
-    "sprite": "%",
-    "color": "#ff69b4"
+    "sprite": "!",
+    "color": "#0000ff"
   },
   {
     "id": "nutrient_paste_tube",
@@ -787,8 +787,8 @@
       "type": "paste",
       "container": "tube"
     },
-    "sprite": "%",
-    "color": "#ff69b4"
+    "sprite": "~",
+    "color": "#98fb98"
   },
   {
     "id": "ink_pot_black",
@@ -811,7 +811,7 @@
     "effects": {
       "resource_ink": 100
     },
-    "color": "#000000",
+    "color": "#c0c0c0",
     "recipe": {
       "id": "ink_pot_black",
       "description": "Mix soot and a binder to create black ink.",
@@ -856,7 +856,7 @@
     "properties": {
       "color": "#000000"
     },
-    "sprite": "%"
+    "sprite": "o"
   },
   {
     "id": "parchment_roll_blank",
@@ -925,8 +925,8 @@
     "properties": {
       "type": "parchment"
     },
-    "sprite": "%",
-    "color": "#ff69b4"
+    "sprite": "o",
+    "color": "#c0c0c0"
   },
   {
     "id": "incense_sticks_sandalwood",
@@ -956,8 +956,8 @@
       "type": "incense",
       "scent": "sandalwood"
     },
-    "sprite": "%",
-    "color": "#8b4513"
+    "sprite": "~",
+    "color": "#228b22"
   },
   {
     "id": "sacred_herbs_bundle",
@@ -986,8 +986,8 @@
       "type": "herbs",
       "grade": "sacred"
     },
-    "sprite": "%",
-    "color": "#ff0000"
+    "sprite": "~",
+    "color": "#228b22"
   },
   {
     "id": "bandage_simple",
@@ -1099,8 +1099,8 @@
       "time_to_craft": 10,
       "batch_size": 1
     },
-    "sprite": "/",
-    "color": "#ff69b4"
+    "sprite": "!",
+    "color": "#0000ff"
   },
   {
     "id": "water_bucket",
@@ -1127,7 +1127,7 @@
     "range": 5,
     "damage": "0",
     "damageType": "Physical",
-    "sprite": "(",
-    "color": "#0000ff"
+    "sprite": "o",
+    "color": "#c0c0c0"
   }
 ]

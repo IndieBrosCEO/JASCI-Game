@@ -79,8 +79,8 @@
       "time_to_craft": 25,
       "batch_size": 1
     },
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "!",
+    "color": "#ffff00"
   },
   {
     "id": "candle_portable",
@@ -185,8 +185,8 @@
       "time_to_craft": 30,
       "batch_size": 1
     },
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "#",
+    "color": "#8b4513"
   },
   {
     "id": "blacksmith_hammer",
@@ -238,7 +238,7 @@
       "time_to_craft": 60,
       "batch_size": 1
     },
-    "sprite": "(",
+    "sprite": "T",
     "color": "#a9a9a9"
   },
   {
@@ -293,8 +293,8 @@
       "time_to_craft": 45,
       "batch_size": 1
     },
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "T",
+    "color": "#8b4513"
   },
   {
     "id": "matches",
@@ -340,8 +340,8 @@
       "batch_size": 1,
       "xp": 10
     },
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "!",
+    "color": "#ff4500"
   },
   {
     "id": "lighter",
@@ -393,8 +393,8 @@
       "time_to_craft": 20,
       "batch_size": 1
     },
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "!",
+    "color": "#ff4500"
   },
   {
     "id": "hammer_peen",
@@ -417,7 +417,7 @@
     ],
     "action": "hammer",
     "canEquip": true,
-    "sprite": "(",
+    "sprite": "T",
     "color": "#a9a9a9"
   },
   {
@@ -440,7 +440,7 @@
     ],
     "action": "dig",
     "canEquip": true,
-    "sprite": "(",
+    "sprite": "T",
     "color": "#a9a9a9"
   },
   {
@@ -486,8 +486,8 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
-    "color": "#c0c0c0"
+    "sprite": "#",
+    "color": "#8b4513"
   },
   {
     "id": "pliers_set",
@@ -508,7 +508,7 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
+    "sprite": "X",
     "color": "#a9a9a9"
   },
   {
@@ -554,8 +554,8 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "?",
+    "color": "#c0c0c0"
   },
   {
     "id": "rivet_gun_manual",
@@ -576,8 +576,8 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "}",
+    "color": "#ff8c00"
   },
   {
     "id": "metal_snips_heavy",
@@ -598,7 +598,7 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
+    "sprite": "X",
     "color": "#a9a9a9"
   },
   {
@@ -620,8 +620,8 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "}",
+    "color": "#ff8c00"
   },
   {
     "id": "welding_torch_oxyacetylene",
@@ -643,8 +643,8 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "!",
+    "color": "#ffff00"
   },
   {
     "id": "multimeter_digital",
@@ -666,8 +666,8 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "~",
+    "color": "#d2b48c"
   },
   {
     "id": "concrete_mixer_small",
@@ -711,8 +711,8 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "!",
+    "color": "#ffff00"
   },
   {
     "id": "chisel_stone",
@@ -734,8 +734,8 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "!",
+    "color": "#ffff00"
   },
   {
     "id": "tap_and_die_set",
@@ -757,8 +757,8 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "#",
+    "color": "#8b4513"
   },
   {
     "id": "file_small_metal",
@@ -779,8 +779,8 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "!",
+    "color": "#ffff00"
   },
   {
     "id": "heat_gun_tool",
@@ -801,8 +801,8 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
-    "color": "#a9a9a9"
+    "sprite": "}",
+    "color": "#ff8c00"
   },
   {
     "id": "spindle_simple",
@@ -893,7 +893,7 @@
       "hand"
     ],
     "canEquip": true,
-    "sprite": "(",
+    "sprite": "X",
     "color": "#a9a9a9"
   },
   {

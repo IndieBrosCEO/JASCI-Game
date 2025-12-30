@@ -63,7 +63,7 @@
       "batch_size": 10
     },
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_762mm",
@@ -84,7 +84,7 @@
     "ammoType": "7.62mm",
     "quantity": 20,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_9mm",
@@ -154,7 +154,7 @@
       "batch_size": 10
     },
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_12gauge_buckshot",
@@ -230,7 +230,7 @@
       "batch_size": 5
     },
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#b22222"
   },
   {
     "id": "ammo_45acp",
@@ -251,7 +251,7 @@
     "ammoType": ".45ACP",
     "quantity": 50,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_22lr",
@@ -273,7 +273,7 @@
     "ammoType": ".22LR",
     "quantity": 100,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_38spl",
@@ -294,7 +294,7 @@
     "ammoType": ".38SPL",
     "quantity": 50,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_357mag",
@@ -315,7 +315,7 @@
     "ammoType": ".357MAG",
     "quantity": 50,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_50bmg",
@@ -337,7 +337,7 @@
     "ammoType": ".50BMG",
     "quantity": 10,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_32acp",
@@ -358,7 +358,7 @@
     "ammoType": ".32ACP",
     "quantity": 50,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_10mm",
@@ -379,7 +379,7 @@
     "ammoType": "10mm",
     "quantity": 50,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_50ae",
@@ -400,7 +400,7 @@
     "ammoType": ".50AE",
     "quantity": 20,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_44mag",
@@ -421,7 +421,7 @@
     "ammoType": ".44mag",
     "quantity": 50,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_flamethrower_fuel",
@@ -441,7 +441,7 @@
     ],
     "ammoType": "flamethrower_fuel",
     "quantity": 5,
-    "sprite": "=",
+    "sprite": "U",
     "color": "#ff4500"
   },
   {
@@ -462,8 +462,8 @@
     ],
     "ammoType": "20mm",
     "quantity": 5,
-    "sprite": "=",
-    "color": "#c0c0c0"
+    "sprite": "U",
+    "color": "#ff4500"
   },
   {
     "id": "ammo_950jdj",
@@ -483,7 +483,7 @@
     "ammoType": ".950JDJ",
     "quantity": 1,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_55boys",
@@ -503,8 +503,8 @@
     ],
     "ammoType": ".55Boys",
     "quantity": 5,
-    "sprite": "=",
-    "color": "#c0c0c0"
+    "sprite": "U",
+    "color": "#ff4500"
   },
   {
     "id": "ammo_700ne",
@@ -524,7 +524,7 @@
     "ammoType": ".700NE",
     "quantity": 2,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_577tyr",
@@ -544,7 +544,7 @@
     "ammoType": ".577Tyr",
     "quantity": 3,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_4bore",
@@ -565,7 +565,7 @@
     "ammoType": "4bore",
     "quantity": 2,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_blunderbuss_shot",
@@ -586,7 +586,7 @@
     "ammoType": "blunderbuss_shot",
     "quantity": 5,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_punt_gun_shot",
@@ -607,7 +607,7 @@
     "ammoType": "punt_gun_shot",
     "quantity": 1,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_500automax",
@@ -627,7 +627,7 @@
     "ammoType": ".500AutoMax",
     "quantity": 10,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_454casull",
@@ -648,7 +648,7 @@
     "ammoType": ".454Casull",
     "quantity": 6,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_500sw",
@@ -669,7 +669,7 @@
     "ammoType": ".500SW",
     "quantity": 5,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_460sw",
@@ -690,7 +690,7 @@
     "ammoType": ".460SW",
     "quantity": 5,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_3030",
@@ -711,7 +711,7 @@
     "ammoType": ".30-30",
     "quantity": 20,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_4570",
@@ -732,7 +732,7 @@
     "ammoType": ".45-70",
     "quantity": 10,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_450marlin",
@@ -753,7 +753,7 @@
     "ammoType": ".450Marlin",
     "quantity": 10,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_338lapua",
@@ -774,7 +774,7 @@
     "ammoType": ".338Lapua",
     "quantity": 5,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_458socom",
@@ -795,7 +795,7 @@
     "ammoType": ".458SOCOM",
     "quantity": 10,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "ammo_4gauge",
@@ -816,7 +816,7 @@
     "ammoType": "4gauge",
     "quantity": 1,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#b22222"
   },
   {
     "id": "ammo_soda_can",
@@ -836,7 +836,7 @@
     "ammoType": "soda_can",
     "quantity": 6,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   },
   {
     "id": "generic_ammo",
@@ -856,6 +856,6 @@
     "ammoType": "generic_ammo",
     "quantity": 100,
     "sprite": "=",
-    "color": "#c0c0c0"
+    "color": "#ffd700"
   }
 ]
