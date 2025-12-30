@@ -417,8 +417,8 @@ class ProceduralQuestManager {
 
             logToConsole(`Procedural Quest "${quest.displayName}" COMPLETED!`, "event-success");
 
-            // TODO: Play quest completion sound/ fanfare (e.g., ui_quest_complete_01.wav)
-            if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav', { volume: 0.9 }); // Generic confirm for now
+            // Play quest completion sound/ fanfare
+            if (window.audioManager) window.audioManager.playSound('quest_complete_01.wav', { volume: 0.9 });
 
             // Apply rewards
             // TODO: More complex reward logic (e.g., item choice, faction standing changes based on performance/difficulty).

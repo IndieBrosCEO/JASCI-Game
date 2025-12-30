@@ -218,7 +218,7 @@ class TrapManager {
                 // window.mapManager.updateTileOnLayer(trapInstance.x, trapInstance.y, trapInstance.z, 'objects', trapDef.disarmedTileId);
                 logToConsole(`${this.logPrefix} TODO: Update map tile for disarmed trap (visual change). Tile ID: ${trapDef.disarmedTileId}`, 'grey');
             }
-            if (window.audioManager) window.audioManager.playSoundAtLocation('trap_disarm_success_01.wav', trapInstance, {}, { falloff: 'linear', maxDistance: 15 }); // Placeholder sound
+            if (window.audioManager) window.audioManager.playSoundAtLocation('ui_confirm_01.wav', trapInstance, {}, { falloff: 'linear', maxDistance: 15 }); // Success sound
 
         } else {
             // Failure
@@ -234,14 +234,14 @@ class TrapManager {
                     window.uiManager.showToastNotification(mishapMsg, 'error');
                 }
                 this.triggerTrap(trapInstance.uniqueId, entity); // Trap triggers
-                if (window.audioManager) window.audioManager.playSoundAtLocation('trap_disarm_fail_trigger_01.wav', trapInstance, {}, { falloff: 'linear', maxDistance: 15 }); // Placeholder
+                if (window.audioManager) window.audioManager.playSoundAtLocation('ui_error_01.wav', trapInstance, {}, { falloff: 'linear', maxDistance: 15 }); // Failure/Trigger sound
             } else {
                 const safeFailMsg = trapDef.messageOnDisarmFailureSafe || `Failed to disarm ${trapDef.name}, but it didn't trigger.`;
                 logToConsole(safeFailMsg, 'orange');
                 if (window.uiManager && entity === this.gameState.player) {
                     window.uiManager.showToastNotification(safeFailMsg, 'warning');
                 }
-                if (window.audioManager) window.audioManager.playSoundAtLocation('trap_disarm_fail_safe_01.wav', trapInstance, {}, { falloff: 'linear', maxDistance: 10 }); // Placeholder
+                if (window.audioManager) window.audioManager.playSoundAtLocation('ui_error_01.wav', trapInstance, {}, { falloff: 'linear', maxDistance: 10 }); // Failure sound
             }
         }
 
@@ -303,9 +303,9 @@ class TrapManager {
 
         trapInstance.state = "triggered";
 
-        // TODO: Play trap activation sound (specific to trapDef.id or type, e.g., trap_spike_trigger_01.wav)
+        // Play trap activation sound
         if (window.audioManager) {
-            const soundName = trapDef.soundOnTrigger || 'trap_default_trigger_01.wav'; // Use specific or default
+            const soundName = trapDef.soundOnTrigger || 'ui_error_01.wav'; // Use specific or default
             window.audioManager.playSoundAtLocation(soundName, trapInstance, {}, { falloff: 'linear', maxDistance: 20 });
         }
 
@@ -360,7 +360,7 @@ class TrapManager {
                 } else if (effect.type === "alert") {
                     logToConsole(`${this.logPrefix} Trap '${trapDef.name}' sends out an alert: "${effect.message}". Radius: ${effect.radius || 10}`, 'yellow');
                     // TODO: Implement NPC alerting logic based on radius and sound propagation.
-                    if (window.audioManager) window.audioManager.playSoundAtLocation('ui_alarm_01.wav', trapInstance, { volume: 0.8 }); // Placeholder
+                    if (window.audioManager) window.audioManager.playSoundAtLocation('ui_error_01.wav', trapInstance, { volume: 0.8 }); // Placeholder
                 }
                 // Note: The structure supports various effects (damage, status, alert).
                 // Status effect application depends on a global window.statusEffectsManager.
