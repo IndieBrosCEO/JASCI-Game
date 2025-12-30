@@ -151,6 +151,35 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         return false;
     }
 
+    // --- Determine Character's Current Tile Properties (moved before collision check) ---
+    // CRITICAL FIX: This block must occur BEFORE the collision check below.
+    // We need to know if the character is on a slope/z-transition to grant exceptions
+    // for "walking into walls" which is how slopes technically work (you walk into the solid base of the slope).
+    const charCurrentLevelData = currentMap.levels[originalPos.z.toString()];
+    let charIsOnZTransition = false;
+    let zTransitionDef = null;
+
+    if (charCurrentLevelData && localAssetManager?.tilesets) {
+        const checkTileForZTransition = (tileId) => {
+            if (tileId && localAssetManager.tilesets[tileId]) {
+                const def = localAssetManager.tilesets[tileId];
+                if (def.tags && def.tags.includes('z_transition')) {
+                    charIsOnZTransition = true;
+                    zTransitionDef = def;
+                }
+            }
+        };
+        let charTileOnMiddleRaw = charCurrentLevelData.middle?.[originalPos.y]?.[originalPos.x];
+        let charBaseIdMiddle = (typeof charTileOnMiddleRaw === 'object' && charTileOnMiddleRaw?.tileId !== undefined) ? charTileOnMiddleRaw.tileId : charTileOnMiddleRaw;
+        checkTileForZTransition(charBaseIdMiddle);
+
+        if (!charIsOnZTransition) {
+            let charTileOnBottomRaw = charCurrentLevelData.bottom?.[originalPos.y]?.[originalPos.x];
+            let charBaseIdBottom = (typeof charTileOnBottomRaw === 'object' && charTileOnBottomRaw?.tileId !== undefined) ? charTileOnBottomRaw.tileId : charTileOnBottomRaw;
+            checkTileForZTransition(charBaseIdBottom);
+        }
+    }
+
     // --- Multi-tile Rotation/Collision Check ---
     if (window.mapUtils) {
         const ent = isPlayer ? window.gameState.player : character;
@@ -159,9 +188,37 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         // 1. Check Static Geometry (Walls/Map Bounds)
         // If ANY part of the footprint is in a wall, block immediately.
         for (const tile of targetFootprint) {
-            if (!window.mapRenderer.isWalkable(tile.x, tile.y, tile.z)) {
-                logToConsole(`${logPrefix} Cannot move: Footprint blocked by static map at (${tile.x},${tile.y}).`);
-                return false;
+            // RELAXED CHECK: Use isTileStrictlyImpassable instead of isWalkable.
+            // This allows movement into "empty air" (for falling) or "slope walls" (if exception met).
+            // Using isWalkable here would block falling because air is not "walkable".
+            const impassableInfo = isTileStrictlyImpassable(tile.x, tile.y, tile.z);
+
+            if (impassableInfo.impassable) {
+                // Check for slope exception
+                let isSlopeException = false;
+                if (charIsOnZTransition && zTransitionDef && zTransitionDef.tags && zTransitionDef.tags.includes('slope')) {
+                    // Slope Directional Validation
+                    // If the name implies a direction, ensure we are moving that way.
+                    const name = zTransitionDef.name || "";
+                    let allowedDirection = true; // Default to true for generic slopes
+
+                    if (name.includes('North') && direction !== 'up' && direction !== 'ArrowUp' && direction !== 'w') allowedDirection = false;
+                    else if (name.includes('South') && direction !== 'down' && direction !== 'ArrowDown' && direction !== 's') allowedDirection = false;
+                    else if (name.includes('East') && direction !== 'right' && direction !== 'ArrowRight' && direction !== 'd') allowedDirection = false;
+                    else if (name.includes('West') && direction !== 'left' && direction !== 'ArrowLeft' && direction !== 'a') allowedDirection = false;
+
+                    if (allowedDirection) {
+                         // Only allow if we are moving INTO the blocked tile that corresponds to the slope ascent?
+                         // For simplicity, if we are on a slope and moving in its direction, we forgive static map collisions
+                         // assuming the Slope Logic (Step 1) will handle the actual transition or block if invalid.
+                         isSlopeException = true;
+                    }
+                }
+
+                if (!isSlopeException) {
+                    logToConsole(`${logPrefix} Cannot move: Footprint blocked by static map at (${tile.x},${tile.y}).`);
+                    return false;
+                }
             }
         }
 
@@ -196,32 +253,6 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         logToConsole(`${logPrefix} Not enough movement points. Need ${actualMoveCost}, have ${currentMovementPoints}.`);
         if (isPlayer && window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return false;
-    }
-
-    // --- Determine Character's Current Tile Properties ---
-    const charCurrentLevelData = currentMap.levels[originalPos.z.toString()];
-    let charIsOnZTransition = false;
-    let zTransitionDef = null;
-
-    if (charCurrentLevelData && localAssetManager?.tilesets) {
-        const checkTileForZTransition = (tileId) => {
-            if (tileId && localAssetManager.tilesets[tileId]) {
-                const def = localAssetManager.tilesets[tileId];
-                if (def.tags && def.tags.includes('z_transition')) {
-                    charIsOnZTransition = true;
-                    zTransitionDef = def;
-                }
-            }
-        };
-        let charTileOnMiddleRaw = charCurrentLevelData.middle?.[originalPos.y]?.[originalPos.x];
-        let charBaseIdMiddle = (typeof charTileOnMiddleRaw === 'object' && charTileOnMiddleRaw?.tileId !== undefined) ? charTileOnMiddleRaw.tileId : charTileOnMiddleRaw;
-        checkTileForZTransition(charBaseIdMiddle);
-
-        if (!charIsOnZTransition) {
-            let charTileOnBottomRaw = charCurrentLevelData.bottom?.[originalPos.y]?.[originalPos.x];
-            let charBaseIdBottom = (typeof charTileOnBottomRaw === 'object' && charTileOnBottomRaw?.tileId !== undefined) ? charTileOnBottomRaw.tileId : charTileOnBottomRaw;
-            checkTileForZTransition(charBaseIdBottom);
-        }
     }
 
     let moveSuccessful = false; // Flag to track if any kind of position change or fall occurred
