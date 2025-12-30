@@ -64,7 +64,9 @@
       "type": "plastic",
       "grade": 3
     },
-    "splashDamage": "2d6"
+    "splashDamage": "2d6",
+    "sprite": "%",
+    "color": "#ff69b4"
   },
   {
     "id": "det_cord_explosive",
@@ -87,7 +89,9 @@
     "family": "explosive",
     "properties": {
       "type": "det_cord"
-    }
+    },
+    "sprite": "%",
+    "color": "#ff69b4"
   },
   {
     "id": "dynamite_explosive",
@@ -156,7 +160,9 @@
     "properties": {
       "type": "dynamite"
     },
-    "splashDamage": "1d8"
+    "splashDamage": "1d8",
+    "sprite": "%",
+    "color": "#ff69b4"
   },
   {
     "id": "bandage",
@@ -210,7 +216,9 @@
     "properties": {
       "type": "bandage",
       "grade": 2
-    }
+    },
+    "sprite": "+",
+    "color": "#ff69b4"
   },
   {
     "id": "first_aid_kit",
@@ -280,7 +288,9 @@
     "properties": {
       "type": "kit",
       "grade": 1
-    }
+    },
+    "sprite": "+",
+    "color": "#ff69b4"
   },
   {
     "id": "canned_beans",
@@ -303,7 +313,9 @@
     "properties": {
       "type": "canned",
       "content": "beans"
-    }
+    },
+    "sprite": "%",
+    "color": "#ff69b4"
   },
   {
     "id": "energy_bar",
@@ -327,7 +339,9 @@
     "properties": {
       "type": "bar",
       "effect": "energy"
-    }
+    },
+    "sprite": "%",
+    "color": "#ff69b4"
   },
   {
     "id": "mre",
@@ -351,7 +365,9 @@
     "family": "food",
     "properties": {
       "type": "mre"
-    }
+    },
+    "sprite": "%",
+    "color": "#ff69b4"
   },
   {
     "id": "bottled_water",
@@ -374,7 +390,9 @@
     "properties": {
       "type": "water",
       "container": "bottle"
-    }
+    },
+    "sprite": "%",
+    "color": "#0000ff"
   },
   {
     "id": "canteen_water",
@@ -398,7 +416,9 @@
     "properties": {
       "type": "water",
       "container": "canteen"
-    }
+    },
+    "sprite": "%",
+    "color": "#ff69b4"
   },
   {
     "id": "water_purification_tablets",
@@ -452,7 +472,9 @@
     "family": "medical",
     "properties": {
       "type": "purification_tablets"
-    }
+    },
+    "sprite": "%",
+    "color": "#0000ff"
   },
   {
     "id": "canned_beans_food",
@@ -532,7 +554,9 @@
     "properties": {
       "type": "pharmaceutical",
       "effect": "antibiotic"
-    }
+    },
+    "sprite": "+",
+    "color": "#ff69b4"
   },
   {
     "id": "painkillers_strong",
@@ -562,7 +586,9 @@
       "type": "pharmaceutical",
       "effect": "painkiller",
       "strength": "strong"
-    }
+    },
+    "sprite": "+",
+    "color": "#ff69b4"
   },
   {
     "id": "stimulant_combat",
@@ -594,7 +620,9 @@
     "properties": {
       "type": "stimulant",
       "grade": "combat"
-    }
+    },
+    "sprite": "+",
+    "color": "#ff69b4"
   },
   {
     "id": "antidote_universal_basic",
@@ -622,7 +650,9 @@
     "properties": {
       "type": "antidote",
       "grade": "basic"
-    }
+    },
+    "sprite": "+",
+    "color": "#ff69b4"
   },
   {
     "id": "herbal_salve_healing",
@@ -696,7 +726,9 @@
       "type": "salve",
       "source": "herbal",
       "effect": "healing"
-    }
+    },
+    "sprite": "+",
+    "color": "#ff69b4"
   },
   {
     "id": "chemical_reagent_generic",
@@ -724,7 +756,9 @@
     "properties": {
       "type": "reagent",
       "grade": "generic"
-    }
+    },
+    "sprite": "%",
+    "color": "#ff69b4"
   },
   {
     "id": "nutrient_paste_tube",
@@ -752,7 +786,9 @@
     "properties": {
       "type": "paste",
       "container": "tube"
-    }
+    },
+    "sprite": "%",
+    "color": "#ff69b4"
   },
   {
     "id": "ink_pot_black",
@@ -819,7 +855,8 @@
     "family": "ink",
     "properties": {
       "color": "#000000"
-    }
+    },
+    "sprite": "%"
   },
   {
     "id": "parchment_roll_blank",
@@ -887,7 +924,9 @@
     "family": "writing_surface",
     "properties": {
       "type": "parchment"
-    }
+    },
+    "sprite": "%",
+    "color": "#ff69b4"
   },
   {
     "id": "incense_sticks_sandalwood",
@@ -916,7 +955,9 @@
     "properties": {
       "type": "incense",
       "scent": "sandalwood"
-    }
+    },
+    "sprite": "%",
+    "color": "#8b4513"
   },
   {
     "id": "sacred_herbs_bundle",
@@ -944,7 +985,9 @@
     "properties": {
       "type": "herbs",
       "grade": "sacred"
-    }
+    },
+    "sprite": "%",
+    "color": "#ff0000"
   },
   {
     "id": "bandage_simple",
@@ -1055,7 +1098,9 @@
       ],
       "time_to_craft": 10,
       "batch_size": 1
-    }
+    },
+    "sprite": "/",
+    "color": "#ff69b4"
   },
   {
     "id": "water_bucket",
@@ -1081,6 +1126,8 @@
     },
     "range": 5,
     "damage": "0",
-    "damageType": "Physical"
+    "damageType": "Physical",
+    "sprite": "(",
+    "color": "#0000ff"
   }
 ]

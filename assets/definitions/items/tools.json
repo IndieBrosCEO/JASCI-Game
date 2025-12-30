@@ -3,13 +3,21 @@
     "id": "flashlight",
     "name": "Flashlight",
     "family": "tool",
-    "properties": { "type": "flashlight" },
+    "properties": {
+      "type": "flashlight"
+    },
     "type": "tool",
     "description": "A battery-powered directional light source.",
     "weight": 0.5,
     "volume": 0.5,
-    "tags": [ "light_source_item", "hand_held", "requires_power_cell" ],
-    "equipSlots": [ "hand" ],
+    "tags": [
+      "light_source_item",
+      "hand_held",
+      "requires_power_cell"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
     "canEquip": true,
     "light_properties": {
       "color": "#3bffd1",
@@ -20,30 +28,79 @@
     "recipe": {
       "description": "Assemble a basic flashlight.",
       "components": [
-        { "family": "casing", "quantity": 1, "require": { "size": "small", "material": "plastic" } },
-        { "family": "component", "quantity": 1, "require": { "type": "led" } },
-        { "family": "wire", "quantity": 1, "require": { "material": "copper" } },
-        { "family": "power_source", "quantity": 1, "require": { "size": "small" } },
-        { "family": "lens", "quantity": 1, "require": { "grade": 1 } }
+        {
+          "family": "casing",
+          "quantity": 1,
+          "require": {
+            "size": "small",
+            "material": "plastic"
+          }
+        },
+        {
+          "family": "component",
+          "quantity": 1,
+          "require": {
+            "type": "led"
+          }
+        },
+        {
+          "family": "wire",
+          "quantity": 1,
+          "require": {
+            "material": "copper"
+          }
+        },
+        {
+          "family": "power_source",
+          "quantity": 1,
+          "require": {
+            "size": "small"
+          }
+        },
+        {
+          "family": "lens",
+          "quantity": 1,
+          "require": {
+            "grade": 1
+          }
+        }
       ],
-      "skills_required": [ { "skill": "Electronics", "level": 2 } ],
-      "tools_required": [ "soldering_iron_kit", "screwdriver_set_multi" ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "soldering_iron_kit",
+        "screwdriver_set_multi"
+      ],
       "station_required": "workbench",
       "time_to_craft": 25,
       "batch_size": 1
-    }
+    },
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "candle_portable",
     "name": "Portable Candle",
     "family": "tool",
-    "properties": { "type": "candle" },
+    "properties": {
+      "type": "candle"
+    },
     "type": "tool",
     "description": "A simple wax candle. Provides a small amount of light.",
     "weight": 0.1,
     "volume": 0.1,
-    "tags": [ "light_source_item", "hand_held", "consumable_light" ],
-    "equipSlots": [ "hand" ],
+    "tags": [
+      "light_source_item",
+      "hand_held",
+      "consumable_light"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
     "canEquip": true,
     "light_properties": {
       "color": "#ffffe0",
@@ -53,351 +110,812 @@
     "recipe": {
       "description": "Make simple wax candles.",
       "components": [
-        { "family": "wax", "quantity": 1, "require": { "type": "beeswax" } },
-        { "family": "component", "quantity": 3, "require": {"type": "wick"} }
+        {
+          "family": "wax",
+          "quantity": 1,
+          "require": {
+            "type": "beeswax"
+          }
+        },
+        {
+          "family": "component",
+          "quantity": 3,
+          "require": {
+            "type": "wick"
+          }
+        }
       ],
-      "skills_required": [ { "skill": "Survival", "level": 0 } ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 0
+        }
+      ],
       "time_to_craft": 5,
       "batch_size": 3
-    }
+    },
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "lockpick_set_basic",
     "name": "Basic Lockpick Set",
     "family": "tool",
-    "properties": { "type": "lockpick_set" },
+    "properties": {
+      "type": "lockpick_set"
+    },
     "description": "A set of tools for non-destructive entry through simple locks.",
     "type": "tool",
     "size": 1,
     "weightLbs": 0.5,
-    "tags": [ "tool", "stealth" ],
+    "tags": [
+      "tool",
+      "stealth"
+    ],
     "canEquip": true,
     "recipe": {
       "description": "Fashion a basic set of lockpicks and a tension wrench.",
       "components": [
-        { "family": "wire", "quantity": 2, "require": { "stiffness": "stiff" } },
-        { "family": "metal", "quantity": 1, "require": { "type": "rod" } }
+        {
+          "family": "wire",
+          "quantity": 2,
+          "require": {
+            "stiffness": "stiff"
+          }
+        },
+        {
+          "family": "metal",
+          "quantity": 1,
+          "require": {
+            "type": "rod"
+          }
+        }
       ],
-      "skills_required": [ { "skill": "Repair", "level": 3 } ],
-      "tools_required": [ "file_small_metal", "pliers_set" ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "file_small_metal",
+        "pliers_set"
+      ],
       "station_required": "workbench",
       "time_to_craft": 30,
       "batch_size": 1
-    }
+    },
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "blacksmith_hammer",
     "name": "Blacksmith's Hammer",
     "family": "tool",
-    "properties": { "type": "hammer" },
+    "properties": {
+      "type": "hammer"
+    },
     "description": "A heavy hammer with a flat face and a peen, used for shaping metal.",
-    "type": "tool", "size": 2, "weightLbs": 4, "tags": [ "tool", "crafting", "blacksmithing" ],
-    "equipSlots": [ "hand" ], "action": "shapeMetal",
+    "type": "tool",
+    "size": 2,
+    "weightLbs": 4,
+    "tags": [
+      "tool",
+      "crafting",
+      "blacksmithing"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "action": "shapeMetal",
     "canEquip": true,
     "recipe": {
       "description": "Forge a heavy blacksmith's hammer.",
       "components": [
-        { "family": "metal", "quantity": 1, "require": { "type": "ingot", "material": "steel" } },
-        { "family": "wood", "quantity": 1, "require": { "type": "log" } }
+        {
+          "family": "metal",
+          "quantity": 1,
+          "require": {
+            "type": "ingot",
+            "material": "steel"
+          }
+        },
+        {
+          "family": "wood",
+          "quantity": 1,
+          "require": {
+            "type": "log"
+          }
+        }
       ],
-      "skills_required": [ { "skill": "Repair", "level": 5 } ],
-      "station_required": "forge", "time_to_craft": 60, "batch_size": 1
-    }
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "station_required": "forge",
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
-    {
+  {
     "id": "hand_saw_wood",
     "name": "Hand Saw",
     "family": "tool",
-    "properties": { "type": "saw" },
+    "properties": {
+      "type": "saw"
+    },
     "description": "A basic saw for cutting wood.",
-    "type": "tool", "size": 3, "weightLbs": 2.5, "tags": [ "tool", "crafting", "woodworking" ],
-    "equipSlots": [ "hand" ], "action": "sawWood",
+    "type": "tool",
+    "size": 3,
+    "weightLbs": 2.5,
+    "tags": [
+      "tool",
+      "crafting",
+      "woodworking"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "action": "sawWood",
     "canEquip": true,
     "recipe": {
       "description": "Craft a basic hand saw.",
       "components": [
-        { "family": "metal_sheet", "quantity": 1, "require": { "thickness": "thin" } },
-        { "family": "wood", "quantity": 1, "require": { "type": "plank" } }
+        {
+          "family": "metal_sheet",
+          "quantity": 1,
+          "require": {
+            "thickness": "thin"
+          }
+        },
+        {
+          "family": "wood",
+          "quantity": 1,
+          "require": {
+            "type": "plank"
+          }
+        }
       ],
-      "skills_required": [ { "skill": "Repair", "level": 3 } ],
-      "tools_required": [ "file_small_metal" ], "station_required": "workbench",
-      "time_to_craft": 45, "batch_size": 1
-    }
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "file_small_metal"
+      ],
+      "station_required": "workbench",
+      "time_to_craft": 45,
+      "batch_size": 1
+    },
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "matches",
     "name": "Matches",
     "family": "tool",
-    "properties": { "type": "fire_starter" },
+    "properties": {
+      "type": "fire_starter"
+    },
     "type": "tool",
     "description": "A box of matches.",
     "weight": 0.1,
     "volume": 0.1,
-    "tags": [ "flame", "consumable" ],
+    "tags": [
+      "flame",
+      "consumable"
+    ],
     "canEquip": true,
     "recipe": {
       "description": "Craft a box of matches.",
       "components": [
-        { "family": "wood", "quantity": 1, "require": { "type": "stick" } },
-        { "family": "chemical", "quantity": 1, "require": { "type": "sulfur" } }
+        {
+          "family": "wood",
+          "quantity": 1,
+          "require": {
+            "type": "stick"
+          }
+        },
+        {
+          "family": "chemical",
+          "quantity": 1,
+          "require": {
+            "type": "sulfur"
+          }
+        }
       ],
-      "skills_required": [ { "skill": "Survival", "level": 2 } ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 2
+        }
+      ],
       "time_to_craft": 10,
       "batch_size": 1,
       "xp": 10
-    }
+    },
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "lighter",
     "name": "Lighter",
     "family": "tool",
-    "properties": { "type": "fire_starter" },
+    "properties": {
+      "type": "fire_starter"
+    },
     "type": "tool",
     "description": "A reusable lighter.",
     "weight": 0.2,
     "volume": 0.2,
-    "tags": [ "flame" ],
+    "tags": [
+      "flame"
+    ],
     "canEquip": true,
     "recipe": {
       "description": "Craft a simple lighter.",
       "components": [
-        { "family": "casing", "quantity": 1, "require": { "size": "small", "material": "plastic" } },
-        { "family": "component", "quantity": 1, "require": { "type": "spring" } },
-        { "family": "fuel", "quantity": 1, "require": { "type": "gasoline" } }
+        {
+          "family": "casing",
+          "quantity": 1,
+          "require": {
+            "size": "small",
+            "material": "plastic"
+          }
+        },
+        {
+          "family": "component",
+          "quantity": 1,
+          "require": {
+            "type": "spring"
+          }
+        },
+        {
+          "family": "fuel",
+          "quantity": 1,
+          "require": {
+            "type": "gasoline"
+          }
+        }
       ],
-      "skills_required": [ { "skill": "Electronics", "level": 3 } ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 3
+        }
+      ],
       "time_to_craft": 20,
       "batch_size": 1
-    }
+    },
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "hammer_peen",
     "name": "Peen Hammer",
     "family": "tool",
-    "properties": { "type": "hammer" },
+    "properties": {
+      "type": "hammer"
+    },
     "description": "A standard hammer with a peen for metalworking and construction.",
-    "type": "tool", "size": 2, "weightLbs": 2, "tags": [ "tool", "crafting", "construction" ],
-    "equipSlots": [ "hand" ], "action": "hammer",
-    "canEquip": true
+    "type": "tool",
+    "size": 2,
+    "weightLbs": 2,
+    "tags": [
+      "tool",
+      "crafting",
+      "construction"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "action": "hammer",
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "shovel",
     "name": "Shovel",
     "family": "tool",
-    "properties": { "type": "shovel" },
+    "properties": {
+      "type": "shovel"
+    },
     "description": "A sturdy shovel for digging.",
-    "type": "tool", "size": 3, "weightLbs": 5, "tags": [ "tool", "digging" ],
-    "equipSlots": [ "hand" ], "action": "dig",
-    "canEquip": true
+    "type": "tool",
+    "size": 3,
+    "weightLbs": 5,
+    "tags": [
+      "tool",
+      "digging"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "action": "dig",
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "tongs_blacksmith",
     "name": "Blacksmith Tongs",
     "family": "tool",
-    "properties": { "type": "tongs" },
+    "properties": {
+      "type": "tongs"
+    },
     "description": "Long tongs for handling hot metal.",
-    "type": "tool", "size": 2, "weightLbs": 3, "tags": [ "tool", "crafting", "blacksmithing" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 2,
+    "weightLbs": 3,
+    "tags": [
+      "tool",
+      "crafting",
+      "blacksmithing"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "soldering_iron_kit",
     "name": "Soldering Iron Kit",
     "family": "tool",
-    "properties": { "type": "soldering_iron" },
+    "properties": {
+      "type": "soldering_iron"
+    },
     "description": "A kit for soldering electronic components.",
-    "type": "tool", "size": 1, "weightLbs": 2, "tags": [ "tool", "crafting", "electronics" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 1,
+    "weightLbs": 2,
+    "tags": [
+      "tool",
+      "crafting",
+      "electronics"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#c0c0c0"
   },
   {
     "id": "pliers_set",
     "name": "Set of Pliers",
     "family": "tool",
-    "properties": { "type": "pliers" },
+    "properties": {
+      "type": "pliers"
+    },
     "description": "A set of pliers for gripping and bending.",
-    "type": "tool", "size": 1, "weightLbs": 1, "tags": [ "tool", "crafting" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 1,
+    "weightLbs": 1,
+    "tags": [
+      "tool",
+      "crafting"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "glassblowers_pipe",
     "name": "Glassblower's Pipe",
     "family": "tool",
-    "properties": { "type": "pipe" },
+    "properties": {
+      "type": "pipe"
+    },
     "description": "A pipe used for blowing glass.",
-    "type": "tool", "size": 2, "weightLbs": 3, "tags": [ "tool", "crafting", "glassworking" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 2,
+    "weightLbs": 3,
+    "tags": [
+      "tool",
+      "crafting",
+      "glassworking"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "wrench_set",
     "name": "Wrench Set",
     "family": "tool",
-    "properties": { "type": "wrench" },
+    "properties": {
+      "type": "wrench"
+    },
     "description": "A set of wrenches for turning nuts and bolts.",
-    "type": "tool", "size": 2, "weightLbs": 4, "tags": [ "tool", "crafting", "mechanic" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 2,
+    "weightLbs": 4,
+    "tags": [
+      "tool",
+      "crafting",
+      "mechanic"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "rivet_gun_manual",
     "name": "Manual Rivet Gun",
     "family": "tool",
-    "properties": { "type": "rivet_gun" },
+    "properties": {
+      "type": "rivet_gun"
+    },
     "description": "A hand-operated tool for setting rivets.",
-    "type": "tool", "size": 1, "weightLbs": 2, "tags": [ "tool", "crafting" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 1,
+    "weightLbs": 2,
+    "tags": [
+      "tool",
+      "crafting"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "metal_snips_heavy",
     "name": "Heavy Metal Snips",
     "family": "tool",
-    "properties": { "type": "snips" },
+    "properties": {
+      "type": "snips"
+    },
     "description": "Heavy-duty shears for cutting sheet metal.",
-    "type": "tool", "size": 1, "weightLbs": 2, "tags": [ "tool", "crafting" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 1,
+    "weightLbs": 2,
+    "tags": [
+      "tool",
+      "crafting"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "hand_drill",
     "name": "Hand Drill",
     "family": "tool",
-    "properties": { "type": "drill" },
+    "properties": {
+      "type": "drill"
+    },
     "description": "A manual drill for making holes.",
-    "type": "tool", "size": 2, "weightLbs": 3, "tags": [ "tool", "crafting" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 2,
+    "weightLbs": 3,
+    "tags": [
+      "tool",
+      "crafting"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "welding_torch_oxyacetylene",
     "name": "Oxyacetylene Welding Torch",
     "family": "tool",
-    "properties": { "type": "welder" },
+    "properties": {
+      "type": "welder"
+    },
     "description": "A torch for welding and cutting metal.",
-    "type": "tool", "size": 3, "weightLbs": 15, "tags": [ "tool", "crafting", "metalworking" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 3,
+    "weightLbs": 15,
+    "tags": [
+      "tool",
+      "crafting",
+      "metalworking"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "multimeter_digital",
     "name": "Digital Multimeter",
     "family": "tool",
-    "properties": { "type": "multimeter" },
+    "properties": {
+      "type": "multimeter"
+    },
     "description": "An instrument for measuring electrical properties.",
-    "type": "tool", "size": 1, "weightLbs": 1, "tags": [ "tool", "crafting", "electronics" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 1,
+    "weightLbs": 1,
+    "tags": [
+      "tool",
+      "crafting",
+      "electronics"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "concrete_mixer_small",
     "name": "Small Concrete Mixer",
     "family": "tool",
-    "properties": { "type": "mixer" },
+    "properties": {
+      "type": "mixer"
+    },
     "description": "A small mixer for preparing concrete.",
-    "type": "tool", "size": 4, "weightLbs": 50, "tags": [ "tool", "crafting", "construction" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": false
+    "type": "tool",
+    "size": 4,
+    "weightLbs": 50,
+    "tags": [
+      "tool",
+      "crafting",
+      "construction"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": false,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "screwdriver_set_multi",
     "name": "Multi-bit Screwdriver Set",
     "family": "tool",
-    "properties": { "type": "screwdriver" },
+    "properties": {
+      "type": "screwdriver"
+    },
     "description": "A screwdriver with interchangeable bits.",
-    "type": "tool", "size": 1, "weightLbs": 1, "tags": [ "tool", "crafting" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 1,
+    "weightLbs": 1,
+    "tags": [
+      "tool",
+      "crafting"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "chisel_stone",
     "name": "Stone Chisel",
     "family": "tool",
-    "properties": { "type": "chisel" },
+    "properties": {
+      "type": "chisel"
+    },
     "description": "A hardened steel chisel for shaping stone.",
-    "type": "tool", "size": 1, "weightLbs": 1, "tags": [ "tool", "crafting", "masonry" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 1,
+    "weightLbs": 1,
+    "tags": [
+      "tool",
+      "crafting",
+      "masonry"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "tap_and_die_set",
     "name": "Tap and Die Set",
     "family": "tool",
-    "properties": { "type": "tap_die" },
+    "properties": {
+      "type": "tap_die"
+    },
     "description": "Tools for cutting threads in metal.",
-    "type": "tool", "size": 2, "weightLbs": 5, "tags": [ "tool", "crafting", "machining" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 2,
+    "weightLbs": 5,
+    "tags": [
+      "tool",
+      "crafting",
+      "machining"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "file_small_metal",
     "name": "Small Metal File",
     "family": "tool",
-    "properties": { "type": "file" },
+    "properties": {
+      "type": "file"
+    },
     "description": "A file for smoothing and shaping metal.",
-    "type": "tool", "size": 1, "weightLbs": 0.5, "tags": [ "tool", "crafting" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [
+      "tool",
+      "crafting"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "heat_gun_tool",
     "name": "Heat Gun",
     "family": "tool",
-    "properties": { "type": "heat_gun" },
+    "properties": {
+      "type": "heat_gun"
+    },
     "description": "A tool that emits a stream of hot air.",
-    "type": "tool", "size": 2, "weightLbs": 2, "tags": [ "tool", "crafting" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 2,
+    "weightLbs": 2,
+    "tags": [
+      "tool",
+      "crafting"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "spindle_simple",
     "name": "Simple Spindle",
     "family": "tool",
-    "properties": { "type": "spindle" },
+    "properties": {
+      "type": "spindle"
+    },
     "description": "A simple tool for spinning thread.",
-    "type": "tool", "size": 1, "weightLbs": 0.5, "tags": [ "tool", "crafting", "textile" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 1,
+    "weightLbs": 0.5,
+    "tags": [
+      "tool",
+      "crafting",
+      "textile"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "mortar_pestle",
     "name": "Mortar and Pestle",
     "family": "tool",
-    "properties": { "type": "mortar_pestle" },
+    "properties": {
+      "type": "mortar_pestle"
+    },
     "description": "A bowl and club used to crush and grind ingredients.",
-    "type": "tool", "size": 1, "weightLbs": 3, "tags": [ "tool", "crafting", "chemistry", "cooking" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 1,
+    "weightLbs": 3,
+    "tags": [
+      "tool",
+      "crafting",
+      "chemistry",
+      "cooking"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "crucible_basic",
     "name": "Basic Crucible",
     "family": "tool",
-    "properties": { "type": "crucible" },
+    "properties": {
+      "type": "crucible"
+    },
     "description": "A ceramic or metal container that can withstand very high temperatures.",
-    "type": "tool", "size": 1, "weightLbs": 2, "tags": [ "tool", "crafting", "blacksmithing" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 1,
+    "weightLbs": 2,
+    "tags": [
+      "tool",
+      "crafting",
+      "blacksmithing"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "tin_snips",
     "name": "Tin Snips",
     "family": "tool",
-    "properties": { "type": "snips" },
+    "properties": {
+      "type": "snips"
+    },
     "description": "Hand shears for cutting thin sheet metal.",
-    "type": "tool", "size": 1, "weightLbs": 1, "tags": [ "tool", "crafting" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 1,
+    "weightLbs": 1,
+    "tags": [
+      "tool",
+      "crafting"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   },
   {
     "id": "knife_heavy_duty",
     "name": "Heavy Duty Knife",
     "family": "tool",
-    "properties": { "type": "knife" },
+    "properties": {
+      "type": "knife"
+    },
     "description": "A strong knife capable of cutting tough materials.",
-    "type": "tool", "size": 1, "weightLbs": 1, "tags": [ "tool", "crafting" ],
-    "equipSlots": [ "hand" ],
-    "canEquip": true
+    "type": "tool",
+    "size": 1,
+    "weightLbs": 1,
+    "tags": [
+      "tool",
+      "crafting"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "sprite": "(",
+    "color": "#a9a9a9"
   }
 ]

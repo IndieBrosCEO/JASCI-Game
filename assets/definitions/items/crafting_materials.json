@@ -4756,7 +4756,9 @@
     "family": "engine_kit",
     "properties": {
       "type": "v4"
-    }
+    },
+    "sprite": "&",
+    "color": "#deb887"
   },
   {
     "id": "long_wooden_shaft",
@@ -5069,7 +5071,9 @@
     "properties": {
       "type": "electric",
       "size": "large"
-    }
+    },
+    "sprite": "&",
+    "color": "#deb887"
   },
   {
     "id": "metal_blade_blank_large",
