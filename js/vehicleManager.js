@@ -157,22 +157,34 @@ class VehicleManager {
             const partDef = this.vehicleParts[partId];
             if (partDef) {
                 totalWeight += partDef.weight || 0;
-                if (partDef.type === "engine") {
-                    totalPower += (partDef.effects && partDef.effects.power) || 0;
-                    maxFuel += partDef.maxFuel || 0;
+
+                // Check for part functionality (durability > 0)
+                const isFunctional = (vehicle.durability[partId] > 0);
+
+                if (isFunctional) {
+                    if (partDef.type === "engine") {
+                        totalPower += (partDef.effects && partDef.effects.power) || 0;
+                        maxFuel += partDef.maxFuel || 0;
+                    }
+                    if (partDef.type.startsWith("armor") && partDef.effects && partDef.effects.armorValue) {
+                        totalArmor += partDef.effects.armorValue; // Simple sum for now
+                    }
+                    if (partDef.type.startsWith("storage") && partDef.effects && partDef.effects.cargoCapacity) {
+                        totalCargoCapacity += partDef.effects.cargoCapacity;
+                    }
                 }
-                if (partDef.type.startsWith("armor") && partDef.effects && partDef.effects.armorValue) {
-                    totalArmor += partDef.effects.armorValue; // Simple sum for now
-                }
-                if (partDef.type.startsWith("storage") && partDef.effects && partDef.effects.cargoCapacity) {
-                    totalCargoCapacity += partDef.effects.cargoCapacity;
-                }
+
                 if (partDef.type === "wheel" && partDef.effects && partDef.effects.traction) {
+                    // Wheels affect traction even if destroyed (badly)
+                    let wheelTraction = partDef.effects.traction;
+                    if (!isFunctional) {
+                        wheelTraction = 0.1; // Destroyed wheels have terrible traction
+                    }
                     // For simplicity, let's average traction. Min might be more realistic.
                     // This is a placeholder for more complex calculation.
                     // A better approach might involve considering the number of wheels, their condition,
                     // and the vehicle's total weight distribution. For now, simple averaging.
-                    tractionFactor = (tractionFactor + partDef.effects.traction) / 2;
+                    tractionFactor = (tractionFactor + wheelTraction) / 2;
                 }
             }
         });
@@ -408,6 +420,10 @@ class VehicleManager {
         vehicle.durability[partIdToRepair] = Math.min(maxDurability, vehicle.durability[partIdToRepair] + amountToHeal);
 
         logToConsole(`VehicleManager: Part "${partDef.name}" on vehicle "${vehicle.name}" repaired. Current durability: ${vehicle.durability[partIdToRepair]}/${maxDurability}.`, "info");
+
+        // Recalculate stats as repaired parts might restore functionality (e.g. engine power)
+        this.calculateVehicleStats(vehicleId);
+
         if (window.audioManager) window.audioManager.playSound("repair_01.wav");
         return true;
     }
@@ -485,9 +501,18 @@ class VehicleManager {
 
         if (vehicle.durability[partToDamageId] <= 0) {
             logToConsole(`VehicleManager: Part "${partDef ? partDef.name : partToDamageId}" on vehicle "${vehicle.name}" has been destroyed!`, "combat-critical");
-            // TODO: Handle part destruction effects (e.g., engine destroyed -> vehicle stops, wheel destroyed -> speed penalty/immobile)
-            // For now, just logs. This could involve setting flags on the vehicle or recalculating stats.
-            // e.g., if partDef.type === "engine", vehicle.isImmobilized = true;
+
+            // Log specific effects
+            if (partDef) {
+                if (partDef.type === "engine") {
+                    logToConsole(`VehicleManager: Engine destroyed! ${vehicle.name} loses power.`, "combat-critical");
+                } else if (partDef.type === "wheel") {
+                    logToConsole(`VehicleManager: Wheel destroyed! ${vehicle.name} loses traction.`, "combat-critical");
+                } else if (partDef.type.startsWith("storage")) {
+                     logToConsole(`VehicleManager: Storage destroyed! ${vehicle.name} cargo capacity compromised.`, "combat-critical");
+                }
+            }
+
             this.calculateVehicleStats(vehicleId); // Recalculate stats as destroyed parts might affect them (e.g. if destroyed engine has 0 power)
         }
         // Play sound effect for damage
