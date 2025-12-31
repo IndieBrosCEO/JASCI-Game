@@ -196,7 +196,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
             if (impassableInfo.impassable) {
                 // Check for slope exception
                 let isSlopeException = false;
-                if (charIsOnZTransition && zTransitionDef && zTransitionDef.tags && zTransitionDef.tags.includes('slope')) {
+                if (charIsOnZTransition && zTransitionDef && zTransitionDef.tags && (zTransitionDef.tags.includes('slope') || zTransitionDef.tags.includes('stairs') || zTransitionDef.tags.includes('ladder'))) {
                     // Slope Directional Validation
                     // If the name implies a direction, ensure we are moving that way.
                     const name = zTransitionDef.name || "";
