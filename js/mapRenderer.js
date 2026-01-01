@@ -2139,8 +2139,8 @@ window.mapRenderer = {
             const effectiveTileOnBottom = (typeof tileOnBottomRaw === 'object' && tileOnBottomRaw?.tileId !== undefined) ? tileOnBottomRaw.tileId : tileOnBottomRaw;
             if (effectiveTileOnBottom && tilesets[effectiveTileOnBottom]) {
                 const tileDefBottom = tilesets[effectiveTileOnBottom];
-                if (tileDefBottom.tags && (tileDefBottom.tags.includes("floor") || tileDefBottom.tags.includes("z_transition"))) {
-                    return true; // Supported by floor
+                if (tileDefBottom.tags && (tileDefBottom.tags.includes("floor") || tileDefBottom.tags.includes("roof") || tileDefBottom.tags.includes("z_transition"))) {
+                    return true; // Supported by floor or roof
                 }
             }
         }
@@ -2152,8 +2152,8 @@ window.mapRenderer = {
             // Strictly check ONLY the middle layer at Z-1 for solid_terrain_top, per game rules.
             const tileOnMiddleBelowRaw = levelDataBelow.middle?.[y]?.[x];
             const effMidBelow = (typeof tileOnMiddleBelowRaw === 'object' && tileOnMiddleBelowRaw?.tileId !== undefined) ? tileOnMiddleBelowRaw.tileId : tileOnMiddleBelowRaw;
-            if (effMidBelow && tilesets[effMidBelow]?.tags?.includes('solid_terrain_top')) {
-                return true; // Supported by solid top object below
+            if (effMidBelow && tilesets[effMidBelow]?.tags && (tilesets[effMidBelow].tags.includes('solid_terrain_top') || tilesets[effMidBelow].tags.includes('wall'))) {
+                return true; // Supported by solid top object or wall below
             }
         }
 
