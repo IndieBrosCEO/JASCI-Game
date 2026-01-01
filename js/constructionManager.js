@@ -210,12 +210,12 @@ class ConstructionManager {
                 }
             }
             if (!foundRequiredAdjacency) {
-                logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}': Missing required adjacent tile (e.g., wall for a window). Requires one of: [${definition.buildRequiresAdjacent.join(', ')}]`, "orange");
+                //logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}': Missing required adjacent tile (e.g., wall for a window). Requires one of: [${definition.buildRequiresAdjacent.join(', ')}]`, "orange");
                 return false;
             }
         }
 
-        logToConsole(`${this.logPrefix} Placement for '${definition.name}' at (${startX},${startY},${z}) seems valid.`, "silver");
+        //logToConsole(`${this.logPrefix} Placement for '${definition.name}' at (${startX},${startY},${z}) seems valid.`, "silver");
         return true;
     }
 
