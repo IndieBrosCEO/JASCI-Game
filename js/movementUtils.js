@@ -352,7 +352,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
             }
 
             if (currentMP >= cost) {
-                if (zTransitionDef.tags?.includes('slope') && zTransitionDef.target_dz !== undefined) {
+                if (zTransitionDef.tags && (zTransitionDef.tags.includes('slope') || zTransitionDef.tags.includes('stairs') || zTransitionDef.tags.includes('ladder')) && zTransitionDef.target_dz !== undefined) {
                     const finalDestZSlope = originalPos.z + zTransitionDef.target_dz;
                     // Check if the target tile (targetX, targetY) at originalPos.z is a solid_terrain_top,
                     // as slopes typically lead onto the top of an adjacent solid block.
