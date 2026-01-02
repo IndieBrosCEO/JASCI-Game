@@ -488,7 +488,7 @@ function findPath3D(startPos, endPos, entity, mapData, tileset) {
                 let isPassable = window.mapRenderer.isWalkable(nextX, nextY, currentZ);
                 const tileDefAtNext = getTileDefFromMapDataLayers(nextX, nextY, currentZ, _mapData, _tileset);
 
-                if (tileDefAtNext && tileDefAtNext.tags && tileDefAtNext.tags.includes("door")) {
+                if (tileDefAtNext && tileDefAtNext.tags && (tileDefAtNext.tags.includes("door") || (tileDefAtNext.tags.includes("closed") && tileDefAtNext.opensToTileId))) {
                     if (tileDefAtNext.tags.includes("closed")) {
                         if (tileDefAtNext.isLocked === true) {
                             isPassable = false;
