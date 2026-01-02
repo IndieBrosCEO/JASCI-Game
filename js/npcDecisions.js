@@ -144,20 +144,57 @@ async function moveNpcTowardsTarget(npc, targetPos, gameState, assetManager, ani
 
     const nextStep = path[1];
 
-    // Check if the next step is a closed door that needs opening
-    const nextStepTileIdRaw = gameState.mapLevels[nextStep.z.toString()]?.building?.[nextStep.y]?.[nextStep.x];
-    const nextStepTileId = (typeof nextStepTileIdRaw === 'object' && nextStepTileIdRaw.tileId) ? nextStepTileIdRaw.tileId : nextStepTileIdRaw;
+    // Check if the next step is a closed door or object that needs opening
+    const nextStepZStr = nextStep.z.toString();
+    const mapLevel = gameState.mapLevels[nextStepZStr];
+    let nextStepTileId = null;
+    let layerFound = null;
+
+    if (mapLevel) {
+        // Prioritize checking building, then middle layer (common for doors/windows)
+        // Actually interaction.js checks middle often. Let's check both or whatever is blocking.
+        // We need to find the tile ID that corresponds to a closed object.
+        const buildingTile = mapLevel.building?.[nextStep.y]?.[nextStep.x];
+        const middleTile = mapLevel.middle?.[nextStep.y]?.[nextStep.x];
+
+        // Check building first
+        let tId = (typeof buildingTile === 'object' && buildingTile !== null && buildingTile.tileId) ? buildingTile.tileId : buildingTile;
+        if (tId && assetManager.tilesets[tId]) {
+            const def = assetManager.tilesets[tId];
+            if (def.tags && def.tags.includes("closed")) {
+                nextStepTileId = tId;
+                layerFound = 'building';
+            }
+        }
+
+        // If not found on building, check middle
+        if (!nextStepTileId) {
+            tId = (typeof middleTile === 'object' && middleTile !== null && middleTile.tileId) ? middleTile.tileId : middleTile;
+            if (tId && assetManager.tilesets[tId]) {
+                const def = assetManager.tilesets[tId];
+                if (def.tags && def.tags.includes("closed")) {
+                    nextStepTileId = tId;
+                    layerFound = 'middle';
+                }
+            }
+        }
+    }
+
     let openedDoorInThisStep = false;
 
     if (nextStepTileId && assetManager.tilesets[nextStepTileId]) {
         const nextStepTileDef = assetManager.tilesets[nextStepTileId];
-        if (nextStepTileDef.tags && nextStepTileDef.tags.includes("door") && nextStepTileDef.tags.includes("closed") && nextStepTileDef.isLocked !== true) {
-            logToConsole(`NPC ${npc.name || npc.id}: Path leads to closed door '${nextStepTileDef.name}' at (${nextStep.x},${nextStep.y},${nextStep.z}). Attempting to open.`, 'cyan');
+        // Generalized check: "door" OR ("closed" AND has "opensToTileId")
+        const isDoor = nextStepTileDef.tags && nextStepTileDef.tags.includes("door");
+        const isOpenable = nextStepTileDef.tags && nextStepTileDef.tags.includes("closed") && nextStepTileDef.opensToTileId;
+
+        if ((isDoor || isOpenable) && nextStepTileDef.tags.includes("closed") && nextStepTileDef.isLocked !== true) {
+            logToConsole(`NPC ${npc.name || npc.id}: Path leads to closed object '${nextStepTileDef.name}' at (${nextStep.x},${nextStep.y},${nextStep.z}). Attempting to open.`, 'cyan');
             if (await attemptOpenDoor(npc, nextStep, gameState, assetManager)) {
-                openedDoorInThisStep = true; // Door opened, NPC can now attempt to move into it
+                openedDoorInThisStep = true; // Door/Object opened
             } else {
-                logToConsole(`NPC ${npc.name || npc.id}: Failed to open door or insufficient MP. Move aborted.`, 'orange');
-                return false; // Cannot open door, so cannot move there this turn
+                logToConsole(`NPC ${npc.name || npc.id}: Failed to open object or insufficient MP. Move aborted.`, 'orange');
+                return false; // Cannot open, move aborted
             }
         }
     }
@@ -266,62 +303,79 @@ window.moveNpcTowardsTarget = moveNpcTowardsTarget;
 async function attemptOpenDoor(npc, doorPos, gameState, assetManager) {
     const { x, y, z } = doorPos;
     const zStr = z.toString();
-    const mapLevels = gameState.mapLevels; // Assuming direct access or via mapRenderer.getCurrentMapData().levels
+    const mapLevels = gameState.mapLevels;
     const tileset = assetManager.tilesets;
 
-    if (!mapLevels || !mapLevels[zStr] || !mapLevels[zStr].building) {
-        logToConsole(`NPC ${npc.id}: Cannot open door at (${x},${y},${z}). Map data missing.`, "orange");
+    if (!mapLevels || !mapLevels[zStr]) {
+        logToConsole(`NPC ${npc.id}: Cannot open object at (${x},${y},${z}). Map level missing.`, "orange");
         return false;
     }
 
-    const currentTileIdRaw = mapLevels[zStr].building[y]?.[x];
-    const currentTileId = (typeof currentTileIdRaw === 'object' && currentTileIdRaw.tileId) ? currentTileIdRaw.tileId : currentTileIdRaw;
+    // Helper to check and open a tile on a specific layer
+    const checkAndOpenLayer = (layerName) => {
+        if (!mapLevels[zStr][layerName]) return false;
 
-    if (currentTileId && tileset[currentTileId]) {
-        const tileDef = tileset[currentTileId];
-        if (tileDef.tags && tileDef.tags.includes("door") && tileDef.tags.includes("closed")) {
-            if (tileDef.isLocked === true) {
-                logToConsole(`NPC ${npc.id}: Door at (${x},${y},${z}) is locked. Cannot open.`, "orange");
-                return false;
-            }
+        const currentTileIdRaw = mapLevels[zStr][layerName][y]?.[x];
+        const currentTileId = (typeof currentTileIdRaw === 'object' && currentTileIdRaw !== null && currentTileIdRaw.tileId) ? currentTileIdRaw.tileId : currentTileIdRaw;
 
-            const openDoorCost = tileDef.openCost || 1; // Use defined openCost or default to 1 MP
-            if (npc.currentMovementPoints < openDoorCost) {
-                logToConsole(`NPC ${npc.id}: Not enough MP to open door at (${x},${y},${z}). Needs ${openDoorCost}, has ${npc.currentMovementPoints}.`, "orange");
-                return false;
-            }
+        if (currentTileId && tileset[currentTileId]) {
+            const tileDef = tileset[currentTileId];
 
-            if (tileDef.opensToTileId && tileset[tileDef.opensToTileId]) {
-                // Update the map data
-                // If map stores full tile objects: { tileId: 'WOH', ...otherProps }
-                // If map stores only IDs: 'WOH'
-                // Assuming map stores object if currentTileIdRaw was object, else ID.
-                if (typeof currentTileIdRaw === 'object') {
-                    mapLevels[zStr].building[y][x] = { ...currentTileIdRaw, tileId: tileDef.opensToTileId };
+            // Check if it matches our "openable" criteria
+            const isDoor = tileDef.tags && tileDef.tags.includes("door");
+            const isOpenable = tileDef.tags && tileDef.tags.includes("closed") && tileDef.opensToTileId;
+
+            if ((isDoor || isOpenable) && tileDef.tags.includes("closed")) {
+                if (tileDef.isLocked === true) {
+                    logToConsole(`NPC ${npc.id}: Object at (${x},${y},${z}) is locked. Cannot open.`, "orange");
+                    return false;
+                }
+
+                const openDoorCost = tileDef.openCost || 1;
+                if (npc.currentMovementPoints < openDoorCost) {
+                    logToConsole(`NPC ${npc.id}: Not enough MP to open object at (${x},${y},${z}). Needs ${openDoorCost}, has ${npc.currentMovementPoints}.`, "orange");
+                    return false;
+                }
+
+                if (tileDef.opensToTileId && tileset[tileDef.opensToTileId]) {
+                    // Update map
+                    if (typeof currentTileIdRaw === 'object') {
+                        mapLevels[zStr][layerName][y][x] = { ...currentTileIdRaw, tileId: tileDef.opensToTileId };
+                    } else {
+                        mapLevels[zStr][layerName][y][x] = tileDef.opensToTileId;
+                    }
+
+                    npc.currentMovementPoints -= openDoorCost;
+                    logToConsole(`NPC ${npc.id}: Opened '${tileDef.name}' at (${x},${y},${z}). Cost: ${openDoorCost} MP. Remaining MP: ${npc.currentMovementPoints}.`, "cyan");
+
+                    if (window.animationManager) {
+                        // window.animationManager.playAnimation('doorOpen', { pos: doorPos, duration: 300 });
+                    }
+                    window.mapRenderer.scheduleRender();
+
+                    // Also propagate garage doors if applicable (copied from interaction.js logic simplified)
+                    if (tileDef.tags.includes('garage_door')) {
+                        // Very basic propagation for NPCs, ideally shared logic
+                        // For now we assume single tile open is enough or simple propagation not critical for pathing immediate step
+                    }
+
+                    return true;
                 } else {
-                    mapLevels[zStr].building[y][x] = tileDef.opensToTileId;
+                    logToConsole(`NPC ${npc.id}: Object '${tileDef.name}' at (${x},${y},${z}) has no opensToTileId.`, "red");
+                    return false;
                 }
-
-                npc.currentMovementPoints -= openDoorCost;
-                logToConsole(`NPC ${npc.id}: Opened door '${tileDef.name}' at (${x},${y},${z}). Cost: ${openDoorCost} MP. Remaining MP: ${npc.currentMovementPoints}.`, "cyan");
-
-                // Play door opening sound/animation (optional)
-                if (window.animationManager) {
-                    // Could add a specific door opening animation if one exists
-                    // window.animationManager.playAnimation('doorOpen', { pos: doorPos, duration: 300 });
-                }
-                window.mapRenderer.scheduleRender(); // Update visual
-                return true;
-            } else {
-                logToConsole(`NPC ${npc.id}: Door '${tileDef.name}' at (${x},${y},${z}) has no opensToTileId or target tile def missing. Cannot open.`, "red");
-                return false;
             }
-        } else {
-            // logToConsole(`NPC ${npc.id}: Tile at (${x},${y},${z}) is not a closed door. Current ID: ${currentTileId}`, "grey");
-            return false; // Not a closed door
         }
-    }
-    // logToConsole(`NPC ${npc.id}: No tile/definition found at (${x},${y},${z}) to open.`, "grey");
+        return false;
+    };
+
+    // Check building layer first
+    if (checkAndOpenLayer('building')) return true;
+
+    // Check middle layer next
+    if (checkAndOpenLayer('middle')) return true;
+
+    // logToConsole(`NPC ${npc.id}: No openable closed object found at (${x},${y},${z}).`, "grey");
     return false;
 }
 window.attemptOpenDoor = attemptOpenDoor;
