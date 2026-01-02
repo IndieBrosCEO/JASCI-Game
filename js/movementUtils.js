@@ -106,7 +106,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         const botEffId = (typeof botTileRaw === 'object' && botTileRaw?.tileId !== undefined) ? botTileRaw.tileId : botTileRaw;
         if (botEffId && tilesets[botEffId]) {
             const botDef = tilesets[botEffId];
-            if (botDef.tags && botDef.tags.includes("impassable")) {
+            if (botDef.tags && botDef.tags.includes("impassable") && !botDef.tags.includes("roof")) {
                 return { impassable: true, name: botDef.name || botEffId };
             }
         }
