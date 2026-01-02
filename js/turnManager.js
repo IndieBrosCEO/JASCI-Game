@@ -64,7 +64,8 @@ function updateTurnUI_internal() {
         // "If both are checked, the turn should end when either Action Points or Movement Points reach 0."
         // "If the Action Points box is checked, the turn ends automatically when the player has 0 Action Points."
         // "If the Movement Points box is checked, the turn ends automatically when the player has 0 Movement Points."
-        if ((autoEndAP && apZero) || (autoEndMP && mpZero)) {
+        // Auto-end turn should be disabled during combat.
+        if (!gameState.isInCombat && ((autoEndAP && apZero) || (autoEndMP && mpZero))) {
             // Check if player is not in the middle of something that should block this?
             // e.g. target selection?
             // If we are in targeting mode, maybe we shouldn't auto-end turn?
