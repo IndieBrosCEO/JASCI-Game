@@ -218,6 +218,24 @@ class CraftingUIManager {
 
         // Component Requirements Display
         const recipeToUse = recipe.recipe || recipe; // Fallback if recipe is just flat
+
+        // Show tools first
+        if (recipeToUse.tools_required && recipeToUse.tools_required.length > 0) {
+            recipeToUse.tools_required.forEach(toolId => {
+                const itemDef = this.assetManager ? this.assetManager.getItem(toolId) : null;
+                const displayName = itemDef ? itemDef.name : toolId;
+                let hasTool = false;
+                if (this.inventoryManager && this.gameState.inventory && this.gameState.inventory.container) {
+                    hasTool = this.inventoryManager.hasItem(toolId, 1, this.gameState.inventory.container.items);
+                }
+
+                const listItem = document.createElement('li');
+                listItem.textContent = `Tool: ${displayName}`;
+                listItem.style.color = hasTool ? "lightgreen" : "lightcoral";
+                this.recipeDetailComponents.appendChild(listItem);
+            });
+        }
+
         if (recipeToUse.components && recipeToUse.components.length > 0) {
             recipeToUse.components.forEach(comp => {
                 let displayName = "";

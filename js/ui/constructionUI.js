@@ -231,6 +231,31 @@ class ConstructionUIManager {
 
         // Component Requirements Display
         const recipeToUse = definition.recipe || definition;
+
+        // Tool Requirements Display (New)
+        if (recipeToUse.tools_required && recipeToUse.tools_required.length > 0) {
+            recipeToUse.tools_required.forEach(toolId => {
+                const itemDef = this.assetManager ? this.assetManager.getItem(toolId) : null;
+                const displayName = itemDef ? itemDef.name : toolId;
+                let hasTool = false;
+                if (this.inventoryManager && this.gameState.inventory && this.gameState.inventory.container) {
+                     hasTool = this.inventoryManager.hasItem(toolId, 1, this.gameState.inventory.container.items);
+                }
+
+                const li = document.createElement('li');
+                const span = document.createElement('span');
+                span.textContent = `Tool: ${displayName}`;
+
+                if (hasTool) {
+                    span.classList.add('req-met');
+                } else {
+                    span.classList.add('req-not-met');
+                }
+                li.appendChild(span);
+                this.dom.detailComponents.appendChild(li);
+            });
+        }
+
         if (recipeToUse.components && recipeToUse.components.length > 0) {
             recipeToUse.components.forEach(comp => {
                 let displayName = "";
