@@ -136,8 +136,12 @@ class SurroundingsUI {
 
             // --- 2. Dynamic Items ---
             if (window.gameState.floorItems) {
-                window.gameState.floorItems.forEach(item => {
-                    if (item.x === targetX && item.y === targetY && item.z === currentZ) {
+                window.gameState.floorItems.forEach(entry => {
+                    if (entry.x === targetX && entry.y === targetY && entry.z === currentZ) {
+                        // Support wrapped {x,y,z,item} entries from dropItem logic
+                        // If entry.item exists, use it. Otherwise assume entry itself is the item (legacy/test).
+                        const item = entry.item || entry;
+
                         let sprite = '?';
                         let color = '#ccc';
                         let name = item.name || 'Item';
