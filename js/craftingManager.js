@@ -107,6 +107,18 @@ class CraftingManager {
         }
         // Old workbenchRequired check is removed as it's replaced by requiredStationType
 
+        // Check tools
+        if (recipe.tools_required && Array.isArray(recipe.tools_required)) {
+            for (const toolId of recipe.tools_required) {
+                // Use InventoryManager's hasItem, passing the inventory array being checked
+                if (this.inventoryManager && typeof this.inventoryManager.hasItem === 'function') {
+                    if (!this.inventoryManager.hasItem(toolId, 1, playerInventory)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
         // Check components using RecipeResolver
         return this.recipeResolver.canCraft(recipe, playerInventory);
     }

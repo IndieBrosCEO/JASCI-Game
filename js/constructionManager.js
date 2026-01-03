@@ -99,11 +99,25 @@ class ConstructionManager {
             }
         }
 
+        const recipeToUse = definition.recipe || definition;
+
+        // Check tools
+        if (recipeToUse.tools_required && Array.isArray(recipeToUse.tools_required)) {
+            for (const toolId of recipeToUse.tools_required) {
+                // Check player inventory (container items) for the tool
+                // Using gameState.inventory.container.items because inventoryManager.hasItem signature supports custom list
+                if (this.inventoryManager && typeof this.inventoryManager.hasItem === 'function') {
+                    if (!this.inventoryManager.hasItem(toolId, 1, this.gameState.inventory.container.items)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
         // Check components using RecipeResolver
         // construction definitions use 'recipe.components' if using new format, or top-level 'components' if legacy/converted
         // The AssetManager loads 'components' from 'recipe.components' into the top level object if standardized,
         // but let's check where they are.
-        const recipeToUse = definition.recipe || definition;
         return this.recipeResolver.canCraft(recipeToUse, this.gameState.inventory.container.items);
     }
 
