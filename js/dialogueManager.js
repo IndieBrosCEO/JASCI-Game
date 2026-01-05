@@ -28,16 +28,21 @@ class DialogueManager {
         }
 
         const npcDef = this.assetManager.getNpc(npc.definitionId);
-        if (!npcDef || !npcDef.dialogueFile) {
+
+        // Check for dialogue override on NPC instance, then definition
+        // Support both dialogueId (new MapMaker standard) and dialogueFile (legacy/definition standard)
+        const dialogueId = npc.dialogueId || npc.dialogueFile || (npcDef ? npcDef.dialogueFile : null);
+
+        if (!dialogueId) {
             console.warn(`NPC ${npc.name} (${npc.definitionId}) has no dialogue file specified.`);
             // Optional: Fallback to a generic greeting
             this.showSimpleMessage(npc.name, "I have nothing to say to you right now.");
             return;
         }
 
-        const dialogueData = this.assetManager.getDialogue(npcDef.dialogueFile);
+        const dialogueData = this.assetManager.getDialogue(dialogueId);
         if (!dialogueData) {
-            console.error(`Dialogue file ${npcDef.dialogueFile} not found or failed to load.`);
+            console.error(`Dialogue file ${dialogueId} not found or failed to load.`);
             this.showSimpleMessage(npc.name, "[Dialogue File Not Found]");
             return;
         }

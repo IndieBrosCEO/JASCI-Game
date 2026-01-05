@@ -306,6 +306,9 @@ class AssetManager {
             }
         });
 
+        // Add dialogues used in map overrides that aren't in base definitions
+        dialogueFilesToLoad.add('police_find_clue_quest_give.json');
+
         for (const filename of dialogueFilesToLoad) {
             const url = `/assets/dialogue/${filename}?t=${Date.now()}`;
             try {

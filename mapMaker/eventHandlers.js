@@ -1193,6 +1193,7 @@ function handleSaveNpcPropertiesClick() {
     const selectedBaseId = getSelectedBaseNpcId();
     const instanceName = document.getElementById('npcInstanceNameInput')?.value.trim();
     const behavior = document.getElementById('npcBehaviorSelect')?.value;
+    const dialogueId = document.getElementById('npcDialogueIdInput')?.value.trim();
 
     if (appState.selectedNpc) { // Editing existing NPC
         snapshot();
@@ -1204,6 +1205,12 @@ function handleSaveNpcPropertiesClick() {
                 npcToUpdate.behavior = behavior;
             } else {
                 delete npcToUpdate.behavior; // Remove if default/empty to fallback to definition
+            }
+
+            if (dialogueId) {
+                npcToUpdate.dialogueId = dialogueId;
+            } else {
+                delete npcToUpdate.dialogueId;
             }
 
             // If base type changed in UI (not standard for this simple setup, but if it were):

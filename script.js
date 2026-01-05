@@ -308,6 +308,14 @@ function spawnNpcsFromMapData(mapData) {
                     newNpc.equippedWeaponId = npcPlacementInfo.equippedWeaponId;
                 }
 
+                // Copy dialogue overrides
+                if (npcPlacementInfo.dialogueFile) {
+                    newNpc.dialogueFile = npcPlacementInfo.dialogueFile;
+                }
+                if (npcPlacementInfo.dialogueId) {
+                    newNpc.dialogueId = npcPlacementInfo.dialogueId;
+                }
+
                 // Override stats if provided in map data
                 if (npcPlacementInfo.stats) {
                     if (Array.isArray(newNpc.stats) && Array.isArray(npcPlacementInfo.stats)) { // Player-like stat array

@@ -189,6 +189,10 @@ const commandHelpInfo = {
     'harvest_help': {
         syntax: 'harvest_help',
         description: 'Displays a tutorial on how to harvest resources.'
+    },
+    'map': {
+        syntax: 'map <mapId>',
+        description: 'Loads the specified map.'
     }
 };
 
@@ -233,6 +237,19 @@ function processConsoleCommand(commandText) {
     const args = parts.slice(1);
 
     switch (command) {
+        case 'map':
+            if (args.length < 1) {
+                logToConsoleUI("Usage: map <mapId>", 'error');
+                break;
+            }
+            const mapIdToLoad = args[0];
+            if (window.loadMap) { // loadMap is exposed in script.js as alias for initiateMapTransition
+                window.loadMap(mapIdToLoad);
+            } else {
+                logToConsoleUI("Error: window.loadMap function not available.", 'error');
+            }
+            break;
+
         case 'help':
             if (args.length === 0) {
                 // Display all available commands
