@@ -1889,6 +1889,25 @@ window.mapRenderer = {
                                     if (cachedCell && cachedCell.span) {
                                         cachedCell.span.textContent = particle.sprite;
                                         cachedCell.span.style.color = particle.color;
+                                        if (typeof particle.opacity === 'number') {
+                                            cachedCell.span.style.opacity = particle.opacity;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else if (anim.type === 'bloodSplash' && anim.particles) { // Blood Splash (Viewport Aware)
+                    anim.particles.forEach(particle => {
+                        if (particle.z === undefined || particle.z === currentZ) {
+                            const particleX = Math.floor(particle.x); const particleY = Math.floor(particle.y);
+                            if (particleX >= startCol && particleX <= endCol && particleY >= startRow && particleY <= endRow) {
+                                const fowStatusParticle = currentFowData?.[particleY]?.[particleX];
+                                if (fowStatusParticle === 'visible' || fowStatusParticle === 'visited') {
+                                    const cachedCell = tileCacheData[particleY]?.[particleX];
+                                    if (cachedCell && cachedCell.span) {
+                                        cachedCell.span.textContent = particle.sprite;
+                                        cachedCell.span.style.color = particle.color;
                                     }
                                 }
                             }
