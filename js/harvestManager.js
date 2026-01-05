@@ -13,17 +13,14 @@ class HarvestManager {
         console.log(`HarvestManager: Attempting ${action} on ${item.name} (${item.id})`);
 
         let lootTableId = null;
-        let requiredToolTag = null;
         let requiredSkill = null;
         let skillDifficulty = 0;
-        let baseTimeCost = 1; // AP cost
 
         // Determine loot table and requirements based on action and tags
         const tileDef = this.assetManager.tilesets[item.id] || {};
         const tags = tileDef.tags || [];
 
         // Simple mapping based on tags
-        // In a more complex system, this could be data-driven
         if (tags.includes("harvest:wood")) {
             lootTableId = "harvest:wood";
             requiredSkill = "Survival";
@@ -50,7 +47,7 @@ class HarvestManager {
             skillDifficulty = 5;
         } else if (tags.includes("scavenge:furniture")) {
             lootTableId = "scavenge:furniture";
-            requiredSkill = "Investigation"; // Or Repair?
+            requiredSkill = "Investigation";
             skillDifficulty = 5;
         } else if (tags.includes("scavenge:machinery")) {
             lootTableId = "scavenge:machinery";
@@ -58,7 +55,7 @@ class HarvestManager {
             skillDifficulty = 10;
         } else if (tags.includes("scavenge:electronics")) {
             lootTableId = "scavenge:electronics";
-            requiredSkill = "Investigation"; // Or Electronics
+            requiredSkill = "Investigation";
             skillDifficulty = 8;
         } else if (tags.includes("scavenge:appliance")) {
             lootTableId = "scavenge:appliance";
@@ -67,7 +64,7 @@ class HarvestManager {
         } else if (tags.includes("scavenge:glass")) {
             lootTableId = "scavenge:glass";
             requiredSkill = "Investigation";
-            skillDifficulty = 0; // Very easy to just smash and grab
+            skillDifficulty = 0;
         } else if (tags.includes("scavenge:generic") || tags.includes("container")) {
              if (item.id === "TC" || tags.includes("scavenge:generic")) {
                  lootTableId = "scavenge:generic";
@@ -95,7 +92,6 @@ class HarvestManager {
 
         if (!lootTableId) {
             console.warn("HarvestManager: No loot table found for this interaction.");
-            // UI feedback
             if (window.uiManager) window.uiManager.showToastNotification("Nothing to harvest here.", "warning");
             return;
         }
@@ -103,17 +99,13 @@ class HarvestManager {
         // Skill Check for Quantity Bonus
         let quantityMultiplier = 1.0;
         if (requiredSkill) {
-            // Standard check: d20 + SkillMod vs Difficulty
             const roll = Math.floor(Math.random() * 20) + 1;
             const totalSkillMod = window.getSkillModifier(requiredSkill, gameState);
             const checkResult = roll + totalSkillMod;
-
             const margin = checkResult - skillDifficulty;
 
-            // logToConsole(`[Harvest] Skill Check: ${requiredSkill} (Mod: ${totalSkillMod}). Roll: ${roll} + ${totalSkillMod} = ${checkResult} vs DC ${skillDifficulty}. Margin: ${margin}.`, "debug", "dev");
-
             if (margin >= 10) {
-                quantityMultiplier = 2.0; // Critical success equivalent
+                quantityMultiplier = 2.0;
                 logToConsole("Outstanding success! Double yield.", "success");
             } else if (margin >= 5) {
                 quantityMultiplier = 1.5;
@@ -122,12 +114,12 @@ class HarvestManager {
                 quantityMultiplier = 1.0;
                 logToConsole("Success.", "info");
             } else if (margin >= -5) {
-                quantityMultiplier = 0.5; // Partial failure
+                quantityMultiplier = 0.5;
                 logToConsole("Marginal failure. Reduced yield.", "orange");
             } else {
-                quantityMultiplier = 0.0; // Failure
+                quantityMultiplier = 0.0;
                 logToConsole("Failed to harvest anything useful.", "red");
-                return; // Exit early
+                return;
             }
         }
 
@@ -141,14 +133,12 @@ class HarvestManager {
                 if (window.inventoryManager.addItemToInventoryById(drop.itemId, drop.quantity)) {
                     gatheredItems.push(drop);
                 } else {
-                    // Inventory full, drop to floor
                     const itemDef = window.assetManager.getItem(drop.itemId);
                     if (itemDef) {
                         const droppedItem = new window.Item(itemDef);
                         droppedItem.quantity = drop.quantity;
 
                         if (!gameState.floorItems) gameState.floorItems = [];
-                        // Use player position for the drop location
                         const dropPos = gameState.playerPos ? { ...gameState.playerPos } : { x: item.x, y: item.y, z: item.z };
 
                         gameState.floorItems.push({
@@ -163,19 +153,17 @@ class HarvestManager {
             });
 
             if (gatheredItems.length > 0) {
-                // Log gathered results
                 let message = "You gathered: ";
                 gatheredItems.forEach(drop => {
                     const itemDef = window.assetManager.getItem(drop.itemId);
                     const name = itemDef ? itemDef.name : drop.itemId;
                     message += `${drop.quantity}x ${name}, `;
                 });
-                message = message.slice(0, -2); // Remove trailing comma
+                message = message.slice(0, -2);
                 logToConsole(message, "success");
             }
 
             if (droppedItems.length > 0) {
-                 // Log dropped results
                  let message = "Inventory full. Dropped on ground: ";
                  droppedItems.forEach(drop => {
                     const itemDef = window.assetManager.getItem(drop.itemId);
@@ -184,17 +172,13 @@ class HarvestManager {
                  });
                  message = message.slice(0, -2);
                  logToConsole(message, "orange");
-
-                 // Refresh map render to show items
                  if (window.mapRenderer) window.mapRenderer.scheduleRender();
             }
 
             if (gatheredItems.length > 0 || droppedItems.length > 0) {
-                // Play sound
                 if (window.audioManager) {
-                    // Determine sound based on action
-                    if (action.includes("Mine")) window.audioManager.playUiSound("mining_hit.wav"); // Placeholder
-                    else if (action.includes("Chop") || action.includes("Harvest")) window.audioManager.playUiSound("wood_chop.wav"); // Placeholder
+                    if (action.includes("Mine")) window.audioManager.playUiSound("mining_hit.wav");
+                    else if (action.includes("Chop") || action.includes("Harvest")) window.audioManager.playUiSound("wood_chop.wav");
                     else window.audioManager.playUiSound("ui_pickup_01.wav");
                 }
 
@@ -254,11 +238,9 @@ class HarvestManager {
 
         // Check Inventory for tool
         if (window.inventoryManager && window.inventoryManager.container && window.inventoryManager.container.items) {
-            // Check Hand Slots
             const handSlots = window.inventoryManager.handSlots || [];
             hasTool = handSlots.some(slot => slot.item && (slot.item.tags.includes(requiredToolType) || (slot.item.properties && slot.item.properties.type === requiredToolType)));
 
-            // If not in hand, check container
             if (!hasTool) {
                 hasTool = window.inventoryManager.container.items.some(it => (it.tags && it.tags.includes(requiredToolType)) || (it.properties && it.properties.type === requiredToolType));
             }
@@ -323,37 +305,12 @@ class HarvestManager {
                         removed = true;
                         logToConsole(`You dug a hole.`, "success");
                     }
+                } else {
+                    // Generic removal for non-Dig actions on bottom layer
+                    levelData.bottom[item.y][item.x] = null;
+                    removed = true;
+                    logToConsole(`You broke the ${item.name}.`, "success");
                 }
-    destroyTile(item) {
-        if (!window.mapRenderer) return;
-        const currentMap = window.mapRenderer.getCurrentMapData();
-        if (!currentMap || !currentMap.levels) return;
-
-        const { x, y, z, id } = item;
-        const zStr = z.toString();
-        const levelData = currentMap.levels[zStr];
-
-        if (!levelData) return;
-
-        let removed = false;
-
-        // Try Middle Layer first (most harvestables)
-        if (levelData.middle && levelData.middle[y]) {
-            const tileAtLoc = levelData.middle[y][x];
-            const tileIdAtLoc = (typeof tileAtLoc === 'object' && tileAtLoc !== null) ? tileAtLoc.tileId : tileAtLoc;
-            if (tileIdAtLoc === id) {
-                levelData.middle[y][x] = null;
-                removed = true;
-            }
-        }
-
-        // Try Bottom Layer if not found on middle
-        if (!removed && levelData.bottom && levelData.bottom[y]) {
-            const tileAtLoc = levelData.bottom[y][x];
-            const tileIdAtLoc = (typeof tileAtLoc === 'object' && tileAtLoc !== null) ? tileAtLoc.tileId : tileAtLoc;
-            if (tileIdAtLoc === id) {
-                levelData.bottom[y][x] = null; // Can create a hole
-                removed = true;
             }
         }
 
@@ -381,15 +338,23 @@ class HarvestManager {
                 }
             }
 
+            // Remove from interactableItems
+            if (window.gameState.interactableItems) {
+                const index = window.gameState.interactableItems.findIndex(it => it.x === item.x && it.y === item.y && it.z === item.z);
+                if (index !== -1) {
+                    window.gameState.interactableItems.splice(index, 1);
+                }
+            }
+
             // Trigger Map Update
             window.mapRenderer.scheduleRender();
-            // Re-detect items (since one is gone)
+            // Re-detect items
             if (window.interaction && window.interaction.detectInteractableItems) {
                 window.interaction.detectInteractableItems();
                 window.interaction.showInteractableItems();
             }
 
-            // Check stability for entities standing on/near the modified tile
+            // Check stability
             if (action === "Dig") {
                 this.checkStability(item.x, item.y, item.z);
             } else if (action === "Chop" || action === "Mine") {
@@ -398,6 +363,64 @@ class HarvestManager {
 
         } else {
             logToConsole(`Failed to ${action.toLowerCase()} target.`, "orange");
+        }
+    }
+
+    destroyTile(item) {
+        if (!window.mapRenderer) return;
+        const currentMap = window.mapRenderer.getCurrentMapData();
+        if (!currentMap || !currentMap.levels) return;
+
+        const { x, y, z, id } = item;
+        const zStr = z.toString();
+        const levelData = currentMap.levels[zStr];
+
+        if (!levelData) return;
+
+        let removed = false;
+
+        // Try Middle Layer first
+        if (levelData.middle && levelData.middle[y]) {
+            const tileAtLoc = levelData.middle[y][x];
+            const tileIdAtLoc = (typeof tileAtLoc === 'object' && tileAtLoc !== null) ? tileAtLoc.tileId : tileAtLoc;
+            if (tileIdAtLoc === id) {
+                levelData.middle[y][x] = null;
+                removed = true;
+            }
+        }
+
+        // Try Bottom Layer if not found on middle
+        if (!removed && levelData.bottom && levelData.bottom[y]) {
+            const tileAtLoc = levelData.bottom[y][x];
+            const tileIdAtLoc = (typeof tileAtLoc === 'object' && tileAtLoc !== null) ? tileAtLoc.tileId : tileAtLoc;
+            if (tileIdAtLoc === id) {
+                levelData.bottom[y][x] = null; // Can create a hole
+                removed = true;
+            }
+        }
+
+        if (removed) {
+            logToConsole("The resource has been depleted.", "orange");
+            if (window.audioManager) window.audioManager.playUiSound("mining_break.wav");
+
+            // Remove from interactableItems
+            if (window.gameState.interactableItems) {
+                const index = window.gameState.interactableItems.findIndex(it => it.x === x && it.y === y && it.z === z);
+                if (index !== -1) {
+                    window.gameState.interactableItems.splice(index, 1);
+                }
+            }
+
+            window.mapRenderer.scheduleRender();
+            if (window.interaction && window.interaction.detectInteractableItems) {
+                window.interaction.detectInteractableItems();
+                window.interaction.showInteractableItems();
+            }
+
+            // Check stability above (usually items are on middle layer or blocking, so stuff above might fall)
+            // Or if it was bottom layer, stuff at same Z might fall?
+            // Safer to check z+1 for stuff standing on it.
+            this.checkStability(x, y, z + 1);
         }
     }
 
@@ -417,19 +440,6 @@ class HarvestManager {
                     if (window.handleFalling) window.handleFalling(npc, x, y, z);
                 }
             });
-            logToConsole("The resource has been depleted.", "orange");
-            if (window.audioManager) window.audioManager.playUiSound("mining_break.wav"); // Placeholder
-
-            // Remove from interactableItems if present
-            if (window.gameState.interactableItems) {
-                const index = window.gameState.interactableItems.findIndex(it => it.x === x && it.y === y && it.z === z);
-                if (index !== -1) {
-                    window.gameState.interactableItems.splice(index, 1);
-                }
-            }
-
-            window.mapRenderer.scheduleRender();
-            if (window.interaction) window.interaction.detectInteractableItems();
         }
     }
 }
