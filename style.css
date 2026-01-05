@@ -1,28 +1,87 @@
-﻿/* Base styles */
+/* Base styles */
 @font-face {
     font-family: 'DwarfFortress';
     src: url('assets/fonts/WebPlus_IBM_VGA_8x16.woff') format('woff');
 }
 
+:root {
+    --bg-color: #000;
+    --text-color: #fff;
+    --panel-bg: #222;
+    --highlight-color: #ff0;
+    --button-bg: #444;
+    --button-hover: #555;
+    --border-color: #555;
+    --juicy-ease: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
 body {
     font-family: 'DwarfFortress', monospace;
-    background-color: #000;
-    color: #fff;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
 }
 
-input, button, select, option {
+/* Interactive Elements Base */
+input, button, select, option, textarea {
     font-family: 'DwarfFortress', monospace;
-    background-color: #444;
-    color: #fff;
-    border: none;
-    padding: 5px;
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    border: 1px solid transparent; /* Prepare for focus */
+    padding: 6px 10px;
+    border-radius: 2px;
+    outline: none;
+    transition: all 0.15s ease-out;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--highlight-color);
+    box-shadow: 0 0 5px rgba(255, 255, 0, 0.3);
 }
 
 button {
     cursor: pointer;
+    position: relative;
+    overflow: hidden; /* For ripple effect */
+    border: 1px solid #333;
+    transition: all 0.1s var(--juicy-ease);
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-1px) scale(1.02);
+    filter: brightness(1.2);
+    border-color: #666;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+button:active:not(:disabled) {
+    transform: translateY(1px) scale(0.98);
+    filter: brightness(0.9);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Ripple Effect */
+span.ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    background-color: rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
 }
 
 /* Stats & Skills */
@@ -33,8 +92,15 @@ button {
 }
 
 .selected {
-    background-color: #ff0; /* High-contrast yellow */
+    background-color: var(--highlight-color);
     color: black;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 0, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(255, 255, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 0, 0); }
 }
 
 .highlight {
@@ -46,50 +112,41 @@ button {
 }
 
 @keyframes flash {
-    0% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0;
-    }
-
-    100% {
-        opacity: 1;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
 }
 
-/* Three-column layout */
+/* Layout */
 #game-container {
     display: flex;
     flex-direction: row;
     gap: 20px;
-    height: calc(100vh - 40px); /* Adjusted for 20px top/bottom body padding */
+    height: calc(100vh - 40px);
     box-sizing: border-box;
 }
 
-/* Left column: Character Creator/Info */
+/* Left Panel */
 #left-panel {
-    /* width: 400px; REMOVED to allow content to define width */
-    flex-shrink: 1; /* Allow shrinking if needed, default is 1. Set to 0 if it should never shrink from content size. */
-    flex-basis: auto; /* Content will determine size. 'max-content' or 'min-content' could also be options. */
-    min-width: 240px; /* Added to prevent excessive squishing */
-    background-color: #222;
-    color: #fff;
+    flex-shrink: 1;
+    flex-basis: auto;
+    min-width: 240px;
+    background-color: var(--panel-bg);
     padding: 10px;
     overflow-y: auto;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;
+    border-radius: 4px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
 }
 
 #character-creator {
-    text-align: center; /* Center text and inline-block children */
-    /* Consider adding max-width or width: fit-content if needed */
+    text-align: center;
+    width: 100%;
 }
 
-/* Middle column: Map and Console */
+/* Middle Panel */
 #middle-panel {
     flex-grow: 1;
     display: flex;
@@ -100,50 +157,71 @@ button {
 }
 
 #mapContainer {
-    width: 60%; /* Map takes 60% of middle-panel */
-    /* overflow-y: auto; from previous rule is fine */
+    width: 60%;
+    flex-grow: 1;
+    position: relative;
+    background-color: #000;
+    font-family: 'DwarfFortress', monospace;
+    white-space: pre;
+    line-height: 1em;
+    overflow: auto;
+    padding: 10px;
     box-sizing: border-box;
-    /* Existing mapContainer styles like background, font, etc., remain */
+    cursor: default;
+    border: 1px solid #333;
+    box-shadow: 0 0 15px rgba(0,0,0,0.8);
 }
 
+/* Combat & Console Stack */
 #combat-console-stack {
-    width: 40%; /* Combat UI and Console stack takes remaining 40% */
+    width: 40%;
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Space between combat UI and console */
+    gap: 10px;
     box-sizing: border-box;
-    overflow-y: auto; /* If the stack itself becomes too tall */
+    overflow-y: auto;
 }
 
 #console-panel-container {
-    /* width: 50%; Is no longer needed as it's part of a column stack */
-    height: 50%; /* Takes 50% of the #combat-console-stack height */
-    /* overflow-y: auto; from previous rule is fine, or can be on #console itself */
+    height: 50%;
     box-sizing: border-box;
-    display: flex; /* To make #console child fill height */
-    flex-direction: column; /* To make #console child fill height */
+    display: flex;
+    flex-direction: column;
 }
 
 #console {
-    height: 100%; /* Make console take full height of its container */
+    height: 100%;
     overflow-y: auto;
     background: #111;
     color: #0f0;
     padding: 5px;
     font-family: 'DwarfFortress', monospace;
-    box-sizing: border-box; /* Added for consistency */
+    box-sizing: border-box;
+    border: 1px solid #333;
 }
 
-/* Right column: Game Controls */
+.console-msg-new {
+    animation: slideInRight 0.2s ease-out forwards;
+}
+
+@keyframes slideInRight {
+    0% { opacity: 0; transform: translateX(-10px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Right Panel */
 #right-panel {
     width: 350px;
     flex-shrink: 0;
-    background-color: #222;
+    background-color: var(--panel-bg);
     padding: 10px;
     overflow-y: auto;
     box-sizing: border-box;
+    border-radius: 4px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
 }
 
+/* Tables */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -155,47 +233,45 @@ table, th, td {
 }
 
 th, td {
-    padding: 4px;
+    padding: 6px;
     text-align: left;
 }
 
+tr {
+    transition: background-color 0.2s;
+}
+
+tr:hover {
+    background-color: #333;
+}
+
 .hidden {
-    display: none;
+    display: none !important;
 }
 
-/* Map container: let it size to your grid of spans + <br> */
-#mapContainer {
-    flex-grow: 1;
-    position: relative;
-    background-color: #000;
-    font-family: 'DwarfFortress', monospace;
-    white-space: pre; /* respect spaces/newlines */
-    line-height: 1em; /* one line per row */
-    overflow: auto; /* scroll if too big */
-    padding: 10px;
-    box-sizing: border-box;
-    cursor: default; /* Ensure default cursor for the map area */
-}
-
-/* Layers are stacked on top of each other */
+/* Map Layers */
 .mapLayer {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none; /* clicks pass through */
+    pointer-events: none;
 }
 
-/* Each tile is one character wide & high */
 .tile {
     display: inline-block;
-    width: 1ch; /* exactly one “0” width */
-    height: 1em; /* exactly one line height */
+    width: 1ch;
+    height: 1em;
     font-size: 1em;
     text-align: center;
     vertical-align: top;
-    pointer-events: auto; /* if you want to click on tiles */
+    pointer-events: auto;
+    transition: transform 0.1s;
+}
+.tile:hover {
+    /* Subtle scale on map hover if desired, usually distracting for map, so omitting */
+    /* z-index: 10; transform: scale(1.2); */
 }
 
 /* Inventory Split View */
@@ -203,8 +279,6 @@ th, td {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    /* height: 300px; Removed fixed height to allow vertical stacking */
-    /* overflow: hidden; Removed to allow container to grow */
 }
 
 .inventory-pane {
@@ -217,7 +291,7 @@ th, td {
 
 .inventory-pane h4 {
     margin: 0;
-    padding: 5px;
+    padding: 8px;
     background-color: #333;
     text-align: center;
     border-bottom: 1px solid #555;
@@ -230,32 +304,42 @@ th, td {
 }
 
 .inventory-pane.active-pane {
-    border: 2px solid #ff0; /* Highlight active pane */
+    border: 2px solid var(--highlight-color);
+    box-shadow: 0 0 10px rgba(255,255,0,0.2);
 }
 
-/* Item Styling in Lists */
+/* Inventory Items */
 .inventory-item {
-    padding: 2px 5px;
+    padding: 4px 8px;
     cursor: pointer;
+    margin-bottom: 2px;
+    border-radius: 2px;
+    transition: all 0.2s ease-out;
+}
+
+.inventory-item:hover {
+    background-color: #444;
+    transform: translateX(5px);
 }
 
 .inventory-item.selected {
-    background-color: #ff0;
+    background-color: var(--highlight-color);
     color: black;
+    transform: scale(1.02);
+    font-weight: bold;
 }
 
-/* Face Creator Panel Styles */
+.slide-in-new {
+    animation: slideInRight 0.3s ease-out forwards;
+}
+
+/* Character Creator */
 #face-creator-panel {
     margin-top: 20px;
     padding-top: 10px;
     border-top: 1px solid #444;
 }
 
-    #face-creator-panel h3 {
-        margin-bottom: 10px;
-    }
-
-/* Tabs */
 .tabs {
     display: flex;
     justify-content: center;
@@ -271,327 +355,253 @@ th, td {
     font-family: inherit;
     font-size: 1.2em;
     padding: 10px 20px;
-    transition: color 0.3s, border-bottom 0.3s;
+    transition: all 0.3s;
 }
 
 .tab-button:hover {
     color: #ccc;
+    background-color: #333;
 }
 
 .tab-button.active {
     color: #fff;
     border-bottom: 2px solid #fff;
     font-weight: bold;
+    transform: translateY(-2px);
 }
 
-.tab-content {
-    /* Styles for tab content container */
+/* Face Creator Inputs */
+#face-creator-panel div {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    animation: slideInRight 0.4s ease-out forwards;
+}
+/* Stagger animations for controls */
+#face-creator-panel div:nth-child(1) { animation-delay: 0.1s; }
+#face-creator-panel div:nth-child(2) { animation-delay: 0.15s; }
+#face-creator-panel div:nth-child(3) { animation-delay: 0.2s; }
+#face-creator-panel div:nth-child(4) { animation-delay: 0.25s; }
+#face-creator-panel div:nth-child(5) { animation-delay: 0.3s; }
+/* ...and so on */
+
+#face-creator-panel label {
+    min-width: 150px;
+    display: inline-block;
 }
 
-    #face-creator-panel div {
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-    }
+#face-creator-panel input[type="range"] {
+    flex-grow: 1;
+    margin-left: 10px;
+    margin-right: 5px;
+    -webkit-appearance: none;
+    height: 8px;
+    background: #333;
+    border-radius: 5px;
+}
+#face-creator-panel input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+#face-creator-panel input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.3);
+    background: var(--highlight-color);
+}
 
-    #face-creator-panel label {
-        min-width: 150px; /* Adjust as needed for alignment */
-        display: inline-block;
-    }
+#face-creator-panel select {
+    margin-left: 10px;
+    flex-grow: 1;
+}
 
-    #face-creator-panel input[type="range"] {
-        flex-grow: 1;
-        margin-left: 10px;
-        margin-right: 5px;
-    }
-
-    #face-creator-panel select {
-        margin-left: 10px;
-        flex-grow: 1;
-    }
-
-    #face-creator-panel input[type="color"] {
-        margin-left: 10px;
-        padding: 0; /* Remove padding for color input */
-        border: 1px solid #555; /* Add a little border */
-        min-width: 50px; /* Ensure it's clickable */
-    }
-
-
-    #face-creator-panel span {
-        min-width: 25px; /* Space for slider values */
-        text-align: right;
-        display: inline-block;
-        margin-left: 5px;
-    }
-
-#asciiFacePreview {
-    font-family: 'DwarfFortress', monospace;
-    white-space: pre;
+#face-creator-panel input[type="color"] {
+    margin-left: 10px;
+    padding: 0;
     border: 1px solid #555;
-    background-color: #1a1a1a;
-    padding: 10px;
-    margin-top: 5px;
-    min-height: 120px;
-    line-height: 1em;
-    overflow-x: auto;
-    letter-spacing: normal;
-    font-stretch: normal;
-}
-
-/* Character Info Panel Face Preview */
-#characterInfoFacePreview h3 {
-    margin-bottom: 5px;
-}
-
-#charInfoAsciiFace {
-    font-family: 'DwarfFortress', monospace;
-    white-space: pre;
-    border: 1px solid #555;
-    background-color: #1a1a1a;
-    padding: 10px;
-    margin-top: 5px;
-    min-height: 120px;
-    line-height: 1em;
-    overflow-x: auto;
-    letter-spacing: normal;
-    font-stretch: normal;
-}
-
-    #asciiFacePreview span,
-    #charInfoAsciiFace span {
-        display: inline; /* Ensures characters flow together naturally like text */
-        /* vertical-align: top; removed as it's less relevant for display:inline and might cause issues */
-    }
-
-/* Randomize Face Button */
-#randomizeFaceButton {
-    display: block; /* Make it take its own line */
-    margin: 15px auto 10px auto; /* Center it and give some space */
-    padding: 8px 15px;
-    background-color: #555;
-    border: 1px solid #777;
-    color: #fff;
+    min-width: 50px;
+    height: 30px;
     cursor: pointer;
 }
 
-    #randomizeFaceButton:hover {
-        background-color: #666;
-    }
+#face-creator-panel span {
+    min-width: 25px;
+    text-align: right;
+    display: inline-block;
+    margin-left: 5px;
+}
 
-/* Preset Color Swatches Styling */
+#asciiFacePreview, #charInfoAsciiFace {
+    font-family: 'DwarfFortress', monospace;
+    white-space: pre;
+    border: 1px solid #555;
+    background-color: #1a1a1a;
+    padding: 10px;
+    margin-top: 5px;
+    min-height: 120px;
+    line-height: 1em;
+    overflow-x: auto;
+    letter-spacing: normal;
+    font-stretch: normal;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+    transition: transform 0.2s;
+}
+
+#asciiFacePreview:hover {
+    transform: scale(1.02);
+}
+
+#asciiFacePreview span, #charInfoAsciiFace span {
+    display: inline;
+}
+
+/* Preset Colors */
 .preset-colors-container {
     display: flex;
-    flex-wrap: wrap; /* Allow swatches to wrap to next line if many */
-    gap: 4px; /* Space between swatches */
-    margin-left: 10px; /* Align with other inputs if label pushes them */
-    margin-top: 2px; /* Small space below the main color picker */
-    flex-grow: 1; /* Allow it to take available space in the flex row */
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-left: 10px;
+    margin-top: 2px;
+    flex-grow: 1;
     align-items: center;
 }
 
-button.preset-swatch { /* More specific selector */
+button.preset-swatch {
     width: 20px;
     height: 20px;
-    border: 1px solid #888; /* Slightly lighter border to see them */
-    padding: 0; /* Remove default button padding */
-    margin: 0; /* Remove default button margin */
+    border: 1px solid #888;
+    padding: 0;
+    margin: 0;
     cursor: pointer;
-    outline: none; /* Remove focus outline if desired, or style it */
-    display: inline-block; /* Ensure they behave well in flex container */
-    font-size: 0; /* Hide any potential text from button element itself */
-    line-height: 0; /* Hide any potential text from button element itself */
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-    button.preset-swatch:hover {
-        border-color: #ccc; /* Highlight border on hover */
-        transform: scale(1.1); /* Slight zoom effect */
-    }
-
-/* Menu Color Coding */
-.menu-character-creator {
-    background-color: #332222; /* Dark reddish-brown */
+button.preset-swatch:hover {
+    border-color: #fff;
+    transform: scale(1.3);
+    z-index: 10;
 }
 
-.menu-game-controls {
-    background-color: #223322; /* Dark greenish-blue */
-}
-
-.menu-inventory-skills { /* A general class for right-panel sections if needed, or be more specific */
-    background-color: #222233; /* Dark bluish-purple */
-}
+/* Menu Colors */
+.menu-character-creator { background-color: #332222; }
+.menu-game-controls { background-color: #223322; }
+.menu-inventory-skills { background-color: #222233; }
+.menu-console { background-color: #1a1a2a; }
 
 #left-panel.menu-character-creator,
 #right-panel.menu-game-controls,
-#console-panel-container.menu-console { /* Added console specific styling */
-    padding: 10px; /* Ensure padding is consistent */
-    border: 1px solid #444; /* Add a subtle border to distinguish menus */
+#console-panel-container.menu-console {
+    padding: 10px;
+    border: 1px solid #444;
 }
 
-/* Specific styling for console panel if it needs a different color */
-.menu-console {
-    background-color: #1a1a2a; /* Darker blue for console area */
-}
-
-/* Styling for combatUIDiv, now part of #combat-console-stack */
+/* Combat UI */
 #combatUIDiv {
-    /* position: absolute; REMOVED */
-    /* top, left, z-index REMOVED */
-    /* width will be 100% of #combat-console-stack by default as a block in flex column */
-    height: 50%; /* Takes 50% of the #combat-console-stack height */
-    /* min-height: 200px; REMOVED for stricter 50/50 split */
-    background-color: rgba(30, 30, 30, 0.95); /* Default background */
-    padding: 10px; /* Slightly reduced padding */
+    height: 50%;
+    background-color: rgba(30, 30, 30, 0.95);
+    padding: 10px;
     color: #fff;
     border: 1px solid #777;
     border-radius: 5px;
-    overflow-y: auto; /* Scroll if content is taller than its 50% height */
-    overflow-x: auto; /* Scroll if content is wider than its allocated space */
+    overflow-y: auto;
+    overflow-x: auto;
     box-sizing: border-box;
-    white-space: normal;
-    line-height: normal;
-    font-family: 'DwarfFortress', monospace;
-    /* margin-bottom: 10px; Added by #combat-console-stack gap */
 }
 
-    #combatUIDiv h4,
-    #combatUIDiv p,
-    #combatUIDiv label,
-    #combatUIDiv select,
-    #combatUIDiv button {
-        font-family: 'DwarfFortress', monospace; /* Explicitly set for children, or a UI font */
-        margin-bottom: 3px; /* Reduced spacing */
-        font-size: 0.9em; /* Slightly smaller font size for combat elements */
-    }
+#combatUIDiv h4, #combatUIDiv p { margin-bottom: 3px; font-size: 0.9em; }
+#combatUIDiv select, #combatUIDiv button { margin-top: 3px; padding: 3px 5px; }
 
-    #combatUIDiv select, #combatUIDiv button {
-        margin-top: 3px; /* Reduced spacing */
-        padding: 3px 5px; /* Smaller padding for buttons/selects */
-    }
+#combatUIDiv #currentAttacker {
+    background-color: rgba(139, 0, 0, 0.3);
+    padding: 5px;
+    border-radius: 3px;
+    margin-bottom: 5px;
+    transition: transform 0.2s;
+}
 
-    #combatUIDiv #currentAttacker p, #combatUIDiv #currentAttacker span {
-        color: #ffdddd; /* Lighter red for attacker text */
-    }
+#combatUIDiv #currentDefender {
+    background-color: rgba(0, 0, 139, 0.3);
+    padding: 5px;
+    border-radius: 3px;
+    margin-bottom: 5px;
+    transition: transform 0.2s;
+}
 
-    #combatUIDiv #currentAttacker {
-        background-color: rgba(139, 0, 0, 0.3); /* DarkRed background for attacker section */
-        padding: 5px;
-        border-radius: 3px;
-        margin-bottom: 5px;
-    }
-
-    #combatUIDiv #currentDefender p, #combatUIDiv #currentDefender span {
-        color: #ddddff; /* Lighter blue for defender text */
-    }
-
-    #combatUIDiv #currentDefender {
-        background-color: rgba(0, 0, 139, 0.3); /* DarkBlue background for defender section */
-        padding: 5px;
-        border-radius: 3px;
-        margin-bottom: 5px;
-    }
-
-    /* Reduce size of specific result paragraphs */
-    #combatUIDiv #attackRollResult,
-    #combatUIDiv #defenseRollResult,
-    #combatUIDiv #damageResult {
-        font-size: 0.85em;
-        margin: 2px 0;
-    }
-
-/* Tooltip styles */
+/* Tooltips */
 .tooltip {
-    position: fixed; /* Changed from absolute to fixed for positioning relative to viewport */
-    background-color: #1a1a1a; /* Dark background */
-    color: #f0f0f0; /* Light grey text */
-    border: 1px solid #555; /* Slightly lighter border */
+    position: fixed;
+    background-color: rgba(26, 26, 26, 0.95);
+    color: #f0f0f0;
+    border: 1px solid #777;
     padding: 8px;
     border-radius: 4px;
-    font-size: 0.9em; /* Slightly smaller font */
-    pointer-events: none; /* So it doesn't interfere with mouse events on the map */
-    z-index: 1000; /* Ensure it's on top */
-    white-space: pre-wrap; /* Allow text to wrap but preserve whitespace like newlines */
-    max-width: 300px; /* Prevent it from becoming too wide */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Subtle shadow for depth */
+    font-size: 0.9em;
+    pointer-events: none;
+    z-index: 1000;
+    white-space: pre-wrap;
+    max-width: 300px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
+    transition: opacity 0.2s, transform 0.2s;
+    opacity: 0;
+    transform: translateY(10px);
+}
+.tooltip:not(.hidden) {
+    opacity: 1;
+    transform: translateY(0);
 }
 
-    .tooltip.hidden {
-        display: none;
-    }
-
-/* Construction UI Specific Styles */
-#constructionBuildableList li.cannot-build {
-    color: #888; /* Gray out the text */
-    font-style: italic; /* Optional: make it italic */
-    /* pointer-events: none; /* Optional: if you want to make them unclickable, though click handler still exists */
-    opacity: 0.6; /* Make it visually more distinct as grayed out */
+/* Modals & Popups */
+.modal-open-anim {
+    animation: popIn 0.3s var(--juicy-ease) forwards;
 }
 
-    #constructionBuildableList li.cannot-build:hover {
-        /* Optional: remove hover effect if it's normally there */
-        /* background-color: transparent; */
-        /* text-decoration: none; /* Remove underline if it's added by default on hover */
-    }
-
-/* Crafting UI: Style for unavailable recipes */
-#craftingRecipeList li.recipe-unavailable {
-    color: #888; /* Gray out the text - same as cannot-build */
-    font-style: italic;
-    opacity: 0.6; /* Consistent opacity for grayed-out items */
+@keyframes popIn {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
-    #craftingRecipeList li.recipe-unavailable:hover {
-        /* Optional: consistent hover behavior for unavailable items */
-        /* background-color: transparent; */
-    }
-
-
-/* Requirement Styling (used by both Crafting and Construction detail views) */
-.req-met {
-    color: #4CAF50; /* Green */
-    font-weight: bold;
+/* Specific Modal IDs need center positioning + anim */
+#settingsModal, #medicalTreatmentModal, #questLogUI {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    border: 1px solid #666;
 }
 
-.req-not-met {
-    color: #F44336; /* Red */
-    font-weight: bold;
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background: #111;
+}
+::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 5px;
+    border: 2px solid #111;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #666;
 }
 
-/* Ensure list items in details panel are styled correctly if they use these classes directly */
-/* These specific overrides might not be strictly necessary if .req-met and .req-not-met are applied directly to spans */
-#detailConstructionSkill li span.req-met,
-#detailConstructionSkill li span.req-not-met,
-#detailConstructionComponents li span.req-met,
-#detailConstructionComponents li span.req-not-met {
-    /* font-weight: bold; /* Already added to the base .req-met/.req-not-met */
-}
-
-/* Crafting UI detail component list uses direct style.color, which is fine.
-   If we wanted to switch it to classes, we would add:
-   #detailRecipeComponents li span.req-met { color: #4CAF50; font-weight: bold; }
-   #detailRecipeComponents li span.req-not-met { color: #F44336; font-weight: bold; }
-   But current JS handles this with direct style.color, which is acceptable.
-*/
-
-/* Console Autocomplete Styles */
-#gameConsole {
-    position: relative;
-}
-
+/* Console Input */
 #consoleInput {
     width: 100%;
     background-color: #111;
     color: white;
     border: 1px solid #444;
-    padding: 5px;
+    padding: 8px;
     box-sizing: border-box;
-    height: 28px;
+    height: 34px;
 }
-
 #consoleSuggestions {
-    display: none; /* Hidden by default */
+    display: none;
     position: absolute;
-    bottom: 28px; /* Position above the input */
+    bottom: 34px;
     left: 0;
     right: 0;
     background: #222;
@@ -600,153 +610,49 @@ button.preset-swatch { /* More specific selector */
     max-height: 150px;
     overflow-y: auto;
     z-index: 100;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
 }
-
 .suggestion-item {
-    padding: 5px;
+    padding: 8px;
     cursor: pointer;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid #333;
+    transition: background-color 0.1s;
 }
-
-.suggestion-item.selected, .suggestion-item:hover {
+.suggestion-item:hover, .suggestion-item.selected {
     background-color: #444;
+    padding-left: 12px; /* Slide effect */
 }
 
-#nearbyEntitiesPanel {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 250px;
-    background-color: rgba(0, 0, 0, 0.8);
-    border: 1px solid #888;
-    color: white;
-    z-index: 10;
-    max-height: 400px;
-    overflow-y: auto;
+/* Progress Bars */
+progress {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 20px;
+    width: 100%;
+    transition: width 0.5s;
+}
+progress::-webkit-progress-bar {
+    background-color: #333;
+    border-radius: 4px;
+}
+progress::-webkit-progress-value {
+    background-color: var(--highlight-color); /* Yellow */
+    border-radius: 4px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#nearbyEntitiesPanel h4 {
-    margin: 0;
-    padding: 5px;
-    background-color: #222;
-    text-align: center;
-}
-
-#nearbyEntitiesList div {
-    padding: 8px;
-    cursor: pointer;
-    border-bottom: 1px solid #444;
-}
-
-#nearbyEntitiesList div:hover {
-    background-color: #555;
-}
-
-#nearbyEntitiesList .hostile {
-    color: #ff6666; /* Light red */
-}
-
-#nearbyEntitiesList .neutral {
-    color: #ffff99; /* Light yellow */
-}
-
-#nearbyEntitiesList .friendly {
-    color: #66ff66; /* Light green */
-}
-
+/* Quest Log */
 #questLogUI {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px;
-    max-width: 90%;
-    height: 500px;
-    max-height: 80%;
-    background-color: #111;
-    border: 2px solid #555;
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
-    padding: 15px;
-    color: #eee;
-    font-family: 'DwarfFortress', monospace;
+    background-color: rgba(17, 17, 17, 0.98);
 }
-
-#questLogUI.hidden {
-    display: none;
-}
-
-#questLogUI h2 {
-    margin-top: 0;
-    text-align: center;
-    border-bottom: 1px solid #444;
-    padding-bottom: 10px;
-}
-
-#questTabs {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #444;
-}
-
-.tab-button {
-    background: none;
-    border: none;
-    color: #888;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 1.1em;
-    padding: 5px 10px;
-}
-
-.tab-button.active {
-    color: #fff;
-    border-bottom: 2px solid #fff;
-}
-
-#questListContainer {
-    flex-grow: 1;
-    overflow-y: auto;
-}
-
-#questList {
-    list-style: none;
-    padding: 0;
-}
-
 .quest-item {
-    padding: 8px;
+    padding: 10px;
     border-bottom: 1px solid #333;
     cursor: pointer;
+    transition: all 0.2s;
 }
-
 .quest-item:hover {
     background-color: #222;
-}
-
-#questDetailPanel {
-    flex-grow: 1;
-    overflow-y: auto;
-}
-
-#closeQuestLogButton {
-    margin-top: 10px;
-    align-self: center;
-    padding: 5px 20px;
-}
-
-/* Surroundings Grid Styles */
-#surroundingsGrid {
-    font-family: 'DwarfFortress', monospace;
-    /* Ensure it has a height so it's not collapsed */
-    min-height: 200px;
-    background-color: #111;
-    border: 1px solid #444;
-    padding: 2px;
-}
-
-#surroundingsGrid div {
-    /* Style for individual cells if needed globally, but inline styles cover most */
+    padding-left: 15px;
+    border-left: 3px solid var(--highlight-color);
 }

@@ -11,6 +11,8 @@ import { logToConsole } from './config.js';
 let assetManagerInstance = null;
 let uiStateHolder = null;         // Holds currentTool, currentTileId, selections, etc.
 let interactionDispatcher = null; // For functions like handleCellMouseDown, handleCellMouseUp
+let dialogueEditorInstance = null;
+let questEditorInstance = null;
 
 /**
  * Initializes the UIManager with necessary references.
@@ -23,6 +25,14 @@ export function initializeUIManager(assetManager, uiState, interactionFns) {
     uiStateHolder = uiState;
     interactionDispatcher = interactionFns;
     logToConsole("UIManager initialized.");
+}
+
+/**
+ * Sets the integrated tool instances for cross-referencing.
+ */
+export function setIntegratedTools(dialogueEditor, questEditor) {
+    dialogueEditorInstance = dialogueEditor;
+    questEditorInstance = questEditor;
 }
 
 // --- Palette Management ---
@@ -1113,6 +1123,35 @@ export function updateSelectedNpcInfoUI(selectedNpc, baseNpcDefinitions) {
 
         if (fields.npcBehaviorSelect) {
             fields.npcBehaviorSelect.value = selectedNpc.behavior || "";
+        }
+
+        // Dialogue ID Population
+        if (el('npcDialogueIdInput')) {
+            el('npcDialogueIdInput').value = selectedNpc.dialogueId || '';
+            // Setup Create/Edit button
+            const btn = el('createEditDialogueBtn');
+            if (btn) {
+                btn.onclick = () => {
+                    const dialogueId = el('npcDialogueIdInput').value || `npc_${selectedNpc.id}_dialogue`;
+                    if (!el('npcDialogueIdInput').value) {
+                         el('npcDialogueIdInput').value = dialogueId;
+                         selectedNpc.dialogueId = dialogueId; // Auto-assign if empty on click
+                    }
+
+                    // Switch to Dialogue Tab
+                    document.querySelector('[data-tab="dialogue-editor"]').click();
+
+                    // Load or Create
+                    if (dialogueEditorInstance) {
+                        // Ideally we would load the file matching the ID, but for now we just prepare the key
+                        dialogueEditorInstance.activeNodeKey = "start"; // Reset or find start
+                        // If we had a file manager, we'd load the file here.
+                        // For now, let's just set a default key or create a new entry if possible.
+                        // Since dialogueEditor is single-file based in this simple version, we can just suggest the key.
+                        logToConsole(`Switching to Dialogue Editor for ${dialogueId}`);
+                    }
+                };
+            }
         }
 
         // Face Generator UI Population

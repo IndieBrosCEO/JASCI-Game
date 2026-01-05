@@ -149,5 +149,13 @@
     { "itemId": "primer_shotgun", "chance": 0.3, "min": 10, "max": 50 },
     { "itemId": "wad_shotgun", "chance": 0.3, "min": 10, "max": 50 },
     { "itemId": "shotshell_hull_10ga", "chance": 0.1, "min": 1, "max": 5 }
+],
+  "harvest:corn": [
+    { "itemId": "corn_cob", "min": 1, "max": 3, "chance": 1.0 },
+    { "itemId": "seeds_corn", "min": 1, "max": 2, "chance": 0.5 }
+  ],
+  "harvest:carrot": [
+    { "itemId": "carrot", "min": 1, "max": 3, "chance": 1.0 },
+    { "itemId": "seeds_carrot", "min": 1, "max": 2, "chance": 0.5 }
   ]
 }

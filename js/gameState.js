@@ -137,6 +137,9 @@ const gameState = {
     perkRanks: {}, // e.g., { "perkId1": 1, "perkId2": 2 }
     processedIdempotencyKeys: new Set(),
 
+    // Harvest/Scavenge Counters
+    harvestCounts: {}, // Tracks how many times a tile has been harvested { "mapId:x,y,z": count }
+
     // Containers
     containers: [], // Stores active container instances on the current map
     nextContainerId: 1, // ID counter for containers
