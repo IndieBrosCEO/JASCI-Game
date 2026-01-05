@@ -484,6 +484,38 @@
       "armorer",
       "weaponsmith"
     ],
+    "recipe": {
+      "description": "Smelt iron ore into a workable ingot.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "ore",
+          "require": {
+            "metal": "iron"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "fuel",
+          "require": {
+            "type": "charcoal"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "crucible_basic",
+        "tongs_blacksmith"
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
     "family": "metal",
     "properties": {
       "type": "ingot",
@@ -515,6 +547,39 @@
       "weaponsmith",
       "machinist"
     ],
+    "recipe": {
+      "description": "Refine iron into steel using carbon.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "iron",
+            "type": "ingot"
+          }
+        },
+        {
+          "quantity": 3,
+          "family": "fuel",
+          "require": {
+            "type": "charcoal"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "tools_required": [
+        "crucible_basic",
+        "tongs_blacksmith"
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 90,
+      "batch_size": 1
+    },
     "family": "metal",
     "properties": {
       "type": "ingot",
@@ -548,6 +613,29 @@
     "properties": {
       "type": "rawhide",
       "grade": 1
+    },
+    "recipe": {
+      "description": "Scrape and clean a raw animal hide to produce rawhide.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "leather",
+          "require": {
+            "type": "raw"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "knife_melee"
+      ],
+      "time_to_craft": 30,
+      "batch_size": 1
     }
   },
   {
@@ -689,6 +777,34 @@
       "tanner"
     ],
     "warning": "Caustic",
+    "recipe": {
+      "description": "Leach lye from wood ash (charcoal) and water.",
+      "components": [
+        {
+          "quantity": 5,
+          "family": "fuel",
+          "require": {
+            "type": "charcoal"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "liquid",
+          "require": {
+            "type": "water"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 2
+        }
+      ],
+      "station_required": "chemistry_set_tile",
+      "time_to_craft": 30,
+      "batch_size": 2
+    },
     "family": "chemical",
     "properties": {
       "type": "lye"
@@ -833,6 +949,38 @@
       "technician",
       "robot_programmer"
     ],
+    "recipe": {
+      "description": "Draw and insulate copper wire from an ingot.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "type": "ingot",
+            "material": "copper"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "plastic",
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "pliers_set"
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 30,
+      "batch_size": 2
+    },
     "family": "wire",
     "properties": {
       "material": "copper",
@@ -950,6 +1098,33 @@
       "laborer",
       "barricade_builder"
     ],
+    "recipe": {
+      "description": "Mix sand and crushed stone binder to make concrete mix.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "construction_material",
+          "require": {
+            "type": "sand"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "stone",
+          "require": {
+            "type": "chunk"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Construction",
+          "level": 1
+        }
+      ],
+      "time_to_craft": 10,
+      "batch_size": 1
+    },
     "family": "construction_material",
     "properties": {
       "type": "concrete_mix"
@@ -979,6 +1154,30 @@
       "machinist",
       "engineer"
     ],
+    "recipe": {
+      "description": "Cut and head small metal bits into rivets.",
+      "components": [
+        {
+          "quantity": 5,
+          "family": "metal",
+          "require": {
+            "type": "bits"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "file_small_metal"
+      ],
+      "time_to_craft": 15,
+      "batch_size": 1
+    },
     "family": "fastener",
     "properties": {
       "type": "rivet",
@@ -1010,10 +1209,95 @@
     "requires": [
       "fiberglass_cloth"
     ],
+    "recipe": {
+      "description": "Distill tree resin and mix with chemicals.",
+      "components": [
+        {
+          "quantity": 3,
+          "family": "pigment",
+          "require": {
+            "source": "bark"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "chemical",
+          "require": {
+            "type": "lye"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 3
+        }
+      ],
+      "station_required": "chemistry_set_tile",
+      "time_to_craft": 45,
+      "batch_size": 1
+    },
     "family": "chemical",
     "properties": {
       "type": "resin",
       "material": "fiberglass"
+    }
+  },
+  {
+    "id": "armor_plate_composite",
+    "name": "Composite Armor Plate",
+    "description": "A strong, lightweight armor plate made from fiberglass and resin.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 1.5,
+    "value": 30,
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "=",
+    "color": "#f5deb3",
+    "tags": [
+      "material",
+      "crafting",
+      "armor_component",
+      "composite",
+      "ballistic"
+    ],
+    "recipe": {
+      "description": "Layer fiberglass cloth and resin to create a composite plate.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "fabric",
+          "require": {
+            "type": "roll",
+            "material": "fiberglass"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "chemical",
+          "require": {
+            "type": "resin",
+            "material": "fiberglass"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 90,
+      "batch_size": 1
+    },
+    "family": "armor_plate",
+    "properties": {
+      "material": "composite",
+      "grade": "ballistic"
     }
   },
   {
@@ -1039,6 +1323,31 @@
       "engineer",
       "artisan"
     ],
+    "recipe": {
+      "description": "Weave heated glass fibers into cloth.",
+      "components": [
+        {
+          "quantity": 5,
+          "family": "blade",
+          "require": {
+            "material": "glass",
+            "type": "shard"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        }
+      ],
+      "tools_required": [
+        "heat_gun_tool"
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
     "family": "fabric",
     "properties": {
       "type": "roll",
@@ -1248,6 +1557,33 @@
       "ceramic",
       "natural"
     ],
+    "recipe": {
+      "description": "Leach lye from wood ash (charcoal).",
+      "components": [
+        {
+          "quantity": 5,
+          "family": "fuel",
+          "require": {
+            "type": "charcoal"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "liquid",
+          "require": {
+            "type": "water"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 1
+        }
+      ],
+      "time_to_craft": 30,
+      "batch_size": 2
+    },
     "family": "ceramic",
     "properties": {
       "type": "clay"
@@ -1443,7 +1779,34 @@
     "properties": {
       "type": "pistol",
       "size": "small",
-      "material": "brass"
+      "material": "brass",
+      "caliber": "9mm"
+    },
+    "recipe": {
+      "description": "Reform brass casing from brass scrap.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "brass",
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "file_small_metal"
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 20,
+      "batch_size": 10
     }
   },
   {
@@ -1469,7 +1832,34 @@
     "properties": {
       "type": "pistol",
       "size": "large",
-      "material": "brass"
+      "material": "brass",
+      "caliber": ".45ACP"
+    },
+    "recipe": {
+      "description": "Reform brass casing from brass scrap.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "brass",
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "file_small_metal"
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 20,
+      "batch_size": 8
     }
   },
   {
@@ -1495,7 +1885,34 @@
     "properties": {
       "type": "rifle",
       "size": "small",
-      "material": "brass"
+      "material": "brass",
+      "caliber": "5.56mm"
+    },
+    "recipe": {
+      "description": "Reform brass casing from brass scrap.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "metal",
+          "require": {
+            "material": "brass",
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "file_small_metal"
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 25,
+      "batch_size": 10
     }
   },
   {
@@ -1521,7 +1938,34 @@
     "properties": {
       "type": "rifle",
       "size": "medium",
-      "material": "brass"
+      "material": "brass",
+      "caliber": "7.62mm"
+    },
+    "recipe": {
+      "description": "Reform brass casing from brass scrap.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "metal",
+          "require": {
+            "material": "brass",
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "file_small_metal"
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 25,
+      "batch_size": 8
     }
   },
   {
@@ -1547,8 +1991,300 @@
     "properties": {
       "type": "rifle",
       "size": "large",
-      "material": "brass"
+      "material": "brass",
+      "caliber": ".50BMG"
+    },
+    "recipe": {
+      "description": "Reform brass casing from brass scrap.",
+      "components": [
+        {
+          "quantity": 3,
+          "family": "metal",
+          "require": {
+            "material": "brass",
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "file_small_metal"
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 30,
+      "batch_size": 5
     }
+  },
+  {
+    "id": "copper_ingot",
+    "name": "Copper Ingot",
+    "description": "A bar of refined copper.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 12,
+    "value": 20,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "=",
+    "color": "#b87333",
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "refined",
+      "copper"
+    ],
+    "family": "metal",
+    "properties": {
+      "type": "ingot",
+      "material": "copper",
+      "grade": 2
+    },
+    "recipe": {
+      "description": "Smelt copper ore into an ingot.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "ore",
+          "require": {
+            "metal": "copper"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "crucible_basic",
+        "tongs_blacksmith"
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 60,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "copper_scrap",
+    "name": "Copper Scrap",
+    "description": "Bits of copper pipe or wire, can be melted down.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 1,
+    "value": 3,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": "=",
+    "color": "#b87333",
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "copper",
+      "modern"
+    ],
+    "family": "metal",
+    "properties": {
+      "type": "scrap",
+      "material": "copper"
+    }
+  },
+  {
+    "id": "metal_tube",
+    "name": "Metal Tube",
+    "description": "A hollow metal tube, useful for frames or piping.",
+    "type": "crafting_material",
+    "size": 2,
+    "weightLbs": 3,
+    "value": 5,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "|",
+    "color": "#b0c4de",
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "construction"
+    ],
+    "family": "metal",
+    "properties": {
+      "type": "tube",
+      "material": "steel"
+    },
+    "recipe": {
+      "description": "Roll metal sheet into a tube.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "metal_sheet",
+          "require": {
+            "thickness": "thin"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "hammer_peen",
+        "pliers_set"
+      ],
+      "time_to_craft": 15,
+      "batch_size": 1
+    }
+  },
+  {
+    "id": "engine_parts_kit_small",
+    "name": "Small Engine Parts Kit",
+    "description": "Parts for a small utility engine.",
+    "type": "crafting_material",
+    "size": 3,
+    "weightLbs": 30,
+    "value": 100,
+    "stackable": false,
+    "tags": [
+      "vehicle_part_kit"
+    ],
+    "recipe": {
+      "description": "Assemble small engine parts.",
+      "components": [
+        {
+          "quantity": 5,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "component",
+          "require": {
+            "type": "gears"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "time_to_craft": 120,
+      "batch_size": 1
+    },
+    "family": "engine_kit",
+    "properties": {
+      "type": "small_engine"
+    },
+    "sprite": "=",
+    "color": "#708090"
+  },
+  {
+    "id": "engine_parts_kit_motorcycle",
+    "name": "Motorcycle Engine Parts Kit",
+    "description": "Parts for a motorcycle engine.",
+    "type": "crafting_material",
+    "size": 3,
+    "weightLbs": 40,
+    "value": 150,
+    "stackable": false,
+    "tags": [
+      "vehicle_part_kit"
+    ],
+    "recipe": {
+      "description": "Assemble motorcycle engine parts.",
+      "components": [
+        {
+          "quantity": 10,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "component",
+          "require": {
+            "type": "gears"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 10
+        }
+      ],
+      "time_to_craft": 240,
+      "batch_size": 1
+    },
+    "family": "engine_kit",
+    "properties": {
+      "type": "motorcycle"
+    },
+    "sprite": "=",
+    "color": "#708090"
+  },
+  {
+    "id": "engine_parts_kit_v6",
+    "name": "V6 Engine Parts Kit",
+    "description": "Parts for a V6 engine.",
+    "type": "crafting_material",
+    "size": 4,
+    "weightLbs": 80,
+    "value": 300,
+    "stackable": false,
+    "tags": [
+      "vehicle_part_kit"
+    ],
+    "recipe": {
+      "description": "Assemble V6 engine parts.",
+      "components": [
+        {
+          "quantity": 20,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "engine_component",
+          "require": {
+            "type": "block",
+            "size": "small"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 15
+        }
+      ],
+      "time_to_craft": 400,
+      "batch_size": 1
+    },
+    "family": "engine_kit",
+    "properties": {
+      "type": "v6"
+    },
+    "sprite": "=",
+    "color": "#708090"
   },
   {
     "id": "shotshell_hull_12ga",
@@ -1568,9 +2304,10 @@
       "ammunition_component",
       "shotshell_hull"
     ],
-    "family": "shotshell_hull",
+    "family": "casing",
     "properties": {
-      "gauge": 12
+      "type": "shotshell",
+      "caliber": "12gauge"
     }
   },
   {
@@ -1591,9 +2328,10 @@
       "ammunition_component",
       "shotshell_hull"
     ],
-    "family": "shotshell_hull",
+    "family": "casing",
     "properties": {
-      "gauge": 10
+      "type": "shotshell",
+      "caliber": "10gauge"
     }
   },
   {
@@ -1738,6 +2476,31 @@
     "properties": {
       "caliber": "9mm",
       "type": "bullet"
+    },
+    "recipe": {
+      "description": "Cast 9mm lead projectiles.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "lead",
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "crucible_basic"
+      ],
+      "station_required": "campfire_basic_tile",
+      "time_to_craft": 20,
+      "batch_size": 20
     }
   },
   {
@@ -1763,6 +2526,31 @@
     "properties": {
       "caliber": "10mm",
       "type": "bullet"
+    },
+    "recipe": {
+      "description": "Cast 10mm lead projectiles.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "lead",
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "crucible_basic"
+      ],
+      "station_required": "campfire_basic_tile",
+      "time_to_craft": 20,
+      "batch_size": 15
     }
   },
   {
@@ -1788,6 +2576,31 @@
     "properties": {
       "caliber": ".45",
       "type": "bullet"
+    },
+    "recipe": {
+      "description": "Cast .45 caliber lead projectiles.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "lead",
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "crucible_basic"
+      ],
+      "station_required": "campfire_basic_tile",
+      "time_to_craft": 20,
+      "batch_size": 15
     }
   },
   {
@@ -1813,6 +2626,31 @@
     "properties": {
       "caliber": ".50",
       "type": "pistol_bullet"
+    },
+    "recipe": {
+      "description": "Cast .50 caliber pistol projectiles.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "lead",
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "crucible_basic"
+      ],
+      "station_required": "campfire_basic_tile",
+      "time_to_craft": 20,
+      "batch_size": 10
     }
   },
   {
@@ -1838,6 +2676,31 @@
     "properties": {
       "caliber": ".22",
       "type": "bullet"
+    },
+    "recipe": {
+      "description": "Cast .22 caliber lead projectiles.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "lead",
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "crucible_basic"
+      ],
+      "station_required": "campfire_basic_tile",
+      "time_to_craft": 20,
+      "batch_size": 40
     }
   },
   {
@@ -1864,6 +2727,38 @@
     "properties": {
       "caliber": "5.56mm",
       "type": "bullet"
+    },
+    "recipe": {
+      "description": "Cast 5.56mm projectiles.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "lead",
+            "type": "scrap"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "copper"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "crucible_basic"
+      ],
+      "station_required": "campfire_basic_tile",
+      "time_to_craft": 25,
+      "batch_size": 20
     }
   },
   {
@@ -1890,6 +2785,38 @@
     "properties": {
       "caliber": "7.62mm",
       "type": "bullet"
+    },
+    "recipe": {
+      "description": "Cast 7.62mm projectiles.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "lead",
+            "type": "scrap"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "copper"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "crucible_basic"
+      ],
+      "station_required": "campfire_basic_tile",
+      "time_to_craft": 25,
+      "batch_size": 15
     }
   },
   {
@@ -1917,6 +2844,38 @@
     "properties": {
       "caliber": ".50bmg",
       "type": "bullet"
+    },
+    "recipe": {
+      "description": "Cast .50 BMG projectiles.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "metal",
+          "require": {
+            "material": "lead",
+            "type": "scrap"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "copper"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "crucible_basic"
+      ],
+      "station_required": "campfire_basic_tile",
+      "time_to_craft": 30,
+      "batch_size": 5
     }
   },
   {
@@ -1940,7 +2899,33 @@
     ],
     "family": "projectile",
     "properties": {
-      "type": "buckshot"
+      "type": "shot",
+      "caliber": "12gauge"
+    },
+    "recipe": {
+      "description": "Cast lead shot pellets.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "material": "lead",
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Guns",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "crucible_basic"
+      ],
+      "station_required": "campfire_basic_tile",
+      "time_to_craft": 15,
+      "batch_size": 50
     }
   },
   {
@@ -2107,6 +3092,41 @@
       "explosive"
     ],
     "warning": "Highly Explosive",
+    "recipe": {
+      "description": "Synthesize a stable explosive compound.",
+      "components": [
+        {
+          "quantity": 3,
+          "family": "chemical",
+          "require": {
+            "type": "saltpeter"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "chemical",
+          "require": {
+            "type": "sulfur"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "fuel",
+          "require": {
+            "type": "charcoal"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Explosives",
+          "level": 4
+        }
+      ],
+      "station_required": "chemistry_set_tile",
+      "time_to_craft": 45,
+      "batch_size": 2
+    },
     "family": "explosive",
     "properties": {
       "type": "generic_b",
@@ -2695,6 +3715,29 @@
       "fastener",
       "clothing_accessory"
     ],
+    "recipe": {
+      "description": "Fashion a small buckle from plastic or metal bits.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "plastic",
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "file_small_metal"
+      ],
+      "time_to_craft": 5,
+      "batch_size": 2
+    },
     "family": "fastener",
     "properties": {
       "type": "buckle",
@@ -2720,6 +3763,34 @@
       "component",
       "optical"
     ],
+    "recipe": {
+      "description": "Grind and polish a glass shard into a crude lens.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "blade",
+          "require": {
+            "type": "shard",
+            "material": "glass"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "construction_material",
+          "require": {
+            "type": "sand"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "time_to_craft": 40,
+      "batch_size": 1
+    },
     "family": "lens",
     "properties": {
       "material": "glass",
@@ -2863,6 +3934,34 @@
       "adhesive",
       "organic"
     ],
+    "recipe": {
+      "description": "Cook animal parts into a sticky paste.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "organic",
+          "require": {
+            "type": "sinew"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "liquid",
+          "require": {
+            "type": "water"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 1
+        }
+      ],
+      "station_required": "campfire_basic_tile",
+      "time_to_craft": 20,
+      "batch_size": 1
+    },
     "family": "adhesive",
     "properties": {
       "type": "paste",
@@ -3042,13 +4141,20 @@
       "tool_component"
     ],
     "recipe": {
-      "description": "Carve a simple tool handle from a piece of wood.",
+      "description": "Carve a simple tool handle from a piece of wood and wrap it with leather.",
       "components": [
         {
           "quantity": 1,
           "family": "wood",
           "require": {
             "type": "stick"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "leather",
+          "require": {
+            "type": "strip"
           }
         }
       ],
@@ -3089,6 +4195,30 @@
       "fabric",
       "cotton"
     ],
+    "recipe": {
+      "description": "Cut a bolt of cotton cloth into sheets.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "fabric",
+          "require": {
+            "type": "bolt",
+            "material": "cotton"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "tin_snips"
+      ],
+      "time_to_craft": 5,
+      "batch_size": 10
+    },
     "family": "fabric",
     "properties": {
       "type": "sheet",
@@ -3499,6 +4629,30 @@
       "component",
       "communication"
     ],
+    "recipe": {
+      "description": "Make a basic antenna from wire.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "wire",
+          "require": {
+            "material": "metal",
+            "stiffness": "stiff"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "pliers_set"
+      ],
+      "time_to_craft": 10,
+      "batch_size": 1
+    },
     "family": "component",
     "properties": {
       "type": "antenna",
@@ -3577,6 +4731,31 @@
     "properties": {
       "type": "block",
       "size": "small"
+    },
+    "recipe": {
+      "description": "Cast a small engine block from metal.",
+      "components": [
+        {
+          "quantity": 10,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "tools_required": [
+        "crucible_basic",
+        "tongs_blacksmith"
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 120,
+      "batch_size": 1
     }
   },
   {
@@ -3602,6 +4781,31 @@
     "properties": {
       "type": "piston_set",
       "size": "small"
+    },
+    "recipe": {
+      "description": "Machine a set of pistons.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 6
+        }
+      ],
+      "tools_required": [
+        "file_small_metal",
+        "tap_and_die_set"
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 60,
+      "batch_size": 1
     }
   },
   {
@@ -3627,6 +4831,31 @@
     "properties": {
       "type": "crankshaft",
       "size": "small"
+    },
+    "recipe": {
+      "description": "Forge or machine a small crankshaft.",
+      "components": [
+        {
+          "quantity": 3,
+          "family": "metal",
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 6
+        }
+      ],
+      "tools_required": [
+        "blacksmith_hammer",
+        "tongs_blacksmith"
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 90,
+      "batch_size": 1
     }
   },
   {
@@ -3723,6 +4952,44 @@
       "component",
       "sensor"
     ],
+    "recipe": {
+      "description": "Assemble a basic sensor module from electronic components.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "component",
+          "require": {
+            "type": "circuit_board"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "component",
+          "require": {
+            "type": "led"
+          }
+        },
+        {
+          "quantity": 2,
+          "family": "wire",
+          "require": {
+            "insulated": true
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "soldering_iron_kit"
+      ],
+      "station_required": "workbench_basic_tile",
+      "time_to_craft": 20,
+      "batch_size": 1
+    },
     "family": "component",
     "properties": {
       "type": "sensor",
@@ -3927,7 +5194,7 @@
     ],
     "family": "pigment",
     "properties": {
-      "color": "#008000",
+      "color": "#006400",
       "source": "plant"
     }
   },
@@ -3951,7 +5218,7 @@
     ],
     "family": "pigment",
     "properties": {
-      "color": "#dc52ff",
+      "color": "#9f4559",
       "source": "bark"
     }
   },
@@ -4254,7 +5521,8 @@
     },
     "family": "metal_sheet",
     "properties": {
-      "thickness": "sturdy"
+      "thickness": "sturdy",
+      "material": "steel"
     }
   },
   {
@@ -4606,6 +5874,34 @@
       "transparent",
       "impact_resistant"
     ],
+    "recipe": {
+      "description": "Boil bone or hide scraps to make a basic glue.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "organic",
+          "require": {
+            "type": "bone"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "liquid",
+          "require": {
+            "type": "water"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 2
+        }
+      ],
+      "station_required": "campfire_basic_tile",
+      "time_to_craft": 30,
+      "batch_size": 2
+    },
     "family": "plastic",
     "properties": {
       "type": "sheet",
@@ -5144,9 +6440,370 @@
       "electronics",
       "scrap"
     ],
+    "recipe": {
+      "description": "Salvage useful bits from electronic scrap.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "salvage",
+          "require": {
+            "type": "electronic_scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 1
+        }
+      ],
+      "tools_required": [
+        "pliers_set"
+      ],
+      "time_to_craft": 5,
+      "batch_size": 1
+    },
     "family": "salvage",
     "properties": {
       "type": "electronic_scrap"
+    }
+  },
+  {
+    "id": "silver_ingot",
+    "name": "Silver Ingot",
+    "description": "A refined bar of silver.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 5,
+    "value": 200,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "=",
+    "color": "#b0c4de",
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "refined",
+      "silver",
+      "jeweler",
+      "artisan"
+    ],
+    "recipe": {
+      "description": "Smelt silver nuggets into an ingot.",
+      "components": [
+        {
+          "quantity": 10,
+          "family": "metal",
+          "require": {
+            "type": "nugget",
+            "material": "silver"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 4
+        }
+      ],
+      "tools_required": [
+        "crucible_basic",
+        "tongs_blacksmith"
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 60,
+      "batch_size": 1
+    },
+    "family": "metal",
+    "properties": {
+      "type": "ingot",
+      "material": "silver"
+    }
+  },
+  {
+    "id": "gold_ingot",
+    "name": "Gold Ingot",
+    "description": "A heavy bar of refined gold.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 10,
+    "value": 500,
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "=",
+    "color": "#ffd700",
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "precious_metal",
+      "gold",
+      "jeweler"
+    ],
+    "recipe": {
+      "description": "Smelt gold dust into an ingot.",
+      "components": [
+        {
+          "quantity": 10,
+          "family": "metal",
+          "require": {
+            "type": "dust",
+            "material": "gold"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 5
+        }
+      ],
+      "tools_required": [
+        "crucible_basic",
+        "tongs_blacksmith"
+      ],
+      "station_required": "forge_simple_tile",
+      "time_to_craft": 90,
+      "batch_size": 1
+    },
+    "family": "metal",
+    "properties": {
+      "type": "ingot",
+      "material": "gold"
+    }
+  },
+  {
+    "id": "circuit_board_advanced",
+    "name": "Advanced Circuit Board",
+    "description": "A high-performance circuit board utilizing gold and silver contacts.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 1,
+    "weightLbs": 0.3,
+    "value": 200,
+    "stackable": true,
+    "maxStack": 10,
+    "sprite": "#",
+    "color": "#ffd700",
+    "tags": [
+      "material",
+      "crafting",
+      "electronics",
+      "component",
+      "advanced"
+    ],
+    "recipe": {
+      "description": "Fabricate an advanced circuit board with precious metals.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "component",
+          "require": {
+            "type": "circuit_board",
+            "populated": false
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "type": "ingot",
+            "material": "gold"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "metal",
+          "require": {
+            "type": "ingot",
+            "material": "silver"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Electronics",
+          "level": 5
+        }
+      ],
+      "tools_required": [
+        "soldering_iron_kit",
+        "multimeter"
+      ],
+      "station_required": "electronics_bench_adv",
+      "time_to_craft": 120,
+      "batch_size": 5
+    },
+    "family": "component",
+    "properties": {
+      "type": "circuit_board",
+      "grade": "advanced"
+    }
+  },
+  {
+    "id": "fuel_line_assembly",
+    "name": "Fuel Line Assembly",
+    "description": "A pre-assembled set of fuel lines and connectors.",
+    "type": "crafting_material",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 1.5,
+    "value": 15,
+    "stackable": true,
+    "maxStack": 5,
+    "sprite": "~",
+    "color": "#2f4f4f",
+    "tags": [
+      "material",
+      "crafting",
+      "vehicle_part",
+      "mechanical"
+    ],
+    "recipe": {
+      "description": "Assemble fuel lines from hose and clamps.",
+      "components": [
+        {
+          "quantity": 2,
+          "family": "component",
+          "require": {
+            "type": "hose",
+            "material": "rubber"
+          }
+        },
+        {
+          "quantity": 4,
+          "family": "component",
+          "require": {
+            "type": "spring"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "pliers_set"
+      ],
+      "time_to_craft": 20,
+      "batch_size": 1
+    },
+    "family": "vehicle_part",
+    "properties": {
+      "type": "fuel_line"
+    }
+  },
+  {
+    "id": "repair_kit_hull_fiberglass",
+    "name": "Fiberglass Hull Repair Kit",
+    "description": "A kit containing resin and cloth for repairing fiberglass hulls or armor.",
+    "type": "consumable",
+    "canEquip": false,
+    "isClothing": false,
+    "size": 2,
+    "weightLbs": 4,
+    "value": 50,
+    "stackable": true,
+    "maxStack": 2,
+    "sprite": "+",
+    "color": "#f5deb3",
+    "tags": [
+      "consumable",
+      "repair",
+      "vehicle",
+      "armor"
+    ],
+    "recipe": {
+      "description": "Assemble a fiberglass repair kit.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "chemical",
+          "require": {
+            "type": "resin",
+            "material": "fiberglass"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "fabric",
+          "require": {
+            "type": "roll",
+            "material": "fiberglass"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "time_to_craft": 15,
+      "batch_size": 1
+    },
+    "family": "repair_kit",
+    "properties": {
+      "type": "fiberglass"
+    }
+  },
+  {
+    "id": "lead_scrap",
+    "name": "Lead Scrap",
+    "description": "Pieces of scrap lead, soft and heavy. Can be melted down for projectiles.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 2,
+    "value": 1,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": "=",
+    "color": "#708090",
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "lead",
+      "modern"
+    ],
+    "family": "metal",
+    "properties": {
+      "type": "scrap",
+      "material": "lead"
+    }
+  },
+  {
+    "id": "scrap_brass",
+    "name": "Scrap Brass",
+    "description": "Pieces of brass scrap, can be melted down for casings or fittings.",
+    "type": "crafting_material",
+    "size": 1,
+    "weightLbs": 1,
+    "value": 2,
+    "stackable": true,
+    "maxStack": 20,
+    "sprite": "=",
+    "color": "#b87333",
+    "tags": [
+      "material",
+      "crafting",
+      "metal",
+      "brass",
+      "modern"
+    ],
+    "family": "metal",
+    "properties": {
+      "type": "scrap",
+      "material": "brass"
     }
   }
 ]

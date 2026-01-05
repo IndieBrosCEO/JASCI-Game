@@ -40,6 +40,27 @@
     "effects": {
       "hunger": -15
     },
+    "recipe": {
+      "description": "Cook raw meat over a fire.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "food",
+          "require": {
+            "type": "meat"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Survival",
+          "level": 0
+        }
+      ],
+      "station_required": "campfire_basic_tile",
+      "time_to_craft": 15,
+      "batch_size": 1
+    },
     "family": "food",
     "properties": {
       "type": "cooked_meat"

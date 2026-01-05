@@ -228,5 +228,261 @@
     },
     "sprite": "n",
     "color": "#000080"
+  },
+  {
+    "id": "jacket_leather",
+    "name": "Leather Jacket",
+    "description": "A tough leather jacket offering good protection against scratches and bites.",
+    "family": "clothing",
+    "properties": {
+      "type": "jacket",
+      "material": "leather"
+    },
+    "type": "clothing",
+    "size": 2,
+    "weightLbs": 3,
+    "tags": [
+      "clothing",
+      "torso_outer",
+      "leather"
+    ],
+    "layer": "torso_outer",
+    "coverage": [
+      "torso",
+      "leftArm",
+      "rightArm"
+    ],
+    "insulation": 15,
+    "armorValue": 3,
+    "isClothing": true,
+    "recipe": {
+      "description": "Sew a tough jacket from tanned leather.",
+      "components": [
+        {
+          "family": "leather",
+          "quantity": 4,
+          "require": {
+            "type": "tanned"
+          }
+        },
+        {
+          "family": "thread",
+          "quantity": 5
+        },
+        {
+          "family": "fastener",
+          "quantity": 5,
+          "require": {
+            "type": "rivet"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "sewing_kit_heavy"
+      ],
+      "time_to_craft": 120,
+      "batch_size": 1
+    },
+    "sprite": "M",
+    "color": "#8b4513"
+  },
+  {
+    "id": "coat_wool",
+    "name": "Wool Coat",
+    "description": "A warm coat made of thick wool. Excellent insulation.",
+    "family": "clothing",
+    "properties": {
+      "type": "coat",
+      "material": "wool"
+    },
+    "type": "clothing",
+    "size": 3,
+    "weightLbs": 4,
+    "tags": [
+      "clothing",
+      "torso_outer",
+      "wool",
+      "warm"
+    ],
+    "layer": "torso_outer",
+    "coverage": [
+      "torso",
+      "leftArm",
+      "rightArm"
+    ],
+    "insulation": 25,
+    "armorValue": 1,
+    "isClothing": true,
+    "recipe": {
+      "description": "Tailor a warm coat from wool bolts.",
+      "components": [
+        {
+          "family": "fabric",
+          "quantity": 3,
+          "require": {
+            "material": "wool",
+            "type": "bolt"
+          }
+        },
+        {
+          "family": "thread",
+          "quantity": 6
+        },
+        {
+          "family": "fastener",
+          "quantity": 4,
+          "require": {
+            "type": "rivet"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 3
+        }
+      ],
+      "tools_required": [
+        "sewing_kit_basic"
+      ],
+      "time_to_craft": 150,
+      "batch_size": 1
+    },
+    "sprite": "M",
+    "color": "#708090"
+  },
+  {
+    "id": "vest_ballistic_composite",
+    "name": "Composite Ballistic Vest",
+    "description": "High-tech body armor made from composite plates and ballistic fabric.",
+    "family": "clothing",
+    "properties": {
+      "type": "vest",
+      "material": "composite"
+    },
+    "type": "clothing",
+    "size": 2,
+    "weightLbs": 8,
+    "tags": [
+      "clothing",
+      "torso_top",
+      "armor",
+      "ballistic"
+    ],
+    "layer": "torso_top",
+    "coverage": [
+      "torso"
+    ],
+    "insulation": 5,
+    "armorValue": 8,
+    "isClothing": true,
+    "recipe": {
+      "description": "Assemble a ballistic vest from composite plates.",
+      "components": [
+        {
+          "family": "armor_plate",
+          "quantity": 2,
+          "require": {
+            "material": "composite"
+          }
+        },
+        {
+          "family": "fabric",
+          "quantity": 1,
+          "require": {
+            "material": "nylon",
+            "grade": "tough"
+          }
+        },
+        {
+          "family": "fastener",
+          "quantity": 4,
+          "require": {
+            "type": "buckle"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 6
+        }
+      ],
+      "tools_required": [
+        "sewing_kit_heavy"
+      ],
+      "station_required": "workbench",
+      "time_to_craft": 180,
+      "batch_size": 1
+    },
+    "sprite": "[",
+    "color": "#2f4f4f"
+  },
+  {
+    "id": "backpack_leather",
+    "name": "Leather Backpack",
+    "description": "A durable backpack made of tanned leather.",
+    "family": "clothing",
+    "properties": {
+      "type": "backpack",
+      "material": "leather"
+    },
+    "type": "clothing",
+    "size": 2,
+    "weightLbs": 3,
+    "tags": [
+      "clothing",
+      "back",
+      "container",
+      "storage"
+    ],
+    "layer": "back",
+    "coverage": [],
+    "insulation": 0,
+    "armorValue": 0,
+    "isClothing": true,
+    "capacity": 40,
+    "recipe": {
+      "description": "Stitch a durable backpack from tanned leather.",
+      "components": [
+        {
+          "family": "leather",
+          "quantity": 3,
+          "require": {
+            "type": "tanned"
+          }
+        },
+        {
+          "family": "thread",
+          "quantity": 4
+        },
+        {
+          "family": "fastener",
+          "quantity": 2,
+          "require": {
+            "type": "buckle"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 2
+        }
+      ],
+      "tools_required": [
+        "sewing_kit_heavy"
+      ],
+      "time_to_craft": 90,
+      "batch_size": 1
+    },
+    "sprite": "p",
+    "color": "#8b4513"
   }
 ]

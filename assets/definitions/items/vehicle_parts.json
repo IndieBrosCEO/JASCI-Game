@@ -861,9 +861,8 @@
       "components": [
         {
           "quantity": 40,
-          "family": "metal",
+          "family": "metal_sheet",
           "require": {
-            "type": "sheet",
             "material": "steel"
           }
         },
@@ -911,9 +910,8 @@
       "components": [
         {
           "quantity": 60,
-          "family": "metal",
+          "family": "metal_sheet",
           "require": {
-            "type": "sheet",
             "material": "steel"
           }
         },
@@ -961,9 +959,9 @@
       "components": [
         {
           "quantity": 10,
-          "family": "metal",
+          "family": "metal_sheet",
           "require": {
-            "type": "sheet"
+            "thickness": "sturdy"
           }
         }
       ],
