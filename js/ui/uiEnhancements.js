@@ -144,10 +144,19 @@ class UIEnhancer {
         }
     }
 
+    playOpenSound() {
+        const now = Date.now();
+        if (this.lastOpenSoundTime && (now - this.lastOpenSoundTime < 200)) {
+            return; // Debounce
+        }
+        this.lastOpenSoundTime = now;
+        if (window.audioManager) {
+            window.audioManager.playSound('ui_menu_open_01.wav', { volume: 0.5 });
+        }
+    }
+
     setupModalObservers() {
         // Observe style attribute changes on modals to trigger animation classes
-        // Or simpler: We rely on CSS transitions on the .hidden class removal,
-        // but adding an "active" class can trigger specific keyframes.
 
         // A generic observer for 'hidden' class removal on specific panels
         const modalIds = [
@@ -166,13 +175,18 @@ class UIEnhancer {
             mutations.forEach(mutation => {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                     const target = mutation.target;
-                    if (!target.classList.contains('hidden')) {
-                        // It just appeared
-                        target.classList.add('modal-open-anim');
-                        if (window.audioManager) {
-                            window.audioManager.playSound('ui_menu_open_01.wav', { volume: 0.5 });
+                    const wasHidden = mutation.oldValue && mutation.oldValue.includes('hidden');
+                    const isHidden = target.classList.contains('hidden');
+
+                    if (wasHidden && !isHidden) {
+                        // Truly opened just now
+                        // Check if we already have the animation class to avoid loops (though check against old value helps)
+                        if (!target.classList.contains('modal-open-anim')) {
+                            target.classList.add('modal-open-anim');
+                            this.playOpenSound();
                         }
-                    } else {
+                    } else if (!wasHidden && isHidden) {
+                        // Truly closed
                         target.classList.remove('modal-open-anim');
                     }
                 }
@@ -181,7 +195,7 @@ class UIEnhancer {
 
         modalIds.forEach(id => {
             const el = document.getElementById(id);
-            if (el) observer.observe(el, { attributes: true });
+            if (el) observer.observe(el, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
         });
     }
 }
