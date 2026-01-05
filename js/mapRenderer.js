@@ -563,6 +563,34 @@ window.mapRenderer = {
     isTileBlockingVision: isTileBlockingVision,
     isTileVisible: isTileVisible,
 
+    ensureLevelExists: function(z) {
+        const mapData = this.getCurrentMapData();
+        if (!mapData || !mapData.levels || !mapData.dimensions) return false;
+
+        const zStr = z.toString();
+        // Check if level exists
+        if (!mapData.levels[zStr]) {
+            const width = mapData.dimensions.width;
+            const height = mapData.dimensions.height;
+
+            // Create empty level structure
+            mapData.levels[zStr] = {
+                bottom: Array(height).fill(null).map(() => Array(width).fill(null)),
+                middle: Array(height).fill(null).map(() => Array(width).fill(null))
+                // landscape/building/item/roof support can be added if needed, but bottom/middle are core for collision
+            };
+
+            // Initialize FOW data for this new level if it doesn't exist
+            if (gameState.fowData && !gameState.fowData[zStr]) {
+                gameState.fowData[zStr] = Array(height).fill(null).map(() => Array(width).fill('hidden'));
+            }
+
+            logToConsole(`Created new empty Z-level: ${z}`, "info");
+            return true;
+        }
+        return false;
+    },
+
     initializeCurrentMap: function (mapData) {
         currentMapData = mapData; // mapData from assetManager now contains .levels and .startPos.z
         gameState.lightSources = [];
