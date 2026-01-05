@@ -665,3 +665,76 @@ progress::-webkit-progress-value {
     padding-left: 15px;
     border-left: 3px solid var(--highlight-color);
 }
+
+/* Toast Notifications */
+#toast-notification-container {
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.toast-notification {
+    background-color: var(--panel-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 10px 15px;
+    border-radius: 4px;
+    font-family: 'DwarfFortress', monospace;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+    pointer-events: auto;
+    opacity: 0; /* Handled by animation */
+    margin-bottom: 10px;
+    animation: slideInToast 0.3s var(--juicy-ease) forwards;
+}
+
+.toast-notification.toast-exiting {
+    animation: fadeOutToast 0.3s ease-in forwards;
+}
+
+.toast-success { border-color: #28a745; border-left: 4px solid #28a745; }
+.toast-warning { border-color: #ffc107; border-left: 4px solid #ffc107; color: #ffeb3b; }
+.toast-error, .toast-danger { border-color: #dc3545; border-left: 4px solid #dc3545; color: #ff9999; }
+.toast-event { border-color: #17a2b8; border-left: 4px solid #17a2b8; }
+.toast-event-critical { border-color: #6610f2; border-left: 4px solid #6610f2; font-weight: bold; }
+.toast-info, .toast-info_minor { border-color: #777; border-left: 4px solid #777; }
+
+@keyframes slideInToast {
+    0% { opacity: 0; transform: translateX(50px) scale(0.9); }
+    100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes fadeOutToast {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.9); }
+}
+
+/* Tooltip Internals */
+.tooltip h5 {
+    margin: 0 0 5px 0;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 4px;
+    color: var(--highlight-color);
+    font-size: 1.1em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.tooltip .section-title {
+    font-weight: bold;
+    color: #888;
+    margin-top: 8px;
+    margin-bottom: 2px;
+    border-bottom: 1px dashed #444;
+    font-size: 0.85em;
+}
+
+.tooltip ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.tooltip li {
+    margin-bottom: 2px;
+    padding-left: 5px;
+    border-left: 1px solid #333;
+}
