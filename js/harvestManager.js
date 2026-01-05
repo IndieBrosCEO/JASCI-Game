@@ -353,8 +353,35 @@ class HarvestManager {
                 window.interaction.detectInteractableItems();
                 window.interaction.showInteractableItems();
             }
+
+            // Check stability for entities standing on/near the modified tile
+            if (action === "Dig") {
+                this.checkStability(item.x, item.y, item.z);
+            } else if (action === "Chop" || action === "Mine") {
+                this.checkStability(item.x, item.y, item.z + 1);
+            }
+
         } else {
             logToConsole(`Failed to ${action.toLowerCase()} target.`, "orange");
+        }
+    }
+
+    checkStability(x, y, z) {
+        // Check for player
+        if (window.gameState.playerPos) {
+            const p = window.gameState.playerPos;
+            if (Math.round(p.x) === x && Math.round(p.y) === y && Math.round(p.z) === z) {
+                if (window.handleFalling) window.handleFalling(window.gameState, x, y, z);
+            }
+        }
+
+        // Check for NPCs
+        if (window.gameState.npcs) {
+            window.gameState.npcs.forEach(npc => {
+                if (npc.mapPos && Math.round(npc.mapPos.x) === x && Math.round(npc.mapPos.y) === y && Math.round(npc.mapPos.z) === z) {
+                    if (window.handleFalling) window.handleFalling(npc, x, y, z);
+                }
+            });
         }
     }
 }
