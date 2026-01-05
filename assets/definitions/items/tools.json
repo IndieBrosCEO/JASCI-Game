@@ -917,5 +917,56 @@
     "canEquip": true,
     "sprite": "(",
     "color": "#a9a9a9"
+  },
+  {
+    "id": "siphon_hose",
+    "name": "Siphon Hose",
+    "family": "tool",
+    "properties": {
+      "type": "siphon"
+    },
+    "description": "A rubber hose with a manual pump bulb, used for siphoning liquids.",
+    "type": "tool",
+    "size": 2,
+    "weightLbs": 1,
+    "tags": [
+      "tool",
+      "siphoning",
+      "vehicle_maintenance"
+    ],
+    "equipSlots": [
+      "hand"
+    ],
+    "canEquip": true,
+    "recipe": {
+      "description": "Assemble a siphon hose.",
+      "components": [
+        {
+          "quantity": 1,
+          "family": "component",
+          "require": {
+            "type": "hose",
+            "material": "rubber"
+          }
+        },
+        {
+          "quantity": 1,
+          "family": "plastic",
+          "require": {
+            "type": "scrap"
+          }
+        }
+      ],
+      "skills_required": [
+        {
+          "skill": "Repair",
+          "level": 1
+        }
+      ],
+      "time_to_craft": 10,
+      "batch_size": 1
+    },
+    "sprite": "S",
+    "color": "#2f4f4f"
   }
 ]
