@@ -411,52 +411,77 @@
             return;
         }
 
-        // Apply End of Turn Environmental Damage (Gas) for the entity who just finished their turn
-        if (previousAttackerEntity && this.gameState.environmentalEffects?.tearGasTiles) {
-            const entityPos = previousAttackerEntity === this.gameState ? this.gameState.playerPos : previousAttackerEntity.mapPos;
-            if (entityPos) {
-                const isOnTearGasTile = this.gameState.environmentalEffects.tearGasTiles.some(t => t.x === entityPos.x && t.y === entityPos.y);
-                if (isOnTearGasTile) {
-                    const entName = previousAttackerEntity === this.gameState ? "Player" : (previousAttackerEntity.name || previousAttackerEntity.id);
-                    const tearGasDamage = Math.max(0, rollDiceNotation(parseDiceNotation("1d2-1")));
-                    if (tearGasDamage > 0) {
-                        logToConsole(`${entName} ends turn in tear gas and takes ${tearGasDamage} damage.`, 'red');
-                        // We must bypass the isProcessingTurn check for applyDamage or handle it carefully.
-                        // applyDamage doesn't use the lock, but death logic might call nextTurn/endCombat.
-                        // Since we are at the start of nextTurn and about to acquire lock, let's process damage.
-                        // However, if they die, we need to handle removal from initiative before proceeding.
+        // --- End of Turn Effects (Bleeding, Environment) ---
+        if (previousAttackerEntity) {
+            const entityName = previousAttackerEntity === this.gameState ? "Player" : (previousAttackerEntity.name || previousAttackerEntity.id);
+            const healthEntity = previousAttackerEntity === this.gameState ? this.gameState.player : previousAttackerEntity;
 
-                        // Note: We haven't set isProcessingTurn = true yet.
-                        this.applyDamage({ name: "Tear Gas" }, previousAttackerEntity, "torso", tearGasDamage, "Chemical", { name: "Tear Gas Cloud" });
+            // 1. Bleeding Damage (End of Turn)
+            if (previousAttackerEntity.statusEffects && previousAttackerEntity.statusEffects.bleeding && previousAttackerEntity.statusEffects.bleeding.value > 0) {
+                const bleedDmg = previousAttackerEntity.statusEffects.bleeding.value;
+                if (healthEntity.health && healthEntity.health.torso) {
+                    const wasInCrisis = healthEntity.health.torso.current <= 0 && healthEntity.health.torso.crisisTimer > 0;
 
-                        const healthEntity = previousAttackerEntity === this.gameState ? this.gameState.player : previousAttackerEntity;
-                        if (healthEntity.health.torso.current <= 0 || healthEntity.health.head.current <= 0) {
-                            logToConsole(`DEFEATED: ${entName} succumbed to tear gas at end of turn!`, 'darkred');
-                            if (previousAttackerEntity === this.gameState) {
-                                this.endCombat();
-                                window.gameOver(this.gameState);
-                                return;
-                            } else {
-                                // NPC died from end-of-turn damage.
-                                // applyDamage handles dropInventory and XP.
-                                // We just need to remove them from initiative so they don't get selected again if loop wraps.
-                                // Adjust currentTurnIndex if we remove the current/previous entity to prevent skipping the next one
-                                const idxToRemove = this.initiativeTracker.findIndex(e => e.entity === previousAttackerEntity);
-                                this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== previousAttackerEntity);
-                                this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== previousAttackerEntity);
+                    logToConsole(`${entityName} takes ${bleedDmg} Bleeding damage to Torso (End of Turn).`, 'red');
+                    // Direct modification to bypass armor/etc, as bleeding is internal/existing wound
+                    healthEntity.health.torso.current = Math.max(0, healthEntity.health.torso.current - bleedDmg);
 
-                                if (idxToRemove !== -1 && idxToRemove <= this.currentTurnIndex) {
-                                    this.currentTurnIndex--;
-                                }
-
-                                window.mapRenderer.scheduleRender();
-                                if (!this.initiativeTracker.some(e => !e.isPlayer && e.entity.health?.torso?.current > 0)) {
-                                    this.endCombat();
-                                    return;
-                                }
-                                // Entity removed, proceed to next turn normal logic
-                            }
+                    if (healthEntity.health.torso.current <= 0) {
+                        if (wasInCrisis) {
+                            // Already in crisis and took damage -> Death
+                            logToConsole(`FATAL: ${entityName} succumbed to bleeding while in Critical Condition!`, 'darkred');
+                            healthEntity.health.torso.isDestroyed = true;
+                            healthEntity.health.torso.crisisTimer = 0;
+                        } else if (healthEntity.health.torso.crisisTimer === 0) {
+                            // Just entered crisis
+                            healthEntity.health.torso.crisisTimer = 3;
+                            logToConsole(`${entityName}'s Torso enters Critical Condition from Bleeding!`, 'darkred');
                         }
+                    }
+                }
+            }
+
+            // 2. Tear Gas (End of Turn)
+            if (this.gameState.environmentalEffects?.tearGasTiles) {
+                const entityPos = previousAttackerEntity === this.gameState ? this.gameState.playerPos : previousAttackerEntity.mapPos;
+                if (entityPos) {
+                    const isOnTearGasTile = this.gameState.environmentalEffects.tearGasTiles.some(t => t.x === entityPos.x && t.y === entityPos.y);
+                    if (isOnTearGasTile) {
+                        const tearGasDamage = Math.max(0, rollDiceNotation(parseDiceNotation("1d2-1")));
+                        if (tearGasDamage > 0) {
+                            logToConsole(`${entityName} ends turn in tear gas and takes ${tearGasDamage} damage.`, 'red');
+                            this.applyDamage({ name: "Tear Gas" }, previousAttackerEntity, "torso", tearGasDamage, "Chemical", { name: "Tear Gas Cloud" });
+                        }
+                    }
+                }
+            }
+
+            // Check for Death after End of Turn Effects
+            // We specifically check for isDestroyed because bleeding sets it if fatal.
+            if ((healthEntity.health.torso.current <= 0 && healthEntity.health.torso.isDestroyed) ||
+                (healthEntity.health.head.current <= 0 && healthEntity.health.head.isDestroyed)) {
+
+                logToConsole(`DEFEATED: ${entityName} succumbed to injuries at end of turn!`, 'darkred');
+                if (previousAttackerEntity === this.gameState) {
+                    this.endCombat();
+                    window.gameOver(this.gameState);
+                    return;
+                } else {
+                    if (window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
+                        window.inventoryManager.dropInventory(previousAttackerEntity);
+                    }
+                    const idxToRemove = this.initiativeTracker.findIndex(e => e.entity === previousAttackerEntity);
+                    this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== previousAttackerEntity);
+                    this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== previousAttackerEntity);
+
+                    if (idxToRemove !== -1 && idxToRemove <= this.currentTurnIndex) {
+                        this.currentTurnIndex--;
+                    }
+
+                    window.mapRenderer.scheduleRender();
+                    if (!this.initiativeTracker.some(e => !e.isPlayer && e.entity.health?.torso?.current > 0)) {
+                        this.endCombat();
+                        return;
                     }
                 }
             }
@@ -753,6 +778,72 @@
                 else { logToConsole(`WARN: Unknown weapon type '${weaponObj.type}' for ${weaponObj.name}. Defaulting to unarmed.`, 'orange'); weaponObj = null; attackType = "melee"; }
             } else { logToConsole(`WARN: Weapon '${selectedVal}' not found. Defaulting to unarmed.`, 'orange'); weaponObj = null; attackType = "melee"; }
         }
+
+        // Crippled Arm Check for Attack
+        const health = this.gameState.player.health;
+        let isLeftCrippled = health && health.leftArm && health.leftArm.current <= 0;
+        let isRightCrippled = health && health.rightArm && health.rightArm.current <= 0;
+
+        // If weapon is two-handed (e.g. rifle, bow, some melee), need both arms.
+        // If weapon is one-handed, need specific arm.
+        // Assuming slot 0 is primary (Right?) and slot 1 is off-hand (Left?).
+        // Or assume generic "Hand Slots".
+        // Let's assume standard: Primary = Right, Off-hand = Left for simplicity, OR checking if *any* arm is available for 1H.
+        // Simplified Logic:
+        // - 2H Weapon: Fails if ANY arm crippled.
+        // - 1H Weapon: Fails if associated arm crippled (or if both crippled).
+        // - Unarmed: Can kick? Usually "Unarmed" implies punches. Let's assume fails if both arms crippled, or specific arm used.
+        // Since we don't strictly track which hand holds what in the selection (just "unarmed" or "weaponID"),
+        // we check the inventory slots.
+        const handSlots = this.gameState.inventory.handSlots;
+        const mainHandItem = handSlots[0]; // Usually Right
+        const offHandItem = handSlots[1]; // Usually Left
+
+        if (weaponObj) {
+            // Is it 2H?
+            const isTwoHanded = weaponObj.tags && (weaponObj.tags.includes("two_handed") || weaponObj.type.includes("rifle") || weaponObj.type.includes("bow") || weaponObj.type.includes("crossbow"));
+            if (isTwoHanded) {
+                if (isLeftCrippled || isRightCrippled) {
+                    logToConsole("Cannot use two-handed weapon with a crippled arm!", 'red');
+                    this.promptPlayerAttackDeclaration();
+                    return;
+                }
+            } else {
+                // 1H Weapon. Which hand is it in?
+                if (mainHandItem && mainHandItem.id === weaponObj.id) {
+                    // Right Hand (Slot 0)
+                    if (isRightCrippled) {
+                        logToConsole("Cannot attack with crippled Right Arm!", 'red');
+                        this.promptPlayerAttackDeclaration();
+                        return;
+                    }
+                } else if (offHandItem && offHandItem.id === weaponObj.id) {
+                    // Left Hand (Slot 1)
+                    if (isLeftCrippled) {
+                        logToConsole("Cannot attack with crippled Left Arm!", 'red');
+                        this.promptPlayerAttackDeclaration();
+                        return;
+                    }
+                } else {
+                    // Weapon not in hand? (Maybe from select list but not equipped?)
+                    // Assume main hand for safety if not found
+                    if (isRightCrippled && isLeftCrippled) {
+                         logToConsole("Cannot attack with both arms crippled!", 'red');
+                         this.promptPlayerAttackDeclaration();
+                         return;
+                    }
+                }
+            }
+        } else {
+            // Unarmed
+            if (isRightCrippled && isLeftCrippled) {
+                logToConsole("Cannot punch with both arms crippled!", 'red');
+                // Maybe allow Kick if legs ok? For now, restriction as per prompt "Crippled Arm: cannot attack".
+                this.promptPlayerAttackDeclaration();
+                return;
+            }
+        }
+
         if (!this.gameState.combatCurrentDefender && !(weaponObj?.type === "weapon_thrown_utility" || weaponObj?.type === "weapon_utility_spray")) {
             logToConsole("ERROR: No target selected for non-utility attack.", 'red'); this.promptPlayerAttackDeclaration(); return;
         }
@@ -849,6 +940,37 @@
         const defenseType = document.getElementById('combatDefenseTypeSelect').value;
         const blockingLimb = defenseType === 'BlockUnarmed' ? document.getElementById('combatBlockingLimbSelect').value : null;
         let description = defenseType;
+
+        // Crippled Arm Check for Block
+        if (defenseType === 'BlockUnarmed' || defenseType === 'BlockArmed') {
+            const health = this.gameState.player.health;
+            if (blockingLimb) {
+                // Check specific limb if chosen
+                if (health[blockingLimb] && health[blockingLimb].current <= 0) {
+                    logToConsole(`Cannot block with crippled ${blockingLimb}! Defaulting to Dodge (or None).`, 'red');
+                    // Fallback
+                    // Ideally we re-prompt, but for flow simplicity we downgrade defense
+                    this.gameState.playerDefenseChoice = { type: "None", blockingLimb: null, description: "Defense Failed (Crippled Limb)" };
+                    this.gameState.combatPhase = 'resolveRolls';
+                    await this.processAttack();
+                    return;
+                }
+            } else {
+                // Armed block or general unarmed block (if limb not specified in UI yet, assume standard arms)
+                // For BlockArmed, check hand holding weapon?
+                // Let's assume Block requires at least one good arm.
+                const isLeftCrippled = health && health.leftArm && health.leftArm.current <= 0;
+                const isRightCrippled = health && health.rightArm && health.rightArm.current <= 0;
+
+                if (isLeftCrippled && isRightCrippled) {
+                     logToConsole(`Cannot block with both arms crippled!`, 'red');
+                     this.gameState.playerDefenseChoice = { type: "None", blockingLimb: null, description: "Defense Failed (Crippled Limbs)" };
+                     this.gameState.combatPhase = 'resolveRolls';
+                     await this.processAttack();
+                     return;
+                }
+            }
+        }
 
         if (defenseType === 'Dodge') {
             description = "Dodges";
@@ -2330,6 +2452,15 @@
     }
 
     handleReloadActionDeclaration() {
+        // Crippled Arm Check for Reload
+        const health = this.gameState.player.health;
+        const isLeftCrippled = health && health.leftArm && health.leftArm.current <= 0;
+        const isRightCrippled = health && health.rightArm && health.rightArm.current <= 0;
+        if (isLeftCrippled || isRightCrippled) { // Reloading typically requires two hands
+             logToConsole("Cannot reload with a crippled arm!", 'red');
+             return;
+        }
+
         const weaponSelect = document.getElementById('combatWeaponSelect');
         const selectedOption = weaponSelect.options[weaponSelect.selectedIndex];
         let weaponObject = null;
@@ -2348,6 +2479,17 @@
 
     handleGrappleAttemptDeclaration() {
         if (this.gameState.actionPointsRemaining <= 0) { logToConsole("No AP to grapple.", 'orange'); return; }
+
+        // Crippled Arm Check for Grapple
+        const health = this.gameState.player.health;
+        const isLeftCrippled = health && health.leftArm && health.leftArm.current <= 0;
+        const isRightCrippled = health && health.rightArm && health.rightArm.current <= 0;
+        if (isLeftCrippled || isRightCrippled) { // Grapple requires arms
+             logToConsole("Cannot grapple with a crippled arm!", 'red');
+             this.promptPlayerAttackDeclaration();
+             return;
+        }
+
         const primaryHandItem = this.gameState.inventory.handSlots[0];
         const offHandItem = this.gameState.inventory.handSlots[1];
         if (primaryHandItem?.type.includes("firearm") && offHandItem?.type.includes("firearm")) {
@@ -2639,6 +2781,38 @@
         part.current = Math.max(0, part.current - reducedDamage);
         logToConsole(`INFO: ${entityName} ${accessKey} HP: ${part.current}/${part.max}.`, isPlayerVictim ? 'lightblue' : 'gold');
         this.shareAggroWithTeam(entity, attacker, damageAmount);
+
+        // --- Bleeding Logic Check (Start) ---
+        // If an arm or leg hits 0 HP, apply Bleeding 1.
+        // If a crippled limb (HP 0) takes damage, increase Bleeding by 1.
+        // Only if actual damage was taken (>0).
+        if (["leftArm", "rightArm", "leftLeg", "rightLeg"].includes(accessKey) && reducedDamage > 0) {
+            let shouldBleed = false;
+            if (part.current === 0) {
+                // If it just hit 0 (reducedDamage > 0 ensures it wasn't 0 before unless damage taken),
+                // or was already 0 and took damage.
+                shouldBleed = true;
+            }
+
+            if (shouldBleed) {
+                if (!entity.statusEffects) entity.statusEffects = {};
+                let bleedEffect = entity.statusEffects.bleeding;
+                if (!bleedEffect) {
+                    entity.statusEffects.bleeding = {
+                        id: "bleeding",
+                        displayName: "Bleeding",
+                        value: 1, // Start at Bleeding 1
+                        duration: 999, // Persists until treated
+                        description: "Taking damage to Torso at end of turn. Treat to stop."
+                    };
+                    logToConsole(`${entityName} starts Bleeding (1).`, isPlayerVictim ? 'red' : 'orange');
+                } else {
+                    bleedEffect.value += 1;
+                    logToConsole(`${entityName}'s Bleeding increased to ${bleedEffect.value}.`, isPlayerVictim ? 'red' : 'orange');
+                }
+            }
+        }
+        // --- Bleeding Logic Check (End) ---
 
         if (part.current === 0) {
             const fmtPartName = window.formatBodyPartName ? window.formatBodyPartName(accessKey) : accessKey.toUpperCase();

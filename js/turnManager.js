@@ -106,6 +106,17 @@ function dash_internal() {
         if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
     }
+
+    // Check for Crippled Legs (Crippled Leg -> Cannot Dash)
+    const health = gameState.player.health;
+    const isLeftCrippled = health && health.leftLeg && health.leftLeg.current <= 0;
+    const isRightCrippled = health && health.rightLeg && health.rightLeg.current <= 0;
+    if (isLeftCrippled || isRightCrippled) {
+        logToConsole("Cannot dash with a crippled leg!", "red");
+        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
+        return;
+    }
+
     if (!gameState.hasDashed && gameState.actionPointsRemaining > 0) {
         gameState.movementPointsRemaining += 6;
         gameState.hasDashed = true;
