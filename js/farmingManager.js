@@ -241,6 +241,27 @@ class FarmingManager {
 
         return false;
     }
+
+    restorePlotsOnMap(mapData) {
+        if (!mapData || !this.plots) return;
+        const mapId = mapData.id;
+        const plotsOnMap = this.plots.filter(p => p.mapId === mapId);
+
+        plotsOnMap.forEach(plot => {
+            const zStr = plot.z.toString();
+            if (mapData.levels && mapData.levels[zStr]) {
+                // Update Bottom to Tilled Soil
+                if (mapData.levels[zStr].bottom && mapData.levels[zStr].bottom[plot.y]) {
+                     mapData.levels[zStr].bottom[plot.y][plot.x] = "TSL";
+                }
+
+                // Update Middle to Plant
+                if (mapData.levels[zStr].middle && mapData.levels[zStr].middle[plot.y]) {
+                     mapData.levels[zStr].middle[plot.y][plot.x] = plot.plantId;
+                }
+            }
+        });
+    }
 }
 
 window.FarmingManager = FarmingManager;
