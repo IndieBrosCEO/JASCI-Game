@@ -117,6 +117,9 @@ class AnimationManager {
             case 'jump': // Added for jump mechanic
                 animationInstance = new JumpAnimation(animationType, data, this.gameState);
                 break;
+            case 'fall': // Added for fall mechanic
+                animationInstance = new FallAnimation(animationType, data, this.gameState);
+                break;
             default:
                 console.warn(`AnimationManager: Unknown animation type: ${animationType}. Using generic Animation.`);
                 animationInstance = new Animation(animationType, data, this.gameState);
@@ -1562,7 +1565,7 @@ class FallAnimation extends Animation {
         this.color = '';  // Not used directly
 
         // Store original entity Z to restore if needed, though handleFalling will set final Z.
-        this.originalEntityZ = (this.entity === this.gameState) ? this.gameState.playerPos.z : this.entity.mapPos.z;
+        this.originalEntityZ = (this.entity === this.gameState || this.entity === this.gameState.player) ? this.gameState.playerPos.z : (this.entity.mapPos ? this.entity.mapPos.z : 0);
 
         // The animation's own x, y, z will be the entity's path, but Z will interpolate.
         this.x = this.fallPathX;

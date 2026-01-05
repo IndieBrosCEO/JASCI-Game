@@ -1459,7 +1459,7 @@ function processConsoleCommand(commandText) {
 }
 
 // --- Autocomplete Suggestions ---
-let suggestions = [];
+window.suggestions = [];
 let suggestionIndex = -1;
 
 function updateSuggestions(inputValue) {
@@ -1469,21 +1469,21 @@ function updateSuggestions(inputValue) {
 
     if (parts.length === 1) {
         // Command suggestions
-        suggestions = Object.keys(commandHelpInfo).filter(cmd => cmd.includes(command));
+        window.suggestions = Object.keys(commandHelpInfo).filter(cmd => cmd.includes(command));
     } else {
         // Argument suggestions
         switch (command) {
             case 'additem':
             case 'removeitem':
             case 'placeitem':
-                suggestions = Object.keys(window.assetManager.itemsById).filter(id => id.toLowerCase().includes(currentArg.toLowerCase()));
+                window.suggestions = Object.keys(window.assetManager.itemsById).filter(id => id.toLowerCase().includes(currentArg.toLowerCase()));
                 break;
             case 'spawnnpc':
-                suggestions = Object.keys(window.assetManager.npcsById).filter(id => id.toLowerCase().includes(currentArg.toLowerCase()));
+                window.suggestions = Object.keys(window.assetManager.npcsById).filter(id => id.toLowerCase().includes(currentArg.toLowerCase()));
                 break;
             // Add more cases for other commands that need argument suggestions
             default:
-                suggestions = [];
+                window.suggestions = [];
         }
     }
     suggestionIndex = -1; // Reset selection
@@ -1495,9 +1495,9 @@ function showSuggestions() {
     if (!suggestionsBox) return;
 
     suggestionsBox.innerHTML = '';
-    if (suggestions.length > 0) {
+    if (window.suggestions.length > 0) {
         suggestionsBox.style.display = 'block';
-        suggestions.forEach((suggestion, index) => {
+        window.suggestions.forEach((suggestion, index) => {
             const div = document.createElement('div');
             div.textContent = suggestion;
             div.classList.add('suggestion-item');
@@ -1519,21 +1519,21 @@ function showSuggestions() {
 }
 
 function handleAutocomplete() {
-    if (suggestions.length > 0) {
+    if (window.suggestions.length > 0) {
         if (suggestionIndex === -1) suggestionIndex = 0;
         const parts = consoleInputElement.value.split(' ');
-        parts[parts.length - 1] = suggestions[suggestionIndex];
+        parts[parts.length - 1] = window.suggestions[suggestionIndex];
         consoleInputElement.value = parts.join(' ') + ' ';
         updateSuggestions(consoleInputElement.value);
     }
 }
 
 function navigateSuggestions(direction) {
-    if (suggestions.length > 0) {
+    if (window.suggestions.length > 0) {
         if (direction === 'up') {
-            suggestionIndex = (suggestionIndex > 0) ? suggestionIndex - 1 : suggestions.length - 1;
+            suggestionIndex = (suggestionIndex > 0) ? suggestionIndex - 1 : window.suggestions.length - 1;
         } else {
-            suggestionIndex = (suggestionIndex < suggestions.length - 1) ? suggestionIndex + 1 : 0;
+            suggestionIndex = (suggestionIndex < window.suggestions.length - 1) ? suggestionIndex + 1 : 0;
         }
         showSuggestions();
     }
