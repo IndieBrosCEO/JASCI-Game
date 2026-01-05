@@ -135,7 +135,10 @@ function _getActionsForItem(it) {
     if (it.itemType === "tile" || (tileDef && tileDef.tags && tileDef.tags.includes("plantable"))) {
         // Tilling
         let hasHoe = false;
-        if (window.gameState.player.equipped.hand && window.gameState.player.equipped.hand.properties && window.gameState.player.equipped.hand.properties.type === "hoe") hasHoe = true;
+        // Check hands for a hoe
+        if (window.gameState.inventory.handSlots) {
+            hasHoe = window.gameState.inventory.handSlots.some(item => item && item.properties && item.properties.type === "hoe");
+        }
 
         // TILLING: Dirt (DI), Grass (GR/TGR), Mud (MU/MF)
         if (hasHoe && ["DI", "GR", "TGR", "MU", "MF"].includes(it.id)) {
@@ -144,9 +147,9 @@ function _getActionsForItem(it) {
 
         // PLANTING: Tilled Soil (TSL)
         if (it.id === "TSL") {
-            const handItem = window.gameState.player.equipped.hand;
-            if (handItem && handItem.tags && handItem.tags.includes("seed")) {
-                actions.push(`Plant ${handItem.name}`);
+            const seedItem = window.gameState.inventory.handSlots.find(item => item && item.tags && item.tags.includes("seed"));
+            if (seedItem) {
+                actions.push(`Plant ${seedItem.name}`);
             }
         }
     }
@@ -154,8 +157,8 @@ function _getActionsForItem(it) {
     // WATERING (Targeting Plant)
     if (tileDef && tileDef.tags && tileDef.tags.includes("plant")) {
         // Check for water container in hand
-        const handItem = window.gameState.player.equipped.hand;
-        if (handItem && ((handItem.properties && handItem.properties.type === "water" && handItem.properties.container) || handItem.id === "water_bucket")) {
+        const waterItem = window.gameState.inventory.handSlots.find(item => item && ((item.properties && item.properties.type === "water" && item.properties.container) || item.id === "water_bucket"));
+        if (waterItem) {
              actions.push("Water Plant");
         }
     }
