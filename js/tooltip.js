@@ -1,11 +1,10 @@
-﻿// js/tooltip.js
+// js/tooltip.js
 
 function showLookTooltip(event, gameState, mapRenderer, assetManager) {
     const tooltipElement = document.getElementById('entityTooltip');
     if (!tooltipElement || !gameState.isLookModeActive) {
         if (tooltipElement) {
             tooltipElement.classList.add('hidden');
-            tooltipElement.style.opacity = '0'; // Ensure opacity is reset if used for transitions
         }
         return;
     }
@@ -47,7 +46,6 @@ function showLookTooltip(event, gameState, mapRenderer, assetManager) {
     const mapData = mapRenderer.getCurrentMapData();
     if (!mapData || !mapData.dimensions || mapX < 0 || mapX >= mapData.dimensions.width || mapY < 0 || mapY >= mapData.dimensions.height) {
         tooltipElement.classList.add('hidden');
-        tooltipElement.style.opacity = '0';
         return;
     }
 
@@ -143,8 +141,7 @@ function showLookTooltip(event, gameState, mapRenderer, assetManager) {
 
     tooltipElement.innerHTML = htmlContent;
     tooltipElement.classList.remove('hidden');
-    tooltipElement.style.opacity = '1';
-
+    // Opacity handled by CSS class .hidden transition
 
     let tooltipX = event.clientX + 20; // Offset slightly more from cursor
     let tooltipY = event.clientY + 20;
@@ -166,7 +163,6 @@ function hideLookTooltip() {
     const tooltipElement = document.getElementById('entityTooltip');
     if (tooltipElement) {
         tooltipElement.classList.add('hidden');
-        tooltipElement.style.opacity = '0';
     }
 }
 

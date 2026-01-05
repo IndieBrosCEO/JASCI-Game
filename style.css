@@ -24,9 +24,13 @@ body {
     box-sizing: border-box;
 }
 
+/* Force Font Globally */
+* {
+    font-family: 'DwarfFortress', monospace;
+}
+
 /* Interactive Elements Base */
 input, button, select, option, textarea {
-    font-family: 'DwarfFortress', monospace;
     background-color: var(--button-bg);
     color: var(--text-color);
     border: 1px solid transparent; /* Prepare for focus */
@@ -673,16 +677,17 @@ progress::-webkit-progress-value {
 }
 
 .toast-notification {
-    background-color: var(--panel-bg);
+    background-color: #111; /* Darker bg for contrast */
     color: var(--text-color);
     border: 1px solid var(--border-color);
-    padding: 10px 15px;
-    border-radius: 4px;
+    padding: 12px 18px; /* More padding */
+    border-radius: 2px; /* Sharp corners */
     font-family: 'DwarfFortress', monospace;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.8); /* Retro block shadow */
     pointer-events: auto;
     opacity: 0; /* Handled by animation */
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    font-size: 1.1em; /* Larger text */
     animation: slideInToast 0.3s var(--juicy-ease) forwards;
 }
 
@@ -737,4 +742,44 @@ progress::-webkit-progress-value {
     margin-bottom: 2px;
     padding-left: 5px;
     border-left: 1px solid #333;
+}
+
+/* Combat Popups (Dice Rolls, etc) */
+.combat-popup {
+    position: fixed;
+    transform: translate(-50%, -50%);
+    font-family: 'DwarfFortress', monospace !important;
+    z-index: 1001;
+    pointer-events: none;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.8);
+}
+
+.dice-roll-popup {
+    background: rgba(20, 20, 20, 0.95);
+    border: 1px solid #aaa;
+    padding: 15px;
+    border-radius: 2px;
+    color: white;
+    font-size: 1.1em;
+    min-width: 150px;
+    text-align: center;
+}
+
+.modifier-popup {
+    background: rgba(40, 40, 40, 0.9);
+    border: 1px solid #aaa;
+    padding: 10px 15px;
+    border-radius: 2px;
+    color: #00FF00;
+    font-size: 1.2em;
+}
+
+.hit-miss-popup {
+    background: rgba(20, 20, 20, 0.9);
+    border: 2px solid #fff;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 2em;
+    font-weight: bold;
+    text-transform: uppercase;
 }
