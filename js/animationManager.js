@@ -1265,7 +1265,7 @@ class DiceRollAnimation extends Animation {
         this.holdResultDuration = this.duration - this.rollEffectDuration; // Time to show final result
 
         this.uiElement = document.createElement('div');
-        this.uiElement.style.position = 'fixed';
+        this.uiElement.className = 'combat-popup dice-roll-popup';
 
         let screenPos = null;
         if (data.entity) {
@@ -1283,15 +1283,7 @@ class DiceRollAnimation extends Animation {
             this.uiElement.style.top = data.position?.y || '30%';
         }
 
-        this.uiElement.style.transform = 'translate(-50%, -50%)';
-        this.uiElement.style.padding = '10px'; // Reduced padding
-        this.uiElement.style.background = 'rgba(40, 40, 40, 0.9)'; // Slightly darker, more opaque
-        this.uiElement.style.border = '1px solid #888'; // Thinner border
-        this.uiElement.style.borderRadius = '5px'; // Smaller radius
-        this.uiElement.style.color = 'white';
-        this.uiElement.style.fontSize = '12px'; // Smaller base font size for the entire box
-        this.uiElement.style.fontFamily = 'monospace';
-        this.uiElement.style.zIndex = '1001';
+        // Inline styles removed in favor of CSS classes
         document.body.appendChild(this.uiElement);
         this.visible = true;
 
@@ -1411,7 +1403,7 @@ class ModifierPopupAnimation extends Animation {
         this.text = data.text;
 
         this.uiElement = document.createElement('div');
-        this.uiElement.style.position = 'fixed';
+        this.uiElement.className = 'combat-popup modifier-popup';
 
         let screenPos = null;
         if (data.entity) {
@@ -1430,15 +1422,8 @@ class ModifierPopupAnimation extends Animation {
             this.uiElement.style.top = data.position?.y || '35%';
         }
 
-        this.uiElement.style.transform = 'translate(-50%, -50%)';
-        this.uiElement.style.padding = '10px 15px';
-        this.uiElement.style.background = 'rgba(70, 70, 70, 0.9)';
-        this.uiElement.style.border = '1px solid #aaa';
-        this.uiElement.style.borderRadius = '5px';
-        this.uiElement.style.color = data.color || '#00FF00'; // Green for positive mods
-        this.uiElement.style.fontSize = '20px';
-        this.uiElement.style.fontFamily = 'monospace';
-        this.uiElement.style.zIndex = '1002';
+        if (data.color) this.uiElement.style.color = data.color;
+
         this.uiElement.style.opacity = '0'; // Start invisible for fade-in
         this.uiElement.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
         this.uiElement.textContent = this.text;
@@ -1480,7 +1465,7 @@ class HitMissLabelAnimation extends Animation {
         this.text = data.text;
 
         this.uiElement = document.createElement('div');
-        this.uiElement.style.position = 'fixed';
+        this.uiElement.className = 'combat-popup hit-miss-popup';
 
         let screenPos = null;
         if (data.entity) {
@@ -1498,16 +1483,13 @@ class HitMissLabelAnimation extends Animation {
             this.uiElement.style.top = data.position?.y || '40%';
         }
 
-        this.uiElement.style.transform = 'translate(-50%, -50%) scale(0.5)'; // Start small
-        this.uiElement.style.padding = '15px 25px';
-        this.uiElement.style.background = 'rgba(40, 40, 40, 0.9)';
-        this.uiElement.style.border = '2px solid #f0f0f0';
-        this.uiElement.style.borderRadius = '8px';
-        this.uiElement.style.color = data.color || (this.text === "Hit!" ? 'lightgreen' : 'salmon');
-        this.uiElement.style.fontSize = '32px';
-        this.uiElement.style.fontWeight = 'bold';
-        this.uiElement.style.fontFamily = 'monospace';
-        this.uiElement.style.zIndex = '1003';
+        this.uiElement.style.transform = 'translate(-50%, -50%) scale(0.5)'; // Start small (override class transform initially)
+        if (data.color) {
+            this.uiElement.style.color = data.color;
+        } else {
+            this.uiElement.style.color = (this.text === "Hit!" ? 'lightgreen' : 'salmon');
+        }
+
         this.uiElement.style.opacity = '0';
         this.uiElement.style.transition = 'opacity 0.4s ease-out, transform 0.4s ease-out';
         this.uiElement.textContent = this.text;

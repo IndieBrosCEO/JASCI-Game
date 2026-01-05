@@ -743,3 +743,43 @@ progress::-webkit-progress-value {
     padding-left: 5px;
     border-left: 1px solid #333;
 }
+
+/* Combat Popups (Dice Rolls, etc) */
+.combat-popup {
+    position: fixed;
+    transform: translate(-50%, -50%);
+    font-family: 'DwarfFortress', monospace !important;
+    z-index: 1001;
+    pointer-events: none;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.8);
+}
+
+.dice-roll-popup {
+    background: rgba(20, 20, 20, 0.95);
+    border: 1px solid #aaa;
+    padding: 15px;
+    border-radius: 2px;
+    color: white;
+    font-size: 1.1em;
+    min-width: 150px;
+    text-align: center;
+}
+
+.modifier-popup {
+    background: rgba(40, 40, 40, 0.9);
+    border: 1px solid #aaa;
+    padding: 10px 15px;
+    border-radius: 2px;
+    color: #00FF00;
+    font-size: 1.2em;
+}
+
+.hit-miss-popup {
+    background: rgba(20, 20, 20, 0.9);
+    border: 2px solid #fff;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 2em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
