@@ -192,10 +192,15 @@ class HarvestManager {
                     else window.audioManager.playUiSound("ui_pickup_01.wav");
                 }
 
-                // Deplete resource?
-                // Example: 10% chance to deplete a scavenger pile or turn rock to rubble
-                if (Math.random() < 0.1) {
-                     // this.depleteNode(item);
+                // Increment harvest count and check for depletion
+                const harvestKey = `${gameState.currentMapId}:${item.x},${item.y},${item.z}`;
+                if (!gameState.harvestCounts) gameState.harvestCounts = {};
+                if (!gameState.harvestCounts[harvestKey]) gameState.harvestCounts[harvestKey] = 0;
+                gameState.harvestCounts[harvestKey]++;
+
+                const MAX_HARVESTS = 3;
+                if (gameState.harvestCounts[harvestKey] >= MAX_HARVESTS) {
+                    this.destroyTile(item);
                 }
             }
 
@@ -222,6 +227,56 @@ class HarvestManager {
             }
         });
         return loot;
+    }
+
+    destroyTile(item) {
+        if (!window.mapRenderer) return;
+        const currentMap = window.mapRenderer.getCurrentMapData();
+        if (!currentMap || !currentMap.levels) return;
+
+        const { x, y, z, id } = item;
+        const zStr = z.toString();
+        const levelData = currentMap.levels[zStr];
+
+        if (!levelData) return;
+
+        let removed = false;
+
+        // Try Middle Layer first (most harvestables)
+        if (levelData.middle && levelData.middle[y]) {
+            const tileAtLoc = levelData.middle[y][x];
+            const tileIdAtLoc = (typeof tileAtLoc === 'object' && tileAtLoc !== null) ? tileAtLoc.tileId : tileAtLoc;
+            if (tileIdAtLoc === id) {
+                levelData.middle[y][x] = null;
+                removed = true;
+            }
+        }
+
+        // Try Bottom Layer if not found on middle
+        if (!removed && levelData.bottom && levelData.bottom[y]) {
+            const tileAtLoc = levelData.bottom[y][x];
+            const tileIdAtLoc = (typeof tileAtLoc === 'object' && tileAtLoc !== null) ? tileAtLoc.tileId : tileAtLoc;
+            if (tileIdAtLoc === id) {
+                levelData.bottom[y][x] = null; // Can create a hole
+                removed = true;
+            }
+        }
+
+        if (removed) {
+            logToConsole("The resource has been depleted.", "orange");
+            if (window.audioManager) window.audioManager.playUiSound("mining_break.wav"); // Placeholder
+
+            // Remove from interactableItems if present
+            if (window.gameState.interactableItems) {
+                const index = window.gameState.interactableItems.findIndex(it => it.x === x && it.y === y && it.z === z);
+                if (index !== -1) {
+                    window.gameState.interactableItems.splice(index, 1);
+                }
+            }
+
+            window.mapRenderer.scheduleRender();
+            if (window.interaction) window.interaction.detectInteractableItems();
+        }
     }
 }
 
