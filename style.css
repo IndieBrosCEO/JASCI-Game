@@ -24,9 +24,13 @@ body {
     box-sizing: border-box;
 }
 
+/* Force Font Globally */
+* {
+    font-family: 'DwarfFortress', monospace;
+}
+
 /* Interactive Elements Base */
 input, button, select, option, textarea {
-    font-family: 'DwarfFortress', monospace;
     background-color: var(--button-bg);
     color: var(--text-color);
     border: 1px solid transparent; /* Prepare for focus */
@@ -673,16 +677,17 @@ progress::-webkit-progress-value {
 }
 
 .toast-notification {
-    background-color: var(--panel-bg);
+    background-color: #111; /* Darker bg for contrast */
     color: var(--text-color);
     border: 1px solid var(--border-color);
-    padding: 10px 15px;
-    border-radius: 4px;
+    padding: 12px 18px; /* More padding */
+    border-radius: 2px; /* Sharp corners */
     font-family: 'DwarfFortress', monospace;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.8); /* Retro block shadow */
     pointer-events: auto;
     opacity: 0; /* Handled by animation */
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    font-size: 1.1em; /* Larger text */
     animation: slideInToast 0.3s var(--juicy-ease) forwards;
 }
 
