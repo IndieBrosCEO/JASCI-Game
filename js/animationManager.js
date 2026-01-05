@@ -1192,7 +1192,7 @@ class BloodSplashAnimation extends Animation {
         this.targetPos = targetPos;
         this.particles = [];
         this.particleCount = 5; // Number of blood drops
-        this.duration = data.duration || 600; // Short duration
+        this.duration = data.duration || 1000; // Longer duration for slower disappear
 
         this.sprites = ['*', '.', ',', '`'];
         this.colors = ['red', 'darkred', 'maroon'];
@@ -1236,9 +1236,30 @@ class BloodSplashAnimation extends Animation {
 
         // Update particles
         this.particles.forEach(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            p.opacity = 1.0 - progress; // Fade out
+            // Only move if not already stopped (collided)
+            if (p.vx !== 0 || p.vy !== 0) {
+                const nextX = p.x + p.vx;
+                const nextY = p.y + p.vy;
+
+                // Check for wall collision
+                let collision = false;
+                if (window.mapRenderer && typeof window.mapRenderer.getCollisionTileAt === 'function') {
+                    const tileId = window.mapRenderer.getCollisionTileAt(Math.floor(nextX), Math.floor(nextY), p.z);
+                    if (tileId !== "") {
+                        collision = true;
+                    }
+                }
+
+                if (collision) {
+                    p.vx = 0;
+                    p.vy = 0;
+                    // p.x and p.y remain at last valid position (on the wall boundary effectively)
+                } else {
+                    p.x = nextX;
+                    p.y = nextY;
+                }
+            }
+            p.opacity = Math.max(0, 1.0 - progress); // Fade out
         });
     }
 }

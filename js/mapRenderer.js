@@ -1467,6 +1467,8 @@ window.mapRenderer = {
                         cachedCell.sprite = finalSpriteForTile;
                         cachedCell.color = finalColorForTile;
                     }
+                    // Reset opacity to ensure no ghosting from previous animations
+                    span.style.opacity = '1';
                     cachedCell.displayedId = finalDisplayIdForTile;
 
                     let newBackgroundColor = tileDefinedBackgroundColor;
