@@ -26189,7 +26189,7 @@
       ],
       "teamId": 10,
       "cr": 2,
-      "dialogueFile": "police_officer_dialogue.json",
+      "dialogueFile": "police_find_clue_quest_give.json",
       "mapPos": {
         "x": 10,
         "y": 9,
