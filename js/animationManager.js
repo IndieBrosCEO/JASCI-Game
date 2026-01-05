@@ -102,6 +102,9 @@ class AnimationManager {
             case 'liquidSplash': // Added by Jules
                 animationInstance = new LiquidSplashAnimation(animationType, data, this.gameState);
                 break;
+            case 'bloodSplash': // Added by Jules
+                animationInstance = new BloodSplashAnimation(animationType, data, this.gameState);
+                break;
             case 'chainsawAttack': // Added by Jules
                 animationInstance = new ChainsawAttackAnimation(animationType, data, this.gameState);
                 break;
@@ -1168,6 +1171,75 @@ class ChainsawAttackAnimation extends Animation {
     }
 }
 window.ChainsawAttackAnimation = ChainsawAttackAnimation;
+
+// --- BloodSplashAnimation Class (Jules) ---
+class BloodSplashAnimation extends Animation {
+    constructor(type, data, gameStateRef) {
+        // data: targetPos (or entity), duration
+        let targetPos = data.targetPos;
+        if (!targetPos && data.entity) {
+            if (data.entity === gameStateRef || data.entity === gameStateRef.player) {
+                targetPos = gameStateRef.playerPos;
+            } else {
+                targetPos = data.entity.mapPos;
+            }
+        }
+
+        super(type, { ...data, x: targetPos ? targetPos.x : 0, y: targetPos ? targetPos.y : 0, z: targetPos ? targetPos.z : 0 }, gameStateRef);
+        this.targetPos = targetPos;
+        this.particles = [];
+        this.particleCount = 5; // Number of blood drops
+        this.duration = data.duration || 600; // Short duration
+
+        this.sprites = ['*', '.', ',', '`'];
+        this.colors = ['red', 'darkred', 'maroon'];
+
+        if (this.targetPos) {
+            for (let i = 0; i < this.particleCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 0.05 + Math.random() * 0.1;
+                this.particles.push({
+                    x: this.targetPos.x,
+                    y: this.targetPos.y,
+                    z: this.targetPos.z,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    sprite: this.sprites[Math.floor(Math.random() * this.sprites.length)],
+                    color: this.colors[Math.floor(Math.random() * this.colors.length)],
+                    opacity: 1.0
+                });
+            }
+        }
+
+        this.visible = true;
+        this.sprite = '*'; // Default fallback
+        console.log(`[BloodSplashAnimation] Created at ${this.x},${this.y}`);
+    }
+
+    update() {
+        if (this.finished) {
+            this.visible = false;
+            return;
+        }
+
+        const now = Date.now();
+        const progress = (now - this.startTime) / this.duration;
+
+        if (progress >= 1) {
+            this.finished = true;
+            this.visible = false;
+            return;
+        }
+
+        // Update particles
+        this.particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.opacity = 1.0 - progress; // Fade out
+        });
+    }
+}
+window.BloodSplashAnimation = BloodSplashAnimation;
 
 
 window.AnimationManager = AnimationManager;
