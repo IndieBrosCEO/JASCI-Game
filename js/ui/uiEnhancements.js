@@ -156,20 +156,26 @@ class UIEnhancer {
     }
 
     setupModalObservers() {
-        // Observe style attribute changes on modals to trigger animation classes
+        // Observe style attribute changes on modals/panels to trigger animation classes
 
-        // A generic observer for 'hidden' class removal on specific panels
-        const modalIds = [
+        // IDs for centered modals (need translate)
+        const centerModalIds = [
+            'settingsModal',
+            'medicalTreatmentModal',
+            'questLogUI'
+        ];
+
+        // IDs for static panels (no translate)
+        const panelIds = [
             'craftingUI',
             'constructionUI',
             'character-creator',
             'vehicleModificationUI',
             'character-info-panel',
-            'settingsModal',
-            'medicalTreatmentModal',
-            'questLogUI',
             'dialogueUI'
         ];
+
+        const allIds = [...centerModalIds, ...panelIds];
 
         const observer = new MutationObserver((mutations) => {
             mutations.forEach(mutation => {
@@ -178,22 +184,25 @@ class UIEnhancer {
                     const wasHidden = mutation.oldValue && mutation.oldValue.includes('hidden');
                     const isHidden = target.classList.contains('hidden');
 
+                    const isCenteredModal = centerModalIds.includes(target.id);
+                    const animClass = isCenteredModal ? 'modal-open-anim' : 'panel-open-anim';
+
                     if (wasHidden && !isHidden) {
                         // Truly opened just now
-                        // Check if we already have the animation class to avoid loops (though check against old value helps)
-                        if (!target.classList.contains('modal-open-anim')) {
-                            target.classList.add('modal-open-anim');
+                        // Check if we already have the animation class to avoid loops
+                        if (!target.classList.contains(animClass)) {
+                            target.classList.add(animClass);
                             this.playOpenSound();
                         }
                     } else if (!wasHidden && isHidden) {
                         // Truly closed
-                        target.classList.remove('modal-open-anim');
+                        target.classList.remove(animClass);
                     }
                 }
             });
         });
 
-        modalIds.forEach(id => {
+        allIds.forEach(id => {
             const el = document.getElementById(id);
             if (el) observer.observe(el, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
         });
