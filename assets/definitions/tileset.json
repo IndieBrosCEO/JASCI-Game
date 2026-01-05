@@ -1236,6 +1236,7 @@
     "tags": [
       "landscape",
       "bottom",
+      "floor",
       "farmland",
       "plantable"
     ]
@@ -2473,5 +2474,79 @@
     ],
     "target_dz": 1,
     "z_cost": 2
+  },
+  "PL_C1": {
+    "sprite": "i",
+    "name": "Corn (Seedling)",
+    "color": "#90EE90",
+    "tags": [
+      "plant",
+      "middle",
+      "corn",
+      "stage1",
+      "vegetation"
+    ]
+  },
+  "PL_C2": {
+    "sprite": "l",
+    "name": "Corn (Growing)",
+    "color": "#32CD32",
+    "tags": [
+      "plant",
+      "middle",
+      "corn",
+      "stage2",
+      "vegetation"
+    ]
+  },
+  "PL_C3": {
+    "sprite": "Y",
+    "name": "Corn (Ripe)",
+    "color": "#FFD700",
+    "tags": [
+      "plant",
+      "middle",
+      "corn",
+      "stage3",
+      "vegetation",
+      "harvest:corn"
+    ]
+  },
+  "PL_R1": {
+    "sprite": ".",
+    "name": "Carrot (Seedling)",
+    "color": "#90EE90",
+    "tags": [
+      "plant",
+      "middle",
+      "carrot",
+      "stage1",
+      "vegetation"
+    ]
+  },
+  "PL_R2": {
+    "sprite": "v",
+    "name": "Carrot (Growing)",
+    "color": "#32CD32",
+    "tags": [
+      "plant",
+      "middle",
+      "carrot",
+      "stage2",
+      "vegetation"
+    ]
+  },
+  "PL_R3": {
+    "sprite": "V",
+    "name": "Carrot (Ripe)",
+    "color": "#FFA500",
+    "tags": [
+      "plant",
+      "middle",
+      "carrot",
+      "stage3",
+      "vegetation",
+      "harvest:carrot"
+    ]
   }
 }

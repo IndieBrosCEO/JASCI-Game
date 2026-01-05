@@ -563,6 +563,34 @@ window.mapRenderer = {
     isTileBlockingVision: isTileBlockingVision,
     isTileVisible: isTileVisible,
 
+    ensureLevelExists: function(z) {
+        const mapData = this.getCurrentMapData();
+        if (!mapData || !mapData.levels || !mapData.dimensions) return false;
+
+        const zStr = z.toString();
+        // Check if level exists
+        if (!mapData.levels[zStr]) {
+            const width = mapData.dimensions.width;
+            const height = mapData.dimensions.height;
+
+            // Create empty level structure
+            mapData.levels[zStr] = {
+                bottom: Array(height).fill(null).map(() => Array(width).fill(null)),
+                middle: Array(height).fill(null).map(() => Array(width).fill(null))
+                // landscape/building/item/roof support can be added if needed, but bottom/middle are core for collision
+            };
+
+            // Initialize FOW data for this new level if it doesn't exist
+            if (gameState.fowData && !gameState.fowData[zStr]) {
+                gameState.fowData[zStr] = Array(height).fill(null).map(() => Array(width).fill('hidden'));
+            }
+
+            logToConsole(`Created new empty Z-level: ${z}`, "info");
+            return true;
+        }
+        return false;
+    },
+
     initializeCurrentMap: function (mapData) {
         currentMapData = mapData; // mapData from assetManager now contains .levels and .startPos.z
         gameState.lightSources = [];
@@ -1439,6 +1467,8 @@ window.mapRenderer = {
                         cachedCell.sprite = finalSpriteForTile;
                         cachedCell.color = finalColorForTile;
                     }
+                    // Reset opacity to ensure no ghosting from previous animations
+                    span.style.opacity = '1';
                     cachedCell.displayedId = finalDisplayIdForTile;
 
                     let newBackgroundColor = tileDefinedBackgroundColor;
@@ -1858,6 +1888,25 @@ window.mapRenderer = {
                                 const fowStatusParticle = currentFowData?.[particleY]?.[particleX];
                                 if (fowStatusParticle === 'visible' || fowStatusParticle === 'visited') {
                                     const cachedCell = tileCacheData[particleY]?.[particleX]; // Absolute
+                                    if (cachedCell && cachedCell.span) {
+                                        cachedCell.span.textContent = particle.sprite;
+                                        cachedCell.span.style.color = particle.color;
+                                        if (typeof particle.opacity === 'number') {
+                                            cachedCell.span.style.opacity = particle.opacity;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else if (anim.type === 'bloodSplash' && anim.particles) { // Blood Splash (Viewport Aware)
+                    anim.particles.forEach(particle => {
+                        if (particle.z === undefined || particle.z === currentZ) {
+                            const particleX = Math.floor(particle.x); const particleY = Math.floor(particle.y);
+                            if (particleX >= startCol && particleX <= endCol && particleY >= startRow && particleY <= endRow) {
+                                const fowStatusParticle = currentFowData?.[particleY]?.[particleX];
+                                if (fowStatusParticle === 'visible' || fowStatusParticle === 'visited') {
+                                    const cachedCell = tileCacheData[particleY]?.[particleX];
                                     if (cachedCell && cachedCell.span) {
                                         cachedCell.span.textContent = particle.sprite;
                                         cachedCell.span.style.color = particle.color;

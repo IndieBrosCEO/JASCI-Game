@@ -33,6 +33,10 @@ import {
 // placeTile is used by tools, not directly usually by the main orchestrator after setup
 import { initializeTileManager } from './tileManager.js';
 
+// --- Integrated Tools ---
+import { DialogueEditor } from './dialogueEditor.js';
+import { QuestEditor } from './questEditor.js';
+
 // --- UI Management ---
 import {
     initializeUIManager,
@@ -45,7 +49,8 @@ import {
     updatePlayerStartDisplay,
     updateGridDimensionsUI,
     updateToolButtonUI, // Needed for direct tool changes by shortcut if not fully in eventHandlers
-    updatePaletteSelectionUI // Needed for direct tile changes by shortcut
+    updatePaletteSelectionUI, // Needed for direct tile changes by shortcut
+    setIntegratedTools // Added for linking tools
 } from './uiManager.js';
 
 // --- Event Handling ---
@@ -165,6 +170,25 @@ async function initializeMapMaker() {
     // Initialize Modules
     initializeTileManager(assetManager);
 
+    // Initialize Integrated Tools
+    const questEditor = new QuestEditor('quest-editor');
+    const dialogueEditor = new DialogueEditor('dialogue-editor', questEditor);
+
+    // Tab Switching Logic
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tool-content').forEach(content => content.classList.remove('active'));
+
+            button.classList.add('active');
+            const targetId = button.getAttribute('data-tab');
+            const targetContent = document.getElementById(targetId);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        });
+    });
+
     // Define interaction functions UIManager needs to attach to dynamic elements
     const uiInteractionDispatch = {
         handleCellMouseDown: handleCellMouseDown,
@@ -180,6 +204,7 @@ async function initializeMapMaker() {
         }
     };
     initializeUIManager(assetManager, appState, uiInteractionDispatch);
+    setIntegratedTools(dialogueEditor, questEditor); // Pass tool instances to UIManager
     initializeEventHandlers(assetManager, appState); // Event Handlers will use appState
 
     // Initialize Map Data

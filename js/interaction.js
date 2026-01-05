@@ -131,6 +131,35 @@ function _getActionsForItem(it) {
     if (it.itemType === "trap" && it.trapState === "detected") {
         actions.push("Examine Trap", "Attempt to Disarm");
     }
+    // Added for Farming
+    if (it.itemType === "tile" || (tileDef && tileDef.tags && tileDef.tags.includes("plantable"))) {
+        // Tilling
+        let hasHoe = false;
+        if (window.gameState.player.equipped.hand && window.gameState.player.equipped.hand.properties && window.gameState.player.equipped.hand.properties.type === "hoe") hasHoe = true;
+
+        // TILLING: Dirt (DI), Grass (GR/TGR), Mud (MU/MF)
+        if (hasHoe && ["DI", "GR", "TGR", "MU", "MF"].includes(it.id)) {
+            actions.push("Till Soil");
+        }
+
+        // PLANTING: Tilled Soil (TSL)
+        if (it.id === "TSL") {
+            const handItem = window.gameState.player.equipped.hand;
+            if (handItem && handItem.tags && handItem.tags.includes("seed")) {
+                actions.push(`Plant ${handItem.name}`);
+            }
+        }
+    }
+
+    // WATERING (Targeting Plant)
+    if (tileDef && tileDef.tags && tileDef.tags.includes("plant")) {
+        // Check for water container in hand
+        const handItem = window.gameState.player.equipped.hand;
+        if (handItem && ((handItem.properties && handItem.properties.type === "water" && handItem.properties.container) || handItem.id === "water_bucket")) {
+             actions.push("Water Plant");
+        }
+    }
+
     // Added for vehicles
     if (it.itemType === "vehicle") {
         console.log(`_getActionsForItem: Detected itemType "vehicle". Item ID: ${it.id}, Item Name: ${it.name}`);

@@ -9,6 +9,10 @@
       {
         "text": "No.",
         "goTo": "end"
+      },
+      {
+        "text": "I have what you seek.",
+        "goTo": "end_quest"
       }
     ]
   },
@@ -26,6 +30,13 @@
     ],
     "actions": [
       "giveQuest:police_find_clue"
+    ]
+  },
+  "end_quest": {
+    "text": "Oh golly gee thanks a lot mister!",
+    "choices": [],
+    "actions": [
+      "completeQuest:police_find_clue"
     ]
   }
 }

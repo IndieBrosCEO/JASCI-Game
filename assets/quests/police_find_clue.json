@@ -6,7 +6,7 @@
     "objectives": [
       {
         "type": "collect",
-        "target": "paper, id:\"howard_b_riley_note\"",
+        "target": "parchment_roll_blank",
         "count": 1,
         "current": 0,
         "description": "Collect Clue"

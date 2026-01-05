@@ -39,61 +39,51 @@ class ToastUIManager {
         toast.className = `toast-notification toast-${type}`;
         toast.innerText = message;
 
-        // Styles for the toast
-        toast.style.padding = '10px 15px';
-        toast.style.borderRadius = '4px';
-        toast.style.color = '#fff';
-        toast.style.fontFamily = "'DwarfFortress', monospace";
-        toast.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s ease-in-out';
-        toast.style.pointerEvents = 'auto'; // Allow clicking (e.g., to dismiss if we added a button)
-        toast.style.textAlign = 'center';
-        toast.style.border = '1px solid #555';
-
-        // Type-specific colors
-        switch (type) {
-            case 'success':
-                toast.style.backgroundColor = 'rgba(40, 167, 69, 0.9)'; // Green
-                toast.style.borderColor = '#28a745';
-                break;
-            case 'warning':
-                toast.style.backgroundColor = 'rgba(255, 193, 7, 0.9)'; // Yellow/Orange
-                toast.style.color = '#000';
-                toast.style.borderColor = '#ffc107';
-                break;
-            case 'error':
-            case 'danger':
-                toast.style.backgroundColor = 'rgba(220, 53, 69, 0.9)'; // Red
-                toast.style.borderColor = '#dc3545';
-                break;
-            case 'event':
-                toast.style.backgroundColor = 'rgba(23, 162, 184, 0.9)'; // Cyan/Info
-                toast.style.borderColor = '#17a2b8';
-                break;
-            case 'event-critical':
-                toast.style.backgroundColor = 'rgba(102, 16, 242, 0.9)'; // Purple
-                toast.style.borderColor = '#6610f2';
-                toast.style.fontWeight = 'bold';
-                break;
-            case 'info':
-            case 'info_minor':
-            default:
-                toast.style.backgroundColor = 'rgba(50, 50, 50, 0.9)'; // Dark Grey
-                toast.style.borderColor = '#777';
-                break;
+        // Sound Effects
+        if (window.audioManager) {
+            let sound = 'ui_type_02.wav'; // Default info/minor
+            let volume = 0.4;
+            switch (type) {
+                case 'success':
+                    sound = 'ui_craft_success_01.wav';
+                    volume = 0.6;
+                    break;
+                case 'warning':
+                    sound = 'ui_error_01.wav';
+                    volume = 0.4;
+                    break;
+                case 'error':
+                case 'danger':
+                    sound = 'ui_error_01.wav';
+                    volume = 0.7;
+                    break;
+                case 'event':
+                    sound = 'ui_confirm_01.wav';
+                    volume = 0.6;
+                    break;
+                case 'event-critical':
+                    sound = 'quest_complete_01.wav';
+                    volume = 0.8;
+                    break;
+                case 'info':
+                case 'info_minor':
+                default:
+                    sound = 'ui_type_02.wav';
+                    volume = 0.3;
+                    break;
+            }
+            window.audioManager.playSound(sound, { volume });
         }
+
+        // Inline styles removed in favor of CSS classes in style.css
 
         this.toastContainer.appendChild(toast);
 
-        // Fade in
-        requestAnimationFrame(() => {
-            toast.style.opacity = '1';
-        });
+        // Animation is handled by CSS keyframes on class .toast-notification
 
         // Auto remove
         setTimeout(() => {
-            toast.style.opacity = '0';
+            toast.classList.add('toast-exiting'); // Trigger fade out animation
             setTimeout(() => {
                 if (this.toastContainer.contains(toast)) {
                     this.toastContainer.removeChild(toast);

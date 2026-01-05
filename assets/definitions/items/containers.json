@@ -12,7 +12,7 @@
       "description": "Sew a small, durable backpack from canvas and leather straps.",
       "components": [
         { "family": "fabric", "quantity": 2, "require": { "material": "canvas", "grade": "sturdy" } },
-        { "family": "leather", "quantity": 2, "require": { "size": "strip" } },
+        { "family": "leather", "quantity": 2, "require": { "type": "strip" } },
         { "family": "thread", "quantity": 2 },
         { "family": "fastener", "quantity": 2, "require": { "type": "buckle" } }
       ],

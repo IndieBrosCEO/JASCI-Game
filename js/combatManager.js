@@ -2611,6 +2611,12 @@
         const reducedDamage = Math.max(0, damageAmount - effectiveArmor - damageReduction);
         const soundPosition = isPlayerVictim ? this.gameState.playerPos : entity.mapPos;
 
+        if (reducedDamage > 0 && window.animationManager) {
+            window.animationManager.playAnimation('bloodSplash', {
+                entity: entity,
+                duration: 600
+            });
+        }
 
         if (reducedDamage > 0 && window.audioManager && soundPosition) {
             if (isPlayerVictim) {
