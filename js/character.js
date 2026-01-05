@@ -678,21 +678,29 @@ function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, charac
     logToConsole(`Medicine check on ${partName} for ${charName} (${treatmentType}, ${restType || 'Immediate'}): Rolled ${roll} + Medicine Bonus ${medicineBonus} = ${totalRoll} (DC ${dc})`);
 
     if (totalRoll >= dc) {
-        // 1. Immediate Crisis Resolution
+        // 1. Immediate Crisis Resolution & Bleeding Stop
         if (isCrisisResolution) {
-            if (treatmentType === "Well Tended") {
-                // "restore injured part to 1 HP immediately"
+            if (treatmentType === "Well Tended" || treatmentType === "Standard Treatment") {
+                // Stabilize success (Standard or better): Restore to 1 HP immediately if at 0.
                 if (part.current === 0) part.current = 1;
                 part.crisisTimer = 0;
                 part.crisisDescription = "";
                 part.isDestroyed = false;
-                logToConsole(`Health crisis in ${partName} resolved (Well Tended). Restored to 1 HP immediately.`, "green");
-            } else if (treatmentType === "Standard Treatment") {
-                // "end crisis"
-                part.crisisTimer = 0;
-                part.crisisDescription = "";
-                part.isDestroyed = false;
-                logToConsole(`Health crisis in ${partName} ended (Standard Treatment).`, "green");
+                logToConsole(`Health crisis in ${partName} resolved (${treatmentType}). Restored to 1 HP immediately.`, "green");
+            }
+        }
+
+        // Stop Bleeding if treating a limb (Standard/Well-Tended only)
+        if (["leftArm", "rightArm", "leftLeg", "rightLeg"].includes(bodyPart)) {
+            if (character.statusEffects && character.statusEffects.bleeding) {
+                // "Poorly Tended" (DC 5) cannot stabilize bleeding.
+                // It heals 1 HP on long rest only, but doesn't resolve status effects like Bleeding/Crisis immediately.
+                if (treatmentType !== "Poorly Tended") {
+                    delete character.statusEffects.bleeding;
+                    logToConsole(`Bleeding stopped for ${charName}.`, "green");
+                } else {
+                    logToConsole(`Poorly tended treatment insufficient to stop bleeding for ${charName}.`, "orange");
+                }
             }
         }
 
@@ -1148,7 +1156,20 @@ function calculateDerivedStats(character) {
     const hitPoints = 10 + (constitution * 2);
     const carryWeight = 50 + (strength * 10);
     const actionPoints = 1;
-    const movementSpeed = 30;
+    let movementSpeed = 30;
+
+    // Crippled Limb Speed Penalties
+    if (character.health) {
+        let crippledLegs = 0;
+        if (character.health.leftLeg && character.health.leftLeg.current <= 0) crippledLegs++;
+        if (character.health.rightLeg && character.health.rightLeg.current <= 0) crippledLegs++;
+
+        if (crippledLegs === 1) {
+            movementSpeed = Math.floor(movementSpeed / 2);
+        } else if (crippledLegs >= 2) {
+            movementSpeed = 5;
+        }
+    }
 
     return {
         "Hit Points": hitPoints,
