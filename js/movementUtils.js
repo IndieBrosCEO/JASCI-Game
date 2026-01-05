@@ -146,6 +146,13 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
             return false;
     }
 
+    // Ensure target Z level exists for vertical moves
+    if (direction === 'up_z') {
+         window.mapRenderer.ensureLevelExists(originalPos.z + 1);
+    } else if (direction === 'down_z') {
+         window.mapRenderer.ensureLevelExists(originalPos.z - 1);
+    }
+
     if (targetX < 0 || targetX >= width || targetY < 0 || targetY >= height) {
         logToConsole(`${logPrefix} Can't move that way (map boundary).`);
         return false;
@@ -920,7 +927,8 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
 
         if (proceedWithFall) {
             if (typeof window.initiateFallCheck === 'function') {
-                const fallHandled = await window.initiateFallCheck(character, targetX, targetY, originalPos.z); // originalPos.z is the Z of the air tile stepped into
+                // Pass safePos (originalPos) to initiateFallCheck for potential infinite void reset
+                const fallHandled = await window.initiateFallCheck(character, targetX, targetY, originalPos.z, originalPos);
                 if (fallHandled) {
                     const fallMoveCost = 1;
                     let currentMP = isPlayer ? window.gameState.movementPointsRemaining : character.currentMovementPoints;

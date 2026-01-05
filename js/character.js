@@ -1262,9 +1262,10 @@ window.characterCanStandAt = characterCanStandAt;
  * @param {number} startX - The X coordinate where the fall initiates.
  * @param {number} startY - The Y coordinate where the fall initiates.
  * @param {number} initialAirZ - The Z level of the air/non-walkable tile the character stepped into.
+ * @param {object} safePos - The {x, y, z} position to return to if infinite void fall is detected.
  * @returns {boolean} True if a fall occurred and position was updated, false otherwise.
  */
-async function handleFalling(characterOrGameState, startX, startY, initialAirZ) { // Made async
+async function handleFalling(characterOrGameState, startX, startY, initialAirZ, safePos) { // Made async
     // Flying Check
     const character = (characterOrGameState === window.gameState) ? window.gameState.player : characterOrGameState;
     if (character.tags && character.tags.includes('flying')) {
@@ -1296,6 +1297,9 @@ async function handleFalling(characterOrGameState, startX, startY, initialAirZ) 
     // The first check is for initialAirZ itself. If it's walkable, no fall.
     // If not, then character falls at least one level.
 
+    // Ensure initial level exists (should be done by caller but safety check)
+    window.mapRenderer.ensureLevelExists(initialAirZ);
+
     if (window.mapRenderer.isWalkable(startX, startY, initialAirZ)) {
         // This case should ideally not be reached if called correctly,
         // as the calling logic should have determined initialAirZ is not walkable.
@@ -1326,21 +1330,45 @@ async function handleFalling(characterOrGameState, startX, startY, initialAirZ) 
     // If initialAirZ is NOT walkable, start the fall search from Z-1 of initialAirZ
     currentCheckZ = initialAirZ - 1;
     levelsFallen = 1; // Already fell one level from original Z to initialAirZ
-    // TODO: Play move_fall_start_01.wav when available, if levelsFallen > 0 (i.e., an actual fall is initiated).
-    // This sound should play when the character *begins* to fall from initialAirZ.
-    // Example: if (levelsFallen > 0 && window.audioManager) window.audioManager.playSound('ui_error_01.wav'); // Placeholder
 
-    while (currentCheckZ >= minZ) {
+    // Modified Fall Logic:
+    // "You can fall as long as you want, max levels created after a fall is 10 though"
+    const MAX_CREATED_LEVELS = 10;
+    const SAFETY_FALL_LIMIT = 100; // Prevent infinite loops or crashes
+    let levelsCreated = 0;
+    let infiniteVoidDetected = false;
+    let steps = 0;
+
+    // We continue checking downwards until we land, trigger infinite void (too many creations), or hit safety limit
+    while (steps < SAFETY_FALL_LIMIT) {
+        // Check/Create level
+        const wasCreated = window.mapRenderer.ensureLevelExists(currentCheckZ);
+        if (wasCreated) {
+            levelsCreated++;
+        }
+
+        // If we have created too many levels during this single fall, abort and reset
+        if (levelsCreated > MAX_CREATED_LEVELS) {
+            infiniteVoidDetected = true;
+            break;
+        }
+
+        // Check for landing
         if (window.mapRenderer.isWalkable(startX, startY, currentCheckZ)) {
             landed = true;
             break;
         }
+
         levelsFallen++;
         currentCheckZ--;
-        if (levelsFallen > 100) { // Safety break for very deep falls
-            logToConsole("handleFalling: Fall exceeded 100 levels, aborting further descent.", "warn");
-            break;
-        }
+        steps++;
+    }
+
+    // If we hit safety limit without landing, we treat it as infinite void (or just abyss reset)
+    // if we haven't landed yet.
+    if (!landed && !infiniteVoidDetected && steps >= SAFETY_FALL_LIMIT) {
+         logToConsole("Fall exceeded safety limit (100). Treating as infinite void.", "warn");
+         infiniteVoidDetected = true;
     }
 
     if (landed) {
@@ -1378,32 +1406,43 @@ async function handleFalling(characterOrGameState, startX, startY, initialAirZ) 
             if (typeof window.updatePlayerStatusDisplay === 'function') window.updatePlayerStatusDisplay();
         }
         return true; // Fall occurred and position updated
-    } else {
-        // Fell out of the world or hit max fall depth without landing
-        logToConsole(`${characterOrGameState === gameState ? "Player" : (characterOrGameState.name || "NPC")} fell out of the world or too far! Will be placed at Z: ${currentCheckZ + 1}. Max damage applied.`, "red");
-        const lastSafeZ = currentCheckZ + 1; // The Z before falling out
+    } else if (infiniteVoidDetected && safePos) {
+        // Infinite Void Fall logic
+        logToConsole(`${characterOrGameState === gameState ? "Player" : (characterOrGameState.name || "NPC")} infinite void fall detected! Returning to safety.`, "red");
 
+        // Flag logic
+        if (characterOrGameState === gameState) {
+            gameState.flags = gameState.flags || {};
+            gameState.flags.lastFallWasInfinite = true;
+        } else {
+            characterOrGameState.flags = characterOrGameState.flags || {};
+            characterOrGameState.flags.lastFallWasInfinite = true;
+        }
+
+        // Animate fall into abyss
+        const abyssEndZ = initialAirZ - MAX_CREATED_LEVELS;
         const abyssFallAnimationPromise = window.animationManager ? window.animationManager.playAnimation('fall', {
             entity: characterOrGameState,
             startZ: initialAirZ,
-            endZ: lastSafeZ, // Visually fall to the last "safe" Z before abyss
+            endZ: abyssEndZ,
             fallPathX: startX,
             fallPathY: startY,
-            levelsFallen: Math.max(1, initialAirZ - lastSafeZ), // Ensure at least 1 level for animation
-            durationPerLevel: 200
+            levelsFallen: MAX_CREATED_LEVELS,
+            durationPerLevel: 100 // Faster fall for abyss
         }) : Promise.resolve();
 
         await abyssFallAnimationPromise;
 
+        // Teleport back to safePos
         if (characterOrGameState === gameState) {
-            gameState.playerPos = { x: startX, y: startY, z: lastSafeZ };
-            if (gameState.viewFollowsPlayerZ) gameState.currentViewZ = lastSafeZ;
+            gameState.playerPos = { ...safePos };
+            if (gameState.viewFollowsPlayerZ) gameState.currentViewZ = safePos.z;
         } else {
-            characterOrGameState.mapPos = { x: startX, y: startY, z: lastSafeZ };
+            characterOrGameState.mapPos = { ...safePos };
         }
-        window.calculateAndApplyFallDamage(characterOrGameState, 20 * 2); // Max damage (20d3 implies 40 levels for calc)
 
-        // Force a final render at the new location AFTER the animation promise resolves
+        logToConsole("Teleported back to last safe position.", "green");
+
         if (window.mapRenderer) {
             window.mapRenderer.scheduleRender();
         }
@@ -1412,7 +1451,22 @@ async function handleFalling(characterOrGameState, startX, startY, initialAirZ) 
             window.interaction?.showInteractableItems();
             if (typeof window.updatePlayerStatusDisplay === 'function') window.updatePlayerStatusDisplay();
         }
-        return true; // Position updated to last safe Z
+        return true; // Handled infinite fall
+
+    } else {
+        // Fallback for non-infinite deep fall or missing safePos (old logic, shouldn't reach here if logic holds)
+        // Or if map has hard floor at minZ that isn't walkable (rare)
+        logToConsole(`${characterOrGameState === gameState ? "Player" : (characterOrGameState.name || "NPC")} fell but landing logic is ambiguous. Placing at Z: ${currentCheckZ + 1}.`, "red");
+        const lastSafeZ = currentCheckZ + 1;
+
+        if (characterOrGameState === gameState) {
+            gameState.playerPos = { x: startX, y: startY, z: lastSafeZ };
+            if (gameState.viewFollowsPlayerZ) gameState.currentViewZ = lastSafeZ;
+        } else {
+            characterOrGameState.mapPos = { x: startX, y: startY, z: lastSafeZ };
+        }
+        window.mapRenderer?.scheduleRender();
+        return true;
     }
 }
 window.handleFalling = handleFalling;
@@ -1532,9 +1586,10 @@ window.calculateAndApplyFallDamage = calculateAndApplyFallDamage;
  * @param {number} targetX - The X coordinate the character attempted to move to.
  * @param {number} targetY - The Y coordinate the character attempted to move to.
  * @param {number} targetZ - The Z coordinate the character attempted to move to.
+ * @param {object} [safePos] - Optional {x,y,z} safe position to return to.
  * @returns {boolean} True if a fall was initiated and handled, false otherwise (e.g., target was walkable).
  */
-async function initiateFallCheck(characterOrGameState, targetX, targetY, targetZ) { // Made async
+async function initiateFallCheck(characterOrGameState, targetX, targetY, targetZ, safePos = null) { // Made async
     const debugPrefix = `initiateFallCheck (${characterOrGameState === gameState ? "Player" : (characterOrGameState.name || "NPC")} to ${targetX},${targetY},${targetZ}):`;
     console.log(`${debugPrefix} Called.`);
 
@@ -1545,6 +1600,8 @@ async function initiateFallCheck(characterOrGameState, targetX, targetY, targetZ
 
     // Check if the target destination (targetX, targetY, targetZ) is actually walkable.
     // If it is, no fall occurs from this movement.
+    // Note: ensureLevelExists should have been called before this for Z-moves, but check here too?
+    // isWalkable relies on level data.
     if (window.mapRenderer.isWalkable(targetX, targetY, targetZ)) {
         console.log(`${debugPrefix} Target tile is walkable. No fall initiated.`);
         // Update position if it's different (actual move happens before this check in script.js)
@@ -1555,7 +1612,7 @@ async function initiateFallCheck(characterOrGameState, targetX, targetY, targetZ
     // If the target tile itself is NOT walkable, it means the character is now in "air" at targetZ.
     // The fall then proceeds downwards from targetZ.
     console.log(`${debugPrefix} Target tile is NOT walkable. Initiating fall from Z=${targetZ}.`);
-    return await handleFalling(characterOrGameState, targetX, targetY, targetZ); // targetZ is the Z-level of the air tile // Added await
+    return await handleFalling(characterOrGameState, targetX, targetY, targetZ, safePos); // targetZ is the Z-level of the air tile // Added await
 }
 window.initiateFallCheck = initiateFallCheck;
 

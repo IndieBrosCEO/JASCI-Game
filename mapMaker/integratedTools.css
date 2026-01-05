@@ -1,0 +1,201 @@
+/* mapMaker/integratedTools.css */
+
+/* Tab Navigation */
+.tab-container {
+    display: flex;
+    border-bottom: 1px solid #444; /* Darker border */
+    background-color: #222; /* Dark background */
+    margin-bottom: 10px;
+}
+
+.tab-button {
+    background-color: inherit;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 10px 20px;
+    transition: 0.3s;
+    font-size: 16px;
+    border-top: 3px solid transparent;
+    color: #ccc; /* Light text */
+    font-family: 'DwarfFortress', monospace; /* Consistent font */
+}
+
+.tab-button:hover {
+    background-color: #333; /* Slightly lighter on hover */
+    color: #fff;
+}
+
+.tab-button.active {
+    background-color: #000; /* Matches body bg */
+    border-top: 3px solid #007bff; /* Keep blue accent or change to match theme (e.g. cyan/lime) */
+    font-weight: bold;
+    color: #fff;
+}
+
+/* Tool Containers */
+.tool-content {
+    display: none;
+    padding: 10px;
+    /* height: calc(100vh - 100px);  Remove fixed height to allow scrolling naturally */
+    overflow: visible;
+}
+
+.tool-content.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Integrated Dialogue & Quest Editor Styles (Adapted from standalone) */
+.editor-layout {
+    display: flex;
+    /* height: 100%;  Let it grow */
+    min-height: 500px;
+    border: 1px solid #444;
+    background-color: #111; /* Dark editor bg */
+}
+
+.editor-sidebar {
+    width: 250px;
+    border-right: 1px solid #444;
+    padding: 10px;
+    overflow-y: auto;
+    background-color: #222; /* Slightly lighter sidebar */
+    flex-shrink: 0;
+}
+
+.editor-main {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    color: #ddd;
+}
+
+.list-item {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #333;
+    color: #ccc;
+}
+
+.list-item:hover {
+    background-color: #333;
+    color: #fff;
+}
+
+.list-item.active {
+    background-color: #444;
+    font-weight: bold;
+    color: #fff;
+    border-left: 3px solid #007bff; /* Accent */
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #ccc;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #555;
+    border-radius: 0; /* Retro sharp corners */
+    box-sizing: border-box;
+    background-color: #000;
+    color: #fff;
+    font-family: 'DwarfFortress', monospace;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+textarea.form-control {
+    height: 100px;
+    resize: vertical;
+}
+
+/* Button Styles - Reuse mapMakerStyle but specialized classes here */
+.btn {
+    padding: 6px 12px;
+    cursor: pointer;
+    background-color: #444;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 0; /* Retro */
+    margin-right: 5px;
+    font-family: 'DwarfFortress', monospace;
+    font-size: 14px;
+}
+
+.btn:hover {
+    background-color: #555;
+    border-color: #777;
+}
+
+.btn-danger {
+    background-color: #8B0000; /* Dark Red */
+    border-color: #a00;
+}
+
+.btn-danger:hover {
+    background-color: #c00;
+}
+
+.btn-secondary {
+    background-color: #333;
+    border-color: #444;
+}
+.btn-secondary:hover {
+    background-color: #444;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+/* Specific Section Styles */
+.choice-item, .objective-item {
+    border: 1px solid #333;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #1a1a1a;
+    border-radius: 0;
+}
+
+.io-section {
+    margin-top: 20px;
+    border-top: 1px solid #444;
+    padding-top: 10px;
+}
+
+/* Helpers */
+.hidden {
+    display: none !important;
+}
+
+h2, h3 {
+    color: #fff;
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+}
+
+select.form-control {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right .7em top 50%;
+    background-size: .65em auto;
+    padding-right: 1.5em;
+}
