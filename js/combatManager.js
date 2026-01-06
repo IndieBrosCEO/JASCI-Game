@@ -1577,7 +1577,7 @@
                 const reloadSoundPos = attacker === this.gameState ? this.gameState.playerPos : attacker.mapPos;
                 let reloadSound = 'ui_click_01.wav'; // Generic placeholder
                 if (weapon?.type?.includes("pistol")) {
-                    reloadSound = 'ui_click_01.wav'; // TODO: Play reload_pistol_01.wav when available
+                    reloadSound = 'reload_gun_01.wav';
                 } else if (weapon?.type?.includes("rifle")) {
                     reloadSound = 'ui_click_01.wav'; // TODO: Play reload_rifle_01.wav when available (also for SMG if no specific sound)
                 } else if (weapon?.type?.includes("shotgun")) {
