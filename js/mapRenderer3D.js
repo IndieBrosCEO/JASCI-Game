@@ -163,7 +163,7 @@ window.mapRenderer3D = {
                     }
 
                     let tileDef = null;
-                    // Fix: Access tilesets via window.assetManager if window.assetManagerInstance is not defined
+                    // Access tilesets via window.assetManager if window.assetManagerInstance is not defined
                     const tilesets = (window.assetManager && window.assetManager.tilesets) ? window.assetManager.tilesets : (window.assetManagerInstance ? window.assetManagerInstance.tilesets : null);
 
                     if (tilesets) {
