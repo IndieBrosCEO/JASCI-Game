@@ -191,7 +191,7 @@ class CraftingManager {
         }
 
         if (this.xpManager && typeof this.xpManager.awardXp === 'function') {
-            this.xpManager.awardXp(xpGainedFromCrafting, this.gameState);
+            this.xpManager.awardXp(`craft:${recipe.id}`, xpGainedFromCrafting);
         } else {
             logToConsole(`${this.logPrefix} xpManager not available, cannot award XP for crafting.`, 'warn');
         }
