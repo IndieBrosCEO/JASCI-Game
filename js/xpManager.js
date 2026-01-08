@@ -78,9 +78,11 @@ class XpManager {
     }
 
     calculateXpForKill(cr) {
-        // Basic placeholder logic, replace with actual CR to XP table if available
+        // Easy (10), Medium (25), Hard (75)
         if (!cr) return 10;
-        return cr * 100;
+        if (cr <= 1) return 10;
+        if (cr <= 2) return 25;
+        return 75;
     }
 
     checkLevelUp() {

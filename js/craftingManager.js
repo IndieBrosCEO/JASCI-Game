@@ -181,7 +181,15 @@ class CraftingManager {
         }
 
         // Award XP
-        const xpGainedFromCrafting = (typeof recipe.xp === 'number') ? recipe.xp : 5;
+        let xpGainedFromCrafting = 10;
+        if (typeof recipe.xp === 'number') {
+            xpGainedFromCrafting = recipe.xp;
+        } else if (typeof recipe.skillLevelRequired === 'number') {
+            if (recipe.skillLevelRequired <= 3) xpGainedFromCrafting = 10;
+            else if (recipe.skillLevelRequired <= 6) xpGainedFromCrafting = 25;
+            else xpGainedFromCrafting = 75;
+        }
+
         if (this.xpManager && typeof this.xpManager.awardXp === 'function') {
             this.xpManager.awardXp(xpGainedFromCrafting, this.gameState);
         } else {
