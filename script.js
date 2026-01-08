@@ -2938,6 +2938,7 @@ async function initialize() { // Made async
         const sfxVolumeSlider = document.getElementById('sfxVolume');
         const autoEndTurnAPCheckbox = document.getElementById('autoEndTurnAP');
         const autoEndTurnMPCheckbox = document.getElementById('autoEndTurnMP');
+        const showCoverOverlayCheckbox = document.getElementById('showCoverOverlay');
 
         if (openSettingsButton && closeSettingsButton && settingsModal) {
             openSettingsButton.addEventListener('click', () => {
@@ -2945,6 +2946,7 @@ async function initialize() { // Made async
                 if (gameState.settings) {
                     if (autoEndTurnAPCheckbox) autoEndTurnAPCheckbox.checked = gameState.settings.autoEndTurnAtZeroAP;
                     if (autoEndTurnMPCheckbox) autoEndTurnMPCheckbox.checked = gameState.settings.autoEndTurnAtZeroMP;
+                    if (showCoverOverlayCheckbox) showCoverOverlayCheckbox.checked = gameState.settings.showCoverOverlay;
                 }
                 settingsModal.classList.remove('hidden');
                 if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
@@ -2985,6 +2987,15 @@ async function initialize() { // Made async
                 if (!gameState.settings) gameState.settings = {};
                 gameState.settings.autoEndTurnAtZeroMP = event.target.checked;
                 logToConsole(`Auto End Turn at 0 MP: ${gameState.settings.autoEndTurnAtZeroMP ? 'ON' : 'OFF'}`);
+            });
+        }
+
+        if (showCoverOverlayCheckbox) {
+            showCoverOverlayCheckbox.addEventListener('change', (event) => {
+                if (!gameState.settings) gameState.settings = {};
+                gameState.settings.showCoverOverlay = event.target.checked;
+                logToConsole(`Cover Overlay: ${gameState.settings.showCoverOverlay ? 'ON' : 'OFF'}`);
+                if (window.mapRenderer) window.mapRenderer.scheduleRender();
             });
         }
 

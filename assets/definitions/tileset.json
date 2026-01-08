@@ -156,7 +156,7 @@
       "impassable",
       "solid_terrain_top"
     ],
-    "coverBonus": 2
+    "coverBonus": 4
   },
   "BSH": {
     "sprite": "*",
@@ -167,7 +167,8 @@
       "vegetation",
       "bottom",
       "flammable"
-    ]
+    ],
+    "coverBonus": 4
   },
   "BLK": {
     "sprite": "O",
@@ -263,7 +264,7 @@
       "building",
       "flammable"
     ],
-    "coverBonus": 4
+    "coverBonus": 7
   },
   "WWV": {
     "sprite": "║",
@@ -276,7 +277,8 @@
       "impassable",
       "building",
       "flammable"
-    ]
+    ],
+    "coverBonus": 7
   },
   "WWCTL": {
     "sprite": "╔",
@@ -289,7 +291,8 @@
       "impassable",
       "building",
       "flammable"
-    ]
+    ],
+    "coverBonus": 7
   },
   "WWCTR": {
     "sprite": "╗",
@@ -302,7 +305,8 @@
       "impassable",
       "building",
       "flammable"
-    ]
+    ],
+    "coverBonus": 7
   },
   "WWCBL": {
     "sprite": "╚",
@@ -315,7 +319,8 @@
       "impassable",
       "building",
       "flammable"
-    ]
+    ],
+    "coverBonus": 7
   },
   "WWCBR": {
     "sprite": "╝",
@@ -328,7 +333,8 @@
       "impassable",
       "building",
       "flammable"
-    ]
+    ],
+    "coverBonus": 7
   },
   "WWTE": {
     "sprite": "╠",
@@ -341,7 +347,8 @@
       "impassable",
       "building",
       "flammable"
-    ]
+    ],
+    "coverBonus": 7
   },
   "WWTW": {
     "sprite": "╣",
@@ -354,7 +361,8 @@
       "impassable",
       "building",
       "flammable"
-    ]
+    ],
+    "coverBonus": 7
   },
   "WWTS": {
     "sprite": "╦",
@@ -367,7 +375,8 @@
       "impassable",
       "building",
       "flammable"
-    ]
+    ],
+    "coverBonus": 7
   },
   "WWTN": {
     "sprite": "╩",
@@ -380,7 +389,8 @@
       "impassable",
       "building",
       "flammable"
-    ]
+    ],
+    "coverBonus": 7
   },
   "WWC": {
     "sprite": "╬",
@@ -393,7 +403,8 @@
       "impassable",
       "building",
       "flammable"
-    ]
+    ],
+    "coverBonus": 7
   },
   "MWH": {
     "sprite": "═",
@@ -406,7 +417,7 @@
       "impassable",
       "building"
     ],
-    "coverBonus": 7
+    "coverBonus": 8
   },
   "MWV": {
     "sprite": "║",
@@ -418,7 +429,8 @@
       "metal",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 8
   },
   "MWCTL": {
     "sprite": "╔",
@@ -430,7 +442,8 @@
       "metal",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 8
   },
   "MWCTR": {
     "sprite": "╗",
@@ -442,7 +455,8 @@
       "metal",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 8
   },
   "MWCBL": {
     "sprite": "╚",
@@ -454,7 +468,8 @@
       "metal",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 8
   },
   "MWCBR": {
     "sprite": "╝",
@@ -466,7 +481,8 @@
       "metal",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 8
   },
   "MWTE": {
     "sprite": "╠",
@@ -478,7 +494,8 @@
       "metal",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 8
   },
   "MWTW": {
     "sprite": "╣",
@@ -490,7 +507,8 @@
       "metal",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 8
   },
   "MWTS": {
     "sprite": "╦",
@@ -502,7 +520,8 @@
       "metal",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 8
   },
   "MWTN": {
     "sprite": "╩",
@@ -514,7 +533,8 @@
       "metal",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 8
   },
   "MWC": {
     "sprite": "╬",
@@ -526,7 +546,8 @@
       "metal",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 8
   },
   "WDH": {
     "sprite": "─",
@@ -544,7 +565,8 @@
       "flammable"
     ],
     "opensToTileId": "WOH",
-    "isLocked": false
+    "isLocked": false,
+    "coverBonus": 7
   },
   "WDV": {
     "sprite": "│",
@@ -562,7 +584,8 @@
       "flammable"
     ],
     "opensToTileId": "WOV",
-    "isLocked": false
+    "isLocked": false,
+    "coverBonus": 7
   },
   "WOH": {
     "sprite": "_",
@@ -579,7 +602,8 @@
       "allows_vision",
       "flammable",
       "permeable"
-    ]
+    ],
+    "coverBonus": 4
   },
   "WOV": {
     "sprite": "'",
@@ -596,7 +620,8 @@
       "allows_vision",
       "flammable",
       "permeable"
-    ]
+    ],
+    "coverBonus": 4
   },
   "WDB": {
     "sprite": ">",
@@ -629,7 +654,8 @@
       "building"
     ],
     "opensToTileId": "MOH",
-    "isLocked": false
+    "isLocked": false,
+    "coverBonus": 8
   },
   "MDV": {
     "sprite": "│",
@@ -646,7 +672,8 @@
       "building"
     ],
     "opensToTileId": "MOV",
-    "isLocked": false
+    "isLocked": false,
+    "coverBonus": 8
   },
   "MOH": {
     "sprite": "_",
@@ -662,7 +689,8 @@
       "building",
       "allows_vision",
       "permeable"
-    ]
+    ],
+    "coverBonus": 4
   },
   "MOV": {
     "sprite": "'",
@@ -678,7 +706,8 @@
       "building",
       "allows_vision",
       "permeable"
-    ]
+    ],
+    "coverBonus": 4
   },
   "MDB": {
     "sprite": ">",
@@ -807,7 +836,8 @@
       "building",
       "impassable",
       "middle"
-    ]
+    ],
+    "coverBonus": 2
   },
   "CB": {
     "sprite": "□",
@@ -828,7 +858,8 @@
     "capacity": 20,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": ""
+    "uniqueID": "",
+    "coverBonus": 4
   },
   "SN": {
     "sprite": "s",
@@ -915,7 +946,8 @@
     "capacity": 10,
     "isLocked": true,
     "lockDifficulty": 15,
-    "uniqueID": ""
+    "uniqueID": "",
+    "coverBonus": 4
   },
   "RF": {
     "sprite": "║",
@@ -1009,7 +1041,8 @@
       "impassable",
       "middle",
       "flammable"
-    ]
+    ],
+    "coverBonus": 2
   },
   "TV": {
     "sprite": "T",
@@ -1040,7 +1073,8 @@
     "capacity": 15,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": ""
+    "uniqueID": "",
+    "coverBonus": 4
   },
   "BD": {
     "sprite": "╬",
@@ -1090,7 +1124,8 @@
     "capacity": 10,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": ""
+    "uniqueID": "",
+    "coverBonus": 4
   },
   "DSK": {
     "sprite": "⌂",
@@ -1111,7 +1146,8 @@
     "capacity": 10,
     "isLocked": false,
     "lockDifficulty": 0,
-    "uniqueID": ""
+    "uniqueID": "",
+    "coverBonus": 4
   },
   "CR": {
     "sprite": "c",
@@ -1253,7 +1289,8 @@
       "breakable",
       "middle",
       "flammable"
-    ]
+    ],
+    "coverBonus": 6
   },
   "TOR": {
     "sprite": "~",
@@ -1800,7 +1837,8 @@
       "breakable",
       "middle"
     ],
-    "description": "A sturdy metal barricade offering good cover."
+    "description": "A sturdy metal barricade offering good cover.",
+    "coverBonus": 8
   },
   "rain_collector_small_tile": {
     "sprite": "Y",
@@ -1860,7 +1898,7 @@
       "impassable",
       "building"
     ],
-    "coverBonus": 8
+    "coverBonus": 10
   },
   "CWV": {
     "sprite": "║",
@@ -1873,7 +1911,7 @@
       "impassable",
       "building"
     ],
-    "coverBonus": 8
+    "coverBonus": 10
   },
   "CWCTL": {
     "sprite": "╔",
@@ -1885,7 +1923,8 @@
       "concrete",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 10
   },
   "CWCTR": {
     "sprite": "╗",
@@ -1897,7 +1936,8 @@
       "concrete",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 10
   },
   "CWCBL": {
     "sprite": "╚",
@@ -1909,7 +1949,8 @@
       "concrete",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 10
   },
   "CWCBR": {
     "sprite": "╝",
@@ -1921,7 +1962,8 @@
       "concrete",
       "impassable",
       "building"
-    ]
+    ],
+    "coverBonus": 10
   },
   "IWH": {
     "sprite": "═",

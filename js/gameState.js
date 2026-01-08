@@ -77,7 +77,8 @@ const gameState = {
     // Settings
     settings: {
         autoEndTurnAtZeroAP: true,
-        autoEndTurnAtZeroMP: true
+        autoEndTurnAtZeroMP: true,
+        showCoverOverlay: false
     },
 
     // Turn-based properties
