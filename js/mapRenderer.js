@@ -1271,6 +1271,29 @@ window.mapRenderer = {
                 let finalColorForTile = displayColor;
                 let finalDisplayIdForTile = displayId;
 
+                    if (gameState.settings && gameState.settings.showCoverOverlay && finalTileDefForLightingAndFow && fowStatus === 'visible') {
+                        const bonus = finalTileDefForLightingAndFow.coverBonus || 0;
+                        if (bonus > 0) {
+                            // Scale intensity from 0.2 to 0.7 based on bonus (2 to 10)
+                            const intensity = Math.min(0.7, Math.max(0.2, bonus / 15));
+                            const tintColor = '#00FF00'; // Pure Green Hex
+
+                            // Blend foreground color
+                            finalColorForTile = blendColors(finalColorForTile, tintColor, intensity);
+
+                            // Blend background color
+                            // If background is not defined or black, we need to provide a base to blend against, or just use a dark green
+                            if (!tileDefinedBackgroundColor || tileDefinedBackgroundColor === '#000000' || tileDefinedBackgroundColor === 'rgba(0,0,0,0)') {
+                                // Create a dark green background directly if none exists
+                                const bgIntensity = Math.floor(255 * intensity * 0.5);
+                                const bgHex = bgIntensity.toString(16).padStart(2, '0');
+                                tileDefinedBackgroundColor = `#00${bgHex}00`;
+                            } else {
+                                tileDefinedBackgroundColor = blendColors(tileDefinedBackgroundColor, tintColor, intensity * 0.5);
+                            }
+                        }
+                    }
+
                 if (gameState.isConstructionModeActive && gameState.constructionGhostCoords &&
                     gameState.constructionGhostCoords.z === currentZ) {
 
