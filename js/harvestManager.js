@@ -1,8 +1,9 @@
 // js/harvestManager.js
 
 class HarvestManager {
-    constructor(assetManager) {
+    constructor(assetManager, xpManager) {
         this.assetManager = assetManager;
+        this.xpManager = xpManager;
     }
 
     // Attempt to harvest a resource from a target item/tile
@@ -176,6 +177,16 @@ class HarvestManager {
             }
 
             if (gatheredItems.length > 0 || droppedItems.length > 0) {
+                // Award XP
+                let xpAmount = 10; // Default Easy
+                if (skillDifficulty <= 5) xpAmount = 10;
+                else if (skillDifficulty <= 9) xpAmount = 25;
+                else xpAmount = 75;
+
+                if (this.xpManager && typeof this.xpManager.awardXp === 'function') {
+                    this.xpManager.awardXp(xpAmount, gameState);
+                }
+
                 if (window.audioManager) {
                     if (action.includes("Mine")) window.audioManager.playUiSound("mining_hit.wav");
                     else if (action.includes("Chop") || action.includes("Harvest")) window.audioManager.playUiSound("wood_chop.wav");
@@ -315,6 +326,11 @@ class HarvestManager {
         }
 
         if (removed) {
+            // Award XP for break action (Easy)
+            if (this.xpManager && typeof this.xpManager.awardXp === 'function') {
+                this.xpManager.awardXp(10, gameState);
+            }
+
             // Play Sound
             if (window.audioManager) window.audioManager.playUiSound(sound);
 

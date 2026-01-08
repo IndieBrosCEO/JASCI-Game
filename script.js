@@ -2367,8 +2367,8 @@ async function initialize() { // Made async
         }
 
         // HarvestManager
-        if (window.HarvestManager && window.assetManager) {
-            window.harvestManager = new HarvestManager(window.assetManager);
+        if (window.HarvestManager && window.assetManager && window.xpManager) {
+            window.harvestManager = new HarvestManager(window.assetManager, window.xpManager);
             logToConsole("HarvestManager instance created.", "info");
         } else {
             console.error("SCRIPT.JS: HarvestManager class not available.");
