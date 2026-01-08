@@ -841,160 +841,146 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
     gameState.combatCurrentDefender = null; // Reset before selection
     gameState.defenderMapPos = null;    // Reset before selection
 
+    // Ensure memory structure exists
+    if (!npc.memory) npc.memory = {};
+    if (!npc.memory.lastSeenPositions) npc.memory.lastSeenPositions = {};
+
     let potentialTargets = [];
+    const currentTime = gameState.currentTime?.totalTurns || 0;
+    const processedIds = new Set();
 
-    // 1. Consider existing aggro list (highest threat with LOS)
-    if (npc.aggroList?.length > 0) {
-        for (const aggroEntry of npc.aggroList) {
-            const target = aggroEntry.entityRef;
-            const isPlayer = target === gameState;
-            const targetPos = isPlayer ? gameState.playerPos : target.mapPos;
-            const targetHealth = isPlayer ? gameState.player.health : target.health;
-            const targetTeamId = isPlayer ? gameState.player.teamId : target.teamId;
+    // Helper to process a potential target
+    const processCandidate = (candidate, isAggroSource = false, threat = 0) => {
+        if (candidate === npc) return;
+        const isPlayer = candidate === gameState || candidate === gameState.player;
+        const realEntity = isPlayer ? gameState.player : candidate;
+        const candidateId = isPlayer ? "player" : candidate.id;
 
-            if (target && target !== npc && targetHealth?.torso?.current > 0 && targetHealth?.head?.current > 0 &&
-                targetTeamId !== npc.teamId && targetPos && initiativeTracker.find(e => e.entity === target)) {
-                if (window.hasLineOfSight3D(npc.mapPos, targetPos, currentTilesets, currentMapData)) {
-                    potentialTargets.push({ entity: target, pos: targetPos, threat: aggroEntry.threat, type: 'aggro' });
+        if (processedIds.has(candidateId)) return; // Skip if already processed
+        processedIds.add(candidateId);
+
+        const realHealth = realEntity.health;
+        const targetTeamId = realEntity.teamId;
+
+        if (realHealth?.torso?.current <= 0 || realHealth?.head?.current <= 0) return;
+        if (targetTeamId === npc.teamId) return; // Do not target allies
+
+        // --- Predator Hunger Logic ---
+        if (!isPlayer && npc.tags?.includes("predator") && realEntity.tags?.includes("prey")) {
+            const HUNGER_THRESHOLD = 50;
+            if ((npc.hunger || 0) < HUNGER_THRESHOLD) return; // Ignore due to lack of hunger
+            const speciesCount = gameState.npcs.filter(n => n.definitionId === realEntity.definitionId && n.health.torso.current > 0).length;
+            if (speciesCount <= 1) return; // Ignore due to conservation
+        }
+
+        const realPos = isPlayer ? gameState.playerPos : candidate.mapPos;
+        const hasLOS = window.hasLineOfSight3D(npc.mapPos, realPos, currentTilesets, currentMapData);
+
+        if (hasLOS) {
+            // Update Memory
+            npc.memory.lastSeenPositions[candidateId] = {
+                pos: { ...realPos },
+                timestamp: currentTime
+            };
+
+            potentialTargets.push({
+                entity: candidate,
+                pos: { ...realPos },
+                distance: getDistance3D(npc.mapPos, realPos),
+                type: isAggroSource ? 'aggro' : 'initiative',
+                visible: true,
+                threat: threat,
+                score: 0
+            });
+        } else {
+            // No LOS - Check Memory
+            const memory = npc.memory.lastSeenPositions[candidateId];
+            if (memory) {
+                // Check if we can see the memory position
+                const canSeeMemoryPos = window.hasLineOfSight3D(npc.mapPos, memory.pos, currentTilesets, currentMapData);
+
+                if (canSeeMemoryPos) {
+                    // We see the spot where they were. Since hasLOS to entity is false, they are not there.
+                    delete npc.memory.lastSeenPositions[candidateId];
+                    logToConsole(`NPC ${npcName}: Investigated last seen pos for ${isPlayer ? "Player" : (candidate.name || candidateId)} -> Empty. Memory cleared.`, 'grey');
+                } else {
+                    // We can't see the spot. Assume they are still there (search mode).
+                    potentialTargets.push({
+                        entity: candidate,
+                        pos: { ...memory.pos }, // Target the memory position
+                        distance: getDistance3D(npc.mapPos, memory.pos),
+                        type: 'memory',
+                        visible: false,
+                        threat: threat,
+                        score: -1000 // Penalty for memory targets
+                    });
                 }
             }
         }
+    };
+
+    // 1. Process Aggro List
+    if (npc.aggroList?.length > 0) {
+        npc.aggroList.forEach(entry => processCandidate(entry.entityRef, true, entry.threat));
     }
 
-    // 2. Consider all enemies in initiative with LOS
-    initiativeTracker.forEach(entry => {
-        const candidate = entry.entity;
-        const isPlayer = candidate === gameState;
-        const candPos = isPlayer ? gameState.playerPos : candidate.mapPos;
-        const candHealth = isPlayer ? gameState.player.health : candidate.health;
-        const candTeamId = isPlayer ? gameState.player.teamId : candidate.teamId;
+    // 2. Process Initiative List
+    initiativeTracker.forEach(entry => processCandidate(entry.entity));
 
-        if (candidate !== npc && candHealth?.torso?.current > 0 && candHealth?.head?.current > 0 &&
-            candTeamId !== npc.teamId && npc.mapPos && candPos) {
+    if (potentialTargets.length === 0) {
+        // logToConsole(`NPC TARGETING: ${npcName} found no valid targets (visible or memory).`, 'orange');
+        return false;
+    }
 
-            // --- Predator Hunger Logic ---
-            // If NPC is a predator and target is prey (and not player, usually), check hunger.
-            // Assuming player is not tagged 'prey'.
-            // If target is player, predators might attack regardless of hunger (territorial).
-            // But if target is another NPC (prey), apply hunger check.
-            let ignoreDueToHunger = false;
-            let ignoreDueToConservation = false;
+    // Scoring & Sorting
+    const isCompanion = npc.isFollowingPlayer;
+    const player = gameState;
+    const companions = isCompanion ? gameState.companions.map(id => gameState.npcs.find(n => n.id === id)).filter(c => c) : [];
 
-            if (!isPlayer && npc.tags?.includes("predator") && candidate.tags?.includes("prey")) {
-                // Hunger Check
-                const HUNGER_THRESHOLD = 50; // Arbitrary threshold
-                if ((npc.hunger || 0) < HUNGER_THRESHOLD) {
-                    ignoreDueToHunger = true;
-                    // logToConsole(`${npc.name} ignores ${candidate.name} (Not hungry: ${npc.hunger})`, 'grey');
-                }
+    potentialTargets.forEach(pt => {
+        // Base Score
+        if (pt.type === 'aggro') pt.score += (pt.threat * 10);
+        if (pt.visible) pt.score += 5000; // Prioritize visible targets heavily
+        else pt.score -= 1000; // Memory targets are lower priority
 
-                // Conservation Check
-                // Count instances of this prey species (definitionId)
-                const speciesCount = gameState.npcs.filter(n => n.definitionId === candidate.definitionId && n.health.torso.current > 0).length;
-                if (speciesCount <= 1) {
-                    ignoreDueToConservation = true;
-                    // logToConsole(`${npc.name} ignores ${candidate.name} (Conservation: Only ${speciesCount} left)`, 'grey');
-                }
+        pt.score -= pt.distance; // Closer is better
+
+        if (isCompanion) {
+            // Companion specific logic
+            let isThreateningAlly = false;
+            if (pt.entity !== player && !companions.includes(pt.entity)) {
+                const distToPlayer = getDistance3D(pt.pos, player.playerPos);
+                if (distToPlayer <= 5) isThreateningAlly = true;
             }
+            if (isThreateningAlly) pt.score += 50;
 
-            if (!ignoreDueToHunger && !ignoreDueToConservation) {
-                if (window.hasLineOfSight3D(npc.mapPos, candPos, currentTilesets, currentMapData)) {
-                    const dist = getDistance3D(npc.mapPos, candPos);
-                    // Add if not already in potentialTargets from aggro list
-                    if (!potentialTargets.some(pt => pt.entity === candidate)) {
-                        potentialTargets.push({ entity: candidate, pos: candPos, distance: dist, type: 'initiative' });
-                    }
-                }
+            const settings = npc.companionSettings || {};
+            if (settings.combatMode === 'passive' && !isThreateningAlly && pt.type !== 'aggro') {
+                pt.score -= 2000; // Passive avoids unprovoked fights
             }
         }
     });
 
-    if (potentialTargets.length === 0) {
-        // logToConsole(`NPC TARGETING: ${npcName} found no valid targets with LOS.`, 'orange');
-        return false;
-    }
-
-    // Companion-specific targeting modifications
-    if (npc.isFollowingPlayer) {
-        const player = gameState; // Assuming player is always gameState for now
-        const companions = gameState.companions.map(id => gameState.npcs.find(n => n.id === id)).filter(c => c);
-        const settings = npc.companionSettings || {};
-        const isPassive = settings.combatMode === 'passive';
-
-        potentialTargets.forEach(pt => {
-            pt.score = 0;
-            // Base score: higher threat is better, closer is better for non-aggro
-            if (pt.type === 'aggro') {
-                pt.score += pt.threat * 10; // Weight threat heavily
-            } else { // 'initiative' type
-                pt.score -= pt.distance; // Closer is better
-            }
-
-            // Is target attacking player or a companion?
-            let isThreateningAlly = false;
-            if (pt.entity !== player && !companions.includes(pt.entity)) { // Target is an enemy
-                // Check aggro lists if available to see if they target player
-                if (pt.entity.aggroList && pt.entity.aggroList.some(a => a.entityRef === player || companions.includes(a.entityRef))) {
-                    isThreateningAlly = true;
-                } else {
-                    // Fallback to proximity
-                    const distToPlayer = getDistance3D(pt.pos, player.playerPos);
-                    if (distToPlayer <= 5) isThreateningAlly = true;
-
-                    companions.forEach(comp => {
-                        if (comp && comp.mapPos) {
-                            const distToComp = getDistance3D(pt.pos, comp.mapPos);
-                            if (distToComp <= 3) isThreateningAlly = true;
-                        }
-                    });
-                }
-
-                if (isThreateningAlly) pt.score += 50;
-            }
-
-            // Passive Mode Filter: Significantly reduce score if not threatening ally and not self-defense
-            if (isPassive && !isThreateningAlly && pt.type !== 'aggro') {
-                pt.score -= 1000; // Deprioritize unprovoked attacks
-            }
-        });
-
-        // Filter out targets with very low scores (passive ignores safe enemies)
-        potentialTargets = potentialTargets.filter(pt => pt.score > -500);
-        // TODO: Add more sophisticated target prioritization (e.g., wounded, high threat, squishy)
-        // Example enhancements to pt.score:
-        // - If pt.entity is "wounded" (e.g., <30% HP), pt.score += 20
-        // - If pt.entity is "high_threat" (e.g., player, or specific NPC type), pt.score += 30
-        // - If pt.entity is "squishy" (e.g., low armor/HP), pt.score += 10 (to finish off)
-        // These would require access to target's health, definition, or dynamic threat assessment.
-
-        potentialTargets.sort((a, b) => b.score - a.score); // Highest score first
-
-    } else { // Non-companion: sort by threat then distance
-        // TODO: Add more sophisticated target prioritization here too for non-companions.
-        // Factors could include:
-        // - Target is "wounded": Prioritize finishing them off.
-        // - Target is "high threat": e.g., player character, heavily armed NPC.
-        // - Target is "squishy": Easier to kill.
-        // - Target is attacking NPC's allies (if NPC has allies and awareness).
-        // This would involve calculating a 'priority_score' for each potential target.
-        potentialTargets.sort((a, b) => {
-            if (a.type === 'aggro' && b.type !== 'aggro') return -1;
-            if (b.type === 'aggro' && a.type !== 'aggro') return 1;
-            if (a.type === 'aggro' && b.type === 'aggro') return b.threat - a.threat; // Higher threat first
-            return a.distance - b.distance; // Closer distance first for non-aggro
-        });
-    }
+    // Sort: High score first
+    potentialTargets.sort((a, b) => b.score - a.score);
 
     const bestTarget = potentialTargets[0];
     if (bestTarget) {
-        gameState.combatCurrentDefender = bestTarget.entity;
-        gameState.defenderMapPos = { ...bestTarget.pos };
-        logToConsole(`NPC TARGETING: ${npcName} selected ${bestTarget.entity === gameState ? "Player" : (bestTarget.entity.name || bestTarget.entity.id)}. Score/Details: ${JSON.stringify({ score: bestTarget.score, threat: bestTarget.threat, dist: bestTarget.distance })}`, 'gold');
+        // Prevent targeting if score is too low (e.g. passive companion vs safe target)
+        if (isCompanion && bestTarget.score < -500) return false;
 
-        if (npc.memory) {
-            npc.memory.lastSeenTargetPos = { ...gameState.defenderMapPos };
-            npc.memory.lastSeenTargetTimestamp = gameState.currentTime?.totalTurns || 0;
-            npc.memory.explorationTarget = null;
+        gameState.combatCurrentDefender = bestTarget.entity;
+        gameState.defenderMapPos = { ...bestTarget.pos }; // Real pos if visible, memory pos if not
+
+        if (!bestTarget.visible) {
+            logToConsole(`NPC ${npcName} searching for ${bestTarget.entity === gameState ? "Player" : (bestTarget.entity.name || bestTarget.entity.id)} at last seen (${bestTarget.pos.x},${bestTarget.pos.y}).`, 'gold');
+        } else {
+            // logToConsole(`NPC ${npcName} targeting ${bestTarget.entity === gameState ? "Player" : (bestTarget.entity.name || bestTarget.entity.id)}.`, 'gold');
+            // Update legacy memory for potential fallbacks
+            if (npc.memory) {
+                npc.memory.lastSeenTargetPos = { ...gameState.defenderMapPos };
+                npc.memory.lastSeenTargetTimestamp = currentTime;
+            }
         }
         return true;
     }

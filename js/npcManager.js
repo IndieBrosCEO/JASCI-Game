@@ -115,6 +115,7 @@ class NpcManager {
                     newNpcInstance.aggroList = [];
                     newNpcInstance.memory = {
                         lastKnownSafePos: { ...newNpcInstance.mapPos },
+                        lastSeenPositions: {}, // Map of entityId -> { pos: {x,y,z}, timestamp: int }
                         recentlyVisitedTiles: [],
                         explorationTarget: null
                     };
