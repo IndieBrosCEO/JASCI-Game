@@ -135,20 +135,72 @@ function getAmbientLightColor(currentTimeHours) {
     // Ensure currentTimeHours is a number and within 0-23 range
     const hour = (typeof currentTimeHours === 'number' && currentTimeHours >= 0 && currentTimeHours <= 23) ? currentTimeHours : 12; // Default to noon if invalid
 
-    // Simple time-to-color mapping
+    // Returns the Shadow/Ambient color (not direct sun)
     if (hour >= 6 && hour < 8) { // Dawn
-        return '#A0A0C0'; // Pale blueish-grey transitioning to yellow
+        return '#606080'; // Dim Dawn Ambient
     } else if (hour >= 8 && hour < 17) { // Daytime
-        return '#FFFFFF'; // Bright white (or slightly yellowish like #FFF5E1)
+        return '#808090'; // Daylight Shadow (Blue-Grey)
     } else if (hour >= 17 && hour < 19) { // Dusk
-        return '#B0A0A0'; // Orangey/dusky transitioning to dark blue
+        return '#706060'; // Dim Dusk Ambient
     } else { // Night (19:00 to 05:59)
-        return '#303045'; // Dark blue/grey for night
+        return '#202035'; // Night Ambient
     }
 }
 
+function getSunLightColor(currentTimeHours) {
+    const hour = (typeof currentTimeHours === 'number' && currentTimeHours >= 0 && currentTimeHours <= 23) ? currentTimeHours : 12;
+    if (hour >= 6 && hour < 8) { // Dawn
+        return '#FFCCAA'; // Warm Orange
+    } else if (hour >= 8 && hour < 17) { // Daytime
+        return '#FFFFF0'; // Bright White/Yellow
+    } else if (hour >= 17 && hour < 19) { // Dusk
+        return '#FF8866'; // Reddish Orange
+    } else {
+        return '#000000'; // No sun at night
+    }
+}
+
+function getSunShadowOffset(hour) {
+    if (hour < 6 || hour >= 18) return { x: 0, y: 0 };
+    // Map 6..18 to offset
+    // 6:00 -> Look East (Positive X) to find sun.
+    // 12:00 -> 0.
+    // 18:00 -> Look West (Negative X).
+    const factor = 0.5; // Slope factor
+    const offsetX = (12 - hour) * factor;
+    return { x: offsetX, y: 0 };
+}
+
+function isTileSunlit(x, y, z, sunVector) {
+    const mapData = window.mapRenderer.getCurrentMapData();
+    if (!mapData) return false;
+
+    // Check the Roof layer of current Z level
+    const levelData = mapData.levels[z.toString()];
+    if (levelData && levelData.roof) {
+        const roof = levelData.roof[y]?.[x];
+        const roofId = (typeof roof === 'object' && roof?.tileId) ? roof.tileId : roof;
+        if (roofId && assetManagerInstance.tilesets[roofId] && !assetManagerInstance.tilesets[roofId].tags.includes('transparent')) {
+            return false; // Blocked by roof on current level
+        }
+    }
+
+    // Raycast upwards towards the sun
+    const maxCheckZ = z + 10;
+    for (let checkZ = z + 1; checkZ <= maxCheckZ; checkZ++) {
+         const dz = checkZ - z;
+         const tx = Math.floor(x + sunVector.x * dz);
+         const ty = Math.floor(y + sunVector.y * dz);
+
+         if (isTileBlockingLight(tx, ty, checkZ)) {
+             return false;
+         }
+    }
+    return true;
+}
+
 // Updated isTileBlockingLight to be 3D
-function isTileBlockingLight(tileX, tileY, tileZ) { // Added tileZ
+function isTileBlockingLight(tileX, tileY, tileZ, checkRoof = false) { // Added tileZ
     const mapData = window.mapRenderer.getCurrentMapData(); // This is fullMapData
     const currentAssetManager = assetManagerInstance;
 
@@ -157,7 +209,24 @@ function isTileBlockingLight(tileX, tileY, tileZ) { // Added tileZ
     }
 
     const levelData = mapData.levels[tileZ.toString()];
-    if (!levelData || !levelData.bottom || !levelData.middle) return true; // Treat missing Z-levels or layers as blocking
+    if (!levelData) return false; // Missing Z-level is open air (transparent)
+
+    // Check Roof Layer (New)
+    if (levelData.roof) {
+        const tileOnRoofRaw = levelData.roof[tileY]?.[tileX];
+        const effectiveTileOnRoof = (typeof tileOnRoofRaw === 'object' && tileOnRoofRaw !== null && tileOnRoofRaw.tileId !== undefined) ? tileOnRoofRaw.tileId : tileOnRoofRaw;
+        if (effectiveTileOnRoof && effectiveTileOnRoof !== "") {
+             const tileDefRoof = currentAssetManager.tilesets[effectiveTileOnRoof];
+             // If roof exists and not transparent, it blocks.
+             // Note: 'checkRoof' arg is just for signature, we always check roof if present in data?
+             // Point lights shouldn't pass through roofs either.
+             if (tileDefRoof) {
+                 if (!tileDefRoof.tags.includes('transparent_to_light') && !tileDefRoof.tags.includes('transparent')) {
+                     return true;
+                 }
+             }
+        }
+    }
 
     // Check middle layer first
     const tileOnMiddleRaw = levelData.middle[tileY]?.[tileX];
@@ -542,6 +611,9 @@ let assetManagerInstance = null;
 // - getLine3D
 // - isTileBlockingVision
 // - isTileVisible
+// - getSunLightColor
+// - getSunShadowOffset
+// - isTileSunlit
 
 window.mapRenderer = {
     initMapRenderer: function (assetMgr) {
@@ -562,6 +634,9 @@ window.mapRenderer = {
     getLine3D: getLine3D,
     isTileBlockingVision: isTileBlockingVision,
     isTileVisible: isTileVisible,
+    getSunLightColor: getSunLightColor,
+    getSunShadowOffset: getSunShadowOffset,
+    isTileSunlit: isTileSunlit,
 
     ensureLevelExists: function(z) {
         const mapData = this.getCurrentMapData();
@@ -1068,8 +1143,13 @@ window.mapRenderer = {
 
 
         const LIGHT_SOURCE_BRIGHTNESS_BOOST = 0.1;
-        const currentAmbientColor = getAmbientLightColor(gameState.currentTime && typeof gameState.currentTime.hours === 'number' ? gameState.currentTime.hours : 12);
-        const AMBIENT_STRENGTH_VISIBLE = 0.3;
+        const currentHour = gameState.currentTime && typeof gameState.currentTime.hours === 'number' ? gameState.currentTime.hours : 12;
+        const currentAmbientColor = getAmbientLightColor(currentHour);
+        const currentSunColor = getSunLightColor(currentHour);
+        const currentSunVector = getSunShadowOffset(currentHour);
+        const isDaytime = (currentHour >= 6 && currentHour < 18);
+
+        const AMBIENT_STRENGTH_VISIBLE = 0.3; // Base ambient strength
         const currentFowData = gameState.fowData[currentZStr]; // Ensure currentFowData is sourced for the current Z level
         const AMBIENT_STRENGTH_VISITED = 0.2;
 
@@ -1234,20 +1314,46 @@ window.mapRenderer = {
                             }
                         }
                     }
+
+                    // Check Sunlight (Directional)
+                    let isSunlitTile = false;
+                    if (isDaytime && fowStatus === 'visible') { // Only calculate sunlight for visible tiles to save perf
+                         if (isTileSunlit(x, y, currentZ, currentSunVector)) {
+                             isSunlitTile = true;
+                         }
+                    }
+
                     if (fowStatus === 'visible') {
+                        // Apply Sunlight or Ambient Shadow
+                        let baseColorForLighting = originalColor;
+
                         if (isLit) {
+                            // Point lights override/add to sun?
                             let activeLight = null;
                             for (const source of lightsOnCurrentZ) {
                                 if (isTileIlluminated(x, y, currentZ, source)) { activeLight = source; break; }
                             }
                             if (activeLight && activeLight.color && typeof activeLight.intensity === 'number') {
-                                const brightenedBase = brightenColor(originalColor, LIGHT_SOURCE_BRIGHTNESS_BOOST);
+                                const brightenedBase = brightenColor(baseColorForLighting, LIGHT_SOURCE_BRIGHTNESS_BOOST);
                                 displayColor = blendColors(brightenedBase, activeLight.color, activeLight.intensity / 2);
                             } else {
-                                displayColor = brightenColor(originalColor, LIGHT_SOURCE_BRIGHTNESS_BOOST / 2);
+                                displayColor = brightenColor(baseColorForLighting, LIGHT_SOURCE_BRIGHTNESS_BOOST / 2);
+                            }
+                            // If also sunlit, maybe add warmth?
+                            if (isSunlitTile) {
+                                displayColor = blendColors(displayColor, currentSunColor, 0.1); // Add sun hint
                             }
                         } else {
-                            displayColor = blendColors(originalColor, currentAmbientColor, AMBIENT_STRENGTH_VISIBLE);
+                            if (isSunlitTile) {
+                                // Sunlit: Bright and warm. Use sun color blend.
+                                // Don't blend with shadow ambient.
+                                displayColor = blendColors(baseColorForLighting, currentSunColor, 0.15);
+                                // Maybe slightly brighten to indicate full sun exposure
+                                displayColor = brightenColor(displayColor, 0.05);
+                            } else {
+                                // Shadowed: Use shadow ambient (darker/blueish)
+                                displayColor = blendColors(baseColorForLighting, currentAmbientColor, 0.4); // Stronger blend for shadow
+                            }
                         }
                     } else if (fowStatus === 'visited') {
                         if (isLit) {
