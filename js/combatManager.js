@@ -2344,6 +2344,25 @@
                     if (defender !== this.gameState && window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
                         window.inventoryManager.dropInventory(defender);
                     }
+
+                    if (defender !== this.gameState && !defender.xpAwardedThisDamageEvent) {
+                        if (defender.cr !== undefined && window.xpManager) {
+                            logToConsole(`CombatManager: NPC ${defenderName} defeated. Awarding XP.`, 'lime');
+                            window.xpManager.awardXp(window.xpManager.calculateXpForKill(defender.cr), this.gameState);
+                        }
+                        // Update Quests
+                        if (window.proceduralQuestManager && typeof window.proceduralQuestManager.checkObjectiveCompletion === 'function') {
+                            window.proceduralQuestManager.checkObjectiveCompletion({ type: "npc_killed", npcId: defender.id, npcTags: defender.tags || [], definitionId: defender.definitionId });
+                        }
+                        if (window.questManager && typeof window.questManager.updateObjective === 'function') {
+                            window.questManager.updateObjective("kill", defender.id);
+                            window.questManager.updateObjective("kill", defender.definitionId);
+                            if (defender.tags) {
+                                defender.tags.forEach(tag => window.questManager.updateObjective("kill", tag));
+                            }
+                        }
+                    }
+
                     this.initiativeTracker = this.initiativeTracker.filter(entry => entry.entity !== defender);
                     this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== defender);
                     if (defender === this.gameState) { this.endCombat(); window.gameOver(this.gameState); return; }
