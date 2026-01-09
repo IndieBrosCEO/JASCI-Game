@@ -45,41 +45,16 @@ function npcShouldTakeFall(npc, fallHeight) {
     let dc = 10 + ((fallHeight - 1) * 2) - Math.floor(averageLegHealthPercent * 10);
     dc = Math.max(5, Math.min(dc, 25)); // Clamp DC between 5 and 25.
 
-    // Use getStatValue (from utils.js, robust for different stat structures) to get Willpower.
-    // Default to a low value (e.g., 3) if stat is missing, affecting the modifier.
-    const willpowerStatValue = (typeof getStatValue === 'function') ? getStatValue("Willpower", npc) : 3;
-    if (typeof getStatValue !== 'function') {
-        logToConsole(`${logPrefix} CRITICAL: getStatValue function not found. Willpower check will be unreliable.`, "red");
-    }
-    if (npc.stats && ((Array.isArray(npc.stats) && !npc.stats.find(s => s.name === "Willpower")) || (!Array.isArray(npc.stats) && !npc.stats["Willpower"]))) {
-        logToConsole(`${logPrefix} NPC has no Willpower stat defined in .stats. Using default value ${willpowerStatValue} for calculation.`, "orange");
-    }
-
-
-    // The prompt implies a direct willpower check, not necessarily a modifier added to a roll vs. DC.
-    // However, "1d20 where the dice challenge is proportionate" suggests a roll against a DC.
-    // The existing DC calculation is: dc = 10 + ((fallHeight - 1) * 2) - Math.floor(averageLegHealthPercent * 10);
-    // Let's use a standard stat modifier for Willpower to affect the roll.
-    // getStatModifier(statName, entity) returns Math.floor(statPoints / 2) - 1. (e.g. 3 WP -> 0, 5 WP -> 1, 7 WP-> 2)
-    // This seems more standard than `willpowerPoints - 3`.
-    let willpowerModifier = 0;
-    if (typeof getStatModifier === 'function') {
-        willpowerModifier = getStatModifier("Willpower", npc);
-    } else {
-        logToConsole(`${logPrefix} CRITICAL: getStatModifier function not found. Willpower modifier will be 0.`, "red");
-        // Fallback simple modifier if getStatModifier is missing
-        willpowerModifier = Math.floor(willpowerStatValue / 2) - 1;
-    }
-
+    // Willpower has been removed. The decision is now based solely on physical factors (height, health) and a random roll.
     const roll = (typeof rollDie === 'function') ? rollDie(20) : Math.floor(Math.random() * 20) + 1;
     if (typeof rollDie !== 'function') {
         logToConsole(`${logPrefix} CRITICAL: rollDie function not found. Using Math.random.`, "red");
     }
-    const totalRoll = roll + willpowerModifier;
 
-    const success = totalRoll >= dc;
+    // Check against DC
+    const success = roll >= dc;
 
-    logToConsole(`${logPrefix} Fall Height: ${fallHeight}. Leg Health Avg: ${(averageLegHealthPercent * 100).toFixed(0)}%. Willpower Stat: ${willpowerStatValue} (Mod: ${willpowerModifier}). DC: ${dc}. Roll: ${roll} + ${willpowerModifier} = ${totalRoll}. Success: ${success}.`, success ? 'green' : 'red');
+    logToConsole(`${logPrefix} Fall Height: ${fallHeight}. Leg Health Avg: ${(averageLegHealthPercent * 100).toFixed(0)}%. DC: ${dc}. Roll: ${roll}. Success: ${success}.`, success ? 'green' : 'red');
 
     return success;
 }

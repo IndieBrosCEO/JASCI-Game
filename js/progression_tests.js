@@ -55,7 +55,6 @@ async function testSaveMigration() {
             { name: "Constitution", points: 12 }, // Con modifier of +1
             { name: "Intelligence", points: 5 },
             { name: "Perception", points: 5 },
-            { name: "Willpower", points: 5 },
             { name: "Charisma", points: 5 },
             { name: "Marketing", points: 5 }
         ],

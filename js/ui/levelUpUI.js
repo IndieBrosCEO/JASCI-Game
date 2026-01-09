@@ -259,7 +259,7 @@ class LevelUpUI {
         perksContainer.innerHTML = ''; // Clear
 
         const perks = this.perkManager.getAvailablePerks();
-        const statOrder = ['Strength', 'Intelligence', 'Dexterity', 'Constitution', 'Perception', 'Willpower', 'Charisma'];
+        const statOrder = ['Strength', 'Intelligence', 'Dexterity', 'Constitution', 'Perception', 'Charisma'];
 
         statOrder.forEach(statName => {
             const col = document.createElement('div');
