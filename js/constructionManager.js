@@ -519,8 +519,17 @@ class ConstructionManager {
         }
 
         // Award XP
-        if (definition.xpAward && this.xpManager && typeof this.xpManager.awardXp === 'function') {
-            this.xpManager.awardXp(definition.xpAward, this.gameState);
+        let xpGained = 10;
+        if (typeof definition.xpAward === 'number') {
+            xpGained = definition.xpAward;
+        } else if (typeof definition.skillLevelRequired === 'number') {
+            if (definition.skillLevelRequired <= 3) xpGained = 10;
+            else if (definition.skillLevelRequired <= 6) xpGained = 25;
+            else xpGained = 75;
+        }
+
+        if (this.xpManager && typeof this.xpManager.awardXp === 'function') {
+            this.xpManager.awardXp(xpGained, this.gameState);
         }
 
         logToConsole(`${this.logPrefix} Successfully built ${definition.name} at (${targetTilePos.x},${targetTilePos.y},${targetTilePos.z}).`, 'green');
