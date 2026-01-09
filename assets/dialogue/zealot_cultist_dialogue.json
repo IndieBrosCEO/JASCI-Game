@@ -15,11 +15,11 @@
         "goTo": "positive_response"
       },
       {
-        "text": "[Willpower] Your words have no power over me.",
+        "text": "[Charisma] Your words have no power over me.",
         "goTo": "willpower_success",
         "condition": {
             "type": "statCheck",
-            "expression": "stat:Willpower>8"
+            "expression": "stat:Charisma>8"
         }
       }
     ]

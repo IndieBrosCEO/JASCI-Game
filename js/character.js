@@ -135,7 +135,6 @@ function renderTables(character) {
         "Dexterity": "Agility, speed, and nimbleness.",
         "Constitution": "Toughness and health.",
         "Perception": "Awareness and ability to spot hidden things.",
-        "Willpower": "Resistance to mental effects.",
         "Charisma": "Force of personality, persuasiveness, and social influence"
     };
     // Removed Marksmanship description
