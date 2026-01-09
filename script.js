@@ -693,6 +693,10 @@ function handleUpdateStat(name, value) {
     console.log(`handleUpdateStat called for ${name} with value ${value}`);
     updateStat(name, value, gameState); // from js/character.js
     renderCharacterInfo(); // Re-render the relevant parts of character info
+    // If we are in the character creator (statsBody exists), re-render the tables to update +/- button onclicks
+    if (document.getElementById('statsBody')) {
+        window.renderTables(gameState);
+    }
 }
 window.handleUpdateStat = handleUpdateStat;
 
@@ -701,6 +705,10 @@ function handleUpdateSkill(name, value) {
     updateSkill(name, value, gameState); // from js/character.js
     // No direct need to call renderCharacterInfo unless total skill points display needs update
     // The skill point display is updated directly by updateSkill.
+    // If we are in the character creator, re-render the tables
+    if (document.getElementById('skillsBody')) {
+        window.renderTables(gameState);
+    }
 }
 window.handleUpdateSkill = handleUpdateSkill;
 

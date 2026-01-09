@@ -89,10 +89,116 @@ span.ripple {
 }
 
 /* Stats & Skills */
-.stats, .skills {
+.stat-row, .skill-row {
     display: flex;
     justify-content: space-between;
-    font-size: 18px;
+    align-items: center;
+    background-color: #1a1a1a;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 4px;
+    transition: transform 0.2s var(--juicy-ease), box-shadow 0.2s, background-color 0.2s;
+    animation: slideInRight 0.3s var(--juicy-ease) backwards;
+    border-left: 4px solid var(--accent-color);
+}
+
+.stat-row:hover, .skill-row:hover {
+    transform: translateX(5px);
+    background-color: #252525;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+/* Stagger animations simply based on child index if possible, or leave to generic slideInRight */
+.stat-row:nth-child(even), .skill-row:nth-child(even) { animation-delay: 0.05s; }
+
+.stat-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stat-icon {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%; /* Circle icon */
+    background-color: var(--accent-color);
+    box-shadow: 0 0 5px var(--accent-color);
+}
+
+.stat-name {
+    font-weight: bold;
+    color: #ddd;
+    text-shadow: 1px 1px 0 #000;
+}
+
+.stat-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.stat-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.stat-btn:hover {
+    background-color: var(--accent-color);
+    color: #000;
+    border-color: #fff;
+    transform: scale(1.1);
+}
+
+.stat-btn:active {
+    transform: scale(0.95);
+}
+
+.stat-input {
+    width: 40px;
+    text-align: center;
+    background-color: rgba(0,0,0,0.3);
+    border: 1px solid #444;
+    border-radius: 2px;
+    color: var(--accent-color);
+    font-weight: bold;
+    padding: 4px;
+}
+
+.stat-input:focus {
+    border-color: var(--accent-color);
+    background-color: #000;
+}
+
+/* Read-only variant for in-game panel */
+.stat-row.read-only, .skill-row.read-only {
+    padding: 4px 8px;
+    margin-bottom: 2px;
+    background-color: transparent; /* Cleaner look for sidebar */
+    border-left-width: 3px;
+}
+
+.stat-row.read-only:hover, .skill-row.read-only:hover {
+    background-color: rgba(255,255,255,0.05);
+    transform: translateX(2px);
+}
+
+.stat-value {
+    font-weight: bold;
+    font-size: 1.1em;
 }
 
 .selected {
