@@ -162,19 +162,39 @@ function renderTables(character) {
     character.MIN_STAT_VALUE = character.MIN_STAT_VALUE || 1;
     character.MAX_STAT_VALUE = character.MAX_STAT_VALUE || 20;
 
-    const statsHtml = character.stats.map(stat => `
-        <div class="stat" style="background-color: ${stat.bgColor}; color: ${stat.textColor};" title="${statDescriptions[stat.name] || ''}">
-            <span>${stat.name}:</span>
-            <input type="number" value="${stat.points}" min="${character.MIN_STAT_VALUE}" 
-                   max="${character.MAX_STAT_VALUE}" 
-                   onchange="handleUpdateStat('${stat.name}', this.value)"> 
-        </div>`).join('');
-    const skillsHtml = character.skills.map(skill => `
-        <div class="skill" style="background-color: ${skill.bgColor}; color: ${skill.textColor};" title="${skillDescriptions[skill.name] || ''}">
-            <span>${skill.name}:</span>
-            <input type="number" value="${skill.points}" min="0" max="100" 
-                   onchange="handleUpdateSkill('${skill.name}', this.value)">
-        </div>`).join('');
+    const statsHtml = character.stats.map(stat => {
+        const isMin = stat.points <= character.MIN_STAT_VALUE;
+        const isMax = stat.points >= character.MAX_STAT_VALUE;
+        return `
+        <div class="stat-row" style="--accent-color: ${stat.bgColor || '#ccc'};" title="${statDescriptions[stat.name] || ''}">
+            <div class="stat-label">
+                <span class="stat-icon" style="background-color: var(--accent-color);"></span>
+                <span class="stat-name">${stat.name}</span>
+            </div>
+            <div class="stat-controls">
+                <button class="stat-btn minus" onclick="handleUpdateStat('${stat.name}', ${stat.points - 1})" ${isMin ? 'disabled' : ''}>-</button>
+                <input type="number" value="${stat.points}" min="${character.MIN_STAT_VALUE}" max="${character.MAX_STAT_VALUE}" class="stat-input" onchange="handleUpdateStat('${stat.name}', this.value)">
+                <button class="stat-btn plus" onclick="handleUpdateStat('${stat.name}', ${stat.points + 1})" ${isMax ? 'disabled' : ''}>+</button>
+            </div>
+        </div>`;
+    }).join('');
+
+    const skillsHtml = character.skills.map(skill => {
+        const isMin = skill.points <= 0;
+        const isMax = skill.points >= 100;
+        return `
+        <div class="skill-row" style="--accent-color: ${skill.bgColor || '#ccc'};" title="${skillDescriptions[skill.name] || ''}">
+            <div class="stat-label">
+                <span class="stat-icon" style="background-color: var(--accent-color);"></span>
+                <span class="stat-name">${skill.name}</span>
+            </div>
+            <div class="stat-controls">
+                <button class="stat-btn minus" onclick="handleUpdateSkill('${skill.name}', ${skill.points - 1})" ${isMin ? 'disabled' : ''}>-</button>
+                <input type="number" value="${skill.points}" min="0" max="100" class="stat-input" onchange="handleUpdateSkill('${skill.name}', this.value)">
+                <button class="stat-btn plus" onclick="handleUpdateSkill('${skill.name}', ${skill.points + 1})" ${isMax ? 'disabled' : ''}>+</button>
+            </div>
+        </div>`;
+    }).join('');
     statsBody.innerHTML = statsHtml;
     skillsBody.innerHTML = skillsHtml;
 
@@ -482,14 +502,20 @@ function renderCharacterStatsSkillsAndWornClothing(character, characterInfoEleme
     `;
 
     const statsHtml = character.stats.map(stat => `
-        <div class="stats" style="background-color: ${stat.bgColor}; color: ${stat.textColor};">
-            <span>${stat.name}:</span>
-            <span>${stat.points}</span>
+        <div class="stat-row read-only" style="--accent-color: ${stat.bgColor || '#ccc'};">
+            <div class="stat-label">
+                <span class="stat-icon" style="background-color: var(--accent-color);"></span>
+                <span class="stat-name">${stat.name}</span>
+            </div>
+            <span class="stat-value" style="color: var(--accent-color)">${stat.points}</span>
         </div>`).join('');
     const skillsHtml = character.skills.map(skill => `
-        <div class="skills" style="background-color: ${skill.bgColor}; color: ${skill.textColor};">
-            <span>${skill.name}:</span>
-            <span>${skill.points}</span>
+        <div class="skill-row read-only" style="--accent-color: ${skill.bgColor || '#ccc'};">
+            <div class="stat-label">
+                <span class="stat-icon" style="background-color: var(--accent-color);"></span>
+                <span class="stat-name">${skill.name}</span>
+            </div>
+            <span class="stat-value" style="color: var(--accent-color)">${skill.points}</span>
         </div>`).join('');
 
     let characterHtml = `
