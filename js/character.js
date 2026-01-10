@@ -1143,18 +1143,28 @@ function gameOver(character) {
             window.proceduralQuestManager.checkObjectiveCompletion({ type: "npc_killed", npcId: character.id, npcTags: character.tags || [], definitionId: character.definitionId });
             character.questKillNotified = true; // Mark as notified
         }
-        // Ensure combat manager removes the NPC if it hasn't already
-        if (window.combatManager && window.combatManager.initiativeTracker.find(e => e.entity === character)) {
-            // Drop loot before removal
-            if (window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
-                window.inventoryManager.dropInventory(character);
-            }
-
-            window.combatManager.initiativeTracker = window.combatManager.initiativeTracker.filter(entry => entry.entity !== character);
-            window.gameState.npcs = window.gameState.npcs.filter(npc => npc !== character);
-            logToConsole(`gameOver for NPC ${characterName}: Removed from initiative and game npcs list.`, 'info');
-            window.mapRenderer.scheduleRender(); // Update map if NPC sprite needs to be removed
+        // Create Corpse (instead of dropInventory)
+        if (window.inventoryManager && typeof window.inventoryManager.createCorpse === 'function') {
+            window.inventoryManager.createCorpse(character);
+        } else if (window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
+            window.inventoryManager.dropInventory(character);
         }
+
+        // Remove from Initiative if present
+        if (window.combatManager) {
+            window.combatManager.initiativeTracker = window.combatManager.initiativeTracker.filter(entry => entry.entity !== character);
+        }
+
+        // Remove from Global NPC List
+        if (window.gameState && window.gameState.npcs) {
+            const npcIndex = window.gameState.npcs.findIndex(n => n.id === character.id);
+            if (npcIndex !== -1) {
+                window.gameState.npcs.splice(npcIndex, 1);
+            }
+        }
+
+        logToConsole(`gameOver for NPC ${characterName}: Processed death and removal.`, 'info');
+        if (window.mapRenderer) window.mapRenderer.scheduleRender();
     }
     // Reset the flag after processing
     setTimeout(() => { window.gameOverCalledForEntityThisTurn = false; }, 0);

@@ -464,6 +464,54 @@ class InventoryManager {
         }
     }
 
+    createCorpse(entity) {
+        if (!entity || !entity.mapPos) return;
+
+        const corpseItemDef = {
+            id: `corpse_${entity.id || Date.now()}`,
+            name: `Corpse of ${entity.name || "Unknown"}`,
+            type: "container",
+            itemType: "corpse",
+            description: `The lifeless body of ${entity.name}.`,
+            capacity: 20,
+            weight: 50,
+            items: [],
+            tags: ["corpse", "container"]
+        };
+
+        const corpseItem = new Item(corpseItemDef);
+
+        // Transfer items
+        if (entity.inventory && entity.inventory.container && entity.inventory.container.items) {
+            corpseItem.items.push(...entity.inventory.container.items);
+            entity.inventory.container.items = [];
+        }
+        if (entity.inventory && entity.inventory.handSlots) {
+            entity.inventory.handSlots.forEach(item => {
+                if (item) corpseItem.items.push(item);
+            });
+            entity.inventory.handSlots = [null, null];
+        }
+        if (entity.wornClothing) {
+            Object.values(entity.wornClothing).forEach(item => {
+                if (item) corpseItem.items.push(item);
+            });
+            entity.wornClothing = {};
+        }
+
+        // Place corpse on floor
+        if (!this.gameState.floorItems) this.gameState.floorItems = [];
+        this.gameState.floorItems.push({
+            x: entity.mapPos.x,
+            y: entity.mapPos.y,
+            z: entity.mapPos.z,
+            item: corpseItem
+        });
+
+        logToConsole(`Created corpse for ${entity.name}.`, 'grey');
+        if (window.mapRenderer) window.mapRenderer.scheduleRender();
+    }
+
     dropItem(itemName) {
         const itemDefToDrop = this.removeItem(itemName, 1);
         if (itemDefToDrop) {
