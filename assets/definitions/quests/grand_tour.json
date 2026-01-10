@@ -1,23 +1,5 @@
 [
   {
-    "id": "sample_quest",
-    "title": "Rat Catcher",
-    "description": "The local shopkeeper needs you to clear out the rats in his basement.",
-    "objectives": [
-      {
-        "type": "kill",
-        "target": "rat",
-        "count": 3,
-        "current": 0,
-        "description": "Kill 3 Rats"
-      }
-    ],
-    "rewards": {
-      "xp": 100,
-      "gold": 50
-    }
-  },
-  {
     "id": "grand_tour",
     "title": "The Grand Tour",
     "description": "Prove your worth by visiting the test grounds, defeating the training dummy, collecting a knife, and reporting back to Fish Joe.",
@@ -54,25 +36,9 @@
     "rewards": {
       "xp": 500,
       "gold": 100,
-      "items": ["medkit_basic"]
-    }
-  },
-  {
-    "id": "police_find_clue",
-    "title": "Find Clue",
-    "description": "The police man needs you to recover a piece of paper that says \"Howard B. Riley\"",
-    "objectives": [
-      {
-        "type": "collect",
-        "target": "parchment_roll_blank",
-        "count": 1,
-        "current": 0,
-        "description": "Collect Clue"
-      }
-    ],
-    "rewards": {
-      "xp": 100,
-      "gold": 0
+      "items": [
+        "medkit_basic"
+      ]
     }
   }
 ]
