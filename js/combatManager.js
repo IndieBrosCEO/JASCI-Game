@@ -633,6 +633,8 @@
             let effectsToRemove = [];
             for (const effectId in attacker.statusEffects) {
                 const effect = attacker.statusEffects[effectId];
+                if (!effect) continue;
+
                 if (effect.damagePerTurn && effect.damageType) {
                     let partToDamage = (currentEntry.isPlayer ? this.gameState : attacker).health?.torso;
                     if (partToDamage) {
