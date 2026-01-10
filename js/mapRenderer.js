@@ -1,6 +1,40 @@
 // js/mapRenderer.js
 // Helper functions for FOW and LOS
 
+// Color Helpers
+function hexToRgb(hex) {
+    if (typeof hex !== 'string' || !hex.startsWith('#')) return null;
+    let r = parseInt(hex.substring(1, 3), 16);
+    let g = parseInt(hex.substring(3, 5), 16);
+    let b = parseInt(hex.substring(5, 7), 16);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return null;
+    return { r, g, b };
+}
+
+function rgbToHex(r, g, b) {
+    return `#${Math.round(Math.max(0, Math.min(255, r))).toString(16).padStart(2, '0')}${Math.round(Math.max(0, Math.min(255, g))).toString(16).padStart(2, '0')}${Math.round(Math.max(0, Math.min(255, b))).toString(16).padStart(2, '0')}`;
+}
+
+function multiplyColors(hex1, hex2) {
+    const c1 = hexToRgb(hex1) || { r: 255, g: 255, b: 255 }; // Treat invalid/missing as white (no tint)
+    const c2 = hexToRgb(hex2) || { r: 255, g: 255, b: 255 };
+    return rgbToHex(
+        (c1.r * c2.r) / 255,
+        (c1.g * c2.g) / 255,
+        (c1.b * c2.b) / 255
+    );
+}
+
+function addColors(hex1, hex2) {
+    const c1 = hexToRgb(hex1) || { r: 0, g: 0, b: 0 };
+    const c2 = hexToRgb(hex2) || { r: 0, g: 0, b: 0 };
+    return rgbToHex(
+        c1.r + c2.r,
+        c1.g + c2.g,
+        c1.b + c2.b
+    );
+}
+
 function darkenColor(hexColor, factor) {
     if (typeof hexColor !== 'string' || !hexColor.startsWith('#') || typeof factor !== 'number') {
         return hexColor || '#000000'; // Return original or black if invalid input
@@ -34,21 +68,6 @@ function blendColors(baseColorHex, tintColorHex, tintFactor) {
     try {
         // Ensure tintFactor is within bounds
         const factor = Math.max(0, Math.min(1, tintFactor));
-
-        // Function to parse hex to RGB object
-        const hexToRgb = (hex) => {
-            if (typeof hex !== 'string' || !hex.startsWith('#')) return null;
-            let r = parseInt(hex.substring(1, 3), 16);
-            let g = parseInt(hex.substring(3, 5), 16);
-            let b = parseInt(hex.substring(5, 7), 16);
-            if (isNaN(r) || isNaN(g) || isNaN(b)) return null;
-            return { r, g, b };
-        };
-
-        // Function to convert RGB object back to hex
-        const rgbToHex = (r, g, b) => {
-            return `#${Math.round(r).toString(16).padStart(2, '0')}${Math.round(g).toString(16).padStart(2, '0')}${Math.round(b).toString(16).padStart(2, '0')}`;
-        };
 
         const baseRgb = hexToRgb(baseColorHex);
         const tintRgb = hexToRgb(tintColorHex);
@@ -197,6 +216,79 @@ function isTileSunlit(x, y, z, sunVector) {
          }
     }
     return true;
+}
+
+// New Advanced Lighting Calculation
+function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
+    const lightsOnCurrentZ = gameState.lightSources.filter(ls => ls.z === z);
+
+    // Accumulators for light color
+    let totalR = 0, totalG = 0, totalB = 0;
+
+    // 1. Base Ambient
+    const ambientRGB = hexToRgb(baseAmbientColor) || { r: 50, g: 50, b: 60 }; // Fallback
+    totalR += ambientRGB.r;
+    totalG += ambientRGB.g;
+    totalB += ambientRGB.b;
+
+    // 2. Sunlight
+    // Only check sunlight if sunColor contributes light (not black)
+    if (sunColor !== '#000000' && isTileSunlit(x, y, z, sunVector)) {
+         const sunRGB = hexToRgb(sunColor) || { r: 0, g: 0, b: 0 };
+         // Sunlight intensity scaling? Assume 1.0 for now, or implicit in sunColor brightness.
+         totalR = Math.max(totalR, sunRGB.r); // Sunlight usually overrides ambient rather than adding?
+         totalG = Math.max(totalG, sunRGB.g); // Or adds? Let's try adding but clamping to ambient+sun logic.
+         totalB = Math.max(totalB, sunRGB.b);
+         // Actually, sunlight *replaces* shadow ambient in real life, but here 'ambient' is shadow color.
+         // So if sunlit, we start with sunColor, not ambient + sunColor.
+         // Let's reset to SunColor if sunlit, then add point lights.
+         totalR = sunRGB.r;
+         totalG = sunRGB.g;
+         totalB = sunRGB.b;
+    }
+
+    // 3. Point Lights
+    // Optimization: Filter by distance first (bounding box)
+    for (const light of lightsOnCurrentZ) {
+        const dist = getDistance3D({x,y,z}, light); // 3D distance, though we filtered by Z=z
+        if (dist > light.radius) continue;
+
+        // Attenuation
+        // Linear falloff: 1 at 0, 0 at radius
+        // Quadratic might be better: 1 / (1 + dist^2) but harder to tune to radius.
+        // Let's stick to (1 - dist/radius)^2 for a nice smooth falloff that definitely ends at radius.
+        const falloff = Math.pow(1 - (dist / light.radius), 2);
+        const intensity = (light.intensity || 1.0) * falloff;
+
+        // Flicker effect?
+        let flickerMod = 1.0;
+        if (light.flicker) {
+             // Simple random flicker based on time and position hash to be deterministic per frame but changing
+             const time = Date.now() / 100;
+             flickerMod = 0.8 + 0.4 * Math.abs(Math.sin(time + x * 0.1 + y * 0.1));
+        }
+
+        const finalIntensity = intensity * flickerMod;
+
+        if (finalIntensity <= 0.01) continue;
+
+        // LOS Check
+        if (isTileIlluminated(x, y, z, light)) {
+            const lightRGB = hexToRgb(light.color || '#FFFFFF') || { r: 255, g: 255, b: 255 };
+
+            // Additive Lighting
+            totalR += lightRGB.r * finalIntensity;
+            totalG += lightRGB.g * finalIntensity;
+            totalB += lightRGB.b * finalIntensity;
+        }
+    }
+
+    // Clamp
+    totalR = Math.min(255, Math.round(totalR));
+    totalG = Math.min(255, Math.round(totalG));
+    totalB = Math.min(255, Math.round(totalB));
+
+    return rgbToHex(totalR, totalG, totalB);
 }
 
 // Updated isTileBlockingLight to be 3D
@@ -1303,73 +1395,32 @@ window.mapRenderer = {
                     displayColor = visitedColorStyle(originalColor);
                 }
 
-                const lightsOnCurrentZ = gameState.lightSources.filter(ls => ls.z === currentZ);
                 if (fowStatus === 'visible' || fowStatus === 'visited') {
-                    let isLit = false;
-                    if (lightsOnCurrentZ.length > 0) {
-                        for (const source of lightsOnCurrentZ) {
-                            if (isTileIlluminated(x, y, currentZ, source)) {
-                                isLit = true;
-                                break;
-                            }
-                        }
-                    }
+                    // --- New Advanced Lighting Integration ---
+                    const baseColorForLighting = originalColor;
 
-                    // Check Sunlight (Directional)
-                    let isSunlitTile = false;
-                    if (isDaytime && fowStatus === 'visible') { // Only calculate sunlight for visible tiles to save perf
-                         if (isTileSunlit(x, y, currentZ, currentSunVector)) {
-                             isSunlitTile = true;
-                         }
-                    }
+                    // We only do complex lighting for Visible tiles.
+                    // Visited tiles get a simplified/dimmed version.
 
                     if (fowStatus === 'visible') {
-                        // Apply Sunlight or Ambient Shadow
-                        let baseColorForLighting = originalColor;
+                        // Calculate total light falling on this tile (Ambient + Sun + Point)
+                        const lightColor = calculateTileLighting(x, y, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
 
-                        if (isLit) {
-                            // Point lights override/add to sun?
-                            let activeLight = null;
-                            for (const source of lightsOnCurrentZ) {
-                                if (isTileIlluminated(x, y, currentZ, source)) { activeLight = source; break; }
-                            }
-                            if (activeLight && activeLight.color && typeof activeLight.intensity === 'number') {
-                                const brightenedBase = brightenColor(baseColorForLighting, LIGHT_SOURCE_BRIGHTNESS_BOOST);
-                                displayColor = blendColors(brightenedBase, activeLight.color, activeLight.intensity / 2);
-                            } else {
-                                displayColor = brightenColor(baseColorForLighting, LIGHT_SOURCE_BRIGHTNESS_BOOST / 2);
-                            }
-                            // If also sunlit, maybe add warmth?
-                            if (isSunlitTile) {
-                                displayColor = blendColors(displayColor, currentSunColor, 0.1); // Add sun hint
-                            }
-                        } else {
-                            if (isSunlitTile) {
-                                // Sunlit: Bright and warm. Use sun color blend.
-                                // Don't blend with shadow ambient.
-                                displayColor = blendColors(baseColorForLighting, currentSunColor, 0.15);
-                                // Maybe slightly brighten to indicate full sun exposure
-                                displayColor = brightenColor(displayColor, 0.05);
-                            } else {
-                                // Shadowed: Use shadow ambient (darker/blueish)
-                                displayColor = blendColors(baseColorForLighting, currentAmbientColor, 0.4); // Stronger blend for shadow
-                            }
-                        }
+                        // Multiply Surface Color * Light Color
+                        displayColor = multiplyColors(baseColorForLighting, lightColor);
+
+                        // Optionally add emission if the tile itself glows (from definition)
+                        // (Not yet in tileDef, but could be added later. For now, assume baseColor is Albedo)
+
                     } else if (fowStatus === 'visited') {
-                        if (isLit) {
-                            let activeLight = null;
-                            for (const source of lightsOnCurrentZ) {
-                                if (isTileIlluminated(x, y, currentZ, source)) { activeLight = source; break; }
-                            }
-                            if (activeLight && activeLight.color && typeof activeLight.intensity === 'number') {
-                                const slightlyBrightenedVisited = brightenColor(displayColor, LIGHT_SOURCE_BRIGHTNESS_BOOST / 2);
-                                displayColor = blendColors(slightlyBrightenedVisited, activeLight.color, activeLight.intensity * 0.25);
-                            } else {
-                                displayColor = blendColors(displayColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
-                            }
-                        } else {
-                            displayColor = blendColors(displayColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
-                        }
+                        // Visited tiles are dim. We use ambient light only, dimmed down.
+                        // Or just darken the base color as before, but consistency is nice.
+
+                        // Old logic was: blend with ambient.
+                        displayColor = blendColors(displayColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
+
+                        // Apply extra darkening for "old memory" feel
+                        displayColor = darkenColor(displayColor, 0.4);
                     }
                 }
 
