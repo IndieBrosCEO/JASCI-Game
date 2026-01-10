@@ -1208,6 +1208,96 @@ window.renderDerivedStats = renderDerivedStats;
 window.calculateDerivedStats = calculateDerivedStats;
 window.updateSkill = updateSkill;
 window.updateStat = updateStat;
+// Refresh the stats UI without re-rendering the entire table (prevents flashing/animation replay)
+function refreshStatsUI(character) {
+    const statsBody = document.getElementById('statsBody');
+    if (!statsBody) return;
+
+    // Ensure character has min/max values set
+    const MIN = character.MIN_STAT_VALUE || 1;
+    const MAX = character.MAX_STAT_VALUE || 20;
+
+    character.stats.forEach(stat => {
+        // Find the row for this stat using a data attribute or other identifier
+        // Since renderTables doesn't add data-ids, we can look for the input with the matching onchange handler
+        // or add a class/id in renderTables.
+        // Let's rely on the input's onchange attribute containing the stat name.
+        // Or better, let's update renderTables to include data-stat-name on the row.
+
+        // For now, let's search inputs.
+        const input = Array.from(statsBody.querySelectorAll('.stat-input')).find(el => el.getAttribute('onchange').includes(`'${stat.name}'`));
+
+        if (input) {
+            const row = input.closest('.stat-row');
+            if (row) {
+                // Update input value
+                if (input.value != stat.points) {
+                    input.value = stat.points;
+                }
+
+                // Update buttons
+                const minusBtn = row.querySelector('.stat-btn.minus');
+                const plusBtn = row.querySelector('.stat-btn.plus');
+
+                if (minusBtn) {
+                    minusBtn.disabled = (stat.points <= MIN);
+                    // Update onclick to ensure latest value is used (though typically logic uses current val)
+                    minusBtn.setAttribute('onclick', `handleUpdateStat('${stat.name}', ${stat.points - 1})`);
+                }
+
+                if (plusBtn) {
+                    plusBtn.disabled = (stat.points >= MAX);
+                    plusBtn.setAttribute('onclick', `handleUpdateStat('${stat.name}', ${stat.points + 1})`);
+                }
+            }
+        }
+    });
+
+    // Update remaining points text
+    const statPointsElement = document.getElementById('statPointsRemaining');
+    if (statPointsElement) {
+        const currentTotalStats = character.stats.reduce((sum, stat) => sum + stat.points, 0);
+        statPointsElement.textContent = (character.MAX_TOTAL_STAT_POINTS || 35) - currentTotalStats;
+    }
+}
+
+// Refresh the skills UI without re-rendering the entire table
+function refreshSkillsUI(character) {
+    const skillsBody = document.getElementById('skillsBody');
+    if (!skillsBody) return;
+
+    character.skills.forEach(skill => {
+        const input = Array.from(skillsBody.querySelectorAll('.stat-input')).find(el => el.getAttribute('onchange').includes(`'${skill.name}'`));
+
+        if (input) {
+            const row = input.closest('.skill-row');
+            if (row) {
+                if (input.value != skill.points) {
+                    input.value = skill.points;
+                }
+
+                const minusBtn = row.querySelector('.stat-btn.minus');
+                const plusBtn = row.querySelector('.stat-btn.plus');
+
+                if (minusBtn) {
+                    minusBtn.disabled = (skill.points <= 0);
+                    minusBtn.setAttribute('onclick', `handleUpdateSkill('${skill.name}', ${skill.points - 1})`);
+                }
+
+                if (plusBtn) {
+                    plusBtn.disabled = (skill.points >= 100);
+                    plusBtn.setAttribute('onclick', `handleUpdateSkill('${skill.name}', ${skill.points + 1})`);
+                }
+            }
+        }
+    });
+
+    // Skill points remaining are updated inside updateSkill function usually,
+    // but we can ensure it here if needed.
+}
+
+window.refreshStatsUI = refreshStatsUI;
+window.refreshSkillsUI = refreshSkillsUI;
 window.renderTables = renderTables;
 window.renderCharacterStatsSkillsAndWornClothing = renderCharacterStatsSkillsAndWornClothing;
 window.initializeHealth = initializeHealth;
