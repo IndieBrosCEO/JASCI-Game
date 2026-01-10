@@ -467,12 +467,19 @@
                     window.gameOver(this.gameState);
                     return;
                 } else {
-                    if (window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
+                    if (window.inventoryManager && typeof window.inventoryManager.createCorpse === 'function') {
+                        window.inventoryManager.createCorpse(previousAttackerEntity);
+                    } else if (window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
                         window.inventoryManager.dropInventory(previousAttackerEntity);
                     }
+
                     const idxToRemove = this.initiativeTracker.findIndex(e => e.entity === previousAttackerEntity);
                     this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== previousAttackerEntity);
-                    this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== previousAttackerEntity);
+
+                    const npcIndex = this.gameState.npcs.findIndex(n => n.id === previousAttackerEntity.id);
+                    if (npcIndex !== -1) {
+                        this.gameState.npcs.splice(npcIndex, 1);
+                    }
 
                     if (idxToRemove !== -1 && idxToRemove <= this.currentTurnIndex) {
                         this.currentTurnIndex--;
@@ -2341,8 +2348,12 @@
                 const stillInInitiative = this.initiativeTracker.find(e => e.entity === defender);
                 if (stillInInitiative) { // Only process if they haven't been removed by, say, an explosion already
                     logToConsole(`DEFEATED: ${defenderName} has fallen!`, 'red');
-                    if (defender !== this.gameState && window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
-                        window.inventoryManager.dropInventory(defender);
+                    if (defender !== this.gameState) {
+                        if (window.inventoryManager && typeof window.inventoryManager.createCorpse === 'function') {
+                            window.inventoryManager.createCorpse(defender);
+                        } else if (window.inventoryManager && typeof window.inventoryManager.dropInventory === 'function') {
+                            window.inventoryManager.dropInventory(defender);
+                        }
                     }
 
                     if (defender !== this.gameState && !defender.xpAwardedThisDamageEvent) {
@@ -2364,7 +2375,12 @@
                     }
 
                     this.initiativeTracker = this.initiativeTracker.filter(entry => entry.entity !== defender);
-                    this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== defender);
+
+                    const npcIndex = this.gameState.npcs.findIndex(n => n.id === defender.id);
+                    if (npcIndex !== -1) {
+                        this.gameState.npcs.splice(npcIndex, 1);
+                    }
+
                     if (defender === this.gameState) { this.endCombat(); window.gameOver(this.gameState); return; }
                     window.mapRenderer.scheduleRender();
                 }
