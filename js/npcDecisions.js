@@ -1417,7 +1417,11 @@ window.handleNpcCombatTurn = handleNpcCombatTurn;
  * @param {object} assetManager - Instance of the AssetManager.
  */
 async function executeNpcTurn(npc, gameState, combatManager, assetManager) {
-    if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) {
+    // Check if alive OR in crisis (HP > 0 or CrisisTimer > 0)
+    const isTorsoOk = npc.health?.torso?.current > 0 || (npc.health?.torso?.crisisTimer > 0);
+    const isHeadOk = npc.health?.head?.current > 0 || (npc.health?.head?.crisisTimer > 0);
+
+    if (!npc || !isTorsoOk || !isHeadOk) {
         // logToConsole(`NPC ${npc?.id || 'Unknown'} is incapacitated. Skipping turn.`);
         return;
     }

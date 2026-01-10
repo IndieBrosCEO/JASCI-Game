@@ -542,16 +542,23 @@
             attacker = currentEntry.entity;
             const isPlayer = currentEntry.isPlayer;
             const healthObj = isPlayer ? this.gameState.player.health : attacker.health;
-            const headHealth = healthObj?.head?.current;
-            const torsoHealth = healthObj?.torso?.current;
+            const head = healthObj?.head;
+            const torso = healthObj?.torso;
 
-            if ((typeof headHealth === 'number' && headHealth > 0) && (typeof torsoHealth === 'number' && torsoHealth > 0)) {
+            // Alive if current > 0 OR in crisis (timer > 0)
+            const isHeadAlive = head && (head.current > 0 || head.crisisTimer > 0);
+            const isTorsoAlive = torso && (torso.current > 0 || torso.crisisTimer > 0);
+
+            if (isHeadAlive && isTorsoAlive) {
                 nextAttackerFound = true;
             } else {
                 attackerName = isPlayer ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id || "Unknown NPC");
-                logToConsole(`Skipping turn for incapacitated or invalid entity: ${attackerName}. HeadHP: ${headHealth}, torsoHP: ${torsoHealth}`, 'grey');
+                logToConsole(`Skipping turn for incapacitated or invalid entity: ${attackerName}. HeadHP: ${head?.current}, TorsoHP: ${torso?.current}`, 'grey');
                 // If it's the player and they are dead, combat should end or game over.
-                if (isPlayer && (headHealth <= 0 || torsoHealth <= 0)) {
+                // Note: Player crisis handling might differ, usually player gets to act in crisis? Yes.
+                // The check above (isHeadAlive && isTorsoAlive) allows acting in crisis.
+                // If they are NOT alive (destroyed or timer 0), then we end.
+                if (isPlayer && (!isHeadAlive || !isTorsoAlive)) {
                     logToConsole("Player is incapacitated. Ending combat.", "red");
                     this.endCombat(); // This should trigger gameOver if player is dead
                     window.gameOver(this.gameState); // Explicitly call gameOver for player
@@ -2023,7 +2030,7 @@
                         rollingEntityName: `${defenderName} Defense`,
                         entity: defender,
                         modifiers: defenseResult.detailedModifiers,
-                        duration: 1500 + (defenseResult.detailedModifiers.length * 500),
+                        duration: 1500 + ((defenseResult.detailedModifiers ? defenseResult.detailedModifiers.length : 0) * 500),
                         onComplete: (finalDisplayValue) => {
                             logToConsole(`DEFENSE: ${defenderName} (${defChoiceType} - ${defenseResult.defenseSkillName}). Final Roll: ${finalDisplayValue} (Natural: ${defenseResult.naturalRoll})`);
                             if (defChoiceType.toLowerCase().includes("block") && window.audioManager && (defender.mapPos || defender === this.gameState)) { /* ... play block sound ... */ }
@@ -2336,7 +2343,10 @@
             }
 
             const defenderHealth = (defender === this.gameState) ? this.gameState.player.health : defender.health;
-            if (defender && defenderHealth && (defenderHealth.head?.current <= 0 || defenderHealth.torso?.current <= 0)) {
+            const isHeadDestroyed = defenderHealth?.head?.current <= 0 && (defenderHealth.head.isDestroyed || defenderHealth.head.crisisTimer === 0);
+            const isTorsoDestroyed = defenderHealth?.torso?.current <= 0 && (defenderHealth.torso.isDestroyed || defenderHealth.torso.crisisTimer === 0);
+
+            if (defender && defenderHealth && (isHeadDestroyed || isTorsoDestroyed)) {
                 // Check if the entity is already marked as defeated or removed to avoid double processing
                 const stillInInitiative = this.initiativeTracker.find(e => e.entity === defender);
                 if (stillInInitiative) { // Only process if they haven't been removed by, say, an explosion already
@@ -2369,7 +2379,13 @@
                     window.mapRenderer.scheduleRender();
                 }
             }
-            if (!this.initiativeTracker.some(e => !e.isPlayer && e.entity.health?.torso?.current > 0 && e.entity.health?.head?.current > 0) && this.initiativeTracker.some(e => e.isPlayer && e.entity.health?.torso?.current > 0 && e.entity.health?.head?.current > 0)) {
+            // Check for victory condition: No hostile NPCs left who are alive OR in crisis (if we consider crisis as defeated, we might end combat, but if they can act/heal, we shouldn't)
+            // If they are in crisis, they are still in initiativeTracker. So checking initiativeTracker length/contents is key.
+            // If we want them to act (heal), they must count as "active".
+            const activeHostiles = this.initiativeTracker.filter(e => !e.isPlayer && ((e.entity.health?.torso?.current > 0 || e.entity.health?.torso?.crisisTimer > 0) && (e.entity.health?.head?.current > 0 || e.entity.health?.head?.crisisTimer > 0)));
+            const activePlayers = this.initiativeTracker.filter(e => e.isPlayer && ((e.entity.health?.torso?.current > 0 || e.entity.health?.torso?.crisisTimer > 0) && (e.entity.health?.head?.current > 0 || e.entity.health?.head?.crisisTimer > 0)));
+
+            if (activeHostiles.length === 0 && activePlayers.length > 0) {
                 logToConsole("All hostile NPCs defeated. Ending combat.", 'fuchsia'); this.endCombat(); return;
             }
             if (this.gameState.dualWieldPending && attacker === this.gameState) {
@@ -2969,8 +2985,12 @@
 
     async executeNpcCombatTurn(npc) {
         const npcName = npc.name || npc.id || "NPC";
-        if (!npc || npc.health?.torso?.current <= 0 || npc.health?.head?.current <= 0) {
-            logToConsole(`INFO: ${npcName} incapacitated. Skipping turn.`, 'orange');
+        // Allow turn if in crisis (crisisTimer > 0)
+        const isTorsoOk = npc.health?.torso?.current > 0 || npc.health?.torso?.crisisTimer > 0;
+        const isHeadOk = npc.health?.head?.current > 0 || npc.health?.head?.crisisTimer > 0;
+
+        if (!npc || !isTorsoOk || !isHeadOk) {
+            logToConsole(`INFO: ${npcName} incapacitated (Dead/Destroyed). Skipping turn.`, 'orange');
             setTimeout(() => this.nextTurn(npc), 0);
             return;
         }
