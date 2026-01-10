@@ -248,8 +248,9 @@
         }
         if (attackDeclUI && !this.gameState.isRetargeting) attackDeclUI.classList.remove('hidden');
         this.populateWeaponSelect();
-        const bodyPartSelect = document.getElementById('combatBodyPartSelect');
-        if (bodyPartSelect) bodyPartSelect.value = "torso";
+
+        // Populate body parts based on current defender
+        this.populateTargetBodyParts(this.gameState.combatCurrentDefender);
 
         // Update LOS line display
         if (this.gameState.combatCurrentAttacker && (this.gameState.combatCurrentDefender || this.gameState.defenderMapPos)) {
@@ -391,6 +392,37 @@
         } else {
             logToConsole("Combat started in background. Waiting for turn tick.", 'grey');
             this.turnsToProcess = 0;
+        }
+    }
+
+    populateTargetBodyParts(defender) {
+        const select = document.getElementById('combatBodyPartSelect');
+        if (!select) return;
+        select.innerHTML = '';
+
+        if (defender && defender.health) {
+            Object.keys(defender.health).forEach(partKey => {
+                const option = document.createElement('option');
+                option.value = partKey;
+                // Use global formatter if available, otherwise capitalize
+                option.textContent = window.formatBodyPartName ? window.formatBodyPartName(partKey) : (partKey.charAt(0).toUpperCase() + partKey.slice(1));
+                select.appendChild(option);
+            });
+            // Default selection logic
+            if (defender.health.torso) select.value = "torso";
+            else if (defender.health.body) select.value = "body";
+            else if (select.options.length > 0) select.selectedIndex = 0;
+        } else {
+            // Fallback if no defender (e.g. tile targeting) or no health data
+            // Default to standard humanoid parts or empty if purely tile-based
+            const standardParts = ["head", "torso", "leftArm", "rightArm", "leftLeg", "rightLeg"];
+            standardParts.forEach(part => {
+                const option = document.createElement('option');
+                option.value = part;
+                option.textContent = window.formatBodyPartName ? window.formatBodyPartName(part) : part;
+                select.appendChild(option);
+            });
+            select.value = "torso";
         }
     }
 
