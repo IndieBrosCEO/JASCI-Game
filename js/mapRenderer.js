@@ -156,13 +156,13 @@ function getAmbientLightColor(currentTimeHours) {
 
     // Returns the Shadow/Ambient color (not direct sun)
     if (hour >= 6 && hour < 8) { // Dawn
-        return '#606080'; // Dim Dawn Ambient
+        return '#8080A0'; // Brighter Dawn Ambient
     } else if (hour >= 8 && hour < 17) { // Daytime
-        return '#808090'; // Daylight Shadow (Blue-Grey)
+        return '#A0A0B0'; // Brighter Daylight Shadow (Blue-Grey)
     } else if (hour >= 17 && hour < 19) { // Dusk
-        return '#706060'; // Dim Dusk Ambient
+        return '#908080'; // Brighter Dusk Ambient
     } else { // Night (19:00 to 05:59)
-        return '#202035'; // Night Ambient
+        return '#353550'; // Brighter Night Ambient (was #202035)
     }
 }
 
@@ -254,10 +254,9 @@ function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
         if (dist > light.radius) continue;
 
         // Attenuation
-        // Linear falloff: 1 at 0, 0 at radius
-        // Quadratic might be better: 1 / (1 + dist^2) but harder to tune to radius.
-        // Let's stick to (1 - dist/radius)^2 for a nice smooth falloff that definitely ends at radius.
-        const falloff = Math.pow(1 - (dist / light.radius), 2);
+        // Switching to Linear falloff for better visibility at range.
+        // Quadratic (Math.pow(..., 2)) falls off too fast, making lights look small.
+        const falloff = 1.0 - (dist / light.radius);
         const intensity = (light.intensity || 1.0) * falloff;
 
         // Flicker effect?
