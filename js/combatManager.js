@@ -1677,6 +1677,32 @@
                 if (attackerPos && targetPos) window.animationManager.playAnimation('throwing', { startPos: attackerPos, endPos: targetPos, sprite: (weapon.sprite || 'o'), color: (weapon.color || 'cyan'), duration: 600, attacker, defender });
             }
         } else if (attackType === 'ranged' && weapon && !weapon.type?.includes("thrown") && weapon.type !== "weapon_utility_spray" && !weapon.tags?.includes("launcher_treated_as_rifle")) {
+            // Muzzle Flash Effect
+            if (attackerPos && this.gameState.lightSources) {
+                const muzzleFlashColor = (weapon.type && weapon.type.includes("laser")) ? "#FF0000" : "#FFFF88"; // Red for lasers, yellow for guns
+                const flashLight = {
+                    x: attackerPos.x,
+                    y: attackerPos.y,
+                    z: attackerPos.z,
+                    radius: 4, // Short burst of light
+                    intensity: 2.0, // Very bright
+                    color: muzzleFlashColor,
+                    temporary: true,
+                    duration: 150 // ms
+                };
+
+                this.gameState.lightSources.push(flashLight);
+                // Remove it after a short delay
+                setTimeout(() => {
+                    const idx = this.gameState.lightSources.indexOf(flashLight);
+                    if (idx > -1) {
+                        this.gameState.lightSources.splice(idx, 1);
+                        if (window.mapRenderer) window.mapRenderer.scheduleRender();
+                    }
+                }, 150);
+                if (window.mapRenderer) window.mapRenderer.scheduleRender();
+            }
+
             if (window.audioManager && attackerPos && !this.isBackgroundSimulation) {
                 let fireSoundName = 'ui_click_01.wav'; // Default placeholder for generic ranged fire or if specific sound is missing. weapon_empty_click_01.wav is handled before processAttack.
                 // Specific fire sounds (actual files are missing, these are placeholders for when they are added)
@@ -3045,6 +3071,29 @@
 
         if (window.animationManager) {
             window.animationManager.playAnimation('explosion', { centerPos: impactTile, radius: radius, duration: 1000, sourceWeapon: weapon });
+        }
+
+        // Explosion Light Flash
+        if (this.gameState.lightSources) {
+             const flashLight = {
+                x: impactTile.x,
+                y: impactTile.y,
+                z: impactTile.z,
+                radius: radius + 2,
+                intensity: 3.0,
+                color: "#FF8800", // Orange/Red explosion
+                temporary: true,
+                duration: 300
+            };
+            this.gameState.lightSources.push(flashLight);
+            setTimeout(() => {
+                const idx = this.gameState.lightSources.indexOf(flashLight);
+                if (idx > -1) {
+                    this.gameState.lightSources.splice(idx, 1);
+                    if (window.mapRenderer) window.mapRenderer.scheduleRender();
+                }
+            }, 300);
+            if (window.mapRenderer) window.mapRenderer.scheduleRender();
         }
 
         const characters = this.getCharactersInBlastRadius(impactTile, radius);
