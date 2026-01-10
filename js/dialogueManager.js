@@ -266,6 +266,7 @@ class DialogueManager {
                         console.warn("Cannot start combat: currentNpc or combatManager is missing.");
                     }
                     break;
+                case 'giveQuest': // Alias for startQuest
                 case 'startQuest':
                     if (params.length === 1 && window.questManager) {
                         window.questManager.startQuest(params[0]);
