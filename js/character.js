@@ -1066,7 +1066,14 @@ function formatBodyPartName(part) {
         leftLeg: "Left Leg",
         rightLeg: "Right Leg"
     };
-    return nameMap[part] || part;
+    // Use map if available, otherwise capitalize first letter and add spaces for camelCase
+    if (nameMap[part]) return nameMap[part];
+
+    // Capitalize and spacing for dynamic parts (e.g. "tail" -> "Tail", "middleLeg" -> "Middle Leg")
+    return part
+        .replace(/([A-Z])/g, ' $1') // Add space before caps
+        .replace(/^./, str => str.toUpperCase()) // Capitalize first letter
+        .trim();
 }
 
 // Game over logic placeholder, now accepts a character
