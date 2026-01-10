@@ -1,7 +1,7 @@
 // mapMaker/uiManager.js
 "use strict";
 
-import { getMapData, getPlayerStart } from './mapDataManager.js'; // For mapData access
+import { getMapData, getPlayerStart, snapshot } from './mapDataManager.js'; // For mapData access
 import { LAYER_TYPES, PLAYER_START_SPRITE, PLAYER_START_COLOR, PLAYER_START_BG_COLOR, ONION_BELOW_COLOR, ONION_ABOVE_COLOR, ERROR_MSG, LOG_MSG, DEFAULT_3D_DEPTH, DEFAULT_ONION_LAYERS_BELOW, DEFAULT_ONION_LAYERS_ABOVE, DEFAULT_LOCK_DC } from './config.js';
 import { getEffectiveTileForDisplay } from './tileManager.js'; // For rendering logic
 import { logToConsole } from './config.js';
@@ -1159,6 +1159,8 @@ export function updateSelectedNpcInfoUI(selectedNpc, baseNpcDefinitions) {
         populateNpcFaceUI(selectedNpc.faceData); // Populates the UI controls
         updateNpcFacePreview(selectedNpc); // Generates and displays the preview
 
+        // Render Health Configuration
+        renderNpcHealthConfig(selectedNpc, baseNpcDefinitions);
 
     } else { // No NPC selected and NPC tool not active (or some other state)
         npcConfigContainer.style.display = 'none'; // Hide the whole panel
@@ -1171,9 +1173,91 @@ export function updateSelectedNpcInfoUI(selectedNpc, baseNpcDefinitions) {
         // Clear or hide face generator UI when no NPC is selected
         const npcFacePreviewEl = el('npcFace_asciiFacePreview');
         if (npcFacePreviewEl) npcFacePreviewEl.innerHTML = '';
+
+        // Clear Health List
+        const healthList = document.getElementById('npcHealthList');
+        if (healthList) healthList.innerHTML = '';
+
         // Could also clear all npcFace_ input values if desired, or just let them be.
         // For now, just clearing preview. The panel itself might be hidden if tool isn't NPC.
     }
+}
+
+/**
+ * Renders the health configuration list for the selected NPC.
+ * @param {object} npc - The selected NPC.
+ * @param {object} baseNpcDefinitions - The loaded NPC definitions.
+ */
+export function renderNpcHealthConfig(npc, baseNpcDefinitions) {
+    const container = document.getElementById('npcHealthList');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (!npc) return;
+
+    const defId = npc.definitionId;
+    const baseHealth = (baseNpcDefinitions && baseNpcDefinitions[defId]) ? baseNpcDefinitions[defId].health : {};
+
+    // Use instance health if present, otherwise use base health.
+    const effectiveHealth = npc.health || baseHealth || {};
+
+    Object.entries(effectiveHealth).forEach(([partName, partData]) => {
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.marginBottom = '4px';
+        row.style.gap = '5px';
+
+        const nameLabel = document.createElement('span');
+        nameLabel.textContent = partName;
+        nameLabel.style.flexGrow = '1';
+        nameLabel.style.minWidth = '80px';
+        nameLabel.title = partName; // Tooltip
+
+        const maxInput = document.createElement('input');
+        maxInput.type = 'number';
+        maxInput.value = partData.max;
+        maxInput.style.width = '50px';
+        maxInput.placeholder = 'Max';
+
+        maxInput.onchange = (e) => {
+            snapshot(); // Undo point
+            // Ensure instance health exists
+            if (!npc.health) {
+                npc.health = JSON.parse(JSON.stringify(effectiveHealth));
+            }
+
+            // Ensure part exists (if we just initialized from base, it does)
+            if (!npc.health[partName]) {
+                 // Should ideally exist if we cloned effectiveHealth, but safety first
+                 npc.health[partName] = { max: parseInt(e.target.value), current: parseInt(e.target.value), armor: 0, crisisTimer: 0 };
+            } else {
+                 npc.health[partName].max = parseInt(e.target.value);
+                 npc.health[partName].current = npc.health[partName].max; // Reset current to max
+            }
+            logToConsole(`Updated ${npc.id} health part ${partName} max to ${npc.health[partName].max}`);
+        };
+
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = 'X';
+        removeBtn.className = 'btn-sm';
+        removeBtn.style.color = 'red';
+        removeBtn.onclick = () => {
+            if (!confirm(`Remove body part '${partName}'?`)) return;
+            snapshot();
+             if (!npc.health) {
+                npc.health = JSON.parse(JSON.stringify(effectiveHealth));
+            }
+            delete npc.health[partName];
+            renderNpcHealthConfig(npc, baseNpcDefinitions); // Re-render
+            logToConsole(`Removed health part ${partName} from ${npc.id}`);
+        };
+
+        row.appendChild(nameLabel);
+        row.appendChild(maxInput);
+        row.appendChild(removeBtn);
+        container.appendChild(row);
+    });
 }
 
 

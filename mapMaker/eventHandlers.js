@@ -8,7 +8,7 @@ import { getMapData, snapshot, undo as undoData, redo as redoData, setPlayerStar
 import { placeTile, ensureTileIsObject, getTopmostTileAt } from './tileManager.js'; // Assuming getTopmostTileAt is in tileManager
 
 // UI Update Function Imports
-import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerStartDisplay, updateToolButtonUI, updateSelectedPortalInfoUI, updateContainerInventoryUI, updateLockPropertiesUI, updateTilePropertyEditorUI, getRect3DDepth, updateUIFromLoadedMap, populateItemSelectDropdown, updateSelectedNpcInfoUI, populateNpcBaseTypeDropdown, updateNpcFacePreview, populateNpcFaceUI, updateSelectedVehicleInfoUI, populateVehicleBaseTypeDropdown, applyZombieFaceConstraints } from './uiManager.js'; // Added applyZombieFaceConstraints
+import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerStartDisplay, updateToolButtonUI, updateSelectedPortalInfoUI, updateContainerInventoryUI, updateLockPropertiesUI, updateTilePropertyEditorUI, getRect3DDepth, updateUIFromLoadedMap, populateItemSelectDropdown, updateSelectedNpcInfoUI, populateNpcBaseTypeDropdown, updateNpcFacePreview, populateNpcFaceUI, updateSelectedVehicleInfoUI, populateVehicleBaseTypeDropdown, applyZombieFaceConstraints, renderNpcHealthConfig } from './uiManager.js'; // Added applyZombieFaceConstraints
 
 // Tool Logic Imports
 import { handlePlayerStartTool, handlePortalToolClick, handleSelectInspectTool, floodFill2D, floodFill3D, drawLine, drawRect, defineStamp, applyStamp, handleNpcToolClick, handleVehicleToolClick } from './toolManager.js'; // Added handleVehicleToolClick
@@ -604,6 +604,68 @@ function setupButtonEventListeners() {
                 else if (typeof updateNpcFacePreview !== 'function') errorReason = "updateNpcFacePreview missing"; // Check imported function
                 logToConsole(`Cannot randomize NPC face: ${errorReason}.`, "warn");
             }
+        });
+    }
+
+    const addHealthPartBtn = document.getElementById('addHealthPartBtn');
+    if (addHealthPartBtn) {
+        addHealthPartBtn.addEventListener('click', () => {
+            const partNameInput = document.getElementById('newHealthPartName');
+            const partMaxInput = document.getElementById('newHealthPartMax');
+            const partName = partNameInput.value.trim(); // Allow spaces? Body parts are camelCase in keys usually, but user might type 'Tail'
+            // For keys, we should probably camelCase it or keep as is.
+            // Let's rely on exact string for now, but maybe sanitize.
+            // The codebase usually uses camelCase for keys (leftArm).
+            // Let's assume the user knows or we can map common names.
+            // Simple approach: Use what they type as the key.
+            const partMax = parseInt(partMaxInput.value, 10) || 10;
+
+            if (!appState.selectedNpc) {
+                alert("No NPC selected.");
+                return;
+            }
+            if (!partName) {
+                alert("Please enter a name for the new body part.");
+                return;
+            }
+
+            // Convert display name to key (simple camelCase approximation)
+            // e.g., "Left Wing" -> "leftWing", "tail" -> "tail"
+            const key = partName.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
+                return index === 0 ? word.toLowerCase() : word.toUpperCase();
+            }).replace(/\s+/g, '');
+
+            snapshot(); // Save state
+
+            // Ensure npc.health exists
+            if (!appState.selectedNpc.health) {
+                // Should copy from base if possible, but if not, empty object
+                const baseDefs = assetManagerInstance.npcDefinitions;
+                const defId = appState.selectedNpc.definitionId;
+                const baseHealth = (baseDefs && baseDefs[defId]) ? baseDefs[defId].health : {};
+                appState.selectedNpc.health = JSON.parse(JSON.stringify(baseHealth));
+            }
+
+            if (appState.selectedNpc.health[key]) {
+                alert(`Body part '${key}' already exists.`);
+                return;
+            }
+
+            appState.selectedNpc.health[key] = {
+                max: partMax,
+                current: partMax,
+                armor: 0,
+                crisisTimer: 0
+            };
+
+            logToConsole(`Added health part '${key}' (Max: ${partMax}) to NPC ${appState.selectedNpc.id}`);
+
+            // Re-render the list
+            renderNpcHealthConfig(appState.selectedNpc, assetManagerInstance.npcDefinitions);
+
+            // Clear inputs
+            partNameInput.value = '';
+            partMaxInput.value = 10;
         });
     }
 }
