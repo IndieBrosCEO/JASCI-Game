@@ -56,5 +56,23 @@
       "gold": 100,
       "items": ["medkit_basic"]
     }
+  },
+  {
+    "id": "police_find_clue",
+    "title": "Find Clue",
+    "description": "The police man needs you to recover a piece of paper that says \"Howard B. Riley\"",
+    "objectives": [
+      {
+        "type": "collect",
+        "target": "parchment_roll_blank",
+        "count": 1,
+        "current": 0,
+        "description": "Collect Clue"
+      }
+    ],
+    "rewards": {
+      "xp": 100,
+      "gold": 0
+    }
   }
 ]
