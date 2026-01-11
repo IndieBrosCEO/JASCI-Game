@@ -9,7 +9,7 @@ export class QuestEditor {
         this.quests = [];
         this.activeQuestId = null;
 
-        // Default sample
+        // Default sample (will be overwritten if external quests are loaded)
         this.quests = [
             {
                 "id": "sample_quest",
@@ -22,6 +22,20 @@ export class QuestEditor {
         this.activeQuestId = "sample_quest";
 
         this.initUI();
+    }
+
+    setQuests(questsMap) {
+        if (!questsMap) return;
+
+        // Convert map object { "id": questObj } to array [ questObj ]
+        const questArray = Object.values(questsMap);
+
+        if (questArray.length > 0) {
+            this.quests = JSON.parse(JSON.stringify(questArray)); // Deep copy to avoid mutating assetManager directly
+            this.activeQuestId = this.quests[0].id;
+            this.render();
+            logToConsole(`QuestEditor: Loaded ${this.quests.length} quests from AssetManager.`);
+        }
     }
 
     initUI() {
