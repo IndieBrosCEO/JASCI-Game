@@ -1200,8 +1200,8 @@
       "middle"
     ],
     "emitsLight": true,
-    "lightRadius": 5,
-    "lightIntensity": 1,
+    "lightRadius": 8,
+    "lightIntensity": 1.2,
     "lightColor": "#FFFFE0"
   },
   "PL": {
@@ -1302,8 +1302,8 @@
       "middle"
     ],
     "emitsLight": true,
-    "lightRadius": 5,
-    "lightIntensity": 1,
+    "lightRadius": 8,
+    "lightIntensity": 1.2,
     "lightColor": "#FFDD33"
   },
   "FLT": {
@@ -1317,8 +1317,8 @@
     ],
     "emitsLight": true,
     "lightColor": "#FFA500",
-    "lightRadius": 6,
-    "lightIntensity": 0.9
+    "lightRadius": 9,
+    "lightIntensity": 1.1
   },
   "SLN": {
     "sprite": "Ħ",
@@ -1330,8 +1330,8 @@
     ],
     "emitsLight": true,
     "lightColor": "#FFFFE0",
-    "lightRadius": 7,
-    "lightIntensity": 0.8
+    "lightRadius": 11,
+    "lightIntensity": 1
   },
   "TLN_P": {
     "sprite": "ñ",
@@ -1343,8 +1343,8 @@
     ],
     "emitsLight": true,
     "lightColor": "#FFFFE0",
-    "lightRadius": 4,
-    "lightIntensity": 0.7
+    "lightRadius": 6,
+    "lightIntensity": 0.8
   },
   "CDL_P": {
     "sprite": "¦",
@@ -1356,8 +1356,8 @@
     ],
     "emitsLight": true,
     "lightColor": "#FFFFE0",
-    "lightRadius": 3,
-    "lightIntensity": 0.5
+    "lightRadius": 5,
+    "lightIntensity": 0.6
   },
   "STLMP": {
     "sprite": "¶",
@@ -1370,8 +1370,8 @@
     ],
     "emitsLight": true,
     "lightColor": "#FFFF00",
-    "lightRadius": 12,
-    "lightIntensity": 0.9
+    "lightRadius": 18,
+    "lightIntensity": 1.1
   },
   "FLDL": {
     "sprite": "Θ",
@@ -1383,8 +1383,8 @@
     ],
     "emitsLight": true,
     "lightColor": "#FFFFFF",
-    "lightRadius": 15,
-    "lightIntensity": 1
+    "lightRadius": 23,
+    "lightIntensity": 1.2
   },
   "NEON_R": {
     "sprite": "§",
@@ -1397,8 +1397,8 @@
     ],
     "emitsLight": true,
     "lightColor": "#FF0000",
-    "lightRadius": 3,
-    "lightIntensity": 0.6
+    "lightRadius": 5,
+    "lightIntensity": 0.7
   },
   "NEON_B": {
     "sprite": "§",
@@ -1411,8 +1411,8 @@
     ],
     "emitsLight": true,
     "lightColor": "#0000FF",
-    "lightRadius": 3,
-    "lightIntensity": 0.6
+    "lightRadius": 5,
+    "lightIntensity": 0.7
   },
   "NEON_G": {
     "sprite": "§",
@@ -1425,8 +1425,8 @@
     ],
     "emitsLight": true,
     "lightColor": "#008000",
-    "lightRadius": 3,
-    "lightIntensity": 0.6
+    "lightRadius": 5,
+    "lightIntensity": 0.7
   },
   "SOLG": {
     "sprite": "þ",
@@ -1439,8 +1439,8 @@
     ],
     "emitsLight": true,
     "lightColor": "#F0FFF0",
-    "lightRadius": 3,
-    "lightIntensity": 0.5
+    "lightRadius": 5,
+    "lightIntensity": 0.6
   },
   "EMBCN": {
     "sprite": "!",
@@ -1453,8 +1453,8 @@
     ],
     "emitsLight": true,
     "lightColor": "#FF0000",
-    "lightRadius": 5,
-    "lightIntensity": 0.8
+    "lightRadius": 8,
+    "lightIntensity": 1
   },
   "ST_U": {
     "sprite": "▲",
@@ -1576,8 +1576,8 @@
     "stationType": "forge",
     "emitsLight": true,
     "lightColor": "#FFA500",
-    "lightRadius": 3,
-    "lightIntensity": 0.7
+    "lightRadius": 5,
+    "lightIntensity": 0.8
   },
   "chemistry_set_tile": {
     "sprite": "C",
@@ -1612,8 +1612,8 @@
     "stationType": "campfire_cooking",
     "emitsLight": true,
     "lightColor": "#FFA500",
-    "lightRadius": 4,
-    "lightIntensity": 0.8
+    "lightRadius": 6,
+    "lightIntensity": 1
   },
   "reloading_bench_tile": {
     "sprite": "R",
