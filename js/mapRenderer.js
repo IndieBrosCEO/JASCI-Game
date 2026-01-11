@@ -1597,7 +1597,19 @@ window.mapRenderer = {
                         }
                         if (drawStaticPlayer) {
                             finalSpriteForTile = "☻";
-                            finalColorForTile = "green";
+                            let playerColor = "#00FF00"; // Pure Green
+
+                            // Apply Lighting to Player
+                            // We use the same lighting calculated for the tile if possible, but calculateTileLighting
+                            // takes explicit coords. Since we are inside the loop for (x,y), we can call it.
+                            // Note: We are already inside a loop for x,y rendering this tile.
+                            // However, calculateTileLighting might be expensive to call again if we didn't store it?
+                            // But for the player (single tile), it's negligible.
+
+                            const lightColor = calculateTileLighting(x, y, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
+                            playerColor = multiplyColors(playerColor, lightColor);
+
+                            finalColorForTile = playerColor;
                             finalDisplayIdForTile = "PLAYER_STATIC";
                         }
                     }
@@ -1606,7 +1618,12 @@ window.mapRenderer = {
                 if (gameState.playerPos && x === gameState.playerPos.x && y === gameState.playerPos.y &&
                     gameState.playerPos.displayZ !== undefined && gameState.playerPos.displayZ === currentZ) {
                     finalSpriteForTile = "☻";
-                    finalColorForTile = "green";
+
+                    let playerColor = "#00FF00"; // Pure Green
+                    const lightColor = calculateTileLighting(x, y, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
+                    playerColor = multiplyColors(playerColor, lightColor);
+
+                    finalColorForTile = playerColor;
                     finalDisplayIdForTile = "PLAYER_FALLING";
                 }
 
