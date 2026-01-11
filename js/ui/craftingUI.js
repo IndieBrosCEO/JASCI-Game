@@ -138,13 +138,17 @@ class CraftingUIManager {
     }
 
     categorizeRecipe(recipe) {
-        const tags = recipe.tags || [];
-        const type = recipe.type || '';
+        // Look up the actual item definition to check its tags/type because recipe object is flattened
+        const itemDef = this.assetManager ? this.assetManager.getItem(recipe.resultItemId) : null;
+
+        const tags = (itemDef && itemDef.tags) ? itemDef.tags : (recipe.tags || []);
+        const type = (itemDef && itemDef.type) ? itemDef.type : (recipe.type || '');
+        const id = recipe.id || '';
 
         if (tags.includes('weapon') || type.startsWith('weapon_')) {
             return 'Weapons';
         }
-        if (tags.includes('ammo') || tags.includes('ammunition') || recipe.ammoType) {
+        if (tags.includes('ammo') || tags.includes('ammunition') || (itemDef && itemDef.ammoType)) {
              return 'Ammo';
         }
         if (tags.includes('medical') || tags.includes('pharmaceutical') || tags.includes('healing')) {
@@ -161,7 +165,7 @@ class CraftingUIManager {
         }
 
         // Specific checks for mixed items or missed tags
-        if (recipe.id.includes('bullet') || recipe.id.includes('shell') || recipe.id.includes('round')) return 'Ammo';
+        if (id.includes('bullet') || id.includes('shell') || id.includes('round')) return 'Ammo';
 
         return 'Misc';
     }
