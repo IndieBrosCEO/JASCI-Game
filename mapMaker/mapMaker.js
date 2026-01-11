@@ -4,6 +4,8 @@
 // AssetManager is assumed to be globally available via <script src="../js/assetManager.js"></script>
 // If it were a module, it would be: import AssetManager from '../js/assetManager.js';
 const assetManager = new AssetManager();
+// Expose assetManager globally for debugging and verification tests
+window.assetManager = assetManager;
 
 // --- Configuration and Constants ---
 import {
@@ -172,6 +174,11 @@ async function initializeMapMaker() {
 
     // Initialize Integrated Tools
     const questEditor = new QuestEditor('quest-editor');
+    // Load quests from AssetManager into QuestEditor
+    if (assetManager.quests) {
+        questEditor.setQuests(assetManager.quests);
+    }
+
     const dialogueEditor = new DialogueEditor('dialogue-editor', questEditor);
 
     // Tab Switching Logic
