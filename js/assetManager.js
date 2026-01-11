@@ -100,7 +100,6 @@ class AssetManager {
             'vehicle_templates.json',
             'dynamic_event_templates.json',
             'procedural_quest_templates.json',
-            'quests.json', // Added quests.json
             'items/traps.json', // Added traps.json
             'constructions.json', // Added constructions.json
             'families.json', // Added families.json
@@ -201,15 +200,6 @@ class AssetManager {
                     } else {
                         console.warn(`AssetManager: Expected array from procedural_quest_templates.json, but got ${typeof parsedJson}. Skipping file.`);
                     }
-                } else if (filename === 'quests.json') {
-                    if (Array.isArray(parsedJson)) {
-                        parsedJson.forEach(quest => {
-                            this.quests[quest.id] = quest;
-                        });
-                        console.log(`AssetManager: Loaded ${Object.keys(this.quests).length} static quests.`);
-                    } else {
-                        console.warn(`AssetManager: Expected array from quests.json, but got ${typeof parsedJson}. Skipping file.`);
-                    }
                 } else if (filename === 'items/traps.json') {
                     if (typeof parsedJson === 'object' && !Array.isArray(parsedJson)) {
                         this.trapDefinitionsData = parsedJson; // Directly assign the object
@@ -297,6 +287,51 @@ class AssetManager {
             }
         }
         console.log(`AssetManager: Populated familyItems map with ${this.familyItems.size} families.`);
+
+        // Load static quests from the quests folder
+        const questsDir = '/assets/definitions/quests/';
+        try {
+            const response = await fetch(questsDir);
+            if (response.ok) {
+                const text = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+                const links = Array.from(doc.querySelectorAll('a'));
+                const questFiles = links
+                    .map(link => link.getAttribute('href'))
+                    .filter(href => href.match(/\.json$/i));
+
+                for (const questFile of questFiles) {
+                     // The href might be a full path or relative. Usually in directory listings they are relative names.
+                     // But sometimes they can be full paths. We need to handle that.
+                     // If href starts with /, it's absolute path.
+                     let url = questFile;
+                     if (!questFile.startsWith('/') && !questFile.startsWith('http')) {
+                         url = questsDir + questFile;
+                     }
+
+                     try {
+                         const qRes = await fetch(url);
+                         if (qRes.ok) {
+                             const qJson = await qRes.json();
+                             // Expecting array of quests or single quest object
+                             const qArray = Array.isArray(qJson) ? qJson : [qJson];
+                             qArray.forEach(quest => {
+                                 this.quests[quest.id] = quest;
+                             });
+                             console.log(`AssetManager: Loaded quest from ${questFile}`);
+                         }
+                     } catch (err) {
+                         console.error(`AssetManager: Failed to load quest file ${questFile}`, err);
+                     }
+                }
+                console.log(`AssetManager: Loaded ${Object.keys(this.quests).length} static quests from folder.`);
+            } else {
+                 console.warn("AssetManager: Failed to access quests directory listing.");
+            }
+        } catch (error) {
+            console.error("AssetManager: Error loading quests from folder:", error);
+        }
 
         // After loading NPCs, load their dialogue files
         const dialogueFilesToLoad = new Set();
