@@ -451,23 +451,27 @@
             // 1. Bleeding Damage (End of Turn)
             if (previousAttackerEntity.statusEffects && previousAttackerEntity.statusEffects.bleeding && previousAttackerEntity.statusEffects.bleeding.value > 0) {
                 const bleedDmg = previousAttackerEntity.statusEffects.bleeding.value;
-                if (healthEntity.health && healthEntity.health.torso) {
-                    const wasInCrisis = healthEntity.health.torso.current <= 0 && healthEntity.health.torso.crisisTimer > 0;
+                if (healthEntity.health) {
+                    const partKey = healthEntity.health.torso ? 'torso' : (healthEntity.health.body ? 'body' : null);
+                    if (partKey) {
+                        const part = healthEntity.health[partKey];
+                        const wasInCrisis = part.current <= 0 && part.crisisTimer > 0;
 
-                    logToConsole(`${entityName} takes ${bleedDmg} Bleeding damage to Torso (End of Turn).`, 'red');
-                    // Direct modification to bypass armor/etc, as bleeding is internal/existing wound
-                    healthEntity.health.torso.current = Math.max(0, healthEntity.health.torso.current - bleedDmg);
+                        logToConsole(`${entityName} takes ${bleedDmg} Bleeding damage to ${partKey} (End of Turn).`, 'red');
+                        // Direct modification to bypass armor/etc, as bleeding is internal/existing wound
+                        part.current = Math.max(0, part.current - bleedDmg);
 
-                    if (healthEntity.health.torso.current <= 0) {
-                        if (wasInCrisis) {
-                            // Already in crisis and took damage -> Death
-                            logToConsole(`FATAL: ${entityName} succumbed to bleeding while in Critical Condition!`, 'darkred');
-                            healthEntity.health.torso.isDestroyed = true;
-                            healthEntity.health.torso.crisisTimer = 0;
-                        } else if (healthEntity.health.torso.crisisTimer === 0) {
-                            // Just entered crisis
-                            healthEntity.health.torso.crisisTimer = 3;
-                            logToConsole(`${entityName}'s Torso enters Critical Condition from Bleeding!`, 'darkred');
+                        if (part.current <= 0) {
+                            if (wasInCrisis) {
+                                // Already in crisis and took damage -> Death
+                                logToConsole(`FATAL: ${entityName} succumbed to bleeding while in Critical Condition!`, 'darkred');
+                                part.isDestroyed = true;
+                                part.crisisTimer = 0;
+                            } else if (part.crisisTimer === 0) {
+                                // Just entered crisis
+                                part.crisisTimer = 3;
+                                logToConsole(`${entityName}'s ${partKey} enters Critical Condition from Bleeding!`, 'darkred');
+                            }
                         }
                     }
                 }
@@ -495,8 +499,11 @@
 
             // Check for Death after End of Turn Effects
             // We specifically check for isDestroyed because bleeding sets it if fatal.
-            if ((healthEntity.health.torso.current <= 0 && healthEntity.health.torso.isDestroyed) ||
-                (healthEntity.health.head.current <= 0 && healthEntity.health.head.isDestroyed)) {
+            const isTorsoDead = healthEntity.health.torso && healthEntity.health.torso.current <= 0 && healthEntity.health.torso.isDestroyed;
+            const isHeadDead = healthEntity.health.head && healthEntity.health.head.current <= 0 && healthEntity.health.head.isDestroyed;
+            const isBodyDead = healthEntity.health.body && healthEntity.health.body.current <= 0 && healthEntity.health.body.isDestroyed; // Fallback
+
+            if (isTorsoDead || isHeadDead || isBodyDead) {
 
                 logToConsole(`DEFEATED: ${entityName} succumbed to injuries at end of turn!`, 'darkred');
                 if (previousAttackerEntity === this.gameState) {
@@ -593,7 +600,10 @@
             const isHeadAlive = head && (head.current > 0 || head.crisisTimer > 0);
             const isTorsoAlive = torso && (torso.current > 0 || torso.crisisTimer > 0);
 
-            if (isHeadAlive && isTorsoAlive) {
+            // Fallback for simple entities without head/torso structure
+            const isSimpleAlive = healthObj && healthObj.current > 0 && !head && !torso;
+
+            if ((isHeadAlive && isTorsoAlive) || isSimpleAlive) {
                 nextAttackerFound = true;
             } else {
                 attackerName = isPlayer ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id || "Unknown NPC");
@@ -3005,8 +3015,9 @@
             // The primary death handling and XP awarding should happen when gameOver is called, or when a crisis timer resolves to death.
             // This check here is to catch cases where a part is destroyed, leading to 0 HP on a vital part, and it wasn't an explosion.
             if (!isPlayerVictim &&
-                ((entity.health.head.current <= 0 && entity.health.head.crisisTimer === 0) ||
-                    (entity.health.torso.current <= 0 && entity.health.torso.crisisTimer === 0)) &&
+                ((entity.health.head && entity.health.head.current <= 0 && entity.health.head.crisisTimer === 0) ||
+                    (entity.health.torso && entity.health.torso.current <= 0 && entity.health.torso.crisisTimer === 0) ||
+                    (entity.health.body && entity.health.body.current <= 0 && entity.health.body.crisisTimer === 0)) &&
                 !entity.xpAwardedThisDamageEvent && // Ensure XP not already given in this damage event
                 !window.gameOverCalledForEntityThisTurn) { // Ensure gameOver hasn't already handled it this turn for this entity
 

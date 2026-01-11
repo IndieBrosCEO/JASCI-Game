@@ -442,7 +442,7 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
                 const mate = gameState.npcs.find(n =>
                     n !== npc &&
                     n.definitionId === npc.definitionId &&
-                    n.health.torso.current > 0 &&
+                    n.health && ((n.health.torso && n.health.torso.current > 0) || (n.health.current > 0)) &&
                     (n.reproductionCooldown === undefined || n.reproductionCooldown <= 0) &&
                     getDistance3D(npc.mapPos, n.mapPos) <= 2 // Close range
                 );
@@ -706,7 +706,8 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
              // Check NPCs
              if (gameState.npcs) {
                  for (const otherNpc of gameState.npcs) {
-                     if (otherNpc === npc || otherNpc.health.torso.current <= 0) continue;
+                     const isAlive = otherNpc.health && ((otherNpc.health.torso && otherNpc.health.torso.current > 0) || otherNpc.health.current > 0);
+                     if (otherNpc === npc || !isAlive) continue;
                      const d = getDistance3D(npc.mapPos, otherNpc.mapPos);
                      if (d < bestDist) {
                          bestDist = d;
@@ -749,7 +750,8 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
             // Check other NPCs
             if (gameState.npcs) {
                 for (const otherNpc of gameState.npcs) {
-                    if (otherNpc === npc || otherNpc.health.torso.current <= 0) continue;
+                    const isAlive = otherNpc.health && ((otherNpc.health.torso && otherNpc.health.torso.current > 0) || otherNpc.health.current > 0);
+                    if (otherNpc === npc || !isAlive) continue;
                     if (npc.teamId !== otherNpc.teamId) {
                         const d = getDistance3D(npc.mapPos, otherNpc.mapPos);
                         if (d <= 10 && d < bestThreatDist) {
@@ -896,7 +898,7 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
         if (!isPlayer && npc.tags?.includes("predator") && realEntity.tags?.includes("prey")) {
             const HUNGER_THRESHOLD = 50;
             if ((npc.hunger || 0) < HUNGER_THRESHOLD) return; // Ignore due to lack of hunger
-            const speciesCount = gameState.npcs.filter(n => n.definitionId === realEntity.definitionId && n.health.torso.current > 0).length;
+            const speciesCount = gameState.npcs.filter(n => n.definitionId === realEntity.definitionId && n.health && ((n.health.torso && n.health.torso.current > 0) || n.health.current > 0)).length;
             if (speciesCount <= 1) return; // Ignore due to conservation
         }
 
@@ -1465,7 +1467,8 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
                         const enemiesInRadius = window.combatManager.initiativeTracker.filter(e => {
                             const ent = e.entity;
                             if (ent === npc || ent.teamId === npc.teamId) return false; // Ignore allies
-                            if (!ent.health || ent.health.torso.current <= 0) return false;
+                            const isAlive = ent.health && ((ent.health.torso && ent.health.torso.current > 0) || ent.health.current > 0);
+                            if (!isAlive) return false;
                             const entPos = ent === gameState ? gameState.playerPos : ent.mapPos;
                             if (!entPos) return false;
                             const dist = getDistance3D(currentTargetPos, entPos);
