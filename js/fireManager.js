@@ -186,17 +186,45 @@ class FireManager {
             }
         });
 
-        if (gameState.activeFires.length > 0 && window.audioManager) {
-            // Check if already playing by some id logic or just rely on playSound handling (it handles duplicates for loading but not necessarily playback loop if we call it every turn)
-            // For a simple fix, we use playSound which initiates it.
-            // However, playSound returns a sourceNode. We need to store it to stop it.
-            if (!this.fireLoopSource) {
-                this.fireLoopSource = window.audioManager.playSound('fire_loop.wav', { loop: true, volume: 0.5 });
-            }
-        } else if (window.audioManager) {
-            if (this.fireLoopSource) {
-                window.audioManager.stopSound(this.fireLoopSource);
-                this.fireLoopSource = null;
+        // Audio update
+        if (window.audioManager && gameState.playerPos) {
+            if (gameState.activeFires && gameState.activeFires.length > 0) {
+                let closestDist = Infinity;
+                let closestFire = null;
+                gameState.activeFires.forEach(f => {
+                    const dx = f.x - gameState.playerPos.x;
+                    const dy = f.y - gameState.playerPos.y;
+                    const dz = f.z - gameState.playerPos.z;
+                    const d = dx * dx + dy * dy + dz * dz; // squared distance is enough for comparison
+                    if (d < closestDist) {
+                        closestDist = d;
+                        closestFire = f;
+                    }
+                });
+
+                if (closestFire) {
+                    if (!this.fireLoopSource) {
+                        this.fireLoopSource = window.audioManager.playSoundAtLocation('fire_loop.wav', closestFire, {}, { loop: true, volume: 0.5 });
+                    } else if (this.fireLoopSource.panner) {
+                        // Update panner position using the handle's panner reference
+                        const panner = this.fireLoopSource.panner;
+                        const ctx = window.audioManager.audioContext;
+                        panner.positionX.setValueAtTime(closestFire.x, ctx.currentTime);
+                        panner.positionY.setValueAtTime(closestFire.y, ctx.currentTime);
+                        panner.positionZ.setValueAtTime(closestFire.z, ctx.currentTime);
+                    }
+                }
+            } else {
+                if (this.fireLoopSource) {
+                    // Use the stop method on the handle
+                    if (typeof this.fireLoopSource.stop === 'function') {
+                        this.fireLoopSource.stop();
+                    } else if (window.audioManager.stopSound) {
+                        // Fallback for direct source node if handle not used (should not happen with new AudioManager)
+                        window.audioManager.stopSound(this.fireLoopSource);
+                    }
+                    this.fireLoopSource = null;
+                }
             }
         }
 
