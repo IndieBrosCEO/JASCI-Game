@@ -1131,6 +1131,8 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
     const npcName = npc.name || npc.id || "NPC";
     // logToConsole(`NPC DECISIONS: ${npcName} starting combat turn (AP:${npc.currentActionPoints}, MP:${npc.currentMovementPoints})`, 'gold');
 
+    const COMBAT_MOVE_ANIMATION_DURATION = 300;
+
     // Check if player should be added to combat (Escalation)
     // If the current defender is the player, but the player is NOT in the initiative tracker,
     // we must restart/escalate combat to include the player.
@@ -1185,16 +1187,69 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
     if (!gameState.combatCurrentDefender && !selectNpcCombatTarget(npc, gameState, combatManager.initiativeTracker, assetManager)) {
             // logToConsole(`NPC ${npcName}: No primary combat target found. Considering secondary objectives or fallback movement.`, 'gold');
 
-        // TODO: If no primary target, consider secondary objectives:
+        // Secondary Objectives:
         // 1. Guard Point: If npc.behavior === "guard" and npc.guardPoint defined, move towards/scan around it.
-        //    (Partially handled if handleNpcOutOfCombatTurn considers npc.memory.lastKnownSafePos as a guard point)
+        if (npc.behavior === "guard" && npc.guardPoint) {
+            const dist = getDistance3D(npc.mapPos, npc.guardPoint);
+            if (dist > 2) { // Allow some slack so they don't wiggle on the spot
+                 logToConsole(`NPC ${npcName} (Guard): No enemies. Returning to guard point.`, 'cyan');
+                 const moveResult = await moveNpcTowardsTarget(npc, npc.guardPoint, gameState, assetManager, COMBAT_MOVE_ANIMATION_DURATION);
+                 if (moveResult) return false; // Action taken (move), end turn processing
+            }
+        }
+
         // 2. Assist Ally: If allies are in combat nearby, move to support.
-        //    - Find nearest ally in combat.
-        //    - If ally is engaged in melee, consider moving to engage their attacker if possible.
-        //    - If ally is ranged, consider moving to a position that offers covering fire or better LOS on ally's target.
-        // 3. Use Item: If low health and has healing items, use one. If tactical advantage, use grenade/smoke.
-        //    (Requires inventory and item use AI)
-        // 4. Fallback to current behavior: exploration/memory movement (handleNpcOutOfCombatTurn).
+        if (combatManager.initiativeTracker) {
+            const alliesInCombat = combatManager.initiativeTracker
+                .map(e => e.entity)
+                .filter(e => {
+                    if (e === npc) return false;
+                    // Robust team check
+                    const isAlly = (e.teamId === npc.teamId);
+                    if (!isAlly) return false;
+
+                    // Robust health check
+                    const hp = e.health ? (e.health.torso ? e.health.torso.current : (e.health.current || 0)) : 0;
+                    return hp > 0;
+                });
+
+            if (alliesInCombat.length > 0) {
+                 // Find nearest ally
+                 let nearestAlly = null;
+                 let minDist = Infinity;
+
+                 for (const ally of alliesInCombat) {
+                     // Robust position check
+                     let allyPos = ally.mapPos;
+                     if (ally === gameState || ally === gameState.player) allyPos = gameState.playerPos;
+
+                     if (allyPos) {
+                         const d = getDistance3D(npc.mapPos, allyPos);
+                         if (d < minDist) {
+                             minDist = d;
+                             nearestAlly = ally;
+                         }
+                     }
+                 }
+
+                 // Move to support if found and reasonably far (to avoid crowding too much if already there)
+                 if (nearestAlly && minDist > 3) {
+                     const allyName = nearestAlly === gameState || nearestAlly === gameState.player ? "Player" : (nearestAlly.name || nearestAlly.id);
+                     logToConsole(`NPC ${npcName}: No local targets. Moving to assist ally ${allyName}.`, 'cyan');
+
+                     let targetPos = nearestAlly.mapPos;
+                     if (nearestAlly === gameState || nearestAlly === gameState.player) targetPos = gameState.playerPos;
+
+                     const moveResult = await moveNpcTowardsTarget(npc, targetPos, gameState, assetManager, COMBAT_MOVE_ANIMATION_DURATION);
+                     // If we moved, we essentially used our turn (or part of it) effectively for a secondary goal.
+                     // Returning false indicates "No Attack Initiated", which falls through to end of turn logic
+                     // or potentially OOC logic if MP remains.
+                     // Since we acted on a combat objective (assist), we should probably treat this as a handled turn
+                     // to prevent OOC wandering.
+                     if (moveResult) return false;
+                 }
+            }
+        }
 
         // Current fallback: OOC-like movement (exploration or returning to a point).
         const oocMoveBudget = Math.min(npc.currentMovementPoints, 2);
