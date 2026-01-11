@@ -580,6 +580,11 @@ function applyHungerThirstDamage(gameState, damageAmount) {
 
 // Initialize health for various body parts on a character object
 function initializeHealth(character) {
+    // If character already has health initialized (e.g. from JSON definition), do not overwrite it.
+    if (character.health && Object.keys(character.health).length > 0) {
+        return;
+    }
+
     character.health = {
         head: { name: "Head", max: 5, current: 5, armor: 0, crisisTimer: 0, crisisDescription: "" },
         torso: { name: "Torso", max: 8, current: 8, armor: 0, crisisTimer: 0, crisisDescription: "" },
