@@ -1408,6 +1408,11 @@ window.mapRenderer = {
                         // Multiply Surface Color * Light Color
                         displayColor = multiplyColors(baseColorForLighting, lightColor);
 
+                        // Apply Lighting to Background as well
+                        if (tileDefinedBackgroundColor && tileDefinedBackgroundColor !== '#000000' && tileDefinedBackgroundColor !== 'rgba(0,0,0,0)') {
+                            tileDefinedBackgroundColor = multiplyColors(tileDefinedBackgroundColor, lightColor);
+                        }
+
                         // Optionally add emission if the tile itself glows (from definition)
                         // (Not yet in tileDef, but could be added later. For now, assume baseColor is Albedo)
 
@@ -1420,6 +1425,12 @@ window.mapRenderer = {
 
                         // Apply extra darkening for "old memory" feel
                         displayColor = darkenColor(displayColor, 0.4);
+
+                        // Also dim background for visited
+                        if (tileDefinedBackgroundColor && tileDefinedBackgroundColor !== '#000000') {
+                             let bgCol = blendColors(tileDefinedBackgroundColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
+                             tileDefinedBackgroundColor = darkenColor(bgCol, 0.4);
+                        }
                     }
                 }
 
@@ -2002,17 +2013,27 @@ window.mapRenderer = {
                                     }
                                 } else if (npcTileFowStatus === 'visible') {
                                     if (cachedCell && cachedCell.span) {
+                                        let npcColor = npc.color;
+                                        // Apply Lighting to NPC
+                                        const lightColor = calculateTileLighting(npcX, npcY, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
+                                        npcColor = multiplyColors(npcColor, lightColor);
+
                                         cachedCell.span.textContent = npc.sprite;
-                                        cachedCell.span.style.color = npc.color;
+                                        cachedCell.span.style.color = npcColor;
                                         cachedCell.sprite = npc.sprite;
-                                        cachedCell.color = npc.color;
+                                        cachedCell.color = npcColor;
                                     }
                                 } else if (npcTileFowStatus === 'visited') {
                                     if (cachedCell && cachedCell.span) {
                                         cachedCell.span.textContent = npc.sprite;
-                                        cachedCell.span.style.color = darkenColor(npc.color, 0.6);
+                                        // Use dimmed lighting or just dark color
+                                        let npcColor = darkenColor(npc.color, 0.4);
+                                        // Blend with ambient for visited look
+                                        npcColor = blendColors(npcColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
+
+                                        cachedCell.span.style.color = npcColor;
                                         cachedCell.sprite = npc.sprite;
-                                        cachedCell.color = darkenColor(npc.color, 0.6);
+                                        cachedCell.color = npcColor;
                                     }
                                 }
                             }
@@ -2172,10 +2193,19 @@ window.mapRenderer = {
                                 const playerInThisVehicle = gameState.player && gameState.player.isInVehicle === vehicle.id;
                                 const playerIsOnThisTile = gameState.playerPos && vX === gameState.playerPos.x && vY === gameState.playerPos.y && gameState.playerPos.z === currentZ;
                                 if (playerInThisVehicle || !playerIsOnThisTile) {
+                                    let displayColor = vehicleColor;
+                                    if (fowStatus === 'visible') {
+                                        const lightColor = calculateTileLighting(vX, vY, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
+                                        displayColor = multiplyColors(vehicleColor, lightColor);
+                                    } else if (fowStatus === 'visited') {
+                                        displayColor = this.darkenColor(vehicleColor, 0.6);
+                                        displayColor = blendColors(displayColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
+                                    }
+
                                     cachedCell.span.textContent = vehicleSprite;
-                                    cachedCell.span.style.color = fowStatus === 'visited' ? this.darkenColor(vehicleColor, 0.6) : vehicleColor;
+                                    cachedCell.span.style.color = displayColor;
                                     cachedCell.sprite = vehicleSprite;
-                                    cachedCell.color = vehicleColor;
+                                    cachedCell.color = displayColor;
                                     cachedCell.displayedId = `VEHICLE_${vehicle.id}`;
                                 }
                             }
