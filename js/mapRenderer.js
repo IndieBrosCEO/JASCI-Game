@@ -2023,10 +2023,53 @@ window.mapRenderer = {
             });
         }
 
-        // Render Active Animations (Viewport Aware)
+        // Render Background Animations (Under Entities)
+        // Includes: Blood Splash, Liquid Splash
         if (gameState.activeAnimations && gameState.activeAnimations.length > 0 && tileCacheData) {
             gameState.activeAnimations.forEach(anim => {
                 if (!anim.visible || (anim.z !== undefined && anim.z !== currentZ)) return;
+
+                if (anim.type === 'bloodSplash' && anim.particles) { // Blood Splash (Viewport Aware)
+                    anim.particles.forEach(particle => {
+                        if (particle.z === undefined || particle.z === currentZ) {
+                            const particleX = Math.floor(particle.x); const particleY = Math.floor(particle.y);
+                            if (particleX >= startCol && particleX <= endCol && particleY >= startRow && particleY <= endRow) {
+                                const fowStatusParticle = currentFowData?.[particleY]?.[particleX];
+                                if (fowStatusParticle === 'visible' || fowStatusParticle === 'visited') {
+                                    const cachedCell = tileCacheData[particleY]?.[particleX];
+                                    if (cachedCell && cachedCell.span) {
+                                        cachedCell.span.textContent = particle.sprite;
+                                        cachedCell.span.style.color = particle.color;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else if ((anim.type === 'liquidSplash' || anim.type === 'scorchMarks') && anim.sprite && anim.visible) {
+                    // Generic Background Animations
+                    const animX = Math.floor(anim.x); const animY = Math.floor(anim.y);
+                    if (animX >= startCol && animX <= endCol && animY >= startRow && animY <= endRow) {
+                        const fowStatus = currentFowData?.[animY]?.[animX];
+                        if (fowStatus === 'visible' || fowStatus === 'visited') {
+                            const cachedCell = tileCacheData[animY]?.[animX];
+                            if (cachedCell && cachedCell.span) {
+                                cachedCell.span.textContent = anim.sprite;
+                                cachedCell.span.style.color = anim.color;
+                                cachedCell.sprite = anim.sprite;
+                                cachedCell.color = anim.color;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Foreground Animations (Over Entities/Vehicles)
+        // Excludes: Blood Splash, Liquid Splash
+        if (gameState.activeAnimations && gameState.activeAnimations.length > 0 && tileCacheData) {
+            gameState.activeAnimations.forEach(anim => {
+                if (!anim.visible || (anim.z !== undefined && anim.z !== currentZ)) return;
+
                 // Explosion animation (Viewport Aware for individual cells)
                 if (anim.type === 'explosion' && anim.explosionSprites && anim.centerPos) {
                     const explosionMaxRadius = anim.currentExpansionRadius;
@@ -2079,22 +2122,6 @@ window.mapRenderer = {
                             }
                         }
                     });
-                } else if (anim.type === 'bloodSplash' && anim.particles) { // Blood Splash (Viewport Aware)
-                    anim.particles.forEach(particle => {
-                        if (particle.z === undefined || particle.z === currentZ) {
-                            const particleX = Math.floor(particle.x); const particleY = Math.floor(particle.y);
-                            if (particleX >= startCol && particleX <= endCol && particleY >= startRow && particleY <= endRow) {
-                                const fowStatusParticle = currentFowData?.[particleY]?.[particleX];
-                                if (fowStatusParticle === 'visible' || fowStatusParticle === 'visited') {
-                                    const cachedCell = tileCacheData[particleY]?.[particleX];
-                                    if (cachedCell && cachedCell.span) {
-                                        cachedCell.span.textContent = particle.sprite;
-                                        cachedCell.span.style.color = particle.color;
-                                    }
-                                }
-                            }
-                        }
-                    });
                 } else if (anim.type === 'gasCloud' && anim.visible && anim.particles && anim.centerPos) { // Gas Cloud (Viewport Aware)
                     const gasCloudCenterZ = anim.z;
                     const verticalRadius = anim.verticalRadius !== undefined ? anim.verticalRadius : 1;
@@ -2137,6 +2164,9 @@ window.mapRenderer = {
                         }
                     }
                 } else if (anim.sprite && anim.visible) { // Other single-sprite animations (Viewport Aware)
+                    // Skip background animations handled in the first pass
+                    if (anim.type === 'bloodSplash' || anim.type === 'liquidSplash' || anim.type === 'scorchMarks') return;
+
                     if (anim.z === undefined || anim.z === currentZ) {
                         const animX = Math.floor(anim.x); const animY = Math.floor(anim.y);
                         if (animX >= startCol && animX <= endCol && animY >= startRow && animY <= endRow) {
