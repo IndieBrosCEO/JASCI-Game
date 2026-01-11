@@ -224,9 +224,9 @@ class VehicleManager {
         return cost;
     }
 
-    consumeFuel(vehicleId, distance) {
+    getFuelConsumption(vehicleId, distance) {
         const vehicle = this.getVehicleById(vehicleId);
-        if (!vehicle) return false;
+        if (!vehicle) return 0;
 
         // Calculate efficiency based on engines
         let efficiency = 0;
@@ -252,7 +252,15 @@ class VehicleManager {
 
         if (engineCount > 0) efficiency /= engineCount; // Average efficiency
 
-        const fuelConsumed = distance * efficiency;
+        return distance * efficiency;
+    }
+
+    consumeFuel(vehicleId, distance) {
+        const vehicle = this.getVehicleById(vehicleId);
+        if (!vehicle) return false;
+
+        const fuelConsumed = this.getFuelConsumption(vehicleId, distance);
+
         if (vehicle.fuel >= fuelConsumed) {
             vehicle.fuel -= fuelConsumed;
             if (vehicle.fuel < 0) vehicle.fuel = 0; // Should not happen due to check
