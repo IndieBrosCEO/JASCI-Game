@@ -2338,15 +2338,16 @@
             if (impactTileMolotov) {
                 if (window.audioManager) {
                     window.audioManager.playSoundAtLocation('ui_error_01.wav', impactTileMolotov, {}, { volume: 0.8 }); // Placeholder for molotov_ignite_01.wav (when available)
-                    // TODO: Play fire_loop_med.wav (when available) if Molotov creates lasting fire. Requires AudioManager loop management controlled by effect duration (e.g., via AnimationManager or a new effect system).
+                    // Persistent fire sound is handled by FireManager detecting the new fire.
                 }
                 if (window.animationManager) window.animationManager.playAnimation('explosion', { centerPos: impactTileMolotov, radius: 1, explosionSprites: ['~', '≈', '*', '#'], color: 'orange', duration: 1500, sourceWeapon: weapon, attacker }); // This is a generic explosion, could be a specific fire spread animation.
             }
         } else if (weapon?.id === 'thermite_grenade_thrown' && hit) { // Thermite
             const impactTileThermite = this.gameState.pendingCombatAction?.targetTile || defender?.mapPos || (attacker.mapPos || this.gameState.playerPos);
             if (window.audioManager && impactTileThermite) {
-                // TODO: Play thermite_loop.wav (when available). Current is a placeholder. Requires AudioManager loop management.
-                window.audioManager.playSoundAtLocation('ui_error_01.wav', impactTileThermite, {}, { volume: 0.7, loop: true, duration: 5000 }); // Long loop placeholder for thermite_loop.wav
+                // Play thermite loop with a set duration. AudioManager now handles the duration stop.
+                // Placeholder: ui_error_01.wav is used until thermite_loop.wav is available.
+                window.audioManager.playSoundAtLocation('ui_error_01.wav', impactTileThermite, {}, { volume: 0.7, loop: true, duration: 5000 });
             }
             if (window.fireManager && impactTileThermite) {
                 const burstRadiusTiles = Math.ceil((weapon.burstRadiusFt || 5) / 5);

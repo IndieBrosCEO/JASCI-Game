@@ -45,7 +45,8 @@
             'melee_unarmed_hit_02.wav',
             'melee_armed_swing_01.wav',
             'ui_start_game_01.wav',
-            'ui_start_game_02.wav'
+            'ui_start_game_02.wav',
+            'fire_loop.wav'
         ];
 
         // Pre-load existing sounds
@@ -161,24 +162,37 @@
         }
     }
 
-    playSound(soundName, { loop = false, volume = 1.0 } = {}) {
+    playSound(soundName, { loop = false, volume = 1.0, duration = 0 } = {}) {
+        const handle = {
+            source: null,
+            stop: function() {
+                if (this.source) {
+                    try { this.source.stop(); } catch(e) {}
+                } else {
+                    this.cancelled = true; // Flag to prevent playing if stopped before load
+                }
+            },
+            cancelled: false
+        };
+
         if (!this.soundBuffers.has(soundName)) {
             console.warn(`Sound not loaded: ${soundName}. Attempting to load now...`);
             this.loadSound(soundName).then(buffer => {
-                if (buffer) {
-                    this._playBuffer(buffer, soundName, loop, volume);
-                } else {
+                if (buffer && !handle.cancelled) {
+                    handle.source = this._playBuffer(buffer, soundName, loop, volume, duration);
+                } else if (!buffer) {
                     console.error(`Failed to play sound ${soundName} after attempting to load.`);
                 }
             });
-            return null;
+            return handle;
         }
 
         const audioBuffer = this.soundBuffers.get(soundName);
-        return this._playBuffer(audioBuffer, soundName, loop, volume);
+        handle.source = this._playBuffer(audioBuffer, soundName, loop, volume, duration);
+        return handle;
     }
 
-    _playBuffer(audioBuffer, soundName, loop, volume) {
+    _playBuffer(audioBuffer, soundName, loop, volume, duration) {
         if (!this.audioContext) {
             console.error("AudioContext not initialized.");
             return null;
@@ -194,6 +208,10 @@
 
         source.loop = loop;
         source.start(0); // Play immediately
+
+        if (duration > 0) {
+            source.stop(this.audioContext.currentTime + duration / 1000);
+        }
 
         source.onended = () => {
             // console.log(`Sound finished: ${soundName}`);
@@ -269,24 +287,46 @@
     }
 
     playSoundAtLocation(soundName, sourcePosition, listenerPosition = { x: 0, y: 0, z: 0 }, options = {}) {
+        const handle = {
+            source: null,
+            panner: null,
+            stop: function() {
+                if (this.source) {
+                    try { this.source.stop(); } catch(e) {}
+                } else {
+                    this.cancelled = true;
+                }
+            },
+            cancelled: false
+        };
+
         if (!this.soundBuffers.has(soundName)) {
             console.warn(`Sound not loaded for playAtLocation: ${soundName}. Attempting to load now...`);
             this.loadSound(soundName).then(buffer => {
-                if (buffer) {
-                    this._playBufferAtLocation(buffer, sourcePosition, listenerPosition, options);
-                } else {
+                if (buffer && !handle.cancelled) {
+                    const result = this._playBufferAtLocation(buffer, sourcePosition, listenerPosition, options);
+                    if (result) {
+                        handle.source = result; // result is the source node, which has .panner attached
+                        handle.panner = result.panner;
+                    }
+                } else if (!buffer) {
                     console.error(`Failed to play sound ${soundName} at location after attempting to load.`);
                 }
             });
-            return null;
+            return handle;
         }
 
         const audioBuffer = this.soundBuffers.get(soundName);
-        return this._playBufferAtLocation(audioBuffer, sourcePosition, listenerPosition, options);
+        const result = this._playBufferAtLocation(audioBuffer, sourcePosition, listenerPosition, options);
+        if (result) {
+            handle.source = result;
+            handle.panner = result.panner;
+        }
+        return handle;
     }
 
     _playBufferAtLocation(audioBuffer, sourcePosition, listenerPosition,
-        { loop = false, volume = 1.0, refDistance = 1, rolloffFactor = 1, maxDistance = 100, distanceModel = 'inverse' } = {}) {
+        { loop = false, volume = 1.0, refDistance = 1, rolloffFactor = 1, maxDistance = 100, distanceModel = 'inverse', duration = 0 } = {}) {
         if (!this.audioContext) {
             console.error("AudioContext not initialized.");
             return null;
@@ -334,6 +374,11 @@
         gainNode.connect(this.sfxGainNode); // Connect to the SFX gain node
 
         source.start(0);
+        if (duration > 0) {
+            source.stop(this.audioContext.currentTime + duration / 1000);
+        }
+
+        source.panner = panner; // Attach panner to source for external control
         return source;
     }
 
