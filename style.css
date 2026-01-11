@@ -453,31 +453,40 @@ tr:hover {
 .tabs {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap; /* Allow wrapping for many tabs */
     margin-bottom: 15px;
     border-bottom: 1px solid #444;
+    background-color: #2a2a2a; /* Slightly lighter bg for tab bar */
+    padding: 5px;
+    border-radius: 4px;
 }
 
 .tab-button {
     background: none;
     border: none;
-    color: #888;
+    color: #aaa;
     cursor: pointer;
     font-family: inherit;
-    font-size: 1.2em;
-    padding: 10px 20px;
-    transition: all 0.3s;
+    font-size: 1.1em;
+    padding: 8px 12px;
+    margin: 0 2px;
+    border-radius: 4px 4px 0 0;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
 }
 
 .tab-button:hover {
-    color: #ccc;
+    color: #fff;
     background-color: #333;
+    border-bottom-color: #555;
 }
 
 .tab-button.active {
     color: #fff;
-    border-bottom: 2px solid #fff;
+    background-color: #3d3d3d;
+    border-bottom-color: var(--highlight-color);
     font-weight: bold;
-    transform: translateY(-2px);
+    /* transform: translateY(-2px); Removed for cleaner non-jumping UI */
 }
 
 /* Face Creator Inputs */

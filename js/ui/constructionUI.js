@@ -1,4 +1,4 @@
-﻿// js/ui/constructionUI.js
+// js/ui/constructionUI.js
 
 class ConstructionUIManager {
     constructor(constructionManager, inventoryManager, assetManager, gameState, mapRenderer) {
@@ -6,7 +6,7 @@ class ConstructionUIManager {
         this.inventoryManager = inventoryManager;
         this.assetManager = assetManager;
         this.gameState = gameState;
-        this.mapRenderer = mapRenderer; // Added mapRenderer dependency
+        this.mapRenderer = mapRenderer;
 
         this.isOpen = false;
         this.selectedCategory = null;
@@ -15,13 +15,13 @@ class ConstructionUIManager {
 
         this.dom = {
             uiPanel: null,
-            categoryList: null,
+            tabsContainer: null, // New
             buildableList: null,
             detailName: null,
             detailDescription: null,
             detailSize: null,
             detailSkill: null,
-            detailSkillLevel: null, // Retained for clarity, though might be merged in display
+            detailSkillLevel: null,
             detailComponents: null,
             detailTimeToBuild: null,
             selectButton: null,
@@ -32,13 +32,13 @@ class ConstructionUIManager {
 
     initialize() {
         this.dom.uiPanel = document.getElementById('constructionUI');
-        this.dom.categoryList = document.getElementById('constructionCategoryList');
+        this.dom.tabsContainer = document.getElementById('constructionTabs');
         this.dom.buildableList = document.getElementById('constructionBuildableList');
         this.dom.detailName = document.getElementById('detailConstructionName');
         this.dom.detailDescription = document.getElementById('detailConstructionDescription');
         this.dom.detailSize = document.getElementById('detailConstructionSize');
-        this.dom.detailSkill = document.getElementById('detailConstructionSkill'); // This is the container
-        this.dom.detailSkillLevel = document.getElementById('detailConstructionSkillLevel'); // Potentially unused if merged
+        this.dom.detailSkill = document.getElementById('detailConstructionSkill');
+        this.dom.detailSkillLevel = document.getElementById('detailConstructionSkillLevel');
         this.dom.detailComponents = document.getElementById('detailConstructionComponents');
         this.dom.detailTimeToBuild = document.getElementById('detailConstructionTime');
         this.dom.selectButton = document.getElementById('selectConstructionButton');
@@ -53,12 +53,11 @@ class ConstructionUIManager {
         this.dom.closeButton.addEventListener('click', () => this.close());
         this.dom.selectButton.addEventListener('click', () => this.enterPlacementMode());
 
-        this.populateCategories();
+        // Initialize with default category if possible, but renderTabs will handle it
         logToConsole(`${this.logPrefix} Initialized.`, "info");
     }
 
     open() {
-        logToConsole(`${this.logPrefix}.open() called.`, "debug");
         if (!this.dom.uiPanel) {
             console.error(`${this.logPrefix} Error: UI Panel element not found. Cannot open.`);
             return;
@@ -69,11 +68,12 @@ class ConstructionUIManager {
         }
         this.isOpen = true;
         this.dom.uiPanel.classList.remove('hidden');
-        this.selectedCategory = null;
-        this.selectedConstructionDefId = null;
-        this.populateCategories();
+
+        // Always refresh categories and list on open
+        this.renderTabs();
         this.renderBuildableList();
         this.clearDetail();
+
         this.dom.selectButton.disabled = true;
         this.dom.placementInstructions.classList.add('hidden');
         this.gameState.isConstructionModeActive = false;
@@ -83,7 +83,7 @@ class ConstructionUIManager {
 
     close() {
         this.isOpen = false;
-        if (!this.dom.uiPanel) return; // Guard against missing panel
+        if (!this.dom.uiPanel) return;
         this.dom.uiPanel.classList.add('hidden');
         this.selectedConstructionDefId = null;
         this.gameState.isConstructionModeActive = false;
@@ -101,61 +101,58 @@ class ConstructionUIManager {
         }
     }
 
-    populateCategories() {
-        if (!this.dom.categoryList || !this.constructionManager) return;
-        this.dom.categoryList.innerHTML = '';
+    renderTabs() {
+        if (!this.dom.tabsContainer || !this.constructionManager) return;
+        this.dom.tabsContainer.innerHTML = '';
 
         const definitions = Object.values(this.constructionManager.constructionDefinitions);
         const categories = [...new Set(definitions.map(def => def.category || "uncategorized"))];
+        categories.sort();
 
-        categories.sort().forEach(category => {
-            const li = document.createElement('li');
-            li.textContent = category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            li.dataset.category = category;
-            li.addEventListener('click', () => {
+        // Ensure we have a selected category
+        if (!this.selectedCategory && categories.length > 0) {
+            this.selectedCategory = categories[0];
+        } else if (categories.length > 0 && !categories.includes(this.selectedCategory)) {
+             this.selectedCategory = categories[0];
+        }
+
+        categories.forEach(category => {
+            const btn = document.createElement('button');
+            btn.className = 'tab-button';
+            if (category === this.selectedCategory) {
+                btn.classList.add('active');
+            }
+            // Format category name
+            btn.textContent = category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+            btn.addEventListener('click', () => {
                 this.selectedCategory = category;
+                this.renderTabs(); // Update active state
                 this.renderBuildableList();
                 this.clearDetail();
                 this.dom.selectButton.disabled = true;
             });
-            this.dom.categoryList.appendChild(li);
+            this.dom.tabsContainer.appendChild(btn);
         });
-        if (!this.selectedCategory && categories.length > 0) {
-            this.selectedCategory = categories[0];
-        }
     }
 
     renderBuildableList() {
-        // logToConsole(`${this.logPrefix}.renderBuildableList() called.`, "debug");
         if (!this.dom.buildableList || !this.constructionManager) {
-            logToConsole(`${this.logPrefix}.renderBuildableList() - buildableList DOM or constructionManager missing.`, "error");
             return;
         }
         this.dom.buildableList.innerHTML = '';
 
-        // Get ALL construction definitions with their skill status
         let allDefinitionsWithSkillStatus = [];
         if (this.constructionManager && typeof this.constructionManager.getAllConstructionDefinitionsWithStatus === 'function') {
             allDefinitionsWithSkillStatus = this.constructionManager.getAllConstructionDefinitionsWithStatus();
-            logToConsole(`${this.logPrefix}.renderBuildableList() - Received from manager (count: ${allDefinitionsWithSkillStatus.length}):`, JSON.parse(JSON.stringify(allDefinitionsWithSkillStatus)));
-        } else {
-            logToConsole(`${this.logPrefix}.renderBuildableList() - constructionManager or getAllConstructionDefinitionsWithStatus method missing.`, "error");
         }
 
         const itemsInCategory = allDefinitionsWithSkillStatus.filter(def =>
             def && (!this.selectedCategory || def.category === this.selectedCategory || (this.selectedCategory === "uncategorized" && !def.category))
         );
 
-        logToConsole(`${this.logPrefix}.renderBuildableList() - Filtered to itemsInCategory (count: ${itemsInCategory.length}) for category: ${this.selectedCategory || 'All'}.`, "debug", JSON.parse(JSON.stringify(itemsInCategory)));
-
-        if (itemsInCategory.length === 0 && allDefinitionsWithSkillStatus.length > 0) {
+        if (itemsInCategory.length === 0) {
             this.dom.buildableList.innerHTML = '<li>No items in this category.</li>';
-            this.clearDetail();
-            this.dom.selectButton.disabled = true;
-            return;
-        }
-        if (allDefinitionsWithSkillStatus.length === 0) {
-            this.dom.buildableList.innerHTML = '<li>No construction definitions loaded.</li>';
             this.clearDetail();
             this.dom.selectButton.disabled = true;
             return;
@@ -163,27 +160,21 @@ class ConstructionUIManager {
 
         itemsInCategory.forEach(def => {
             const li = document.createElement('li');
-            // Now check full buildability (skills + components)
             const canCurrentlyBuild = this.constructionManager.canBuild(def.id);
 
             li.textContent = def.name;
             li.dataset.constructionId = def.id;
             li.style.cursor = "pointer";
 
-
             if (!canCurrentlyBuild) {
-                li.classList.add('cannot-build'); // This class should make it appear grayed out
-                // The title will provide more specific reasons on hover.
+                li.classList.add('cannot-build');
                 if (!def.meetsSkillReqs) {
                     li.title = "Skill requirements not met.";
                 } else {
-                    // If skills are met, it must be missing components (or potentially placement, but that's not checked here)
                     li.title = "Missing required components.";
                 }
             } else {
                 li.title = "You can build this.";
-                // Potentially add a 'can-build' class if specific styling for available items is needed beyond default.
-                // li.classList.add('can-build');
             }
 
             li.addEventListener('click', () => {
@@ -204,14 +195,12 @@ class ConstructionUIManager {
         this.dom.detailDescription.textContent = definition.description;
         this.dom.detailSize.textContent = definition.size ? `${definition.size.width}x${definition.size.height}` : '1x1';
 
-        this.dom.detailSkill.innerHTML = ''; // Clear previous skill details
-        this.dom.detailComponents.innerHTML = ''; // Clear previous component details
+        this.dom.detailSkill.innerHTML = '';
+        this.dom.detailComponents.innerHTML = '';
 
         // Skill Requirement Display
         if (definition.skillRequired && definition.skillLevelRequired) {
-            const player = this.gameState; // Use instance gameState
-            // Assuming getSkillValue is globally accessible or part of a utility manager
-            // If getSkillValue is not global, it would need to be passed or accessed via a manager
+            const player = this.gameState;
             const playerScore = typeof getSkillValue === 'function' ? getSkillValue(definition.skillRequired, player) : 0;
             const skillLi = document.createElement('li');
             const skillSpan = document.createElement('span');
@@ -232,7 +221,7 @@ class ConstructionUIManager {
         // Component Requirements Display
         const recipeToUse = definition.recipe || definition;
 
-        // Tool Requirements Display (New)
+        // Tool Requirements Display
         if (recipeToUse.tools_required && recipeToUse.tools_required.length > 0) {
             recipeToUse.tools_required.forEach(toolId => {
                 const itemDef = this.assetManager ? this.assetManager.getItem(toolId) : null;
@@ -262,13 +251,6 @@ class ConstructionUIManager {
                 let hasEnough = false;
                 let currentCount = 0;
 
-                // We need to check if constructionManager has recipeResolver
-                // If UI doesn't have direct access, we might need to duplicate some logic or expose a helper
-                // Ideally, we use RecipeResolver if available on window or through manager
-
-                // For display purposes, resolving complex requirements perfectly to a "count" is hard
-                // because multiple items might match. We'll try to show a summary.
-
                 const resolver = this.constructionManager.recipeResolver || (window.RecipeResolver ? new window.RecipeResolver(this.assetManager) : null);
 
                 if (resolver && this.gameState.inventory) {
@@ -280,7 +262,6 @@ class ConstructionUIManager {
                 if (comp.family) {
                     displayName = `Family: ${comp.family}`;
                     if (comp.require) {
-                        // Add details like " (type: log)"
                         const reqs = Object.entries(comp.require).map(([k, v]) => `${k}: ${v}`).join(', ');
                         if (reqs) displayName += ` (${reqs})`;
                     }
@@ -315,9 +296,8 @@ class ConstructionUIManager {
         this.dom.detailName.textContent = "-";
         this.dom.detailDescription.textContent = "-";
         this.dom.detailSize.textContent = "-";
-        this.dom.detailSkill.innerHTML = "<li>Skill: -</li>"; // Use innerHTML for consistency
-        // this.dom.detailSkillLevel.textContent = "-"; // If it were a separate element
-        this.dom.detailComponents.innerHTML = '<li>Components: -</li>'; // Use innerHTML
+        this.dom.detailSkill.innerHTML = "<li>Skill: -</li>";
+        this.dom.detailComponents.innerHTML = '<li>Components: -</li>';
         this.dom.detailTimeToBuild.textContent = "-";
     }
 
@@ -347,19 +327,10 @@ class ConstructionUIManager {
     }
 }
 
-// Removed: window.ConstructionUI = ConstructionUI;
-// Initialization will be handled by script.js creating an instance of ConstructionUIManager
-// and assigning it to window.ConstructionUI there.
-
-// --- BEGIN TEMPORARY DEBUGGING ---
 try {
     if (typeof ConstructionUIManager !== 'undefined') {
         window.ConstructionUIManager = ConstructionUIManager;
-        console.log('[ConstructionUIManager DEBUG] Successfully assigned ConstructionUIManager class to window.ConstructionUIManager.');
-    } else {
-        console.error('[ConstructionUIManager DEBUG] ConstructionUIManager class name is undefined at point of explicit window assignment.');
     }
 } catch (e) {
-    console.error('[ConstructionUIManager DEBUG] Error during explicit window assignment:', e);
+    console.error('[ConstructionUIManager] Error during explicit window assignment:', e);
 }
-// --- END TEMPORARY DEBUGGING ---

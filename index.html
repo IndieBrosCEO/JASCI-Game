@@ -16,6 +16,9 @@
             <!-- Crafting UI (Initially Hidden) -->
             <div id="craftingUI" class="hidden">
                 <h2>Crafting</h2>
+                <div class="tabs" id="craftingTabs">
+                    <!-- Tabs will be populated dynamically -->
+                </div>
                 <div class="crafting-sections-container">
                     <div id="craftingRecipeListSection">
                         <h3>Available Recipes</h3>
@@ -49,14 +52,10 @@
             <!-- Construction UI (Initially Hidden) -->
             <div id="constructionUI" class="hidden">
                 <h2>Construction</h2>
+                <div class="tabs" id="constructionTabs">
+                    <!-- Category Tabs -->
+                </div>
                 <div class="construction-sections-container">
-                    <div id="constructionCategoryListSection">
-                        <h3>Categories</h3>
-                        <ul id="constructionCategoryList">
-                            <!-- Categories like Crafting, Defensive, Resource will be populated here -->
-                            <!-- Example: <li data-category="crafting_station">Crafting Stations</li> -->
-                        </ul>
-                    </div>
                     <div id="constructionBuildableListSection">
                         <h3>Buildable Items</h3>
                         <ul id="constructionBuildableList">
