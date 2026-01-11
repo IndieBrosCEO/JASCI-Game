@@ -323,9 +323,13 @@ export function ensureTileIsObject(x, y, z, layerName, mapDataRef) {
  *          - `definition`: The tile definition object from AssetManager.
  *          Returns null if no tile is found or if the tile definition is missing.
  */
-export function getTopmostTileAt(x, y, z, mapDataRef) {
-    if (!assetManagerRef) {
-        console.error("TileManager: AssetManager not initialized for getTopmostTileAt.");
+export function getTopmostTileAt(x, y, z, mapDataRef, assetManagerPassed = null) {
+    // If assetManagerRef (module-scoped) is not set, try using the passed one.
+    // This allows getTopmostTileAt to work even if initializeTileManager wasn't called or failed,
+    // provided the caller passes the assetManager.
+    const manager = assetManagerRef || assetManagerPassed;
+    if (!manager) {
+        console.error("TileManager: AssetManager not initialized or passed for getTopmostTileAt.");
         return null;
     }
     const zStr = z.toString();
@@ -338,7 +342,7 @@ export function getTopmostTileAt(x, y, z, mapDataRef) {
         if (tileData && tileData !== "") { // Check if there's any data and it's not an empty string.
             const baseId = (typeof tileData === 'object' && tileData.tileId) ? tileData.tileId : tileData;
             if (baseId && baseId !== "") { // Ensure baseId itself is also not empty.
-                const definition = assetManagerRef.tilesets[baseId];
+                const definition = manager.tilesets[baseId];
                 if (definition) { // Ensure a definition exists for this baseId.
                     return {
                         tile: tileData,
