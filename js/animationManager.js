@@ -302,6 +302,64 @@ class Animation {
     isFinished() {
         return this.finished;
     }
+
+    // Helper to position UI elements smartly (avoiding entity overlap and screen clipping)
+    _positionPopup(element, targetX, targetY, preferredOffsetY) {
+        // Initial placement (preferred)
+        let x = targetX;
+        let y = targetY - preferredOffsetY;
+
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+
+        // It must be in DOM to measure
+        if (!element.parentNode) document.body.appendChild(element);
+
+        const rect = element.getBoundingClientRect();
+        const winWidth = window.innerWidth;
+        const winHeight = window.innerHeight;
+        const margin = 10;
+        const tileHeight = 20; // Approx tile height
+
+        // 1. Clamp to screen
+        // Clamp X
+        if (x - rect.width / 2 < margin) x = margin + rect.width / 2;
+        else if (x + rect.width / 2 > winWidth - margin) x = winWidth - margin - rect.width / 2;
+
+        // Clamp Y
+        if (y - rect.height / 2 < margin) y = margin + rect.height / 2;
+        else if (y + rect.height / 2 > winHeight - margin) y = winHeight - margin - rect.height / 2;
+
+        // 2. Check for overlap with entity (located at targetX, targetY)
+        // Entity roughly occupies targetY - tileHeight/2 to targetY + tileHeight/2
+        const entityTop = targetY - tileHeight;
+        const entityBottom = targetY + tileHeight;
+
+        const popupTop = y - rect.height / 2;
+        const popupBottom = y + rect.height / 2;
+
+        // Simple vertical overlap check: if popup vertical range intersects entity vertical range
+        if (popupBottom > entityTop && popupTop < entityBottom) {
+            // Overlap detected. Likely clamped Y down due to screen top.
+            // Try shifting X to the right or left.
+
+            // Prefer right side
+            let newX = targetX + tileHeight + rect.width / 2 + 5;
+            if (newX + rect.width / 2 > winWidth - margin) {
+                // Right side no good or off screen, try left
+                newX = targetX - tileHeight - rect.width / 2 - 5;
+            }
+
+            x = newX;
+
+            // Re-clamp X just in case
+            if (x - rect.width / 2 < margin) x = margin + rect.width / 2;
+            else if (x + rect.width / 2 > winWidth - margin) x = winWidth - margin - rect.width / 2;
+        }
+
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+    }
 }
 
 class MovementAnimation extends Animation {
@@ -1363,26 +1421,6 @@ class DiceRollAnimation extends Animation {
         this.uiElement = document.createElement('div');
         this.uiElement.className = 'combat-popup dice-roll-popup';
 
-        let screenPos = null;
-        if (data.entity) {
-            const entityPos = (data.entity === this.gameState) ? this.gameState.playerPos : data.entity.mapPos;
-            if (entityPos) {
-                screenPos = window.mapToScreenCoordinates(entityPos.x, entityPos.y, entityPos.z);
-            }
-        }
-
-        if (screenPos) {
-            this.uiElement.style.left = `${screenPos.x}px`;
-            this.uiElement.style.top = `${screenPos.y - 30}px`; // Offset slightly above the entity
-        } else {
-            this.uiElement.style.left = data.position?.x || '50%'; // Fallback to original
-            this.uiElement.style.top = data.position?.y || '30%';
-        }
-
-        // Inline styles removed in favor of CSS classes
-        document.body.appendChild(this.uiElement);
-        this.visible = true;
-
         this.rollingEntityName = data.rollingEntityName || "";
         this.modifiers = data.modifiers || [];
         this.fixedNaturalRoll = data.fixedNaturalRoll;
@@ -1397,7 +1435,7 @@ class DiceRollAnimation extends Animation {
         this.rollEffectDuration = (this.fixedNaturalRoll !== undefined) ? 0 : Math.min(600, this.duration - this.totalModifierDuration - 150); // Faster roll effect
         this.holdResultDuration = this.duration - this.rollEffectDuration - this.totalModifierDuration;
 
-        // Adjusted font sizes within innerHTML to be relative to the new base or smaller absolute
+        // Set content BEFORE positioning to ensure dimensions are correct for clamping
         this.uiElement.innerHTML = `
             <div style="font-size: 0.9em; color: #bbb; margin-bottom: 3px;">${this.rollingEntityName}</div>
             <div class="dice-value" style="font-size: 1.3em; font-weight: bold; margin-bottom: 3px;">Rolling ${this.diceNotation}...</div>
@@ -1407,6 +1445,25 @@ class DiceRollAnimation extends Animation {
         this.diceValueElement = this.uiElement.querySelector('.dice-value');
         this.modifiersAppliedElement = this.uiElement.querySelector('.modifiers-applied');
         this.runningTotalElement = this.uiElement.querySelector('.running-total');
+
+        // Positioning logic
+        let screenPos = null;
+        if (data.entity) {
+            const entityPos = (data.entity === this.gameState) ? this.gameState.playerPos : data.entity.mapPos;
+            if (entityPos) {
+                screenPos = window.mapToScreenCoordinates(entityPos.x, entityPos.y, entityPos.z);
+            }
+        }
+
+        if (screenPos) {
+            this._positionPopup(this.uiElement, screenPos.x, screenPos.y, 80); // Move it well above (80px)
+        } else {
+            this.uiElement.style.left = data.position?.x || '50%'; // Fallback to original
+            this.uiElement.style.top = data.position?.y || '30%';
+            document.body.appendChild(this.uiElement); // Append if fallback used (helper does it for screenPos path)
+        }
+
+        this.visible = true;
     }
 
     update() {
@@ -1509,21 +1566,19 @@ class ModifierPopupAnimation extends Animation {
             }
         }
 
+        if (data.color) this.uiElement.style.color = data.color;
+        this.uiElement.textContent = this.text;
+
         if (screenPos) {
-            this.uiElement.style.left = `${screenPos.x}px`;
-            // Position modifiers slightly differently, perhaps to the side or further above
-            this.uiElement.style.top = `${screenPos.y - 60}px`;
+            this._positionPopup(this.uiElement, screenPos.x, screenPos.y, 60); // Use helper, offset 60
         } else {
             this.uiElement.style.left = data.position?.x || '50%'; // Fallback
             this.uiElement.style.top = data.position?.y || '35%';
+            document.body.appendChild(this.uiElement);
         }
-
-        if (data.color) this.uiElement.style.color = data.color;
 
         this.uiElement.style.opacity = '0'; // Start invisible for fade-in
         this.uiElement.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
-        this.uiElement.textContent = this.text;
-        document.body.appendChild(this.uiElement);
         this.visible = true;
 
         // Trigger fade-in and slight upward movement
@@ -1571,25 +1626,32 @@ class HitMissLabelAnimation extends Animation {
             }
         }
 
-        if (screenPos) {
-            this.uiElement.style.left = `${screenPos.x}px`;
-            this.uiElement.style.top = `${screenPos.y}px`; // Position Hit/Miss directly on entity
-        } else {
-            this.uiElement.style.left = data.position?.x || '50%'; // Fallback
-            this.uiElement.style.top = data.position?.y || '40%';
-        }
-
         this.uiElement.style.transform = 'translate(-50%, -50%) scale(0.5)'; // Start small (override class transform initially)
         if (data.color) {
             this.uiElement.style.color = data.color;
         } else {
             this.uiElement.style.color = (this.text === "Hit!" ? 'lightgreen' : 'salmon');
         }
+        this.uiElement.textContent = this.text;
+
+        if (screenPos) {
+            // Smart positioning for hit/miss too, to ensure it doesn't overlap excessively or clip
+            // Hit/Miss usually goes ON TOP of entity, but if user says "near ... not covering",
+            // maybe we offset it slightly? Or is centering okay?
+            // User: "put it near the attacker and defender but not so it is covering them up"
+            // So centering (offset 0) is "covering them up".
+            // Let's use offset 0 but use the helper which might clamp it.
+            // Wait, if I use offset 0, it covers. I should offset it.
+            // Let's try offset 40 (above).
+            this._positionPopup(this.uiElement, screenPos.x, screenPos.y, 40);
+        } else {
+            this.uiElement.style.left = data.position?.x || '50%'; // Fallback
+            this.uiElement.style.top = data.position?.y || '40%';
+            document.body.appendChild(this.uiElement);
+        }
 
         this.uiElement.style.opacity = '0';
         this.uiElement.style.transition = 'opacity 0.4s ease-out, transform 0.4s ease-out';
-        this.uiElement.textContent = this.text;
-        document.body.appendChild(this.uiElement);
         this.visible = true;
 
         // Trigger pop-in effect
