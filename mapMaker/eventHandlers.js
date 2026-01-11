@@ -74,6 +74,7 @@ export function handleCellMouseDown(event) {
     const mapData = getMapData();
 
     // Common logic: Clear selections if not using a selection-type tool.
+    // Note: Tools like portal, npc, vehicle handle their own partial clearing via callbacks to allow keeping their specific selection.
     if (appState.currentTool !== "selectInspect" && appState.currentTool !== "portal" && appState.currentTool !== "npc" && appState.currentTool !== "vehicle") {
         clearAllSelections(); // Helper function to clear selection states and update their UIs
     }
@@ -143,7 +144,8 @@ export function handleCellMouseDown(event) {
             handlePlayerStartTool(x, y, z, mapData, triggerFullGridRender, updatePlayerStartDisplay);
             break;
         case "portal":
-            handlePortalToolClick(x, y, z, mapData, appState, triggerFullGridRender, updateSelectedPortalInfoUI, clearAllSelections);
+            // Use clearSelectionsExcept to avoid clearing the portal we just selected/created
+            handlePortalToolClick(x, y, z, mapData, appState, triggerFullGridRender, updateSelectedPortalInfoUI, () => clearSelectionsExcept('portal'));
             break;
         case "selectInspect":
             handleSelectInspectTool(x, y, z, mapData, appState, assetManagerInstance, toolInteractionInterface);
@@ -153,7 +155,7 @@ export function handleCellMouseDown(event) {
             const npcToolInteractionInterface = {
                 ...toolInteractionInterface.getUIRenderers(), // renderGrid
                 updateNpcEditorUI: (npc, npcDefs) => updateSelectedNpcInfoUI(npc, npcDefs || assetManagerInstance.npcDefinitions),
-                clearOtherSelections: clearAllSelections, // or a more specific version if needed
+                clearOtherSelections: () => clearSelectionsExcept('npc'),
                 showStatusMessage: (message, type = 'info') => {
                     const statusElement = document.getElementById('mapMakerStatusMessage');
                     if (statusElement) {
@@ -183,7 +185,7 @@ export function handleCellMouseDown(event) {
             const vehicleToolInteractionInterface = {
                 ...toolInteractionInterface.getUIRenderers(),
                 updateVehicleEditorUI: (vehicle, vehicleDefs) => updateSelectedVehicleInfoUI(vehicle, vehicleDefs || assetManagerInstance.vehicleTemplateDefinitions),
-                clearOtherSelections: clearAllSelections,
+                clearOtherSelections: () => clearSelectionsExcept('vehicle'),
                 showStatusMessage: (message, type = 'info') => {
                     // Reuse same status message element logic if generic
                     const statusElement = document.getElementById('mapMakerStatusMessage');
@@ -1171,14 +1173,31 @@ function triggerAllEditorUIsUpdate() {
 
 /** Clears all selection states and updates relevant UI parts. */
 function clearAllSelections() {
-    appState.selectedPortal = null;
-    // appState.selectedNpc = null; // This is now handled by updateSelectedNpcInfoUI when tool changes or selection is made
-    if (appState.currentTool !== 'npc') { // Only clear selectedNpc if not actively using NPC tool
+    clearSelectionsExcept(null);
+}
+
+/**
+ * Clears selection states except for the specified type.
+ * @param {string|null} keepType - The type of selection to keep ('portal', 'npc', 'vehicle'). Null clears all.
+ */
+function clearSelectionsExcept(keepType) {
+    if (keepType !== 'portal') appState.selectedPortal = null;
+
+    // NPC selection is special because the tool might keep it active for placement
+    if (keepType !== 'npc') {
+        // Only clear selectedNpc if not actively using NPC tool (handled in tool switch) OR if explicitly asked to clear everything (keepType null)
+        // Actually, if we are clearing "others", we should clear NPC unless we want to keep it.
         appState.selectedNpc = null;
     }
-    appState.selectedTileForInventory = null;
-    appState.selectedGenericTile = null;
-    triggerAllEditorUIsUpdate(); // This will hide/clear editor panels, including NPC panel if selectedNpc is null
+
+    if (keepType !== 'vehicle') appState.selectedVehicle = null;
+
+    // These are usually cleared unless specific tool logic demands keeping them (e.g. inventory tool?)
+    // For now, always clear these unless we added a keepType for them
+    if (keepType !== 'inventory') appState.selectedTileForInventory = null;
+    if (keepType !== 'generic') appState.selectedGenericTile = null;
+
+    triggerAllEditorUIsUpdate();
 }
 
 /** Clears selections and also any active previews (like stamp preview). */
