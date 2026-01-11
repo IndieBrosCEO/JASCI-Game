@@ -946,6 +946,23 @@ async function handleKeyDown(event) {
         return;
     }
 
+    // Prevent movement and other actions during defense declaration
+    if (gameState.isInCombat && gameState.combatPhase === 'playerDefenseDeclare') {
+        const key = event.key.toLowerCase();
+        // Block Movement (WASD, Arrows), Jump (J), Inventory (I), Dash (X), Prone (P), Crouch (K), Wait/EndTurn (T), Search (V), Map (M), etc.
+        // Allow: Camera controls (<, >, /, +, -), Console (`), Help (H).
+        if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright',
+             'j', 'i', 'x', 'p', 'k', 't', 'v', 'c', 'b', 'm', 'u', 'q', 'g', 'f', 'r'].includes(key)) {
+            event.preventDefault();
+            return;
+        }
+        // Also block number keys for action selection
+        if (event.key >= '1' && event.key <= '9') {
+            event.preventDefault();
+            return;
+        }
+    }
+
     // Jump ('J' key)
     if (event.key === 'j' || event.key === 'J') {
         if (typeof window.handleJumpKeyPress === 'function') {
