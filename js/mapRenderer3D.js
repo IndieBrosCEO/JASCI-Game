@@ -9,6 +9,29 @@ window.mapRenderer3D = {
     // Structure: { "z,y,x": { span: HTMLElement, sprite: string, color: string, left: number, top: number } }
     tile3DCache: {},
 
+    // Helper functions for color manipulation
+    hexToRgb: function(hex) {
+        if (typeof hex !== 'string' || !hex.startsWith('#')) return { r: 0, g: 0, b: 0 };
+        let r = parseInt(hex.substring(1, 3), 16);
+        let g = parseInt(hex.substring(3, 5), 16);
+        let b = parseInt(hex.substring(5, 7), 16);
+        return { r, g, b };
+    },
+
+    rgbToHex: function(r, g, b) {
+        return `#${Math.round(Math.max(0, Math.min(255, r))).toString(16).padStart(2, '0')}${Math.round(Math.max(0, Math.min(255, g))).toString(16).padStart(2, '0')}${Math.round(Math.max(0, Math.min(255, b))).toString(16).padStart(2, '0')}`;
+    },
+
+    multiplyColors: function(c1Hex, c2Hex) {
+        const c1 = this.hexToRgb(c1Hex);
+        const c2 = this.hexToRgb(c2Hex);
+        return this.rgbToHex(
+            (c1.r * c2.r) / 255,
+            (c1.g * c2.g) / 255,
+            (c1.b * c2.b) / 255
+        );
+    },
+
     toggle: function() {
         this.isEnabled = !this.isEnabled;
         console.log("3D View toggled: " + (this.isEnabled ? "ON" : "OFF"));
@@ -218,7 +241,20 @@ window.mapRenderer3D = {
                     // Check for entities at this x,y,z
                     // Player
                     if (window.gameState.playerPos.x === x && window.gameState.playerPos.y === y && window.gameState.playerPos.z === z) {
-                         this.drawTile(fragment, x, y, z, "☻", "green", centerX, centerY, camX, camY, focusZ, true);
+                         let playerColor = "#00FF00"; // Pure Green
+
+                         if (window.mapRenderer && window.mapRenderer.calculateTileLighting) {
+                             const currentHour = window.gameState.currentTime && typeof window.gameState.currentTime.hours === 'number' ? window.gameState.currentTime.hours : 12;
+                             const currentAmbientColor = window.mapRenderer.getAmbientLightColor(currentHour);
+                             const currentSunColor = window.mapRenderer.getSunLightColor(currentHour);
+                             const currentSunVector = window.mapRenderer.getSunShadowOffset(currentHour);
+                             const isDaytime = (currentHour >= 6 && currentHour < 18);
+
+                             const lightColor = window.mapRenderer.calculateTileLighting(x, y, z, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
+                             playerColor = this.multiplyColors(playerColor, lightColor);
+                         }
+
+                         this.drawTile(fragment, x, y, z, "☻", playerColor, centerX, centerY, camX, camY, focusZ, true);
                     }
 
                     // NPCs
