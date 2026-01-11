@@ -1,0 +1,1025 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - heading "JASCI All-in-One Editor" [level=1] [ref=e2]
+  - generic [ref=e3]:
+    - button "Map Maker" [ref=e4] [cursor=pointer]
+    - button "Dialogue Editor" [ref=e5] [cursor=pointer]
+    - button "Quest Editor" [ref=e6] [cursor=pointer]
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - text: "Width:"
+        - spinbutton "Width:" [ref=e10]: "20"
+      - generic [ref=e11]:
+        - text: "Height:"
+        - spinbutton "Height:" [ref=e12]: "15"
+      - button "Resize Map" [ref=e13] [cursor=pointer]
+      - separator [ref=e14]
+      - text: "Current Z-Level:"
+      - spinbutton "Current Z-Level:" [ref=e15]: "0"
+      - button "↑ (Z+1)" [ref=e16] [cursor=pointer]
+      - button "↓ (Z-1)" [ref=e17] [cursor=pointer]
+      - button "Add New Z-Level" [ref=e18] [cursor=pointer]
+      - button "Delete Current Z-Level" [ref=e19] [cursor=pointer]
+      - text: "3D Tool Depth/Height:"
+      - spinbutton "3D Tool Depth/Height:" [ref=e20]: "1"
+      - generic [ref=e21]: "Player Start: (X: 10, Y: 7, Z: 0)"
+      - generic [ref=e22]:
+        - text: "Onion Skin:"
+        - generic [ref=e23]:
+          - checkbox "Enable" [ref=e24]
+          - text: Enable
+        - generic [ref=e25]: "Below:"
+        - spinbutton "Below:" [ref=e26]: "1"
+        - generic [ref=e27]: "Above:"
+        - spinbutton "Above:" [ref=e28]: "0"
+      - separator [ref=e29]
+      - generic [ref=e30]:
+        - text: "Show Layers:"
+        - generic [ref=e31]:
+          - checkbox "Bottom" [checked] [ref=e32]
+          - text: Bottom
+        - generic [ref=e33]:
+          - checkbox "Middle" [checked] [ref=e34]
+          - text: Middle
+      - separator [ref=e35]
+      - generic [ref=e36]:
+        - button "Brush" [ref=e37] [cursor=pointer]
+        - button "Fill 2D" [ref=e38] [cursor=pointer]
+        - button "Fill 3D" [ref=e39] [cursor=pointer]
+        - button "Line" [ref=e40] [cursor=pointer]
+        - button "Rect" [ref=e41] [cursor=pointer]
+        - button "Stamp" [ref=e42] [cursor=pointer]
+        - button "Select" [ref=e43] [cursor=pointer]
+        - button "P☻" [ref=e44] [cursor=pointer]
+        - button "Portal" [ref=e45] [cursor=pointer]
+        - button "NPC" [ref=e46] [cursor=pointer]
+        - button "Vehicle" [ref=e47] [cursor=pointer]
+        - text: "Brush Size:"
+        - spinbutton "Brush Size:" [ref=e48]: "1"
+      - separator [ref=e49]
+      - generic [ref=e50]:
+        - text: "Filter by tags:"
+        - generic [ref=e51]:
+          - checkbox "Landscape" [ref=e52]
+          - text: Landscape
+        - generic [ref=e53]:
+          - checkbox "Building" [ref=e54]
+          - text: Building
+        - generic [ref=e55]:
+          - checkbox "Item" [ref=e56]
+          - text: Item
+        - generic [ref=e57]:
+          - checkbox "Roof" [ref=e58]
+          - text: Roof
+        - generic [ref=e59]:
+          - checkbox "Wall" [ref=e60]
+          - text: Wall
+        - generic [ref=e61]:
+          - checkbox "Floor" [ref=e62]
+          - text: Floor
+        - generic [ref=e63]:
+          - checkbox "Door" [ref=e64]
+          - text: Door
+        - generic [ref=e65]:
+          - checkbox "Window" [ref=e66]
+          - text: Window
+        - generic [ref=e67]:
+          - checkbox "Container" [ref=e68]
+          - text: Container
+        - generic [ref=e69]:
+          - checkbox "Impassable" [ref=e70]
+          - text: Impassable
+        - generic [ref=e71]:
+          - checkbox "Solid Top" [ref=e72]
+          - text: Solid Top
+        - generic [ref=e73]:
+          - checkbox "Water" [ref=e74]
+          - text: Water
+        - button "Clear Filters" [ref=e75] [cursor=pointer]
+      - generic [ref=e76]:
+        - text: "Search Tiles:"
+        - textbox "Search Tiles:" [ref=e77]:
+          - /placeholder: Name or ID...
+        - button "Clear Search" [ref=e78] [cursor=pointer]
+      - generic [ref=e79]:
+        - generic "Eraser (Clear Tile at X,Y,Z on all layers)" [ref=e80] [cursor=pointer]: ✖
+        - 'generic "Map Boundary (MB) Tags: landscape, impassable, middle" [ref=e81] [cursor=pointer]': ▒
+        - 'generic "Dirt (DI) Tags: landscape, solid_terrain_top, impassable, middle" [ref=e82] [cursor=pointer]': .
+        - 'generic "Grass (GR) Tags: landscape, bottom, flammable, harvest:plant" [ref=e83] [cursor=pointer]': ","
+        - 'generic "Mud (MU) Tags: landscape, middle, solid_terrain_top, impassable, harvest:mud, interactive" [ref=e84] [cursor=pointer]': ","
+        - 'generic "Muddy Ground (MF) Tags: landscape, bottom, mud" [ref=e85] [cursor=pointer]': ","
+        - 'generic "Tall Grass (TGR) Tags: landscape, bottom, flammable, harvest:plant, interactive" [ref=e86] [cursor=pointer]': W
+        - 'generic "Marsh (MSH) Tags: landscape, bottom" [ref=e87] [cursor=pointer]': w
+        - 'generic "Bog (BOG) Tags: landscape, bottom" [ref=e88] [cursor=pointer]': ~
+        - 'generic "Sand (SA) Tags: landscape, middle, solid_terrain_top, impassable, harvest:sand, interactive" [ref=e89] [cursor=pointer]': ":"
+        - 'generic "Gravel (GV) Tags: landscape, middle, solid_terrain_top, impassable, harvest:gravel, interactive" [ref=e90] [cursor=pointer]': ;
+        - 'generic "Shallow Water (WS) Tags: landscape, water, bottom, floor" [ref=e91] [cursor=pointer]': ~
+        - 'generic "Deep Water (WD) Tags: landscape, water, bottom, floor" [ref=e92] [cursor=pointer]': ~
+        - 'generic "Asphalt Road (AR) Tags: landscape, middle, solid_terrain_top, impassable" [ref=e93] [cursor=pointer]': =
+        - 'generic "Dirt Road (DRO) Tags: landscape, middle, solid_terrain_top, impassable" [ref=e94] [cursor=pointer]': ":"
+        - 'generic "Tree Trunk (TRK) Tags: landscape, middle, vegetation, impassable, solid_terrain_top, harvest:wood, interactive" [ref=e95] [cursor=pointer]': "|"
+        - 'generic "Bush (BSH) Tags: landscape, vegetation, bottom, flammable, harvest:plant, interactive" [ref=e96] [cursor=pointer]': "*"
+        - 'generic "Boulder (BLK) Tags: landscape, impassable, middle, solid_terrain_top, harvest:stone, interactive" [ref=e97] [cursor=pointer]': O
+        - 'generic "Spikes (SPK) Tags: bottom" [ref=e98] [cursor=pointer]': ^
+        - 'generic "Manhole (MH) Tags: bottom" [ref=e99] [cursor=pointer]': o
+        - 'generic "Tile Flooring (FL) Tags: bottom, building, floor" [ref=e100] [cursor=pointer]': +
+        - 'generic "Concrete Flooring (CF) Tags: bottom, building, floor" [ref=e101] [cursor=pointer]': ░
+        - 'generic "Wood Flooring (WF) Tags: bottom, wood, building, floor, flammable" [ref=e102] [cursor=pointer]': "-"
+        - 'generic "Metal Flooring (MTF) Tags: bottom, metal, building, floor, flammable" [ref=e103] [cursor=pointer]': "-"
+        - 'generic "Carpet Floor (CT) Tags: bottom, building, floor" [ref=e104] [cursor=pointer]': ░
+        - 'generic "Wood Wall Hz (WWH) Tags: wall, middle, wood, impassable, building, flammable" [ref=e105] [cursor=pointer]': ═
+        - 'generic "Wood Wall Vt (WWV) Tags: wall, middle, wood, impassable, building, flammable" [ref=e106] [cursor=pointer]': ║
+        - 'generic "Wood Wall Corner TL (WWCTL) Tags: wall, middle, wood, impassable, building, flammable" [ref=e107] [cursor=pointer]': ╔
+        - 'generic "Wood Wall Corner TR (WWCTR) Tags: wall, middle, wood, impassable, building, flammable" [ref=e108] [cursor=pointer]': ╗
+        - 'generic "Wood Wall Corner BL (WWCBL) Tags: wall, middle, wood, impassable, building, flammable" [ref=e109] [cursor=pointer]': ╚
+        - 'generic "Wood Wall Corner BR (WWCBR) Tags: wall, middle, wood, impassable, building, flammable" [ref=e110] [cursor=pointer]': ╝
+        - 'generic "Wood Wall T–East (WWTE) Tags: wall, middle, wood, impassable, building, flammable" [ref=e111] [cursor=pointer]': ╠
+        - 'generic "Wood Wall T–West (WWTW) Tags: wall, middle, wood, impassable, building, flammable" [ref=e112] [cursor=pointer]': ╣
+        - 'generic "Wood Wall T–South (WWTS) Tags: wall, middle, wood, impassable, building, flammable" [ref=e113] [cursor=pointer]': ╦
+        - 'generic "Wood Wall T–North (WWTN) Tags: wall, middle, wood, impassable, building, flammable" [ref=e114] [cursor=pointer]': ╩
+        - 'generic "Wood Wall Cross (WWC) Tags: wall, middle, wood, impassable, building, flammable" [ref=e115] [cursor=pointer]': ╬
+        - 'generic "Metal Wall Hz (MWH) Tags: wall, middle, metal, impassable, building" [ref=e116] [cursor=pointer]': ═
+        - 'generic "Metal Wall Vt (MWV) Tags: wall, middle, metal, impassable, building" [ref=e117] [cursor=pointer]': ║
+        - 'generic "Metal Wall Corner TL (MWCTL) Tags: wall, middle, metal, impassable, building" [ref=e118] [cursor=pointer]': ╔
+        - 'generic "Metal Wall Corner TR (MWCTR) Tags: wall, middle, metal, impassable, building" [ref=e119] [cursor=pointer]': ╗
+        - 'generic "Metal Wall Corner BL (MWCBL) Tags: wall, middle, metal, impassable, building" [ref=e120] [cursor=pointer]': ╚
+        - 'generic "Metal Wall Corner BR (MWCBR) Tags: wall, middle, metal, impassable, building" [ref=e121] [cursor=pointer]': ╝
+        - 'generic "Metal Wall T–East (MWTE) Tags: wall, middle, metal, impassable, building" [ref=e122] [cursor=pointer]': ╠
+        - 'generic "Metal Wall T–West (MWTW) Tags: wall, middle, metal, impassable, building" [ref=e123] [cursor=pointer]': ╣
+        - 'generic "Metal Wall T–South (MWTS) Tags: wall, middle, metal, impassable, building" [ref=e124] [cursor=pointer]': ╦
+        - 'generic "Metal Wall T–North (MWTN) Tags: wall, middle, metal, impassable, building" [ref=e125] [cursor=pointer]': ╩
+        - 'generic "Metal Wall Cross (MWC) Tags: wall, middle, metal, impassable, building" [ref=e126] [cursor=pointer]': ╬
+        - 'generic "Wood Door Hz (WDH) Tags: door, middle, wood, closed, impassable, interactive, breakable, building, flammable" [ref=e127] [cursor=pointer]': ─
+        - 'generic "Wood Door Vt (WDV) Tags: door, middle, wood, closed, impassable, interactive, breakable, building, flammable" [ref=e128] [cursor=pointer]': │
+        - 'generic "Wood Door Hz Open (WOH) Tags: door, middle, wood, open, interactive, breakable, building, allows_vision, flammable, permeable" [ref=e129] [cursor=pointer]': _
+        - 'generic "Wood Door Vt Open (WOV) Tags: door, middle, wood, open, interactive, breakable, building, allows_vision, flammable, permeable" [ref=e130] [cursor=pointer]': "'"
+        - 'generic "Wood Door Broken (WDB) Tags: door, middle, wood, broken, interactive, building, allows_vision, flammable, permeable" [ref=e131] [cursor=pointer]': ">"
+        - 'generic "Metal Door Hz (MDH) Tags: door, middle, metal, closed, impassable, interactive, breakable, building" [ref=e132] [cursor=pointer]': ─
+        - 'generic "Metal Door Vt (MDV) Tags: door, middle, metal, closed, impassable, interactive, breakable, building" [ref=e133] [cursor=pointer]': │
+        - 'generic "Metal Door Hz Open (MOH) Tags: door, middle, metal, open, interactive, breakable, building, allows_vision, permeable" [ref=e134] [cursor=pointer]': _
+        - 'generic "Metal Door Vt Open (MOV) Tags: door, middle, metal, open, interactive, breakable, building, allows_vision, permeable" [ref=e135] [cursor=pointer]': "'"
+        - 'generic "Metal Door Broken (MDB) Tags: door, middle, metal, broken, interactive, building, allows_vision, permeable" [ref=e136] [cursor=pointer]': ">"
+        - 'generic "Window Hz Closed (WinCH) Tags: window, middle, closed, impassable, interactive, breakable, building, transparent, scavenge:glass" [ref=e137] [cursor=pointer]': ─
+        - 'generic "Window Vt Closed (WinCV) Tags: window, middle, closed, impassable, interactive, breakable, building, transparent, scavenge:glass" [ref=e138] [cursor=pointer]': │
+        - 'generic "Window Hz Open (WinOH) Tags: window, middle, open, interactive, breakable, building, transparent, scavenge:glass" [ref=e139] [cursor=pointer]': =
+        - 'generic "Window Vt Open (WinOV) Tags: window, middle, open, interactive, breakable, building, transparent, scavenge:glass" [ref=e140] [cursor=pointer]': "\""
+        - 'generic "Window Broken (WinB) Tags: window, middle, broken, interactive, building, allows_vision, permeable, scavenge:glass" [ref=e141] [cursor=pointer]': ">"
+        - 'generic "Roof (Wood) (RW) Tags: roof, bottom, impassable, middle, flammable" [ref=e142] [cursor=pointer]': "#"
+        - 'generic "Roof (Metal) (RM) Tags: roof, bottom, impassable" [ref=e143] [cursor=pointer]': "#"
+        - 'generic "Tree Leaves (TRF) Tags: roof, vegetation, middle" [ref=e144] [cursor=pointer]': "Y"
+        - 'generic "Counter (CN) Tags: building, impassable, middle, scavenge:furniture, interactive" [ref=e145] [cursor=pointer]': ∩
+        - 'generic "Cabinet (CB) Tags: interactive, container, blocks_vision, impassable, building, furniture, middle, flammable, scavenge:furniture" [ref=e146] [cursor=pointer]': □
+        - 'generic "Sink (SN) Tags: building, interactive, middle" [ref=e147] [cursor=pointer]': s
+        - 'generic "Drawer (DR) Tags: interactive, container, item, furniture, middle, flammable" [ref=e148] [cursor=pointer]': π
+        - 'generic "Gun Case (GC) Tags: interactive, container, item, furniture, blocks_vision, impassable, middle" [ref=e149] [cursor=pointer]': Æ
+        - 'generic "Trash Can (TC) Tags: interactive, container, item, middle" [ref=e150] [cursor=pointer]': u
+        - 'generic "Safe (SF) Tags: interactive, container, item, furniture, blocks_vision, impassable, metal, middle" [ref=e151] [cursor=pointer]': "#"
+        - 'generic "Refrigerator (RF) Tags: interactive, container, item, furniture, blocks_vision, impassable, electronics, middle, scavenge:appliance" [ref=e152] [cursor=pointer]': ║
+        - 'generic "Stove/Oven (ST) Tags: interactive, container, item, furniture, blocks_vision, impassable, electronics, middle, scavenge:appliance" [ref=e153] [cursor=pointer]': S
+        - 'generic "Microwave (MW) Tags: interactive, container, item, furniture, electronics, middle, scavenge:appliance" [ref=e154] [cursor=pointer]': m
+        - 'generic "Sofa (SF2) Tags: item, interactive, middle, flammable" [ref=e155] [cursor=pointer]': H
+        - 'generic "Armchair (CH) Tags: item, interactive, middle, flammable, scavenge:furniture" [ref=e156] [cursor=pointer]': h
+        - 'generic "Coffee Table (TB) Tags: item, impassable, middle, flammable, scavenge:furniture, interactive" [ref=e157] [cursor=pointer]': "n"
+        - 'generic "Television (TV) Tags: item, interactive, middle, scavenge:electronics" [ref=e158] [cursor=pointer]': T
+        - 'generic "Bookshelf (STL) Tags: interactive, container, item, furniture, blocks_vision, impassable, middle, flammable, scavenge:furniture" [ref=e159] [cursor=pointer]': ⌠
+        - 'generic "Bed (BD) Tags: building, interactive, middle, scavenge:furniture" [ref=e160] [cursor=pointer]': ╬
+        - 'generic "Nightstand (NK) Tags: interactive, container, item, furniture, middle, flammable, scavenge:furniture" [ref=e161] [cursor=pointer]': "#"
+        - 'generic "Dresser (DRS) Tags: interactive, container, item, furniture, blocks_vision, impassable, middle, flammable, scavenge:furniture" [ref=e162] [cursor=pointer]': D
+        - 'generic "Desk (DSK) Tags: interactive, container, item, furniture, blocks_vision, impassable, middle, flammable, scavenge:furniture" [ref=e163] [cursor=pointer]': ⌂
+        - 'generic "Chair (CR) Tags: item, interactive, middle, flammable, scavenge:furniture" [ref=e164] [cursor=pointer]': c
+        - 'generic "Toilet (TW) Tags: item, interactive, middle" [ref=e165] [cursor=pointer]': ‖
+        - 'generic "Shower (SH) Tags: item, interactive, middle" [ref=e166] [cursor=pointer]': /
+        - 'generic "Bathtub (BTB) Tags: item, interactive, middle" [ref=e167] [cursor=pointer]': b
+        - 'generic "Floor Lamp (FLR) Tags: item, interactive, middle" [ref=e168] [cursor=pointer]': f
+        - 'generic "Potted Plant (PL) Tags: item, middle" [ref=e169] [cursor=pointer]': "#"
+        - 'generic "Computer (CP) Tags: item, interactive, middle, scavenge:electronics" [ref=e170] [cursor=pointer]': k
+        - 'generic "Printer (PR) Tags: item, interactive, middle, scavenge:electronics" [ref=e171] [cursor=pointer]': p
+        - 'generic "Washer (WM) Tags: item, interactive, impassable, middle, scavenge:appliance" [ref=e172] [cursor=pointer]': W
+        - 'generic "Dryer (DRY) Tags: item, interactive, impassable, middle, scavenge:appliance" [ref=e173] [cursor=pointer]': d
+        - 'generic "Fireplace (FT) Tags: building, interactive, middle" [ref=e174] [cursor=pointer]': ♣
+        - 'generic "Tilled Soil (TSL) Tags: landscape, bottom, floor, farmland, plantable" [ref=e175] [cursor=pointer]': ≈
+        - 'generic "Wooden Barricade (WBD) Tags: structure, impassable, wood, cover, breakable, middle, flammable" [ref=e176] [cursor=pointer]': X
+        - 'generic "Torch (TOR) Tags: item, interactive, middle" [ref=e177] [cursor=pointer]': ~
+        - 'generic "Floor Torch (FLT) Tags: item, interactive, middle" [ref=e178] [cursor=pointer]': Î
+        - 'generic "Standing Lantern (SLN) Tags: item, middle" [ref=e179] [cursor=pointer]': Ħ
+        - 'generic "Table Lantern (Placed) (TLN_P) Tags: item, middle" [ref=e180] [cursor=pointer]': ñ
+        - 'generic "Candle (Placed) (CDL_P) Tags: item, middle" [ref=e181] [cursor=pointer]': ¦
+        - 'generic "Streetlamp (STLMP) Tags: structure, impassable, middle" [ref=e182] [cursor=pointer]': ¶
+        - 'generic "Floodlight (FLDL) Tags: structure, middle" [ref=e183] [cursor=pointer]': Θ
+        - 'generic "Neon Sign (Red) (NEON_R) Tags: item, decorative, middle" [ref=e184] [cursor=pointer]': §
+        - 'generic "Neon Sign (Blue) (NEON_B) Tags: item, decorative, middle" [ref=e185] [cursor=pointer]': §
+        - 'generic "Neon Sign (Green) (NEON_G) Tags: item, decorative, middle" [ref=e186] [cursor=pointer]': §
+        - 'generic "Solar Garden Lamp (SOLG) Tags: item, emits_at_night, middle" [ref=e187] [cursor=pointer]': þ
+        - 'generic "Emergency Beacon (EMBCN) Tags: item, flashing_effect, middle" [ref=e188] [cursor=pointer]': "!"
+        - 'generic "Stairs Up (ST_U) Tags: building, z_transition, stairs, middle" [ref=e189] [cursor=pointer]': ▲
+        - 'generic "Stairs Down (ST_D) Tags: building, z_transition, stairs, middle" [ref=e190] [cursor=pointer]': ▼
+        - 'generic "Hole (HOLE) Tags: landscape, z_transition, hole, transparent_bottom, allows_vision, bottom" [ref=e191] [cursor=pointer]': O
+        - 'generic "Dirt Slope Up (DSL_U) Tags: landscape, z_transition, slope, dirt_slope, middle" [ref=e192] [cursor=pointer]': ▲
+        - 'generic "Dirt Slope Down (DSL_D) Tags: landscape, z_transition, slope, dirt_slope, middle" [ref=e193] [cursor=pointer]': ▼
+        - 'generic "Ladder (LADR) Tags: z_transition, climbable, interactive, ladder, item, middle" [ref=e194] [cursor=pointer]': H
+        - 'generic "Basic Workbench (workbench_basic_tile) Tags: interactive, crafting_station, workbench_general, building, furniture, middle, impassable" [ref=e195] [cursor=pointer]': W
+        - 'generic "Simple Forge (forge_simple_tile) Tags: interactive, crafting_station, forge, building, furniture, middle, impassable, heat_source_small, scavenge:machinery" [ref=e196] [cursor=pointer]': F
+        - 'generic "Chemistry Set (chemistry_set_tile) Tags: interactive, crafting_station, chemistry_bench, building, furniture, middle, impassable" [ref=e197] [cursor=pointer]': C
+        - 'generic "Basic Campfire (campfire_basic_tile) Tags: interactive, crafting_station, heat_source_small, cooking_station, light_source, natural_structure, middle" [ref=e198] [cursor=pointer]': c
+        - 'generic "Reloading Bench (reloading_bench_tile) Tags: interactive, crafting_station, reloading_general, building, furniture, middle, impassable, gunsmithing, scavenge:machinery" [ref=e199] [cursor=pointer]': R
+        - 'generic "Munitions Crafting Bench (munitions_bench_tile) Tags: interactive, crafting_station, munitions_assembly, building, furniture, middle, impassable, explosives_work" [ref=e200] [cursor=pointer]': M
+        - 'generic "Armor Crafting Jig (armor_jig_tile) Tags: interactive, crafting_station, armor_station, building, furniture, middle, impassable, armor_crafting" [ref=e201] [cursor=pointer]': A
+        - 'generic "Machine Shop Lathe (lathe_tile) Tags: interactive, crafting_station, machining_lathe, building, furniture, middle, impassable, requires_power_grid, metalworking, precision_work, scavenge:machinery" [ref=e202] [cursor=pointer]': L
+        - 'generic "Vehicle Assembly Bay (vehicle_bay_tile) Tags: interactive, crafting_station, vehicle_assembly, building, furniture, middle, impassable, requires_power_grid, large_construction, scavenge:machinery" [ref=e203] [cursor=pointer]': V
+        - 'generic "Engine Assembly Jig (engine_jig_tile) Tags: interactive, crafting_station, engine_work, building, furniture, middle, impassable, mechanical, scavenge:machinery" [ref=e204] [cursor=pointer]': E
+        - 'generic "Simple Loom (loom_tile) Tags: interactive, crafting_station, weaving, building, furniture, middle, impassable, textile_work" [ref=e205] [cursor=pointer]': H
+        - 'generic "Simple Tanning Rack (tanning_rack_tile) Tags: interactive, crafting_station, tanning, building, furniture, middle, impassable, leather_work" [ref=e206] [cursor=pointer]': T
+        - 'generic "Set Tripwire (trap_tripwire_set_tile) Tags: trap_visible, interactive, bottom" [ref=e207] [cursor=pointer]': /
+        - 'generic "Stone Floor (Hidden Plate) (floor_stone_plate_hidden) Tags: floor, building, bottom, trap_concealing" [ref=e208] [cursor=pointer]': .
+        - 'generic "Dirt Floor (Hidden Spikes) (trap_spikes_hidden_map_tile) Tags: floor, landscape, bottom, trap_concealing" [ref=e209] [cursor=pointer]': .
+        - 'generic "Advanced Electronics Bench (electronics_bench_adv_tile) Tags: interactive, crafting_station, electronics_advanced, building, furniture, middle, impassable, requires_power_grid, scavenge:electronics" [ref=e210] [cursor=pointer]': e
+        - 'generic "Ash (ASH) Tags: landscape, bottom, inert, scavenge:junk, interactive" [ref=e211] [cursor=pointer]': ≈
+        - 'generic "Riverbed (RB) Tags: landscape, bottom" [ref=e212] [cursor=pointer]': .
+        - 'generic "Metal Barricade (barricade_metal_tile) Tags: structure, impassable, metal, cover, breakable, middle" [ref=e213] [cursor=pointer]': X
+        - 'generic "Small Rain Collector (rain_collector_small_tile) Tags: structure, impassable, middle, interactive, water_source, resource_producer" [ref=e214] [cursor=pointer]': "Y"
+        - 'generic "Small Storage Locker (storage_locker_small_tile) Tags: interactive, container, furniture, middle, impassable, metal, storage" [ref=e215] [cursor=pointer]': L
+        - 'generic "Sidewalk (SWLK) Tags: landscape, bottom, floor, concrete" [ref=e216] [cursor=pointer]': ▒
+        - 'generic "Concrete Wall Hz (CWH) Tags: wall, middle, concrete, impassable, building" [ref=e217] [cursor=pointer]': ═
+        - 'generic "Concrete Wall Vt (CWV) Tags: wall, middle, concrete, impassable, building" [ref=e218] [cursor=pointer]': ║
+        - 'generic "Concrete Wall Corner TL (CWCTL) Tags: wall, middle, concrete, impassable, building" [ref=e219] [cursor=pointer]': ╔
+        - 'generic "Concrete Wall Corner TR (CWCTR) Tags: wall, middle, concrete, impassable, building" [ref=e220] [cursor=pointer]': ╗
+        - 'generic "Concrete Wall Corner BL (CWCBL) Tags: wall, middle, concrete, impassable, building" [ref=e221] [cursor=pointer]': ╚
+        - 'generic "Concrete Wall Corner BR (CWCBR) Tags: wall, middle, concrete, impassable, building" [ref=e222] [cursor=pointer]': ╝
+        - 'generic "Interior Wall Hz (IWH) Tags: wall, middle, impassable, building" [ref=e223] [cursor=pointer]': ═
+        - 'generic "Interior Wall Vt (IWV) Tags: wall, middle, impassable, building" [ref=e224] [cursor=pointer]': ║
+        - 'generic "Wood Pillar (PILW) Tags: structure, middle, wood, impassable, building, transparent" [ref=e225] [cursor=pointer]': I
+        - 'generic "Metal Pillar (PILM) Tags: structure, middle, metal, impassable, building, transparent" [ref=e226] [cursor=pointer]': I
+        - 'generic "Chain Link Fence Hz (CLF_H) Tags: structure, middle, metal, impassable, transparent, fence" [ref=e227] [cursor=pointer]': x
+        - 'generic "Chain Link Fence Vt (CLF_V) Tags: structure, middle, metal, impassable, transparent, fence" [ref=e228] [cursor=pointer]': x
+        - 'generic "Chain Link Gate Hz (CLFG_H) Tags: door, middle, metal, closed, impassable, transparent, interactive, fence" [ref=e229] [cursor=pointer]': x
+        - 'generic "Chain Link Gate Vt (CLFG_V) Tags: door, middle, metal, closed, impassable, transparent, interactive, fence" [ref=e230] [cursor=pointer]': x
+        - 'generic "Chain Link Gate Hz Open (CLFG_HO) Tags: door, middle, metal, open, transparent, interactive, permeable, fence" [ref=e231] [cursor=pointer]': _
+        - 'generic "Chain Link Gate Vt Open (CLFG_VO) Tags: door, middle, metal, open, transparent, interactive, permeable, fence" [ref=e232] [cursor=pointer]': "'"
+        - 'generic "Wooden Fence Hz (WDF_H) Tags: structure, middle, wood, impassable, fence" [ref=e233] [cursor=pointer]': "#"
+        - 'generic "Wooden Fence Vt (WDF_V) Tags: structure, middle, wood, impassable, fence" [ref=e234] [cursor=pointer]': "#"
+        - 'generic "Wooden Fence Gate Hz (WDFG_H) Tags: door, middle, wood, closed, impassable, interactive, fence" [ref=e235] [cursor=pointer]': +
+        - 'generic "Wooden Fence Gate Vt (WDFG_V) Tags: door, middle, wood, closed, impassable, interactive, fence" [ref=e236] [cursor=pointer]': +
+        - 'generic "Wooden Fence Gate Hz Open (WDFG_HO) Tags: door, middle, wood, open, allows_vision, interactive, permeable, fence" [ref=e237] [cursor=pointer]': _
+        - 'generic "Wooden Fence Gate Vt Open (WDFG_VO) Tags: door, middle, wood, open, allows_vision, interactive, permeable, fence" [ref=e238] [cursor=pointer]': "'"
+        - 'generic "Garage Door Hz (RGD_H) Tags: door, middle, metal, closed, impassable, interactive, garage_door" [ref=e239] [cursor=pointer]': =
+        - 'generic "Garage Door Vt (RGD_V) Tags: door, middle, metal, closed, impassable, interactive, garage_door" [ref=e240] [cursor=pointer]': H
+        - 'generic "Garage Door Hz Open (RGD_HO) Tags: door, middle, metal, open, interactive, permeable, garage_door, allows_vision" [ref=e241] [cursor=pointer]': _
+        - 'generic "Garage Door Vt Open (RGD_VO) Tags: door, middle, metal, open, interactive, permeable, garage_door, allows_vision" [ref=e242] [cursor=pointer]': "'"
+        - 'generic "Jail Cell Bars Hz (JCB_H) Tags: structure, middle, metal, impassable, transparent, jail" [ref=e243] [cursor=pointer]': ═
+        - 'generic "Jail Cell Bars Vt (JCB_V) Tags: structure, middle, metal, impassable, transparent, jail" [ref=e244] [cursor=pointer]': ║
+        - 'generic "Jail Cell Door Hz (JCD_H) Tags: door, middle, metal, closed, impassable, transparent, interactive, jail" [ref=e245] [cursor=pointer]': ═
+        - 'generic "Jail Cell Door Vt (JCD_V) Tags: door, middle, metal, closed, impassable, transparent, interactive, jail" [ref=e246] [cursor=pointer]': ║
+        - 'generic "Jail Cell Door Hz Open (JCD_HO) Tags: door, middle, metal, open, transparent, interactive, permeable, jail" [ref=e247] [cursor=pointer]': _
+        - 'generic "Jail Cell Door Vt Open (JCD_VO) Tags: door, middle, metal, open, transparent, interactive, permeable, jail" [ref=e248] [cursor=pointer]': "'"
+        - 'generic "Sandstone (sandstone) Tags: landscape, middle, solid_terrain_top, impassable, cave, sandstone" [ref=e249] [cursor=pointer]': ░
+        - 'generic "Sandstone Stalactite (sandstone_stalactite) Tags: rock_formation, middle, sandstone, impassable, cave" [ref=e250] [cursor=pointer]': ▼
+        - 'generic "Sandstone Stalagmite (sandstone_stalagmite) Tags: rock_formation, middle, sandstone, impassable, cave, sharp, stalagmite" [ref=e251] [cursor=pointer]': ▲
+        - 'generic "Limestone (limestone) Tags: landscape, middle, solid_terrain_top, impassable, cave, limestone" [ref=e252] [cursor=pointer]': ░
+        - 'generic "Limestone Stalactite (limestone_stalactite) Tags: rock_formation, middle, limestone, impassable, cave" [ref=e253] [cursor=pointer]': ▼
+        - 'generic "Limestone Stalagmite (limestone_stalagmite) Tags: rock_formation, middle, limestone, impassable, cave, sharp, stalagmite" [ref=e254] [cursor=pointer]': ▲
+        - 'generic "Mud Slope Up (MSL_U) Tags: landscape, z_transition, slope, mud_slope, middle" [ref=e255] [cursor=pointer]': ▲
+        - 'generic "Sand Slope Up (SSL_U) Tags: landscape, z_transition, slope, sand_slope, middle" [ref=e256] [cursor=pointer]': ▲
+        - 'generic "Gravel Slope Up (GSL_U) Tags: landscape, z_transition, slope, gravel_slope, middle" [ref=e257] [cursor=pointer]': ▲
+        - 'generic "Asphalt Road Slope Up (ARSL_U) Tags: landscape, z_transition, slope, road_slope, middle" [ref=e258] [cursor=pointer]': ▲
+        - 'generic "Dirt Road Slope Up (DRSL_U) Tags: landscape, z_transition, slope, road_slope, middle" [ref=e259] [cursor=pointer]': ▲
+        - 'generic "Sandstone Slope Up (SNDSL_U) Tags: landscape, z_transition, slope, sandstone_slope, middle" [ref=e260] [cursor=pointer]': ▲
+        - 'generic "Limestone Slope Up (LMSL_U) Tags: landscape, z_transition, slope, limestone_slope, middle" [ref=e261] [cursor=pointer]': ▲
+        - 'generic "Corn (Seedling) (PL_C1) Tags: plant, middle, corn, stage1, vegetation" [ref=e262] [cursor=pointer]': i
+        - 'generic "Corn (Growing) (PL_C2) Tags: plant, middle, corn, stage2, vegetation" [ref=e263] [cursor=pointer]': l
+        - 'generic "Corn (Ripe) (PL_C3) Tags: plant, middle, corn, stage3, vegetation, harvest:corn" [ref=e264] [cursor=pointer]': "Y"
+        - 'generic "Carrot (Seedling) (PL_R1) Tags: plant, middle, carrot, stage1, vegetation" [ref=e265] [cursor=pointer]': .
+        - 'generic "Carrot (Growing) (PL_R2) Tags: plant, middle, carrot, stage2, vegetation" [ref=e266] [cursor=pointer]': v
+        - 'generic "Carrot (Ripe) (PL_R3) Tags: plant, middle, carrot, stage3, vegetation, harvest:carrot" [ref=e267] [cursor=pointer]': V
+        - 'generic "Desert Eagle (.50AE autoloader) (desert_eagle_50ae) Tags: item, interactive, generated_from_item, weapon, firearm, pistol, modern, handgun" [ref=e268] [cursor=pointer]': "}"
+        - 'generic "S&W M29 (.44 magnum revolver) (sw_m29_44) Tags: item, interactive, generated_from_item, weapon, firearm, pistol, modern, revolver, handgun" [ref=e269] [cursor=pointer]': "}"
+        - 'generic "Knife (knife_melee) Tags: item, interactive, generated_from_item, weapon, melee, piercing, slashing, knife, tool" [ref=e270] [cursor=pointer]': "!"
+        - 'generic "Club (club_melee) Tags: item, interactive, generated_from_item, weapon, melee, bludgeoning, improvised" [ref=e271] [cursor=pointer]': "|"
+        - 'generic "Makeshift Shiv (shiv_melee) Tags: item, interactive, generated_from_item, weapon, melee, blade, makeshift, stealthy" [ref=e272] [cursor=pointer]': "!"
+        - 'generic "Torch (torch_melee) Tags: item, interactive, generated_from_item, weapon, melee, light_source, fire_source, bludgeoning" [ref=e273] [cursor=pointer]': "|"
+        - 'generic "Spear (spear) Tags: item, interactive, generated_from_item, weapon, melee, piercing" [ref=e274] [cursor=pointer]': "|"
+        - 'generic "Katana (katana) Tags: item, interactive, generated_from_item, weapon, melee, slashing" [ref=e275] [cursor=pointer]': /
+        - 'generic "Longsword (longsword) Tags: item, interactive, generated_from_item, weapon, melee, slashing" [ref=e276] [cursor=pointer]': /
+        - 'generic "Hatchet (hatchet) Tags: item, interactive, generated_from_item, weapon, melee, slashing" [ref=e277] [cursor=pointer]': T
+        - 'generic "Rapier (rapier) Tags: item, interactive, generated_from_item, weapon, melee, piercing" [ref=e278] [cursor=pointer]': /
+        - 'generic "Sword cane (sword_cane) Tags: item, interactive, generated_from_item, weapon, melee, piercing" [ref=e279] [cursor=pointer]': /
+        - 'generic "Sap (sap) Tags: item, interactive, generated_from_item, weapon, melee, bludgeoning" [ref=e280] [cursor=pointer]': "|"
+        - 'generic "Kama (kama) Tags: item, interactive, generated_from_item, weapon, melee, slashing" [ref=e281] [cursor=pointer]': "!"
+        - 'generic "Machete (machete) Tags: item, interactive, generated_from_item, weapon, melee, slashing" [ref=e282] [cursor=pointer]': /
+        - 'generic "Cleaver (cleaver) Tags: item, interactive, generated_from_item, weapon, melee, slashing" [ref=e283] [cursor=pointer]': /
+        - 'generic "Metal baton (metal_baton) Tags: item, interactive, generated_from_item, weapon, melee, bludgeoning" [ref=e284] [cursor=pointer]': "|"
+        - 'generic "Tonfa (tonfa) Tags: item, interactive, generated_from_item, weapon, melee, bludgeoning" [ref=e285] [cursor=pointer]': "|"
+        - 'generic "Nunchaku (nunchaku) Tags: item, interactive, generated_from_item, weapon, melee, bludgeoning" [ref=e286] [cursor=pointer]': "|"
+        - 'generic "Whip (whip) Tags: item, interactive, generated_from_item, weapon, melee, bludgeoning" [ref=e287] [cursor=pointer]': ~
+        - 'generic "Chain saw (chain_saw) Tags: item, interactive, generated_from_item, weapon, melee, slashing" [ref=e288] [cursor=pointer]': "{"
+        - 'generic "Kukri (kukri) Tags: item, interactive, generated_from_item, weapon, melee, slashing" [ref=e289] [cursor=pointer]': "!"
+        - 'generic "Bayonet (fixed) (bayonet_fixed) Tags: item, interactive, generated_from_item, weapon, melee, piercing" [ref=e290] [cursor=pointer]': "!"
+        - 'generic "Brass knuckles (brass_knuckles) Tags: item, interactive, generated_from_item, weapon, melee, bludgeoning" [ref=e291] [cursor=pointer]': o
+        - 'generic "Straight razor (straight_razor) Tags: item, interactive, generated_from_item, weapon, melee, slashing" [ref=e292] [cursor=pointer]': "!"
+        - 'generic "M-60 (m_60) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e293] [cursor=pointer]': "}"
+        - 'generic "M2HB (m2hb) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e294] [cursor=pointer]': "}"
+        - 'generic "TEC-9 (9mm machine pistol) (tec_9_9mm_machine_pistol) Tags: item, interactive, generated_from_item, weapon, firearm, pistol" [ref=e295] [cursor=pointer]': "}"
+        - 'generic "MAC Ingram M10 (.45 machine pistol) (mac_ingram_m10_45_machine_pistol) Tags: item, interactive, generated_from_item, weapon, firearm, pistol" [ref=e296] [cursor=pointer]': "}"
+        - 'generic "HK MP5 (9mm submachine gun) (hk_mp5_9mm_submachine_gun) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e297] [cursor=pointer]': "}"
+        - 'generic "AKM/AK-47 (7.62mmR assault rifle) (akm_ak_47_7_62mmr_assault_rifle) Tags: item, interactive, generated_from_item, weapon, firearm, rifle" [ref=e298] [cursor=pointer]': "}"
+        - 'generic "M16A2 (5.56mm assault rifle) (m16a2_5_56mm_assault_rifle) Tags: item, interactive, generated_from_item, weapon, firearm, rifle" [ref=e299] [cursor=pointer]': "}"
+        - 'generic "M4 Carbine (5.56mm assault rifle) (m4_carbine_5_56mm_assault_rifle) Tags: item, interactive, generated_from_item, weapon, firearm, rifle" [ref=e300] [cursor=pointer]': "}"
+        - 'generic "Steyr AUG (5.56mm assault rifle) (steyr_aug_5_56mm_assault_rifle) Tags: item, interactive, generated_from_item, weapon, firearm, rifle" [ref=e301] [cursor=pointer]': "}"
+        - 'generic "Skorpion (.32 machine pistol) (skorpion_32_machine_pistol) Tags: item, interactive, generated_from_item, weapon, firearm, pistol" [ref=e302] [cursor=pointer]': "}"
+        - 'generic "Beretta 93R (9mm machine pistol) (beretta_93r_9mm_machine_pistol) Tags: item, interactive, generated_from_item, weapon, firearm, pistol" [ref=e303] [cursor=pointer]': "}"
+        - 'generic "Uzi (9mm submachine gun) (uzi_9mm_submachine_gun) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e304] [cursor=pointer]': "}"
+        - 'generic "HK G3 (7.62mm assault rifle) (hk_g3_7_62mm_assault_rifle) Tags: item, interactive, generated_from_item, weapon, firearm, rifle" [ref=e305] [cursor=pointer]': "}"
+        - 'generic "Glock 17 (9mm autoloader) (glock_17_9mm_autoloader) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e306] [cursor=pointer]': "}"
+        - 'generic "Beretta 92F (9mm autoloader) (beretta_92f_9mm_autoloader) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e307] [cursor=pointer]': "}"
+        - 'generic "Glock 201 (10mm autoloader) (glock_201_10mm_autoloader) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e308] [cursor=pointer]': "}"
+        - 'generic "HK MP5K (9mm submachine gun) (hk_mp5k_9mm_submachine_gun) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e309] [cursor=pointer]': "}"
+        - 'generic "Barrett Light Fifty (.50 sniper rifle) (barrett_light_fifty_50_sniper_rifle) Tags: item, interactive, generated_from_item, weapon, firearm, rifle" [ref=e310] [cursor=pointer]': "}"
+        - 'generic "Flamethrower (flamethrower) Tags: item, interactive, generated_from_item, weapon, firearm, fire_source, area_effect" [ref=e311] [cursor=pointer]': "}"
+        - 'generic "Pepper Spray (pepper_spray) Tags: item, interactive, generated_from_item, weapon, utility, non_lethal, area_effect" [ref=e312] [cursor=pointer]': /
+        - 'generic "Colt Double Eagle (10mm autoloader) (colt_double_eagle_10mm_autoloader) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e313] [cursor=pointer]': "}"
+        - 'generic "SITES M9 (9mm autoloader) (sites_m9_9mm_autoloader) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e314] [cursor=pointer]': "}"
+        - 'generic "AA-12 (12-gauge automatic shotgun) (aa_12_12_gauge_automatic_shotgun) Tags: item, interactive, generated_from_item, weapon, firearm, shotgun" [ref=e315] [cursor=pointer]': "}"
+        - 'generic "Walther PPK (.32 autoloader) (walther_ppk_32_autoloader) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e316] [cursor=pointer]': "}"
+        - 'generic "Colt M1911 (.45 autoloader) (colt_m1911_45_autoloader) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e317] [cursor=pointer]': "}"
+        - 'generic "Benelli 121 M1 (12-gauge shotgun) (benelli_121_m1_12_gauge_shotgun) Tags: item, interactive, generated_from_item, weapon, firearm, shotgun" [ref=e318] [cursor=pointer]': "}"
+        - 'generic "Pathfinder (.22 revolver) (pathfinder_22_revolver) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e319] [cursor=pointer]': "}"
+        - 'generic "Ruger Service-Six (.38S revolver) (ruger_service_six_38s_revolver) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e320] [cursor=pointer]': "}"
+        - 'generic "Colt Python1 (.357 revolver) (colt_python1_357_revolver) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e321] [cursor=pointer]': "}"
+        - 'generic "Winchester 94 (.444 hunting rifle) (winchester_94_444_hunting_rifle) Tags: item, interactive, generated_from_item, weapon, firearm, rifle" [ref=e322] [cursor=pointer]': "}"
+        - 'generic "Mossberg (12-gauge shotgun) (mossberg_12_gauge_shotgun) Tags: item, interactive, generated_from_item, weapon, firearm, shotgun" [ref=e323] [cursor=pointer]': "}"
+        - 'generic "Browning BPS (10-gauge shotgun) (browning_bps_10_gauge_shotgun) Tags: item, interactive, generated_from_item, weapon, firearm, shotgun" [ref=e324] [cursor=pointer]': "}"
+        - 'generic "HK PSG11 (7.62mm sniper rifle) (hk_psg11_7_62mm_sniper_rifle) Tags: item, interactive, generated_from_item, weapon, firearm, rifle" [ref=e325] [cursor=pointer]': "}"
+        - 'generic "Beretta M3P (12-gauge shotgun) (beretta_m3p_12_gauge_shotgun) Tags: item, interactive, generated_from_item, weapon, firearm, shotgun" [ref=e326] [cursor=pointer]': "}"
+        - 'generic "Remington 700 (7.62mm hunting rifle) (remington_700_7_62mm_hunting_rifle) Tags: item, interactive, generated_from_item, weapon, firearm, rifle" [ref=e327] [cursor=pointer]': "}"
+        - 'generic "Derringer (.45) (derringer_45) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e328] [cursor=pointer]': "}"
+        - 'generic "Sawed-off shotgun (12-ga shotgun) (sawed_off_shotgun_12_ga_shotgun) Tags: item, interactive, generated_from_item, weapon, firearm, shotgun" [ref=e329] [cursor=pointer]': "}"
+        - 'generic "M72A3 LAW (rocket launcher) (m72a3_law_rocket_launcher) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e330] [cursor=pointer]': "}"
+        - 'generic "M79 (grenade launcher) (m79_grenade_launcher) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e331] [cursor=pointer]': "}"
+        - 'generic "Crossbow (crossbow) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e332] [cursor=pointer]': )
+        - 'generic "Compound bow (compound_bow) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e333] [cursor=pointer]': )
+        - 'generic "Javelin (javelin) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e334] [cursor=pointer]': "|"
+        - 'generic "Shuriken (shuriken) Tags: item, interactive, generated_from_item, weapon, firearm" [ref=e335] [cursor=pointer]': "*"
+        - 'generic "40mm fragmentation grenade (40mm_fragmentation_grenade) Tags: item, interactive, generated_from_item, weapon, thrown, explosive" [ref=e336] [cursor=pointer]': o
+        - 'generic "Fragmentation grenade (fragmentation_grenade) Tags: item, interactive, generated_from_item, weapon, thrown, explosive" [ref=e337] [cursor=pointer]': o
+        - 'generic "Tear gas grenade (tear_gas_grenade) Tags: item, interactive, generated_from_item, weapon, thrown, explosive" [ref=e338] [cursor=pointer]': o
+        - 'generic "Thermite grenade (thermite_grenade) Tags: item, interactive, generated_from_item, weapon, thrown, explosive" [ref=e339] [cursor=pointer]': o
+        - 'generic "White phosphorus grenade (white_phosphorus_grenade) Tags: item, interactive, generated_from_item, weapon, thrown, explosive" [ref=e340] [cursor=pointer]': o
+        - 'generic "Acid, mild (acid_mild) Tags: item, interactive, generated_from_item, weapon, thrown, explosive" [ref=e341] [cursor=pointer]': "!"
+        - 'generic "Digestive Clamp (digestive_clamp) Tags: item, interactive, generated_from_item, weapon, melee, natural" [ref=e342] [cursor=pointer]': x
+        - 'generic "Digestive Clamp/Taser Shock (digestive_clamp_taser) Tags: item, interactive, generated_from_item, weapon, melee, natural" [ref=e343] [cursor=pointer]': x
+        - 'generic "Solothurn S18-1000 (20mm anti-tank rifle) (solothurn_s18_1000) Tags: item, interactive, generated_from_item, weapon, firearm, rifle, heavy, anti_tank" [ref=e344] [cursor=pointer]': "}"
+        - 'generic ".950 JDJ “FAT MAC” (single-shot rifle) (950_jdj_fat_mac) Tags: item, interactive, generated_from_item, weapon, firearm, rifle, heavy" [ref=e345] [cursor=pointer]': "}"
+        - 'generic "BOYS (.55 anti-tank rifle) (boys_anti_tank_rifle) Tags: item, interactive, generated_from_item, weapon, firearm, rifle, heavy, anti_tank" [ref=e346] [cursor=pointer]': "}"
+        - 'generic "700 Nitro Express (double rifle) (700_nitro_express) Tags: item, interactive, generated_from_item, weapon, firearm, rifle, hunting" [ref=e347] [cursor=pointer]': "}"
+        - 'generic "577 Tyrannosaur rifle (577_tyrannosaur) Tags: item, interactive, generated_from_item, weapon, firearm, rifle, hunting" [ref=e348] [cursor=pointer]': "}"
+        - 'generic "4-BORE rifle (4_bore_rifle) Tags: item, interactive, generated_from_item, weapon, firearm, rifle, antique" [ref=e349] [cursor=pointer]': "}"
+        - 'generic "Blunderbuss (blunderbuss) Tags: item, interactive, generated_from_item, weapon, firearm, antique, shotgun" [ref=e350] [cursor=pointer]': "}"
+        - 'generic "Punt gun (punt_gun) Tags: item, interactive, generated_from_item, weapon, firearm, shotgun, heavy, antique" [ref=e351] [cursor=pointer]': "}"
+        - 'generic "Big Horn Armory AR500 (.500 Auto Max rifle) (big_horn_ar500) Tags: item, interactive, generated_from_item, weapon, firearm, rifle, modern" [ref=e352] [cursor=pointer]': "}"
+        - 'generic ".50 BMG pistol (50_bmg_pistol) Tags: item, interactive, generated_from_item, weapon, firearm, pistol, heavy, meme" [ref=e353] [cursor=pointer]': "}"
+        - 'generic ".454 Casull revolver (454_casull_revolver) Tags: item, interactive, generated_from_item, weapon, firearm, pistol, revolver, magnum" [ref=e354] [cursor=pointer]': "}"
+        - 'generic "S&W 500 Magnum revolver (500 S&W) (sw_500_magnum) Tags: item, interactive, generated_from_item, weapon, firearm, pistol, revolver, magnum" [ref=e355] [cursor=pointer]': "}"
+        - 'generic "S&W .460 S&W Magnum revolver (sw_460_magnum) Tags: item, interactive, generated_from_item, weapon, firearm, pistol, revolver, magnum" [ref=e356] [cursor=pointer]': "}"
+        - 'generic "Magnum Research BFR (.30-30) (bfr_30_30) Tags: item, interactive, generated_from_item, weapon, firearm, pistol, revolver, hunting" [ref=e357] [cursor=pointer]': "}"
+        - 'generic "Magnum Research BFR (45-70) (bfr_45_70) Tags: item, interactive, generated_from_item, weapon, firearm, pistol, revolver, hunting" [ref=e358] [cursor=pointer]': "}"
+        - 'generic "Magnum Research BFR (450 Marlin) (bfr_450_marlin) Tags: item, interactive, generated_from_item, weapon, firearm, pistol, revolver, hunting" [ref=e359] [cursor=pointer]': "}"
+        - 'generic "Magnum Research BFR (500 S&W) (bfr_500_sw) Tags: item, interactive, generated_from_item, weapon, firearm, pistol, revolver, hunting" [ref=e360] [cursor=pointer]': "}"
+        - 'generic "Savage 111 (.338 Lapua sniper rifle) (savage_111_338) Tags: item, interactive, generated_from_item, weapon, firearm, rifle, sniper" [ref=e361] [cursor=pointer]': "}"
+        - 'generic "CMMG MkW-15 Anvil (.458 SOCOM) (cmmg_mkw_15) Tags: item, interactive, generated_from_item, weapon, firearm, rifle, modern" [ref=e362] [cursor=pointer]': "}"
+        - 'generic "HK MP5SD (suppressed 9mm SMG) (hk_mp5sd) Tags: item, interactive, generated_from_item, weapon, firearm, smg, suppressed" [ref=e363] [cursor=pointer]': "}"
+        - 'generic "Gatling gun (gatling_gun) Tags: item, interactive, generated_from_item, weapon, firearm, heavy, machine_gun" [ref=e364] [cursor=pointer]': "}"
+        - 'generic "Minigun (minigun) Tags: item, interactive, generated_from_item, weapon, firearm, heavy, machine_gun, modern" [ref=e365] [cursor=pointer]': "}"
+        - 'generic "MEGA Can Cannon (launcher) (mega_can_cannon) Tags: item, interactive, generated_from_item, weapon, firearm, launcher, improvised" [ref=e366] [cursor=pointer]': "}"
+        - 'generic "4 gauge BFG-1 (4-gauge shotgun) (bfg1_4gauge) Tags: item, interactive, generated_from_item, weapon, firearm, shotgun, heavy" [ref=e367] [cursor=pointer]': "}"
+        - 'generic "Dog Bite (dog_bite) Tags: item, interactive, generated_from_item, weapon, melee, piercing, natural" [ref=e368] [cursor=pointer]': x
+        - 'generic "5.56mm Rounds (ammo_556mm) Tags: item, interactive, generated_from_item, ammo, modern, rifle" [ref=e369] [cursor=pointer]': =
+        - 'generic "7.62mm Rounds (ammo_762mm) Tags: item, interactive, generated_from_item, ammo, modern, rifle" [ref=e370] [cursor=pointer]': =
+        - 'generic "9mm Rounds (ammo_9mm) Tags: item, interactive, generated_from_item, ammo, modern, pistol, smg" [ref=e371] [cursor=pointer]': =
+        - 'generic "12-Gauge Buckshot Shells (ammo_12gauge_buckshot) Tags: item, interactive, generated_from_item, ammo, modern, shotgun" [ref=e372] [cursor=pointer]': =
+        - 'generic ".45 ACP Rounds (ammo_45acp) Tags: item, interactive, generated_from_item, ammo, modern, pistol" [ref=e373] [cursor=pointer]': =
+        - 'generic ".22 LR Rounds (ammo_22lr) Tags: item, interactive, generated_from_item, ammo, modern, pistol, rifle" [ref=e374] [cursor=pointer]': =
+        - 'generic ".38 Special Rounds (ammo_38spl) Tags: item, interactive, generated_from_item, ammo, modern, revolver" [ref=e375] [cursor=pointer]': =
+        - 'generic ".357 Magnum Rounds (ammo_357mag) Tags: item, interactive, generated_from_item, ammo, modern, revolver" [ref=e376] [cursor=pointer]': =
+        - 'generic ".50 BMG Rounds (ammo_50bmg) Tags: item, interactive, generated_from_item, ammo, modern, rifle, heavy" [ref=e377] [cursor=pointer]': =
+        - 'generic ".32 ACP Rounds (ammo_32acp) Tags: item, interactive, generated_from_item, ammo, modern, pistol" [ref=e378] [cursor=pointer]': =
+        - 'generic "10mm Auto Rounds (ammo_10mm) Tags: item, interactive, generated_from_item, ammo, modern, pistol" [ref=e379] [cursor=pointer]': =
+        - 'generic ".50 AE Rounds (ammo_50ae) Tags: item, interactive, generated_from_item, ammo, modern, pistol" [ref=e380] [cursor=pointer]': =
+        - 'generic ".44 Magnum Rounds (ammo_44mag) Tags: item, interactive, generated_from_item, ammo, modern, revolver" [ref=e381] [cursor=pointer]': =
+        - 'generic "Flamethrower Fuel (ammo_flamethrower_fuel) Tags: item, interactive, generated_from_item, ammo, fuel, flammable" [ref=e382] [cursor=pointer]': U
+        - 'generic "20mm Rounds (ammo_20mm) Tags: item, interactive, generated_from_item, ammo, heavy, anti_tank" [ref=e383] [cursor=pointer]': U
+        - 'generic ".950 JDJ Rounds (ammo_950jdj) Tags: item, interactive, generated_from_item, ammo, heavy" [ref=e384] [cursor=pointer]': =
+        - 'generic ".55 Boys Rounds (ammo_55boys) Tags: item, interactive, generated_from_item, ammo, heavy, anti_tank" [ref=e385] [cursor=pointer]': U
+        - 'generic ".700 Nitro Express Rounds (ammo_700ne) Tags: item, interactive, generated_from_item, ammo, hunting" [ref=e386] [cursor=pointer]': =
+        - 'generic ".577 Tyrannosaur Rounds (ammo_577tyr) Tags: item, interactive, generated_from_item, ammo, hunting" [ref=e387] [cursor=pointer]': =
+        - 'generic "4-Bore Rounds (ammo_4bore) Tags: item, interactive, generated_from_item, ammo, antique, heavy" [ref=e388] [cursor=pointer]': =
+        - 'generic "Blunderbuss Shot (ammo_blunderbuss_shot) Tags: item, interactive, generated_from_item, ammo, antique, shot" [ref=e389] [cursor=pointer]': =
+        - 'generic "Punt Gun Shot (ammo_punt_gun_shot) Tags: item, interactive, generated_from_item, ammo, antique, heavy" [ref=e390] [cursor=pointer]': =
+        - 'generic ".500 Auto Max Rounds (ammo_500automax) Tags: item, interactive, generated_from_item, ammo, modern" [ref=e391] [cursor=pointer]': =
+        - 'generic ".454 Casull Rounds (ammo_454casull) Tags: item, interactive, generated_from_item, ammo, modern, revolver" [ref=e392] [cursor=pointer]': =
+        - 'generic ".500 S&W Rounds (ammo_500sw) Tags: item, interactive, generated_from_item, ammo, modern, revolver" [ref=e393] [cursor=pointer]': =
+        - 'generic ".460 S&W Magnum Rounds (ammo_460sw) Tags: item, interactive, generated_from_item, ammo, modern, revolver" [ref=e394] [cursor=pointer]': =
+        - 'generic ".30-30 Winchester Rounds (ammo_3030) Tags: item, interactive, generated_from_item, ammo, classic, rifle" [ref=e395] [cursor=pointer]': =
+        - 'generic ".45-70 Government Rounds (ammo_4570) Tags: item, interactive, generated_from_item, ammo, classic, rifle" [ref=e396] [cursor=pointer]': =
+        - 'generic ".450 Marlin Rounds (ammo_450marlin) Tags: item, interactive, generated_from_item, ammo, modern, rifle" [ref=e397] [cursor=pointer]': =
+        - 'generic ".338 Lapua Magnum Rounds (ammo_338lapua) Tags: item, interactive, generated_from_item, ammo, modern, sniper" [ref=e398] [cursor=pointer]': =
+        - 'generic ".458 SOCOM Rounds (ammo_458socom) Tags: item, interactive, generated_from_item, ammo, modern, rifle" [ref=e399] [cursor=pointer]': =
+        - 'generic "4-Gauge Shells (ammo_4gauge) Tags: item, interactive, generated_from_item, ammo, heavy, shotgun" [ref=e400] [cursor=pointer]': =
+        - 'generic "Soda Cans (Ammo) (ammo_soda_can) Tags: item, interactive, generated_from_item, ammo, improvised" [ref=e401] [cursor=pointer]': =
+        - 'generic "Generic Ammo Box (generic_ammo) Tags: item, interactive, generated_from_item, ammo, generic" [ref=e402] [cursor=pointer]': =
+        - 'generic "C4/Semtex (c4_semtex_explosive) Tags: item, interactive, generated_from_item, explosive, demolition, modern, consumable" [ref=e403] [cursor=pointer]': "%"
+        - 'generic "Det cord (det_cord_explosive) Tags: item, interactive, generated_from_item, explosive, demolition, modern, consumable" [ref=e404] [cursor=pointer]': "%"
+        - 'generic "Dynamite (dynamite_explosive) Tags: item, interactive, generated_from_item, explosive, demolition, modern, consumable" [ref=e405] [cursor=pointer]': "%"
+        - 'generic "Bandage (bandage) Tags: item, interactive, generated_from_item, consumable, medical, modern" [ref=e406] [cursor=pointer]': +
+        - 'generic "First-Aid Kit (first_aid_kit) Tags: item, interactive, generated_from_item, consumable, medical, modern" [ref=e407] [cursor=pointer]': +
+        - 'generic "Canned Beans (canned_beans) Tags: item, interactive, generated_from_item, consumable, food, modern" [ref=e408] [cursor=pointer]': o
+        - 'generic "Energy Bar (energy_bar) Tags: item, interactive, generated_from_item, consumable, food, modern" [ref=e409] [cursor=pointer]': "%"
+        - 'generic "MRE (mre) Tags: item, interactive, generated_from_item, consumable, food, modern, military" [ref=e410] [cursor=pointer]': "%"
+        - 'generic "Bottled Water (bottled_water) Tags: item, interactive, generated_from_item, consumable, drink, modern" [ref=e411] [cursor=pointer]': "!"
+        - 'generic "Canteen (Full) (canteen_water) Tags: item, interactive, generated_from_item, consumable, drink, modern, reusable_container" [ref=e412] [cursor=pointer]': o
+        - 'generic "Water Purification Tablets (water_purification_tablets) Tags: item, interactive, generated_from_item, consumable, utility, modern" [ref=e413] [cursor=pointer]': "!"
+        - 'generic "Canned Beans (canned_beans_food) Tags: item, interactive, generated_from_item, consumable, food, modern" [ref=e414] [cursor=pointer]': o
+        - 'generic "Bottled Water (bottled_water_drink) Tags: item, interactive, generated_from_item, consumable, drink, modern" [ref=e415] [cursor=pointer]': "!"
+        - 'generic "Course of Antibiotics (antibiotics_course) Tags: item, interactive, generated_from_item, consumable, medical, pharmaceutical, doctor, nurse, pharmacist" [ref=e416] [cursor=pointer]': "!"
+        - 'generic "Strong Painkillers (painkillers_strong) Tags: item, interactive, generated_from_item, consumable, medical, pharmaceutical, doctor, paramedic, surgeon" [ref=e417] [cursor=pointer]': "!"
+        - 'generic "Combat Stimulant Injector (stimulant_combat) Tags: item, interactive, generated_from_item, consumable, medical, military, stimulant, soldier, mercenary" [ref=e418] [cursor=pointer]': "!"
+        - 'generic "Basic Universal Antidote (antidote_universal_basic) Tags: item, interactive, generated_from_item, consumable, medical, antidote, doctor, paramedic, chemist, alchemist" [ref=e419] [cursor=pointer]': "!"
+        - 'generic "Healing Herbal Salve (herbal_salve_healing) Tags: item, interactive, generated_from_item, consumable, medical, herbal, apothecary, herbalist, shaman, healer" [ref=e420] [cursor=pointer]': ~
+        - 'generic "Generic Chemical Reagent (Labeled Bottle) (chemical_reagent_generic) Tags: item, interactive, generated_from_item, consumable, science, laboratory, chemical, chemist, alchemist, biochemist" [ref=e421] [cursor=pointer]': "!"
+        - 'generic "Nutrient Paste Tube (nutrient_paste_tube) Tags: item, interactive, generated_from_item, consumable, food, medical, emergency, doctor, paramedic, survivor" [ref=e422] [cursor=pointer]': ~
+        - 'generic "Black Ink Pot (ink_pot_black) Tags: item, interactive, generated_from_item, consumable, crafting, ink, scribe, archivist, cartographer, writer" [ref=e423] [cursor=pointer]': o
+        - 'generic "Blank Parchment Roll (parchment_roll_blank) Tags: item, interactive, generated_from_item, consumable, crafting, paper, scribe, archivist, cartographer, historian" [ref=e424] [cursor=pointer]': o
+        - 'generic "Sandalwood Incense Sticks (incense_sticks_sandalwood) Tags: item, interactive, generated_from_item, consumable, ritual, fragrance, priest, shaman, medium, cultist" [ref=e425] [cursor=pointer]': ~
+        - 'generic "Bundle of Sacred Herbs (sacred_herbs_bundle) Tags: item, interactive, generated_from_item, consumable, ritual, herbal, shaman, priest, cultist, healer" [ref=e426] [cursor=pointer]': ~
+        - 'generic "Simple Bandage (bandage_simple) Tags: item, interactive, generated_from_item, medical, healing, consumable, first_aid" [ref=e427] [cursor=pointer]': +
+        - 'generic "Molotov Cocktail (molotov_cocktail) Tags: item, interactive, generated_from_item, weapon, thrown, incendiary, fire_source" [ref=e428] [cursor=pointer]': "!"
+        - 'generic "Bucket of Water (water_bucket) Tags: item, interactive, generated_from_item, tool, water_source, extinguish_source, thrown" [ref=e429] [cursor=pointer]': o
+        - 'generic "Simple Shirt (simple_shirt) Tags: item, interactive, generated_from_item, clothing, torso_top" [ref=e430] [cursor=pointer]': "["
+        - 'generic "Baseball Cap (baseball_cap) Tags: item, interactive, generated_from_item, clothing, head_top" [ref=e431] [cursor=pointer]': ^
+        - 'generic "Basic Vest (basic_vest) Tags: item, interactive, generated_from_item, clothing, torso_top" [ref=e432] [cursor=pointer]': "["
+        - 'generic "Durable Pants (durable_pants) Tags: item, interactive, generated_from_item, clothing, legs_bottom" [ref=e433] [cursor=pointer]': "n"
+        - 'generic "Leather Jacket (jacket_leather) Tags: item, interactive, generated_from_item, clothing, torso_outer, leather" [ref=e434] [cursor=pointer]': M
+        - 'generic "Wool Coat (coat_wool) Tags: item, interactive, generated_from_item, clothing, torso_outer, wool, warm" [ref=e435] [cursor=pointer]': M
+        - 'generic "Composite Ballistic Vest (vest_ballistic_composite) Tags: item, interactive, generated_from_item, clothing, torso_top, armor, ballistic" [ref=e436] [cursor=pointer]': "["
+        - 'generic "Leather Backpack (backpack_leather) Tags: item, interactive, generated_from_item, clothing, back, container, storage" [ref=e437] [cursor=pointer]': p
+        - 'generic "Flashlight (flashlight) Tags: item, interactive, generated_from_item, light_source_item, hand_held, requires_power_cell" [ref=e438] [cursor=pointer]': "!"
+        - 'generic "Portable Candle (candle_portable) Tags: item, interactive, generated_from_item, light_source_item, hand_held, consumable_light" [ref=e439] [cursor=pointer]': (
+        - 'generic "Basic Lockpick Set (lockpick_set_basic) Tags: item, interactive, generated_from_item, tool, stealth" [ref=e440] [cursor=pointer]': "#"
+        - 'generic "Blacksmith''s Hammer (blacksmith_hammer) Tags: item, interactive, generated_from_item, tool, crafting, blacksmithing" [ref=e441] [cursor=pointer]': T
+        - 'generic "Hand Saw (hand_saw_wood) Tags: item, interactive, generated_from_item, tool, crafting, woodworking" [ref=e442] [cursor=pointer]': T
+        - 'generic "Matches (matches) Tags: item, interactive, generated_from_item, flame, consumable" [ref=e443] [cursor=pointer]': "!"
+        - 'generic "Lighter (lighter) Tags: item, interactive, generated_from_item, flame" [ref=e444] [cursor=pointer]': "!"
+        - 'generic "Peen Hammer (hammer_peen) Tags: item, interactive, generated_from_item, tool, crafting, construction" [ref=e445] [cursor=pointer]': T
+        - 'generic "Shovel (shovel) Tags: item, interactive, generated_from_item, tool, digging" [ref=e446] [cursor=pointer]': T
+        - 'generic "Blacksmith Tongs (tongs_blacksmith) Tags: item, interactive, generated_from_item, tool, crafting, blacksmithing" [ref=e447] [cursor=pointer]': (
+        - 'generic "Soldering Iron Kit (soldering_iron_kit) Tags: item, interactive, generated_from_item, tool, crafting, electronics" [ref=e448] [cursor=pointer]': "#"
+        - 'generic "Set of Pliers (pliers_set) Tags: item, interactive, generated_from_item, tool, crafting" [ref=e449] [cursor=pointer]': X
+        - 'generic "Glassblower''s Pipe (glassblowers_pipe) Tags: item, interactive, generated_from_item, tool, crafting, glassworking" [ref=e450] [cursor=pointer]': (
+        - 'generic "Wrench Set (wrench_set) Tags: item, interactive, generated_from_item, tool, crafting, mechanic" [ref=e451] [cursor=pointer]': "?"
+        - 'generic "Manual Rivet Gun (rivet_gun_manual) Tags: item, interactive, generated_from_item, tool, crafting" [ref=e452] [cursor=pointer]': "}"
+        - 'generic "Heavy Metal Snips (metal_snips_heavy) Tags: item, interactive, generated_from_item, tool, crafting" [ref=e453] [cursor=pointer]': X
+        - 'generic "Hand Drill (hand_drill) Tags: item, interactive, generated_from_item, tool, crafting" [ref=e454] [cursor=pointer]': "}"
+        - 'generic "Oxyacetylene Welding Torch (welding_torch_oxyacetylene) Tags: item, interactive, generated_from_item, tool, crafting, metalworking" [ref=e455] [cursor=pointer]': "!"
+        - 'generic "Digital Multimeter (multimeter_digital) Tags: item, interactive, generated_from_item, tool, crafting, electronics" [ref=e456] [cursor=pointer]': ~
+        - 'generic "Small Concrete Mixer (concrete_mixer_small) Tags: item, interactive, generated_from_item, tool, crafting, construction" [ref=e457] [cursor=pointer]': (
+        - 'generic "Multi-bit Screwdriver Set (screwdriver_set_multi) Tags: item, interactive, generated_from_item, tool, crafting" [ref=e458] [cursor=pointer]': "!"
+        - 'generic "Stone Chisel (chisel_stone) Tags: item, interactive, generated_from_item, tool, crafting, masonry" [ref=e459] [cursor=pointer]': "!"
+        - 'generic "Tap and Die Set (tap_and_die_set) Tags: item, interactive, generated_from_item, tool, crafting, machining" [ref=e460] [cursor=pointer]': "#"
+        - 'generic "Small Metal File (file_small_metal) Tags: item, interactive, generated_from_item, tool, crafting" [ref=e461] [cursor=pointer]': "!"
+        - 'generic "Heat Gun (heat_gun_tool) Tags: item, interactive, generated_from_item, tool, crafting" [ref=e462] [cursor=pointer]': "}"
+        - 'generic "Simple Spindle (spindle_simple) Tags: item, interactive, generated_from_item, tool, crafting, textile" [ref=e463] [cursor=pointer]': (
+        - 'generic "Mortar and Pestle (mortar_pestle) Tags: item, interactive, generated_from_item, tool, crafting, chemistry, cooking" [ref=e464] [cursor=pointer]': (
+        - 'generic "Basic Crucible (crucible_basic) Tags: item, interactive, generated_from_item, tool, crafting, blacksmithing" [ref=e465] [cursor=pointer]': (
+        - 'generic "Tin Snips (tin_snips) Tags: item, interactive, generated_from_item, tool, crafting" [ref=e466] [cursor=pointer]': X
+        - 'generic "Heavy Duty Knife (knife_heavy_duty) Tags: item, interactive, generated_from_item, tool, crafting" [ref=e467] [cursor=pointer]': (
+        - 'generic "Siphon Hose (siphon_hose) Tags: item, interactive, generated_from_item, tool, siphoning, vehicle_maintenance" [ref=e468] [cursor=pointer]': S
+        - 'generic "Scrap Metal (scrap_metal) Tags: item, interactive, generated_from_item, material, crafting, metal, modern" [ref=e469] [cursor=pointer]': =
+        - 'generic "Wood Planks (wood_planks) Tags: item, interactive, generated_from_item, material, crafting, wood, modern" [ref=e470] [cursor=pointer]': =
+        - 'generic "Cloth Scrap (cloth_scrap) Tags: item, interactive, generated_from_item, material, crafting, cloth, modern" [ref=e471] [cursor=pointer]': =
+        - 'generic "Duct Tape (duct_tape) Tags: item, interactive, generated_from_item, material, crafting, adhesive, modern" [ref=e472] [cursor=pointer]': "&"
+        - 'generic "Nails (nails) Tags: item, interactive, generated_from_item, material, crafting, metal, modern" [ref=e473] [cursor=pointer]': =
+        - 'generic "Sharp Glass Shard (sharp_glass) Tags: item, interactive, generated_from_item, material, sharp, glass, crafting" [ref=e474] [cursor=pointer]': "*"
+        - 'generic "Splintered Wood (splintered_wood) Tags: item, interactive, generated_from_item, debris, sharp, wood, modern" [ref=e475] [cursor=pointer]': =
+        - 'generic "Metal Ingot (metal_ingot) Tags: item, interactive, generated_from_item, material, crafting, metal, refined" [ref=e476] [cursor=pointer]': =
+        - 'generic "Leather Strips (leather_strips) Tags: item, interactive, generated_from_item, material, crafting, leather" [ref=e477] [cursor=pointer]': ~
+        - 'generic "Empty Glass Bottle (glass_bottle_empty) Tags: item, interactive, generated_from_item, material, crafting, container, glass" [ref=e478] [cursor=pointer]': "*"
+        - 'generic "Gasoline (Partial Canister) (gasoline_canister_partial) Tags: item, interactive, generated_from_item, material, crafting, fuel, flammable, explosive_ingredient" [ref=e479] [cursor=pointer]': ~
+        - 'generic "Makeshift Armor Plate (armor_plate_makeshift) Tags: item, interactive, generated_from_item, material, crafting, armor_component, metal" [ref=e480] [cursor=pointer]': =
+        - 'generic "Tomato Seeds (tomato_seeds) Tags: item, interactive, generated_from_item, seed, gardening, consumable, food_source" [ref=e481] [cursor=pointer]': .
+        - 'generic "Corn Seeds (corn_seeds) Tags: item, interactive, generated_from_item, seed, gardening, consumable, food_source" [ref=e482] [cursor=pointer]': .
+        - 'generic "Carrot Seeds (carrot_seeds) Tags: item, interactive, generated_from_item, seed, gardening, consumable, food_source" [ref=e483] [cursor=pointer]': ","
+        - 'generic "Iron Ingot (iron_ingot) Tags: item, interactive, generated_from_item, material, crafting, metal, refined, blacksmith, armorer, weaponsmith" [ref=e484] [cursor=pointer]': =
+        - 'generic "Steel Ingot (steel_ingot) Tags: item, interactive, generated_from_item, material, crafting, metal, refined, blacksmith, armorer, weaponsmith, machinist" [ref=e485] [cursor=pointer]': =
+        - 'generic "Rawhide Leather (rawhide_leather) Tags: item, interactive, generated_from_item, material, crafting, leather, raw, tanner, cobbler" [ref=e486] [cursor=pointer]': ~
+        - 'generic "Roll of Tanned Leather (tanned_leather_roll) Tags: item, interactive, generated_from_item, material, crafting, leather, refined, tanner, cobbler, armorer, seamstress" [ref=e487] [cursor=pointer]': ~
+        - 'generic "Bolt of Cotton Cloth (bolt_of_cloth_cotton) Tags: item, interactive, generated_from_item, material, crafting, cloth, fabric, weaver, seamstress, tailor" [ref=e488] [cursor=pointer]': ~
+        - 'generic "Bolt of Wool Cloth (bolt_of_cloth_wool) Tags: item, interactive, generated_from_item, material, crafting, cloth, fabric, wool, weaver, seamstress, tailor" [ref=e489] [cursor=pointer]': ~
+        - 'generic "Chunk of Beeswax (beeswax_chunk) Tags: item, interactive, generated_from_item, material, crafting, wax, candle_maker, artisan" [ref=e490] [cursor=pointer]': ~
+        - 'generic "Lye Powder (lye_powder) Tags: item, interactive, generated_from_item, material, crafting, chemical, soap_maker, tanner" [ref=e491] [cursor=pointer]': .
+        - 'generic "Rendered Animal Fat (Tallow/Lard) (animal_fat_rendered) Tags: item, interactive, generated_from_item, material, crafting, fat, soap_maker, candle_maker, cook, butcher" [ref=e492] [cursor=pointer]': o
+        - 'generic "Small Uncut Gemstone (gemstone_uncut_small) Tags: item, interactive, generated_from_item, material, crafting, gemstone, raw, jeweler, artisan" [ref=e493] [cursor=pointer]': "*"
+        - 'generic "Pouch of Gold Dust (gold_dust_pouch) Tags: item, interactive, generated_from_item, material, crafting, metal, precious_metal, gold, jeweler, artisan" [ref=e494] [cursor=pointer]': =
+        - 'generic "Silver Nugget (silver_nugget) Tags: item, interactive, generated_from_item, material, crafting, metal, precious_metal, silver, jeweler, artisan" [ref=e495] [cursor=pointer]': =
+        - 'generic "Spool of Copper Wire (copper_wire_spool) Tags: item, interactive, generated_from_item, material, crafting, metal, electrical, electronics, electrician, engineer, technician, robot_programmer" [ref=e496] [cursor=pointer]': =
+        - 'generic "Section of Rubber Hose (rubber_hose_section) Tags: item, interactive, generated_from_item, material, crafting, rubber, plumbing, mechanical, plumber, mechanic, engineer" [ref=e497] [cursor=pointer]': ~
+        - 'generic "Assorted Gears (gears_assorted) Tags: item, interactive, generated_from_item, material, crafting, metal, mechanical, machinist, engineer, mechanic, robot_programmer" [ref=e498] [cursor=pointer]': =
+        - 'generic "Blank Circuit Board (PCB) (circuit_board_blank) Tags: item, interactive, generated_from_item, material, crafting, electronics, technician, engineer, electrician, robot_programmer" [ref=e499] [cursor=pointer]': "#"
+        - 'generic "Bag of Concrete Mix (concrete_mix_bag) Tags: item, interactive, generated_from_item, material, crafting, construction, civil_engineer, architect, laborer, barricade_builder" [ref=e500] [cursor=pointer]': ~
+        - 'generic "Box of Rivets (rivets_box) Tags: item, interactive, generated_from_item, material, crafting, metal, fastener, shipwright, armorer, machinist, engineer" [ref=e501] [cursor=pointer]': =
+        - 'generic "Can of Fiberglass Resin (fiberglass_resin_can) Tags: item, interactive, generated_from_item, material, crafting, chemical, composite, shipwright, engineer, artisan" [ref=e502] [cursor=pointer]': ~
+        - 'generic "Composite Armor Plate (armor_plate_composite) Tags: item, interactive, generated_from_item, material, crafting, armor_component, composite, ballistic" [ref=e503] [cursor=pointer]': =
+        - 'generic "Roll of Fiberglass Cloth (fiberglass_cloth_roll) Tags: item, interactive, generated_from_item, material, crafting, fabric, composite, shipwright, engineer, artisan" [ref=e504] [cursor=pointer]': ~
+        - 'generic "Wood Stick (wood_stick) Tags: item, interactive, generated_from_item, material, crafting, wood, natural, fuel" [ref=e505] [cursor=pointer]': =
+        - 'generic "Wood Log (wood_log) Tags: item, interactive, generated_from_item, material, crafting, wood, natural, construction" [ref=e506] [cursor=pointer]': =
+        - 'generic "Strong Plant Fibers (plant_fibers_strong) Tags: item, interactive, generated_from_item, material, crafting, organic, natural, textile" [ref=e507] [cursor=pointer]': ~
+        - 'generic "Sharp Stone Fragment (stone_sharp_fragment) Tags: item, interactive, generated_from_item, material, crafting, stone, sharp, natural" [ref=e508] [cursor=pointer]': ~
+        - 'generic "Small Raw Animal Hide (animal_hide_raw_small) Tags: item, interactive, generated_from_item, material, crafting, organic, raw_leather" [ref=e509] [cursor=pointer]': ~
+        - 'generic "Animal Sinew (sinew_animal) Tags: item, interactive, generated_from_item, material, crafting, organic, cordage" [ref=e510] [cursor=pointer]': ~
+        - 'generic "Feather (feather) Tags: item, interactive, generated_from_item, material, crafting, organic, fletching" [ref=e511] [cursor=pointer]': ^
+        - 'generic "Lump of Clay (clay_lump) Tags: item, interactive, generated_from_item, material, crafting, ceramic, natural" [ref=e512] [cursor=pointer]': c
+        - 'generic "Pile of Sand (sand_pile) Tags: item, interactive, generated_from_item, material, crafting, inorganic, construction_component" [ref=e513] [cursor=pointer]': "*"
+        - 'generic "Charcoal Bits (charcoal_bits) Tags: item, interactive, generated_from_item, material, crafting, fuel, drawing, explosive_ingredient" [ref=e514] [cursor=pointer]': =
+        - 'generic "Basic Gunpowder (gunpowder_basic) Tags: item, interactive, generated_from_item, material, crafting, explosive, ammunition_component" [ref=e515] [cursor=pointer]': .
+        - 'generic "Small Metal Bits (metal_bits_small) Tags: item, interactive, generated_from_item, material, crafting, metal, shrapnel" [ref=e516] [cursor=pointer]': =
+        - 'generic "Small Pistol Brass Casing (casing_brass_pistol_small) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, brass, casing" [ref=e517] [cursor=pointer]': =
+        - 'generic "Large Pistol Brass Casing (casing_brass_pistol_large) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, brass, casing" [ref=e518] [cursor=pointer]': =
+        - 'generic "Small Rifle Brass Casing (casing_brass_rifle_small) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, brass, casing" [ref=e519] [cursor=pointer]': =
+        - 'generic "Medium Rifle Brass Casing (casing_brass_rifle_medium) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, brass, casing" [ref=e520] [cursor=pointer]': =
+        - 'generic "Large Rifle Brass Casing (casing_brass_rifle_large) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, brass, casing" [ref=e521] [cursor=pointer]': =
+        - 'generic "Copper Ingot (copper_ingot) Tags: item, interactive, generated_from_item, material, crafting, metal, refined, copper" [ref=e522] [cursor=pointer]': =
+        - 'generic "Copper Scrap (copper_scrap) Tags: item, interactive, generated_from_item, material, crafting, metal, copper, modern" [ref=e523] [cursor=pointer]': =
+        - 'generic "Metal Tube (metal_tube) Tags: item, interactive, generated_from_item, material, crafting, metal, construction" [ref=e524] [cursor=pointer]': "|"
+        - 'generic "Small Engine Parts Kit (engine_parts_kit_small) Tags: item, interactive, generated_from_item, vehicle_part_kit" [ref=e525] [cursor=pointer]': =
+        - 'generic "Motorcycle Engine Parts Kit (engine_parts_kit_motorcycle) Tags: item, interactive, generated_from_item, vehicle_part_kit" [ref=e526] [cursor=pointer]': =
+        - 'generic "V6 Engine Parts Kit (engine_parts_kit_v6) Tags: item, interactive, generated_from_item, vehicle_part_kit" [ref=e527] [cursor=pointer]': =
+        - 'generic "12-Gauge Shotshell Hull (shotshell_hull_12ga) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, shotshell_hull" [ref=e528] [cursor=pointer]': ~
+        - 'generic "10-Gauge Shotshell Hull (shotshell_hull_10ga) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, shotshell_hull" [ref=e529] [cursor=pointer]': ~
+        - 'generic "Small Pistol Primer (primer_pistol_small) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, primer" [ref=e530] [cursor=pointer]': .
+        - 'generic "Large Pistol Primer (primer_pistol_large) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, primer" [ref=e531] [cursor=pointer]': .
+        - 'generic "Small Rifle Primer (primer_rifle_small) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, primer" [ref=e532] [cursor=pointer]': ","
+        - 'generic "Large Rifle Primer (primer_rifle_large) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, primer" [ref=e533] [cursor=pointer]': ","
+        - 'generic "Shotgun Primer (primer_shotgun) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, primer" [ref=e534] [cursor=pointer]': ":"
+        - 'generic "9mm Bullet Projectile (bullet_projectile_9mm) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, projectile, lead" [ref=e535] [cursor=pointer]': "*"
+        - 'generic "10mm Bullet Projectile (bullet_projectile_10mm) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, projectile, lead" [ref=e536] [cursor=pointer]': "*"
+        - 'generic ".45 Caliber Bullet Projectile (bullet_projectile_45cal) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, projectile, lead" [ref=e537] [cursor=pointer]': o
+        - 'generic ".50 Caliber Pistol Bullet Projectile (bullet_projectile_50cal_pistol) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, projectile, lead" [ref=e538] [cursor=pointer]': O
+        - 'generic ".22 Caliber Bullet Projectile (bullet_projectile_22cal) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, projectile, lead" [ref=e539] [cursor=pointer]': .
+        - 'generic "5.56mm Bullet Projectile (bullet_projectile_5_56mm) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, projectile, lead, copper" [ref=e540] [cursor=pointer]': =
+        - 'generic "7.62mm Bullet Projectile (bullet_projectile_7_62mm) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, projectile, lead, copper" [ref=e541] [cursor=pointer]': =
+        - 'generic ".50 BMG Bullet Projectile (bullet_projectile_50bmg) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, projectile, lead, copper, steel_core_optional" [ref=e542] [cursor=pointer]': =
+        - 'generic "Lead Buckshot Pellets (shot_lead_pellets_buckshot) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, projectile, lead" [ref=e543] [cursor=pointer]': ":"
+        - 'generic "Shotgun Wad (wad_shotgun) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component" [ref=e544] [cursor=pointer]': ~
+        - 'generic "Wooden Arrow Shaft (arrow_shaft_wood) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, wood" [ref=e545] [cursor=pointer]': =
+        - 'generic "Sturdy Wooden Bolt Shaft (arrow_shaft_sturdy_wood) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, wood" [ref=e546] [cursor=pointer]': =
+        - 'generic "Crude Stone Arrowhead (arrowhead_stone_crude) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, stone, sharp" [ref=e547] [cursor=pointer]': o
+        - 'generic "Basic Metal Arrowhead (arrowhead_metal_basic) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, metal, sharp" [ref=e548] [cursor=pointer]': =
+        - 'generic "Basic Metal Bolt Head (bolthead_metal_basic) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, metal, sharp" [ref=e549] [cursor=pointer]': =
+        - 'generic "Generic Explosive Compound (Type B) (explosive_compound_generic_b) Tags: item, interactive, generated_from_item, material, crafting, explosive" [ref=e550] [cursor=pointer]': .
+        - 'generic "40mm Grenade Casing (Metal) (casing_grenade_40mm_metal) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, casing, metal" [ref=e551] [cursor=pointer]': =
+        - 'generic "Timed/Impact Grenade Fuze Assembly (fuze_timed_impact_grenade) Tags: item, interactive, generated_from_item, material, crafting, ammunition_component, explosive_component, mechanical" [ref=e552] [cursor=pointer]': "#"
+        - 'generic "Simple Plant Fiber Thread (thread_simple_plant_fiber) Tags: item, interactive, generated_from_item, material, crafting, textile, cordage" [ref=e553] [cursor=pointer]': "'"
+        - 'generic "Basic Plant Fiber Cordage (cordage_basic_plant_fiber) Tags: item, interactive, generated_from_item, material, crafting, cordage, natural" [ref=e554] [cursor=pointer]': ;
+        - 'generic "Rough Fiber Cloth Sheet (cloth_sheet_rough_fiber) Tags: item, interactive, generated_from_item, material, crafting, textile, fabric" [ref=e555] [cursor=pointer]': =
+        - 'generic "Small Cured Leather Piece (leather_cured_small) Tags: item, interactive, generated_from_item, material, crafting, leather, processed" [ref=e556] [cursor=pointer]': ~
+        - 'generic "Thin Metal Rod (metal_rod_thin) Tags: item, interactive, generated_from_item, material, crafting, metal, component" [ref=e557] [cursor=pointer]': =
+        - 'generic "Thin Metal Sheet (metal_sheet_thin) Tags: item, interactive, generated_from_item, material, crafting, metal, component" [ref=e558] [cursor=pointer]': =
+        - 'generic "Stiff Metal Wire (metal_wire_stiff) Tags: item, interactive, generated_from_item, material, crafting, metal, component, electrical_conductive_bare" [ref=e559] [cursor=pointer]': =
+        - 'generic "Processed Plastic Scrap (plastic_scrap_processed) Tags: item, interactive, generated_from_item, material, crafting, plastic, component" [ref=e560] [cursor=pointer]': =
+        - 'generic "Basic LED (led_basic) Tags: item, interactive, generated_from_item, material, crafting, electronics, component, light_source_component" [ref=e561] [cursor=pointer]': "#"
+        - 'generic "Thin Insulated Wire (wire_insulated_thin) Tags: item, interactive, generated_from_item, material, crafting, electronics, component, electrical_conductive" [ref=e562] [cursor=pointer]': =
+        - 'generic "Small Battery Cell (battery_cell_small) Tags: item, interactive, generated_from_item, material, crafting, electronics, component, power_source" [ref=e563] [cursor=pointer]': "#"
+        - 'generic "Small Metal Spring (spring_small_metal) Tags: item, interactive, generated_from_item, material, crafting, metal, component, mechanical" [ref=e564] [cursor=pointer]': =
+        - 'generic "Small Metal Rivet (rivet_small_metal) Tags: item, interactive, generated_from_item, material, crafting, metal, component, fastener" [ref=e565] [cursor=pointer]': =
+        - 'generic "Small Buckle (Metal/Plastic) (buckle_small_metal_plastic) Tags: item, interactive, generated_from_item, material, crafting, component, fastener, clothing_accessory" [ref=e566] [cursor=pointer]': =
+        - 'generic "Crude Glass Lens (lens_crude_glass) Tags: item, interactive, generated_from_item, material, crafting, glass, component, optical" [ref=e567] [cursor=pointer]': "*"
+        - 'generic "Sulfur Powder (chemical_reagent_sulfur) Tags: item, interactive, generated_from_item, material, crafting, chemical, explosive_ingredient" [ref=e568] [cursor=pointer]': .
+        - 'generic "Saltpeter (Potassium Nitrate) (chemical_reagent_saltpeter) Tags: item, interactive, generated_from_item, material, crafting, chemical, explosive_ingredient, fertilizer_component" [ref=e569] [cursor=pointer]': .
+        - 'generic "Simple Bark Tannin (tannin_simple_bark) Tags: item, interactive, generated_from_item, material, crafting, chemical, organic, leather_tanning" [ref=e570] [cursor=pointer]': ~
+        - 'generic "Basic Wick (wick_basic_cloth_or_fiber) Tags: item, interactive, generated_from_item, material, crafting, component, light_source_component" [ref=e571] [cursor=pointer]': ~
+        - 'generic "Herbal Antiseptic Pulp (antiseptic_herbal_pulp) Tags: item, interactive, generated_from_item, material, crafting, medical_component, herbal" [ref=e572] [cursor=pointer]': p
+        - 'generic "Basic Adhesive Paste (adhesive_paste_basic) Tags: item, interactive, generated_from_item, material, crafting, adhesive, organic" [ref=e573] [cursor=pointer]': =
+        - 'generic "Simple Mechanical Parts (mechanical_parts_simple) Tags: item, interactive, generated_from_item, material, crafting, metal, component, mechanical" [ref=e574] [cursor=pointer]': =
+        - 'generic "Rubber Strips/Chunks (rubber_strips_or_chunks) Tags: item, interactive, generated_from_item, material, crafting, rubber, component" [ref=e575] [cursor=pointer]': =
+        - 'generic "Old Tire (old_tire) Tags: item, interactive, generated_from_item, material, salvage, rubber_source, vehicle_component_raw" [ref=e576] [cursor=pointer]': O
+        - 'generic "Small Tool-Grade Steel Ingot (steel_ingot_small_tool_grade) Tags: item, interactive, generated_from_item, material, crafting, metal, refined, steel, tool_component" [ref=e577] [cursor=pointer]': =
+        - 'generic "Simple Wooden Tool Handle (wood_handle_simple_tool) Tags: item, interactive, generated_from_item, material, crafting, wood, component, tool_component" [ref=e578] [cursor=pointer]': =
+        - 'generic "Fine Cotton Fabric Sheet (fabric_sheet_cotton_fine) Tags: item, interactive, generated_from_item, material, crafting, textile, fabric, cotton" [ref=e579] [cursor=pointer]': =
+        - 'generic "Fine Wool Fabric Sheet (fabric_sheet_wool_fine) Tags: item, interactive, generated_from_item, material, crafting, textile, fabric, wool" [ref=e580] [cursor=pointer]': =
+        - 'generic "Sturdy Canvas Fabric Sheet (fabric_sheet_canvas_sturdy) Tags: item, interactive, generated_from_item, material, crafting, textile, fabric, canvas" [ref=e581] [cursor=pointer]': =
+        - 'generic "Tough Nylon Fabric Sheet (fabric_sheet_nylon_tough) Tags: item, interactive, generated_from_item, material, crafting, textile, fabric, synthetic, nylon" [ref=e582] [cursor=pointer]': =
+        - 'generic "Kevlar Ballistic Fabric Sheet (fabric_sheet_kevlar_ballistic) Tags: item, interactive, generated_from_item, material, crafting, textile, fabric, ballistic, kevlar, armor_component" [ref=e583] [cursor=pointer]': =
+        - 'generic "Rough Burlap Fabric Sheet (fabric_sheet_burlap_rough) Tags: item, interactive, generated_from_item, material, crafting, textile, fabric, burlap" [ref=e584] [cursor=pointer]': =
+        - 'generic "Thick Cured Leather Hide (leather_hide_thick_cured) Tags: item, interactive, generated_from_item, material, crafting, leather, processed, armor_component" [ref=e585] [cursor=pointer]': ~
+        - 'generic "Medium Tanned Leather Hide (leather_hide_medium_tanned) Tags: item, interactive, generated_from_item, material, crafting, leather, refined, clothing_material" [ref=e586] [cursor=pointer]': ~
+        - 'generic "Foam Padding Sheet (padding_foam_sheet) Tags: item, interactive, generated_from_item, material, crafting, synthetic, padding, comfort_component" [ref=e587] [cursor=pointer]': =
+        - 'generic "Small Device Plastic Casing (plastic_casing_small_device) Tags: item, interactive, generated_from_item, material, crafting, plastic, component, casing" [ref=e588] [cursor=pointer]': ~
+        - 'generic "Medium Device Plastic Casing (plastic_casing_medium_device) Tags: item, interactive, generated_from_item, material, crafting, plastic, component, casing" [ref=e589] [cursor=pointer]': ~
+        - 'generic "Small Device Metal Casing (metal_casing_small_device) Tags: item, interactive, generated_from_item, material, crafting, metal, component, casing" [ref=e590] [cursor=pointer]': =
+        - 'generic "Medium Device Metal Casing (metal_casing_medium_device) Tags: item, interactive, generated_from_item, material, crafting, metal, component, casing" [ref=e591] [cursor=pointer]': =
+        - 'generic "Simple Populated Circuit Board (electronics_board_populated_simple) Tags: item, interactive, generated_from_item, material, crafting, electronics, component, circuitry" [ref=e592] [cursor=pointer]': "#"
+        - 'generic "Nichrome Heating Element Wire (heating_element_nichrome_wire) Tags: item, interactive, generated_from_item, material, crafting, electronics, component, heating_element" [ref=e593] [cursor=pointer]': "#"
+        - 'generic "Small Electric Motor (motor_small_electric) Tags: item, interactive, generated_from_item, material, crafting, electronics, mechanical, component" [ref=e594] [cursor=pointer]': "#"
+        - 'generic "Basic Radio Antenna (antenna_basic_radio) Tags: item, interactive, generated_from_item, material, crafting, electronics, component, communication" [ref=e595] [cursor=pointer]': "#"
+        - 'generic "Advanced Fuze Mechanism (fuze_mechanism_advanced) Tags: item, interactive, generated_from_item, material, crafting, explosive_component, mechanical, electronics_optional" [ref=e596] [cursor=pointer]': "#"
+        - 'generic "Vehicle Grade Steel Plate (steel_plate_vehicle_grade) Tags: item, interactive, generated_from_item, material, crafting, metal, armor_component, vehicle_part_raw" [ref=e597] [cursor=pointer]': =
+        - 'generic "Small Engine Block (Cast) (engine_block_small_cast) Tags: item, interactive, generated_from_item, material, crafting, metal, vehicle_part_raw, engine_component" [ref=e598] [cursor=pointer]': =
+        - 'generic "Piston Set for Small Engine (piston_set_small_engine) Tags: item, interactive, generated_from_item, material, crafting, metal, vehicle_part_raw, engine_component" [ref=e599] [cursor=pointer]': =
+        - 'generic "Crankshaft for Small Engine (crankshaft_small_engine) Tags: item, interactive, generated_from_item, material, crafting, metal, vehicle_part_raw, engine_component" [ref=e600] [cursor=pointer]': =
+        - 'generic "Rubber Sheet (Tire Tread) (rubber_sheet_tire_tread) Tags: item, interactive, generated_from_item, material, crafting, rubber, vehicle_part_raw_processed" [ref=e601] [cursor=pointer]': =
+        - 'generic "Small Optical Grade Glass Lens (glass_lens_optical_grade_small) Tags: item, interactive, generated_from_item, material, crafting, glass, component, optical, precision" [ref=e602] [cursor=pointer]': "*"
+        - 'generic "Basic Memory Chip (memory_chip_basic) Tags: item, interactive, generated_from_item, material, crafting, electronics, component, circuitry" [ref=e603] [cursor=pointer]': "#"
+        - 'generic "Basic Sensor Module (sensor_module_basic) Tags: item, interactive, generated_from_item, material, crafting, electronics, component, sensor" [ref=e604] [cursor=pointer]': =
+        - 'generic "Plastic Junk (plastic_junk_item) Tags: item, interactive, generated_from_item, material, junk, plastic_source, unprocessed" [ref=e605] [cursor=pointer]': ~
+        - 'generic "Steel Needle (needle_steel) Tags: item, interactive, generated_from_item, material, crafting, tool_component, sewing_component" [ref=e606] [cursor=pointer]': =
+        - 'generic "Heavy Steel Needle (needle_steel_heavy) Tags: item, interactive, generated_from_item, material, crafting, tool_component, sewing_component, leatherworking_component" [ref=e607] [cursor=pointer]': =
+        - 'generic "Strong Synthetic Thread (thread_strong_synthetic) Tags: item, interactive, generated_from_item, material, crafting, textile, cordage, synthetic" [ref=e608] [cursor=pointer]': "'"
+        - 'generic "Green Pigment Leaves (plant_leaves_green_pigment) Tags: item, interactive, generated_from_item, material, organic, dye_source, natural" [ref=e609] [cursor=pointer]': l
+        - 'generic "Brown Pigment Bark (tree_bark_brown_pigment) Tags: item, interactive, generated_from_item, material, organic, dye_source, natural" [ref=e610] [cursor=pointer]': b
+        - 'generic "Natural Green Dye (dye_green_natural) Tags: item, interactive, generated_from_item, material, crafting, dye, coloring_agent" [ref=e611] [cursor=pointer]': d
+        - 'generic "Natural Brown Dye (dye_brown_natural) Tags: item, interactive, generated_from_item, material, crafting, dye, coloring_agent" [ref=e612] [cursor=pointer]': d
+        - 'generic "Strong Netting (netting_strong) Tags: item, interactive, generated_from_item, material, crafting, textile, component" [ref=e613] [cursor=pointer]': "#"
+        - 'generic "Clean Water (Unit) (water_clean_item) Tags: item, interactive, generated_from_item, material, crafting, liquid, consumable_ingredient" [ref=e614] [cursor=pointer]': ~
+        - 'generic "Large Suitable Rock (rock_large_suitable) Tags: item, interactive, generated_from_item, material, natural, stone_source" [ref=e615] [cursor=pointer]': o
+        - 'generic "Hewn Stone Block (stone_block_hewn) Tags: item, interactive, generated_from_item, material, crafting, stone, construction" [ref=e616] [cursor=pointer]': o
+        - 'generic "Sturdy Metal Sheet (metal_sheet_sturdy) Tags: item, interactive, generated_from_item, material, crafting, metal, construction, armor_component" [ref=e617] [cursor=pointer]': =
+        - 'generic "Set of Bolts and Nuts (bolts_and_nuts_set) Tags: item, interactive, generated_from_item, material, crafting, metal, fastener" [ref=e618] [cursor=pointer]': =
+        - 'generic "Basic Tarp (tarp_basic) Tags: item, interactive, generated_from_item, material, crafting, shelter_component, waterproof_light" [ref=e619] [cursor=pointer]': =
+        - 'generic "Simple Wooden Splint (splint_wood_simple) Tags: item, interactive, generated_from_item, material, crafting, medical_component, wood" [ref=e620] [cursor=pointer]': =
+        - 'generic "Iodine Crystals (iodine_crystals) Tags: item, interactive, generated_from_item, material, crafting, chemical, medical_component, water_treatment" [ref=e621] [cursor=pointer]': ~
+        - 'generic "Comfrey Leaves (medicinal_herb_comfrey) Tags: item, interactive, generated_from_item, material, organic, herbal, medical_ingredient" [ref=e622] [cursor=pointer]': l
+        - 'generic "Fine Animal Hide (animal_hide_fine) Tags: item, interactive, generated_from_item, material, organic, raw_leather, parchment_source" [ref=e623] [cursor=pointer]': ~
+        - 'generic "Basic Lime Solution (lime_solution_basic) Tags: item, interactive, generated_from_item, material, crafting, chemical, leather_processing" [ref=e624] [cursor=pointer]': ~
+        - 'generic "Small Metal Hook (hook_metal_small) Tags: item, interactive, generated_from_item, material, crafting, metal, fishing_component, sharp" [ref=e625] [cursor=pointer]': =
+        - 'generic "Thick Plexiglass Sheet (plexiglass_sheet_thick) Tags: item, interactive, generated_from_item, material, crafting, plastic, transparent, impact_resistant" [ref=e626] [cursor=pointer]': =
+        - 'generic "Vehicle Grade Mechanical Parts (mechanical_parts_vehicle_grade) Tags: item, interactive, generated_from_item, material, crafting, metal, component, mechanical, vehicle_part_raw" [ref=e627] [cursor=pointer]': =
+        - 'generic "V4 Engine Parts Kit (engine_parts_kit_v4) Tags: item, interactive, generated_from_item, material, crafting, metal, component, engine_component, vehicle_part_kit" [ref=e628] [cursor=pointer]': =
+        - 'generic "Long Wooden Shaft (long_wooden_shaft) Tags: item, interactive, generated_from_item, material, crafting, wood, weapon_component, pole" [ref=e629] [cursor=pointer]': =
+        - 'generic "Hand Grenade Metal Casing (metal_casing_grenade_hand) Tags: item, interactive, generated_from_item, material, crafting, metal, explosive_component, casing" [ref=e630] [cursor=pointer]': =
+        - 'generic "Safety Pin and Pull Ring Assembly (safety_pin_pull_ring) Tags: item, interactive, generated_from_item, material, crafting, metal, explosive_component, mechanical" [ref=e631] [cursor=pointer]': =
+        - 'generic "Small Metal Blade Blank (metal_blade_blank_small) Tags: item, interactive, generated_from_item, material, crafting, metal, weapon_component, blade_blank" [ref=e632] [cursor=pointer]': =
+        - 'generic "Wooden Handle Scales (Pair) (wood_handle_scales_pair) Tags: item, interactive, generated_from_item, material, crafting, wood, weapon_component, handle_component" [ref=e633] [cursor=pointer]': =
+        - 'generic "Large Electric Motor (motor_large_electric) Tags: item, interactive, generated_from_item, material, crafting, electronics, mechanical, component, motor" [ref=e634] [cursor=pointer]': "#"
+        - 'generic "Large Metal Blade Blank (metal_blade_blank_large) Tags: item, interactive, generated_from_item, material, crafting, metal, weapon_component, blade_blank" [ref=e635] [cursor=pointer]': =
+        - 'generic "Electronic Scrap (electronic_scrap) Tags: item, interactive, generated_from_item, material, crafting, electronics, scrap" [ref=e636] [cursor=pointer]': =
+        - 'generic "Silver Ingot (silver_ingot) Tags: item, interactive, generated_from_item, material, crafting, metal, refined, silver, jeweler, artisan" [ref=e637] [cursor=pointer]': =
+        - 'generic "Gold Ingot (gold_ingot) Tags: item, interactive, generated_from_item, material, crafting, metal, precious_metal, gold, jeweler" [ref=e638] [cursor=pointer]': =
+        - 'generic "Advanced Circuit Board (circuit_board_advanced) Tags: item, interactive, generated_from_item, material, crafting, electronics, component, advanced" [ref=e639] [cursor=pointer]': "#"
+        - 'generic "Fuel Line Assembly (fuel_line_assembly) Tags: item, interactive, generated_from_item, material, crafting, vehicle_part, mechanical" [ref=e640] [cursor=pointer]': ~
+        - 'generic "Fiberglass Hull Repair Kit (repair_kit_hull_fiberglass) Tags: item, interactive, generated_from_item, consumable, repair, vehicle, armor" [ref=e641] [cursor=pointer]': +
+        - 'generic "Lead Scrap (lead_scrap) Tags: item, interactive, generated_from_item, material, crafting, metal, lead, modern" [ref=e642] [cursor=pointer]': =
+        - 'generic "Scrap Brass (scrap_brass) Tags: item, interactive, generated_from_item, material, crafting, metal, brass, modern" [ref=e643] [cursor=pointer]': =
+        - 'generic "Small Backpack (small_backpack_container) Tags: item, interactive, generated_from_item, container, wearable, backpack, clothing" [ref=e644] [cursor=pointer]': b
+        - 'generic "Dart Trap Kit (pressure_plate_dart_trap_kit) Tags: item, interactive, generated_from_item, trap, kit, mechanical" [ref=e645] [cursor=pointer]': T
+        - 'generic "Tripwire Alarm Kit (tripwire_alarm_kit) Tags: item, interactive, generated_from_item, trap, kit, alarm" [ref=e646] [cursor=pointer]': T
+        - 'generic "Raw Meat (raw_meat) Tags: item, interactive, generated_from_item, food, raw, consumable_ingredient" [ref=e647] [cursor=pointer]': "%"
+        - 'generic "Cooked Meat (cooked_meat) Tags: item, interactive, generated_from_item, food, consumable" [ref=e648] [cursor=pointer]': "%"
+        - 'generic "Bone (bone) Tags: item, interactive, generated_from_item, material, crafting, organic" [ref=e649] [cursor=pointer]': "!"
+        - 'generic "Dirty Water (dirty_water) Tags: item, interactive, generated_from_item, liquid, unsafe" [ref=e650] [cursor=pointer]': ~
+        - 'generic "Iron Ore (iron_ore) Tags: item, interactive, generated_from_item, ore, metal_source, crafting" [ref=e651] [cursor=pointer]': o
+        - 'generic "Copper Ore (copper_ore) Tags: item, interactive, generated_from_item, ore, metal_source, crafting" [ref=e652] [cursor=pointer]': o
+        - 'generic "Stone Chunk (stone_chunk) Tags: item, interactive, generated_from_item, stone, crafting" [ref=e653] [cursor=pointer]': "*"
+      - separator [ref=e654]
+      - button "Export Map JSON" [ref=e655] [cursor=pointer]
+      - button "Choose File" [ref=e656]
+      - button "Load Map" [ref=e657] [cursor=pointer]
+    - separator [ref=e658]
+    - generic [ref=e659]:
+      - heading "Map Metadata Hide" [level=3] [ref=e660]:
+        - text: Map Metadata
+        - button "Hide" [ref=e661] [cursor=pointer]
+      - generic [ref=e662]:
+        - generic [ref=e663]:
+          - text: "Map Name:"
+          - textbox "Map Name:" [ref=e664]: New Map
+        - generic [ref=e665]:
+          - text: "Description:"
+          - textbox "Description:" [ref=e666]
+        - generic [ref=e667]:
+          - text: "Author:"
+          - textbox "Author:" [ref=e668]
+        - generic [ref=e669]:
+          - text: "Custom Tags (comma-separated):"
+          - textbox "Custom Tags (comma-separated):" [ref=e670]
+        - generic [ref=e671]:
+          - text: "Area ID:"
+          - textbox "Area ID:" [ref=e672]:
+            - /placeholder: e.g., fallbrook_pd
+        - generic [ref=e673]:
+          - text: "Primary Parent Map ID:"
+          - textbox "Primary Parent Map ID:" [ref=e674]:
+            - /placeholder: Optional parent map ID
+        - button "Save Metadata to Current Map" [ref=e675] [cursor=pointer]
+    - separator [ref=e676]
+    - separator [ref=e677]
+    - generic [ref=e678]:
+      - heading "Portal Configuration Hide" [level=3] [ref=e679]:
+        - text: Portal Configuration
+        - button "Hide" [ref=e680] [cursor=pointer]
+      - generic [ref=e682]: "Selected Portal: None"
+    - separator [ref=e683]
+    - separator [ref=e684]
+    - separator [ref=e685]
+    - generic [ref=e686]:
+      - generic "Empty" [ref=e687] [cursor=pointer]
+      - generic "Empty" [ref=e688] [cursor=pointer]
+      - generic "Empty" [ref=e689] [cursor=pointer]
+      - generic "Empty" [ref=e690] [cursor=pointer]
+      - generic "Empty" [ref=e691] [cursor=pointer]
+      - generic "Empty" [ref=e692] [cursor=pointer]
+      - generic "Empty" [ref=e693] [cursor=pointer]
+      - generic "Empty" [ref=e694] [cursor=pointer]
+      - generic "Empty" [ref=e695] [cursor=pointer]
+      - generic "Empty" [ref=e696] [cursor=pointer]
+      - generic "Empty" [ref=e697] [cursor=pointer]
+      - generic "Empty" [ref=e698] [cursor=pointer]
+      - generic "Empty" [ref=e699] [cursor=pointer]
+      - generic "Empty" [ref=e700] [cursor=pointer]
+      - generic "Empty" [ref=e701] [cursor=pointer]
+      - generic "Empty" [ref=e702] [cursor=pointer]
+      - generic "Empty" [ref=e703] [cursor=pointer]
+      - generic "Empty" [ref=e704] [cursor=pointer]
+      - generic "Empty" [ref=e705] [cursor=pointer]
+      - generic "Empty" [ref=e706] [cursor=pointer]
+      - generic "Empty" [ref=e707] [cursor=pointer]
+      - generic "Empty" [ref=e708] [cursor=pointer]
+      - generic "Empty" [ref=e709] [cursor=pointer]
+      - generic "Empty" [ref=e710] [cursor=pointer]
+      - generic "Empty" [ref=e711] [cursor=pointer]
+      - generic "Empty" [ref=e712] [cursor=pointer]
+      - generic "Empty" [ref=e713] [cursor=pointer]
+      - generic "Empty" [ref=e714] [cursor=pointer]
+      - generic "Empty" [ref=e715] [cursor=pointer]
+      - generic "Empty" [ref=e716] [cursor=pointer]
+      - generic "Empty" [ref=e717] [cursor=pointer]
+      - generic "Empty" [ref=e718] [cursor=pointer]
+      - generic "Empty" [ref=e719] [cursor=pointer]
+      - generic "Empty" [ref=e720] [cursor=pointer]
+      - generic "Empty" [ref=e721] [cursor=pointer]
+      - generic "Empty" [ref=e722] [cursor=pointer]
+      - generic "Empty" [ref=e723] [cursor=pointer]
+      - generic "Empty" [ref=e724] [cursor=pointer]
+      - generic "Empty" [ref=e725] [cursor=pointer]
+      - generic "Empty" [ref=e726] [cursor=pointer]
+      - generic "Empty" [ref=e727] [cursor=pointer]
+      - generic "Empty" [ref=e728] [cursor=pointer]
+      - generic "Empty" [ref=e729] [cursor=pointer]
+      - generic "Empty" [ref=e730] [cursor=pointer]
+      - generic "Empty" [ref=e731] [cursor=pointer]
+      - generic "Empty" [ref=e732] [cursor=pointer]
+      - generic "Empty" [ref=e733] [cursor=pointer]
+      - generic "Empty" [ref=e734] [cursor=pointer]
+      - generic "Empty" [ref=e735] [cursor=pointer]
+      - generic "Empty" [ref=e736] [cursor=pointer]
+      - generic "Empty" [ref=e737] [cursor=pointer]
+      - generic "Empty" [ref=e738] [cursor=pointer]
+      - generic "Empty" [ref=e739] [cursor=pointer]
+      - generic "Empty" [ref=e740] [cursor=pointer]
+      - generic "Empty" [ref=e741] [cursor=pointer]
+      - generic "Empty" [ref=e742] [cursor=pointer]
+      - generic "Empty" [ref=e743] [cursor=pointer]
+      - generic "Empty" [ref=e744] [cursor=pointer]
+      - generic "Empty" [ref=e745] [cursor=pointer]
+      - generic "Empty" [ref=e746] [cursor=pointer]
+      - generic "Empty" [ref=e747] [cursor=pointer]
+      - generic "Empty" [ref=e748] [cursor=pointer]
+      - generic "Empty" [ref=e749] [cursor=pointer]
+      - generic "Empty" [ref=e750] [cursor=pointer]
+      - generic "Empty" [ref=e751] [cursor=pointer]
+      - generic "Empty" [ref=e752] [cursor=pointer]
+      - generic "Empty" [ref=e753] [cursor=pointer]
+      - generic "Empty" [ref=e754] [cursor=pointer]
+      - generic "Empty" [ref=e755] [cursor=pointer]
+      - generic "Empty" [ref=e756] [cursor=pointer]
+      - generic "Empty" [ref=e757] [cursor=pointer]
+      - generic "Empty" [ref=e758] [cursor=pointer]
+      - generic "Empty" [ref=e759] [cursor=pointer]
+      - generic "Empty" [ref=e760] [cursor=pointer]
+      - generic "Empty" [ref=e761] [cursor=pointer]
+      - generic "Empty" [ref=e762] [cursor=pointer]
+      - generic "Empty" [ref=e763] [cursor=pointer]
+      - generic "Empty" [ref=e764] [cursor=pointer]
+      - generic "Empty" [ref=e765] [cursor=pointer]
+      - generic "Empty" [ref=e766] [cursor=pointer]
+      - generic "Empty" [ref=e767] [cursor=pointer]
+      - generic "Empty" [ref=e768] [cursor=pointer]
+      - generic "Empty" [ref=e769] [cursor=pointer]
+      - generic "Empty" [ref=e770] [cursor=pointer]
+      - generic "Empty" [ref=e771] [cursor=pointer]
+      - generic "Empty" [ref=e772] [cursor=pointer]
+      - generic "Empty" [ref=e773] [cursor=pointer]
+      - generic "Empty" [ref=e774] [cursor=pointer]
+      - generic "Empty" [ref=e775] [cursor=pointer]
+      - generic "Empty" [ref=e776] [cursor=pointer]
+      - generic "Empty" [ref=e777] [cursor=pointer]
+      - generic "Empty" [ref=e778] [cursor=pointer]
+      - generic "Empty" [ref=e779] [cursor=pointer]
+      - generic "Empty" [ref=e780] [cursor=pointer]
+      - generic "Empty" [ref=e781] [cursor=pointer]
+      - generic "Empty" [ref=e782] [cursor=pointer]
+      - generic "Empty" [ref=e783] [cursor=pointer]
+      - generic "Empty" [ref=e784] [cursor=pointer]
+      - generic "Empty" [ref=e785] [cursor=pointer]
+      - generic "Empty" [ref=e786] [cursor=pointer]
+      - generic "Empty" [ref=e787] [cursor=pointer]
+      - generic "Empty" [ref=e788] [cursor=pointer]
+      - generic "Empty" [ref=e789] [cursor=pointer]
+      - generic "Empty" [ref=e790] [cursor=pointer]
+      - generic "Empty" [ref=e791] [cursor=pointer]
+      - generic "Empty" [ref=e792] [cursor=pointer]
+      - generic "Empty" [ref=e793] [cursor=pointer]
+      - generic "Empty" [ref=e794] [cursor=pointer]
+      - generic "Empty" [ref=e795] [cursor=pointer]
+      - generic "Empty" [ref=e796] [cursor=pointer]
+      - generic "Empty" [ref=e797] [cursor=pointer]
+      - generic "Empty" [ref=e798] [cursor=pointer]
+      - generic "Empty" [ref=e799] [cursor=pointer]
+      - generic "Empty" [ref=e800] [cursor=pointer]
+      - generic "Empty" [ref=e801] [cursor=pointer]
+      - generic "Empty" [ref=e802] [cursor=pointer]
+      - generic "Empty" [ref=e803] [cursor=pointer]
+      - generic "Empty" [ref=e804] [cursor=pointer]
+      - generic "Empty" [ref=e805] [cursor=pointer]
+      - generic "Empty" [ref=e806] [cursor=pointer]
+      - generic "Empty" [ref=e807] [cursor=pointer]
+      - generic "Empty" [ref=e808] [cursor=pointer]
+      - generic "Empty" [ref=e809] [cursor=pointer]
+      - generic "Empty" [ref=e810] [cursor=pointer]
+      - generic "Empty" [ref=e811] [cursor=pointer]
+      - generic "Empty" [ref=e812] [cursor=pointer]
+      - generic "Empty" [ref=e813] [cursor=pointer]
+      - generic "Empty" [ref=e814] [cursor=pointer]
+      - generic "Empty" [ref=e815] [cursor=pointer]
+      - generic "Empty" [ref=e816] [cursor=pointer]
+      - generic "Empty" [ref=e817] [cursor=pointer]
+      - generic "Empty" [ref=e818] [cursor=pointer]
+      - generic "Empty" [ref=e819] [cursor=pointer]
+      - generic "Empty" [ref=e820] [cursor=pointer]
+      - generic "Empty" [ref=e821] [cursor=pointer]
+      - generic "Empty" [ref=e822] [cursor=pointer]
+      - generic "Empty" [ref=e823] [cursor=pointer]
+      - generic "Empty" [ref=e824] [cursor=pointer]
+      - generic "Empty" [ref=e825] [cursor=pointer]
+      - generic "Empty" [ref=e826] [cursor=pointer]
+      - generic "Empty" [ref=e827] [cursor=pointer]
+      - generic "Empty" [ref=e828] [cursor=pointer]
+      - generic "Empty" [ref=e829] [cursor=pointer]
+      - generic "Empty" [ref=e830] [cursor=pointer]
+      - generic "Empty" [ref=e831] [cursor=pointer]
+      - generic "Empty" [ref=e832] [cursor=pointer]
+      - generic "Empty" [ref=e833] [cursor=pointer]
+      - generic "Empty" [ref=e834] [cursor=pointer]
+      - generic "Empty" [ref=e835] [cursor=pointer]
+      - generic "Empty" [ref=e836] [cursor=pointer]
+      - generic "Player Start (X:10, Y:7, Z:0)" [ref=e837] [cursor=pointer]: ☻
+      - generic "Empty" [ref=e838] [cursor=pointer]
+      - generic "Empty" [ref=e839] [cursor=pointer]
+      - generic "Empty" [ref=e840] [cursor=pointer]
+      - generic "Empty" [ref=e841] [cursor=pointer]
+      - generic "Empty" [ref=e842] [cursor=pointer]
+      - generic "Empty" [ref=e843] [cursor=pointer]
+      - generic "Empty" [ref=e844] [cursor=pointer]
+      - generic "Empty" [ref=e845] [cursor=pointer]
+      - generic "Empty" [ref=e846] [cursor=pointer]
+      - generic "Empty" [ref=e847] [cursor=pointer]
+      - generic "Empty" [ref=e848] [cursor=pointer]
+      - generic "Empty" [ref=e849] [cursor=pointer]
+      - generic "Empty" [ref=e850] [cursor=pointer]
+      - generic "Empty" [ref=e851] [cursor=pointer]
+      - generic "Empty" [ref=e852] [cursor=pointer]
+      - generic "Empty" [ref=e853] [cursor=pointer]
+      - generic "Empty" [ref=e854] [cursor=pointer]
+      - generic "Empty" [ref=e855] [cursor=pointer]:
+        - 'generic "Portal: portal_0 Target: N/A at (0,0,Z0)"': P
+      - generic "Empty" [ref=e856] [cursor=pointer]
+      - generic "Empty" [ref=e857] [cursor=pointer]
+      - generic "Empty" [ref=e858] [cursor=pointer]
+      - generic "Empty" [ref=e859] [cursor=pointer]
+      - generic "Empty" [ref=e860] [cursor=pointer]
+      - generic "Empty" [ref=e861] [cursor=pointer]
+      - generic "Empty" [ref=e862] [cursor=pointer]
+      - generic "Empty" [ref=e863] [cursor=pointer]
+      - generic "Empty" [ref=e864] [cursor=pointer]
+      - generic "Empty" [ref=e865] [cursor=pointer]
+      - generic "Empty" [ref=e866] [cursor=pointer]
+      - generic "Empty" [ref=e867] [cursor=pointer]
+      - generic "Empty" [ref=e868] [cursor=pointer]
+      - generic "Empty" [ref=e869] [cursor=pointer]
+      - generic "Empty" [ref=e870] [cursor=pointer]
+      - generic "Empty" [ref=e871] [cursor=pointer]
+      - generic "Empty" [ref=e872] [cursor=pointer]
+      - generic "Empty" [ref=e873] [cursor=pointer]
+      - generic "Empty" [ref=e874] [cursor=pointer]
+      - generic "Empty" [ref=e875] [cursor=pointer]
+      - generic "Empty" [ref=e876] [cursor=pointer]
+      - generic "Empty" [ref=e877] [cursor=pointer]
+      - generic "Empty" [ref=e878] [cursor=pointer]
+      - generic "Empty" [ref=e879] [cursor=pointer]
+      - generic "Empty" [ref=e880] [cursor=pointer]
+      - generic "Empty" [ref=e881] [cursor=pointer]
+      - generic "Empty" [ref=e882] [cursor=pointer]
+      - generic "Empty" [ref=e883] [cursor=pointer]
+      - generic "Empty" [ref=e884] [cursor=pointer]
+      - generic "Empty" [ref=e885] [cursor=pointer]
+      - generic "Empty" [ref=e886] [cursor=pointer]
+      - generic "Empty" [ref=e887] [cursor=pointer]
+      - generic "Empty" [ref=e888] [cursor=pointer]
+      - generic "Empty" [ref=e889] [cursor=pointer]
+      - generic "Empty" [ref=e890] [cursor=pointer]
+      - generic "Empty" [ref=e891] [cursor=pointer]
+      - generic "Empty" [ref=e892] [cursor=pointer]
+      - generic "Empty" [ref=e893] [cursor=pointer]
+      - generic "Empty" [ref=e894] [cursor=pointer]
+      - generic "Empty" [ref=e895] [cursor=pointer]
+      - generic "Empty" [ref=e896] [cursor=pointer]
+      - generic "Empty" [ref=e897] [cursor=pointer]
+      - generic "Empty" [ref=e898] [cursor=pointer]
+      - generic "Empty" [ref=e899] [cursor=pointer]
+      - generic "Empty" [ref=e900] [cursor=pointer]
+      - generic "Empty" [ref=e901] [cursor=pointer]
+      - generic "Empty" [ref=e902] [cursor=pointer]
+      - generic "Empty" [ref=e903] [cursor=pointer]
+      - generic "Empty" [ref=e904] [cursor=pointer]
+      - generic "Empty" [ref=e905] [cursor=pointer]
+      - generic "Empty" [ref=e906] [cursor=pointer]
+      - generic "Empty" [ref=e907] [cursor=pointer]
+      - generic "Empty" [ref=e908] [cursor=pointer]
+      - generic "Empty" [ref=e909] [cursor=pointer]
+      - generic "Empty" [ref=e910] [cursor=pointer]
+      - generic "Empty" [ref=e911] [cursor=pointer]
+      - generic "Empty" [ref=e912] [cursor=pointer]
+      - generic "Empty" [ref=e913] [cursor=pointer]
+      - generic "Empty" [ref=e914] [cursor=pointer]
+      - generic "Empty" [ref=e915] [cursor=pointer]
+      - generic "Empty" [ref=e916] [cursor=pointer]
+      - generic "Empty" [ref=e917] [cursor=pointer]
+      - generic "Empty" [ref=e918] [cursor=pointer]
+      - generic "Empty" [ref=e919] [cursor=pointer]
+      - generic "Empty" [ref=e920] [cursor=pointer]
+      - generic "Empty" [ref=e921] [cursor=pointer]
+      - generic "Empty" [ref=e922] [cursor=pointer]
+      - generic "Empty" [ref=e923] [cursor=pointer]
+      - generic "Empty" [ref=e924] [cursor=pointer]
+      - generic "Empty" [ref=e925] [cursor=pointer]
+      - generic "Empty" [ref=e926] [cursor=pointer]
+      - generic "Empty" [ref=e927] [cursor=pointer]
+      - generic "Empty" [ref=e928] [cursor=pointer]
+      - generic "Empty" [ref=e929] [cursor=pointer]
+      - generic "Empty" [ref=e930] [cursor=pointer]
+      - generic "Empty" [ref=e931] [cursor=pointer]
+      - generic "Empty" [ref=e932] [cursor=pointer]
+      - generic "Empty" [ref=e933] [cursor=pointer]
+      - generic "Empty" [ref=e934] [cursor=pointer]
+      - generic "Empty" [ref=e935] [cursor=pointer]
+      - generic "Empty" [ref=e936] [cursor=pointer]
+      - generic "Empty" [ref=e937] [cursor=pointer]
+      - generic "Empty" [ref=e938] [cursor=pointer]
+      - generic "Empty" [ref=e939] [cursor=pointer]
+      - generic "Empty" [ref=e940] [cursor=pointer]
+      - generic "Empty" [ref=e941] [cursor=pointer]
+      - generic "Empty" [ref=e942] [cursor=pointer]
+      - generic "Empty" [ref=e943] [cursor=pointer]
+      - generic "Empty" [ref=e944] [cursor=pointer]
+      - generic "Empty" [ref=e945] [cursor=pointer]
+      - generic "Empty" [ref=e946] [cursor=pointer]
+      - generic "Empty" [ref=e947] [cursor=pointer]
+      - generic "Empty" [ref=e948] [cursor=pointer]
+      - generic "Empty" [ref=e949] [cursor=pointer]
+      - generic "Empty" [ref=e950] [cursor=pointer]
+      - generic "Empty" [ref=e951] [cursor=pointer]
+      - generic "Empty" [ref=e952] [cursor=pointer]
+      - generic "Empty" [ref=e953] [cursor=pointer]
+      - generic "Empty" [ref=e954] [cursor=pointer]
+      - generic "Empty" [ref=e955] [cursor=pointer]
+      - generic "Empty" [ref=e956] [cursor=pointer]
+      - generic "Empty" [ref=e957] [cursor=pointer]
+      - generic "Empty" [ref=e958] [cursor=pointer]
+      - generic "Empty" [ref=e959] [cursor=pointer]
+      - generic "Empty" [ref=e960] [cursor=pointer]
+      - generic "Empty" [ref=e961] [cursor=pointer]
+      - generic "Empty" [ref=e962] [cursor=pointer]
+      - generic "Empty" [ref=e963] [cursor=pointer]
+      - generic "Empty" [ref=e964] [cursor=pointer]
+      - generic "Empty" [ref=e965] [cursor=pointer]
+      - generic "Empty" [ref=e966] [cursor=pointer]
+      - generic "Empty" [ref=e967] [cursor=pointer]
+      - generic "Empty" [ref=e968] [cursor=pointer]
+      - generic "Empty" [ref=e969] [cursor=pointer]
+      - generic "Empty" [ref=e970] [cursor=pointer]
+      - generic "Empty" [ref=e971] [cursor=pointer]
+      - generic "Empty" [ref=e972] [cursor=pointer]
+      - generic "Empty" [ref=e973] [cursor=pointer]
+      - generic "Empty" [ref=e974] [cursor=pointer]
+      - generic "Empty" [ref=e975] [cursor=pointer]
+      - generic "Empty" [ref=e976] [cursor=pointer]
+      - generic "Empty" [ref=e977] [cursor=pointer]
+      - generic "Empty" [ref=e978] [cursor=pointer]
+      - generic "Empty" [ref=e979] [cursor=pointer]
+      - generic "Empty" [ref=e980] [cursor=pointer]
+      - generic "Empty" [ref=e981] [cursor=pointer]
+      - generic "Empty" [ref=e982] [cursor=pointer]
+      - generic "Empty" [ref=e983] [cursor=pointer]
+      - generic "Empty" [ref=e984] [cursor=pointer]
+      - generic "Empty" [ref=e985] [cursor=pointer]
+      - generic "Empty" [ref=e986] [cursor=pointer]
+```
