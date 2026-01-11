@@ -27,7 +27,8 @@
     "tags": [
       "landscape",
       "bottom",
-      "flammable"
+      "flammable",
+      "harvest:plant"
     ]
   },
   "MU": {
@@ -38,7 +39,9 @@
       "landscape",
       "middle",
       "solid_terrain_top",
-      "impassable"
+      "impassable",
+      "harvest:mud",
+      "interactive"
     ]
   },
   "MF": {
@@ -58,7 +61,9 @@
     "tags": [
       "landscape",
       "bottom",
-      "flammable"
+      "flammable",
+      "harvest:plant",
+      "interactive"
     ]
   },
   "MSH": {
@@ -87,7 +92,9 @@
       "landscape",
       "middle",
       "solid_terrain_top",
-      "impassable"
+      "impassable",
+      "harvest:sand",
+      "interactive"
     ]
   },
   "GV": {
@@ -98,7 +105,9 @@
       "landscape",
       "middle",
       "solid_terrain_top",
-      "impassable"
+      "impassable",
+      "harvest:gravel",
+      "interactive"
     ]
   },
   "WS": {
@@ -154,7 +163,9 @@
       "middle",
       "vegetation",
       "impassable",
-      "solid_terrain_top"
+      "solid_terrain_top",
+      "harvest:wood",
+      "interactive"
     ],
     "coverBonus": 4
   },
@@ -166,7 +177,9 @@
       "landscape",
       "vegetation",
       "bottom",
-      "flammable"
+      "flammable",
+      "harvest:plant",
+      "interactive"
     ],
     "coverBonus": 4
   },
@@ -178,7 +191,9 @@
       "landscape",
       "impassable",
       "middle",
-      "solid_terrain_top"
+      "solid_terrain_top",
+      "harvest:stone",
+      "interactive"
     ],
     "coverBonus": 10
   },
@@ -736,7 +751,8 @@
       "interactive",
       "breakable",
       "building",
-      "transparent"
+      "transparent",
+      "scavenge:glass"
     ]
   },
   "WinCV": {
@@ -751,7 +767,8 @@
       "interactive",
       "breakable",
       "building",
-      "transparent"
+      "transparent",
+      "scavenge:glass"
     ]
   },
   "WinOH": {
@@ -765,7 +782,8 @@
       "interactive",
       "breakable",
       "building",
-      "transparent"
+      "transparent",
+      "scavenge:glass"
     ]
   },
   "WinOV": {
@@ -779,7 +797,8 @@
       "interactive",
       "breakable",
       "building",
-      "transparent"
+      "transparent",
+      "scavenge:glass"
     ]
   },
   "WinB": {
@@ -793,7 +812,8 @@
       "interactive",
       "building",
       "allows_vision",
-      "permeable"
+      "permeable",
+      "scavenge:glass"
     ]
   },
   "RW": {
@@ -835,7 +855,9 @@
     "tags": [
       "building",
       "impassable",
-      "middle"
+      "middle",
+      "scavenge:furniture",
+      "interactive"
     ],
     "coverBonus": 2
   },
@@ -851,7 +873,8 @@
       "building",
       "furniture",
       "middle",
-      "flammable"
+      "flammable",
+      "scavenge:furniture"
     ],
     "itemLink": "cb_container_item",
     "contents": [],
@@ -961,7 +984,8 @@
       "blocks_vision",
       "impassable",
       "electronics",
-      "middle"
+      "middle",
+      "scavenge:appliance"
     ],
     "itemLink": "rf_container_item",
     "contents": [],
@@ -982,7 +1006,8 @@
       "blocks_vision",
       "impassable",
       "electronics",
-      "middle"
+      "middle",
+      "scavenge:appliance"
     ],
     "itemLink": "st_container_item",
     "contents": [],
@@ -1001,7 +1026,8 @@
       "item",
       "furniture",
       "electronics",
-      "middle"
+      "middle",
+      "scavenge:appliance"
     ],
     "itemLink": "mw_container_item",
     "contents": [],
@@ -1029,7 +1055,8 @@
       "item",
       "interactive",
       "middle",
-      "flammable"
+      "flammable",
+      "scavenge:furniture"
     ]
   },
   "TB": {
@@ -1040,7 +1067,9 @@
       "item",
       "impassable",
       "middle",
-      "flammable"
+      "flammable",
+      "scavenge:furniture",
+      "interactive"
     ],
     "coverBonus": 2
   },
@@ -1051,7 +1080,8 @@
     "tags": [
       "item",
       "interactive",
-      "middle"
+      "middle",
+      "scavenge:electronics"
     ]
   },
   "STL": {
@@ -1066,7 +1096,8 @@
       "blocks_vision",
       "impassable",
       "middle",
-      "flammable"
+      "flammable",
+      "scavenge:furniture"
     ],
     "itemLink": "stl_container_item",
     "contents": [],
@@ -1083,7 +1114,8 @@
     "tags": [
       "building",
       "interactive",
-      "middle"
+      "middle",
+      "scavenge:furniture"
     ]
   },
   "NK": {
@@ -1096,7 +1128,8 @@
       "item",
       "furniture",
       "middle",
-      "flammable"
+      "flammable",
+      "scavenge:furniture"
     ],
     "itemLink": "nk_container_item",
     "contents": [],
@@ -1117,7 +1150,8 @@
       "blocks_vision",
       "impassable",
       "middle",
-      "flammable"
+      "flammable",
+      "scavenge:furniture"
     ],
     "itemLink": "drs_container_item",
     "contents": [],
@@ -1139,7 +1173,8 @@
       "blocks_vision",
       "impassable",
       "middle",
-      "flammable"
+      "flammable",
+      "scavenge:furniture"
     ],
     "itemLink": "dsk_container_item",
     "contents": [],
@@ -1157,7 +1192,8 @@
       "item",
       "interactive",
       "middle",
-      "flammable"
+      "flammable",
+      "scavenge:furniture"
     ]
   },
   "TW": {
@@ -1220,7 +1256,8 @@
     "tags": [
       "item",
       "interactive",
-      "middle"
+      "middle",
+      "scavenge:electronics"
     ]
   },
   "PR": {
@@ -1230,7 +1267,8 @@
     "tags": [
       "item",
       "interactive",
-      "middle"
+      "middle",
+      "scavenge:electronics"
     ]
   },
   "WM": {
@@ -1241,7 +1279,8 @@
       "item",
       "interactive",
       "impassable",
-      "middle"
+      "middle",
+      "scavenge:appliance"
     ]
   },
   "DRY": {
@@ -1252,7 +1291,8 @@
       "item",
       "interactive",
       "impassable",
-      "middle"
+      "middle",
+      "scavenge:appliance"
     ]
   },
   "FT": {
@@ -1570,7 +1610,8 @@
       "furniture",
       "middle",
       "impassable",
-      "heat_source_small"
+      "heat_source_small",
+      "scavenge:machinery"
     ],
     "description": "A rudimentary forge for working with metals.",
     "stationType": "forge",
@@ -1627,7 +1668,8 @@
       "furniture",
       "middle",
       "impassable",
-      "gunsmithing"
+      "gunsmithing",
+      "scavenge:machinery"
     ],
     "description": "A sturdy bench equipped with presses and measures for reloading ammunition.",
     "stationType": "reloading_general"
@@ -1680,7 +1722,8 @@
       "impassable",
       "requires_power_grid",
       "metalworking",
-      "precision_work"
+      "precision_work",
+      "scavenge:machinery"
     ],
     "description": "A machine tool for shaping metal or wood.",
     "stationType": "machining_lathe"
@@ -1698,7 +1741,8 @@
       "middle",
       "impassable",
       "requires_power_grid",
-      "large_construction"
+      "large_construction",
+      "scavenge:machinery"
     ],
     "description": "A large bay for constructing and modifying vehicles.",
     "stationType": "vehicle_assembly"
@@ -1715,7 +1759,8 @@
       "furniture",
       "middle",
       "impassable",
-      "mechanical"
+      "mechanical",
+      "scavenge:machinery"
     ],
     "description": "A specialized jig for assembling engines.",
     "stationType": "engine_work"
@@ -1801,7 +1846,8 @@
       "furniture",
       "middle",
       "impassable",
-      "requires_power_grid"
+      "requires_power_grid",
+      "scavenge:electronics"
     ],
     "description": "A bench with specialized tools for complex electronics work.",
     "stationType": "electronics_advanced"
@@ -1813,7 +1859,9 @@
     "tags": [
       "landscape",
       "bottom",
-      "inert"
+      "inert",
+      "scavenge:junk",
+      "interactive"
     ]
   },
   "RB": {
