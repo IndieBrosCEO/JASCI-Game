@@ -4,52 +4,26 @@ class AssetManager {
     constructor() {
         this.tilesets = {};
         this.itemsById = {};
-        this.npcDefinitions = {}; // Renamed from npcsById
+        this.npcDefinitions = {};
         this.dialogues = {};
         this.fishDefinitions = {};
         this.mapsById = {};
         this.currentMap = null;
-        this.mapIndexData = null; // For storing mapIndex.json content
+        this.mapIndexData = null;
         this.tileAliases = {
-            "WW1": "WWH",     // Wood Wall Horizontal
-            "WW2": "WWV",     // Wood Wall Vertical
-            "WW3": "WWCTL",   // Wood Wall Corner Top-Left
-            "WW4": "WWCTR",   // Wood Wall Corner Top-Right
-            "WW5": "WWCBL",   // Wood Wall Corner Bottom-Left
-            "WW6": "WWCBR",   // Wood Wall Corner Bottom-Right
-            "WWinC1": "WinCH", // Example: Wood Window Closed Horizontal
-            "WWinC2": "WinCV", // Example: Wood Window Closed Vertical
-            "WD1": "WDH",     // Wood Door Horizontal (Closed)
-            "WD2": "WDV",     // Wood Door Vertical (Closed)
-            "MW1": "MWH",     // Metal Wall Horizontal
-            "MW2": "MWV",     // Metal Wall Vertical
-            "MW3": "MWCTL",   // Metal Wall Corner Top-Left
-            "MW4": "MWCTR",   // Metal Wall Corner Top-Right
-            "MW5": "MWCBL",   // Metal Wall Corner Bottom-Left
-            "MW6": "MWCBR",   // Metal Wall Corner Bottom-Right
-            "MD1": "MDH",     // Metal Door Horizontal (Closed)
-            // Add any other common wall/door/window aliases observed if obvious.
-            // For instance, map IDs like 'WF' (Wood Floor), 'FL' (Tile Flooring) likely map directly.
-            // If they don't and are used in maps, they might need entries too,
-            // but prioritize structural, impassable items for the wall-phasing bug.
-            "FL": "FL", // Tile Flooring (likely direct map)
-            "WF": "WF"  // Wood Flooring (likely direct map)
+            "WW1": "WWH", "WW2": "WWV", "WW3": "WWCTL", "WW4": "WWCTR", "WW5": "WWCBL", "WW6": "WWCBR",
+            "WWinC1": "WinCH", "WWinC2": "WinCV", "WD1": "WDH", "WD2": "WDV",
+            "MW1": "MWH", "MW2": "MWV", "MW3": "MWCTL", "MW4": "MWCTR", "MW5": "MWCBL", "MW6": "MWCBR",
+            "MD1": "MDH", "FL": "FL", "WF": "WF"
         };
+        this.familyItems = new Map();
     }
 
     getTileDefinition(tileIdFromMap) {
         if (!tileIdFromMap) return null;
-        // Check direct match first
-        if (this.tilesets[tileIdFromMap]) {
-            return this.tilesets[tileIdFromMap];
-        }
-        // Check aliases
+        if (this.tilesets[tileIdFromMap]) return this.tilesets[tileIdFromMap];
         const alias = this.tileAliases[tileIdFromMap];
-        if (alias && this.tilesets[alias]) {
-            return this.tilesets[alias];
-        }
-        // Optional: Log warning if tile still not found, though _validateMapTiles handles this broadly.
-        // console.warn(`AssetManager.getTileDefinition: No definition found for tile ID '${tileIdFromMap}' after checking aliases.`);
+        if (alias && this.tilesets[alias]) return this.tilesets[alias];
         return null;
     }
 
@@ -59,7 +33,7 @@ class AssetManager {
             console.log("AssetManager: mapIndexData has been set.");
         } else {
             console.warn("AssetManager: setMapIndexData received invalid data. Expected an array.", mapIndexJson);
-            this.mapIndexData = null; // Or keep previous if preferred
+            this.mapIndexData = null;
         }
     }
 
@@ -75,189 +49,95 @@ class AssetManager {
         this.proceduralQuestTemplates = {};
         this.trapDefinitionsData = {};
         this.constructionDefinitions = {};
-        this.quests = {}; // Added for static quests
+        this.quests = {};
         this.levelCurve = [];
         this.families = {};
-        this.familyItems = new Map(); // Initialize here to prevent crash before loadDefinitions
+        this.familyItems = new Map();
         this.legacyAliases = {};
 
-        // Updated to load from new categorized item files
         const definitionFiles = [
-            'level_curve.json',
-            'tileset.json',
-            'water_absorption.json',
-            'npcs.json',
-            'items/weapons.json',
-            'items/ammunition.json',
-            'items/consumables.json',
-            'items/clothing.json',
-            'fish.json',
-            'items/tools.json',
-            'items/crafting_materials.json',
-            'items/containers.json',
-            'items/trap_kits.json',
-            'items/vehicle_parts.json',
-            'vehicle_templates.json',
-            'dynamic_event_templates.json',
-            'procedural_quest_templates.json',
-            'items/traps.json', // Added traps.json
-            'constructions.json', // Added constructions.json
-            'families.json', // Added families.json
-            'perks.json', // Added perks.json
-            'items/harvest_resources.json', // Added harvest resources
-            'loot_tables.json', // Added loot tables
-            'world_graph.json',
-            'areas.json'
+            'level_curve.json', 'tileset.json', 'water_absorption.json', 'npcs.json',
+            'items/weapons.json', 'items/ammunition.json', 'items/consumables.json',
+            'items/clothing.json', 'fish.json', 'items/tools.json', 'items/crafting_materials.json',
+            'items/containers.json', 'items/trap_kits.json', 'items/vehicle_parts.json',
+            'vehicle_templates.json', 'dynamic_event_templates.json', 'procedural_quest_templates.json',
+            'items/traps.json', 'constructions.json', 'families.json', 'perks.json',
+            'items/harvest_resources.json', 'loot_tables.json', 'world_graph.json', 'areas.json'
         ];
 
-        for (const filename of definitionFiles) {
-            const url = `/assets/definitions/${filename}?t=${Date.now()}`;
+        // Parallel fetch
+        const fetchPromises = definitionFiles.map(async filename => {
+            const url = `/assets/definitions/${filename}`;
             try {
                 const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status} for ${filename}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status} for ${filename}`);
                 const parsedJson = await response.json();
-
-                if (filename === 'level_curve.json') {
-                    if (Array.isArray(parsedJson)) {
-                        this.levelCurve = parsedJson;
-                        console.log(`AssetManager: Loaded ${this.levelCurve.length} level curve entries.`);
-                    } else {
-                        console.warn(`AssetManager: Expected array from level_curve.json, but got ${typeof parsedJson}. Skipping file.`);
-                    }
-                } else if (filename === 'water_absorption.json') {
-                    this.waterAbsorptionRules = parsedJson.mappings || [];
-                    console.log(`AssetManager: Loaded ${this.waterAbsorptionRules.length} water absorption rules.`);
-                } else if (filename === 'tileset.json') {
-                    this.tilesets = parsedJson;
-                    // Inject harvest tags programmatically if missing (temporary fix for JSON edit issues)
-                    const patchTile = (id, tagsToAdd) => {
-                        const tile = this.tilesets[id];
-                        if (tile) {
-                            if (!tile.tags) tile.tags = [];
-                            tagsToAdd.forEach(tag => {
-                                if (!tile.tags.includes(tag)) tile.tags.push(tag);
-                            });
-                        }
-                    };
-
-                    patchTile("TRK", ["harvest:wood", "interactive"]);
-                    patchTile("BSH", ["harvest:plant", "interactive"]); // Changed from wood
-                    patchTile("TGR", ["harvest:plant", "interactive"]);
-                    patchTile("GR", ["harvest:plant"]); // Maybe interactive? or just harvestable via tool
-                    patchTile("BLK", ["harvest:stone", "interactive"]);
-                    patchTile("ASH", ["scavenge:junk", "interactive"]);
-                    patchTile("SA", ["harvest:sand", "interactive"]);
-                    patchTile("MU", ["harvest:mud", "interactive"]);
-                    patchTile("GV", ["harvest:gravel", "interactive"]);
-
-                    // Furniture
-                    ["CH", "CR", "TB", "DSK", "DRS", "STL", "BD", "NK", "CN", "CB"].forEach(id => patchTile(id, ["scavenge:furniture", "interactive"]));
-
-                    // Machinery
-                    ["lathe_tile", "engine_jig_tile", "vehicle_bay_tile", "forge_simple_tile", "reloading_bench_tile"].forEach(id => patchTile(id, ["scavenge:machinery", "interactive"]));
-
-                    // Electronics
-                    ["CP", "TV", "PR", "electronics_bench_adv_tile"].forEach(id => patchTile(id, ["scavenge:electronics", "interactive"]));
-
-                    // Appliances
-                    ["RF", "ST", "MW", "WM", "DRY"].forEach(id => patchTile(id, ["scavenge:appliance", "interactive"]));
-
-                    // Glass (Windows)
-                    ["WinCH", "WinCV", "WinOH", "WinOV", "WinB"].forEach(id => patchTile(id, ["scavenge:glass", "interactive"]));
-
-                    console.log("AssetManager: Base tilesets loaded and patched:", this.tilesets);
-                } else if (filename === 'npcs.json') {
-                    this.npcDefinitions = Object.fromEntries(parsedJson.map(npc => [npc.id, npc]));
-                } else if (filename === 'fish.json') {
-                    this.fishDefinitions = parsedJson;
-                } else if (filename === 'items/vehicle_parts.json') {
-                    if (Array.isArray(parsedJson)) {
-                        this.vehiclePartDefinitions = Object.fromEntries(parsedJson.map(part => [part.id, part]));
-                        console.log(`AssetManager: Loaded ${Object.keys(this.vehiclePartDefinitions).length} vehicle parts.`);
-                    } else {
-                        console.warn(`AssetManager: Expected array from vehicle_parts.json, but got ${typeof parsedJson}. Skipping file.`);
-                    }
-                } else if (filename === 'vehicle_templates.json') {
-                    if (Array.isArray(parsedJson)) {
-                        this.vehicleTemplateDefinitions = Object.fromEntries(parsedJson.map(template => [template.id, template]));
-                        console.log(`AssetManager: Loaded ${Object.keys(this.vehicleTemplateDefinitions).length} vehicle templates.`);
-                    } else {
-                        console.warn(`AssetManager: Expected array from vehicle_templates.json, but got ${typeof parsedJson}. Skipping file.`);
-                    }
-                } else if (filename === 'dynamic_event_templates.json') {
-                    if (Array.isArray(parsedJson)) {
-                        this.dynamicEventTemplates = Object.fromEntries(parsedJson.map(template => [template.id, template]));
-                        console.log(`AssetManager: Loaded ${Object.keys(this.dynamicEventTemplates).length} dynamic event templates.`);
-                    } else {
-                        console.warn(`AssetManager: Expected array from dynamic_event_templates.json, but got ${typeof parsedJson}. Skipping file.`);
-                    }
-                } else if (filename === 'procedural_quest_templates.json') {
-                    if (Array.isArray(parsedJson)) {
-                        this.proceduralQuestTemplates = Object.fromEntries(parsedJson.map(template => [template.id, template]));
-                        console.log(`AssetManager: Loaded ${Object.keys(this.proceduralQuestTemplates).length} procedural quest templates.`);
-                    } else {
-                        console.warn(`AssetManager: Expected array from procedural_quest_templates.json, but got ${typeof parsedJson}. Skipping file.`);
-                    }
-                } else if (filename === 'items/traps.json') {
-                    if (typeof parsedJson === 'object' && !Array.isArray(parsedJson)) {
-                        this.trapDefinitionsData = parsedJson; // Directly assign the object
-                        // Optionally, validate that each trap has an 'id' matching its key, or add it if missing.
-                        // For now, direct assignment is simplest if the structure is { "trap_id_1": { ... }, "trap_id_2": { ... } }
-                        // And downstream code expects this.trapDefinitionsData["trap_id_1"]
-                        console.log(`AssetManager: Loaded ${Object.keys(this.trapDefinitionsData).length} trap definitions from object.`);
-                    } else if (Array.isArray(parsedJson)) { // Keep handling for array format if it might still occur
-                        this.trapDefinitionsData = Object.fromEntries(parsedJson.map(trap => [trap.id, trap]));
-                        console.log(`AssetManager: Loaded ${Object.keys(this.trapDefinitionsData).length} trap definitions from array.`);
-                    } else {
-                        console.warn(`AssetManager: Expected object or array from traps.json, but got ${typeof parsedJson}. Skipping file.`);
-                    }
-                } else if (filename === 'constructions.json') {
-                    if (Array.isArray(parsedJson)) {
-                        this.constructionDefinitions = Object.fromEntries(parsedJson.map(def => [def.id, def]));
-                        console.log(`AssetManager: Loaded ${Object.keys(this.constructionDefinitions).length} construction definitions.`);
-                    } else {
-                        console.warn(`AssetManager: Expected array from constructions.json, but got ${typeof parsedJson}. Skipping file.`);
-                        this.constructionDefinitions = {}; // Ensure it's an empty object on failure
-                    }
-                } else if (filename === 'families.json') {
-                    this.families = parsedJson;
-                    console.log(`AssetManager: Loaded families definition.`);
-                } else if (filename === 'perks.json') {
-                    this.perks = parsedJson;
-                    console.log(`AssetManager: Loaded perks definition.`);
-                } else if (filename === 'loot_tables.json') {
-                    this.lootTables = parsedJson;
-                    console.log(`AssetManager: Loaded loot tables.`);
-                } else if (filename === 'world_graph.json') {
-                    this.worldGraph = parsedJson;
-                    console.log(`AssetManager: Loaded world graph.`);
-                } else if (filename === 'areas.json') {
-                    this.areas = parsedJson;
-                    console.log(`AssetManager: Loaded areas.`);
-                } else if (['items/weapons.json', 'items/ammunition.json', 'items/consumables.json', 'items/clothing.json', 'items/tools.json', 'items/crafting_materials.json', 'items/containers.json', 'items/trap_kits.json', 'items/harvest_resources.json'].includes(filename)) {
-                    // All new item files are arrays of items
-                    if (Array.isArray(parsedJson)) {
-                        parsedJson.forEach(item => {
-                            if (tempItemsById[item.id]) { // Fixed the check to use tempItemsById
-                                console.warn(`AssetManager: Duplicate item ID '${item.id}' found while loading ${filename}. Overwriting previous entry from another file.`);
-                            }
-                            tempItemsById[item.id] = item;
-                        });
-                    } else {
-                        console.warn(`AssetManager: Expected array from ${filename}, but got ${typeof parsedJson}. Skipping file.`);
-                    }
-                }
+                return { filename, parsedJson };
             } catch (error) {
                 console.error(`Failed to load base definition file ${filename}:`, error);
+                return null;
+            }
+        });
+
+        const results = await Promise.all(fetchPromises);
+
+        for (const result of results) {
+            if (!result) continue;
+            const { filename, parsedJson } = result;
+
+            if (filename === 'level_curve.json') {
+                if (Array.isArray(parsedJson)) this.levelCurve = parsedJson;
+            } else if (filename === 'water_absorption.json') {
+                this.waterAbsorptionRules = parsedJson.mappings || [];
+            } else if (filename === 'tileset.json') {
+                this.tilesets = parsedJson;
+                console.log("AssetManager: Base tilesets loaded:", Object.keys(this.tilesets).length);
+            } else if (filename === 'npcs.json') {
+                this.npcDefinitions = Object.fromEntries(parsedJson.map(npc => [npc.id, npc]));
+            } else if (filename === 'fish.json') {
+                this.fishDefinitions = parsedJson;
+            } else if (filename === 'items/vehicle_parts.json') {
+                if (Array.isArray(parsedJson)) this.vehiclePartDefinitions = Object.fromEntries(parsedJson.map(p => [p.id, p]));
+            } else if (filename === 'vehicle_templates.json') {
+                if (Array.isArray(parsedJson)) this.vehicleTemplateDefinitions = Object.fromEntries(parsedJson.map(t => [t.id, t]));
+            } else if (filename === 'dynamic_event_templates.json') {
+                if (Array.isArray(parsedJson)) this.dynamicEventTemplates = Object.fromEntries(parsedJson.map(t => [t.id, t]));
+            } else if (filename === 'procedural_quest_templates.json') {
+                if (Array.isArray(parsedJson)) this.proceduralQuestTemplates = Object.fromEntries(parsedJson.map(t => [t.id, t]));
+            } else if (filename === 'items/traps.json') {
+                if (Array.isArray(parsedJson)) {
+                    this.trapDefinitionsData = Object.fromEntries(parsedJson.map(t => [t.id, t]));
+                } else {
+                    this.trapDefinitionsData = parsedJson;
+                }
+            } else if (filename === 'constructions.json') {
+                if (Array.isArray(parsedJson)) this.constructionDefinitions = Object.fromEntries(parsedJson.map(d => [d.id, d]));
+            } else if (filename === 'families.json') {
+                this.families = parsedJson;
+            } else if (filename === 'perks.json') {
+                this.perks = parsedJson;
+            } else if (filename === 'loot_tables.json') {
+                this.lootTables = parsedJson;
+            } else if (filename === 'world_graph.json') {
+                this.worldGraph = parsedJson;
+            } else if (filename === 'areas.json') {
+                this.areas = parsedJson;
+            } else if (filename.startsWith('items/')) {
+                if (Array.isArray(parsedJson)) {
+                    parsedJson.forEach(item => {
+                        if (tempItemsById[item.id]) {
+                            console.warn(`AssetManager: Duplicate item ID '${item.id}' in ${filename}. Overwriting.`);
+                        }
+                        tempItemsById[item.id] = item;
+                    });
+                }
             }
         }
-        console.log("Base asset definitions loaded.");
-        this.itemsById = tempItemsById; // All items are now consolidated into itemsById
-        console.log("AssetManager: All items loaded:", this.itemsById);
 
-        // Auto-generate tile definitions for items that have sprites but are not in tilesets
+        console.log("Base asset definitions loaded.");
+        this.itemsById = tempItemsById;
+
+        // Auto-generate tiles
         for (const itemId in this.itemsById) {
             const item = this.itemsById[itemId];
             if (item.sprite && !this.tilesets[itemId]) {
@@ -272,430 +152,234 @@ class AssetManager {
                         if (!this.tilesets[itemId].tags.includes(t)) this.tilesets[itemId].tags.push(t);
                     });
                 }
-                // console.log(`Generated tile definition for item: ${itemId}`);
             }
         }
 
-        // Populate familyItems map
+        // Populate familyItems
         for (const itemId in this.itemsById) {
             const item = this.itemsById[itemId];
             if (item.family) {
-                if (!this.familyItems.has(item.family)) {
-                    this.familyItems.set(item.family, []);
-                }
+                if (!this.familyItems.has(item.family)) this.familyItems.set(item.family, []);
                 this.familyItems.get(item.family).push(item);
             }
         }
-        console.log(`AssetManager: Populated familyItems map with ${this.familyItems.size} families.`);
 
-        // Load static quests from the quests folder using index.json
+        // Load static quests
         const questsDir = '/assets/definitions/quests/';
-        const questIndexUrl = questsDir + 'index.json';
-
         try {
-            const response = await fetch(questIndexUrl);
-            if (response.ok) {
-                const questFiles = await response.json();
-
+            const indexRes = await fetch(questsDir + 'index.json');
+            if (indexRes.ok) {
+                const questFiles = await indexRes.json();
                 if (Array.isArray(questFiles)) {
-                    for (const questFile of questFiles) {
-                        const url = questsDir + questFile;
+                    const questPromises = questFiles.map(async qFile => {
                         try {
-                            const qRes = await fetch(url);
-                            if (qRes.ok) {
-                                const qJson = await qRes.json();
-                                // Expecting array of quests or single quest object
-                                const qArray = Array.isArray(qJson) ? qJson : [qJson];
-                                qArray.forEach(quest => {
-                                    this.quests[quest.id] = quest;
-                                });
-                                console.log(`AssetManager: Loaded quest from ${questFile}`);
-                            } else {
-                                console.warn(`AssetManager: Failed to fetch quest file ${questFile}: ${qRes.status}`);
-                            }
-                        } catch (err) {
-                            console.error(`AssetManager: Failed to load quest file ${questFile}`, err);
+                            const qRes = await fetch(questsDir + qFile);
+                            if (qRes.ok) return await qRes.json();
+                        } catch (e) { console.error(e); }
+                        return null;
+                    });
+                    const questsLoaded = await Promise.all(questPromises);
+                    questsLoaded.flat().forEach(quest => {
+                        if (quest) {
+                            if (this.quests[quest.id]) console.warn(`AssetManager: Duplicate quest ID '${quest.id}'. Overwriting.`);
+                            this.quests[quest.id] = quest;
                         }
-                    }
-                    console.log(`AssetManager: Loaded ${Object.keys(this.quests).length} static quests from folder.`);
-                } else {
-                    console.warn("AssetManager: quest index.json is not an array.");
+                    });
                 }
-            } else {
-                 console.warn(`AssetManager: Failed to load quest index.json. Status: ${response.status}`);
             }
-        } catch (error) {
-            console.error("AssetManager: Error loading quests from index.json:", error);
-        }
+        } catch (e) { console.error("Error loading quests:", e); }
 
-        // After loading NPCs, load their dialogue files
+        // Dialogue loading
         const dialogueFilesToLoad = new Set();
-        Object.values(this.npcDefinitions).forEach(npcDef => {
-            if (npcDef.dialogueFile) {
-                dialogueFilesToLoad.add(npcDef.dialogueFile);
-            }
-        });
-
-        // Add dialogues used in map overrides that aren't in base definitions
+        Object.values(this.npcDefinitions).forEach(def => { if (def.dialogueFile) dialogueFilesToLoad.add(def.dialogueFile); });
         dialogueFilesToLoad.add('police_find_clue_quest_give.json');
 
-        for (const filename of dialogueFilesToLoad) {
-            const url = `/assets/dialogue/${filename}?t=${Date.now()}`;
+        const dialoguePromises = Array.from(dialogueFilesToLoad).map(async filename => {
             try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status} for ${filename}`);
+                const res = await fetch(`/assets/dialogue/${filename}`);
+                if (res.ok) {
+                    this.dialogues[filename] = await res.json();
                 }
-                this.dialogues[filename] = await response.json();
-                console.log(`AssetManager: Dialogue file '${filename}' loaded successfully.`);
-            } catch (error) {
-                console.error(`Failed to load dialogue file ${filename}:`, error);
-            }
-        }
+            } catch (e) { console.error(e); }
+        });
+        await Promise.all(dialoguePromises);
+        console.log("AssetManager: Dialogues loaded.");
     }
 
-    getVehiclePart(partId) {
-        return this.vehiclePartDefinitions[partId] || null;
-    }
+    getVehiclePart(partId) { return this.vehiclePartDefinitions[partId] || null; }
+    getVehicleTemplate(templateId) { return this.vehicleTemplateDefinitions[templateId] || null; }
+    getDynamicEventTemplate(templateId) { return this.dynamicEventTemplates[templateId] || null; }
+    getAllDynamicEventTemplates() { return this.dynamicEventTemplates; }
+    getProceduralQuestTemplate(templateId) { return this.proceduralQuestTemplates[templateId] || null; }
+    getAllProceduralQuestTemplates() { return this.proceduralQuestTemplates; }
 
-    getVehicleTemplate(templateId) {
-        return this.vehicleTemplateDefinitions[templateId] || null;
-    }
-
-    getDynamicEventTemplate(templateId) {
-        return this.dynamicEventTemplates[templateId] || null;
-    }
-
-    getAllDynamicEventTemplates() { // Added getter for all
-        return this.dynamicEventTemplates; // Returns the object; could also return Object.values(this.dynamicEventTemplates) for an array
-    }
-
-    getProceduralQuestTemplate(templateId) {
-        return this.proceduralQuestTemplates[templateId] || null;
-    }
-
-    getAllProceduralQuestTemplates() { // Added getter for all
-        return this.proceduralQuestTemplates; // Returns the object
-    }
-
-    getTileset(tilesetId) { // tilesetId is optional, will return all tilesets if not provided
+    getTileset(tilesetId) {
         if (tilesetId) {
-            // If the structure of tilesets.json is an object with multiple named tilesets
-            // return this.tilesets[tilesetId];
-            // For now, assuming tileset.json is the default tileset itself or an object with an id
-            if (this.tilesets && this.tilesets.id === tilesetId) {
-                return this.tilesets;
-            }
-            // If tilesets.json is an array of tilesets, you might search by id:
-            // return this.tilesets.find(ts => ts.id === tilesetId);
-            return this.tilesets[tilesetId]; // Simple lookup if this.tilesets is a map of tilesets
+            return this.tilesets[tilesetId];
         }
-        return this.tilesets; // Returns the whole tilesets object (likely the default one)
+        return this.tilesets;
     }
 
-    getItem(itemId) {
-        return this.itemsById[itemId] || null;
-    }
-
-    getNpc(npcId) {
-        return this.npcDefinitions[npcId] || null; // Use npcDefinitions
-    }
-
-    getDialogue(dialogueId) {
-        if (!this.dialogues[dialogueId]) {
-            console.error(`Dialogue file with id '${dialogueId}' not found in assetManager.`);
-            return null;
-        }
-        return this.dialogues[dialogueId];
-    }
-
-    getLevelCurve() {
-        return this.levelCurve || [];
-    }
+    getItem(itemId) { return this.itemsById[itemId] || null; }
+    getNpc(npcId) { return this.npcDefinitions[npcId] || null; }
+    getDialogue(dialogueId) { return this.dialogues[dialogueId] || null; }
+    getLevelCurve() { return this.levelCurve || []; }
+    getFish(fishId) { return fishId ? (this.fishDefinitions[fishId] || null) : this.fishDefinitions; }
 
     async loadData(url) {
         try {
-            const response = await fetch(`${url}?t=${Date.now()}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(response.status);
             return await response.json();
-        } catch (error) {
-            console.error(`Failed to load data from ${url}:`, error);
+        } catch (e) {
+            console.error(`Failed to load data from ${url}:`, e);
             return null;
         }
     }
 
-    getFish(fishId) {
-        if (fishId) {
-            return this.fishDefinitions[fishId] || null;
-        }
-        return this.fishDefinitions;
-    }
-
     async loadMap(mapId) {
-        console.log(`AssetManager.loadMap: Called with mapId = "${mapId}" (Type: ${typeof mapId})`);
-        let mapJsonData;
-        let loadedFromPath = '';
+        console.log(`AssetManager.loadMap: ${mapId}`);
+        // Cache Check
+        if (this.mapsById[mapId]) {
+            console.log(`AssetManager: Returning cached map '${mapId}'.`);
+            this.currentMap = this.mapsById[mapId];
+            return this.currentMap;
+        }
 
-        const baseMapPath = `/assets/maps/${mapId}.json?t=${Date.now()}`;
-        console.log(`AssetManager.loadMap: Attempting to load base map from: ${baseMapPath}`);
+        let mapJsonData;
+        const baseMapPath = `/assets/maps/${mapId}.json`;
         try {
             const response = await fetch(baseMapPath);
-            if (!response.ok) {
-                const error = new Error(`HTTP error! status: ${response.status} for base map ${mapId} at ${baseMapPath}`);
-                error.response = response;
-                throw error;
-            }
+            if (!response.ok) throw new Error(response.status);
             mapJsonData = await response.json();
-            loadedFromPath = baseMapPath;
-            console.log(`AssetManager.loadMap: Base map '${mapId}' data fetched successfully from ${baseMapPath}.`);
         } catch (error) {
-            console.error(`AssetManager.loadMap: Base map fetch failed for '${baseMapPath}'. Error: ${error.message}, Status: ${error.response ? error.response.status : 'N/A'}`);
-            this.currentMap = null;
-            return false; // Indicate failure
-        }
-
-        if (!mapJsonData) {
-            console.error(`Map data for '${mapId}' could not be loaded from any path.`);
+            console.error(`AssetManager.loadMap: Failed to load '${mapId}': ${error.message}`);
             this.currentMap = null;
             return false;
         }
 
-        // Transform map data
-        const processedMapData = { id: mapId, name: mapId }; // Default name
-
+        const processedMapData = { id: mapId, name: mapId };
         if (this.mapIndexData) {
             const mapInfo = this.mapIndexData.find(m => m.id === mapId);
-            if (mapInfo && mapInfo.name) {
-                processedMapData.name = mapInfo.name;
-            }
+            if (mapInfo && mapInfo.name) processedMapData.name = mapInfo.name;
         }
 
-        let width = mapJsonData.width; // Width and height are still relevant for the 2D plane of each Z-level
-        let height = mapJsonData.height;
-
-        // Infer dimensions from the first Z-level's landscape layer if not directly available
-        if ((width === undefined || height === undefined) && mapJsonData.levels) {
-            const firstZLevelKey = Object.keys(mapJsonData.levels)[0];
-            if (firstZLevelKey && mapJsonData.levels[firstZLevelKey] && mapJsonData.levels[firstZLevelKey].landscape) {
-                const landscapeLayer = mapJsonData.levels[firstZLevelKey].landscape;
-                if (Array.isArray(landscapeLayer) && landscapeLayer.length > 0 && Array.isArray(landscapeLayer[0])) {
-                    height = landscapeLayer.length;
-                    width = landscapeLayer[0].length;
-                    console.log(`Map dimensions for '${mapId}' inferred from Z-level '${firstZLevelKey}' landscape layer: ${width}x${height}`);
-                } else {
-                    console.warn(`Map dimensions could not be inferred for map '${mapId}' from Z-level '${firstZLevelKey}'. Using 0x0.`);
-                    width = 0; height = 0;
-                }
-            } else {
-                console.warn(`Map dimensions could not be inferred for map '${mapId}' as levels or landscape data is missing. Using 0x0.`);
-                width = 0; height = 0;
+        // Robust dimensions check
+        let width = 0;
+        let height = 0;
+        if (mapJsonData.levels) {
+            for (const z in mapJsonData.levels) {
+                const level = mapJsonData.levels[z];
+                ['landscape', 'building', 'item', 'roof'].forEach(layer => {
+                    if (level[layer] && Array.isArray(level[layer])) {
+                        height = Math.max(height, level[layer].length);
+                        if (level[layer].length > 0 && Array.isArray(level[layer][0])) {
+                            width = Math.max(width, level[layer][0].length);
+                        }
+                    }
+                });
             }
-        } else if (width === undefined || height === undefined) {
-            console.warn(`Map dimensions (width/height) missing for map '${mapId}' and could not be inferred. Using 0x0.`);
-            width = 0; height = 0;
         }
+        if (width === 0 && mapJsonData.width) width = mapJsonData.width;
+        if (height === 0 && mapJsonData.height) height = mapJsonData.height;
 
-        processedMapData.dimensions = { width, height }; // These are per-Z-level dimensions
-        processedMapData.levels = mapJsonData.levels || {}; // Store the Z-levels structure
-        processedMapData.startPos = mapJsonData.startPos || { x: 0, y: 0, z: 0 }; // Include Z in startPos
+        processedMapData.dimensions = { width, height };
+        processedMapData.levels = mapJsonData.levels || {};
+        processedMapData.startPos = mapJsonData.startPos || { x: 0, y: 0, z: 0 };
 
-        processedMapData.portals = mapJsonData.portals || [];
-        processedMapData.traps = mapJsonData.traps || []; // Load traps from map data
-        // Ensure NPCs have Z coordinate, default to 0 if missing from old map formats during transition
+        const normalizeZ = (item) => {
+            if (!item.z && item.z !== 0) item.z = 0;
+            return item;
+        };
+
+        processedMapData.portals = (mapJsonData.portals || []).map(normalizeZ);
+        processedMapData.traps = (mapJsonData.traps || []).map(normalizeZ);
+        processedMapData.container_instances = (mapJsonData.container_instances || []).map(normalizeZ);
+
         processedMapData.npcs = (mapJsonData.npcs || []).map(npc => {
-            // Prioritize npc.mapPos (from map maker format), then npc.pos (older/other format), then default.
             const positionData = npc.mapPos || npc.pos || { x: 0, y: 0, z: 0 };
             const finalNpc = {
-                ...npc, // Spread all original properties from the map file's NPC entry
-                pos: {  // Ensure the final structure uses 'pos' for consistency downstream
+                ...npc,
+                pos: {
                     x: positionData.x !== undefined ? positionData.x : 0,
                     y: positionData.y !== undefined ? positionData.y : 0,
                     z: positionData.z !== undefined ? positionData.z : 0
                 }
             };
-            // Remove mapPos if it exists to avoid confusion, as 'pos' is now the standard
-            if (finalNpc.hasOwnProperty('mapPos')) {
-                delete finalNpc.mapPos;
-            }
+            // Preserve mapPos
+            finalNpc.mapPos = { ...finalNpc.pos };
             return finalNpc;
         });
-        processedMapData.container_instances = mapJsonData.container_instances || []; // Future: may need Z
-        processedMapData.tileset = mapJsonData.tileset || null; // Or a default tileset ID
+
+        processedMapData.tileset = mapJsonData.tileset || null;
 
         this.currentMap = processedMapData;
-        this.mapsById[mapId] = processedMapData; // Cache the processed map
+        this.mapsById[mapId] = processedMapData;
 
         this._validateMapTiles(this.currentMap);
-
-        console.log(`Map '${mapId}' processed and loaded successfully from ${loadedFromPath}. Name: ${processedMapData.name}`);
-        return processedMapData; // Return processed map data
+        console.log(`Map '${mapId}' processed and cached.`);
+        return processedMapData;
     }
 
     _validateMapTiles(mapData) {
-        if (!mapData || !mapData.id || !mapData.levels) { // Check for .levels now
-            console.warn(`Invalid map data for validation (missing id or levels): ${mapData ? mapData.id : 'unknown map'}`);
-            return;
-        }
-
-        for (const zLevelKey in mapData.levels) {
-            if (mapData.levels.hasOwnProperty(zLevelKey)) {
-                const levelData = mapData.levels[zLevelKey];
-                if (!levelData) {
-                    console.warn(`Missing level data for Z-level '${zLevelKey}' in map '${mapData.id}'.`);
-                    continue;
-                }
-                // Define the layers to check within each Z-level
-                const layersToValidate = ['landscape', 'building', 'item', 'roof'];
-                for (const layerName of layersToValidate) {
-                    if (levelData.hasOwnProperty(layerName)) {
-                        const layer = levelData[layerName];
-                        if (Array.isArray(layer)) {
-                            for (let r = 0; r < layer.length; r++) {
-                                const row = layer[r];
-                                if (Array.isArray(row)) {
-                                    for (let c = 0; c < row.length; c++) {
-                                        const tileData = row[c];
-                                        // Tile data can be a string ID or an object { tileId: "ID", ... }
-                                        const tileId = (typeof tileData === 'object' && tileData !== null && tileData.tileId !== undefined)
-                                            ? tileData.tileId
-                                            : tileData;
-
-                                        if (tileId !== null && tileId !== "" && !this.getTileDefinition(tileId)) {
-                                            console.warn(`Unknown tile ID: '${tileId}' in map '${mapData.id}', Z-level '${zLevelKey}', layer '${layerName}', at [${r},${c}] (after alias check)`);
-                                        }
-                                    }
+        if (!mapData || !mapData.levels) return;
+        for (const z in mapData.levels) {
+            const level = mapData.levels[z];
+            ['landscape', 'building', 'item', 'roof'].forEach(layerName => {
+                const layer = level[layerName];
+                if (Array.isArray(layer)) {
+                    layer.forEach((row, r) => {
+                        if (Array.isArray(row)) {
+                            row.forEach((tileData, c) => {
+                                const tileId = (typeof tileData === 'object' && tileData?.tileId) ? tileData.tileId : tileData;
+                                if (tileId && tileId !== "" && !this.getTileDefinition(tileId)) {
+                                    console.warn(`Unknown tile ID: '${tileId}' in map '${mapData.id}' at [${r},${c},${z}]`);
                                 }
-                            }
-                        } else if (layer !== undefined && layer !== null) {
-                            console.warn(`Layer '${layerName}' in Z-level '${zLevelKey}' of map '${mapData.id}' is not an array.`);
+                            });
                         }
-                    } else {
-                        // It's okay if a layer like 'roof' or 'item' is missing, but landscape/building should ideally be present.
-                        // console.log(`Layer '${layerName}' not present in Z-level '${zLevelKey}' of map '${mapData.id}'.`);
-                    }
+                    });
                 }
-            }
+            });
         }
-    }
-
-    getMap(mapId) {
-        return this.mapsById[mapId] || null;
     }
 
     findItemsByTag(tag) {
-        if (!tag || typeof tag !== 'string') {
-            console.warn("findItemsByTag: tag must be a non-empty string.");
-            return [];
-        }
+        if (!tag) return [];
         const lowerCaseTag = tag.toLowerCase();
-        const foundItems = [];
-        for (const itemId in this.itemsById) {
-            if (this.itemsById.hasOwnProperty(itemId)) {
-                const item = this.itemsById[itemId];
-                if (item && Array.isArray(item.tags)) {
-                    if (item.tags.some(t => typeof t === 'string' && t.toLowerCase() === lowerCaseTag)) {
-                        foundItems.push(item);
-                    }
-                }
-            }
-        }
-        return foundItems;
+        return Object.values(this.itemsById).filter(item => item.tags && item.tags.some(t => t.toLowerCase() === lowerCaseTag));
     }
 
     findItemsByFamily(family) {
-        if (!family || typeof family !== 'string') return [];
         return this.familyItems.get(family) || [];
     }
 
     findNpcsByTag(tag) {
-        if (!tag || typeof tag !== 'string') {
-            console.warn("findNpcsByTag: tag must be a non-empty string.");
-            return [];
-        }
+        if (!tag) return [];
         const lowerCaseTag = tag.toLowerCase();
-        const foundNpcs = [];
-        for (const npcId in this.npcDefinitions) { // Use npcDefinitions
-            if (this.npcDefinitions.hasOwnProperty(npcId)) {
-                const npc = this.npcDefinitions[npcId];
-                if (npc && Array.isArray(npc.tags)) {
-                    if (npc.tags.some(t => typeof t === 'string' && t.toLowerCase() === lowerCaseTag)) {
-                        foundNpcs.push(npc);
-                    }
-                }
-            }
-        }
-        return foundNpcs;
+        return Object.values(this.npcDefinitions).filter(npc => npc.tags && npc.tags.some(t => t.toLowerCase() === lowerCaseTag));
     }
 
     findAssets(queryText, assetTypes) {
         const results = [];
-        if (!queryText || typeof queryText !== 'string' || queryText.trim() === "") {
-            console.warn("findAssets: queryText must be a non-empty string.");
-            return results;
-        }
-        const lowerCaseQuery = queryText.toLowerCase();
+        if (!queryText) return results;
+        const lower = queryText.toLowerCase();
+        const types = new Set((assetTypes || []).map(t => t.toLowerCase()));
+        const searchAll = types.size === 0;
 
-        const searchAllTypes = !assetTypes || (Array.isArray(assetTypes) && assetTypes.length === 0);
-        const typesToSearch = new Set(Array.isArray(assetTypes) ? assetTypes.map(t => t.toLowerCase()) : []);
-
-        // Search items
-        if (searchAllTypes || typesToSearch.has('item')) {
-            for (const itemId in this.itemsById) {
-                if (this.itemsById.hasOwnProperty(itemId)) {
-                    const item = this.itemsById[itemId];
-                    if (!item) continue;
-
-                    let match = false;
-                    if (item.name && typeof item.name === 'string' && item.name.toLowerCase().includes(lowerCaseQuery)) {
-                        match = true;
-                    }
-                    if (!match && item.id && typeof item.id === 'string' && item.id.toLowerCase().includes(lowerCaseQuery)) {
-                        match = true;
-                    }
-                    if (!match && Array.isArray(item.tags)) {
-                        if (item.tags.some(tag => typeof tag === 'string' && tag.toLowerCase().includes(lowerCaseQuery))) {
-                            match = true;
-                        }
-                    }
-                    if (match) {
-                        results.push(item);
-                    }
+        if (searchAll || types.has('item')) {
+            Object.values(this.itemsById).forEach(item => {
+                if (item.name?.toLowerCase().includes(lower) || item.id?.toLowerCase().includes(lower) || item.tags?.some(t => t.toLowerCase().includes(lower))) {
+                    results.push(item);
                 }
-            }
+            });
         }
-
-        // Search NPCs
-        if (searchAllTypes || typesToSearch.has('npc')) {
-            for (const npcId in this.npcDefinitions) { // Use npcDefinitions
-                if (this.npcDefinitions.hasOwnProperty(npcId)) {
-                    const npc = this.npcDefinitions[npcId];
-                    if (!npc) continue;
-
-                    let match = false;
-                    if (npc.name && typeof npc.name === 'string' && npc.name.toLowerCase().includes(lowerCaseQuery)) {
-                        match = true;
-                    }
-                    if (!match && npc.id && typeof npc.id === 'string' && npc.id.toLowerCase().includes(lowerCaseQuery)) {
-                        match = true;
-                    }
-                    if (!match && Array.isArray(npc.tags)) {
-                        if (npc.tags.some(tag => typeof tag === 'string' && tag.toLowerCase().includes(lowerCaseQuery))) {
-                            match = true;
-                        }
-                    }
-                    if (match) {
-                        // Check if this object is already in results to prevent duplicates if searching multiple types
-                        // and an object somehow got miscategorized or if IDs overlap (though not expected with current structure)
-                        if (!results.includes(npc)) { // Simple check, could be more performant for very large N
-                            results.push(npc);
-                        }
-                    }
+        if (searchAll || types.has('npc')) {
+            Object.values(this.npcDefinitions).forEach(npc => {
+                if (npc.name?.toLowerCase().includes(lower) || npc.id?.toLowerCase().includes(lower) || npc.tags?.some(t => t.toLowerCase().includes(lower))) {
+                    results.push(npc);
                 }
-            }
+            });
         }
-        // Future extension for other asset types (tilesets, maps) would go here.
         return results;
     }
 }
