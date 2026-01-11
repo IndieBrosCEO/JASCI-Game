@@ -473,7 +473,12 @@
                 }
             }
 
-            // 2. Tear Gas (End of Turn)
+            // 2. Update Health Crisis (End of Turn)
+            if (window.updateHealthCrisis) {
+                window.updateHealthCrisis(previousAttackerEntity);
+            }
+
+            // 3. Tear Gas (End of Turn)
             if (this.gameState.environmentalEffects?.tearGasTiles) {
                 const entityPos = previousAttackerEntity === this.gameState ? this.gameState.playerPos : previousAttackerEntity.mapPos;
                 if (entityPos) {

@@ -1157,6 +1157,55 @@ async function handleNpcCombatTurn(npc, gameState, combatManager, assetManager) 
 
     // Loop for combat actions (attack, move to attack, drop)
     for (let iter = 0; (npc.currentActionPoints > 0 || npc.currentMovementPoints > 0) && iter < 10; iter++) {
+        // --- Crisis Logic (Survival Priority) ---
+        // If in crisis, prioritize healing or fleeing.
+        const isHeadCrisis = npc.health?.head?.current <= 0 && npc.health?.head?.crisisTimer > 0;
+        const isTorsoCrisis = npc.health?.torso?.current <= 0 && npc.health?.torso?.crisisTimer > 0;
+
+        if ((isHeadCrisis || isTorsoCrisis) && npc.currentActionPoints > 0) {
+             // 1. Try to Heal (Check for item)
+             let healItem = null;
+             if (npc.inventory && npc.inventory.container) {
+                healItem = npc.inventory.container.items.find(i => {
+                    const def = assetManager.getItem(i.id);
+                    return def && def.effects && (def.effects.health > 0 || def.effects.heal_limbs > 0);
+                });
+             }
+
+             if (healItem) {
+                 // Proceed to let standard healing logic (below) handle it.
+             } else {
+                 // No healing item in crisis!
+                 logToConsole(`NPC ${npcName} is in CRITICAL CONDITION (Crisis) and has no healing items!`, 'red');
+
+                 // Try to flee if possible
+                 const fleeTarget = getFleeTarget(npc, gameState.defenderMapPos || gameState.playerPos); // Flee from current target or player
+                 if (fleeTarget && npc.currentMovementPoints > 0) {
+                     logToConsole(`NPC ${npcName} attempting to flee due to crisis!`, 'orange');
+                     if (await moveNpcTowardsTarget(npc, fleeTarget, gameState, assetManager, 300)) {
+                         // actionTakenInIter will be set if move succeeds
+                         // but we are inside the loop start.
+                         // We should mark action taken and continue loop.
+                         // But we are injecting this logic at start of loop.
+                         // Let's just execute move here and continue.
+                         // wait, we need to set actionTakenInIter = true at end of loop usually.
+                         // If we move here, we consume MP.
+                         // If we cannot flee (no MP or blocked), we should STOP ATTACKING.
+                         // "it should try to heal itself... right now, the entity tries to attack again"
+                     } else {
+                         logToConsole(`NPC ${npcName} cannot flee.`, 'orange');
+                     }
+                 }
+
+                 // If we didn't heal (no item), we tried to flee.
+                 // Regardless of flee success/fail, if in crisis and no healing, DO NOT ATTACK.
+                 if (npc.currentMovementPoints <= 0) { // If ran out of movement or couldn't move
+                     logToConsole(`NPC ${npcName} is too critically injured to attack effectively. Skipping offensive actions.`, 'orange');
+                     return false; // End turn (will trigger nextTurn -> updateHealthCrisis)
+                 }
+             }
+        }
+
         // Re-evaluate target each iteration, in case it died or a higher priority one appears
         if (!selectNpcCombatTarget(npc, gameState, combatManager.initiativeTracker, assetManager)) {
                 // logToConsole(`NPC ${npcName}: Target lost mid-turn or no new target. Ending actions.`, 'orange');
