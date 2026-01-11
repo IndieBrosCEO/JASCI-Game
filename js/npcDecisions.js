@@ -379,8 +379,8 @@ function findNearestInterestingTile(npc, gameState, assetManager, criteriaFn, ra
             const bottomTileRaw = levelData.bottom?.[y]?.[x];
             const middleTileRaw = levelData.middle?.[y]?.[x];
 
-            const bottomId = (typeof bottomTileRaw === 'object' && bottomTileRaw.tileId) ? bottomTileRaw.tileId : bottomTileRaw;
-            const middleId = (typeof middleTileRaw === 'object' && middleTileRaw.tileId) ? middleTileRaw.tileId : middleTileRaw;
+            const bottomId = (typeof bottomTileRaw === 'object' && bottomTileRaw !== null && bottomTileRaw.tileId) ? bottomTileRaw.tileId : bottomTileRaw;
+            const middleId = (typeof middleTileRaw === 'object' && middleTileRaw !== null && middleTileRaw.tileId) ? middleTileRaw.tileId : middleTileRaw;
 
             const bottomDef = assetManager.tilesets[bottomId];
             const middleDef = assetManager.tilesets[middleId];
@@ -606,8 +606,60 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
                 goalTarget = findNearestInterestingTile(npc, gameState, assetManager, (def) => def && (def.tags && (def.tags.includes('container'))));
                 if (goalTarget && getDistance3D(npc.mapPos, goalTarget) <= 1.5) {
                     logToConsole(`NPC ${npcName} is scavenging a container.`, 'cyan');
-                    // TODO: Actually loot items from the container if possible?
-                    // For now, just busy wait simulating searching.
+
+                    // Find or Initialize Container
+                    let containerInstance = gameState.containers.find(c =>
+                        c.x === goalTarget.x && c.y === goalTarget.y && c.z === goalTarget.z
+                    );
+
+                    if (!containerInstance) {
+                        // Need to get tileId to create container
+                        const mapData = window.mapRenderer.getCurrentMapData();
+                        const levelData = mapData.levels[goalTarget.z.toString()];
+                        // Check middle then bottom
+                        let tRaw = levelData.middle?.[goalTarget.y]?.[goalTarget.x];
+                        if (!tRaw) tRaw = levelData.bottom?.[goalTarget.y]?.[goalTarget.x];
+
+                        const tId = (typeof tRaw === 'object' && tRaw !== null && tRaw.tileId) ? tRaw.tileId : tRaw;
+                        const def = assetManager.tilesets[tId];
+
+                        if (def && def.tags && def.tags.includes('container')) {
+                            const ContainerClass = window.InventoryContainer;
+                            if (ContainerClass) {
+                                containerInstance = new ContainerClass(def.name || "Container", "M");
+                                containerInstance.x = goalTarget.x;
+                                containerInstance.y = goalTarget.y;
+                                containerInstance.z = goalTarget.z;
+                                containerInstance.tileId = tId;
+                                containerInstance.id = `container_${goalTarget.x}_${goalTarget.y}_${goalTarget.z}_${Date.now()}`;
+
+                                if (window.populateContainer) {
+                                    window.populateContainer(containerInstance);
+                                }
+                                gameState.containers.push(containerInstance);
+                            }
+                        }
+                    }
+
+                    // Loot Item
+                    if (containerInstance && containerInstance.items && containerInstance.items.length > 0) {
+                        const itemIdx = Math.floor(Math.random() * containerInstance.items.length);
+                        const itemToLoot = containerInstance.items[itemIdx];
+
+                        if (itemToLoot) {
+                            if (npc.inventory && window.inventoryManager) {
+                                if (window.inventoryManager.addItem(itemToLoot, npc.inventory.container.items, npc.inventory.container.maxSlots)) {
+                                    containerInstance.items.splice(itemIdx, 1);
+                                    logToConsole(`NPC ${npcName} looted ${itemToLoot.name} from ${containerInstance.name}.`, 'cyan');
+                                } else {
+                                    logToConsole(`NPC ${npcName} failed to loot ${itemToLoot.name} (Inventory Full).`, 'orange');
+                                }
+                            }
+                        }
+                    } else {
+                        logToConsole(`NPC ${npcName} found nothing in ${containerInstance ? containerInstance.name : "container"}.`, 'grey');
+                    }
+
                     npc.memory.actionCooldown = 5;
                     return;
                 }
