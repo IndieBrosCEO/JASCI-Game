@@ -72,7 +72,9 @@ class DialogueManager {
 
         this.updateSpeakerDisplay();
 
-        this.dialogueText.innerHTML = this.parseText(node.text);
+        // Use textContent for safety against XSS.
+        // CSS white-space: pre-wrap on #dialogueText handles newlines.
+        this.dialogueText.textContent = this.parseText(node.text);
         this.dialogueOptions.innerHTML = '';
 
         if (node.choices && node.choices.length > 0) {
@@ -137,7 +139,7 @@ class DialogueManager {
         this.speakerName.textContent = title;
         this.speakerPortraitImage.style.display = 'none';
         this.speakerAsciiPortrait.style.display = 'none';
-        this.dialogueText.innerHTML = message;
+        this.dialogueText.textContent = message;
         this.dialogueOptions.innerHTML = '';
         const li = document.createElement('li');
         li.textContent = "[Close]";
@@ -151,11 +153,13 @@ class DialogueManager {
         const npcDef = this.assetManager.getNpc(this.currentNpc.definitionId);
         this.speakerName.textContent = this.currentNpc.name;
 
-        if (npcDef.portraitHeadUrl) {
+        if (npcDef && npcDef.portraitHeadUrl) {
             this.speakerPortraitImage.src = npcDef.portraitHeadUrl;
             this.speakerPortraitImage.style.display = 'block';
             this.speakerAsciiPortrait.style.display = 'none';
-        } else if (npcDef.asciiPortrait) {
+        } else if (npcDef && npcDef.asciiPortrait) {
+            // innerHTML is used here to render colored ASCII spans.
+            // Content comes from static definitions, considered trusted.
             this.speakerAsciiPortrait.innerHTML = npcDef.asciiPortrait;
             this.speakerAsciiPortrait.style.display = 'block';
             this.speakerPortraitImage.style.display = 'none';
@@ -172,8 +176,9 @@ class DialogueManager {
         }
 
         if (condition.type === 'skillCheck' && condition.expression) {
-            // E.g., "skill:Charisma>10"
-            const parts = condition.expression.match(/(\w+):(\w+)([><=]+)(\d+)/);
+            // E.g., "skill:Charisma>10" or "skill:Melee Weapons>5"
+            // Updated regex to support spaces in stat/skill names
+            const parts = condition.expression.match(/^(\w+):([\w\s]+)([><=]+)(\d+)$/);
             if (!parts) {
                 console.warn(`Invalid condition expression: ${condition.expression}`);
                 return true; // Default to true if expression is malformed
@@ -181,12 +186,14 @@ class DialogueManager {
 
             const [, type, statName, operator, valueStr] = parts;
             const value = parseInt(valueStr, 10);
-            let playerValue;
+            let playerValue = 0;
 
             if (type === 'skill') {
-                playerValue = this.gameState.player.skills[statName] || 0;
+                // Use helper to get skill value (handles array search)
+                playerValue = window.getSkillValue ? window.getSkillValue(statName, this.gameState) : 0;
             } else if (type === 'stat') {
-                playerValue = this.gameState.player.stats[statName] || 0;
+                // Use helper to get stat value
+                playerValue = window.getStatValue ? window.getStatValue(statName, this.gameState) : 0;
             } else {
                 console.warn(`Unknown condition type: ${type}`);
                 return true;
@@ -241,17 +248,11 @@ class DialogueManager {
                     if (params.length === 2) {
                         const itemId = params[0];
                         const quantity = parseInt(params[1], 10);
-                        if (window.inventoryManager) {
-                            // Check if addItemToInventoryById is available (preferred for string IDs)
-                            if (typeof window.inventoryManager.addItemToInventoryById === 'function') {
-                                window.inventoryManager.addItemToInventoryById(itemId, quantity);
-                            } else {
-                                // Fallback or if addItem is robust enough (though inventoryManager.addItem expects object)
-                                window.inventoryManager.addItem(itemId, quantity);
-                            }
+                        if (window.inventoryManager && typeof window.inventoryManager.addItemToInventoryById === 'function') {
+                            window.inventoryManager.addItemToInventoryById(itemId, quantity);
                             console.log(`Gave player ${quantity} of ${itemId}`);
                         } else {
-                            console.warn("inventoryManager not found, cannot give item.");
+                            console.warn("inventoryManager (or addItemToInventoryById) not found, cannot give item.");
                         }
                     } else {
                         console.warn(`Invalid giveItem action format: ${actionString}`);
@@ -286,7 +287,8 @@ class DialogueManager {
                         const qType = params[1];
                         const qTarget = params[2];
                         const qAmt = params.length > 3 ? parseInt(params[3]) : 1;
-                        window.questManager.updateObjective(qType, qTarget, qAmt);
+                        // Pass qId to updateObjective to target specific quest
+                        window.questManager.updateObjective(qType, qTarget, qAmt, qId);
                     }
                     break;
                 case 'recruit':
