@@ -235,9 +235,9 @@ async function endTurn_internal() { // Make async
         window.gasManager.processTurn();
     }
 
-    // Advance Time (15 seconds per turn)
-    if (window.TimeManager && typeof window.TimeManager.advanceSeconds === 'function') {
-        window.TimeManager.advanceSeconds(gameState, 15);
+    // Advance Time (1 minute per turn)
+    if (window.TimeManager && typeof window.TimeManager.advanceTime === 'function') {
+        window.TimeManager.advanceTime(gameState, 1);
     }
 
     gameState.currentTurn++;
