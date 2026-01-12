@@ -66,10 +66,12 @@ class QuestManager {
         return true;
     }
 
-    updateObjective(type, target, amount = 1) {
+    updateObjective(type, target, amount = 1, questId = null) {
         let updated = false;
         this.gameState.activeQuests.forEach(quest => {
             if (quest.status !== 'active') return;
+            // If a specific questId is provided, skip others
+            if (questId && quest.id !== questId) return;
 
             let questUpdated = false;
             quest.objectives.forEach(obj => {
