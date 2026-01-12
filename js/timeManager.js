@@ -15,29 +15,56 @@ const TimeManager = {
         if (typeof ticksToAdvance !== 'number' || ticksToAdvance <= 0) {
             return;
         }
+        const minutesToAdd = ticksToAdvance / this.TICKS_PER_MINUTE;
+        this.addMinutes(gameState, minutesToAdd);
+    },
 
-        for (let i = 0; i < ticksToAdvance; i++) {
-            gameState.currentTime.minutes += (1 / this.TICKS_PER_MINUTE);
-
-            if (gameState.currentTime.minutes >= this.MINUTES_PER_HOUR) {
-                gameState.currentTime.minutes -= this.MINUTES_PER_HOUR;
-                gameState.currentTime.hours++;
-
-                // Hourly updates (like hunger/thirst decrement)
-                this.processHourlyNeeds(gameState);
-
-                if (gameState.currentTime.hours >= this.HOURS_PER_DAY) {
-                    gameState.currentTime.hours -= this.HOURS_PER_DAY;
-                    // Potentially trigger daily events or resets here
-                    logToConsole("A new day has begun.", "lightblue");
-                    this.processDailyNeeds(gameState);
-                }
-            }
+    /**
+     * Advances the game time by a specified number of seconds.
+     * @param {object} gameState - The global game state object.
+     * @param {number} seconds - The number of seconds to advance.
+     */
+    advanceSeconds: function (gameState, seconds) {
+        if (typeof seconds !== 'number' || seconds <= 0) {
+            return;
         }
+        const minutesToAdd = seconds / 60;
+        this.addMinutes(gameState, minutesToAdd);
+    },
 
-        // logToConsole(`Time advanced by ${ticksToAdvance} tick(s). Current time: ${this.getClockDisplay(gameState).clockString}`, 'debug');
+    /**
+     * Adds minutes to the game time and handles rollovers.
+     * @param {object} gameState - The global game state.
+     * @param {number} minutes - The number of minutes to add.
+     */
+    addMinutes: function(gameState, minutes) {
+        gameState.currentTime.minutes += minutes;
+        this.checkTimeRollover(gameState);
+
+        // logToConsole(`Time advanced. Current time: ${this.getClockDisplay(gameState).clockString}`, 'debug');
         if (window.updatePlayerStatusDisplay) { // Ensure UI updates after time change
             window.updatePlayerStatusDisplay();
+        }
+    },
+
+    /**
+     * Checks for time unit rollovers (minutes -> hours -> days).
+     * @param {object} gameState - The global game state.
+     */
+    checkTimeRollover: function(gameState) {
+        while (gameState.currentTime.minutes >= this.MINUTES_PER_HOUR) {
+            gameState.currentTime.minutes -= this.MINUTES_PER_HOUR;
+            gameState.currentTime.hours++;
+
+            // Hourly updates (like hunger/thirst decrement)
+            this.processHourlyNeeds(gameState);
+
+            if (gameState.currentTime.hours >= this.HOURS_PER_DAY) {
+                gameState.currentTime.hours -= this.HOURS_PER_DAY;
+                // Potentially trigger daily events or resets here
+                logToConsole("A new day has begun.", "lightblue");
+                this.processDailyNeeds(gameState);
+            }
         }
     },
 
