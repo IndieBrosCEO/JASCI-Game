@@ -12,7 +12,7 @@ class CraftingManager {
         this.recipeResolver = new RecipeResolver(assetManager);
     }
 
-    async initialize() {
+    initialize() {
         this.recipes = {}; // Initialize as an empty object
 
         if (!this.assetManager || !this.assetManager.itemsById) {
@@ -61,7 +61,8 @@ class CraftingManager {
     getAllRecipes() {
         logToConsole(`${this.logPrefix} getAllRecipes CALLED.`);
         if (!this.recipes || typeof this.recipes !== 'object') {
-            logToConsole(`${this.logPrefix}   this.recipes is not a valid object or is null/undefined. Value:`, this.recipes, 'orange');
+            logToConsole(`${this.logPrefix}   this.recipes is not a valid object or is null/undefined.`, 'orange');
+            // logToConsole(this.recipes); // Removed raw object logging
             return [];
         }
 
@@ -69,7 +70,7 @@ class CraftingManager {
         logToConsole(`${this.logPrefix}   Object.values(this.recipes) produced an array of length: ${recipeValues.length}`);
 
         if (recipeValues.length > 0) {
-            logToConsole(`${this.logPrefix}   First recipe object from Object.values():`, recipeValues[0]);
+            // logToConsole(`${this.logPrefix}   First recipe object from Object.values():`, recipeValues[0]); // Removed raw object logging
             if (typeof recipeValues[0].id !== 'undefined') {
                 logToConsole(`${this.logPrefix}   ID of first recipe: ${recipeValues[0].id}`);
             } else {
@@ -83,9 +84,10 @@ class CraftingManager {
      * Checks if the player has the required components and meets other conditions for a specific recipe.
      * @param {string} recipeId - The ID of the recipe.
      * @param {object} playerInventory - The player's inventory (e.g., gameState.inventory.container.items).
+     * @param {string} [activeStationType] - Optional override for active station. Defaults to gameState.activeCraftingStationType.
      * @returns {boolean} True if the player can craft the item, false otherwise.
      */
-    canCraft(recipeId, playerInventory) {
+    canCraft(recipeId, playerInventory, activeStationType = null) {
         const recipe = this.recipes[recipeId];
         if (!recipe) {
             logToConsole(`${this.logPrefix} Recipe ID '${recipeId}' not found.`, 'red');
@@ -93,15 +95,15 @@ class CraftingManager {
         }
 
         // Check skill requirements
-        const player = this.gameState;
+        const player = this.gameState; // getSkillValue correctly handles gameState as player
         if (recipe.skillRequired && recipe.skillLevelRequired) {
             if (getSkillValue(recipe.skillRequired, player) < recipe.skillLevelRequired) return false;
         }
 
-        // Check requiredStationType against gameState.activeCraftingStationType
-        // This check is important for determining if crafting is possible *at the current station*
+        // Check requiredStationType against active station
+        const stationToCheck = activeStationType || this.gameState.activeCraftingStationType;
         if (recipe.requiredStationType) {
-            if (!this.gameState.activeCraftingStationType || this.gameState.activeCraftingStationType !== recipe.requiredStationType) {
+            if (!stationToCheck || stationToCheck !== recipe.requiredStationType) {
                 return false;
             }
         }
@@ -129,7 +131,12 @@ class CraftingManager {
      * @returns {boolean} True if crafting was successful, false otherwise.
      */
     async craftItem(recipeId) {
-        const playerInventoryItems = this.gameState.inventory.container.items; // Direct access for now
+        if (!this.gameState.inventory || !this.gameState.inventory.container || !this.gameState.inventory.container.items) {
+            logToConsole(`${this.logPrefix} Inventory not initialized. Cannot craft.`, 'red');
+            return false;
+        }
+
+        const playerInventoryItems = this.gameState.inventory.container.items;
         if (!this.canCraft(recipeId, playerInventoryItems)) {
             logToConsole(`${this.logPrefix} Pre-craft check failed for '${recipeId}'. Player may be missing components, skill, or workbench.`, 'orange');
             if (window.uiManager) window.uiManager.showToastNotification("Cannot craft: missing components, skill, or required workbench.", "error");
@@ -139,39 +146,58 @@ class CraftingManager {
 
         const recipe = this.recipes[recipeId];
 
+        // Validate result definition BEFORE consuming
+        const resultItemDef = this.assetManager.getItem(recipe.resultItemId); // No await needed, strictly sync
+        if (!resultItemDef) {
+            logToConsole(`${this.logPrefix} CRITICAL ERROR: Result item definition '${recipe.resultItemId}' not found for recipe '${recipe.name}'. Aborting craft.`, 'red');
+            if (window.uiManager) window.uiManager.showToastNotification("Crafting failed: result item definition missing.", "error");
+            return false;
+        }
+
+        // Pre-check capacity (simplified check - assumes 1 slot needed per result item if not stackable)
+        // This is imperfect because consuming components frees slots, but it's a safe guard.
+        // A better check would simulate the transaction.
+        const currentItems = playerInventoryItems.length;
+        const maxItems = this.gameState.inventory.container.maxSlots;
+        // Estimate freed slots? Hard to know without resolving first.
+        // We'll proceed, but verify add success.
+
         // Consume components using RecipeResolver logic
+        // We need to store what we are consuming to potentially rollback, or just fail hard if removal fails.
+        const componentsToConsume = [];
         for (const component of recipe.components) {
             const resolved = this.recipeResolver.resolveComponent(component, playerInventoryItems);
             if (!resolved) {
                 logToConsole(`${this.logPrefix} CRITICAL ERROR: Failed to resolve component during crafting of '${recipe.name}', though canCraft was true.`, 'red');
                 return false;
             }
+            componentsToConsume.push(...resolved.items);
+        }
 
-            for (const itemToConsume of resolved.items) {
-                if (!this.inventoryManager.removeItems(itemToConsume.item.id, itemToConsume.count, playerInventoryItems)) {
-                    logToConsole(`${this.logPrefix} CRITICAL ERROR: Failed to remove component ${itemToConsume.item.id} during crafting of '${recipe.name}'.`, 'red');
-                    return false;
-                }
+        // Execute Consumption
+        for (const itemToConsume of componentsToConsume) {
+            if (!this.inventoryManager.removeItems(itemToConsume.item.id, itemToConsume.count, playerInventoryItems)) {
+                logToConsole(`${this.logPrefix} CRITICAL ERROR: Failed to remove component ${itemToConsume.item.id} during crafting of '${recipe.name}'.`, 'red');
+                // Potential inconsistent state here if some components removed but not others.
+                return false;
             }
         }
 
         // Add result item(s)
-        const resultItemDef = await this.assetManager.getItem(recipe.resultItemId);
-        if (!resultItemDef) {
-            logToConsole(`${this.logPrefix} CRITICAL ERROR: Result item definition '${recipe.resultItemId}' not found for recipe '${recipe.name}'.`, 'red');
-            // Need to decide how to handle this - roll back consumed components?
-            if (window.uiManager) window.uiManager.showToastNotification("Crafting failed: result item definition missing.", "error");
-            return false;
-        }
+        const quantityToCreate = recipe.resultQuantity || 1;
+        let createdCount = 0;
 
-        for (let i = 0; i < (recipe.resultQuantity || 1); i++) {
-            // Create a new instance of the item
-            const newItemInstance = JSON.parse(JSON.stringify(resultItemDef)); // Simple deep clone
+        for (let i = 0; i < quantityToCreate; i++) {
+            // Create a new instance of the item using the proper constructor
+            const newItemInstance = new window.Item(resultItemDef);
+
             // Any specific instance properties for crafted items would be set here if needed.
             if (!this.inventoryManager.addItemToInventory(newItemInstance, 1, playerInventoryItems, this.gameState.inventory.container.maxSlots)) {
-                logToConsole(`${this.logPrefix} Failed to add crafted item '${newItemInstance.name}' to inventory (perhaps full?). Item lost.`, 'red');
+                logToConsole(`${this.logPrefix} Failed to add crafted item '${newItemInstance.name}' to inventory (full?). Item lost.`, 'red');
                 if (window.uiManager) window.uiManager.showToastNotification(`Inventory full. Crafted ${newItemInstance.name} lost!`, "error");
-                // No rollback of components for now, item is lost if inventory full.
+                // Components already consumed.
+            } else {
+                createdCount++;
             }
         }
 
@@ -226,7 +252,7 @@ class CraftingManager {
             const modDef = this.assetManager.getItem(itemInInventory.id); // itemInInventory is an instance, get its base definition
             if (modDef && (modDef.itemCategory === 'weapon_mod' || modDef.isMod)) { // Check if it's a mod
                 // Check slot compatibility: modDef.modType should be one of the weapon's available slot types
-                if (weaponSlots.includes(modDef.modType)) {
+                if (Array.isArray(weaponSlots) && weaponSlots.includes(modDef.modType)) {
                     let compatible = true;
                     // Check weapon category/tag compatibility
                     if (modDef.appliesToWeaponCategory && modDef.appliesToWeaponCategory.length > 0) {
