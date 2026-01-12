@@ -17,7 +17,10 @@ function updateSkill(name, value, character) {
     const maxPoints = character.MAX_SKILL_POINTS || 30;
 
     const oldPoints = character.skills[index].points; // Get old points BEFORE parsing new value
-    const newValue = parseInt(value) || 0;
+
+    // Fix: Handle 0 correctly by checking isNaN
+    let newValue = parseInt(value);
+    if (isNaN(newValue)) newValue = 0; // Default to 0 if invalid input for skills
 
     if (newValue < 0 || newValue > 100) {
         if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
@@ -65,13 +68,18 @@ function updateStat(name, value, character) {
         return;
     }
 
-    // Use default min/max if not defined on character
-    const minVal = character.MIN_STAT_VALUE || 1;
+    // Use default min/max if not defined on character. Allow minVal to be 0.
+    const minVal = (character.MIN_STAT_VALUE !== undefined) ? character.MIN_STAT_VALUE : 1;
     const maxVal = character.MAX_STAT_VALUE || 20;
-    const maxTotalPoints = 35; // Recommended total
+
+    // Fix: Use configurable max total points instead of hardcoded 35
+    const maxTotalPoints = character.MAX_TOTAL_STAT_POINTS || 35;
 
     const oldPoints = character.stats[index].points; // Get old points BEFORE parsing new value
-    const newValue = parseInt(value) || minVal;
+
+    // Fix: Handle 0 correctly. Do not treat 0 as falsey to fallback to minVal.
+    let parsedVal = parseInt(value);
+    const newValue = isNaN(parsedVal) ? minVal : parsedVal;
 
     if (newValue < minVal || newValue > maxVal) {
         console.warn(`updateStat: Value ${newValue} out of bounds (${minVal}-${maxVal})`);
@@ -90,7 +98,7 @@ function updateStat(name, value, character) {
 
     // If game has started, we assume it's a level up or reward, so strict total cap check
     // for character creation (35) might be bypassed or increased.
-    // For now, if gameState.gameStarted is true, we skip the 35 cap check.
+    // For now, if gameState.gameStarted is true, we skip the cap check.
     if (!window.gameState || !window.gameState.gameStarted) {
         if (updatedTotal > maxTotalPoints) {
             console.warn(`updateStat: Total points ${updatedTotal} exceeds max ${maxTotalPoints}`);
@@ -137,7 +145,6 @@ function renderTables(character) {
         "Perception": "Awareness and ability to spot hidden things.",
         "Charisma": "Force of personality, persuasiveness, and social influence"
     };
-    // Removed Marksmanship description
 
     const skillDescriptions = {
         "Animal Handling": "Governs the ability to interact with and control animals.",
@@ -158,12 +165,14 @@ function renderTables(character) {
     };
 
     // Ensure character has min/max values set for the inputs
-    character.MIN_STAT_VALUE = character.MIN_STAT_VALUE || 1;
+    character.MIN_STAT_VALUE = (character.MIN_STAT_VALUE !== undefined) ? character.MIN_STAT_VALUE : 1;
     character.MAX_STAT_VALUE = character.MAX_STAT_VALUE || 20;
 
     const statsHtml = character.stats.map(stat => {
         const isMin = stat.points <= character.MIN_STAT_VALUE;
         const isMax = stat.points >= character.MAX_STAT_VALUE;
+        // Fix: Use safe onclick with escaped name and data attribute for selector robustness
+        const safeName = stat.name.replace(/'/g, "\\'");
         return `
         <div class="stat-row" style="--accent-color: ${stat.bgColor || '#ccc'};" title="${statDescriptions[stat.name] || ''}">
             <div class="stat-label">
@@ -171,9 +180,9 @@ function renderTables(character) {
                 <span class="stat-name">${stat.name}</span>
             </div>
             <div class="stat-controls">
-                <button class="stat-btn minus" onclick="handleUpdateStat('${stat.name}', ${stat.points - 1})" ${isMin ? 'disabled' : ''}>-</button>
-                <input type="number" value="${stat.points}" min="${character.MIN_STAT_VALUE}" max="${character.MAX_STAT_VALUE}" class="stat-input" onchange="handleUpdateStat('${stat.name}', this.value)">
-                <button class="stat-btn plus" onclick="handleUpdateStat('${stat.name}', ${stat.points + 1})" ${isMax ? 'disabled' : ''}>+</button>
+                <button class="stat-btn minus" onclick="updateStat('${safeName}', ${stat.points - 1}, window.gameState)" ${isMin ? 'disabled' : ''}>-</button>
+                <input type="number" value="${stat.points}" min="${character.MIN_STAT_VALUE}" max="${character.MAX_STAT_VALUE}" class="stat-input" data-stat-name="${stat.name}" onchange="updateStat('${safeName}', this.value, window.gameState)">
+                <button class="stat-btn plus" onclick="updateStat('${safeName}', ${stat.points + 1}, window.gameState)" ${isMax ? 'disabled' : ''}>+</button>
             </div>
         </div>`;
     }).join('');
@@ -181,6 +190,7 @@ function renderTables(character) {
     const skillsHtml = character.skills.map(skill => {
         const isMin = skill.points <= 0;
         const isMax = skill.points >= 100;
+        const safeName = skill.name.replace(/'/g, "\\'");
         return `
         <div class="skill-row" style="--accent-color: ${skill.bgColor || '#ccc'};" title="${skillDescriptions[skill.name] || ''}">
             <div class="stat-label">
@@ -188,9 +198,9 @@ function renderTables(character) {
                 <span class="stat-name">${skill.name}</span>
             </div>
             <div class="stat-controls">
-                <button class="stat-btn minus" onclick="handleUpdateSkill('${skill.name}', ${skill.points - 1})" ${isMin ? 'disabled' : ''}>-</button>
-                <input type="number" value="${skill.points}" min="0" max="100" class="stat-input" onchange="handleUpdateSkill('${skill.name}', this.value)">
-                <button class="stat-btn plus" onclick="handleUpdateSkill('${skill.name}', ${skill.points + 1})" ${isMax ? 'disabled' : ''}>+</button>
+                <button class="stat-btn minus" onclick="updateSkill('${safeName}', ${skill.points - 1}, window.gameState)" ${isMin ? 'disabled' : ''}>-</button>
+                <input type="number" value="${skill.points}" min="0" max="100" class="stat-input" data-stat-name="${skill.name}" onchange="updateSkill('${safeName}', this.value, window.gameState)">
+                <button class="stat-btn plus" onclick="updateSkill('${safeName}', ${skill.points + 1}, window.gameState)" ${isMax ? 'disabled' : ''}>+</button>
             </div>
         </div>`;
     }).join('');
@@ -202,6 +212,14 @@ function renderTables(character) {
     if (statPointsElement) {
         const currentTotalStats = character.stats.reduce((sum, stat) => sum + stat.points, 0);
         statPointsElement.textContent = (character.MAX_TOTAL_STAT_POINTS || 35) - currentTotalStats;
+    }
+
+    // Fix: Also update remaining skill points display on initial render
+    const skillPointsElement = document.getElementById('skillPoints');
+    if (skillPointsElement) {
+        const currentTotalSkills = character.skills.reduce((sum, skill) => sum + skill.points, 0);
+        const maxSkills = character.MAX_SKILL_POINTS || 30;
+        skillPointsElement.textContent = maxSkills - currentTotalSkills;
     }
 }
 
@@ -239,14 +257,9 @@ function startGame() {
     let currentMap = window.mapRenderer.getCurrentMapData();
     if (!currentMap) {
         console.warn("startGame called but no map data loaded from mapRenderer. This should have been handled by initialize().");
-        // Attempt to gracefully handle or rely on initialize() having set defaults
-        // Forcing a load here might be redundant if initialize worked or failed informatively.
-        // If initialize() failed to load any map, currentMap will be null.
-        // Game might not be in a playable state if no map is loaded.
     }
 
     // Ensure gameState reflects the currently loaded map's Z-level structure
-    // This might be redundant if initialize() and handleMapSelectionChangeWrapper() are correctly setting these.
     if (currentMap && currentMap.levels && currentMap.startPos) {
         gameState.mapLevels = currentMap.levels;
         gameState.playerPos = {
@@ -254,8 +267,6 @@ function startGame() {
         }; // Ensure we have x, y, and z
         gameState.currentViewZ = currentMap.startPos.z;
     } else if (currentMap) {
-        // If currentMap exists but is missing Z-level data (e.g. old format map somehow loaded)
-        // Log a warning and try to set defaults.
         console.warn("startGame: currentMap is loaded but missing Z-level data (levels or startPos.z). Attempting to use defaults.");
         gameState.mapLevels = currentMap.layers ? {
             "0": currentMap.layers
@@ -292,80 +303,6 @@ function startGame() {
         gameState.currentViewZ = 0;
     }
 
-    // Ensure gameState.inventory.container is initialized before trying to modify it or call functions like addItem.
-    // OLD BACKPACK UPGRADE LOGIC REMOVED
-
-    // Add Small Backpack and Cargo Pants as starting items
-    if (gameState.inventory.container && typeof window.inventoryManager.addItem === 'function' && assetManager) {
-        const itemsToStartWith = [{
-            id: "small_backpack_container",
-            nameForLog: "Small Backpack"
-        }, {
-            id: "cargo_pants_pockets",
-            nameForLog: "Cargo Pants"
-        }, {
-            id: "large_backpack_item",
-            nameForLog: "Large Backpack"
-        }];
-
-        itemsToStartWith.forEach(itemInfo => {
-            const itemDef = assetManager.getItem(itemInfo.id);
-            if (itemDef) {
-                const newItem = new Item(itemDef); // Assumes Item constructor is globally available
-                if (window.inventoryManager.addItem(newItem)) {
-                    logToConsole(`Added starting item: ${itemInfo.nameForLog} to inventory.`);
-                } else {
-                    logToConsole(`Failed to add starting item: ${itemInfo.nameForLog} to inventory (addItem returned false).`);
-                }
-            } else {
-                logToConsole(`Warning: Item definition not found for starting item ID: ${itemInfo.id} (${itemInfo.nameForLog}).`);
-            }
-        });
-    } else {
-        if (!gameState.inventory.container) logToConsole("Could not add starting backpack/pants: Inventory container not ready.");
-        if (typeof window.addItem !== 'function') logToConsole("Could not add starting backpack/pants: addItem function not available.");
-        if (!assetManager) logToConsole("Could not add starting backpack/pants: assetManager not available.");
-    }
-
-    // Add clothing items from definitions
-    // Item constructor is now in js/inventory.js
-    // addItem is now in js/inventory.js
-    const clothingToAdd = ["basic_vest"];
-    clothingToAdd.forEach(itemId => {
-        const itemDef = assetManager.getItem(itemId); // All items (incl clothing) are in itemsById
-        if (itemDef) {
-            // Create a new Item instance if your addItem expects an Item object
-            // For simplicity, if addItem can handle raw definitions, that's fine too.
-            // Assuming Item constructor can take the definition object:
-            const newItem = new Item(itemDef);
-            window.inventoryManager.addItem(newItem);
-        } else {
-            console.warn(`Clothing item definition not found for ID: ${itemId}`);
-        }
-    });
-
-    // Add weapons and ammunition
-    const weaponsAndAmmoToAdd = [];
-
-    weaponsAndAmmoToAdd.forEach(itemEntry => {
-        const itemDef = assetManager.getItem(itemEntry.id);
-        if (itemDef) {
-            const quantity = itemEntry.quantity || 1; // Default to 1 if quantity not specified
-            for (let i = 0; i < quantity; i++) {
-                const newItem = new Item(itemDef);
-                // If it's ammunition, we might want to store its specific ammoType or quantity per item
-                if (itemDef.type === "ammunition") {
-                    newItem.ammoType = itemDef.ammoType;
-                    newItem.quantityPerBox = itemDef.quantity; // Assuming 'quantity' in JSON is per-box
-                }
-                window.inventoryManager.addItem(newItem);
-            }
-        } else {
-            console.warn(`Weapon or ammo definition not found for ID: ${itemEntry.id}`);
-        }
-    });
-
-
     if (characterCreator) characterCreator.classList.add('hidden');
     if (characterInfoPanel) characterInfoPanel.classList.remove('hidden');
     if (middlePanel) middlePanel.classList.remove('hidden');
@@ -390,58 +327,46 @@ function startGame() {
     }
 
     // 2. Define all starting items (clothes, consumables, etc.)
+    // Fix: Removed duplicates and use only valid item IDs found in definitions.
     const allStartingItems = [{
-        id: "small_backpack_wearable",
+        id: "small_backpack_container",
         nameForLog: "Small Backpack"
-    }, {
-        id: "cargo_pants_pockets",
-        nameForLog: "Cargo Pants"
     }, {
         id: "basic_vest",
         nameForLog: "Basic Vest"
-    }, {
-        id: "large_backpack_item",
-        nameForLog: "Large Backpack"
-    }, {
-        id: "fishing_rod_simple",
-        nameForLog: "Fishing Rod"
-    }
-        // Add other items like Canned Beans, Bottled Water if they are default starting items
-        // For example:
-        // { id: "canned_beans_food", nameForLog: "Canned Beans" },
-        // { id: "bottled_water_drink", nameForLog: "Bottled Water" }
-    ];
+    }];
 
     logToConsole(`Processing ${allStartingItems.length} starting items. Player inventory capacity: ${gameState.inventory.container.maxSlots} slots.`);
 
     // 3. Attempt to add all starting items to inventory; if full, place on floor.
-    allStartingItems.forEach(itemInfo => {
-        const itemDef = assetManager.getItem(itemInfo.id);
-        if (itemDef) {
-            const newItemInstance = new Item(itemDef);
-            if (!window.inventoryManager.addItem(newItemInstance)) { // addItem uses InventoryManager.addItemToInventory
-                logToConsole(`Inventory full (or item add failed) for: ${itemInfo.nameForLog}. Placing on floor.`);
-                if (!gameState.floorItems) gameState.floorItems = [];
-                gameState.floorItems.push({
-                    x: gameState.playerPos.x,
-                    y: gameState.playerPos.y,
-                    z: gameState.playerPos.z,
-                    item: newItemInstance
-                });
+    // Fix: Check function existence properly and check/init floorItems.
+    if (window.inventoryManager && typeof window.inventoryManager.addItem === 'function') {
+        allStartingItems.forEach(itemInfo => {
+            const itemDef = assetManager.getItem(itemInfo.id);
+            if (itemDef) {
+                const newItemInstance = new Item(itemDef);
+                if (!window.inventoryManager.addItem(newItemInstance)) { // addItem uses InventoryManager.addItemToInventory
+                    logToConsole(`Inventory full (or item add failed) for: ${itemInfo.nameForLog}. Placing on floor.`);
+                    if (!gameState.floorItems) gameState.floorItems = [];
+                    gameState.floorItems.push({
+                        x: gameState.playerPos.x,
+                        y: gameState.playerPos.y,
+                        z: gameState.playerPos.z,
+                        item: newItemInstance
+                    });
+                } else {
+                    logToConsole(`Added starting item: ${itemInfo.nameForLog} to inventory.`);
+                }
             } else {
-                logToConsole(`Added starting item: ${itemInfo.nameForLog} to inventory.`);
+                logToConsole(`Warning: Starting item definition not found for ID: ${itemInfo.id} (${itemInfo.nameForLog}). Skipping.`);
             }
-        } else {
-            logToConsole(`Warning: Starting item definition not found for ID: ${itemInfo.id} (${itemInfo.nameForLog}). Skipping.`);
-        }
-    });
+        });
+    } else {
+        logToConsole("Error: inventoryManager.addItem is not available. Cannot add starting items.");
+    }
 
-    // Player starts with no clothes equipped. Inventory capacity is purely Strength-based.
-    // The player will need to pick up and equip items from the floor or their inventory.
-    // If they equip a backpack, `equipClothing` in InventoryManager will call `calculateCumulativeCapacity`
-    // which will then update `gameState.inventory.container.maxSlots` to include the backpack's capacity.
-
-    if (window.mapRenderer && gameState.floorItems.length > 0) {
+    // Fix: Safe check for floorItems before accessing length
+    if (window.mapRenderer && gameState.floorItems && gameState.floorItems.length > 0) {
         window.mapRenderer.scheduleRender(); // Ensure map re-renders if items were dropped.
     }
 
@@ -540,9 +465,10 @@ function renderCharacterStatsSkillsAndWornClothing(character, characterInfoEleme
 
 function applyHungerThirstDamage(gameState, damageAmount) {
     logToConsole(`DEBUG: applyHungerThirstDamage CALLED. Damage: ${damageAmount}. Initial torso HP: ${gameState.player.health && gameState.player.health.torso ? gameState.player.health.torso.current : 'N/A'}`);
-    // The 'character' parameter in other health functions is analogous to 'gameState' here,
-    // as player-specific health is directly on gameState.health.
-    if (!gameState.player.health || !gameState.player.health.torso) {
+
+    // Fix: Resolve character correctly (gameState -> gameState.player)
+    // The previous logic assumed gameState.player exists, which is correct for applying hunger to player.
+    if (!gameState.player || !gameState.player.health || !gameState.player.health.torso) {
         logToConsole("Error: Player health or torso data is missing. Cannot apply hunger/thirst damage.");
         return;
     }
@@ -603,7 +529,7 @@ function getArmorForBodyPart(bodyPartName, character) {
     // gameState.js initializes gameState.player.wornClothing
     // So if 'character' is gameState, then character.player.wornClothing is the path.
     let wornClothingSource = null;
-    if (character === gameState && character.player) {
+    if (character === window.gameState && character.player) {
         wornClothingSource = character.player.wornClothing;
     } else if (character && character.wornClothing) {
         wornClothingSource = character.wornClothing;
@@ -623,9 +549,12 @@ function getArmorForBodyPart(bodyPartName, character) {
 }
 
 // Update crisis timers for body parts at the end of each turn for a character
-function updateHealthCrisis(character) {
-    if (!character.health) return;
-    const characterName = (character === window.gameState) ? 'Player' : (character.name || character.id);
+function updateHealthCrisis(characterOrGameState) {
+    // Fix: Resolve character correctly at the start
+    const character = (characterOrGameState === window.gameState && window.gameState.player) ? window.gameState.player : characterOrGameState;
+
+    if (!character || !character.health) return;
+    const characterName = (characterOrGameState === window.gameState) ? 'Player' : (character.name || character.id);
 
     for (let partKey in character.health) {
         let part = character.health[partKey];
@@ -640,16 +569,14 @@ function updateHealthCrisis(character) {
                 logToConsole(`Health crisis in ${part.name} for ${characterName} was not treated. Part is now destroyed.`, 'red');
                 // "failing to address it -> death"
                 logToConsole(`${characterName} has died due to untreated health crisis (${part.name}).`, 'darkred');
-                gameOver(character); // Pass character to gameOver
+                gameOver(characterOrGameState); // Pass characterOrGameState to gameOver
                 return; // Stop further crisis checks if character died
             }
         }
     }
     // Re-render health table to show updated crisis timers or destroyed states
     if (window.renderHealthTable) {
-        // If the character is the player, we need to pass gameState.player
-        const characterToRender = (character === window.gameState) ? window.gameState.player : character;
-        window.renderHealthTable(characterToRender);
+        window.renderHealthTable(character);
     }
 }
 
@@ -695,17 +622,19 @@ function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, charac
 
     // Perform skill check using Persuasion/Intimidation skill check logic as a template
     // This assumes a getSkillValue function similar to what's used for Persuasion/Intimidation.
-    // For Medicine, the bonus is directly passed as medicineBonus (e.g., from player's Medicine skill).
+    // For Medicine, the bonus is directly passed as medicineBonus (e.g., from player's Medicine skill + item).
     let roll, totalRoll;
     if (overrideRoll !== null) {
         totalRoll = overrideRoll;
         roll = totalRoll - medicineBonus; // Reverse calculate natural roll for logging
     } else {
-        roll = rollDie(20);
+        // Fix: Use window.rollDie
+        roll = window.rollDie(20);
         totalRoll = roll + medicineBonus;
     }
 
-    logToConsole(`Medicine check on ${partName} for ${charName} (${treatmentType}, ${restType || 'Immediate'}): Rolled ${roll} + Medicine Bonus ${medicineBonus} = ${totalRoll} (DC ${dc})`);
+    // Fix: Updated log message to be clear that medicineBonus is the Total Bonus
+    logToConsole(`Medicine check on ${partName} for ${charName} (${treatmentType}, ${restType || 'Immediate'}): Rolled ${roll} + Total Bonus ${medicineBonus} = ${totalRoll} (DC ${dc})`);
 
     if (totalRoll >= dc) {
         // 1. Immediate Crisis Resolution & Bleeding Stop
@@ -887,6 +816,12 @@ function openMedicalTreatmentModal(bodyPartKey, targetId = 'player') {
     const confirmButton = document.getElementById('confirmTreatmentButton');
     const cancelButton = document.getElementById('cancelTreatmentButton');
 
+    // Fix: Null checks for DOM elements
+    if (!confirmButton || !cancelButton) {
+        console.error("Medical treatment modal buttons missing!");
+        return;
+    }
+
     // Clone button to remove old event listeners
     const newConfirmBtn = confirmButton.cloneNode(true);
     confirmButton.parentNode.replaceChild(newConfirmBtn, confirmButton);
@@ -902,38 +837,47 @@ function openMedicalTreatmentModal(bodyPartKey, targetId = 'player') {
 
     // Populate Items
     const itemContainer = document.getElementById('treatmentItemOptions');
-    itemContainer.innerHTML = "";
+    if (itemContainer) {
+        itemContainer.innerHTML = "";
 
-    const medicalItems = window.getMedicalItems();
-    let hasMedicalItems = false;
-    if (window.gameState.inventory && window.gameState.inventory.container && window.gameState.inventory.container.items) {
-        medicalItems.forEach(medItem => {
-            const count = window.gameState.inventory.container.items.filter(i => i.id === medItem.id).length;
-            if (count > 0) {
-                hasMedicalItems = true;
-                const div = document.createElement('div');
-                div.innerHTML = `
-                    <input type="radio" id="treatmentMethod_${medItem.id}" name="treatmentMethod" value="${medItem.id}">
-                    <label for="treatmentMethod_${medItem.id}">Use ${medItem.name} (+${medItem.bonus} Bonus, ${count} left)</label>
-                 `;
-                itemContainer.appendChild(div);
-            }
-        });
+        const medicalItems = window.getMedicalItems();
+        let hasMedicalItems = false;
+        if (window.gameState.inventory && window.gameState.inventory.container && window.gameState.inventory.container.items) {
+            medicalItems.forEach(medItem => {
+                const count = window.gameState.inventory.container.items.filter(i => i.id === medItem.id).length;
+                if (count > 0) {
+                    hasMedicalItems = true;
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <input type="radio" id="treatmentMethod_${medItem.id}" name="treatmentMethod" value="${medItem.id}">
+                        <label for="treatmentMethod_${medItem.id}">Use ${medItem.name} (+${medItem.bonus} Bonus, ${count} left)</label>
+                     `;
+                    itemContainer.appendChild(div);
+                }
+            });
+        }
+
+        if (!hasMedicalItems) {
+            itemContainer.innerHTML = "<div style='color: grey; font-style: italic;'>No medical items in player inventory.</div>";
+        }
     }
 
-    if (!hasMedicalItems) {
-        itemContainer.innerHTML = "<div style='color: grey; font-style: italic;'>No medical items in player inventory.</div>";
-    }
-
-    document.getElementById('treatmentMethodSkill').checked = true;
+    const skillRadio = document.getElementById('treatmentMethodSkill');
+    if (skillRadio) skillRadio.checked = true;
 
     newCancelBtn.onclick = () => {
         modal.classList.add('hidden');
     };
 
     newConfirmBtn.onclick = () => {
+        // Fix: Check for selected radio to prevent crash
+        const selectedRadio = document.querySelector('input[name="treatmentMethod"]:checked');
+        if (!selectedRadio) {
+            alert("Please select a treatment method.");
+            return;
+        }
         newConfirmBtn.disabled = true;
-        const selectedMethod = document.querySelector('input[name="treatmentMethod"]:checked').value;
+        const selectedMethod = selectedRadio.value;
         window.performMedicalTreatment(bodyPartKey, selectedMethod, targetId);
     };
 
@@ -945,7 +889,9 @@ function performMedicalTreatment(bodyPartKey, methodValue, targetId = 'player') 
     const targetEntity = getEntityById(targetId);
     if (!targetEntity) return;
 
-    if (window.gameState.actionPointsRemaining < 1) {
+    // Fix: Handle Action Points safe check
+    const currentAP = (window.gameState.actionPointsRemaining !== undefined) ? window.gameState.actionPointsRemaining : 0;
+    if (currentAP < 1) {
         logToConsole("Not enough Action Points to perform treatment.", "orange");
         if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
         return;
@@ -968,7 +914,7 @@ function performMedicalTreatment(bodyPartKey, methodValue, targetId = 'player') 
         }
     }
 
-    window.gameState.actionPointsRemaining--;
+    if (window.gameState.actionPointsRemaining > 0) window.gameState.actionPointsRemaining--;
     if (window.turnManager && window.turnManager.updateTurnUI) window.turnManager.updateTurnUI();
 
     if (itemToConsume) {
@@ -1236,18 +1182,12 @@ function refreshStatsUI(character) {
     if (!statsBody) return;
 
     // Ensure character has min/max values set
-    const MIN = character.MIN_STAT_VALUE || 1;
+    const MIN = (character.MIN_STAT_VALUE !== undefined) ? character.MIN_STAT_VALUE : 1;
     const MAX = character.MAX_STAT_VALUE || 20;
 
     character.stats.forEach(stat => {
-        // Find the row for this stat using a data attribute or other identifier
-        // Since renderTables doesn't add data-ids, we can look for the input with the matching onchange handler
-        // or add a class/id in renderTables.
-        // Let's rely on the input's onchange attribute containing the stat name.
-        // Or better, let's update renderTables to include data-stat-name on the row.
-
-        // For now, let's search inputs.
-        const input = Array.from(statsBody.querySelectorAll('.stat-input')).find(el => el.getAttribute('onchange').includes(`'${stat.name}'`));
+        // Fix: Use robustness selector via data-stat-name
+        const input = statsBody.querySelector(`.stat-input[data-stat-name="${stat.name}"]`);
 
         if (input) {
             const row = input.closest('.stat-row');
@@ -1261,15 +1201,17 @@ function refreshStatsUI(character) {
                 const minusBtn = row.querySelector('.stat-btn.minus');
                 const plusBtn = row.querySelector('.stat-btn.plus');
 
+                const safeName = stat.name.replace(/'/g, "\\'");
+
                 if (minusBtn) {
                     minusBtn.disabled = (stat.points <= MIN);
                     // Update onclick to ensure latest value is used (though typically logic uses current val)
-                    minusBtn.setAttribute('onclick', `handleUpdateStat('${stat.name}', ${stat.points - 1})`);
+                    minusBtn.setAttribute('onclick', `updateStat('${safeName}', ${stat.points - 1}, window.gameState)`);
                 }
 
                 if (plusBtn) {
                     plusBtn.disabled = (stat.points >= MAX);
-                    plusBtn.setAttribute('onclick', `handleUpdateStat('${stat.name}', ${stat.points + 1})`);
+                    plusBtn.setAttribute('onclick', `updateStat('${safeName}', ${stat.points + 1}, window.gameState)`);
                 }
             }
         }
@@ -1289,7 +1231,7 @@ function refreshSkillsUI(character) {
     if (!skillsBody) return;
 
     character.skills.forEach(skill => {
-        const input = Array.from(skillsBody.querySelectorAll('.stat-input')).find(el => el.getAttribute('onchange').includes(`'${skill.name}'`));
+        const input = skillsBody.querySelector(`.stat-input[data-stat-name="${skill.name}"]`);
 
         if (input) {
             const row = input.closest('.skill-row');
@@ -1301,21 +1243,28 @@ function refreshSkillsUI(character) {
                 const minusBtn = row.querySelector('.stat-btn.minus');
                 const plusBtn = row.querySelector('.stat-btn.plus');
 
+                const safeName = skill.name.replace(/'/g, "\\'");
+
                 if (minusBtn) {
                     minusBtn.disabled = (skill.points <= 0);
-                    minusBtn.setAttribute('onclick', `handleUpdateSkill('${skill.name}', ${skill.points - 1})`);
+                    minusBtn.setAttribute('onclick', `updateSkill('${safeName}', ${skill.points - 1}, window.gameState)`);
                 }
 
                 if (plusBtn) {
                     plusBtn.disabled = (skill.points >= 100);
-                    plusBtn.setAttribute('onclick', `handleUpdateSkill('${skill.name}', ${skill.points + 1})`);
+                    plusBtn.setAttribute('onclick', `updateSkill('${safeName}', ${skill.points + 1}, window.gameState)`);
                 }
             }
         }
     });
 
-    // Skill points remaining are updated inside updateSkill function usually,
-    // but we can ensure it here if needed.
+    // Fix: Refresh remaining skill points text
+    const skillPointsElement = document.getElementById('skillPoints');
+    if (skillPointsElement) {
+        const currentTotalSkills = character.skills.reduce((sum, skill) => sum + skill.points, 0);
+        const maxSkills = character.MAX_SKILL_POINTS || 30;
+        skillPointsElement.textContent = maxSkills - currentTotalSkills;
+    }
 }
 
 window.refreshStatsUI = refreshStatsUI;
@@ -1511,6 +1460,12 @@ async function handleFalling(characterOrGameState, startX, startY, initialAirZ, 
             break;
         }
 
+        // Fix: Stop if we are below minZ (map bottom) and assume infinite fall if no landing found
+        if (minZ !== -Infinity && currentCheckZ < minZ - MAX_CREATED_LEVELS) {
+             infiniteVoidDetected = true;
+             break;
+        }
+
         // Check for landing
         if (window.mapRenderer.isWalkable(startX, startY, currentCheckZ)) {
             landed = true;
@@ -1644,7 +1599,11 @@ function calculateAndApplyFallDamage(characterOrGameState, levelsFallen) {
         const mapData = window.mapRenderer.getCurrentMapData();
         if (mapData && mapData.levels && mapData.levels[pos.z]) {
             // Check middle layer first (e.g. stalagmites are on middle layer)
-            const tileOnMiddle = mapData.levels[pos.z].middle?.[pos.y]?.[pos.x];
+            // Fix: Check fallback keys (building/landscape) if middle/bottom missing
+            const levelData = mapData.levels[pos.z];
+
+            const middleTile = levelData.middle?.[pos.y]?.[pos.x] || levelData.building?.[pos.y]?.[pos.x];
+            const tileOnMiddle = middleTile;
             const effectiveTileIdMiddle = (typeof tileOnMiddle === 'object' && tileOnMiddle !== null && tileOnMiddle.tileId) ? tileOnMiddle.tileId : tileOnMiddle;
 
             if (effectiveTileIdMiddle) {
@@ -1657,7 +1616,8 @@ function calculateAndApplyFallDamage(characterOrGameState, levelsFallen) {
 
             // Check bottom layer (e.g. spikes might be on bottom)
             if (!landedOnSharp) {
-                const tileOnBottom = mapData.levels[pos.z].bottom?.[pos.y]?.[pos.x];
+                const bottomTile = levelData.bottom?.[pos.y]?.[pos.x] || levelData.landscape?.[pos.y]?.[pos.x];
+                const tileOnBottom = bottomTile;
                 const effectiveTileIdBottom = (typeof tileOnBottom === 'object' && tileOnBottom !== null && tileOnBottom.tileId) ? tileOnBottom.tileId : tileOnBottom;
 
                 if (effectiveTileIdBottom) {
@@ -1689,7 +1649,7 @@ function calculateAndApplyFallDamage(characterOrGameState, levelsFallen) {
 
     let totalDamage = 0;
     for (let i = 0; i < numDice; i++) {
-        totalDamage += rollDie(3); // rollDie is from utils.js
+        totalDamage += window.rollDie(3); // Fix: Use window.rollDie
     }
 
     if (totalDamage <= 0) return;
@@ -1697,8 +1657,6 @@ function calculateAndApplyFallDamage(characterOrGameState, levelsFallen) {
     // Play hard landing sound if damage is taken
     if (window.audioManager && typeof window.audioManager.playHardLandingSound === 'function') {
         window.audioManager.playHardLandingSound();
-        // TODO: Play move_fall_damage_01.wav when available. Current hard landing sound is a general placeholder.
-        // This could be played in addition to or instead of just a hard landing, if damage is significant.
     }
 
     const health = (characterOrGameState === window.gameState && window.gameState.player) ? window.gameState.player.health : characterOrGameState.health;
@@ -1731,7 +1689,8 @@ function calculateAndApplyFallDamage(characterOrGameState, levelsFallen) {
     logToConsole(`Took ${totalDamage} total fall damage from a ${levelsFallen}-level fall.`, "red");
 
     if (typeof window.renderHealthTable === 'function') {
-        window.renderHealthTable(characterOrGameState);
+        // Fix: Pass player object if gameState
+        window.renderHealthTable(characterOrGameState === window.gameState ? window.gameState.player : characterOrGameState);
     }
 }
 window.calculateAndApplyFallDamage = calculateAndApplyFallDamage;
