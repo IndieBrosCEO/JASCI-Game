@@ -1,4 +1,3 @@
-﻿// js/constructionManager.js
 
 class ConstructionManager {
     constructor(gameState, assetManager, inventoryManager, timeManager, xpManager, mapManager, trapManager) {
@@ -26,12 +25,6 @@ class ConstructionManager {
             const count = Object.keys(this.constructionDefinitions).length;
             if (count > 0) {
                 logToConsole(`${this.logPrefix} Successfully referenced ${count} construction definitions from AssetManager.`, 'green');
-                // Log the actual definitions for verification
-                try {
-                    logToConsole(`${this.logPrefix} this.constructionDefinitions content after referencing:`, JSON.parse(JSON.stringify(this.constructionDefinitions)));
-                } catch (e) {
-                    logToConsole(`${this.logPrefix} Error logging this.constructionDefinitions: ${e}`, 'red', this.constructionDefinitions);
-                }
             } else {
                 logToConsole(`${this.logPrefix} AssetManager provided constructionDefinitions, but it was empty.`, 'orange');
             }
@@ -48,14 +41,12 @@ class ConstructionManager {
      */
     getAllConstructionDefinitionsWithStatus() {
         const allDefinitionsWithStatus = [];
-        const player = this.gameState;
+        const gameStateRef = this.gameState; // Renamed from 'player' to avoid confusion, getSkillValue uses gameState
         const constructionDefs = this.constructionDefinitions || {}; // Ensure it's an object
         const totalDefinitions = Object.keys(constructionDefs).length;
         let definitionsProcessed = 0;
 
-        logToConsole(`${this.logPrefix} getAllConstructionDefinitionsWithStatus() CALLED. Total raw definitions in this.constructionDefinitions: ${totalDefinitions}`, "debug");
         if (totalDefinitions === 0) {
-            logToConsole(`${this.logPrefix} getAllConstructionDefinitionsWithStatus: this.constructionDefinitions is empty. Returning empty array.`, "warn");
             return [];
         }
 
@@ -65,7 +56,7 @@ class ConstructionManager {
             augmentedDefinition.meetsSkillReqs = true; // Assume true initially
 
             if (originalDefinition.skillRequired && originalDefinition.skillLevelRequired) {
-                const playerScore = getSkillValue(originalDefinition.skillRequired, player); // Ensure getSkillValue is accessible
+                const playerScore = getSkillValue(originalDefinition.skillRequired, gameStateRef); // Ensure getSkillValue is accessible
                 if (playerScore < originalDefinition.skillLevelRequired) {
                     augmentedDefinition.meetsSkillReqs = false;
                 }
@@ -75,7 +66,6 @@ class ConstructionManager {
             definitionsProcessed++;
         }
 
-        logToConsole(`${this.logPrefix} getAllConstructionDefinitionsWithStatus() processed ${definitionsProcessed} definitions. Returning all definitions with skill status. (Count: ${allDefinitionsWithStatus.length})`, "debug", JSON.parse(JSON.stringify(allDefinitionsWithStatus)));
         return allDefinitionsWithStatus;
     }
 
@@ -91,17 +81,21 @@ class ConstructionManager {
             return false;
         }
 
-        const player = this.gameState;
+        const gameStateRef = this.gameState; // Renamed from 'player'
         if (definition.skillRequired && definition.skillLevelRequired) {
-            if (getSkillValue(definition.skillRequired, player) < definition.skillLevelRequired) {
-                // logToConsole(`${this.logPrefix} Cannot build '${definition.name}'. Skill ${definition.skillRequired} too low. Need ${definition.skillLevelRequired}, have ${getSkillValue(definition.skillRequired, player)}.`, 'orange');
+            if (getSkillValue(definition.skillRequired, gameStateRef) < definition.skillLevelRequired) {
                 return false;
             }
         }
 
+        // Validate inventory existence
+        if (!this.gameState.inventory || !this.gameState.inventory.container || !this.gameState.inventory.container.items) {
+             return false;
+        }
+
         const recipeToUse = definition.recipe || definition;
 
-        // Check tools
+        // Check tools - Note: RecipeResolver.canCraft currently only checks components, not tools.
         if (recipeToUse.tools_required && Array.isArray(recipeToUse.tools_required)) {
             for (const toolId of recipeToUse.tools_required) {
                 // Check player inventory (container items) for the tool
@@ -115,9 +109,6 @@ class ConstructionManager {
         }
 
         // Check components using RecipeResolver
-        // construction definitions use 'recipe.components' if using new format, or top-level 'components' if legacy/converted
-        // The AssetManager loads 'components' from 'recipe.components' into the top level object if standardized,
-        // but let's check where they are.
         return this.recipeResolver.canCraft(recipeToUse, this.gameState.inventory.container.items);
     }
 
@@ -161,13 +152,7 @@ class ConstructionManager {
 
                 // 2. Check if target tile on target layer is empty.
                 // Default target layer is 'middle' (consistent with world logic: objects are on middle layer).
-                // If definition specifies a targetLayer (e.g. 'bottom' for floors), use that.
                 const targetLayer = definition.targetLayer || 'middle';
-
-                // We should also check 'middle' if placing on 'building' (legacy) or vice versa if we want to be strict,
-                // but moving forward we use 'middle'.
-                // However, to be safe against existing map data, we check if the SPECIFIC target layer is occupied.
-                // AND if we are placing on 'middle', we double check 'building' isn't there (legacy conflict).
 
                 const targetLayerRaw = levelData[targetLayer]?.[currentY]?.[currentX];
                 const targetLayerTileId = typeof targetLayerRaw === 'object' ? targetLayerRaw?.tileId : targetLayerRaw;
@@ -186,50 +171,58 @@ class ConstructionManager {
                         return false;
                     }
                 }
-
-                // 3. Check allowedTileTags against the underlying 'bottom' (landscape/floor) tile
-                // REMOVED: User spec says no "inside" or "outside" tags and relies on layer occupancy only.
-                // The loop below is removed to allow placement based purely on target layer availability.
             }
         }
 
-        // Adjacency checks
+        // Adjacency checks - Improved for multi-tile structures
         if (definition.buildRequiresAdjacent && definition.buildRequiresAdjacent.length > 0) {
             let foundRequiredAdjacency = false;
-            const { x, y, z } = targetTilePos; // Assuming 1x1 for simplicity of this TODO.
-            // Multi-tile would need to check perimeter based on definition.size.
 
-            const neighbors = [{ dx: 0, dy: -1 }, { dx: 0, dy: 1 }, { dx: -1, dy: 0 }, { dx: 1, dy: 0 }];
-            for (const n of neighbors) {
-                const nx = x + n.dx;
-                const ny = y + n.dy;
+            // Check adjacency for ALL tiles occupied by the structure
+            for (let dy = 0; dy < size.height; dy++) {
+                for (let dx = 0; dx < size.width; dx++) {
+                    const currentX = startX + dx;
+                    const currentY = startY + dy;
 
-                if (nx >= 0 && nx < mapData.dimensions.width && ny >= 0 && ny < mapData.dimensions.height) {
-                    const adjLevelData = mapData.levels[z.toString()];
-                    if (adjLevelData) {
-                        // Check building layer primarily for structural adjacencies
-                        const adjTileRaw = adjLevelData.building?.[ny]?.[nx] || adjLevelData.middle?.[ny]?.[nx]; // Check building then middle
-                        const adjTileId = (typeof adjTileRaw === 'object' && adjTileRaw?.tileId !== undefined) ? adjTileRaw.tileId : adjTileRaw;
+                    const neighbors = [{ dx: 0, dy: -1 }, { dx: 0, dy: 1 }, { dx: -1, dy: 0 }, { dx: 1, dy: 0 }];
+                    for (const n of neighbors) {
+                        const nx = currentX + n.dx;
+                        const ny = currentY + n.dy;
 
-                        if (adjTileId && this.assetManager.tilesets[adjTileId]) {
-                            const adjTileDef = this.assetManager.tilesets[adjTileId];
-                            if (adjTileDef.tags) {
-                                if (definition.buildRequiresAdjacent.some(reqTag => adjTileDef.tags.includes(reqTag))) {
-                                    foundRequiredAdjacency = true;
-                                    break;
+                        // Skip if neighbor is part of the structure itself
+                        if (nx >= startX && nx < startX + size.width && ny >= startY && ny < startY + size.height) {
+                            continue;
+                        }
+
+                        if (nx >= 0 && nx < mapData.dimensions.width && ny >= 0 && ny < mapData.dimensions.height) {
+                            const adjLevelData = mapData.levels[z.toString()];
+                            if (adjLevelData) {
+                                // Check building layer primarily for structural adjacencies
+                                const adjTileRaw = adjLevelData.building?.[ny]?.[nx] || adjLevelData.middle?.[ny]?.[nx]; // Check building then middle
+                                const adjTileId = (typeof adjTileRaw === 'object' && adjTileRaw?.tileId !== undefined) ? adjTileRaw.tileId : adjTileRaw;
+
+                                if (adjTileId && this.assetManager.tilesets[adjTileId]) {
+                                    const adjTileDef = this.assetManager.tilesets[adjTileId];
+                                    if (adjTileDef.tags) {
+                                        if (definition.buildRequiresAdjacent.some(reqTag => adjTileDef.tags.includes(reqTag))) {
+                                            foundRequiredAdjacency = true;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
+                    if (foundRequiredAdjacency) break;
                 }
+                if (foundRequiredAdjacency) break;
             }
+
             if (!foundRequiredAdjacency) {
-                //logToConsole(`${this.logPrefix} Invalid placement for '${definition.name}': Missing required adjacent tile (e.g., wall for a window). Requires one of: [${definition.buildRequiresAdjacent.join(', ')}]`, "orange");
                 return false;
             }
         }
 
-        //logToConsole(`${this.logPrefix} Placement for '${definition.name}' at (${startX},${startY},${z}) seems valid.`, "silver");
         return true;
     }
 
@@ -240,7 +233,16 @@ class ConstructionManager {
             return false;
         }
         const structure = this.gameState.mapStructures[structureIndex];
-        const definition = structure.definition;
+
+        // Prevent dismantling structures from other maps
+        if (structure.mapId && this.gameState.currentMapId && structure.mapId !== this.gameState.currentMapId) {
+             logToConsole(`${this.logPrefix} Cannot dismantle: Structure is on a different map (${structure.mapId}).`, 'error');
+             return false;
+        }
+
+        // Retrieve definition via ID if reference is stale or missing, fallback to stored definition
+        let definition = this.constructionDefinitions[structure.constructionId];
+        if (!definition) definition = structure.definition;
 
         if (!definition) {
              logToConsole(`${this.logPrefix} Cannot dismantle: Definition missing for structure.`, 'error');
@@ -289,12 +291,12 @@ class ConstructionManager {
                              const itemInstance = new window.Item(itemDef);
                              itemInstance.quantity = refundQty;
                              if (!this.inventoryManager.addItem(itemInstance)) {
-                                 // Inventory full, drop to floor
+                                 // Inventory full, drop to structure location, not player location
                                  if (!this.gameState.floorItems) this.gameState.floorItems = [];
                                  this.gameState.floorItems.push({
-                                     x: this.gameState.playerPos.x,
-                                     y: this.gameState.playerPos.y,
-                                     z: this.gameState.playerPos.z,
+                                     x: structure.x,
+                                     y: structure.y,
+                                     z: structure.z,
                                      item: itemInstance
                                  });
                                  logToConsole(`Inventory full. Dropped ${refundQty}x ${itemDef.name} on the ground.`, 'orange');
@@ -323,30 +325,24 @@ class ConstructionManager {
                     const cx = structure.x + dx;
                     const cy = structure.y + dy;
 
-                    // Clear target layer
-                    if (levelData[targetLayer] && levelData[targetLayer][cy]) {
-                        // Check if the tile actually matches what we expect (optional safety)
-                        // But for now, just clear it.
-                        // We set it to "" (empty string) which represents empty in this system
-                        levelData[targetLayer][cy][cx] = "";
-                    }
+                    // Bounds Check
+                    if (cx >= 0 && cx < mapData.dimensions.width && cy >= 0 && cy < mapData.dimensions.height) {
+                        // Clear target layer
+                        if (levelData[targetLayer] && levelData[targetLayer][cy]) {
+                            levelData[targetLayer][cy][cx] = "";
+                        }
 
-                    // Also clear 'building' layer if it was used (legacy safety, similar to placement logic)
-                    if (targetLayer === 'middle' && levelData.building && levelData.building[cy]) {
-                         const bTile = levelData.building[cy][cx];
-                         // Only clear if it looks like our tile? Or just force clear?
-                         // To be safe, maybe only clear if it matches tileIdPlaced?
-                         // Let's just assume the structure occupies this space.
-                         // Actually, we should check if tileIdPlaced matches.
-                         // But for now, forceful clear is probably what "Dismantle" implies.
-                         // Let's stick to targetLayer primarily.
+                        // Also clear 'building' layer if it was used (legacy safety)
+                        if (targetLayer === 'middle' && levelData.building && levelData.building[cy]) {
+                             levelData.building[cy][cx] = "";
+                        }
                     }
                 }
             }
         }
 
         // 3. Remove Trap if applicable
-        if (definition.trapToPlace && this.trapManager) {
+        if (definition.trapToPlace && this.trapManager && this.gameState.currentMapTraps) {
              // Find and remove the trap instance associated with this location
              // Traps are stored in gameState.currentMapTraps
              const trapIndex = this.gameState.currentMapTraps.findIndex(t => t.x === structure.x && t.y === structure.y && t.z === structure.z && t.trapDefId === definition.trapToPlace);
@@ -362,7 +358,7 @@ class ConstructionManager {
         // 5. Update UI/Render
         if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
         if (window.mapRenderer) window.mapRenderer.scheduleRender();
-        if (window.audioManager) window.audioManager.playUiSound('ui_construction_complete_01.wav'); // Reuse sound or find a deconstruct one
+        if (window.audioManager) window.audioManager.playUiSound('ui_construction_complete_01.wav');
 
         return true;
     }
@@ -378,19 +374,26 @@ class ConstructionManager {
         if (!this.canBuild(constructionId)) {
             logToConsole(`${this.logPrefix} Pre-build check failed for '${constructionId}'. Player may be missing components or skill.`, 'orange');
             if (window.uiManager) window.uiManager.showToastNotification("Cannot build: missing components or skill.", "error");
-            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Sound for failure
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             return false;
         }
 
         const definition = this.constructionDefinitions[constructionId];
         if (!this.isValidPlacement(definition, targetTilePos)) {
             if (window.uiManager) window.uiManager.showToastNotification("Cannot build here: Invalid placement.", "error");
-            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Sound for failure
+            if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
             return false;
         }
 
-        // Consume components
+        // Consuming components
         const recipeToUse = definition.recipe || definition;
+
+        // Ensure inventory exists before consumption
+        if (!this.gameState.inventory || !this.gameState.inventory.container || !this.gameState.inventory.container.items) {
+             logToConsole(`${this.logPrefix} Inventory unavailable.`, 'red');
+             return false;
+        }
+
         for (const component of recipeToUse.components) {
             const resolved = this.recipeResolver.resolveComponent(component, this.gameState.inventory.container.items);
             if (!resolved) {
@@ -409,24 +412,15 @@ class ConstructionManager {
         // Place the tile(s) on the map
         const size = definition.size || { width: 1, height: 1 };
         const { x: startX, y: startY, z } = targetTilePos;
+        let placementFailed = false;
 
         for (let dy = 0; dy < size.height; dy++) {
             for (let dx = 0; dx < size.width; dx++) {
                 const currentX = startX + dx;
                 const currentY = startY + dy;
-                // For multi-tile objects, the primary tileIdPlaced might only go on the origin (dx=0,dy=0)
-                // or a more complex system for multi-tile sprites is needed.
-                // For now, place the main tileId at the origin, potentially other parts or empty markers elsewhere.
-                // Simplified: place the same tileId on all occupied cells if it's a simple block.
-                // More realistically, a multi-tile object would have one main entry in mapStructures
-                // and occupy multiple visual tiles. The mapManager.updateTileOnLayer should handle this.
 
-                // Determine target layer (default 'middle')
                 const targetLayer = definition.targetLayer || 'middle';
 
-                // For now, this simplified logic will place the *same* tile ID on all cells the structure occupies.
-                // This is okay for simple things like a 2x1 workbench if both tiles look the same.
-                // For complex multi-tile sprites, this needs a more advanced tile placement system.
                 if (this.mapManager && typeof this.mapManager.updateTileOnLayer === 'function') {
                     this.mapManager.updateTileOnLayer(currentX, currentY, z, targetLayer, definition.tileIdPlaced);
                 } else {
@@ -440,43 +434,31 @@ class ConstructionManager {
                     if (levelData && levelData[targetLayer]) {
                         levelData[targetLayer][currentY][currentX] = definition.tileIdPlaced;
                     } else {
-                        logToConsole(`${this.logPrefix} CRITICAL ERROR: Cannot place tile for '${definition.name}' at (${currentX},${currentY},${z}). mapManager or map data invalid. Rolling back components.`, "red");
-                        // Rollback consumed components
-                        const recipeToUse = definition.recipe || definition; // Use the correct recipe object
-                        const componentsToRollback = recipeToUse.components || [];
-                        for (const component of componentsToRollback) {
-                            // Note: component.itemId is not standard in recipe components, usually family/require.
-                            // If it's a specific item recipe, it might have itemId.
-                            // However, we consumed based on resolved items.
-                            // Ideally we track exactly what was consumed.
-                            // For now, we try to refund based on component requirement, but this is imperfect if family was used.
-                            // Warning: This rollback logic is weak without resolved item tracking.
-                            // But fixing the crash:
-                            logToConsole(`${this.logPrefix} Rollback: Cannot perfectly restore generic components.`, "orange");
-                        }
-                        if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
-                        if (window.uiManager) window.uiManager.showToastNotification("Construction failed: map error.", "error");
-                        if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav'); // Sound for failure
-                        return false;
+                        logToConsole(`${this.logPrefix} CRITICAL ERROR: Cannot place tile for '${definition.name}' at (${currentX},${currentY},${z}). mapManager or map data invalid.`, "red");
+                        placementFailed = true;
                     }
                 }
             }
         }
-        if (size.width > 1 || size.height > 1) {
-            logToConsole(`${this.logPrefix} Fallback: Directly updated map data for multi-tile '${definition.name}'.`, "grey");
-        } else if (this.mapManager === undefined || typeof this.mapManager.updateTileOnLayer !== 'function') {
-            logToConsole(`${this.logPrefix} Fallback: Directly updated map data for '${definition.name}'.`, "grey");
+
+        if (placementFailed) {
+            // Rollback consumed components - Partial mitigation.
+            // Ideally we track exactly what was resolved and refund it.
+            // Since we don't store the exact resolved items list in scope, we can't perfectly refund specific IDs if multiple matched.
+            logToConsole(`${this.logPrefix} Placement failed after component consumption. Materials lost.`, "red");
+            if (window.uiManager) window.uiManager.showToastNotification("Construction failed: map error.", "error");
+            return false;
         }
 
-
         // If it's a trap, add it to trapManager
-        // For multi-tile constructions that are traps, this assumes the trap effect is at the origin targetTilePos
         if (definition.trapToPlace && this.trapManager) {
             const trapDefFromConstructions = this.trapManager.getTrapDefinition(definition.trapToPlace);
             if (trapDefFromConstructions) {
+                if (!this.gameState.currentMapTraps) this.gameState.currentMapTraps = []; // Ensure array exists
+
                 this.gameState.currentMapTraps.push({
                     trapDefId: definition.trapToPlace,
-                    x: targetTilePos.x, // Trap placed at the origin of the construction
+                    x: targetTilePos.x,
                     y: targetTilePos.y,
                     z: targetTilePos.z,
                     state: "hidden",
@@ -488,7 +470,7 @@ class ConstructionManager {
             }
         }
 
-        // Add to mapStructures if it has health, is a container, or a resource producer
+        // Add to mapStructures
         if (definition.health || definition.tags?.includes('container') || definition.category === 'resource_production') {
             const newStructure = {
                 uniqueId: `struct_${Date.now()}_${Math.random()}`,
@@ -498,7 +480,8 @@ class ConstructionManager {
                 z: targetTilePos.z,
                 currentHealth: definition.health || null,
                 maxHealth: definition.health || null,
-                definition: definition // Store a reference to its definition for quick access
+                mapId: this.gameState.currentMapId, // Bind structure to current map
+                definition: definition // Keep reference, but use constructionId for persistence if needed
             };
             if (definition.tags?.includes('container') && definition.containerCapacity) {
                 newStructure.container = new InventoryContainer(definition.name, definition.containerCapacity, []);
@@ -506,9 +489,7 @@ class ConstructionManager {
             if (definition.category === 'resource_production') {
                 newStructure.internalStorage = []; // [{itemId, quantity}]
                 newStructure.currentProductionProgress = 0;
-                if (definition.requiresInputItemId) {
-                    newStructure.inputStorage = []; // [{itemId, quantity}]
-                }
+                newStructure.inputStorage = []; // Initialize regardless of current requirement to be safe
             }
             this.gameState.mapStructures.push(newStructure);
         }
@@ -534,7 +515,7 @@ class ConstructionManager {
 
         logToConsole(`${this.logPrefix} Successfully built ${definition.name} at (${targetTilePos.x},${targetTilePos.y},${targetTilePos.z}).`, 'green');
         if (window.uiManager) window.uiManager.showToastNotification(`Built ${definition.name}!`, "success");
-        if (window.audioManager) window.audioManager.playUiSound('ui_construction_complete_01.wav'); // Placeholder
+        if (window.audioManager) window.audioManager.playUiSound('ui_construction_complete_01.wav');
 
         if (window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
         if (window.mapRenderer) window.mapRenderer.scheduleRender();
@@ -554,12 +535,27 @@ class ConstructionManager {
         return null;
     }
 
-    updateResourceProduction(currentTick) { // currentTick might be gameState.currentTurn or a more precise game tick
+    updateResourceProduction(currentTick) {
         if (!this.gameState.mapStructures || this.gameState.mapStructures.length === 0) return;
 
         this.gameState.mapStructures.forEach(structure => {
+            // Only update structures on the current map
+            if (structure.mapId && this.gameState.currentMapId && structure.mapId !== this.gameState.currentMapId) {
+                return;
+            }
+
+            // Ensure definition is available (restore from ID if needed)
+            if (!structure.definition && structure.constructionId) {
+                structure.definition = this.constructionDefinitions[structure.constructionId];
+            }
+
             if (structure.definition && structure.definition.category === 'resource_production' && structure.definition.producesItemId) {
                 const def = structure.definition;
+
+                // Ensure storages exist
+                if (!structure.internalStorage) structure.internalStorage = [];
+                if (!structure.inputStorage) structure.inputStorage = [];
+
                 structure.currentProductionProgress = (structure.currentProductionProgress || 0) + (def.productionRatePerTick || 0.001);
 
                 if (structure.currentProductionProgress >= 1) {
@@ -568,9 +564,8 @@ class ConstructionManager {
 
                     // Check input requirements
                     if (def.requiresInputItemId) {
-                        const inputItemInStorage = structure.inputStorage?.find(item => item.itemId === def.requiresInputItemId);
+                        const inputItemInStorage = structure.inputStorage.find(item => item.itemId === def.requiresInputItemId);
                         if (!inputItemInStorage || inputItemInStorage.quantity < itemsToProduce) {
-                            // logToConsole(`${this.logPrefix} ${def.name} needs ${def.requiresInputItemId} to produce. Input storage: ${inputItemInStorage ? inputItemInStorage.quantity : 0}. Required: ${itemsToProduce}`, "info");
                             return; // Not enough input
                         }
                     }
@@ -599,8 +594,6 @@ class ConstructionManager {
                             structure.internalStorage.push({ itemId: def.producesItemId, quantity: actualAmountToAdd });
                         }
                         logToConsole(`${this.logPrefix} ${def.name} produced ${actualAmountToAdd} ${def.producesItemId}. Total in structure: ${existingProduct ? existingProduct.quantity : actualAmountToAdd}.`, 'info');
-                    } else if (itemsToProduce > 0) {
-                        // logToConsole(`${this.logPrefix} ${def.name} produced ${itemsToProduce} ${def.producesItemId}, but storage is full.`, 'info');
                     }
                 }
             }
@@ -609,9 +602,21 @@ class ConstructionManager {
 
     collectFromResourceProducer(structureUniqueId) {
         const structure = this.getStructureByUniqueId(structureUniqueId);
+
+        // Ensure definition
+        if (structure && !structure.definition && structure.constructionId) {
+            structure.definition = this.constructionDefinitions[structure.constructionId];
+        }
+
         if (!structure || !structure.definition || structure.definition.category !== 'resource_production' || !structure.internalStorage || structure.internalStorage.length === 0) {
             logToConsole(`${this.logPrefix} Nothing to collect from ${structure?.definition?.name || 'structure'}.`, 'info');
             return false;
+        }
+
+        // Map check
+        if (structure.mapId && this.gameState.currentMapId && structure.mapId !== this.gameState.currentMapId) {
+             logToConsole(`${this.logPrefix} Cannot collect: Structure is on a different map.`, 'orange');
+             return false;
         }
 
         let collectedAnything = false;
@@ -619,12 +624,11 @@ class ConstructionManager {
             const storedItemEntry = structure.internalStorage[i];
             // Attempt to add to player inventory
             if (this.inventoryManager.addItemToInventoryById(storedItemEntry.itemId, storedItemEntry.quantity)) {
-                logToConsole(`${this.logPrefix} Collected ${storedItemEntry.quantity}x ${storedItemEntry.itemId} from ${structure.definition.name}.`, 'event-success');
+                logToConsole(`${this.logPrefix} Collected ${storedItemEntry.quantity}x ${storedItemEntry.itemId} from ${structure.definition.name}.`, 'green');
                 structure.internalStorage.splice(i, 1); // Remove collected item
                 collectedAnything = true;
             } else {
                 logToConsole(`${this.logPrefix} Could not collect ${storedItemEntry.itemId} from ${structure.definition.name}, player inventory full.`, 'orange');
-                // Potentially break or only collect what fits
             }
         }
         if (collectedAnything && window.inventoryManager && window.inventoryManager.updateInventoryUI) window.inventoryManager.updateInventoryUI();
@@ -633,16 +637,28 @@ class ConstructionManager {
 
     addInputToResourceProducer(structureUniqueId, itemId, quantity = 1) {
         const structure = this.getStructureByUniqueId(structureUniqueId);
+
+        // Ensure definition
+        if (structure && !structure.definition && structure.constructionId) {
+            structure.definition = this.constructionDefinitions[structure.constructionId];
+        }
+
         if (!structure || !structure.definition || structure.definition.category !== 'resource_production' || !structure.definition.requiresInputItemId) {
             logToConsole(`${this.logPrefix} This structure does not require inputs or is invalid.`, 'warn');
             return false;
         }
+
+        // Map check
+        if (structure.mapId && this.gameState.currentMapId && structure.mapId !== this.gameState.currentMapId) {
+             logToConsole(`${this.logPrefix} Cannot add input: Structure is on a different map.`, 'orange');
+             return false;
+        }
+
         if (structure.definition.requiresInputItemId !== itemId) {
             logToConsole(`${this.logPrefix} ${structure.definition.name} requires ${structure.definition.requiresInputItemId}, not ${itemId}.`, 'warn');
             return false;
         }
 
-        // Assume player has the item and it's consumed from their inventory by the caller (e.g., interaction.js)
         if (!structure.inputStorage) structure.inputStorage = [];
 
         const existingInput = structure.inputStorage.find(item => item.itemId === itemId);
@@ -657,10 +673,5 @@ class ConstructionManager {
     }
 
 }
-
-// Make globally accessible
-// window.constructionManager = new ConstructionManager(window.gameState, window.assetManager, window.inventoryManager, window.TimeManager, window.xpManager, window.mapManager, window.trapManager);
-// Initialization:
-// if (window.constructionManager) window.constructionManager.initialize();
 
 window.ConstructionManager = ConstructionManager;
