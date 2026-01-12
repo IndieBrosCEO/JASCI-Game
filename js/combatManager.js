@@ -9,6 +9,7 @@
         this.turnsToProcess = 0;
         this.backgroundRoundResolve = null;
         this.isBackgroundSimulation = false;
+        this._onWeaponChange = this.handleWeaponSelectionChange.bind(this);
     }
 
     updateCombatLOSLine(attackerEntity, targetEntityOrPos, weaponObj) {
@@ -101,8 +102,8 @@
                 weaponSelect.appendChild(weaponOption);
             }
         });
-        weaponSelect.removeEventListener('change', this.handleWeaponSelectionChange.bind(this));
-        weaponSelect.addEventListener('change', this.handleWeaponSelectionChange.bind(this));
+        weaponSelect.removeEventListener('change', this._onWeaponChange);
+        weaponSelect.addEventListener('change', this._onWeaponChange);
         this.handleWeaponSelectionChange({ target: weaponSelect });
     }
 
@@ -648,7 +649,7 @@
             let effectsToRemove = [];
             for (const effectId in attacker.statusEffects) {
                 const effect = attacker.statusEffects[effectId];
-                if (!effect) continue;
+                if (!effect || typeof effect !== 'object') continue;
 
                 if (effect.damagePerTurn && effect.damageType) {
                     let partToDamage = (currentEntry.isPlayer ? this.gameState : attacker).health?.torso;
@@ -834,7 +835,15 @@
         const selectedVal = weaponSelect.value; let weaponObj = null, attackType = "unarmed";
         if (selectedVal === "unarmed") { weaponObj = null; attackType = "melee"; }
         else {
-            weaponObj = this.gameState.inventory.handSlots.find(i => i && (i.id === selectedVal || i.name === selectedVal)) || this.assetManager.getItem(selectedVal);
+            // Check hand slots first (instances), then assets (templates - clone if used)
+            const handItem = this.gameState.inventory.handSlots.find(i => i && (i.id === selectedVal || i.name === selectedVal));
+            if (handItem) {
+                weaponObj = handItem;
+            } else {
+                const template = this.assetManager.getItem(selectedVal);
+                weaponObj = template ? { ...template } : null; // Shallow clone to avoid mutating template
+            }
+
             if (weaponObj) {
                 if (weaponObj.type.includes("melee")) attackType = "melee";
                 else if (weaponObj.type.includes("firearm") || weaponObj.type.includes("bow") || weaponObj.type.includes("crossbow") || weaponObj.type.includes("weapon_ranged_other") || weaponObj.type.includes("thrown") || weaponObj.type.includes("weapon_utility_spray")) attackType = "ranged";
@@ -1065,11 +1074,11 @@
         this.gameState.npcDefenseChoice = defense; logToConsole(`${npc.name} defends: ${defense}.`, 'gold');
     }
 
-    handleDefenderActionPrompt() {
+    async handleDefenderActionPrompt() {
         const defender = this.gameState.combatCurrentDefender, attacker = this.gameState.combatCurrentAttacker;
         if (!defender && !(this.gameState.pendingCombatAction?.targetTile && (this.gameState.pendingCombatAction?.weapon?.type === "weapon_thrown_explosive" || this.gameState.pendingCombatAction?.weapon?.type === "weapon_thrown_utility"))) {
             logToConsole(`Error: Defender not set & not valid area effect. Attacker: ${attacker?.name}.`, 'red');
-            if (attacker === this.gameState) this.promptPlayerAttackDeclaration(); else this.nextTurn(attacker); return;
+            if (attacker === this.gameState) this.promptPlayerAttackDeclaration(); else await this.nextTurn(attacker); return;
         }
         // Allow defender to be gameState.player OR gameState (legacy fallback)
         if (defender === this.gameState.player || defender === this.gameState) {
@@ -1999,10 +2008,8 @@
 
                 let inMeleeRange = false;
                 if (dz === 0) { // Same Z-level
-                    const manhattanXY = dx + dy;
-                    // Allows Manhattan distance 1 (cardinal) and 2 (diagonal)
-                    // Must not be the same tile (manhattanXY > 0)
-                    if (manhattanXY > 0 && manhattanXY <= 2) {
+                    // Chebyshev distance 1 (includes diagonals)
+                    if (Math.max(dx, dy) === 1) {
                         inMeleeRange = true;
                     }
                 } else if (dz === 1) { // One Z-level difference
@@ -2049,9 +2056,9 @@
                 const distance = getDistance3D(attackerMapPos, targetMapPos);
                 actionContext.isGrappling = attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === (defender === this.gameState.player ? 'player' : defender?.id);
                 if (distance <= 1.8) actionContext.rangeModifier = (weapon.tags?.includes("requires_grapple_for_point_blank") && defender && actionContext.isGrappling) ? 15 : (weapon.tags?.includes("requires_grapple_for_point_blank") ? 0 : 15);
-                else if (distance <= weapon.optimalRange || 10) actionContext.rangeModifier = 5;
-                else if (distance <= weapon.effectiveRange || 30) actionContext.rangeModifier = 0;
-                else if (distance <= weapon.maxRange || 60) actionContext.rangeModifier = -5;
+                else if (distance <= (weapon.optimalRange || 10)) actionContext.rangeModifier = 5;
+                else if (distance <= (weapon.effectiveRange || 30)) actionContext.rangeModifier = 0;
+                else if (distance <= (weapon.maxRange || 60)) actionContext.rangeModifier = -5;
                 else actionContext.rangeModifier = -10;
                 if (distance > (weapon.effectiveRange || 30)) {
                     let mod = 0;
@@ -2302,8 +2309,13 @@
             }
         }
         // Consume Aiming Effect if used
-        if (attacker.aimingEffect) {
+        if (attacker.aimingEffect || (attacker === this.gameState && this.gameState.player.aimingEffect)) {
             attacker.aimingEffect = false;
+            // Ensure mirrored flags are cleared if attacker is player
+            if (attacker === this.gameState || attacker === this.gameState.player) {
+                this.gameState.aimingEffect = false;
+                if (this.gameState.player) this.gameState.player.aimingEffect = false;
+            }
             logToConsole(`${attackerName} is no longer aiming.`, 'grey');
         }
 
@@ -2562,6 +2574,7 @@
         if (window.audioManager) window.audioManager.playUiSound('ui_confirm_01.wav'); // Needs a specific sound potentially
 
         this.gameState.player.aimingEffect = true;
+        this.gameState.aimingEffect = true; // Sync for consistency
         this.gameState.actionPointsRemaining--;
         window.turnManager.updateTurnUI();
 
@@ -2844,7 +2857,7 @@
             }
         }
 
-        const effectiveArmor = isPlayerVictim ? window.getArmorForBodyPart(accessKey, entity) : (entity.armor?.[accessKey] || 0);
+        let effectiveArmor = isPlayerVictim ? window.getArmorForBodyPart(accessKey, entity) : (entity.armor?.[accessKey] || 0);
 
         // Perk: Breaker (Str) - Melee attacks ignore 1 point of armor
         if (attacker === this.gameState && weapon?.type?.includes("melee") && window.perkManager && window.perkManager.hasPerk("Breaker")) {
