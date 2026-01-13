@@ -158,19 +158,8 @@ function getFOWModifiedHighlightColor(baseHighlightColor, fowStatus) {
 }
 
 function getAmbientLightColor(currentTimeHours) {
-    // Ensure currentTimeHours is a number and within 0-23 range
-    const hour = (typeof currentTimeHours === 'number' && currentTimeHours >= 0 && currentTimeHours <= 23) ? currentTimeHours : 12; // Default to noon if invalid
-
-    // Returns the Shadow/Ambient color (not direct sun)
-    if (hour >= 6 && hour < 8) { // Dawn
-        return '#8080A0'; // Brighter Dawn Ambient
-    } else if (hour >= 8 && hour < 17) { // Daytime
-        return '#A0A0B0'; // Brighter Daylight Shadow (Blue-Grey)
-    } else if (hour >= 17 && hour < 19) { // Dusk
-        return '#908080'; // Brighter Dusk Ambient
-    } else { // Night (19:00 to 05:59)
-        return '#353550'; // Brighter Night Ambient (was #202035)
-    }
+    // Ambient light disabled per request (only direct sun/moon light)
+    return '#000000';
 }
 
 function getSunLightColor(currentTimeHours) {
@@ -182,35 +171,57 @@ function getSunLightColor(currentTimeHours) {
     } else if (hour >= 17 && hour < 19) { // Dusk
         return '#FF8866'; // Reddish Orange
     } else {
-        return '#000000'; // No sun at night
+        return '#202040'; // Moonlight (Dim Blue-White)
     }
 }
 
 function getSunShadowOffset(hour) {
-    if (hour < 6 || hour >= 18) return { x: 0, y: 0 };
-    // Map 6..18 to angle 0..PI
-    // 6:00 -> Angle 0 (East). cos(0)=1.
-    // 12:00 -> Angle PI/2 (South). cos(PI/2)=0. sin(PI/2)=1.
-    // 18:00 -> Angle PI (West). cos(PI)=-1.
-    const angle = ((hour - 6) / 12) * Math.PI;
-    const x = Math.cos(angle) * 5.0;
-    const y = Math.sin(angle) * 2.0; // Y component simulates sun travelling through South
-    return { x, y };
+    // Sun logic (6:00 to 18:00)
+    if (hour >= 6 && hour < 18) {
+        // Map 6..18 to angle 0..PI
+        const angle = ((hour - 6) / 12) * Math.PI;
+        const x = Math.cos(angle) * 5.0;
+        const y = Math.sin(angle) * 2.0;
+        return { x, y };
+    } else {
+        // Moon logic (18:00 to 6:00 next day)
+        // Map 18..30 to angle 0..PI? Or simple offset?
+        // Let's mimic sun path for Moon: Moonrise 18:00 (East), Moonset 6:00 (West).
+        // Angle 0 at 18:00. Angle PI at 6:00.
+        let adjustedHour = hour;
+        if (adjustedHour < 6) adjustedHour += 24; // 0..5 becomes 24..29
+
+        // Range 18 to 30.
+        // (adjustedHour - 18) / 12 * PI
+        const angle = ((adjustedHour - 18) / 12) * Math.PI;
+        const x = Math.cos(angle) * 5.0;
+        const y = Math.sin(angle) * 2.0;
+        return { x, y };
+    }
 }
 
 function isTileSunlit(x, y, z, sunVector) {
     const mapData = window.mapRenderer.getCurrentMapData();
-    if (!mapData) return false;
+    if (!mapData || !mapData.dimensions) return false;
+    const width = mapData.dimensions.width;
+    const height = mapData.dimensions.height;
 
-    // Check the Roof layer of current Z level
+    // Check intersection with Roof Layer of current Z (which is the "ceiling")
+    // This allows light to enter through windows if the sun angle allows the ray to bypass the roof directly above.
     const levelData = mapData.levels[z.toString()];
     if (levelData && levelData.roof) {
-        const roof = levelData.roof[y]?.[x];
-        const roofId = (typeof roof === 'object' && roof?.tileId) ? roof.tileId : roof;
-        if (roofId && assetManagerInstance.tilesets[roofId]) {
-            const tags = assetManagerInstance.tilesets[roofId].tags || [];
-            if (!tags.includes('transparent') && !tags.includes('transparent_to_light')) {
-                return false; // Blocked by roof on current level
+        const roofIntersectX = Math.floor(x + sunVector.x);
+        const roofIntersectY = Math.floor(y + sunVector.y);
+
+        // If roof intersection is out of bounds, no roof there
+        if (roofIntersectX >= 0 && roofIntersectX < width && roofIntersectY >= 0 && roofIntersectY < height) {
+            const roof = levelData.roof[roofIntersectY]?.[roofIntersectX];
+            const roofId = (typeof roof === 'object' && roof?.tileId) ? roof.tileId : roof;
+            if (roofId && assetManagerInstance.tilesets[roofId]) {
+                const tags = assetManagerInstance.tilesets[roofId].tags || [];
+                if (!tags.includes('transparent') && !tags.includes('transparent_to_light')) {
+                    return false; // Blocked by roof intersection
+                }
             }
         }
     }
@@ -220,15 +231,6 @@ function isTileSunlit(x, y, z, sunVector) {
     // We check a short distance (e.g., 2 tiles) in the immediate direction of the sun vector.
     // If the sun vector has magnitude, we can trace.
     if (Math.abs(sunVector.x) > 0.1 || Math.abs(sunVector.y) > 0.1) {
-        // Calculate normalized direction or just step?
-        // sunVector is per 1 Z-level.
-        // If sunVector is large (low sun), the ray travels far in X/Y for small Z change.
-        // Effectively, we want to trace the ray starting from (x,y,z) out.
-        // The loop below starts at checkZ = z + 1.
-        // Between z and z+1, the ray moves sunVector.x and sunVector.y.
-        // If sunVector is (5, 0) (Low East Sun), it moves 5 tiles East before going up 1 Z.
-        // We should check those intermediate tiles on the CURRENT Z level.
-
         const steps = Math.ceil(Math.max(Math.abs(sunVector.x), Math.abs(sunVector.y)));
         if (steps > 0) {
             const stepX = sunVector.x / steps;
@@ -245,6 +247,11 @@ function isTileSunlit(x, y, z, sunVector) {
                 // Don't check self
                 if (tx === x && ty === y) continue;
 
+                // Check bounds for horizontal trace
+                if (tx < 0 || tx >= width || ty < 0 || ty >= height) {
+                    return true; // Reached edge of map (sunlight enters)
+                }
+
                 // Check blocking on current Z
                 if (isTileBlockingLight(tx, ty, z, { ignoreFloor: true })) {
                     return false;
@@ -259,6 +266,11 @@ function isTileSunlit(x, y, z, sunVector) {
          const dz = checkZ - z;
          const tx = Math.floor(x + sunVector.x * dz);
          const ty = Math.floor(y + sunVector.y * dz);
+
+         // Check bounds
+         if (tx < 0 || tx >= width || ty < 0 || ty >= height) {
+             return true; // Reached edge of map, clear path to sky
+         }
 
          // For upward checks, use default behavior (checks floors if they block vertical light)
          if (isTileBlockingLight(tx, ty, checkZ, { ignoreFloor: false })) {
@@ -285,7 +297,6 @@ function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
 
     // Check for opaque roof on current level to block ambient
     const mapData = window.mapRenderer.getCurrentMapData();
-    let hasOpaqueRoof = false;
     if (mapData && mapData.levels && mapData.levels[z.toString()]) {
         const roofLayer = mapData.levels[z.toString()].roof;
         if (roofLayer) {
@@ -299,7 +310,6 @@ function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
                      // If roof exists and is NOT transparent to light, it blocks ambient sky light
                      if (tileDef && !tileDef.tags.includes('transparent') && !tileDef.tags.includes('transparent_to_light')) {
                          baseAmbientColor = '#000000'; // Block ambient
-                         hasOpaqueRoof = true;
                      }
                  }
              }
@@ -316,8 +326,8 @@ function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
     totalB += ambientRGB.b;
 
     // 2. Sunlight
-    // Only check sunlight if sunColor contributes light (not black) and not under opaque roof
-    if (sunColor !== '#000000' && !hasOpaqueRoof && isTileSunlit(x, y, z, sunVector)) {
+    // Only check sunlight if sunColor contributes light (not black)
+    if (sunColor !== '#000000' && isTileSunlit(x, y, z, sunVector)) {
          const sunRGB = hexToRgb(sunColor) || { r: 0, g: 0, b: 0 };
          // Sunlight intensity scaling? Assume 1.0 for now, or implicit in sunColor brightness.
          totalR = Math.max(totalR, sunRGB.r); // Sunlight usually overrides ambient rather than adding?
