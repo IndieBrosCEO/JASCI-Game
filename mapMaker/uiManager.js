@@ -270,8 +270,10 @@ function applyStampPreview(cellElement, x, y, currentTool, stampData3D, previewP
     const stampRelativeX = x - previewPos.x;
     const stampRelativeY = y - previewPos.y;
 
-    if (stampData3D.levels[0]) { // Previewing the stamp's own z=0 slice
+    // Render base layer (Z=0 relative to stamp)
+    if (stampData3D.levels[0]) {
         let tileIdToPreviewFromStamp = "";
+        // Prioritize MIDDLE, then BOTTOM
         if (stampData3D.levels[0][LAYER_TYPES.MIDDLE]?.[stampRelativeY]?.[stampRelativeX]) {
             tileIdToPreviewFromStamp = stampData3D.levels[0][LAYER_TYPES.MIDDLE][stampRelativeY][stampRelativeX];
         } else if (stampData3D.levels[0][LAYER_TYPES.BOTTOM]?.[stampRelativeY]?.[stampRelativeX]) {
@@ -290,8 +292,34 @@ function applyStampPreview(cellElement, x, y, currentTool, stampData3D, previewP
                 cellElement.classList.add("stamp-preview");
             }
         } else if (tileIdToPreviewFromStamp === "") {
+            // Explicitly empty in stamp overwrites map content in preview
             cellElement.textContent = ' ';
             cellElement.classList.add("stamp-preview");
+        }
+    }
+
+    // Render upper layers (Z>0 relative to stamp) using onion skin style
+    // Iterate from 1 up to depth-1
+    for (let zi = 1; zi < stampData3D.depth; zi++) {
+        if (stampData3D.levels[zi]) {
+            let tileIdAbove = "";
+            if (stampData3D.levels[zi][LAYER_TYPES.MIDDLE]?.[stampRelativeY]?.[stampRelativeX]) {
+                tileIdAbove = stampData3D.levels[zi][LAYER_TYPES.MIDDLE][stampRelativeY][stampRelativeX];
+            } else if (stampData3D.levels[zi][LAYER_TYPES.BOTTOM]?.[stampRelativeY]?.[stampRelativeX]) {
+                tileIdAbove = stampData3D.levels[zi][LAYER_TYPES.BOTTOM][stampRelativeY][stampRelativeX];
+            }
+
+            const effectiveIdAbove = (typeof tileIdAbove === 'object' && tileIdAbove?.tileId) ? tileIdAbove.tileId : tileIdAbove;
+
+            if (effectiveIdAbove && effectiveIdAbove !== "") {
+                const defAbove = assetManagerInstance.tilesets[effectiveIdAbove];
+                if (defAbove) {
+                    // Overwrite with "above" style
+                    cellElement.textContent = defAbove.sprite || '?';
+                    cellElement.style.color = ONION_ABOVE_COLOR;
+                    // Add to title or class if needed, but visual override is main goal
+                }
+            }
         }
     }
 }
@@ -515,6 +543,29 @@ export function renderMergedGrid(mapData, currentEditingZ, gridWidth, gridHeight
                 if ((x === minX || x === maxX) && (y >= minY && y <= maxY) ||
                     (y === minY || y === maxY) && (x >= minX && x <= maxX)) {
                     cellElement.classList.add("rect-preview");
+                }
+            }
+
+            // Apply Stamp Selection Preview (Bounding Box)
+            if (currentTool === "stamp" && uiStateHolder.dragStart && mouseOverGridPos && !stampData3D) {
+                const x0 = uiStateHolder.dragStart.x;
+                const y0 = uiStateHolder.dragStart.y;
+                const x1 = mouseOverGridPos.x;
+                const y1 = mouseOverGridPos.y;
+
+                const minX = Math.min(x0, x1);
+                const maxX = Math.max(x0, x1);
+                const minY = Math.min(y0, y1);
+                const maxY = Math.max(y0, y1);
+
+                // Highlight the border of the selection area
+                if ((x === minX || x === maxX) && (y >= minY && y <= maxY) ||
+                    (y === minY || y === maxY) && (x >= minX && x <= maxX)) {
+                    cellElement.classList.add("stamp-selection-preview");
+
+                    // Add depth info to title
+                    const depth = getRect3DDepth();
+                    cellElement.title += `\nSelection Depth: ${depth}`;
                 }
             }
 

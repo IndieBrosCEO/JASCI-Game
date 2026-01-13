@@ -150,6 +150,13 @@ input, textarea, select {
     /* outline: 1px solid purple; */ /* Alternative */
 }
 
+/* Stamp Selection Preview style */
+.cell.stamp-selection-preview {
+    background-color: rgba(255, 165, 0, 0.2); /* Semi-transparent orange */
+    outline: 2px dashed orange;
+    z-index: 100; /* Ensure outline is visible on top */
+}
+
 /* NPC and Portal markers */
 .npc-marker,
 .portal-marker {
