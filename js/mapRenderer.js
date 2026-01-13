@@ -293,6 +293,12 @@ function getTileLightLevel(x, y, z) {
 
 // New Advanced Lighting Calculation
 function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
+    // Check cache first
+    const cacheKey = `${x},${y},${z}`;
+    if (gameState.frameLightCache && gameState.frameLightCache[cacheKey]) {
+        return gameState.frameLightCache[cacheKey];
+    }
+
     const lightsOnCurrentZ = gameState.lightSources.filter(ls => ls.z === z);
 
     // Check for opaque roof on current level to block ambient
@@ -381,7 +387,11 @@ function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
     totalG = Math.min(255, Math.round(totalG));
     totalB = Math.min(255, Math.round(totalB));
 
-    return rgbToHex(totalR, totalG, totalB);
+    const resultColor = rgbToHex(totalR, totalG, totalB);
+    if (gameState.frameLightCache) {
+        gameState.frameLightCache[cacheKey] = resultColor;
+    }
+    return resultColor;
 }
 
 // Updated isTileBlockingLight to be 3D
@@ -1216,6 +1226,55 @@ window.mapRenderer = {
         console.log("Map selector setup complete.");
     },
 
+    // Helper to fix "wrong-side wall glow"
+    getSurfaceLightForBlockingTile: function(x, y, z, playerPos, currentFowData, ambient, sunColor, sunVector) {
+        // Consider 4 cardinal neighbors
+        const neighbors = [
+            {dx: 0, dy: -1}, {dx: 0, dy: 1}, {dx: -1, dy: 0}, {dx: 1, dy: 0}
+        ];
+
+        let bestLightHex = null;
+        let maxLum = -1;
+
+        // Ensure we have map dimensions
+        const mapData = this.getCurrentMapData();
+        if (!mapData || !mapData.dimensions) return ambient; // Fallback
+
+        for (const n of neighbors) {
+            const nx = x + n.dx;
+            const ny = y + n.dy;
+
+            // Check bounds
+            if (nx < 0 || ny < 0 || nx >= mapData.dimensions.width || ny >= mapData.dimensions.height) continue;
+
+            // Only consider neighbors whose FOW state is "visible"
+            // We need to check if fowData exists for the neighbor
+            if (currentFowData && currentFowData[ny] && currentFowData[ny][nx] === 'visible') {
+
+                // Recommended: ignore neighbors that are also light-blocking to avoid "wall lit by wall" chains
+                if (isTileBlockingLight(nx, ny, z)) continue;
+
+                // Get light via cache
+                const lightHex = calculateTileLighting(nx, ny, z, ambient, sunColor, sunVector);
+                const lum = getLuminance(lightHex);
+
+                if (lum > maxLum) {
+                    maxLum = lum;
+                    bestLightHex = lightHex;
+                }
+            }
+        }
+
+        // If no eligible neighbor exists, fall back to using the player’s current tile light
+        if (bestLightHex) {
+            return bestLightHex;
+        } else if (playerPos) {
+            return calculateTileLighting(playerPos.x, playerPos.y, z, ambient, sunColor, sunVector);
+        } else {
+            return ambient;
+        }
+    },
+
     scheduleRender: function () { // This function will be called from script.js
         if (!gameState.renderScheduled) {
             gameState.renderScheduled = true;
@@ -1346,6 +1405,9 @@ window.mapRenderer = {
                 data: Array(mapTotalHeight).fill(null).map(() => Array(mapTotalWidth).fill(null))
             };
         }
+
+        // Reset per-frame light cache
+        gameState.frameLightCache = {};
 
         const tileCacheData = gameState.tileCache.data;
 
@@ -1523,7 +1585,14 @@ window.mapRenderer = {
 
                     if (fowStatus === 'visible') {
                         // Calculate total light falling on this tile (Ambient + Sun + Point)
-                        const lightColor = calculateTileLighting(x, y, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
+                        let lightColor;
+
+                        // Fix for "wrong-side wall glow": If tile blocks light, sample from visible neighbors
+                        if (isTileBlockingLight(x, y, currentZ)) {
+                            lightColor = this.getSurfaceLightForBlockingTile(x, y, currentZ, gameState.playerPos, currentFowData, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
+                        } else {
+                            lightColor = calculateTileLighting(x, y, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
+                        }
 
                         // Multiply Surface Color * Light Color
                         displayColor = multiplyColors(baseColorForLighting, lightColor);
