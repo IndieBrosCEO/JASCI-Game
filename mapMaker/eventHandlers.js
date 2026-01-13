@@ -415,6 +415,18 @@ function handleGlobalKeyDown(event) {
             updatePaletteSelectionUI(""); // Update palette UI
             newTool = "brush"; // Switch to brush tool
             break;
+        case "<":
+        case ",":
+            if (event.key === '<' || (event.shiftKey && event.key === ',')) {
+                 handleZLevelChange(-1); // Down
+            }
+            break;
+        case ">":
+        case ".":
+            if (event.key === '>' || (event.shiftKey && event.key === '.')) {
+                handleZLevelChange(1); // Up
+            }
+            break;
         case "escape":
             handleEscapeKey();
             break;
