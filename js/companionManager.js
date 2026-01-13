@@ -1,4 +1,4 @@
-﻿// js/companionManager.js
+// js/companionManager.js
 
 class CompanionManager {
     constructor(gameState, assetManager, factionManager) {
@@ -10,13 +10,18 @@ class CompanionManager {
     }
 
     initialize() {
-        if (!this.gameState.companions) {
+        if (this.gameState && !this.gameState.companions) {
             this.gameState.companions = [];
         }
-        logToConsole("CompanionManager initialized.", "info");
+        if (!this.gameState || !this.gameState.npcs) {
+            logToConsole("CompanionManager initialize: gameState or npcs array missing.", "error");
+        } else {
+            logToConsole("CompanionManager initialized.", "info");
+        }
     }
 
     getNpcInstance(npcId) {
+        if (!this.gameState || !this.gameState.npcs) return undefined;
         return this.gameState.npcs.find(npc => npc.id === npcId);
     }
 
@@ -39,7 +44,7 @@ class CompanionManager {
         if (!reqs) return true; // No requirements means recruitable if isRecruitable is true
 
         // Check quest completion
-        if (reqs.questCompleted && !this.gameState.completedQuests.includes(reqs.questCompleted)) {
+        if (reqs.questCompleted && this.gameState.completedQuests && !this.gameState.completedQuests.includes(reqs.questCompleted)) {
             logToConsole(`Recruitment requirement for ${npc.name}: Quest "${reqs.questCompleted}" not completed.`, "info");
             return false;
         }
@@ -49,7 +54,7 @@ class CompanionManager {
             const playerRep = this.factionManager.getPlayerReputation(reqs.reputation.factionId); // Gets numerical score
             const requiredRepStatus = this.factionManager.getReputationStatus(reqs.reputation.level); // Converts "friendly" to numerical threshold range
 
-            if (!playerRep || playerRep < requiredRepStatus.minThreshold) { // Simplified: assumes level means "at least this good"
+            if (playerRep === undefined || playerRep === null || playerRep < requiredRepStatus.minThreshold) {
                 logToConsole(`Recruitment requirement for ${npc.name}: Reputation with ${reqs.reputation.factionId} not high enough (needs ${reqs.reputation.level}). Player: ${playerRep}`, "info");
                 return false;
             }
@@ -94,7 +99,8 @@ class CompanionManager {
         if (reqs && reqs.skillCheck) {
             const skillName = reqs.skillCheck.skill;
             const dc = reqs.skillCheck.dc;
-            const playerSkillValue = getSkillValue(skillName, this.gameState); // Assumes getSkillValue is global
+            // playerSkillValue was computed but unused previously.
+            // We use getSkillModifier for the roll, which includes the stat bonus.
             const roll = rollDie(20); // Assumes rollDie is global
             const totalRoll = roll + getSkillModifier(skillName, this.gameState); // Assumes getSkillModifier
 
@@ -108,7 +114,8 @@ class CompanionManager {
 
         // Consume item if required (AFTER skill check passes, if any)
         if (reqs && reqs.item) {
-            if (window.inventoryManager && window.inventoryManager.removeItemByNameOrId(reqs.item, 1)) {
+            // Updated to use removeItem instead of non-existent removeItemByNameOrId
+            if (window.inventoryManager && window.inventoryManager.removeItem(reqs.item, 1)) {
                 logToConsole(`Consumed item "${reqs.item}" for recruiting ${npc.name}.`, "info");
             } else {
                 logToConsole(`Failed to consume required item "${reqs.item}" for ${npc.name} (should have been checked by canRecruit). This is an issue.`, "error");
@@ -120,6 +127,12 @@ class CompanionManager {
         // Add to companions
         this.gameState.companions.push(npcId);
         npc.isFollowingPlayer = true;
+
+        // Store original team ID for restoration upon dismissal
+        if (npc.originalTeamId === undefined) {
+            npc.originalTeamId = npc.teamId;
+        }
+
         npc.currentOrders = "follow_close"; // Legacy support
 
         // New granular behaviors
@@ -139,12 +152,17 @@ class CompanionManager {
 
         logToConsole(`${npc.name} (Team ID: ${npc.teamId}) has joined your party! Aligned with player team.`, "event-success");
 
-        if (window.xpManager && typeof window.xpManager.awardXp === 'function') {
-            const xpAmount = 50; // Example XP for recruiting a companion
-            window.xpManager.awardXp(xpAmount, this.gameState);
-            logToConsole(`Awarded ${xpAmount} XP for recruiting ${npc.name}.`, "lime");
+        if (!npc.hasBeenRecruited) {
+            npc.hasBeenRecruited = true;
+            if (window.xpManager && typeof window.xpManager.awardXp === 'function') {
+                const xpAmount = 50; // Example XP for recruiting a companion
+                window.xpManager.awardXp(xpAmount, this.gameState);
+                logToConsole(`Awarded ${xpAmount} XP for recruiting ${npc.name}.`, "lime");
+            } else {
+                logToConsole("xpManager not available to award XP for recruitment.", "warn");
+            }
         } else {
-            logToConsole("xpManager not available to award XP for recruitment.", "warn");
+            logToConsole(`${npc.name} has been recruited before. No XP awarded.`, "grey");
         }
 
         // DialogueManager will handle navigating to the "recruited" dialogue node.
@@ -166,20 +184,25 @@ class CompanionManager {
         npc.isFollowingPlayer = false;
         npc.currentOrders = null;
 
-        // Revert teamId to original definition's teamId
-        const npcDef = this.getNpcDefinition(npc.definitionId);
-        if (npcDef && npcDef.teamId !== undefined) {
-            npc.teamId = npcDef.teamId;
-            logToConsole(`${npc.name}'s teamId reverted to ${npc.teamId} (from definition).`, "info");
-        } else if (npcDef) {
-            // Fallback if definition has no teamId, make them neutral civilian-like, or based on factionId
-            // For simplicity, let's try to infer a general teamId from their factionId if possible
-            // This is a rough fallback. Ideally, all NPC defs have a teamId.
-            const defaultFactionTeam = window.factionManager?.Factions[npc.factionId?.toUpperCase()]?.defaultTeamId || 2; // Default to team 2 (e.g. neutral/generic NPC)
-            npc.teamId = defaultFactionTeam;
-            logToConsole(`${npc.name}'s teamId defaulted to ${npc.teamId} based on faction or general default.`, "info");
+        // Clear companion settings to prevent memory effects
+        delete npc.companionSettings;
+
+        // Revert teamId to original teamId if stored, else definition's teamId
+        if (npc.originalTeamId !== undefined) {
+            npc.teamId = npc.originalTeamId;
+            logToConsole(`${npc.name}'s teamId reverted to ${npc.teamId} (from runtime backup).`, "info");
         } else {
-            logToConsole(`Could not find definition for ${npc.id} to revert teamId. NPC may behave unpredictably.`, "warn");
+            const npcDef = this.getNpcDefinition(npc.definitionId);
+            if (npcDef && npcDef.teamId !== undefined) {
+                npc.teamId = npcDef.teamId;
+                logToConsole(`${npc.name}'s teamId reverted to ${npc.teamId} (from definition).`, "info");
+            } else {
+                // Fallback using injected factionManager or window fallback
+                const fm = this.factionManager || window.factionManager;
+                const defaultFactionTeam = fm?.Factions[npc.factionId?.toUpperCase()]?.defaultTeamId || 2;
+                npc.teamId = defaultFactionTeam;
+                logToConsole(`${npc.name}'s teamId defaulted to ${npc.teamId} based on faction or general default.`, "info");
+            }
         }
 
         // Clear exploration target so they pick a new one based on their reverted alignment/AI.
@@ -193,6 +216,7 @@ class CompanionManager {
     }
 
     getCompanionById(npcId) { // This is more of a convenience, could just use getNpcInstance
+        // Use getNpcInstance for consistent lookup, but only if they are in companions list
         if (this.gameState.companions.includes(npcId)) {
             return this.getNpcInstance(npcId);
         }
@@ -236,13 +260,14 @@ class CompanionManager {
 
         // Loyalty Checks: Refuse dangerous/unwanted orders if loyalty is too low
         if (typeof companion.loyalty === 'number') {
+            // Log reason for refusal clearly
             if (setting === 'combatMode' && value === 'aggressive' && companion.loyalty < 25) {
-                logToConsole(`${companion.name} refuses to be aggressive! (Loyalty too low: ${companion.loyalty})`, "warn");
+                logToConsole(`${companion.name} refuses to be aggressive! (Loyalty ${companion.loyalty} < 25)`, "warn");
                 if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
                 return false;
             }
             if (setting === 'followMode' && value === 'wait' && companion.loyalty < 20) {
-                logToConsole(`${companion.name} refuses to stay behind! (Loyalty too low: ${companion.loyalty})`, "warn");
+                logToConsole(`${companion.name} refuses to stay behind! (Loyalty ${companion.loyalty} < 20)`, "warn");
                 if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
                 return false;
             }
@@ -327,10 +352,10 @@ class CompanionManager {
 
 // Make it globally accessible or manage through a central registry
 if (typeof window !== 'undefined') {
+    window.CompanionManager = CompanionManager;
     // Depends on gameState, assetManager, factionManager
     // Ensure these are available on window before instantiation or pass them in.
     // Initialization should happen after assetManager has loaded definitions.
     // window.companionManager = new CompanionManager(window.gameState, window.assetManager, window.factionManager);
     // Defer instantiation to main script's initialize function
 }
-window.CompanionManager = CompanionManager;
