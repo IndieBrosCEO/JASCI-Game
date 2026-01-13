@@ -571,6 +571,8 @@ export function defineStamp(x0, y0, z0, x1, y1, copyDepth, mapData, uiState, int
 
     uiState.stampData3D = { w: stampW, h: stampH, depth: copyDepth, levels: {} };
 
+    logToConsole(`Defining stamp with depth: ${copyDepth} (starting from Z${z0})`);
+
     for (let zi = 0; zi < copyDepth; zi++) { // zi is relative Z index within the stamp (0 to depth-1)
         const sourceMapZ = z0 + zi; // Actual Z-level in the map to copy from
         const sourceMapZStr = sourceMapZ.toString();
