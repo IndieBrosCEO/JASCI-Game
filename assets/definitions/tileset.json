@@ -857,7 +857,8 @@
       "impassable",
       "middle",
       "scavenge:furniture",
-      "interactive"
+      "interactive",
+      "allows_vision"
     ],
     "coverBonus": 2
   },
@@ -1003,11 +1004,11 @@
       "container",
       "item",
       "furniture",
-      "blocks_vision",
       "impassable",
       "electronics",
       "middle",
-      "scavenge:appliance"
+      "scavenge:appliance",
+      "allows_vision"
     ],
     "itemLink": "st_container_item",
     "contents": [],
@@ -1069,7 +1070,8 @@
       "middle",
       "flammable",
       "scavenge:furniture",
-      "interactive"
+      "interactive",
+      "allows_vision"
     ],
     "coverBonus": 2
   },
@@ -1115,7 +1117,8 @@
       "building",
       "interactive",
       "middle",
-      "scavenge:furniture"
+      "scavenge:furniture",
+      "allows_vision"
     ]
   },
   "NK": {
@@ -1170,11 +1173,11 @@
       "container",
       "item",
       "furniture",
-      "blocks_vision",
       "impassable",
       "middle",
       "flammable",
-      "scavenge:furniture"
+      "scavenge:furniture",
+      "allows_vision"
     ],
     "itemLink": "dsk_container_item",
     "contents": [],
@@ -1280,7 +1283,8 @@
       "interactive",
       "impassable",
       "middle",
-      "scavenge:appliance"
+      "scavenge:appliance",
+      "allows_vision"
     ]
   },
   "DRY": {
@@ -1292,7 +1296,8 @@
       "interactive",
       "impassable",
       "middle",
-      "scavenge:appliance"
+      "scavenge:appliance",
+      "allows_vision"
     ]
   },
   "FT": {
@@ -1328,7 +1333,8 @@
       "cover",
       "breakable",
       "middle",
-      "flammable"
+      "flammable",
+      "allows_vision"
     ],
     "coverBonus": 6
   },
@@ -1406,7 +1412,8 @@
     "tags": [
       "structure",
       "impassable",
-      "middle"
+      "middle",
+      "allows_vision"
     ],
     "emitsLight": true,
     "lightColor": "#FFFF00",
@@ -1593,7 +1600,8 @@
       "building",
       "furniture",
       "middle",
-      "impassable"
+      "impassable",
+      "allows_vision"
     ],
     "description": "A sturdy table for basic crafting and repairs.",
     "stationType": "workbench_general"
@@ -1611,7 +1619,8 @@
       "middle",
       "impassable",
       "heat_source_small",
-      "scavenge:machinery"
+      "scavenge:machinery",
+      "allows_vision"
     ],
     "description": "A rudimentary forge for working with metals.",
     "stationType": "forge",
@@ -1631,7 +1640,8 @@
       "building",
       "furniture",
       "middle",
-      "impassable"
+      "impassable",
+      "allows_vision"
     ],
     "description": "Allows for basic chemical reactions and crafting.",
     "stationType": "chemistry_bench"
@@ -1669,7 +1679,8 @@
       "middle",
       "impassable",
       "gunsmithing",
-      "scavenge:machinery"
+      "scavenge:machinery",
+      "allows_vision"
     ],
     "description": "A sturdy bench equipped with presses and measures for reloading ammunition.",
     "stationType": "reloading_general"
@@ -1686,7 +1697,8 @@
       "furniture",
       "middle",
       "impassable",
-      "explosives_work"
+      "explosives_work",
+      "allows_vision"
     ],
     "description": "A specialized workbench for safely assembling explosives and advanced ammunition.",
     "stationType": "munitions_assembly"
@@ -1703,7 +1715,8 @@
       "furniture",
       "middle",
       "impassable",
-      "armor_crafting"
+      "armor_crafting",
+      "allows_vision"
     ],
     "description": "A specialized jig for working with heavy armor components.",
     "stationType": "armor_station"
@@ -1723,7 +1736,8 @@
       "requires_power_grid",
       "metalworking",
       "precision_work",
-      "scavenge:machinery"
+      "scavenge:machinery",
+      "allows_vision"
     ],
     "description": "A machine tool for shaping metal or wood.",
     "stationType": "machining_lathe"
@@ -1742,7 +1756,8 @@
       "impassable",
       "requires_power_grid",
       "large_construction",
-      "scavenge:machinery"
+      "scavenge:machinery",
+      "allows_vision"
     ],
     "description": "A large bay for constructing and modifying vehicles.",
     "stationType": "vehicle_assembly"
@@ -1760,7 +1775,8 @@
       "middle",
       "impassable",
       "mechanical",
-      "scavenge:machinery"
+      "scavenge:machinery",
+      "allows_vision"
     ],
     "description": "A specialized jig for assembling engines.",
     "stationType": "engine_work"
@@ -1777,7 +1793,8 @@
       "furniture",
       "middle",
       "impassable",
-      "textile_work"
+      "textile_work",
+      "allows_vision"
     ],
     "description": "A basic loom for weaving cloth.",
     "stationType": "weaving"
@@ -1794,7 +1811,8 @@
       "furniture",
       "middle",
       "impassable",
-      "leather_work"
+      "leather_work",
+      "allows_vision"
     ],
     "description": "A wooden frame for stretching hides.",
     "stationType": "tanning"
@@ -1847,7 +1865,8 @@
       "middle",
       "impassable",
       "requires_power_grid",
-      "scavenge:electronics"
+      "scavenge:electronics",
+      "allows_vision"
     ],
     "description": "A bench with specialized tools for complex electronics work.",
     "stationType": "electronics_advanced"
@@ -1883,7 +1902,8 @@
       "metal",
       "cover",
       "breakable",
-      "middle"
+      "middle",
+      "allows_vision"
     ],
     "description": "A sturdy metal barricade offering good cover.",
     "coverBonus": 8
@@ -1898,7 +1918,8 @@
       "middle",
       "interactive",
       "water_source",
-      "resource_producer"
+      "resource_producer",
+      "allows_vision"
     ],
     "description": "Collects rainwater over time.",
     "producesItemId": "bottled_water_drink",
@@ -1916,7 +1937,8 @@
       "middle",
       "impassable",
       "metal",
-      "storage"
+      "storage",
+      "allows_vision"
     ],
     "description": "A small, lockable container for storing items.",
     "contents": [],
