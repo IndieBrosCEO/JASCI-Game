@@ -87,6 +87,13 @@ function blendColors(baseColorHex, tintColorHex, tintFactor) {
     }
 }
 
+function getLuminance(hexColor) {
+    const rgb = hexToRgb(hexColor);
+    if (!rgb) return 0;
+    // Standard relative luminance formula
+    return (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
+}
+
 function brightenColor(hexColor, factor) {
     if (typeof hexColor !== 'string' || !hexColor.startsWith('#') || typeof factor !== 'number') {
         return hexColor || '#FFFFFF'; // Return original or white if invalid input
@@ -181,13 +188,14 @@ function getSunLightColor(currentTimeHours) {
 
 function getSunShadowOffset(hour) {
     if (hour < 6 || hour >= 18) return { x: 0, y: 0 };
-    // Map 6..18 to offset
-    // 6:00 -> Look East (Positive X) to find sun.
-    // 12:00 -> 0.
-    // 18:00 -> Look West (Negative X).
-    const factor = 0.5; // Slope factor
-    const offsetX = (12 - hour) * factor;
-    return { x: offsetX, y: 0 };
+    // Map 6..18 to angle 0..PI
+    // 6:00 -> Angle 0 (East). cos(0)=1.
+    // 12:00 -> Angle PI/2 (South). cos(PI/2)=0. sin(PI/2)=1.
+    // 18:00 -> Angle PI (West). cos(PI)=-1.
+    const angle = ((hour - 6) / 12) * Math.PI;
+    const x = Math.cos(angle) * 5.0;
+    const y = Math.sin(angle) * 2.0; // Y component simulates sun travelling through South
+    return { x, y };
 }
 
 function isTileSunlit(x, y, z, sunVector) {
@@ -199,8 +207,11 @@ function isTileSunlit(x, y, z, sunVector) {
     if (levelData && levelData.roof) {
         const roof = levelData.roof[y]?.[x];
         const roofId = (typeof roof === 'object' && roof?.tileId) ? roof.tileId : roof;
-        if (roofId && assetManagerInstance.tilesets[roofId] && !assetManagerInstance.tilesets[roofId].tags.includes('transparent')) {
-            return false; // Blocked by roof on current level
+        if (roofId && assetManagerInstance.tilesets[roofId]) {
+            const tags = assetManagerInstance.tilesets[roofId].tags || [];
+            if (!tags.includes('transparent') && !tags.includes('transparent_to_light')) {
+                return false; // Blocked by roof on current level
+            }
         }
     }
 
@@ -216,6 +227,17 @@ function isTileSunlit(x, y, z, sunVector) {
          }
     }
     return true;
+}
+
+function getTileLightLevel(x, y, z) {
+    // Current time info from global state
+    const currentHour = (window.gameState && window.gameState.currentTime && typeof window.gameState.currentTime.hours === 'number') ? window.gameState.currentTime.hours : 12;
+    const currentAmbientColor = getAmbientLightColor(currentHour);
+    const currentSunColor = getSunLightColor(currentHour);
+    const currentSunVector = getSunShadowOffset(currentHour);
+
+    const lightHex = calculateTileLighting(x, y, z, currentAmbientColor, currentSunColor, currentSunVector);
+    return getLuminance(lightHex);
 }
 
 // New Advanced Lighting Calculation
@@ -717,6 +739,8 @@ window.mapRenderer = {
     darkenColor: darkenColor, // Added darkenColor
     blendColors: blendColors,
     brightenColor: brightenColor,
+    getLuminance: getLuminance,
+    getTileLightLevel: getTileLightLevel,
     getAmbientLightColor: getAmbientLightColor,
     isTileBlockingLight: isTileBlockingLight,
     // isTileEmpty is already assigned at the end of the object

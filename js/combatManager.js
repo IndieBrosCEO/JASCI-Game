@@ -1111,19 +1111,41 @@
         if (!actionContext.detailedModifiers) actionContext.detailedModifiers = [];
         if (skillBasedModifier !== 0) actionContext.detailedModifiers.push({ text: `Skill (${skillName}): ${skillBasedModifier > 0 ? '+' : ''}${skillBasedModifier}`, value: skillBasedModifier, type: skillBasedModifier > 0 ? 'positive' : 'negative' });
 
-        let targetX, targetY;
+        let targetX, targetY, targetZ;
         if (actionContext.skillToUse === "Explosives" && this.gameState.pendingCombatAction?.targetTile) {
-            targetX = this.gameState.pendingCombatAction.targetTile.x; targetY = this.gameState.pendingCombatAction.targetTile.y;
+            targetX = this.gameState.pendingCombatAction.targetTile.x; targetY = this.gameState.pendingCombatAction.targetTile.y; targetZ = this.gameState.pendingCombatAction.targetTile.z;
         } else if (this.gameState.combatCurrentDefender?.mapPos) {
-            targetX = this.gameState.combatCurrentDefender.mapPos.x; targetY = this.gameState.combatCurrentDefender.mapPos.y;
+            targetX = this.gameState.combatCurrentDefender.mapPos.x; targetY = this.gameState.combatCurrentDefender.mapPos.y; targetZ = this.gameState.combatCurrentDefender.mapPos.z;
+        } else if (this.gameState.defenderMapPos) {
+            targetX = this.gameState.defenderMapPos.x; targetY = this.gameState.defenderMapPos.y; targetZ = this.gameState.defenderMapPos.z;
         }
-        let isLitBySource = false;
-        if (typeof targetX === 'number' && this.gameState.lightSources && typeof isTileIlluminated === 'function') {
-            for (const source of this.gameState.lightSources) { if (isTileIlluminated(targetX, targetY, source)) { isLitBySource = true; break; } }
+
+        let lightingPenalty = 0;
+        if (typeof targetX === 'number' && typeof targetY === 'number') {
+            if (targetZ === undefined) targetZ = this.gameState.playerPos?.z || 0;
+
+            if (window.mapRenderer && typeof window.mapRenderer.getTileLightLevel === 'function') {
+                const lightLevel = window.mapRenderer.getTileLightLevel(targetX, targetY, targetZ);
+                // Threshold for "Darkness". Night ambient is ~0.21. We set threshold at 0.25.
+                if (lightLevel < 0.25) {
+                    lightingPenalty = -2;
+                }
+            } else {
+                // Fallback for tests or missing renderer
+                let isLitBySource = false;
+                if (this.gameState.lightSources && typeof isTileIlluminated === 'function') {
+                    for (const source of this.gameState.lightSources) {
+                        // Ensure 3D check compatibility
+                        const sZ = source.z !== undefined ? source.z : targetZ;
+                        if (isTileIlluminated(targetX, targetY, targetZ, { ...source, z: sZ })) { isLitBySource = true; break; }
+                    }
+                }
+                const ambientColorHex = (typeof getAmbientLightColor === 'function' && this.gameState.currentTime?.hours !== undefined) ? getAmbientLightColor(this.gameState.currentTime.hours) : '#FFFFFF';
+                // Updated to include new night color #353550
+                const isAmbientDark = ['#303045', '#353550'].includes(ambientColorHex.toUpperCase());
+                if (!isLitBySource && isAmbientDark) lightingPenalty = -2;
+            }
         }
-        const ambientColorHex = (typeof getAmbientLightColor === 'function' && this.gameState.currentTime?.hours !== undefined) ? getAmbientLightColor(this.gameState.currentTime.hours) : '#FFFFFF';
-        const isAmbientDark = ['#303045'].includes(ambientColorHex.toUpperCase());
-        let lightingPenalty = (!isLitBySource && isAmbientDark) ? -2 : 0;
         if (lightingPenalty !== 0) actionContext.detailedModifiers.push({ text: `Lighting: ${lightingPenalty}`, value: lightingPenalty, type: 'negative' });
 
 
