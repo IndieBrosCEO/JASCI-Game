@@ -215,6 +215,44 @@ function isTileSunlit(x, y, z, sunVector) {
         }
     }
 
+    // Check for obstacles on the SAME Z-level in the direction of the sun
+    // This allows walls on Z0 to cast shadows on Z0 if the sun angle is low enough.
+    // We check a short distance (e.g., 2 tiles) in the immediate direction of the sun vector.
+    // If the sun vector has magnitude, we can trace.
+    if (Math.abs(sunVector.x) > 0.1 || Math.abs(sunVector.y) > 0.1) {
+        // Calculate normalized direction or just step?
+        // sunVector is per 1 Z-level.
+        // If sunVector is large (low sun), the ray travels far in X/Y for small Z change.
+        // Effectively, we want to trace the ray starting from (x,y,z) out.
+        // The loop below starts at checkZ = z + 1.
+        // Between z and z+1, the ray moves sunVector.x and sunVector.y.
+        // If sunVector is (5, 0) (Low East Sun), it moves 5 tiles East before going up 1 Z.
+        // We should check those intermediate tiles on the CURRENT Z level.
+
+        const steps = Math.ceil(Math.max(Math.abs(sunVector.x), Math.abs(sunVector.y)));
+        if (steps > 0) {
+            const stepX = sunVector.x / steps;
+            const stepY = sunVector.y / steps;
+            let cx = x;
+            let cy = y;
+            // Trace the horizontal path before the ray "lifts off" to Z+1
+            for (let i = 1; i <= steps; i++) {
+                cx += stepX;
+                cy += stepY;
+                const tx = Math.floor(cx);
+                const ty = Math.floor(cy);
+
+                // Don't check self
+                if (tx === x && ty === y) continue;
+
+                // Check blocking on current Z
+                if (isTileBlockingLight(tx, ty, z, { ignoreFloor: true })) {
+                    return false;
+                }
+            }
+        }
+    }
+
     // Raycast upwards towards the sun
     const maxCheckZ = z + 10;
     for (let checkZ = z + 1; checkZ <= maxCheckZ; checkZ++) {
@@ -222,7 +260,8 @@ function isTileSunlit(x, y, z, sunVector) {
          const tx = Math.floor(x + sunVector.x * dz);
          const ty = Math.floor(y + sunVector.y * dz);
 
-         if (isTileBlockingLight(tx, ty, checkZ)) {
+         // For upward checks, use default behavior (checks floors if they block vertical light)
+         if (isTileBlockingLight(tx, ty, checkZ, { ignoreFloor: false })) {
              return false;
          }
     }
@@ -244,6 +283,29 @@ function getTileLightLevel(x, y, z) {
 function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
     const lightsOnCurrentZ = gameState.lightSources.filter(ls => ls.z === z);
 
+    // Check for opaque roof on current level to block ambient
+    const mapData = window.mapRenderer.getCurrentMapData();
+    let hasOpaqueRoof = false;
+    if (mapData && mapData.levels && mapData.levels[z.toString()]) {
+        const roofLayer = mapData.levels[z.toString()].roof;
+        if (roofLayer) {
+             const tileOnRoofRaw = roofLayer[y]?.[x];
+             const effectiveTileOnRoof = (typeof tileOnRoofRaw === 'object' && tileOnRoofRaw !== null && tileOnRoofRaw.tileId !== undefined) ? tileOnRoofRaw.tileId : tileOnRoofRaw;
+
+             if (effectiveTileOnRoof && effectiveTileOnRoof !== "") {
+                 const currentAssetManager = assetManagerInstance || window.assetManager;
+                 if (currentAssetManager && currentAssetManager.tilesets) {
+                     const tileDef = currentAssetManager.tilesets[effectiveTileOnRoof];
+                     // If roof exists and is NOT transparent to light, it blocks ambient sky light
+                     if (tileDef && !tileDef.tags.includes('transparent') && !tileDef.tags.includes('transparent_to_light')) {
+                         baseAmbientColor = '#000000'; // Block ambient
+                         hasOpaqueRoof = true;
+                     }
+                 }
+             }
+        }
+    }
+
     // Accumulators for light color
     let totalR = 0, totalG = 0, totalB = 0;
 
@@ -254,8 +316,8 @@ function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
     totalB += ambientRGB.b;
 
     // 2. Sunlight
-    // Only check sunlight if sunColor contributes light (not black)
-    if (sunColor !== '#000000' && isTileSunlit(x, y, z, sunVector)) {
+    // Only check sunlight if sunColor contributes light (not black) and not under opaque roof
+    if (sunColor !== '#000000' && !hasOpaqueRoof && isTileSunlit(x, y, z, sunVector)) {
          const sunRGB = hexToRgb(sunColor) || { r: 0, g: 0, b: 0 };
          // Sunlight intensity scaling? Assume 1.0 for now, or implicit in sunColor brightness.
          totalR = Math.max(totalR, sunRGB.r); // Sunlight usually overrides ambient rather than adding?
@@ -313,12 +375,21 @@ function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
 }
 
 // Updated isTileBlockingLight to be 3D
-function isTileBlockingLight(tileX, tileY, tileZ, checkRoof = false) { // Added tileZ
+function isTileBlockingLight(tileX, tileY, tileZ, optionsOrCheckRoof = false) { // Added tileZ
     const mapData = window.mapRenderer.getCurrentMapData(); // This is fullMapData
     const currentAssetManager = assetManagerInstance;
 
     if (!mapData || !mapData.levels || !currentAssetManager || !currentAssetManager.tilesets) {
         return false;
+    }
+
+    // Parse options
+    let options = {};
+    if (typeof optionsOrCheckRoof === 'object') {
+        options = optionsOrCheckRoof;
+    } else {
+        // Legacy support (checkRoof unused)
+        options = { checkRoof: !!optionsOrCheckRoof };
     }
 
     const levelData = mapData.levels[tileZ.toString()];
@@ -369,6 +440,14 @@ function isTileBlockingLight(tileX, tileY, tileZ, checkRoof = false) { // Added 
             if (tileDefBottom.tags.includes('transparent_to_light') || tileDefBottom.tags.includes('transparent_floor') || tileDefBottom.tags.includes('transparent') || tileDefBottom.tags.includes('allows_vision')) {
                 return false; // Bottom tile is transparent to light.
             }
+
+            // If ignoreFloor is true (e.g. horizontal light ray), we skip blocking for floor tiles
+            // unless they explicitly block light.
+            if (options.ignoreFloor) {
+                if (tileDefBottom.tags.includes('blocks_light')) return true;
+                return false;
+            }
+
             // If it's a floor (most bottom tiles are), and not transparent to light, it blocks light to Z-1.
             if (tileDefBottom.tags.includes('floor')) {
                 return true;
@@ -376,6 +455,8 @@ function isTileBlockingLight(tileX, tileY, tileZ, checkRoof = false) { // Added 
             // Other bottom layer types that aren't floors and aren't transparent to light might exist. Assume they block.
             return true;
         } else if (tileDefBottom) { // Has a def but no tags
+            if (options.ignoreFloor) return false;
+
             // Untagged bottom items, if not floors, might be rare. If it's a floor by name, it blocks.
             if (tileDefBottom.name && tileDefBottom.name.toLowerCase().includes("floor")) return true;
             return false; // Otherwise, untagged non-floor on bottom, assume non-blocking for light.
@@ -466,9 +547,14 @@ function isTileIlluminated(targetX, targetY, targetZ, lightSource) { // targetZ 
     const line = getLine3D(sourceX, sourceY, sourceZ, targetX, targetY, targetZ);
     if (line.length < 2) return true;
 
+    // Check if the ray is strictly horizontal on the same Z level
+    const ignoreFloor = (sourceZ === targetZ);
+
     for (let i = 1; i < line.length - 1; i++) {
         const point = line[i];
-        if (isTileBlockingLight(point.x, point.y, point.z)) {
+        // If ray is horizontal, point.z should equal sourceZ, so ignoreFloor is valid.
+        // If ray is sloped, point.z might differ, but if sourceZ != targetZ, ignoreFloor is false, which is correct.
+        if (isTileBlockingLight(point.x, point.y, point.z, { ignoreFloor: ignoreFloor })) {
             return false;
         }
     }
