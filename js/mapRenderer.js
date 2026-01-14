@@ -1436,7 +1436,7 @@ window.mapRenderer = {
 
                 let isCurrentCellSeeThrough = (!primaryTileDefOnCurrentZ);
                 if (primaryTileDefOnCurrentZ && primaryTileDefOnCurrentZ.tags &&
-                    (primaryTileDefOnCurrentZ.tags.includes('transparent_floor') || primaryTileDefOnCurrentZ.tags.includes('allows_vision') || primaryTileDefOnCurrentZ.tags.includes('transparent_bottom'))) {
+                    (primaryTileDefOnCurrentZ.tags.includes('transparent_floor') || primaryTileDefOnCurrentZ.tags.includes('transparent_bottom'))) {
                     if (!isSolidTerrainTopDirectlyOnCurrentZ) {
                         isCurrentCellSeeThrough = true;
                     }
@@ -1537,19 +1537,19 @@ window.mapRenderer = {
                         // (Not yet in tileDef, but could be added later. For now, assume baseColor is Albedo)
 
                     } else if (fowStatus === 'visited') {
-                        // Visited tiles are dim. We use ambient light only, dimmed down.
-                        // Or just darken the base color as before, but consistency is nice.
+                        // Visited tiles now use the full lighting calculation to respect environmental lighting (e.g. shadows)
+                        const lightColor = calculateTileLighting(x, y, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
 
-                        // Old logic was: blend with ambient.
-                        displayColor = blendColors(displayColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
+                        // Multiply base color with light
+                        displayColor = multiplyColors(displayColor, lightColor);
 
-                        // Apply extra darkening for "old memory" feel
+                        // Apply visited dimming (memory effect)
                         displayColor = darkenColor(displayColor, 0.4);
 
-                        // Also dim background for visited
-                        if (tileDefinedBackgroundColor && tileDefinedBackgroundColor !== '#000000') {
-                             let bgCol = blendColors(tileDefinedBackgroundColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);
-                             tileDefinedBackgroundColor = darkenColor(bgCol, 0.4);
+                        // Apply to background
+                        if (tileDefinedBackgroundColor && tileDefinedBackgroundColor !== '#000000' && tileDefinedBackgroundColor !== 'rgba(0,0,0,0)') {
+                             tileDefinedBackgroundColor = multiplyColors(tileDefinedBackgroundColor, lightColor);
+                             tileDefinedBackgroundColor = darkenColor(tileDefinedBackgroundColor, 0.4);
                         }
                     }
                 }
@@ -1956,7 +1956,7 @@ window.mapRenderer = {
                         if (interZ === currentZ) {
                             if (interTileIdOnViewZ === "PLAYER_STATIC" || interTileIdOnViewZ?.startsWith("NPC_") || interTileIdOnViewZ === "FOW_HIDDEN") isCurrentInterTileSeeThrough = false;
                             else if (!interTileIdOnViewZ) isCurrentInterTileSeeThrough = true;
-                            else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('allows_vision') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) isCurrentInterTileSeeThrough = true;
+                            else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) isCurrentInterTileSeeThrough = true;
                             else isCurrentInterTileSeeThrough = false;
                         } else {
                             const interMiddleRaw = interLevelData?.middle?.[y]?.[x];
@@ -2023,7 +2023,7 @@ window.mapRenderer = {
                         if (interZ === currentZ) {
                             if (interTileIdOnViewZ === "PLAYER_STATIC" || interTileIdOnViewZ?.startsWith("NPC_") || interTileIdOnViewZ === "FOW_HIDDEN") isCurrentInterTileSeeThrough = false;
                             else if (!interTileIdOnViewZ) isCurrentInterTileSeeThrough = true;
-                            else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('allows_vision') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) isCurrentInterTileSeeThrough = true;
+                            else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) isCurrentInterTileSeeThrough = true;
                             else isCurrentInterTileSeeThrough = false;
                         } else {
                             const interMiddleRaw = interLevelData?.middle?.[y]?.[x];
