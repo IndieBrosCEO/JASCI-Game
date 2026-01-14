@@ -159,7 +159,7 @@ function getFOWModifiedHighlightColor(baseHighlightColor, fowStatus) {
 
 function getAmbientLightColor(currentTimeHours) {
     // Ambient light disabled per request (only direct sun/moon light)
-    return '#000000';
+    return '#3D3D3D';
 }
 
 function getSunLightColor(currentTimeHours) {
