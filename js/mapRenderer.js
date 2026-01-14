@@ -1436,7 +1436,7 @@ window.mapRenderer = {
 
                 let isCurrentCellSeeThrough = (!primaryTileDefOnCurrentZ);
                 if (primaryTileDefOnCurrentZ && primaryTileDefOnCurrentZ.tags &&
-                    (primaryTileDefOnCurrentZ.tags.includes('transparent_floor') || primaryTileDefOnCurrentZ.tags.includes('allows_vision') || primaryTileDefOnCurrentZ.tags.includes('transparent_bottom'))) {
+                    (primaryTileDefOnCurrentZ.tags.includes('transparent_floor') || primaryTileDefOnCurrentZ.tags.includes('transparent_bottom'))) {
                     if (!isSolidTerrainTopDirectlyOnCurrentZ) {
                         isCurrentCellSeeThrough = true;
                     }
@@ -1956,7 +1956,7 @@ window.mapRenderer = {
                         if (interZ === currentZ) {
                             if (interTileIdOnViewZ === "PLAYER_STATIC" || interTileIdOnViewZ?.startsWith("NPC_") || interTileIdOnViewZ === "FOW_HIDDEN") isCurrentInterTileSeeThrough = false;
                             else if (!interTileIdOnViewZ) isCurrentInterTileSeeThrough = true;
-                            else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('allows_vision') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) isCurrentInterTileSeeThrough = true;
+                            else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) isCurrentInterTileSeeThrough = true;
                             else isCurrentInterTileSeeThrough = false;
                         } else {
                             const interMiddleRaw = interLevelData?.middle?.[y]?.[x];
@@ -2023,7 +2023,7 @@ window.mapRenderer = {
                         if (interZ === currentZ) {
                             if (interTileIdOnViewZ === "PLAYER_STATIC" || interTileIdOnViewZ?.startsWith("NPC_") || interTileIdOnViewZ === "FOW_HIDDEN") isCurrentInterTileSeeThrough = false;
                             else if (!interTileIdOnViewZ) isCurrentInterTileSeeThrough = true;
-                            else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('allows_vision') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) isCurrentInterTileSeeThrough = true;
+                            else if (interTileDefOnViewZ && interTileDefOnViewZ.tags && (interTileDefOnViewZ.tags.includes('transparent_floor') || interTileDefOnViewZ.tags.includes('transparent_bottom'))) isCurrentInterTileSeeThrough = true;
                             else isCurrentInterTileSeeThrough = false;
                         } else {
                             const interMiddleRaw = interLevelData?.middle?.[y]?.[x];
