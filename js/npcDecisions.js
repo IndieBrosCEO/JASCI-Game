@@ -732,6 +732,37 @@ async function handleNpcOutOfCombatTurn(npc, gameState, assetManager, maxMovesPe
              }
         }
 
+        // --- Swarm AI (Flocking - Cohesion) ---
+        if (npc.tags && npc.tags.includes('swarm')) {
+            // Find centroid of nearby allies
+            let sumX = 0, sumY = 0, count = 0;
+            const COHESION_RADIUS = 8;
+            gameState.npcs.forEach(ally => {
+                if (ally !== npc && ally.definitionId === npc.definitionId && ally.mapPos && ally.mapPos.z === npc.mapPos.z) {
+                    const d = getDistance3D(npc.mapPos, ally.mapPos);
+                    if (d <= COHESION_RADIUS) {
+                        sumX += ally.mapPos.x;
+                        sumY += ally.mapPos.y;
+                        count++;
+                    }
+                }
+            });
+
+            if (count > 0) {
+                const centerX = Math.round(sumX / count);
+                const centerY = Math.round(sumY / count);
+                // If we are far from center, move towards it (Cohesion)
+                if (getDistance3D(npc.mapPos, {x: centerX, y: centerY, z: npc.mapPos.z}) > 3) {
+                    // Bias movement towards center
+                    // We don't override specific goals (like food), but if idle, we flock.
+                    if (!goalTarget) {
+                        goalTarget = { x: centerX, y: centerY, z: npc.mapPos.z };
+                        // logToConsole(`NPC ${npcName} flocking towards swarm center.`, 'grey');
+                    }
+                }
+            }
+        }
+
         // --- NPC vs NPC Combat Initiation Check ---
         // Scan for hostile entities nearby to start combat
         if (!gameState.isInCombat) {
@@ -1694,3 +1725,17 @@ function getFleeTarget(npc, threatPos) {
     return { x: clampedX, y: clampedY, z };
 }
 window.getFleeTarget = getFleeTarget;
+
+// Persona System Helper
+function updateNpcPersona(npc) {
+    if (!npc || !npc.personas || !npc.currentPersona) return;
+
+    const personaData = npc.personas[npc.currentPersona];
+    if (personaData) {
+        if (personaData.dialogueFile) npc.dialogueFile = personaData.dialogueFile;
+        if (personaData.behavior) npc.behavior = personaData.behavior;
+        // Optionally update sprite, color, etc.
+        logToConsole(`NPC ${npc.name} switched to persona: ${npc.currentPersona}`, 'pink');
+    }
+}
+window.updateNpcPersona = updateNpcPersona;

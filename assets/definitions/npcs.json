@@ -2294,5 +2294,32 @@
     "tags": ["monster", "dragon", "flying", "hostile", "boss"],
     "teamId": 99,
     "cr": 10
+  },
+  {
+    "id": "danny_calderone",
+    "name": "Danny Calderone",
+    "sprite": "@",
+    "color": "#ff00ff",
+    "factionId": "neutral",
+    "behavior": "persona_switch",
+    "health": { "torso": { "max": 15, "current": 15, "armor": 0, "crisisTimer": 0 } },
+    "tags": ["humanoid", "unique", "persona_system"],
+    "personas": {
+      "trade": { "dialogueFile": "danny_trade.json", "behavior": "idle" },
+      "murder": { "dialogueFile": "danny_murder.json", "behavior": "hostile" }
+    },
+    "currentPersona": "trade",
+    "teamId": 0
+  },
+  {
+    "id": "bubo",
+    "name": "Bubo",
+    "sprite": "R",
+    "color": "#c0c0c0",
+    "factionId": "earth_first",
+    "behavior": "patrol",
+    "health": { "torso": { "max": 20, "current": 20, "armor": 0, "crisisTimer": 0 } },
+    "tags": ["robot", "ai", "unique"],
+    "teamId": 3
   }
 ]

@@ -1129,5 +1129,20 @@
     "damageType": "Physical",
     "sprite": "o",
     "color": "#c0c0c0"
+  },
+  {
+    "id": "radiation_meds",
+    "name": "RadAway",
+    "description": "Intravenous chemical solution that bonds with radiation particles and passes them through your system.",
+    "type": "consumable_medical",
+    "size": 0,
+    "weightLbs": 0.5,
+    "tags": ["consumable", "medical", "radiation", "radaway"],
+    "effects": {
+      "radiation_reduction": 100
+    },
+    "doses": 1,
+    "sprite": "!",
+    "color": "#ffa500"
   }
 ]

@@ -118,10 +118,31 @@ function getFactionRelationship(actorA, actorB, playerReputation = {}) {
         }
     }
 
-    // 5. Consult Matrix (Public Relationships)
+    // 5. Consult Matrix (Hidden & Public Relationships)
     const subjectData = factionDataMap[subjectFaction];
-    if (subjectData && subjectData.relationships && subjectData.relationships[targetFaction]) {
-        return subjectData.relationships[targetFaction];
+
+    if (subjectData) {
+        // Ideological Lock (Hard override)
+        if (subjectData.ideological_lock && Array.isArray(subjectData.ideological_lock)) {
+            if (subjectData.ideological_lock.includes(targetFaction)) {
+                return "enemy"; // or "hostile"
+            }
+        }
+
+        // Covert Relations (Hidden internal stance)
+        // If subject has a secret agenda against target, they act on that.
+        if (subjectData.covert_relation && subjectData.covert_relation[targetFaction]) {
+            const secretStance = subjectData.covert_relation[targetFaction];
+            // Map specific covert tags to standard relationship enums for AI logic
+            if (secretStance === 'disrupt' || secretStance === 'hostile') return 'hostile';
+            if (secretStance === 'support' || secretStance === 'ally') return 'ally';
+            if (secretStance === 'opportunism') return 'neutral'; // Or tense?
+        }
+
+        // Standard Public Matrix
+        if (subjectData.relationships && subjectData.relationships[targetFaction]) {
+            return subjectData.relationships[targetFaction];
+        }
     }
 
     // 6. Default Fallbacks (if not in matrix)

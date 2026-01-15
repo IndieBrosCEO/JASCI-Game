@@ -63,7 +63,39 @@ class QuestManager {
         if (window.uiManager && window.uiManager.showToastNotification) {
             window.uiManager.showToastNotification(`Quest Started: ${questDef.title}`);
         }
+
+        // Trigger onAccept hooks
+        if (questDef.onAccept) {
+            this.processQuestTrigger(questDef.onAccept);
+        }
+
         return true;
+    }
+
+    processQuestTrigger(triggers) {
+        if (!Array.isArray(triggers)) triggers = [triggers];
+
+        triggers.forEach(trigger => {
+            if (trigger.type === 'reputation_change') {
+                if (window.factionManager) {
+                    window.factionManager.adjustPlayerReputation(trigger.factionId, trigger.amount, this.gameState);
+                }
+            } else if (trigger.type === 'advance_clock') {
+                if (!window.clockManager && window.ClockManager && this.gameState) {
+                    window.clockManager = new window.ClockManager(this.gameState);
+                }
+                if (window.clockManager) {
+                    window.clockManager.advanceClock(trigger.clockId, trigger.amount);
+                } else {
+                    console.warn("QuestManager: ClockManager not available to advance clock.");
+                }
+            } else if (trigger.type === 'spawn_npc') {
+                if (window.npcManager) {
+                    // trigger.npcId, trigger.x, trigger.y...
+                    // Simplified support
+                }
+            }
+        });
     }
 
     updateObjective(type, target, amount = 1, questId = null) {
@@ -114,6 +146,11 @@ class QuestManager {
             window.uiManager.showToastNotification(`Quest Completed: ${quest.title}`);
         }
 
+        // Trigger onComplete hooks
+        if (questDef.onComplete) {
+            this.processQuestTrigger(questDef.onComplete);
+        }
+
         // Rewards
         if (questDef && questDef.rewards) {
             this.grantRewards(questDef.rewards);
@@ -143,6 +180,31 @@ class QuestManager {
                      }
                  });
              }
+        }
+
+        // New Rewards: Reputation & Clocks
+        if (rewards.reputation_change) {
+            // Can be array or single object
+            const reps = Array.isArray(rewards.reputation_change) ? rewards.reputation_change : [rewards.reputation_change];
+            if (window.factionManager) {
+                reps.forEach(rep => {
+                    window.factionManager.adjustPlayerReputation(rep.factionId, rep.amount, this.gameState);
+                });
+            }
+        }
+
+        if (rewards.advance_clock) {
+            const clocks = Array.isArray(rewards.advance_clock) ? rewards.advance_clock : [rewards.advance_clock];
+            if (!window.clockManager && window.ClockManager && this.gameState) {
+                window.clockManager = new window.ClockManager(this.gameState);
+            }
+            if (window.clockManager) {
+                clocks.forEach(clk => {
+                    window.clockManager.advanceClock(clk.clockId, clk.ticks || clk.amount || 1);
+                });
+            } else {
+                console.warn("QuestManager: ClockManager not available to advance clock.");
+            }
         }
     }
 }

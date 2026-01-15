@@ -1,79 +1,16 @@
 [
   {
-    "id": "player",
-    "name": "Player Aligned",
-    "color": "green",
-    "defaultTeamId": 0,
-    "relationships": {
-      "civilian": "neutral",
-      "police": "neutral",
-      "pd_faction": "neutral",
-      "militia": "neutral",
-      "bandit": "hostile",
-      "scavenger": "neutral",
-      "mutant": "hostile",
-      "zombie": "hostile",
-      "creature_hostile": "hostile",
-      "creature_predator": "hostile",
-      "creature_neutral": "neutral",
-      "creature_prey": "neutral",
-      "insect_swarm": "neutral",
-      "guard": "neutral",
-      "earth_first": "neutral",
-      "frn": "neutral",
-      "foak": "neutral",
-      "cm": "neutral",
-      "fellowship": "neutral",
-      "pala": "neutral"
-    }
-  },
-  {
-    "id": "civilian",
-    "name": "Civilian",
-    "color": "lightblue",
-    "defaultTeamId": 2,
-    "relationships": {
-      "police": "ally",
-      "pd_faction": "ally",
-      "militia": "neutral",
-      "bandit": "hostile",
-      "scavenger": "hostile",
-      "mutant": "hostile",
-      "zombie": "hostile",
-      "guard": "ally",
-      "earth_first": "neutral"
-    }
-  },
-  {
-    "id": "police",
-    "name": "Police Force",
-    "color": "blue",
-    "defaultTeamId": 2,
-    "relationships": {
-      "militia": "neutral",
-      "bandit": "hostile",
-      "scavenger": "hostile",
-      "mutant": "hostile",
-      "zombie": "hostile",
-      "guard": "ally",
-      "earth_first": "neutral",
-      "pd_faction": "ally"
-    }
-  },
-  {
-    "id": "pd_faction",
+    "id": "fpd",
     "name": "FPD",
     "color": "dodgerblue",
-    "defaultTeamId": 2,
     "relationships": {
-      "police": "ally",
       "frn": "ally",
       "foak": "enemy",
       "cm": "tense",
-      "bandit": "tense",
+      "raiders": "tense",
       "fellowship": "neutral",
       "guard": "neutral",
-      "earth_first": "neutral",
+      "earth_first": "unknown",
       "pala": "tense"
     }
   },
@@ -81,12 +18,11 @@
     "id": "frn",
     "name": "FRN",
     "color": "teal",
-    "defaultTeamId": 2,
     "relationships": {
-      "pd_faction": "ally",
+      "fpd": "ally",
       "foak": "enemy",
       "cm": "tense",
-      "bandit": "neutral",
+      "raiders": "neutral",
       "fellowship": "neutral",
       "guard": "neutral",
       "earth_first": "enemy",
@@ -97,66 +33,60 @@
     "id": "foak",
     "name": "FOAK",
     "color": "darkred",
-    "defaultTeamId": 3,
     "relationships": {
-      "pd_faction": "enemy",
+      "fpd": "enemy",
       "frn": "enemy",
       "cm": "enemy",
-      "bandit": "tense",
+      "raiders": "tense",
       "fellowship": "neutral",
       "guard": "enemy",
-      "earth_first": "neutral",
+      "earth_first": "unknown",
       "pala": "enemy"
-    }
+    },
+    "ideological_lock": ["cm"]
   },
   {
     "id": "cm",
     "name": "CM",
     "color": "purple",
-    "defaultTeamId": 4,
     "relationships": {
-      "pd_faction": "enemy",
+      "fpd": "enemy",
       "frn": "tense",
       "foak": "enemy",
-      "bandit": "tense",
+      "raiders": "tense",
       "fellowship": "neutral",
       "guard": "tense",
-      "earth_first": "neutral",
+      "earth_first": "unknown",
       "pala": "tense"
     }
   },
   {
-    "id": "bandit",
+    "id": "raiders",
     "name": "Raiders",
-    "color": "darkred",
-    "defaultTeamId": 3,
+    "color": "brown",
     "relationships": {
-      "pd_faction": "tense",
+      "fpd": "tense",
       "frn": "neutral",
       "foak": "tense",
       "cm": "tense",
       "fellowship": "neutral",
       "guard": "enemy",
-      "earth_first": "neutral",
-      "pala": "neutral",
-      "scavenger": "neutral",
-      "mutant": "neutral",
-      "zombie": "hostile"
+      "earth_first": "unknown",
+      "pala": "neutral"
     }
   },
   {
     "id": "fellowship",
     "name": "Fellowship",
     "color": "gold",
-    "defaultTeamId": 2,
     "relationships": {
-      "pd_faction": "neutral",
+      "fpd": "neutral",
       "frn": "neutral",
       "foak": "neutral",
       "cm": "fear",
-      "bandit": "fear",
+      "raiders": "fear",
       "guard": "neutral",
-      "earth_first": "neutral",
+      "earth_first": "unknown",
       "pala": "neutral"
     }
   },
@@ -164,13 +94,12 @@
     "id": "guard",
     "name": "Guard",
     "color": "darkcyan",
-    "defaultTeamId": 2,
     "relationships": {
-      "pd_faction": "neutral",
+      "fpd": "neutral",
       "frn": "neutral",
       "foak": "enemy",
       "cm": "tense",
-      "bandit": "enemy",
+      "raiders": "enemy",
       "fellowship": "neutral",
       "earth_first": "enemy",
       "pala": "tense"
@@ -180,115 +109,52 @@
     "id": "earth_first",
     "name": "Earth First",
     "color": "forestgreen",
-    "defaultTeamId": 3,
     "relationships": {
-      "pd_faction": "enemy",
+      "fpd": "enemy",
       "frn": "enemy",
       "foak": "neutral",
       "cm": "neutral",
-      "bandit": "neutral",
-      "fellowship": "neutral",
+      "raiders": "neutral",
+      "fellowship": "unknown",
       "guard": "enemy",
-      "pala": "neutral"
+      "pala": "unknown"
+    },
+    "covert_relation": {
+      "fpd": "disrupt",
+      "cm": "disrupt",
+      "raiders": "disrupt",
+      "foak": "opportunism"
     }
   },
   {
     "id": "pala",
     "name": "Pala",
     "color": "orange",
-    "defaultTeamId": 2,
     "relationships": {
-      "pd_faction": "tense",
+      "fpd": "tense",
       "frn": "tense",
       "foak": "enemy",
       "cm": "tense",
-      "bandit": "neutral",
+      "raiders": "neutral",
       "fellowship": "neutral",
       "guard": "neutral",
-      "earth_first": "neutral"
+      "earth_first": "unknown"
     }
   },
   {
-    "id": "militia",
-    "name": "Local Militia",
-    "color": "olive",
-    "defaultTeamId": 2,
+    "id": "player",
+    "name": "Player Aligned",
+    "color": "green",
     "relationships": {
-      "bandit": "hostile",
-      "scavenger": "neutral",
-      "mutant": "hostile",
-      "zombie": "hostile",
-      "guard": "neutral",
-      "earth_first": "hostile"
+        "fpd": "neutral",
+        "frn": "neutral",
+        "foak": "neutral",
+        "cm": "neutral",
+        "raiders": "hostile",
+        "fellowship": "neutral",
+        "guard": "neutral",
+        "earth_first": "neutral",
+        "pala": "neutral"
     }
-  },
-  {
-    "id": "scavenger",
-    "name": "Scavengers",
-    "color": "saddlebrown",
-    "defaultTeamId": 2,
-    "relationships": {
-      "mutant": "hostile",
-      "zombie": "hostile",
-      "guard": "hostile",
-      "earth_first": "neutral"
-    }
-  },
-  {
-    "id": "mutant",
-    "name": "Mutants",
-    "color": "darkgreen",
-    "defaultTeamId": 3,
-    "relationships": {
-      "zombie": "neutral"
-    }
-  },
-  {
-    "id": "zombie",
-    "name": "Zombies",
-    "color": "lightgreen",
-    "defaultTeamId": 3,
-    "relationships": {}
-  },
-  {
-    "id": "creature_hostile",
-    "name": "Hostile Creatures",
-    "color": "red",
-    "defaultTeamId": 3,
-    "relationships": {}
-  },
-  {
-    "id": "creature_predator",
-    "name": "Predators",
-    "color": "orange",
-    "defaultTeamId": 3,
-    "relationships": {
-      "creature_prey": "hostile",
-      "player": "hostile",
-      "zombie": "hostile"
-    }
-  },
-  {
-    "id": "creature_neutral",
-    "name": "Neutral Creatures",
-    "color": "gray",
-    "defaultTeamId": 5,
-    "relationships": {}
-  },
-  {
-    "id": "creature_prey",
-    "name": "Prey Animals",
-    "color": "lightgray",
-    "defaultTeamId": 5,
-    "relationships": {
-      "creature_predator": "hostile"
-    }
-  },
-  {
-    "id": "insect_swarm",
-    "name": "Insect Swarm",
-    "color": "yellow",
-    "defaultTeamId": 3,
-    "relationships": {}
   }
 ]

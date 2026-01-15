@@ -2661,5 +2661,21 @@
     "canEquip": false,
     "sprite": "x",
     "color": "#8b0000"
+  },
+  {
+    "id": "alien_blaster",
+    "name": "Alien Blaster",
+    "description": "A strange, futuristic weapon of unknown origin.",
+    "type": "weapon_firearm",
+    "size": 2,
+    "weightLbs": 4,
+    "tags": ["weapon", "firearm", "energy", "alien"],
+    "damage": "4d10",
+    "damageType": "Energy",
+    "range": 20,
+    "ammoType": "alien_power_cell",
+    "canEquip": true,
+    "sprite": "}",
+    "color": "#00ff00"
   }
 ]
