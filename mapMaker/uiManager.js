@@ -325,6 +325,31 @@ function applyStampPreview(cellElement, x, y, currentTool, stampData3D, previewP
 }
 
 function renderOverlays(gridContainer, mapData, currentEditingZ, selectedPortal, selectedNpc, selectedVehicle) {
+    // Zones
+    (mapData.zones || []).forEach(zone => {
+        if (zone.z === currentEditingZ) {
+            for (let y = zone.y; y < zone.y + zone.height; y++) {
+                for (let x = zone.x; x < zone.x + zone.width; x++) {
+                    const cell = gridContainer.querySelector(`.cell[data-x='${x}'][data-y='${y}'][data-z='${currentEditingZ}']`);
+                    if (cell) {
+                        cell.classList.add('zone-cell');
+                        if (appState.selectedZone?.id === zone.id) {
+                            cell.classList.add('selected-zone-cell');
+                        }
+                        // Add marker to top-left
+                        if (x === zone.x && y === zone.y) {
+                            const marker = document.createElement('div');
+                            marker.className = 'zone-marker';
+                            marker.textContent = 'Z';
+                            marker.title = `Zone: ${zone.name}\nType: ${zone.type}`;
+                            cell.appendChild(marker);
+                        }
+                    }
+                }
+            }
+        }
+    });
+
     // Portals
     (mapData.portals || []).forEach(portal => {
         if (portal.z === currentEditingZ) {
@@ -605,6 +630,41 @@ export function updateToolButtonUI(currentToolName) {
     });
 }
 
+
+// --- Zone Editor UI ---
+/**
+ * Updates the Zone editor UI elements based on the currently selected zone.
+ */
+export function updateZoneEditorUI(selectedZone) {
+    const el = (id) => document.getElementById(id);
+    const zoneConfigDiv = el('zoneConfigControls');
+
+    if (!zoneConfigDiv) return;
+
+    if (selectedZone) {
+        el('zoneConfigContent').parentElement.style.display = 'block'; // Ensure container visible
+        el('editingZoneId').textContent = selectedZone.id;
+        el('zoneNameInput').value = selectedZone.name || '';
+        el('zoneTypeSelect').value = selectedZone.type || 'faction_control';
+        el('zoneFactionIdInput').value = selectedZone.factionId || '';
+        el('zoneHazardTypeSelect').value = selectedZone.hazardType || 'radiation';
+        el('zoneHazardValueInput').value = selectedZone.hazardValue || 0;
+        el('zoneEventIdInput').value = selectedZone.eventId || '';
+
+        // Visibility logic based on type
+        el('zoneFactionControls').style.display = selectedZone.type === 'faction_control' ? 'block' : 'none';
+        el('zoneHazardControls').style.display = selectedZone.type === 'hazard' ? 'block' : 'none';
+        el('zoneEventControls').style.display = selectedZone.type === 'event_trigger' ? 'block' : 'none';
+    } else {
+        // Hide logic handled by tool switch clearing selection?
+        // Or specific tool UI logic.
+        // For now, if no zone selected, maybe hide the controls?
+        // But tool might be active.
+        // If tool active but no selection (drag start?), keep previous or clear?
+        // Let's clear.
+        el('editingZoneId').textContent = "New/None";
+    }
+}
 
 // --- Portal Editor UI ---
 /**

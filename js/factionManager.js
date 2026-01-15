@@ -1,193 +1,148 @@
-﻿/**
+/**
  * @file factionManager.js
  * Manages factions, their relationships, and NPC alignment to them.
  */
 
-// Define Factions
-const Factions = {
-    PLAYER: { id: "player", name: "Player Aligned", color: "green" },
-    CIVILIAN: { id: "civilian", name: "Civilian", color: "lightblue" },
-    POLICE: { id: "police", name: "Police Force", color: "blue" },
-    MILITIA: { id: "militia", name: "Local Militia", color: "olive" },
-    BANDIT: { id: "bandit", name: "Bandits", color: "darkred" },
-    SCAVENGER: { id: "scavenger", name: "Scavengers", color: "saddlebrown" },
-    MUTANT: { id: "mutant", name: "Mutants", color: "darkgreen" },
-    ZOMBIE: { id: "zombie", name: "Zombies", color: "lightgreen" }, // Example, adjust as needed
-    CREATURE_HOSTILE: { id: "creature_hostile", name: "Hostile Creatures", color: "red" }, // e.g., Generic monsters
-    CREATURE_PREDATOR: { id: "creature_predator", name: "Predators", color: "orange" }, // e.g., Mountain Lion, Rattlesnake
-    CREATURE_NEUTRAL: { id: "creature_neutral", name: "Neutral Creatures", color: "gray" }, // e.g., Raccoon, Vulture
-    CREATURE_PREY: { id: "creature_prey", name: "Prey Animals", color: "lightgray" }, // e.g., Deer, Quail
-    INSECT_SWARM: { id: "insect_swarm", name: "Insect Swarm", color: "yellow" }, // e.g., Bees (defensive)
-    // Placeholder for specific game factions from prompt
-    GUARD: { id: "guard", name: "Guard Faction", color: "darkcyan" }, // From prompt
-    EARTH_FIRST: { id: "earth_first", name: "Earth First", color: "forestgreen" }, // From prompt
-    PD_FACTION: { id: "pd_faction", name: "PD (Specific)", color: "dodgerblue" } // From prompt, to distinguish from generic police if needed
-};
+// Factions object will be populated from assets/definitions/factions.json
+const Factions = {};
 window.Factions = Factions; // Make Factions globally available
 
-// Define default faction relationships
-// Possible values: "ally", "neutral", "hostile"
-// Player reputation will override these for the player's interactions.
-const defaultFactionRelationships = {
-    [Factions.PLAYER.id]: {
-        [Factions.CIVILIAN.id]: "neutral",
-        [Factions.POLICE.id]: "neutral",
-        [Factions.MILITIA.id]: "neutral",
-        [Factions.BANDIT.id]: "hostile",
-        [Factions.SCAVENGER.id]: "neutral", // Can be hostile or neutral based on player actions
-        [Factions.MUTANT.id]: "hostile",
-        [Factions.ZOMBIE.id]: "hostile",
-        [Factions.CREATURE_HOSTILE.id]: "hostile",
-        [Factions.CREATURE_PREDATOR.id]: "hostile",
-        [Factions.CREATURE_NEUTRAL.id]: "neutral",
-        [Factions.CREATURE_PREY.id]: "neutral",
-        [Factions.INSECT_SWARM.id]: "neutral", // Hostile if provoked
-        [Factions.GUARD.id]: "neutral",
-        [Factions.EARTH_FIRST.id]: "neutral",
-        [Factions.PD_FACTION.id]: "neutral"
-    },
-    [Factions.CIVILIAN.id]: {
-        [Factions.POLICE.id]: "ally",
-        [Factions.MILITIA.id]: "neutral",
-        [Factions.BANDIT.id]: "hostile",
-        [Factions.SCAVENGER.id]: "hostile",
-        [Factions.MUTANT.id]: "hostile",
-        [Factions.ZOMBIE.id]: "hostile",
-        [Factions.CREATURE_HOSTILE.id]: "hostile",
-        [Factions.CREATURE_PREDATOR.id]: "hostile",
-        [Factions.GUARD.id]: "ally",
-        [Factions.EARTH_FIRST.id]: "neutral",
-        [Factions.PD_FACTION.id]: "ally"
-    },
-    [Factions.POLICE.id]: {
-        [Factions.MILITIA.id]: "neutral", // Could be ally depending on context
-        [Factions.BANDIT.id]: "hostile",
-        [Factions.SCAVENGER.id]: "hostile",
-        [Factions.MUTANT.id]: "hostile",
-        [Factions.ZOMBIE.id]: "hostile",
-        [Factions.GUARD.id]: "ally", // Assuming PD and Guard are aligned
-        [Factions.EARTH_FIRST.id]: "neutral", // Potentially suspicious or hostile
-        [Factions.PD_FACTION.id]: "ally" // Should be self!
-    },
-    [Factions.MILITIA.id]: {
-        [Factions.BANDIT.id]: "hostile",
-        [Factions.SCAVENGER.id]: "neutral",
-        [Factions.MUTANT.id]: "hostile",
-        [Factions.ZOMBIE.id]: "hostile",
-        [Factions.GUARD.id]: "neutral",
-        [Factions.EARTH_FIRST.id]: "hostile" // Example: Militia vs Eco-group
-    },
-    [Factions.BANDIT.id]: {
-        [Factions.SCAVENGER.id]: "neutral", // Might compete or ignore
-        [Factions.MUTANT.id]: "neutral", // Might ignore or fight over resources
-        [Factions.ZOMBIE.id]: "hostile", // Zombies are generally hostile to all living
-        [Factions.GUARD.id]: "hostile",
-        [Factions.EARTH_FIRST.id]: "neutral"
-    },
-    [Factions.SCAVENGER.id]: {
-        [Factions.MUTANT.id]: "hostile",
-        [Factions.ZOMBIE.id]: "hostile",
-        [Factions.GUARD.id]: "hostile",
-        [Factions.EARTH_FIRST.id]: "neutral"
-    },
-    [Factions.MUTANT.id]: {
-        [Factions.ZOMBIE.id]: "neutral" // Or hostile, depends on lore
-    },
-    // GUARD, EARTH_FIRST, PD_FACTION relationships with others
-    [Factions.GUARD.id]: {
-        [Factions.EARTH_FIRST.id]: "neutral", // Or hostile, depending on specific scenario
-        [Factions.PD_FACTION.id]: "ally"
-    },
-    [Factions.EARTH_FIRST.id]: {
-        [Factions.PD_FACTION.id]: "neutral" // Or suspicious/hostile
-    },
-    // Predator-Prey Relationships
-    [Factions.CREATURE_PREDATOR.id]: {
-        [Factions.CREATURE_PREY.id]: "hostile",
-        [Factions.CREATURE_HOSTILE.id]: "neutral", // Predators might ignore monsters or fight, default neutral
-        [Factions.CREATURE_NEUTRAL.id]: "neutral", // Usually ignore scavengers
-        [Factions.PLAYER.id]: "hostile", // Predators attack player
-        [Factions.ZOMBIE.id]: "hostile" // Zombies attack life
-    },
-    [Factions.CREATURE_PREY.id]: {
-        [Factions.CREATURE_PREDATOR.id]: "hostile", // Fear/Flee behavior is technically a 'hostile' relation for detection
-        [Factions.PLAYER.id]: "neutral" // Usually neutral/fear
-    }
-};
+// Private storage for relationships loaded from JSON
+let factionDataMap = {};
 
-// Player reputation with factions (will be stored in gameState)
-// Example structure in gameState:
-// gameState.playerReputation = {
-//     "police": 0, // Neutral
-//     "bandit": -50, // Hostile
-//     "civilian": 10 // Friendly
-// };
+/**
+ * Initializes the Faction Manager with data loaded from AssetManager.
+ * @param {Array} factionsList - Array of faction objects loaded from JSON.
+ */
+function initializeFactions(factionsList) {
+    if (!Array.isArray(factionsList)) {
+        console.error("FactionManager: Invalid factions data provided.", factionsList);
+        return;
+    }
+
+    factionsList.forEach(faction => {
+        // Populate the public Factions object with keys derived from IDs (e.g. "player" -> Factions.PLAYER)
+        // For backward compatibility and ease of access.
+        const key = faction.id.toUpperCase();
+        Factions[key] = {
+            id: faction.id,
+            name: faction.name,
+            color: faction.color,
+            defaultTeamId: faction.defaultTeamId
+        };
+
+        // Store the full data including relationships in our private map
+        factionDataMap[faction.id] = faction;
+    });
+
+    console.log("FactionManager: Factions initialized.", Object.keys(Factions));
+}
+
+// Define reputation thresholds for descriptive levels
+const ReputationThreshold = {
+    Hostile: -500,
+    Unfriendly: -200,
+    NeutralMin: -199,
+    NeutralMax: 199,
+    Friendly: 200,
+    Allied: 500
+};
 
 /**
  * Gets the relationship between two factions.
- * @param {string} factionId1 - The ID of the first faction.
- * @param {string} factionId2 - The ID of the second faction.
+ * @param {string|object} actorA - The first actor (entity or faction ID).
+ * @param {string|object} actorB - The second actor (entity or faction ID).
  * @param {object} [playerReputation] - Optional player reputation object from gameState.
- * @returns {string} "ally", "neutral", or "hostile".
+ * @returns {string} "ally", "neutral", "hostile", "tense", "fear", "unknown".
  */
-function getFactionRelationship(factionId1, factionId2, playerReputation = {}) {
-    if (factionId1 === factionId2) return "ally"; // Same faction is always ally
+function getFactionRelationship(actorA, actorB, playerReputation = {}) {
+    // Helper to extract faction ID and hidden dynamics
+    const getDetails = (actor) => {
+        if (typeof actor === 'string') return { id: actor, covert: null, isRevealed: false };
+        return {
+            id: actor.factionId,
+            covert: actor.covert_faction_id || null,
+            isRevealed: actor.isRevealed === true
+        };
+    };
 
-    // Handle player involvement specifically, as reputation overrides defaults
-    if (factionId1 === Factions.PLAYER.id) {
-        const rep = playerReputation[factionId2];
+    const a = getDetails(actorA);
+    const b = getDetails(actorB);
+
+    // If IDs are missing
+    if (!a.id || !b.id) return "neutral";
+
+    // 1. Self is always Ally
+    if (a.id === b.id && !a.covert && !b.covert) return "ally";
+
+    // 2. Identify the "Subjective Self" (Who is asking?)
+    // This function asks: "How does A view B?"
+    // If A has a covert faction, A views B based on A's TRUE faction.
+    // Unless A is the Player (who usually doesn't have a covert faction in this context, but we check ID).
+
+    let subjectFaction = a.id;
+    if (a.covert) {
+        subjectFaction = a.covert; // A knows their own true allegiance
+    }
+
+    // 3. Identify the "Objective Target" (Who is being viewed?)
+    // How does A view B?
+    // If B has a covert faction, A only knows it if B is revealed.
+    // Otherwise, A sees B's public faction.
+
+    let targetFaction = b.id;
+    if (b.covert && b.isRevealed) {
+        targetFaction = b.covert; // True nature revealed
+    }
+
+    // 4. Player Reputation Override
+    // If A is Player, check reputation with B's perceived faction.
+    if (a.id === "player") {
+        const rep = playerReputation[targetFaction];
         if (rep !== undefined) {
-            if (rep <= -50) return "hostile"; // Example thresholds
-            if (rep >= 50) return "ally";
-            return "neutral";
+            if (rep <= ReputationThreshold.Hostile) return "hostile";
+            if (rep >= ReputationThreshold.Allied) return "ally";
+            // Check other thresholds if needed, or default to matrix if neutral
         }
-        // Fall through to default if no specific player rep
     }
-    if (factionId2 === Factions.PLAYER.id) {
-        const rep = playerReputation[factionId1];
+    // If B is Player, check A's reputation with Player?
+    // Usually reputation is "How Faction X likes Player".
+    // So if targetFaction is "player", we check subjectFaction's opinion of player via rep?
+    // The matrix usually handles "Faction -> Player".
+    // But dynamic reputation:
+    if (targetFaction === "player") {
+        const rep = playerReputation[subjectFaction]; // Subject's opinion of player
         if (rep !== undefined) {
-            if (rep <= -50) return "hostile";
-            if (rep >= 50) return "ally";
-            return "neutral";
+            if (rep <= ReputationThreshold.Hostile) return "hostile";
+            if (rep >= ReputationThreshold.Allied) return "ally";
         }
-        // Fall through to default
     }
 
-    // Check default relationships (symmetric)
-    if (defaultFactionRelationships[factionId1] && defaultFactionRelationships[factionId1][factionId2] !== undefined) {
-        return defaultFactionRelationships[factionId1][factionId2];
-    }
-    if (defaultFactionRelationships[factionId2] && defaultFactionRelationships[factionId2][factionId1] !== undefined) {
-        return defaultFactionRelationships[factionId2][factionId1];
+    // 5. Consult Matrix (Public Relationships)
+    const subjectData = factionDataMap[subjectFaction];
+    if (subjectData && subjectData.relationships && subjectData.relationships[targetFaction]) {
+        return subjectData.relationships[targetFaction];
     }
 
-    // Default for unlisted relationships (e.g., two creature factions)
-    // Most unlisted inter-NPC faction relationships can be neutral unless specified.
-    // Specific creature interactions (predator-prey) are more complex than simple faction hate.
-    if ((factionId1.startsWith("creature_") && factionId2.startsWith("creature_")) ||
-        (factionId1 === Factions.ZOMBIE.id && factionId2.startsWith("creature_")) ||
-        (factionId2 === Factions.ZOMBIE.id && factionId1.startsWith("creature_"))) {
-        // Simple: Hostile creatures are hostile to prey animals. Zombies might be neutral to non-prey animals.
-        if ((factionId1 === Factions.CREATURE_HOSTILE.id && factionId2 === Factions.CREATURE_PREY.id) ||
-            (factionId2 === Factions.CREATURE_HOSTILE.id && factionId1 === Factions.CREATURE_PREY.id)) {
-            return "hostile";
-        }
-        return "neutral"; // Default for other creature/zombie interactions
+    // 6. Default Fallbacks (if not in matrix)
+
+    // Creature/Zombie logic preservation
+    if (subjectFaction === "zombie" || targetFaction === "zombie") {
+        if (subjectFaction === "zombie" && targetFaction === "zombie") return "neutral"; // Zombies don't eat each other
+        return "hostile"; // Zombies hate everything else, everything hates zombies
     }
 
-    // If one is zombie and the other is living (non-creature, non-player)
-    const livingFactions = [Factions.CIVILIAN.id, Factions.POLICE.id, Factions.MILITIA.id, Factions.BANDIT.id, Factions.SCAVENGER.id, Factions.MUTANT.id, Factions.GUARD.id, Factions.EARTH_FIRST.id, Factions.PD_FACTION.id];
-    if (factionId1 === Factions.ZOMBIE.id && livingFactions.includes(factionId2)) return "hostile";
-    if (factionId2 === Factions.ZOMBIE.id && livingFactions.includes(factionId1)) return "hostile";
+    if (subjectFaction.startsWith("creature_predator")) {
+        if (targetFaction.startsWith("creature_prey") || targetFaction === "player") return "hostile";
+    }
 
-
-    return "neutral"; // Default if no specific relationship is defined
+    return "neutral";
 }
 
 /**
  * Modifies player reputation with a specific faction.
  * @param {string} factionId - The ID of the faction.
- * @param {number} amount - The amount to change the reputation by (positive or negative).
+ * @param {number} amount - The amount to change the reputation by.
  * @param {object} gameState - The global game state object.
  */
 function adjustPlayerReputation(factionId, amount, gameState) {
@@ -198,15 +153,16 @@ function adjustPlayerReputation(factionId, amount, gameState) {
         gameState.playerReputation[factionId] = 0;
     }
     gameState.playerReputation[factionId] += amount;
-    // Clamp reputation if needed, e.g., between -1000 and 1000 (or other defined min/max)
+
     const repMin = -1000;
     const repMax = 1000;
     gameState.playerReputation[factionId] = Math.max(repMin, Math.min(repMax, gameState.playerReputation[factionId]));
 
-    const factionName = Factions[factionId.toUpperCase()]?.name || factionId; // Use toUpperCase for safety, though current Faction keys are uppercase
-    logToConsole(`Player reputation with ${factionName} changed by ${amount}. New rep: ${gameState.playerReputation[factionId]}.`, 'blue');
+    const factionName = Factions[factionId.toUpperCase()]?.name || factionId;
+    if (typeof logToConsole === 'function') {
+        logToConsole(`Player reputation with ${factionName} changed by ${amount}. New rep: ${gameState.playerReputation[factionId]}.`, 'blue');
+    }
 }
-
 
 /**
  * Gets the player's current reputation score with a specific faction.
@@ -218,27 +174,16 @@ function getPlayerReputation(factionId, gameState) {
     if (gameState.playerReputation && gameState.playerReputation[factionId] !== undefined) {
         return gameState.playerReputation[factionId];
     }
-    return 0; // Default to neutral if no specific reputation is tracked
+    return 0;
 }
-
-// Define reputation thresholds for descriptive levels
-const ReputationThreshold = {
-    Hostile: -500,
-    Unfriendly: -200,
-    NeutralMin: -199, // For easier range checks if Neutral is a band
-    NeutralMax: 199,
-    Friendly: 200,
-    Allied: 500
-};
-
 
 window.factionManager = {
     Factions,
-    defaultFactionRelationships,
-    ReputationThreshold, // Expose thresholds
-    getFactionRelationship, // This existing function might need to use playerReputation and thresholds more explicitly
+    ReputationThreshold,
+    initializeFactions,
+    getFactionRelationship,
     adjustPlayerReputation,
-    getPlayerReputation // Expose new getter
+    getPlayerReputation
 };
 
-console.log("factionManager.js loaded and initialized.");
+console.log("factionManager.js loaded.");

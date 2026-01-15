@@ -889,10 +889,14 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
         processedIds.add(candidateId);
 
         const realHealth = realEntity.health;
-        const targetTeamId = realEntity.teamId;
 
         if (realHealth?.torso?.current <= 0 || realHealth?.head?.current <= 0) return;
-        if (targetTeamId === npc.teamId) return; // Do not target allies
+
+        // Faction Relationship Check
+        const relation = window.factionManager.getFactionRelationship(npc, realEntity, gameState.playerReputation);
+        const isAggro = isAggroSource || (npc.aggroList && npc.aggroList.some(e => e.entityRef === realEntity));
+
+        if (!isAggro && relation !== 'hostile') return; // Only target hostile or explicitly aggroed entities
 
         // --- Predator Hunger Logic ---
         if (!isPlayer && npc.tags?.includes("predator") && realEntity.tags?.includes("prey")) {
@@ -973,6 +977,30 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
         else pt.score -= 1000; // Memory targets are lower priority
 
         pt.score -= pt.distance; // Closer is better
+
+        // Swarm AI Priorities (Nearest > Injured > Isolated)
+        if (npc.tags && npc.tags.includes('swarm')) {
+            // Injured priority
+            const hpPercent = (realEntity.health?.torso?.current || 0) / (realEntity.health?.torso?.max || 1);
+            pt.score += (1 - hpPercent) * 20; // Up to +20 for low health
+
+            // Isolated priority (Check distance to their allies)
+            let neighborAllies = 0;
+            const theirTeam = realEntity.teamId;
+            // Scan potential targets (or initiative tracker) to find their allies
+            // This is computationally expensive if many entities. Simplified:
+            // Just check distance to Player if they are not Player? Or other NPCs.
+            // Let's assume isolation is lack of nearby friends.
+            if (initiativeTracker) {
+                initiativeTracker.forEach(e => {
+                    if (e.entity !== realEntity && e.entity.teamId === theirTeam && e.entity.health?.torso?.current > 0) {
+                        const d = getDistance3D(pt.pos, e.entity === gameState ? gameState.playerPos : e.entity.mapPos);
+                        if (d < 5) neighborAllies++;
+                    }
+                });
+            }
+            if (neighborAllies === 0) pt.score += 15; // Bonus for isolated
+        }
 
         if (isCompanion) {
             // Companion specific logic

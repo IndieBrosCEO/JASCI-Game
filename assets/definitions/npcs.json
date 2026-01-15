@@ -745,6 +745,7 @@
     "sprite": "I",
     "color": "#9400d3",
     "factionId": "neutral",
+    "covert_faction_id": "foak",
     "behavior": "stealth_observe",
     "patrolPoints": [],
     "health": {
@@ -2148,6 +2149,7 @@
       "hostile",
       "mutant",
       "melee",
+      "swarm",
       "vulnerable_fire",
       "vulnerable_physical_rupture"
     ],

@@ -8,10 +8,10 @@ import { getMapData, snapshot, undo as undoData, redo as redoData, setPlayerStar
 import { placeTile, ensureTileIsObject, getTopmostTileAt } from './tileManager.js'; // Assuming getTopmostTileAt is in tileManager
 
 // UI Update Function Imports
-import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerStartDisplay, updateToolButtonUI, updateSelectedPortalInfoUI, updateContainerInventoryUI, updateLockPropertiesUI, updateTilePropertyEditorUI, getRect3DDepth, updateUIFromLoadedMap, populateItemSelectDropdown, updateSelectedNpcInfoUI, populateNpcBaseTypeDropdown, updateNpcFacePreview, populateNpcFaceUI, updateSelectedVehicleInfoUI, populateVehicleBaseTypeDropdown, applyZombieFaceConstraints, renderNpcHealthConfig } from './uiManager.js'; // Added applyZombieFaceConstraints
+import { buildPalette, updatePaletteSelectionUI, renderMergedGrid, updatePlayerStartDisplay, updateToolButtonUI, updateSelectedPortalInfoUI, updateContainerInventoryUI, updateLockPropertiesUI, updateTilePropertyEditorUI, getRect3DDepth, updateUIFromLoadedMap, populateItemSelectDropdown, updateSelectedNpcInfoUI, populateNpcBaseTypeDropdown, updateNpcFacePreview, populateNpcFaceUI, updateSelectedVehicleInfoUI, populateVehicleBaseTypeDropdown, applyZombieFaceConstraints, renderNpcHealthConfig, updateZoneEditorUI } from './uiManager.js'; // Added applyZombieFaceConstraints
 
 // Tool Logic Imports
-import { handlePlayerStartTool, handlePortalToolClick, handleSelectInspectTool, floodFill2D, floodFill3D, drawLine, drawRect, defineStamp, applyStamp, handleNpcToolClick, handleVehicleToolClick } from './toolManager.js'; // Added handleVehicleToolClick
+import { handlePlayerStartTool, handlePortalToolClick, handleSelectInspectTool, floodFill2D, floodFill3D, drawLine, drawRect, defineStamp, applyStamp, handleNpcToolClick, handleVehicleToolClick, handleZoneTool } from './toolManager.js'; // Added handleVehicleToolClick
 
 // Configuration and Utilities
 import { LAYER_TYPES, LOG_MSG, ERROR_MSG, DEFAULT_3D_DEPTH, NPC_ID_PREFIX, VEHICLE_ID_PREFIX, DEFAULT_LOCK_DC } from './config.js'; // Added VEHICLE_ID_PREFIX
@@ -90,6 +90,7 @@ export function handleCellMouseDown(event) {
             renderGrid: triggerFullGridRender,
             updateAllEditorUIs: triggerAllEditorUIsUpdate
         }),
+        updateZoneEditorUI: updateZoneEditorUI,
         // Potentially add access to assetManagerInstance if tools need it directly, though often passed
     };
 
@@ -219,6 +220,7 @@ export function handleCellMouseDown(event) {
         case "line":
         case "rect":
         case "stamp":
+        case "zone": // Zone tool starts drag
             if (appState.dragStart === null) {
                 appState.dragStart = { x, y, z }; // Store z for stamp copy start point
                 clearAllSelections(); // Start of a drag operation usually deselects other things
@@ -256,6 +258,11 @@ export function handleCellMouseUp(event) {
             if (appState.dragStart) { // Ensure drag was started for rect
                 const depth = getRect3DDepth(); // Assumes UIManager.getRect3DDepth() exists and is correct
                 drawRect(appState.dragStart.x, appState.dragStart.y, z, x, y, depth, appState.currentTileId, mapData, assetManagerInstance, toolInteractionInterface);
+            }
+            break;
+        case "zone":
+            if (appState.dragStart) {
+                handleZoneTool(appState.dragStart.x, appState.dragStart.y, z, x, y, mapData, appState, toolInteractionInterface);
             }
             break;
         case "stamp":
@@ -317,7 +324,7 @@ function handleGridMouseMove(event) {
         }
     }
     // Line Tool Preview Logic (similar to brush, but depends on dragStart)
-    else if ((appState.currentTool === "line" || appState.currentTool === "rect") && appState.dragStart) {
+    else if ((appState.currentTool === "line" || appState.currentTool === "rect" || appState.currentTool === "zone") && appState.dragStart) {
         if (!appState.mouseOverGridPos || appState.mouseOverGridPos.x !== currentMousePos.x || appState.mouseOverGridPos.y !== currentMousePos.y) {
             appState.mouseOverGridPos = { x: currentMousePos.x, y: currentMousePos.y };
             needsRender = true;
@@ -767,7 +774,7 @@ function handleToolButtonClick(toolName) {
 
 
     // If switching away from a tool that uses dragStart, or to a tool that clears it (like stamp)
-    if ((appState.currentTool === "line" || appState.currentTool === "rect") && toolName !== appState.currentTool) {
+    if ((appState.currentTool === "line" || appState.currentTool === "rect" || appState.currentTool === "zone") && toolName !== appState.currentTool) {
         appState.dragStart = null;
         appState.mouseOverGridPos = null; // Clear potential line/rect preview
         triggerFullGridRender(); // Update grid to remove preview

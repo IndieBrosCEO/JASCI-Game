@@ -52,6 +52,7 @@ class AssetManager {
         this.quests = {};
         this.levelCurve = [];
         this.families = {};
+        this.factions = [];
         this.familyItems = new Map();
         this.legacyAliases = {};
 
@@ -62,7 +63,8 @@ class AssetManager {
             'items/containers.json', 'items/trap_kits.json', 'items/vehicle_parts.json',
             'vehicle_templates.json', 'dynamic_event_templates.json', 'procedural_quest_templates.json',
             'items/traps.json', 'constructions.json', 'families.json', 'perks.json',
-            'items/harvest_resources.json', 'loot_tables.json', 'world_graph.json', 'areas.json'
+            'items/harvest_resources.json', 'loot_tables.json', 'world_graph.json', 'areas.json',
+            'factions.json'
         ];
 
         // Parallel fetch
@@ -122,6 +124,9 @@ class AssetManager {
                 this.worldGraph = parsedJson;
             } else if (filename === 'areas.json') {
                 this.areas = parsedJson;
+            } else if (filename === 'factions.json') {
+                this.factions = parsedJson;
+                console.log("AssetManager: Factions loaded.");
             } else if (filename.startsWith('items/')) {
                 if (Array.isArray(parsedJson)) {
                     parsedJson.forEach(item => {
@@ -295,6 +300,7 @@ class AssetManager {
         processedMapData.portals = (mapJsonData.portals || []).map(normalizeZ);
         processedMapData.traps = (mapJsonData.traps || []).map(normalizeZ);
         processedMapData.container_instances = (mapJsonData.container_instances || []).map(normalizeZ);
+        processedMapData.zones = (mapJsonData.zones || []).map(normalizeZ);
 
         processedMapData.npcs = (mapJsonData.npcs || []).map(npc => {
             const positionData = npc.mapPos || npc.pos || { x: 0, y: 0, z: 0 };
