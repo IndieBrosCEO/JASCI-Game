@@ -2,108 +2,119 @@
 
 This document outlines the requirements to support the "Wasteland Campaign GM Setting Bible" and "Updated Faction Relationship Map". The audit is divided into architectural requirements (Engine/Tools) and specific content requirements.
 
+**Note:** This audit incorporates "GM-dev sanity checks" to ensure a robust, data-driven architecture that separates relationships, reputation, and hidden dynamics.
+
 ---
 
 ## 1. Base Game Engine Audit
 
-### A. Faction System
+### A. Faction System (Architecture Update)
 *   **Current Status:** Hardcoded in `js/factionManager.js` (`const Factions`, `defaultFactionRelationships`).
-*   **Requirement:** **Dynamic Faction System** (Mechanic Update).
-    *   Refactor `FactionManager` to load faction definitions and relationship matrices from JSON files (e.g., `assets/definitions/factions.json`).
-    *   Support for the complex relationship types found in the text (Ally, Trade, Neutral, Tense, Enemy, Covert).
-    *   Ensure NPCs defined in `npcs.json` can reference these dynamic faction IDs.
+*   **Requirement:** **Layered Faction Architecture**.
+    *   **Layer 1: Public Relationships (Enum).** A standard matrix defining baseline stances: `Ally`, `Trade`, `Neutral`, `Tense`, `Enemy`, `Unknown`.
+        *   *Feature:* **Asymmetry Support** (Faction A can view B as `Tense` while B views A as `Enemy`).
+    *   **Layer 2: Player Reputation (Numeric).** A specific tracking system for the player's standing with each faction (separate from inter-faction politics).
+    *   **Layer 3: Hidden Dynamics (Tags/Flags).** A system for special logic that doesn't fit into the standard matrix.
+        *   `covert_relation`: e.g., `CovertSupport`, `CovertDisrupt`.
+        *   `ideological_lock`: e.g., `["no_alliance_possible"]` (FOAK vs CM).
+    *   **NPC Linkage:**
+        *   Standard `faction_id`.
+        *   New `covert_faction_id` (e.g., An NPC appears as "Fellowship" but `covert_faction_id` is "FOAK").
+        *   Reveal logic (Suspicion threshold, Event trigger).
 
-### B. Quest System
-*   **Current Status:** `js/questManager.js` supports basic objectives (Kill, Collect, Visit, Talk) and rewards (XP, Items).
-*   **Requirement:** **Faction Integration** (Mechanic Update).
-    *   **New Reward Type:** `reputation`. Quests should be able to grant positive/negative reputation with specific factions.
-    *   **New Requirement:** `min_reputation`. Quests should optionally require a certain reputation level with a faction to be available.
-    *   **New Objective Type:** `change_reputation`? (Optional, maybe not needed if quests *cause* the change).
-    *   **Clock/Timeline System:** The "Active Clocks" (Virus, Road Takeover, Water Theft) imply a global state tracking system that advances based on player actions or time.
+### B. Quest & Event System (Architecture Update)
+*   **Current Status:** Basic objectives and rewards.
+*   **Requirement:** **Clock Manager & Trigger System**.
+    *   **Clock Manager:** A first-class system to track named global clocks (e.g., "Virus Progress", "Road Takeover").
+        *   Advanced by: Time passage, Quest outcomes, Territory changes.
+        *   Stages & Thresholds (e.g., "At 50%: Checkpoints Harden").
+    *   **Trigger System:** Hooks to drive logic beyond simple quest completion.
+        *   `onAccept`, `onComplete`, `onFail`.
+        *   `onEnterZone`, `onExitZone`.
+        *   `onTimerTick`, `onClockThreshold`.
+    *   **Rewards:** `reputation_change` (Faction + Amount), `advance_clock` (ClockID + Ticks).
 
-### C. NPC & AI
-*   **Current Status:** Basic behaviors (`idle`, `patrol`, `hunt`, `flee`) in `js/npcDecisions.js`.
-*   **Requirement:** **Campaign Behaviors** (New Mechanics).
-    *   **"Bio-Muncher" AI:** Swarm behavior, vulnerable to fire, specific "horror beats" logic.
-    *   **"Orange Mist" Effect:** Needs a status effect system where continuous exposure transforms entities.
-    *   **Infiltration Logic:** NPCs that appear friendly (e.g., "Fellowship" members) but trigger hostile events based on hidden "FOAK Infiltrator" tags.
+### C. NPC & AI (Architecture Update)
+*   **Current Status:** Basic behaviors.
+*   **Requirement:** **Advanced Campaign Behaviors**.
+    *   **Swarm AI (Bio-Munchers):**
+        *   Flocking-lite movement (cohesion radius).
+        *   Target selection priorities (nearest > injured > isolated).
+    *   **Infiltration Logic:**
+        *   Handling for `true_faction` vs `visible_faction`.
+        *   Reveal conditions: Interrogation, Quest step, Proximity to handler.
+    *   **Persona System:** Support for NPCs like "Danny" who have multiple persona states affecting dialogue and behavior (sharing one memory/inventory).
 
-### D. World & Persistence
-*   **Current Status:** Map transitions supported. State persistence for Quests and Inventory exists.
-*   **Requirement:** **World State Tracking** (Mechanic Update).
-    *   **Territory Control:** Track which faction controls key points (e.g., "76 Road", "Water Points").
-    *   **Global Flags:** Persist states like "Reactor Recovered", "Gate Closed", "Virus Progress %".
+### D. World & Hazards (Architecture Update)
+*   **Current Status:** Basic tiles.
+*   **Requirement:** **Complex Hazard System**.
+    *   **Orange Mist:**
+        *   **Continuous Exposure:** Track `mist_exposure_seconds` status stack.
+        *   **Transformation:** Trigger "Bio-Muncher" transformation at threshold (e.g., 6s continuous).
+        *   **Mitigation:** Gas mask equipment reduces exposure gain to 0.
+    *   **Radiation:** Dose per second, sickness thresholds.
 
 ---
 
 ## 2. MapMaker Tool Audit
 
-### A. Faction & Zone Tools
-*   **Current Status:** Can place individual NPCs. No concept of "Zones".
-*   **Requirement:** **Zone/Territory Tool** (New Mechanic).
-    *   A new tool to paint "Zones" on the map.
-    *   **Functionality:**
-        *   **Faction Control:** Define which faction owns the zone for dynamic spawning (e.g., "FOAK Patrols" in "De Luz Rd").
-        *   **Environmental Hazards:** Mark zones as "Radiation" or "Orange Mist" to trigger status effects on entry.
-        *   **Event Triggers:** "Enter Zone" events for quests (e.g., "Investigate the Sunrise Project").
+### A. Zone/Territory Tool (New Feature)
+*   **Current Status:** None.
+*   **Requirement:** **Multi-Layer Zone Painting**.
+    *   **Layer 1: Control.** Define Faction ownership, Security Level (Safe, Contested, Hostile), and Patrol Density.
+    *   **Layer 2: Hazard.** Paint areas as "Radiation", "Orange Mist", "Fire Scar".
+        *   Parameters: Dose/Rate, Linger Time.
+    *   **Layer 3: Event/Trigger.** "Enter Zone" hooks for quests and lore.
+    *   **Spawn Tables:** Define dynamic spawns per zone (e.g., "FOAK Patrol" on "De Luz Rd").
 
-### B. Quest Editor
-*   **Current Status:** `mapMaker/questEditor.js` allows editing Title, Description, Objectives, XP/Item rewards.
-*   **Requirement:** **Faction Support** (Mechanic Update).
-    *   Add UI fields to set "Reputation Rewards" (Faction ID + Amount).
-    *   Add UI fields to set "Reputation Requirements" (Faction ID + Min Value).
+### B. Points of Interest (POIs) & Checkpoints
+*   **Current Status:** None.
+*   **Requirement:** **Checkpoint Objects**.
+    *   First-class objects defining: Controlling Faction, Inspection Rules (Toll, Confiscation), Hostility Thresholds.
+
+### C. Validation & Debugging
+*   **Requirement:**
+    *   **JSON Schema Validation:** Ensure bad IDs don't crash the game.
+    *   **Debug Overlay:** Visualize Zone Owners, Hazard Boundaries, Clock States.
 
 ---
 
 ## 3. Specific Content Requirements
 
-### A. Factions (To be defined in `factions.json`)
-*   **FPD** (Fallbrook Police Department) - *Order Anchor*
-*   **FRN** (Fallbrook Resilience Network) - *Tech/Science*
-*   **FOAK** (Proud Boys / Alt-Knights) - *Violent Opportunists*
-*   **CM** (Calaveras de la Muerte) - *Cartel/Road Lords*
-*   **Raiders** (Raiders of the Deadlands) - *Suburban Horror*
-*   **Fellowship** (Christian Fellowship) - *Moral Battleground*
-*   **Guard** (California National Guard) - *Sleeping Giant*
-*   **Earth First** - *Invisible Antagonists*
-*   **Pala** - *Border Authority*
-
-### B. Key NPCs (To be defined in `npcs.json`)
-*   **FPD:** Captain David Nisleit, Marna (Sgt), Memphis, Monte.
-*   **FRN:** Dr. Isabella "Izzy" Reyes, Amelia "Wren" Prescott.
-*   **FOAK:** Agustus Sol Invictus, Shauna (Infiltrator).
-*   **CM:** Loi Khac Nguyen "Thai".
-*   **Raiders:** Donovan "Danny" Calderone ("Trade Danny" & "Murder Danny" personas).
-*   **Fellowship:** Shannon Smith.
-*   **Guard:** Abe "Sandy" Adegoke.
-*   **Earth First:** Bubo (AI/Leader), "Green" Mercenaries.
-*   **Wildcards:** Beebe (Gun Shop), Bonner (Ex-Green), Zelma De Klerk (Scavenger), Chacol "Chase" Avila, Hero (Alien), Ryk (Refugee).
-
-### C. New Items (To be defined in `items.json`)
-*   **Weapons:** "Hamburger Helper" (Alien Blaster), 1911 Pistol, Camdon Defense firearms.
-*   **Gear:** Gas Mask (Orange Mist protection), Air Filter.
-*   **Quest Items:** Biomass Reactor, Virus Prototype, "Green" Letters/Orders.
-*   **Resources:** Antibiotics, Batteries, Fuel.
-
-### D. Plot Engines & Quests (To be defined in `quests.json`)
-*   **Water War Spark:** FOAK attacks a water point; Player must defend or investigate.
-*   **CM Protection:** Broker or break a "protection deal" between CM and FPD.
-*   **Fellowship Crisis:** Sick children need FRN meds; Player mediates between the factions.
-*   **Beebe Squeeze:** Protect Beebe from CM/FOAK extortion.
-*   **Reactor Heist:** Recover the Biomass Reactor from the "Sunrise Project" dungeon (Time limit: Orange Mist).
-*   **The Banishment:** Decide the fate of traitors Grayson and Shauna (affects FPD stability).
-*   **Hero's Departure:** Escort Hero/Chase to the desert gate (Pala territory) before the ship leaves.
-
-### E. Faction Relationship Matrix (Default State)
+### A. Faction Relationship Matrix (Baseline Public Relations)
 | Faction | FPD | FRN | FOAK | CM | Raiders | Fellowship | Guard | Earth First | Pala |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **FPD** | - | Ally | Enemy | Tense | Tense | Neutral | Neutral | Unknown | Tense |
 | **FRN** | Ally | - | Enemy | Tense | Neutral | Neutral | Neutral | Enemy | Tense |
-| **FOAK** | Enemy | Enemy | - | Enemy | Tense | Infiltrating | Enemy | Pawn | Enemy |
+| **FOAK** | Enemy | Enemy | - | Enemy | Tense | Neutral | Enemy | Unknown | Enemy |
 | **CM** | Enemy | Tense | Enemy | - | Tense | Neutral | Tense | Unknown | Tense |
 | **Raiders** | Tense | Neutral | Tense | Tense | - | Neutral | Enemy | Unknown | Neutral |
-| **Fellowship**| Neutral | Neutral | Split | Fear | Fear | - | Neutral | Unknown | Neutral |
+| **Fellowship**| Neutral | Neutral | Neutral | Fear | Fear | - | Neutral | Unknown | Neutral |
 | **Guard** | Neutral | Neutral | Enemy | Tense | Enemy | Neutral | - | Enemy | Tense |
-| **Earth First**| Enemy | Enemy | Pawn | Disruption| Disruption | Unknown | Enemy | - | Unknown |
+| **Earth First**| Enemy | Enemy | Neutral | Neutral | Neutral | Unknown | Enemy | - | Unknown |
+| **Pala** | Tense | Tense | Enemy | Tense | Neutral | Neutral | Neutral | Unknown | - |
 
-*Note: "Split", "Infiltrating", and "Pawn" imply special game logic or scripted events rather than simple relationship values.*
+### B. Special Dynamics (Hidden/Covert Layers)
+*   **Earth First:**
+    *   `CovertCommand` -> "Green Mercenaries"
+    *   `CovertDisrupt` -> FPD, CM, Raiders
+    *   `CovertOpportunism` -> FOAK
+*   **FOAK:**
+    *   `CovertInfiltration` -> Fellowship (Defectors/Spies)
+    *   `CovertSabotage` -> FPD (Shauna/Grayson)
+    *   `IdeologicalLock` -> CM (Cannot Ally)
+*   **CM:**
+    *   `CovertControl` -> Beebe
+    *   `ExpansionClock` -> Roads 15/76
+*   **Earth First / Bubo:**
+    *   `Unknown` to most until revealed.
+
+### C. Key NPCs & Assets
+*   **Danny Calderone:** Needs "Two Persona" logic (Trade Danny / Murder Danny).
+*   **Bubo:** AI entity, potential multiple bodies/terminals.
+*   **Items:** Gas Masks (Functional), Radiation Meds, Alien Blaster ("Hamburger Helper").
+*   **Clocks:**
+    *   "Virus Completion" (Main)
+    *   "Road Takeover" (CM)
+    *   "Water Theft" (FOAK)
+    *   "Fellowship Fracture" (Social)
