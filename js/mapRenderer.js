@@ -2411,11 +2411,60 @@ window.mapRenderer = {
             }
         }
 
+        this.renderZones(); // Draw debug zones if enabled
+
         this.updateMapHighlight(); // This function will also need to be viewport aware if it directly manipulates DOM outside cache
 
         if (window.gameState && window.gameState.activeAnimations && window.gameState.activeAnimations.filter(a => a.z === undefined || a.z === currentZ).length > 0) {
             window.mapRenderer.scheduleRender();
         }
+    },
+
+    renderZones: function() {
+        if (!gameState.showDebugZones) return;
+
+        const mapData = this.getCurrentMapData();
+        if (!mapData || !mapData.zones) return;
+
+        const currentZ = gameState.currentViewZ;
+        const tileCacheData = gameState.tileCache && gameState.tileCache.z === currentZ ? gameState.tileCache.data : null;
+        if (!tileCacheData) return;
+
+        // Iterate zones and apply overlay
+        mapData.zones.forEach(zone => {
+            if (zone.z !== currentZ) return;
+
+            let color = 'rgba(255, 255, 255, 0.2)'; // Default
+            let border = '1px dashed white';
+
+            if (zone.type === 'faction_control') {
+                color = 'rgba(0, 0, 255, 0.2)'; // Blueish
+                border = '1px solid blue';
+            } else if (zone.type === 'hazard') {
+                color = 'rgba(255, 165, 0, 0.3)'; // Orange
+                border = '1px dashed orange';
+            } else if (zone.type === 'event') {
+                color = 'rgba(128, 0, 128, 0.2)'; // Purple
+                border = '1px dotted purple';
+            }
+
+            for (let y = zone.y; y < zone.y + zone.height; y++) {
+                for (let x = zone.x; x < zone.x + zone.width; x++) {
+                    const cell = tileCacheData[y]?.[x];
+                    if (cell && cell.span) {
+                        // Blend background? Or simple override/border?
+                        // Let's use outline or box-shadow to not mess up FOW background too much
+                        cell.span.style.outline = border;
+                        // cell.span.style.backgroundColor = color; // This might be too much overlap
+                        // Use box-shadow inset for fill effect
+                        cell.span.style.boxShadow = `inset 0 0 0 1000px ${color}`;
+
+                        // Add title/tooltip if not present?
+                        if (!cell.span.title) cell.span.title = `Zone: ${zone.name} (${zone.type})`;
+                    }
+                }
+            }
+        });
     },
 
     updateMapHighlight: function () { // Needs to be viewport aware for querySelectorAll

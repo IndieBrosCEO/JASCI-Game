@@ -484,5 +484,21 @@
     },
     "sprite": "p",
     "color": "#8b4513"
+  },
+  {
+    "id": "gas_mask",
+    "name": "Gas Mask",
+    "description": "A protective mask that filters out harmful airborne particulates.",
+    "type": "clothing",
+    "size": 1,
+    "weightLbs": 2,
+    "tags": ["clothing", "head_face", "gas_mask", "protective"],
+    "layer": "head_face",
+    "coverage": ["head"],
+    "insulation": 1,
+    "armorValue": 0,
+    "isClothing": true,
+    "sprite": "m",
+    "color": "#556b2f"
   }
 ]
