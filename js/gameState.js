@@ -247,6 +247,7 @@ gameState.player.maxBreath = 20;
 gameState.player.dimensions = { width: 1, length: 1, height: 1 };
 gameState.player.facing = 'down'; // Default facing
 gameState.player.isInVehicle = null; // vehicleId if player is in a vehicle, otherwise null
+gameState.player.factionId = "player";
 gameState.player.teamId = 1;
 gameState.player.aggroList = [];
 gameState.player.isGodMode = false;

@@ -1,7 +1,7 @@
 // mapMaker/toolManager.js
 "use strict";
 
-import { snapshot, setPlayerStart as setPlayerStartInData, addPortalToMap, getNextPortalId as getNextPortalIdFromData, addNpcToMap, getNextNpcId as getNextNpcIdFromData, addVehicleToMap, getNextVehicleId as getNextVehicleIdFromData } from './mapDataManager.js'; // Added vehicle functions
+import { snapshot, setPlayerStart as setPlayerStartInData, addPortalToMap, getNextPortalId as getNextPortalIdFromData, addNpcToMap, getNextNpcId as getNextNpcIdFromData, addVehicleToMap, getNextVehicleId as getNextVehicleIdFromData, addZoneToMap, getNextZoneId } from './mapDataManager.js'; // Added vehicle functions
 import { placeTile, getTopmostTileAt, getLayerForTile } from './tileManager.js'; // Added getLayerForTile
 import { DEFAULT_PORTAL_TARGET_MAP_ID, DEFAULT_PORTAL_TARGET_X, DEFAULT_PORTAL_TARGET_Y, DEFAULT_PORTAL_TARGET_Z, DEFAULT_PORTAL_NAME, PORTAL_ID_PREFIX, NPC_ID_PREFIX, VEHICLE_ID_PREFIX, LAYER_TYPES, LOG_MSG, ERROR_MSG, STAMP_COPY_LAYERS } from './config.js'; // Added NPC_ID_PREFIX and VEHICLE_ID_PREFIX
 import { logToConsole } from './config.js';
@@ -662,4 +662,57 @@ export function applyStamp(pasteBaseX, pasteBaseY, pasteBaseZ, stampData3D, mapD
     }
     if (renderGrid) renderGrid();
     logToConsole(`Stamp applied at (${pasteBaseX},${pasteBaseY},Z${pasteBaseZ}).`);
+}
+
+/**
+ * Handles the Zone tool action.
+ * Creates a new Zone from drag coordinates.
+ * @param {number} x0 - Start X.
+ * @param {number} y0 - Start Y.
+ * @param {number} z - Z-level.
+ * @param {number} x1 - End X.
+ * @param {number} y1 - End Y.
+ * @param {MapData} mapData - Current map data.
+ * @param {object} appState - Application state.
+ * @param {object} interactionInterface - Interface for UI updates.
+ */
+export function handleZoneTool(x0, y0, z, x1, y1, mapData, appState, interactionInterface) {
+    snapshot();
+    const { renderGrid } = interactionInterface.getUIRenderers();
+    // updateZoneEditorUI will need to be added to interactionInterface or imported
+
+    const minX = Math.min(x0, x1);
+    const maxX = Math.max(x0, x1);
+    const minY = Math.min(y0, y1);
+    const maxY = Math.max(y0, y1);
+
+    const typeSelect = document.getElementById('zoneTypeSelect');
+    const factionInput = document.getElementById('zoneFactionIdInput');
+    const hazardTypeSelect = document.getElementById('zoneHazardTypeSelect');
+    const hazardValueInput = document.getElementById('zoneHazardValueInput');
+    const eventInput = document.getElementById('zoneEventIdInput');
+
+    const newZone = {
+        id: `zone_${getNextZoneId()}`,
+        name: "New Zone",
+        x: minX,
+        y: minY,
+        z: z,
+        width: Math.abs(maxX - minX) + 1,
+        height: Math.abs(maxY - minY) + 1,
+        type: typeSelect ? typeSelect.value : 'faction_control',
+        factionId: factionInput ? factionInput.value : '',
+        hazardType: hazardTypeSelect ? hazardTypeSelect.value : '',
+        hazardValue: hazardValueInput ? parseInt(hazardValueInput.value, 10) : 0,
+        eventId: eventInput ? eventInput.value : ''
+    };
+
+    addZoneToMap(newZone);
+    appState.selectedZone = newZone;
+    logToConsole(`Created Zone ${newZone.id} at (${minX},${minY}) size ${newZone.width}x${newZone.height}.`);
+
+    if (interactionInterface.updateZoneEditorUI) {
+        interactionInterface.updateZoneEditorUI(newZone);
+    }
+    if (renderGrid) renderGrid();
 }

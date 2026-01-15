@@ -58,6 +58,7 @@ const npcManager = new NpcManager(gameState, assetManager, window.mapRenderer, c
 const dynamicEventManager = new DynamicEventManager(gameState, assetManager, npcManager, window.factionManager, TimeManager); // Use window.factionManager
 const proceduralQuestManager = new ProceduralQuestManager(gameState, assetManager, npcManager, window.factionManager, TimeManager, window.mapUtils); // Use window.factionManager
 const questManager = new QuestManager(gameState, assetManager);
+const clockManager = new ClockManager(gameState);
 
 // UI Managers (assuming they don't have complex cross-dependencies for instantiation here)
 // If they do, their instantiation might need to be adjusted or moved post-initialize of others.
@@ -83,6 +84,7 @@ window.dialogueManager = dialogueManager; // js/dialogueManager.js directly assi
 // window.factionManager = factionManager; // js/factionManager.js directly assigns to window.factionManager
 window.vehicleManager = vehicleManager;
 window.trapManager = trapManager;
+window.hazardManager = new HazardManager(gameState);
 window.weatherManager = weatherManager;
 // window.xpManager = xpManager; // js/xpManager.js directly assigns to window.xpManager
 window.perkManager = new PerkManager(window.gameState, window.assetManager);
@@ -92,6 +94,7 @@ window.npcManager = npcManager;
 window.dynamicEventManager = dynamicEventManager;
 window.proceduralQuestManager = proceduralQuestManager;
 window.questManager = questManager;
+window.clockManager = clockManager;
 // window.CraftingUI = CraftingUI; // This was causing an error as CraftingUI (const) is commented out. Correct assignment is in initialize().
 // window.ConstructionUI = ConstructionUI; // This was causing an error as ConstructionUI (const) is commented out. Correct assignment is in initialize().
 window.VehicleModificationUI = VehicleModificationUI;
@@ -2190,6 +2193,11 @@ async function initialize() { // Made async
         console.log("Keybinds populated.");
         await assetManager.loadDefinitions();
         console.log("Asset definitions loaded.");
+
+        // Initialize Faction Manager
+        if (window.factionManager && assetManager.factions) {
+            window.factionManager.initializeFactions(assetManager.factions);
+        }
 
         // Initialize WorldMapManager
         window.worldMapManager = new WorldMapManager();

@@ -97,6 +97,7 @@ export function initNewMap(gridWidth, gridHeight, initialZ = DEFAULT_START_POS_Z
         npcs: [],
         vehicles: [],
         portals: [],
+        zones: [],
         description: "",
         author: "",
         customTags: [],
@@ -432,6 +433,83 @@ export function updatePortalInMap(portalId, portalDataUpdates) {
     }
     logToConsole(`Portal ID '${portalId}' not found for update.`);
     return false;
+}
+
+// --- Zone Management ---
+/**
+ * Adds a zone to the map data.
+ * @param {object} zoneData - The zone object to add.
+ */
+export function addZoneToMap(zoneData) {
+    if (!mapData.zones) mapData.zones = [];
+    mapData.zones.push(zoneData);
+    logToConsole("Zone added to map data:", zoneData);
+}
+
+/**
+ * Removes a zone from the map data by its ID.
+ * @param {string} zoneId - The ID of the zone to remove.
+ * @returns {boolean} True if a zone was removed, false otherwise.
+ */
+export function removeZoneFromMap(zoneId) {
+    if (!mapData.zones) return false;
+    const initialLength = mapData.zones.length;
+    mapData.zones = mapData.zones.filter(z => z.id !== zoneId);
+    if (mapData.zones.length < initialLength) {
+        logToConsole(`Zone with ID '${zoneId}' removed from map data.`);
+        return true;
+    }
+    logToConsole(`Zone with ID '${zoneId}' not found for removal.`);
+    return false;
+}
+
+/**
+ * Finds a zone at a specific map coordinate.
+ * @param {number} x - X-coordinate.
+ * @param {number} y - Y-coordinate.
+ * @param {number} z - Z-coordinate.
+ * @returns {object|null} The zone object if found, otherwise null.
+ */
+export function getZoneAt(x, y, z) {
+    if (!mapData.zones) return null;
+    return mapData.zones.find(zone =>
+        zone.z === z &&
+        x >= zone.x && x < zone.x + zone.width &&
+        y >= zone.y && y < zone.y + zone.height
+    ) || null;
+}
+
+/**
+ * Updates an existing zone's data.
+ * @param {string} zoneId - The ID of the zone to update.
+ * @param {object} zoneDataUpdates - An object containing properties to update on the zone.
+ * @returns {boolean} True if the zone was found and updated, false otherwise.
+ */
+export function updateZoneInMap(zoneId, zoneDataUpdates) {
+    if (!mapData.zones) return false;
+    const zone = mapData.zones.find(z => z.id === zoneId);
+    if (zone) {
+        Object.assign(zone, zoneDataUpdates);
+        logToConsole(`Zone ID '${zoneId}' updated with:`, zoneDataUpdates);
+        return true;
+    }
+    logToConsole(`Zone ID '${zoneId}' not found for update.`);
+    return false;
+}
+
+/**
+ * Calculates the next available Zone ID.
+ * Assumes Zone IDs are in the format "zone_NUMBER".
+ * @returns {number} The next integer to use for a new Zone ID.
+ */
+export function getNextZoneId() {
+    if (!mapData.zones || mapData.zones.length === 0) return 0;
+    const maxIdNum = Math.max(-1, ...mapData.zones.map(z => {
+        const idParts = z.id.split('_');
+        const idNum = parseInt(idParts[1], 10);
+        return isNaN(idNum) ? -1 : idNum;
+    }));
+    return maxIdNum + 1;
 }
 
 /**
