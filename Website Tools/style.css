@@ -1,0 +1,282 @@
+/* Adapted from JASCI official website CSS to match Game Style */
+
+/* 1. Base Typography & Colors (Game Style) */
+@font-face {
+    font-family: 'DwarfFortress';
+    src: url('../assets/fonts/WebPlus_IBM_VGA_8x16.woff') format('woff');
+}
+
+:root {
+    --bg-color: #000;
+    --text-color: #fff;
+    --panel-bg: #222;
+    --highlight-color: #ff0;
+    --button-bg: #444;
+    --button-hover: #555;
+    --border-color: #555;
+    --juicy-ease: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 2. Reset & Base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 100%;            /* 1rem = 16px */
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'DwarfFortress', monospace;
+  line-height: 1.6;
+  font-size: 1rem;
+  margin: 0;
+  padding: 1rem;
+  position: relative;         /* for absolute children */
+  overflow-x: hidden;         /* hide side scrollbars */
+}
+
+/* 3. Links */
+a {
+  color: var(--highlight-color);
+  text-decoration: none;
+  font-weight: bold;
+}
+a:visited {
+  color: #d0d; /* Slightly darker violet/magenta to distinguish but fit theme */
+  font-weight: bold;
+}
+a:hover,
+a:focus {
+  color: #fff;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+/* 4. Layout Containers */
+header,
+main,
+footer {
+  max-width: 960px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+}
+
+/* 5. Header & Nav */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo img {
+  max-height: 3rem;
+  width: auto;
+}
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+}
+nav a {
+  padding: 0.5rem;
+}
+
+/* 6. Main Content */
+main h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+.music-section {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.music-links {
+  flex: 1;
+}
+.music-links h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.music-links ul {
+  list-style: disc inside;
+}
+.guitar-image img {
+  max-width: 150px;
+  height: auto;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.6);
+}
+.guitar-image figcaption {
+  text-align: center;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+/* 7. Aside */
+aside {
+  margin-bottom: 2rem;
+}
+aside h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+aside ul {
+  list-style: disc inside;
+}
+
+/* 8. Footer */
+footer {
+  text-align: center;
+}
+footer img {
+  max-width: 100px;
+  height: auto;
+}
+
+/* 9. Form Elements (Game Style) */
+input,
+button,
+select {
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  border: 1px solid #333;
+  padding: 0.75rem;
+  font-family: 'DwarfFortress', monospace;
+  font-size: 1rem;
+  border-radius: 2px;
+  outline: none;
+  transition: all 0.15s ease-out;
+}
+
+input:focus, select:focus {
+    border-color: var(--highlight-color);
+    box-shadow: 0 0 5px rgba(255, 255, 0, 0.3);
+}
+
+button {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.1s var(--juicy-ease);
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-1px) scale(1.02);
+    filter: brightness(1.2);
+    border-color: #666;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    /* Override provided outline if we use game style borders */
+    outline: none;
+}
+
+button:active:not(:disabled) {
+    transform: translateY(1px) scale(0.98);
+    filter: brightness(0.9);
+}
+
+/* 10. Responsive Adjustments */
+@media (max-width: 600px) {
+  header,
+  .music-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  nav ul {
+    flex-direction: column;
+  }
+  .logo img {
+    margin-bottom: 1rem;
+  }
+}
+
+/* 11. Falling-Blocks Background */
+.falling-bg {
+  position: fixed;
+  top: 0;
+  height: 100vh;
+  width: 400px;           /* gutter width—you can tweak */
+  overflow: hidden;
+  pointer-events: none;   /* clicks pass through except on .pixel */
+  z-index: -1;            /* behind all page content */
+}
+.falling-bg.left  { left: 0;  }
+.falling-bg.right { right: 0; }
+
+/* 12. Pixel Styling & Smooth Steering */
+.pixel {
+  position: absolute;
+  width: 20px;            /* block size */
+  height: 20px;
+  opacity: 0.8;
+  pointer-events: auto;   /* allow clicks if needed */
+  animation: fall linear forwards;
+  transform-origin: center center;
+  transition: left 0.2s ease;  /* smooth horizontal movement */
+}
+
+/* 13. Falling Animation Keyframes */
+@keyframes fall {
+  0%   { transform: translateY(-25px); opacity: 1; }
+  100% { transform: translateY(110vh);  opacity: 0; }
+}
+
+/* === Word Hunt Minigame === */
+.bg-words span {
+  position: absolute;
+  font-size: 1rem;
+  white-space: nowrap;
+  user-select: none;
+  transition: transform 0.3s ease, color 0.3s;
+  text-shadow:
+    0 0 4px currentColor,
+    0 0 8px currentColor;
+}
+.bg-words span.true-word {
+  cursor: pointer;
+}
+#surprise {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+#surprise .box {
+  background: #111; color: #0ff;
+  padding: 2rem; border: 2px solid #0ff;
+  border-radius: 1rem; text-align: center;
+  box-shadow: 0 0 20px #0ff;
+}
+#surprise .box a {
+  color: #0ff; text-decoration: underline;
+}
+#surprise .box button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #0ff; color: #111;
+  border: none; border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+/* 15. Pixel trail effect */
+.trail {
+  position: absolute;
+  width: 20px;            /* match .pixel size */
+  height: 20px;
+  pointer-events: none;   /* so trails don’t intercept clicks */
+  opacity: 0.5;
+  animation: trailFade 0.6s ease-out forwards;
+  transform-origin: center center;
+}
+
+@keyframes trailFade {
+  from { opacity: 0.5; }
+  to   { opacity: 0; }
+}
