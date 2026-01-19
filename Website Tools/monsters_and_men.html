@@ -4,14 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Monsters and Men</title>
-<link href="/style.css" rel="stylesheet" type="text/css" media="all">
+<link href="style_website.css" rel="stylesheet" type="text/css" media="all">
 <style>
-    .error { color: red; font-weight: bold; }
-    table { border-collapse: collapse; width: 100%; max-width: 600px; margin-bottom: 20px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background-color: #f2f2f2; }
+    .error { color: #FF5555; font-weight: bold; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+    th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+    th { background-color: #333; color: var(--highlight-color); }
     input[type="number"] { width: 60px; }
     .mod-display { font-weight: bold; }
+
+    /* Stat-specific row coloring is handled via classes injected by JS */
 </style>
 </head>
 <body>
@@ -27,65 +29,105 @@
 <img src="monster.gif">
 <h1>Monsters and Men - Creature Editor</h1>
 
-<div id="controls">
-    <button onclick="document.getElementById('fileInput').click()">Load Creature JSON</button>
-    <input type="file" id="fileInput" style="display: none;" onchange="loadCreature(this)">
-    <button onclick="resetToTemplate()">Reset to Template</button>
-    <button onclick="downloadCreature()">Download JSON</button>
-    <p id="errorMessage" class="error"></p>
+<div class="panel" style="margin-bottom: 2rem;">
+    <div id="controls" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+        <button onclick="document.getElementById('fileInput').click()">Load Creature JSON</button>
+        <input type="file" id="fileInput" style="display: none;" onchange="loadCreature(this)">
+        <button onclick="resetToTemplate()">Reset to Template</button>
+        <button onclick="downloadCreature()">Download JSON</button>
+        <span id="errorMessage" class="error"></span>
+    </div>
 </div>
 
-<hr>
+<div id="editor" class="grid-2">
+    <!-- Left Column: Name, Stats, Health -->
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="panel">
+            <h2>Basic Info</h2>
+            <label>Creature Name: <input type="text" id="creatureName" oninput="updateName(this.value)" style="width: 100%;"></label>
+        </div>
 
-<div id="editor">
-    <label>Creature Name: <input type="text" id="creatureName" oninput="updateName(this.value)"></label>
+        <div class="panel">
+            <h2>Stats</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Stat</th>
+                        <th>Score (0-10)</th>
+                        <th>Modifier</th>
+                    </tr>
+                </thead>
+                <tbody id="statsBody"></tbody>
+            </table>
+        </div>
 
-    <h3>Stats</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Stat</th>
-                <th>Score (0-10)</th>
-                <th>Modifier</th>
-            </tr>
-        </thead>
-        <tbody id="statsBody"></tbody>
-    </table>
+        <div class="panel">
+            <h2>Health & Armor</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Body Part</th>
+                        <th>HP</th>
+                        <th>Armor</th>
+                    </tr>
+                </thead>
+                <tbody id="healthBody"></tbody>
+            </table>
+        </div>
+    </div>
 
-    <h3>Skills</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Skill</th>
-                <th>Stat</th>
-                <th>Score</th>
-                <th>Modifier</th>
-            </tr>
-        </thead>
-        <tbody id="skillsBody"></tbody>
-    </table>
+    <!-- Right Column: Skills, Attributes, Notes -->
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="panel">
+            <h2>Skills</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Skill</th>
+                        <th>Stat</th>
+                        <th>Score</th>
+                        <th>Mod</th>
+                    </tr>
+                </thead>
+                <tbody id="skillsBody"></tbody>
+            </table>
+        </div>
 
-    <h3>Health & Armor</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Body Part</th>
-                <th>HP</th>
-                <th>Armor Defense Bonus</th>
-            </tr>
-        </thead>
-        <tbody id="healthBody"></tbody>
-    </table>
+        <div class="panel">
+            <h2>Attributes</h2>
+            <textarea id="attributes" rows="6" style="width: 100%; background: #111; color: #eee; border: 1px solid #444;" oninput="updateField('attributes', this.value)"></textarea>
+        </div>
 
-    <h3>Attributes</h3>
-    <textarea id="attributes" rows="4" cols="50" oninput="updateField('attributes', this.value)"></textarea>
-
-    <h3>Notes</h3>
-    <textarea id="notes" rows="4" cols="50" oninput="updateField('notes', this.value)"></textarea>
+        <div class="panel">
+            <h2>Notes</h2>
+            <textarea id="notes" rows="6" style="width: 100%; background: #111; color: #eee; border: 1px solid #444;" oninput="updateField('notes', this.value)"></textarea>
+        </div>
+    </div>
 </div>
 
 <script>
     const STATS_LIST = ["Strength", "Intelligence", "Dexterity", "Constitution", "Perception", "Willpower", "Charisma"];
+
+    // Mapping for colors
+    const STAT_CLASSES = {
+        "Strength": "stat-str",
+        "Intelligence": "stat-int",
+        "Dexterity": "stat-dex",
+        "Constitution": "stat-con",
+        "Perception": "stat-per",
+        "Willpower": "stat-wil",
+        "Charisma": "stat-cha"
+    };
+
+    const STAT_BG_CLASSES = {
+        "Strength": "bg-str",
+        "Intelligence": "bg-int",
+        "Dexterity": "bg-dex",
+        "Constitution": "bg-con",
+        "Perception": "bg-per",
+        "Willpower": "bg-wil",
+        "Charisma": "bg-cha"
+    };
 
     const SKILLS_MAP = {
         "Animal Handling": "Charisma",
@@ -114,7 +156,6 @@
         { "part": "Right Leg", "HP": 7, "armorDefense": 0 }
     ];
 
-    // Deep copy helper
     function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
     const DEFAULT_CREATURE = {
@@ -143,18 +184,16 @@
 
     function updateStat(stat, val) {
         currentCreature.stats[stat] = parseInt(val) || 0;
-        renderUI(); // Re-render to update dependent skill modifiers
+        renderUI();
     }
 
     function updateSkill(skill, val) {
         currentCreature.skills[skill] = parseInt(val) || 0;
-        renderUI(); // Re-render to update modifier display
+        renderUI();
     }
 
     function updateHealth(index, field, val) {
         currentCreature.health[index][field] = parseInt(val) || 0;
-        // No full re-render needed strictly, but safer to keep UI in sync
-        // if necessary we could verify types here
     }
 
     function calcStatMod(score) {
@@ -179,8 +218,11 @@
             const score = currentCreature.stats[stat];
             const mod = calcStatMod(score);
             const row = document.createElement('tr');
+            // Add background tint class
+            row.className = STAT_BG_CLASSES[stat] || "";
+
             row.innerHTML = `
-                <td>${stat}</td>
+                <td class="${STAT_CLASSES[stat] || ''}"><strong>${stat}</strong></td>
                 <td><input type="number" value="${score}" onchange="updateStat('${stat}', this.value)"></td>
                 <td class="mod-display">${mod >= 0 ? '+' : ''}${mod}</td>
             `;
@@ -195,9 +237,12 @@
             const statName = SKILLS_MAP[skill];
             const mod = calcSkillMod(score, statName);
             const row = document.createElement('tr');
+            // Add background tint based on stat
+            row.className = STAT_BG_CLASSES[statName] || "";
+
             row.innerHTML = `
                 <td>${skill}</td>
-                <td>${statName.substring(0,3)}</td>
+                <td class="${STAT_CLASSES[statName] || ''}">${statName.substring(0,3).toUpperCase()}</td>
                 <td><input type="number" value="${score}" onchange="updateSkill('${skill}', this.value)"></td>
                 <td class="mod-display">${mod >= 0 ? '+' : ''}${mod}</td>
             `;
@@ -244,7 +289,7 @@
             }
         };
         reader.readAsText(file);
-        input.value = ''; // Reset input
+        input.value = '';
     }
 
     function showError(msg) {
@@ -306,13 +351,11 @@
             }
         }
 
-        // If all good:
         currentCreature = data;
-        showError(""); // clear error
+        showError("");
         renderUI();
     }
 
-    // Initialize
     init();
 </script>
 </body>
