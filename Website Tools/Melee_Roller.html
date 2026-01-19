@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Melee Combat Simulation</title>
+<link href="/style.css" rel="stylesheet" type="text/css" media="all">
+</head>
+<body>
+<p><a href="index.html"><img src="flame_dimetap.gif"></a></p>
+    <ul>
+  <li><a href="index.html">Home</a></li>
+  <li><a href="Rules_JASCI.html">JASCI TRPG Rules</a></li>
+  <li><a href="JASCI_Melee_Roller.html">JASCI Melee Roller</a></li>
+  <li><a href="JASCI_Ranged_Roller.html">JASCI Ranged Roller</a></li>
+  <li><a href="JASCI_Thrown_Roller.html">JASCI Thrown Roller</a></li>
+  <li><a href="JASCI_XP_Calculator.html">JASCI XP Calculator</a></li>
+  <li><a href="monsters_and_men.html">Monsters and Men</a></li>
+</ul>
+<img src="under_construction.gif">
+<img src="skeleton.gif">
+<h1>JASCI Melee Combat Simulation</h1>
+<form id="combatForm">
+  <h2>Melee</h2>
+  <h3>Attacker</h3>
+  <button type="button" onclick="loadCharacter('attacker')">Load Character/Creature File</button><br> <!-- Button to load attacker's data -->
+  
+  <label for="attackerName">Attacker Name:</label>
+  <input type="text" id="attackerName" placeholder="Enter attacker's name"><br>
+  
+  <label for="isAttackerUnarmed">Attacker Weapon Status:</label>
+  <select id="isAttackerUnarmed" name="isAttackerUnarmed">
+    <option value="Unarmed">Unarmed</option>
+    <option value="Armed">Armed</option>
+  </select><br>
+
+  <div id="unarmedFields">
+    <label for="attackerUnarmedSkill" style="background-color: green;">Unarmed Skill:</label>
+    <input type="number" id="attackerUnarmedSkill" name="attackerUnarmedSkill" placeholder="Enter unarmed skill"><br>
+  </div>
+
+  <div id="armedFields">
+  <label for="attackerMeleeWeaponSkill" style="background-color: green;">Melee Weapon Skill:</label>
+  <input type="number" id="attackerMeleeWeaponSkill" name="attackerMeleeWeaponSkill" placeholder="Enter melee weapon skill"><br>
+
+    <label for="attackerMeleeWeaponDamageDice">Melee Weapon Damage Dice:</label>
+    <input type="text" id="attackerMeleeWeaponDamageDice" name="attackerMeleeWeaponDamageDice" placeholder="e.g., 1d4"><br>
+
+    <label for="attackerMeleeWeaponDamageModifier">Melee Weapon Damage Modifier:</label>
+    <input type="number" id="attackerMeleeWeaponDamageModifier" name="attackerMeleeWeaponDamageModifier" placeholder="Enter damage modifier"><br>
+  </div>
+
+  <label for="targetedBodyPart">Targeted Body part:</label>
+  <select id="targetedBodyPart" name="targetedBodyPart">
+    <option value="Head">Head: -4</option>
+    <option value="Torso">Torso: 0</option>
+    <option value="Left Arm">Left Arm: -1</option>
+    <option value="Right Arm">Right Arm: -1</option>
+    <option value="Left Leg">Left Leg: -1</option>
+    <option value="Right Leg">Right Leg: -1</option>
+  </select><br>
+
+  <p id="attackerInfo">Hit Modifier: <span id="hitModifier">0</span>, Damage Modifier: <span id="damageModifier">0</span>, Probability: <span id="probability">0%</span></p>
+
+  <h3>Defender</h3>
+  <button type="button" onclick="loadCharacter('defender')">Load Character/Creature File</button><br> <!-- Button to load defender's data -->
+  
+  <label for="defenderName">Defender Name:</label>
+  <input type="text" id="defenderName" placeholder="Enter defender's name"><br>
+
+  <label for="isDefenderUnarmed">Defender Weapon Status:</label>
+  <select id="isDefenderUnarmed" name="isDefenderUnarmed">
+    <option value="Unarmed">Unarmed</option>
+    <option value="Armed">Armed</option>
+  </select><br>
+  
+  <div id="unarmedDefenderFields">
+  <label for="defenderUnarmedSkill" style="background-color: green;">Unarmed Skill:</label>
+  <input type="number" id="defenderUnarmedSkill" name="defenderUnarmedSkill" placeholder="Enter unarmed skill"><br>
+  </div>
+  
+  <div id="armedDefenderFields">
+    <label for="defenderMeleeWeaponSkill" style="background-color: green;">Melee Weapon Skill:</label>
+    <input type="number" id="defenderMeleeWeaponSkill" name="defenderMeleeWeaponSkill" placeholder="Enter melee weapon skill"><br>
+
+    <label for="isDualWielding">Is dual wielding?</label>
+    <input type="checkbox" id="isDualWielding" name="isDualWielding"><br>
+  </div>
+
+  <label for="actionType">Defensive Action:</label>
+  <select id="actionType">
+      <option value="Blocking">Blocking</option>
+      <option value="Dodging">Dodging</option>
+  </select><br>
+
+  <div id="blockingFields">
+    <label for="defenderConstitution" style="background-color: red;">Constitution:</label>
+    <input type="number" id="defenderConstitution" name="defenderConstitution" placeholder="Enter constitution value"><br>
+    <label for="blockingArm">Blocking Arm:</label>
+    <select id="blockingArm">
+      <option value="None">None</option>
+      <option value="Left">Left</option>
+      <option value="Right">Right</option>
+    </select><br>
+
+    <label for="blockingArmArmor">Blocking Arm Armor:</label>
+    <input type="number" id="blockingArmArmor" name="blockingArmArmor" placeholder="Enter arm armor rating"><br>
+  </div>
+    
+  <div id="dodgingFields">
+    <label for="defenderDexterity" style="background-color: orange;">Dexterity:</label>
+    <input type="number" id="defenderDexterity" name="defenderDexterity" placeholder="Enter dexterity value"><br>
+  </div>
+
+  <label for="bodyPartArmor">Body Part Armor:</label>
+  <input type="number" id="bodyPartArmor" name="bodyPartArmor" placeholder="Enter targeted armor rating"><br>
+
+  <p id="defenderInfo">Defense Roll Modifier: <span id="defenseModifier">0</span>, Damage Mitigation: <span id="damageMitigation">0</span></p><br>
+
+  <button type="button" onclick="resolveCombat()">Resolve Combat</button>
+  
+  <textarea id="consoleOutput" rows="10" cols="50"></textarea>
+</form>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const attackerWeaponStatusSelect = document.getElementById('isAttackerUnarmed');
+    const defenderWeaponStatusSelect = document.getElementById('isDefenderUnarmed');
+    const unarmedFields = document.getElementById('unarmedFields');
+    const armedFields = document.getElementById('armedFields');
+    const unarmedDefenderFields = document.getElementById('unarmedDefenderFields');
+    const armedDefenderFields = document.getElementById('armedDefenderFields');
+    const actionTypeSelect = document.getElementById('actionType');
+    const blockingFields = document.getElementById('blockingFields');
+    const dodgingFields = document.getElementById('dodgingFields');
+
+    // Function to toggle visibility of fields based on the selected type
+    function toggleFields() {
+        // Toggle armed and unarmed fields
+        const selectedAttackerWeapon = attackerWeaponStatusSelect.value;
+        if (selectedAttackerWeapon === 'Unarmed') {
+            unarmedFields.style.display = 'block';
+            armedFields.style.display = 'none';
+        } else if (selectedAttackerWeapon === 'Armed') {
+            unarmedFields.style.display = 'none';
+            armedFields.style.display = 'block';
+        } else {
+            unarmedFields.style.display = 'none';
+            armedFields.style.display = 'none';
+        }
+
+      // Toggle defensive armed and unarmed fields
+      const selectedDefenderWeapon = defenderWeaponStatusSelect.value;
+      if (selectedDefenderWeapon === 'Unarmed') {
+          if (actionTypeSelect.value === 'Blocking') {
+            unarmedDefenderFields.style.display = 'block';
+            blockingFields.style.display = 'block';
+            armedDefenderFields.style.display = 'none';
+            dodgingFields.style.display = 'none';          
+          } else if (actionTypeSelect.value === 'Dodging'){
+            unarmedDefenderFields.style.display = 'block';
+            blockingFields.style.display = 'none';
+            armedDefenderFields.style.display = 'none';
+            dodgingFields.style.display = 'block';
+          }
+      } else if (selectedDefenderWeapon === 'Armed') {
+        if (actionTypeSelect.value === 'Blocking') {
+          unarmedDefenderFields.style.display = 'none';
+          blockingFields.style.display = 'none';
+          armedDefenderFields.style.display = 'block';
+          dodgingFields.style.display = 'none';          
+        } else if (actionTypeSelect.value === 'Dodging'){
+          unarmedDefenderFields.style.display = 'block';
+          blockingFields.style.display = 'none';
+          armedDefenderFields.style.display = 'block';
+          dodgingFields.style.display = 'block';
+        }
+      }
+    }
+
+    // Initial toggle on page load for both sets of fields
+    toggleFields();
+
+    // Setup event listeners for changes in either selection
+    attackerWeaponStatusSelect.addEventListener('change', toggleFields);
+    defenderWeaponStatusSelect.addEventListener('change', toggleFields);
+    actionTypeSelect.addEventListener('change', toggleFields);
+    });
+
+    function updateDisplay() {
+        // Get attacker variables
+        const attackerUnarmedSkill = parseInt(document.getElementById('attackerUnarmedSkill').value) || 0;
+        const isAttackerUnarmed = document.getElementById('isAttackerUnarmed').value === 'Unarmed';
+        const attackerMeleeWeaponSkill = parseInt(document.getElementById('attackerMeleeWeaponSkill').value) || 0;
+        const targetedBodyPart = document.getElementById('targetedBodyPart').value;
+
+        // Get defense-related variables
+        const defenderUnarmedSkill = parseInt(document.getElementById('defenderUnarmedSkill').value) || 0;
+        const isDefenderUnarmed = document.getElementById('isDefenderUnarmed').value === 'Unarmed';
+        const defenderMeleeWeaponSkill = parseInt(document.getElementById('defenderMeleeWeaponSkill').value) || 0;
+        const isDualWielding = document.getElementById('isDualWielding').checked;
+        const blockingArm = document.getElementById('blockingArm').value || 'None';
+        const blockingArmArmor = parseInt(document.getElementById('blockingArmArmor').value) || 0;
+        const defenderDexterity = parseInt(document.getElementById('defenderDexterity').value) || 0;
+        const defenderConstitution = parseInt(document.getElementById('defenderConstitution').value) || 0;
+        const bodyPartArmor = parseInt(document.getElementById('bodyPartArmor').value) || 0;
+        const actionType = document.getElementById('actionType').value;
+
+        // Calculate attack modifier using calculateHitModifier function
+        const attackModifier = calculateHitModifier(isAttackerUnarmed, attackerUnarmedSkill, attackerMeleeWeaponSkill, targetedBodyPart);
+
+        // Calculate defense modifier using calculateDefenseModifier function
+        const defenseModifier = calculateDefenseModifier(isDefenderUnarmed, defenderUnarmedSkill, defenderMeleeWeaponSkill, isDualWielding, actionType, blockingArm, blockingArmArmor, defenderDexterity, defenderConstitution, bodyPartArmor);
+
+        // Calculate probability using calculateProbability function
+        const probability = calculateProbability(attackModifier, defenseModifier);
+
+        // Calculate damage modifier and damage mitigation
+        let damageModifier = 0;
+        let damageMitigation = 0;
+        if (isAttackerUnarmed) {
+            damageModifier = 0;
+        } else {
+            damageModifier = parseInt(document.getElementById('attackerMeleeWeaponDamageModifier').value) || 0;
+        }
+        damageMitigation = bodyPartArmor;
+
+        // Update display elements
+        document.getElementById('hitModifier').textContent = attackModifier;
+        document.getElementById('defenseModifier').textContent = defenseModifier;
+        document.getElementById('probability').textContent = probability.toFixed(2) + '%';
+        document.getElementById('damageModifier').textContent = damageModifier;
+        document.getElementById('damageMitigation').textContent = damageMitigation;
+    }
+
+
+    // Event listeners for attacker fields
+    document.getElementById('attackerUnarmedSkill').addEventListener('input', updateDisplay);
+    document.getElementById('attackerMeleeWeaponSkill').addEventListener('input', updateDisplay);
+    document.getElementById('attackerMeleeWeaponDamageModifier').addEventListener('input', updateDisplay);
+    document.getElementById('targetedBodyPart').addEventListener('change', updateDisplay);
+    document.getElementById('isAttackerUnarmed').addEventListener('change', updateDisplay);
+
+    // Event listeners for defender fields
+    document.getElementById('defenderUnarmedSkill').addEventListener('input', updateDisplay);
+    document.getElementById('defenderMeleeWeaponSkill').addEventListener('input', updateDisplay);
+    document.getElementById('isDualWielding').addEventListener('change', updateDisplay);
+    document.getElementById('blockingArm').addEventListener('change', updateDisplay);
+    document.getElementById('blockingArmArmor').addEventListener('input', updateDisplay);
+    document.getElementById('defenderDexterity').addEventListener('input', updateDisplay);
+    document.getElementById('defenderConstitution').addEventListener('input', updateDisplay);
+    document.getElementById('bodyPartArmor').addEventListener('input', updateDisplay);
+    document.getElementById('isDefenderUnarmed').addEventListener('change', updateDisplay);
+    document.getElementById('actionType').addEventListener('change', updateDisplay);
+    
+    function appendToConsoleLog(log) {
+    const consoleOutput = document.getElementById('consoleOutput');
+    consoleOutput.value += log + '\n';
+    }
+    function resolveCombat() {
+        // Declare attacker variables
+        let isAttackerUnarmed, attackerUnarmedSkill, attackerMeleeWeaponSkill, targetedBodyPart;
+        // Get attacker variables
+        attackerUnarmedSkill = parseInt(document.getElementById('attackerUnarmedSkill').value) || 0;
+        isAttackerUnarmed = document.getElementById('isAttackerUnarmed').value === 'Unarmed';
+        attackerMeleeWeaponSkill = parseInt(document.getElementById('attackerMeleeWeaponSkill').value) || 0;
+        targetedBodyPart = document.getElementById('targetedBodyPart').value;
+
+        // Declare defender variables
+        let isDefenderUnarmed, isDualWielding, actionType, defenderConstitution, defenderUnarmedSkill, defenderMeleeWeaponSkill, defenderDexterity, bodyPartArmor;
+        // Get defender variables
+        defenderUnarmedSkill = parseInt(document.getElementById('defenderUnarmedSkill').value) || 0;
+        isDefenderUnarmed = document.getElementById('isDefenderUnarmed').value === 'Unarmed';
+        defenderMeleeWeaponSkill = parseInt(document.getElementById('defenderMeleeWeaponSkill').value) || 0;
+        isDualWielding = document.getElementById('isDualWielding').checked;
+        const blockingArm = document.getElementById('blockingArm').value || 'None';
+        const blockingArmArmor = parseInt(document.getElementById('blockingArmArmor').value) || 0;
+        defenderDexterity = parseInt(document.getElementById('defenderDexterity').value) || 0;
+        defenderConstitution = parseInt(document.getElementById('defenderConstitution').value) || 0;
+        bodyPartArmor = parseInt(document.getElementById('bodyPartArmor').value) || 0;
+        actionType = document.getElementById('actionType').value;
+
+        // Calculate attack modifier using calculateHitModifier function
+        const attackModifier = calculateHitModifier(isAttackerUnarmed, attackerUnarmedSkill, attackerMeleeWeaponSkill, targetedBodyPart);
+
+        // Roll a d20 for attacker's attack
+        const attackerRoll = Math.floor(Math.random() * 20) + 1 + attackModifier;
+        appendToConsoleLog('Attacker roll:' + attackerRoll + ' ' + 'd20+' + attackModifier);
+
+        // Roll a d20 for defender's defense
+        const defenderRoll = Math.floor(Math.random() * 20) + 1;
+
+        // Calculate defense modifier using calculateDefenseModifier function
+        const defenseModifier = calculateDefenseModifier(isDefenderUnarmed, defenderUnarmedSkill, defenderMeleeWeaponSkill, isDualWielding, actionType, blockingArm, blockingArmArmor, defenderDexterity, defenderConstitution, bodyPartArmor);
+
+        // Add armor value to defense modifier
+        const totalDefenseRoll = defenderRoll + defenseModifier;
+        appendToConsoleLog('Defender roll:' + totalDefenseRoll + ' ' + 'd20+' + defenseModifier);
+
+        // Check if the attacker hits
+        let hit = false;
+        if (attackerRoll > totalDefenseRoll || attackerRoll === 20) {
+            hit = true;
+            appendToConsoleLog('Attack hits!');
+        } else {
+            appendToConsoleLog('Attack misses!');
+        }
+
+        // Resolve damage if the attacker hits
+        if (hit) {
+            let damage = 0;
+            if (isAttackerUnarmed) {
+                // Calculate unarmed damage
+                if (attackerUnarmedSkill === 0) {
+                    damage = Math.floor(Math.random() * 2) - 1 - bodyPartArmor; // 1d2 - 1
+                } else {
+                    damage = Math.floor(Math.random() * attackerUnarmedSkill) + 1 - bodyPartArmor;
+                }
+            } else {
+                // Calculate melee weapon damage
+                const damageDice = attackerMeleeWeaponDamageDice.split('d');
+                const damageRoll = parseInt(damageDice[0]) * (Math.floor(Math.random() * parseInt(damageDice[1])) + 1);
+                damage = damageRoll + attackerMeleeWeaponDamageModifier - bodyPartArmor;
+            }
+            if (damage < 0){
+                damage = 0;
+            }
+            if (isAttackerUnarmed) {
+                // Display unarmed damage
+                if (attackerUnarmedSkill === 0) {
+                    appendToConsoleLog('Damage:' + damage + ' ' + '1d2-' + (bodyPartArmor + 1));
+                } else {
+                    appendToConsoleLog('Damage:' + damage + ' ' + '1' + 'd' + attackerUnarmedSkill + '-' + bodyPartArmor);
+                }
+            } else {
+                // Display melee weapon damage
+                appendToConsoleLog('Damage:' + damage + ' ' + attackerMeleeWeaponDamageDice + '+' + attackerMeleeWeaponDamageModifier + '-' + bodyPartArmor);
+            }
+
+            // Apply damage to the targeted body part or blocking limb
+            let affectedBodyPart = targetedBodyPart;
+            if (actionType == 'Blocking' && isDefenderUnarmed && totalDefenseRoll >= 10) {
+                affectedBodyPart = blockingArm;
+                appendToConsoleLog('Damage applied to ' + blockingArm + ' ' + 'blocking limb');
+            } else {
+                appendToConsoleLog('Damage applied to ' + targetedBodyPart);
+            }
+        }
+    }
+
+
+    
+    // Function to load character data from a JSON file
+    function loadCharacter(role) {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'application/json';
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const data = JSON.parse(event.target.result);
+                if (role === 'attacker') {
+                    fillAttackerFields(data);
+                } else if (role === 'defender') {
+                    fillDefenderFields(data);
+                }
+            };
+            reader.readAsText(file);
+        });
+        fileInput.click();
+    }
+
+    // Function to fill attacker's fields with data from the loaded character
+    function fillAttackerFields(data) {
+        document.getElementById('attackerName').value = data.name;
+        // Fill other attacker fields
+        if (data.stats) {
+            document.getElementById('attackerUnarmedSkill').value = parseInt(data.stats.Unarmed_Skill) || 0;
+            document.getElementById('attackerMeleeWeaponSkill').value = parseInt(data.stats.Melee_Weapons) || 0;
+            // Add other stats as needed
+        }
+    }
+
+    // Function to fill defender's fields with data from the loaded character
+    function fillDefenderFields(data) {
+        document.getElementById('defenderName').value = data.name;
+        // Fill other defender fields
+        if (data.stats) {
+            document.getElementById('defenderUnarmedSkill').value = parseInt(data.stats.Unarmed_Skill) || 0;
+            document.getElementById('defenderMeleeWeaponSkill').value = parseInt(data.stats.Melee_Weapons) || 0;
+            document.getElementById('defenderConstitution').value = parseInt(data.stats.Constitution) || 0;
+            document.getElementById('defenderDexterity').value = parseInt(data.stats.Dexterity) || 0;
+            // Add other stats as needed
+        }
+    }
+
+    function calculateHitModifier(
+        isAttackerUnarmed,
+        attackerUnarmedSkill,
+        attackerMeleeWeaponSkill,
+        targetedBodyPart
+    ) {
+        // Define body part modifiers
+        const bodyPartModifiers = {
+            'Head': -4,
+            'Torso': 0,
+            'Left Arm': -1,
+            'Right Arm': -1,
+            'Left Leg': -1,
+            'Right Leg': -1,
+        };
+
+        // Get attack modifier based on targeted body part and unarmed skill or melee weapon skill
+        let attackModifier = bodyPartModifiers[targetedBodyPart] || 0; // Use || 0 to default to 0 if body part not found
+
+        if (isAttackerUnarmed) {
+            attackModifier += attackerUnarmedSkill;
+        } else {
+            attackModifier += attackerMeleeWeaponSkill;
+        }
+
+        return attackModifier;
+    }
+
+
+    function calculateDefenseModifier(
+        isDefenderUnarmed,
+        defenderUnarmedSkill,
+        defenderMeleeWeaponSkill,
+        isDualWielding,
+        actionType,
+        blockingArm,
+        blockingArmArmor,
+        defenderDexterity,
+        defenderConstitution,
+        bodyPartArmor
+    ) {
+        // Calculate defense modifier based on blocking and dodging
+        let defenseModifier = 0;
+
+        if (actionType === 'Blocking' || actionType === 'Dodging') {
+            if (actionType === 'Blocking') {
+                if (isDefenderUnarmed) {
+                    defenseModifier += defenderConstitution + defenderUnarmedSkill;
+                } else {
+                    defenseModifier += defenderMeleeWeaponSkill;
+                    if (isDualWielding && defenderMeleeWeaponSkill >= 5) {
+                        defenseModifier += 2;
+                    }
+                }
+            } else if (actionType === 'Dodging') {
+                defenseModifier += defenderDexterity + defenderUnarmedSkill;
+            }
+
+            // Add armor value to defense modifier
+            defenseModifier += bodyPartArmor;
+        }
+
+        return defenseModifier;
+    }
+
+
+
+    function calculateProbability(attackerModifier, defenderModifier) {
+        const numSides = 20; // Assuming both Attacker and Defender are rolling d20
+
+        // Calculate the probability of each outcome for Attacker and Defender Rolls
+        const attackerProbabilities = Array.from({ length: numSides }, (_, i) => 1 / numSides); // Each outcome has an equal probability
+        const defenderProbabilities = Array.from({ length: numSides }, (_, i) => 1 / numSides);
+
+        // Initialize total probability
+        let totalProbability = 0;
+
+        // Sum up the probabilities of Attacker Roll being higher than Defender Roll
+        for (let i = 0; i < numSides; i++) {
+            for (let j = 0; j < numSides; j++) {
+                if (i + 1 + attackerModifier > j + 1 + defenderModifier) {
+                    totalProbability += attackerProbabilities[i] * defenderProbabilities[j];
+                }
+            }
+        }
+
+        return totalProbability * 100; // Convert to percentage
+    }
+
+    calculateProbability(0, 0)
+    updateDisplay()
+    
+  </script>
+  </body>
+  </html>

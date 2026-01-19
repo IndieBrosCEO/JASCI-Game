@@ -1,0 +1,93 @@
+ <!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XP Calculator</title>
+  <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+  <p><a href="index.html"><img src="flame_dimetap.gif"></a></p>
+      <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="Rules_JASCI.html">JASCI TRPG Rules</a></li>
+    <li><a href="JASCI_Melee_Roller.html">JASCI Melee Roller</a></li>
+    <li><a href="JASCI_Ranged_Roller.html">JASCI Ranged Roller</a></li>
+    <li><a href="JASCI_Thrown_Roller.html">JASCI Thrown Roller</a></li>
+    <li><a href="JASCI_XP_Calculator.html">JASCI XP Calculator</a></li>
+    <li><a href="monsters_and_men.html">Monsters and Men</a></li>
+  </ul>
+  <img src="calculator.gif">
+<h1>JASCI XP Calculator</h1>
+<h2>Combat XP Calculator</h2>
+<form id="combatXpForm">
+    <div>
+        <label for="numberOfEnemies">Number of Enemies:</label>
+        <input type="number" id="numberOfEnemies" value="1">
+    </div>
+    <div>
+        <label for="enemyCR">Enemy Challenge Rating:</label>
+        <input type="number" id="enemyCR" step="0.1" value="1">
+    </div>
+    <div>
+        <label for="characterLevels">Character Levels (comma-separated):</label>
+        <input type="text" id="characterLevels" value="">
+    </div>
+    <div>
+        <label for="numberOfCharacters">Number of Characters:</label>
+        <input type="number" id="numberOfCharacters" value="1">
+    </div>
+    <button type="button" onclick="calculateCombatXP()">Calculate Combat XP</button>
+</form>
+<p id="combatXP">Combat XP to Award Individually: 0</p>
+
+<h2>Out of Combat XP Calculator</h2>
+<form id="xpForm">
+    <div>
+        <label for="easyInstances">Easy Instances:</label>
+        <input type="number" id="easyInstances" value="0">
+    </div>
+    <div>
+        <label for="mediumInstances">Medium Instances:</label>
+        <input type="number" id="mediumInstances" value="0">
+    </div>
+    <div>
+        <label for="hardInstances">Hard Instances:</label>
+        <input type="number" id="hardInstances" value="0">
+    </div>
+    <div>
+        <label for="miscInstances">Miscellaneous Instances:</label>
+        <input type="number" id="miscInstances" value="0">
+    </div>
+    <button type="button" onclick="calculateXP()">Calculate XP</button>
+</form>
+<p id="totalXP">Total XP: 0</p>
+
+<script>
+function calculateCombatXP() {
+    const numberOfEnemies = parseInt(document.getElementById('numberOfEnemies').value) || 0;
+    const enemyCR = parseFloat(document.getElementById('enemyCR').value) || 0;
+    const characterLevelsInput = document.getElementById('characterLevels').value.split(',');
+    const characterLevels = characterLevelsInput.map(level => parseFloat(level)).filter(level => !Number.isNaN(level));
+    const numberOfCharacters = parseInt(document.getElementById('numberOfCharacters').value) || 0;
+
+    const crSum = Math.round((numberOfEnemies > 1 ? numberOfEnemies * 1.5 : numberOfEnemies) * enemyCR);
+    const maxCrSum = Math.max(crSum, 0); // Ensuring non-negative
+    const averageCharacterLevel = characterLevels.length > 0 ? characterLevels.reduce((a, b) => a + b, 0) / characterLevels.length : 0;
+
+    const xp = Math.round((3.96 * Math.pow(crSum, 2) + (maxCrSum < 1 ? 25 : 100)) * (maxCrSum > averageCharacterLevel + 8 ? 1.5 : (maxCrSum > averageCharacterLevel + 3 ? 1.25 : 1)) / numberOfCharacters);
+    document.getElementById('combatXP').textContent = 'Combat XP to Award Individually: ' + xp;
+}
+
+  function calculateXP() {
+      const easy = parseInt(document.getElementById('easyInstances').value) * 10 || 0;
+      const medium = parseInt(document.getElementById('mediumInstances').value) * 25 || 0;;
+      const hard = parseInt(document.getElementById('hardInstances').value) * 75 || 0;
+      const misc = parseInt(document.getElementById('miscInstances').value) || 0;  // Assuming miscellaneous instances have their own predefined XP value
+
+      const totalXP = easy + medium + hard + misc;
+      document.getElementById('totalXP').textContent = 'Total XP: ' + totalXP;
+  }
+</script>
+</body>
+</html>

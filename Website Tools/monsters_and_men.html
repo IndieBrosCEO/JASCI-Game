@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monsters and Men</title>
+  <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+  <p><a href="index.html"><img src="flame_dimetap.gif"></a></p>
+      <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="Rules_JASCI.html">JASCI TRPG Rules</a></li>
+    <li><a href="JASCI_Melee_Roller.html">JASCI Melee Roller</a></li>
+    <li><a href="JASCI_Ranged_Roller.html">JASCI Ranged Roller</a></li>
+    <li><a href="JASCI_Thrown_Roller.html">JASCI Thrown Roller</a></li>
+    <li><a href="JASCI_XP_Calculator.html">JASCI XP Calculator</a></li>
+    <li><a href="monsters_and_men.html">Monsters and Men</a></li>
+  </ul>
+  <img src="under_construction.gif">
+  <img src="monster.gif">
+    <h1>Monsters and Men</h1>
+
+    <h2>Load Creatures</h2>
+    <input type="file" id="fileInput" style="display: none;" onchange="loadCreature(this)">
+    <button onclick="document.getElementById('fileInput').click()">Load</button>
+
+
+    <h2>Creature</h2>
+    <div>
+        <label for="creatureName">Creature Name:</label>
+        <input type="text" id="creatureName" value="Template Creature">
+        
+        <h3>Stats</h3>
+        <table>
+            <tbody id="statsBody">
+                <!-- Stats rows will be inserted here -->
+            </tbody>
+        </table>
+
+        <h3>Health + Armor</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Part</th>
+                    <th>HP</th>
+                    <th>Armor</th>
+                </tr>
+            </thead>
+            <tbody id="healthBody">
+                <!-- Health rows will be inserted here -->
+            </tbody>
+        </table>
+
+        <h3>Attributes</h3>
+        <textarea id="attributes" rows="4" cols="50">Put Attributes Here</textarea>
+
+        <h3>Notes</h3>
+        <textarea id="notes" rows="4" cols="50">Put Notes Here</textarea>
+
+        <button onclick="downloadCreature()">Download</button>
+    </div>
+
+    <script>
+        // Default creature template
+        const defaultCreature = {
+            name: "Template Creature",
+            stats: {
+                Strength: "+2",
+                Unarmed_Skill: "+4",
+                Melee_Weapons: "+4",
+                Intelligence: "0",
+                Dexterity: "+2",
+                Constitution: "+2",
+                Perception: "+3",
+                Willpower: "+3",
+                Charisma: "0",
+                Marksmanship: "+2",
+                Guns_Skill: "+4",
+                Explosives_Skill: "+3"
+            },
+            health: [
+                { part: "Head 🗣️", HP: 5, Armor: 0 },
+                { part: "Torso 👕", HP: 8, Armor: 0 },
+                { part: "L Arm 💪", HP: 6, Armor: 0 },
+                { part: "L Hand ✋", HP: 3, Armor: 0 },
+                { part: "R Arm 💪", HP: 6, Armor: 0 },
+                { part: "R Hand 🤚", HP: 3, Armor: 0 },
+                { part: "L Leg 🦵", HP: 6, Armor: 0 },
+                { part: "L Foot 🦶", HP: 3, Armor: 0 },
+                { part: "R Leg 🦵", HP: 6, Armor: 0 },
+                { part: "R Foot 🦶", HP: 3, Armor: 0 }
+            ],
+            attributes: "Put Attributes Here",
+            notes: "Put Notes Here"
+        };
+
+        // Function to handle file Load
+        function loadCreature(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function() {
+                const creatureData = JSON.parse(reader.result);
+                // Display the loaded creature
+                displayLoadedCreature(creatureData);
+            };
+            reader.readAsText(file);
+        }
+
+        // Function to display the loaded creature
+        function displayLoadedCreature(creatureData) {
+            const creatureNameInput = document.getElementById('creatureName');
+            creatureNameInput.value = creatureData.name;
+  
+            displayStats(creatureData.stats);
+            displayHealth(creatureData.health);
+  
+            const attributesTextArea = document.getElementById('attributes');
+            attributesTextArea.value = creatureData.attributes;
+  
+            const notesTextArea = document.getElementById('notes');
+            notesTextArea.value = creatureData.notes;
+        }
+
+
+
+        // Function to process uploaded monsters
+        function processMonsters(monsters) {
+            // Process the monsters as needed
+            console.log(monsters);
+        }
+
+        // Function to display the default creature template
+        function displayDefaultCreature() {
+            const creatureNameInput = document.getElementById('creatureName');
+            creatureNameInput.value = defaultCreature.name;
+
+            displayStats(defaultCreature.stats);
+            displayHealth(defaultCreature.health);
+
+            const attributesTextArea = document.getElementById('attributes');
+            attributesTextArea.value = defaultCreature.attributes;
+
+            const notesTextArea = document.getElementById('notes');
+            notesTextArea.value = defaultCreature.notes;
+        }
+
+        // Function to display stats
+      // Function to display stats
+      function displayStats(stats) {
+          const statsBody = document.getElementById('statsBody');
+          statsBody.innerHTML = '';
+          for (const [stat, value] of Object.entries(stats)) {
+              let bgColor = '';
+              switch (stat) {
+                  case 'Strength':
+                  case 'Unarmed_Skill':
+                  case 'Melee_Weapons':
+                      bgColor = 'green';
+                      break;
+                  case 'Intelligence':
+                      bgColor = '#FFC300';
+                      break;
+                  case 'Dexterity':
+                      bgColor = 'orange';
+                      break;
+                  case 'Constitution':
+                      bgColor = 'red';
+                      break;
+                  case 'Perception':
+                      bgColor = 'turquoise';
+                      break;
+                  case 'Willpower':
+                      bgColor = 'blue';
+                      break;
+                  case 'Charisma':
+                      bgColor = 'darkred';
+                      break;
+                  case 'Marksmanship':
+                  case 'Guns_Skill':
+                  case 'Explosives_Skill':
+                      bgColor = 'purple';
+                      break;
+                  default:
+                      bgColor = 'white';
+              }
+              const row = statsBody.insertRow();
+              row.innerHTML = `
+                  <td style="background-color: ${bgColor};">${stat}</td>
+                  <td><input type="text" value="${value}" onchange="updateStat('${stat}', this.value)"></td>
+              `;
+          }
+      }
+
+
+        // Function to display health
+        function displayHealth(health) {
+            const healthBody = document.getElementById('healthBody');
+            healthBody.innerHTML = '';
+            health.forEach(part => {
+                const row = healthBody.insertRow();
+                row.innerHTML = `
+                    <td>${part.part}</td>
+                    <td><input type="number" value="${part.HP}" onchange="updateHealth('${part.part}', 'HP', this.value)"></td>
+                    <td><input type="number" value="${part.Armor}" onchange="updateHealth('${part.part}', 'Armor', this.value)"></td>
+                `;
+            });
+        }
+
+        // Function to update stat value
+        function updateStat(stat, value) {
+            defaultCreature.stats[stat] = value;
+        }
+
+        // Function to update health value
+        function updateHealth(part, field, value) {
+            const health = defaultCreature.health.find(p => p.part === part);
+            health[field] = parseInt(value);
+        }
+
+      // Function to download the current creature as a JSON file
+      function downloadCreature() {
+          const creatureName = document.getElementById('creatureName').value;
+          const filename = creatureName.replace(/\s/g, '_') + '.json';
+          const creatureData = JSON.stringify({
+              name: creatureName,
+              stats: defaultCreature.stats,
+              health: defaultCreature.health,
+              attributes: document.getElementById('attributes').value,
+              notes: document.getElementById('notes').value
+          }, null, 2);
+
+          const blob = new Blob([creatureData], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', filename);
+
+          document.body.appendChild(link);
+          link.click();
+
+          // Cleanup
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+      }
+
+
+        // Display default creature template on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            displayDefaultCreature();
+        });
+    </script>
+</body>
+</html>
