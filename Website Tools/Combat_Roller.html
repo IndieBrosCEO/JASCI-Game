@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Combat Roller</title>
+<link href="/style.css" rel="stylesheet" type="text/css" media="all">
+<style>
+    .tab {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+    }
+    .tab button {
+        background-color: inherit;
+        float: left;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        transition: 0.3s;
+        font-size: 17px;
+    }
+    .tab button:hover {
+        background-color: #ddd;
+    }
+    .tab button.active {
+        background-color: #ccc;
+    }
+    .tabcontent {
+        display: none;
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-top: none;
+    }
+    .section-header {
+        background-color: #eee;
+        padding: 5px;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+<p><a href="index.html"><img src="flame_dimetap.gif"></a></p>
+<ul>
+  <li><a href="index.html">Home</a></li>
+  <li><a href="Rules_JASCI.html">JASCI TRPG Rules</a></li>
+  <li><a href="Combat_Roller.html">Combat Roller</a></li>
+  <li><a href="XP_Calculator.html">XP Calculator</a></li>
+  <li><a href="monsters_and_men.html">Monsters and Men</a></li>
+</ul>
+<img src="under_construction.gif">
+<img src="skeleton.gif">
+
+<h1>JASCI Combat Roller</h1>
+
+<div class="tab">
+  <button class="tablinks" onclick="openTab(event, 'Melee')" id="defaultOpen">Melee</button>
+  <button class="tablinks" onclick="openTab(event, 'Ranged')">Ranged</button>
+  <button class="tablinks" onclick="openTab(event, 'Thrown')">Thrown</button>
+</div>
+
+<div id="Melee" class="tabcontent">
+  <h2>Melee Combat</h2>
+  <form id="meleeForm">
+      <div class="section-header">Attacker</div>
+      <label>Name: <input type="text" id="meleeAttackerName" placeholder="Attacker"></label><br>
+      <label>Weapon Type:
+          <select id="meleeWeaponType" onchange="updateMeleeFields()">
+              <option value="Unarmed">Unarmed</option>
+              <option value="Armed">Armed</option>
+          </select>
+      </label><br>
+      <div id="meleeUnarmedFields">
+          <label>Unarmed Skill: <input type="number" id="meleeUnarmedSkill" value="0"></label>
+      </div>
+      <div id="meleeArmedFields" style="display:none;">
+          <label>Melee Weapon Skill: <input type="number" id="meleeWeaponSkill" value="0"></label><br>
+          <label>Weapon Damage Dice: <input type="text" id="meleeDamageDice" placeholder="1d6"></label><br>
+          <label>Weapon Damage Mod: <input type="number" id="meleeDamageMod" value="0"></label>
+      </div>
+      <label>Target Body Part:
+        <select id="meleeBodyPart">
+            <option value="Torso">Torso (0)</option>
+            <option value="Head">Head (-4)</option>
+            <option value="Left Arm">Left Arm (-1)</option>
+            <option value="Right Arm">Right Arm (-1)</option>
+            <option value="Left Leg">Left Leg (-1)</option>
+            <option value="Right Leg">Right Leg (-1)</option>
+        </select>
+      </label><br>
+      <label>Attacker Moved? <input type="checkbox" id="meleeAttackerMoved"></label> (-2 Hit)<br>
+      <label>Lighting Penalty? <input type="checkbox" id="meleeLighting"></label> (-2 Hit)<br>
+
+      <div class="section-header">Defender</div>
+      <label>Name: <input type="text" id="meleeDefenderName" placeholder="Defender"></label><br>
+      <label>Action:
+          <select id="meleeDefenseAction" onchange="updateMeleeDefenseFields()">
+              <option value="Dodge">Dodge</option>
+              <option value="BlockUnarmed">Block (Unarmed)</option>
+              <option value="BlockArmed">Block (Armed)</option>
+              <option value="None">None</option>
+          </select>
+      </label><br>
+      <div id="meleeDodgeFields">
+          <label>Dexterity: <input type="number" id="meleeDefenderDex" value="0"></label><br>
+          <label>Unarmed Skill: <input type="number" id="meleeDefenderUnarmed" value="0"></label>
+      </div>
+      <div id="meleeBlockUnarmedFields" style="display:none;">
+          <label>Unarmed Skill: <input type="number" id="meleeDefenderBlockUnarmed" value="0"></label><br>
+          <label>Constitution: <input type="number" id="meleeDefenderCon" value="0"></label>
+      </div>
+      <div id="meleeBlockArmedFields" style="display:none;">
+          <label>Melee Weapon Skill: <input type="number" id="meleeDefenderBlockArmed" value="0"></label>
+      </div>
+      <label>Armor (Target Part): <input type="number" id="meleeDefenderArmor" value="0"></label><br>
+      <label>Defender Moved? <input type="checkbox" id="meleeDefenderMoved"></label> (+2 Def)<br>
+
+      <button type="button" onclick="resolveMelee()">Roll Melee</button>
+  </form>
+</div>
+
+<div id="Ranged" class="tabcontent">
+  <h2>Ranged Combat</h2>
+  <form id="rangedForm">
+      <div class="section-header">Attacker</div>
+      <label>Name: <input type="text" id="rangedAttackerName" placeholder="Attacker"></label><br>
+      <label>Gun Skill: <input type="number" id="rangedGunSkill" value="0"></label><br>
+      <label>Weapon Type:
+          <select id="rangedWeaponType">
+              <option value="Pistol">Pistol</option>
+              <option value="Rifle">Rifle</option>
+              <option value="Shotgun">Shotgun</option>
+              <option value="Sniper">Sniper</option>
+              <option value="Bow">Bow</option>
+              <option value="Crossbow">Crossbow</option>
+          </select>
+      </label><br>
+      <label>Damage Dice: <input type="text" id="rangedDamageDice" placeholder="2d6"></label><br>
+      <label>Distance (tiles/units): <input type="number" id="rangedDistance" value="5"></label><br>
+      <label>Target Body Part:
+        <select id="rangedBodyPart">
+            <option value="Torso">Torso (0)</option>
+            <option value="Head">Head (-4)</option>
+            <option value="Left Arm">Left Arm (-1)</option>
+            <option value="Right Arm">Right Arm (-1)</option>
+            <option value="Left Leg">Left Leg (-1)</option>
+            <option value="Right Leg">Right Leg (-1)</option>
+        </select>
+      </label><br>
+      <label>Fire Mode:
+          <select id="rangedFireMode">
+              <option value="Single">Single</option>
+              <option value="Burst">Burst (-5 Hit)</option>
+              <option value="Auto">Auto (-8 Hit)</option>
+          </select>
+      </label><br>
+      <label>Attacker Moved? <input type="checkbox" id="rangedAttackerMoved"></label> (-2 Hit)<br>
+      <label>Lighting Penalty? <input type="checkbox" id="rangedLighting"></label> (-2 Hit)<br>
+
+      <div class="section-header">Defender</div>
+      <label>Name: <input type="text" id="rangedDefenderName" placeholder="Defender"></label><br>
+      <label>Defense Action:
+          <select id="rangedDefenseAction" onchange="updateRangedDefenseFields()">
+              <option value="Dodge">Dodge</option>
+              <option value="None">None (Passive/Cover only)</option>
+          </select>
+      </label><br>
+      <div id="rangedDodgeFields">
+          <label>Dexterity: <input type="number" id="rangedDefenderDex" value="0"></label><br>
+          <label>Unarmed Skill: <input type="number" id="rangedDefenderUnarmed" value="0"></label>
+      </div>
+      <label>Cover Bonus: <input type="number" id="rangedCover" value="0"></label><br>
+      <label>Armor (Target Part): <input type="number" id="rangedDefenderArmor" value="0"></label><br>
+      <label>Defender Moved? <input type="checkbox" id="rangedDefenderMoved"></label> (+2 Def)<br>
+
+      <button type="button" onclick="resolveRanged()">Roll Ranged</button>
+  </form>
+</div>
+
+<div id="Thrown" class="tabcontent">
+  <h2>Thrown Combat</h2>
+  <form id="thrownForm">
+      <div class="section-header">Attacker</div>
+      <label>Name: <input type="text" id="thrownAttackerName" placeholder="Attacker"></label><br>
+      <label>Type:
+          <select id="thrownType" onchange="updateThrownFields()">
+              <option value="Projectile">Projectile (Knife, Spear)</option>
+              <option value="Grenade">Grenade/Explosive</option>
+          </select>
+      </label><br>
+      <div id="thrownProjectileFields">
+          <label>Strength: <input type="number" id="thrownStrength" value="0"></label>
+      </div>
+      <div id="thrownGrenadeFields" style="display:none;">
+          <label>Explosives Skill: <input type="number" id="thrownExplosives" value="0"></label>
+      </div>
+      <label>Damage Dice: <input type="text" id="thrownDamageDice" placeholder="1d4"></label><br>
+      <label>Range (Distance): <input type="number" id="thrownDistance" value="5"></label><br>
+      <label>Attacker Moved? <input type="checkbox" id="thrownAttackerMoved"></label> (-2 Hit)<br>
+
+      <div class="section-header">Defender</div>
+      <label>Name: <input type="text" id="thrownDefenderName" placeholder="Defender"></label><br>
+      <label>Defense Action: Dodge (Standard)</label><br>
+      <label>Dexterity: <input type="number" id="thrownDefenderDex" value="0"></label><br>
+      <label>Unarmed Skill: <input type="number" id="thrownDefenderUnarmed" value="0"></label><br>
+      <label>Armor: <input type="number" id="thrownDefenderArmor" value="0"></label><br>
+      <label>Defender Moved? <input type="checkbox" id="thrownDefenderMoved"></label> (+2 Def)<br>
+      <label>Cover Bonus: <input type="number" id="thrownCover" value="0"></label><br>
+
+      <button type="button" onclick="resolveThrown()">Roll Thrown</button>
+  </form>
+</div>
+
+<div class="section-header">Output</div>
+<textarea id="consoleOutput" rows="10" cols="80" style="width:100%;"></textarea>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    document.getElementById("defaultOpen").click();
+
+    function log(msg) {
+        const out = document.getElementById("consoleOutput");
+        out.value += msg + "\n";
+        out.scrollTop = out.scrollHeight;
+    }
+
+    function rollDie(sides) {
+        return Math.floor(Math.random() * sides) + 1;
+    }
+
+    function parseDice(notation) {
+        if (!notation) return { count: 0, sides: 0, mod: 0 };
+        const parts = notation.toLowerCase().split('d');
+        const count = parseInt(parts[0]) || 1;
+        let sides = 0, mod = 0;
+        if (parts[1]) {
+            if (parts[1].includes('+')) {
+                const sp = parts[1].split('+');
+                sides = parseInt(sp[0]);
+                mod = parseInt(sp[1]);
+            } else if (parts[1].includes('-')) {
+                const sp = parts[1].split('-');
+                sides = parseInt(sp[0]);
+                mod = -parseInt(sp[1]);
+            } else {
+                sides = parseInt(parts[1]);
+            }
+        }
+        return { count, sides, mod };
+    }
+
+    function rollDiceNotation(notation) {
+        const d = parseDice(notation);
+        let total = 0;
+        for (let i = 0; i < d.count; i++) total += rollDie(d.sides);
+        return total + d.mod;
+    }
+
+    function getBodyPartMod(part) {
+        switch(part) {
+            case 'Head': return -4;
+            case 'Left Arm': case 'Right Arm': case 'Left Leg': case 'Right Leg': return -1;
+            default: return 0;
+        }
+    }
+
+    // --- Melee Logic ---
+    function updateMeleeFields() {
+        const type = document.getElementById("meleeWeaponType").value;
+        document.getElementById("meleeUnarmedFields").style.display = type === "Unarmed" ? "block" : "none";
+        document.getElementById("meleeArmedFields").style.display = type === "Armed" ? "block" : "none";
+    }
+
+    function updateMeleeDefenseFields() {
+        const type = document.getElementById("meleeDefenseAction").value;
+        document.getElementById("meleeDodgeFields").style.display = type === "Dodge" ? "block" : "none";
+        document.getElementById("meleeBlockUnarmedFields").style.display = type === "BlockUnarmed" ? "block" : "none";
+        document.getElementById("meleeBlockArmedFields").style.display = type === "BlockArmed" ? "block" : "none";
+    }
+
+    function resolveMelee() {
+        const atkName = document.getElementById("meleeAttackerName").value || "Attacker";
+        const defName = document.getElementById("meleeDefenderName").value || "Defender";
+        const wType = document.getElementById("meleeWeaponType").value;
+        const bodyPart = document.getElementById("meleeBodyPart").value;
+        const atkMoved = document.getElementById("meleeAttackerMoved").checked;
+        const lighting = document.getElementById("meleeLighting").checked;
+
+        let hitMod = 0;
+        let skillVal = 0;
+        if (wType === "Unarmed") {
+            skillVal = parseInt(document.getElementById("meleeUnarmedSkill").value) || 0;
+        } else {
+            skillVal = parseInt(document.getElementById("meleeWeaponSkill").value) || 0;
+        }
+        hitMod += skillVal;
+        hitMod += getBodyPartMod(bodyPart);
+        if (atkMoved) hitMod -= 2;
+        if (lighting) hitMod -= 2;
+
+        const atkRoll = rollDie(20);
+        const totalAtk = atkRoll + hitMod;
+
+        log(`--- Melee Attack: ${atkName} vs ${defName} ---`);
+        log(`${atkName} Roll: ${atkRoll} + ${hitMod} = ${totalAtk} (Target: ${bodyPart})`);
+
+        // Defense
+        const defAction = document.getElementById("meleeDefenseAction").value;
+        const defMoved = document.getElementById("meleeDefenderMoved").checked;
+        let defMod = 0;
+
+        if (defAction === "Dodge") {
+            defMod += (parseInt(document.getElementById("meleeDefenderDex").value) || 0);
+            defMod += (parseInt(document.getElementById("meleeDefenderUnarmed").value) || 0);
+        } else if (defAction === "BlockUnarmed") {
+            defMod += (parseInt(document.getElementById("meleeDefenderBlockUnarmed").value) || 0);
+             // Constitution bonus for unarmed block if applicable in rules?
+             // Melee_Roller.html had Con + Unarmed. CombatManager says Unarmed only.
+             // Let's stick to old roller logic if rules are ambiguous, OR combatManager.
+             // CombatManager: case "BlockUnarmed": baseDefenseValue = getSkillModifier("Unarmed", defender);
+             // Old Melee_Roller: defenseModifier += defenderConstitution + defenderUnarmedSkill;
+             // Since CombatManager is "current state", I should probably use that. But simpler is Dex+Unarmed for Dodge.
+             // Let's assume Skill is the main factor. CombatManager seems more authoritative.
+        } else if (defAction === "BlockArmed") {
+            defMod += (parseInt(document.getElementById("meleeDefenderBlockArmed").value) || 0);
+        }
+
+        if (defMoved) defMod += 2;
+
+        const defRoll = rollDie(20);
+        const totalDef = defRoll + defMod;
+        log(`${defName} Defense (${defAction}): ${defRoll} + ${defMod} = ${totalDef}`);
+
+        let hit = false;
+        if (atkRoll === 20) hit = true;
+        else if (defRoll === 20 && defAction !== "None") hit = false; // Crit success defense?
+        else if (atkRoll === 1) hit = false; // Crit miss
+        else if (defRoll === 1 && defAction !== "None") hit = true; // Crit fail defense
+        else hit = totalAtk > totalDef;
+
+        if (hit) {
+            log("RESULT: HIT!");
+            let dmg = 0;
+            let dmgDice = "1d2"; // Default unarmed base
+            let dmgMod = 0;
+            const armor = parseInt(document.getElementById("meleeDefenderArmor").value) || 0;
+
+            if (wType === "Unarmed") {
+                // CombatManager: unarmedMod <= 0 ? "1d2-1" : `1d${unarmedMod}`
+                if (skillVal <= 0) {
+                    dmgDice = "1d2";
+                    dmgMod = -1;
+                } else {
+                    dmgDice = "1d" + skillVal;
+                    dmgMod = 0;
+                }
+            } else {
+                dmgDice = document.getElementById("meleeDamageDice").value || "1d4";
+                dmgMod = parseInt(document.getElementById("meleeDamageMod").value) || 0;
+            }
+
+            const rawDmg = rollDiceNotation(dmgDice) + dmgMod;
+            const finalDmg = Math.max(0, rawDmg - armor);
+            log(`Damage (${dmgDice}${dmgMod>=0?"+"+dmgMod:dmgMod}): ${rawDmg} - Armor ${armor} = ${finalDmg}`);
+        } else {
+            log("RESULT: MISS");
+        }
+        log("");
+    }
+
+    // --- Ranged Logic ---
+    function updateRangedDefenseFields() {
+        const type = document.getElementById("rangedDefenseAction").value;
+        document.getElementById("rangedDodgeFields").style.display = type === "Dodge" ? "block" : "none";
+    }
+
+    function resolveRanged() {
+        const atkName = document.getElementById("rangedAttackerName").value || "Attacker";
+        const defName = document.getElementById("rangedDefenderName").value || "Defender";
+        const wType = document.getElementById("rangedWeaponType").value;
+        const skillVal = parseInt(document.getElementById("rangedGunSkill").value) || 0;
+        const dist = parseFloat(document.getElementById("rangedDistance").value) || 0;
+        const bodyPart = document.getElementById("rangedBodyPart").value;
+        const fireMode = document.getElementById("rangedFireMode").value;
+        const atkMoved = document.getElementById("rangedAttackerMoved").checked;
+        const lighting = document.getElementById("rangedLighting").checked;
+
+        let hitMod = skillVal;
+        hitMod += getBodyPartMod(bodyPart);
+
+        // Range Logic based on CombatManager
+        let rangeMod = 0;
+        let optimal = 10, effective = 30, max = 60;
+        // Adjust defaults if needed? CombatManager uses 10/30/60
+        if (dist <= 1.8) rangeMod = 15; // Point blank (simplified)
+        else if (dist <= optimal) rangeMod = 5;
+        else if (dist <= effective) rangeMod = 0;
+        else if (dist <= max) rangeMod = -5;
+        else rangeMod = -10;
+
+        // Specific weapon range adjustments beyond effective
+        if (dist > effective) {
+             if (wType === "Bow") rangeMod -= 3;
+             else if (wType === "Shotgun") rangeMod -= 5;
+             else if (wType === "Sniper") rangeMod += 2; // "Sniper" tag logic
+        }
+
+        hitMod += rangeMod;
+
+        if (fireMode === "Burst") hitMod -= 5;
+        else if (fireMode === "Auto") hitMod -= 8;
+
+        if (atkMoved) hitMod -= 2;
+        if (lighting) hitMod -= 2;
+
+        const atkRoll = rollDie(20);
+        const totalAtk = atkRoll + hitMod;
+
+        log(`--- Ranged Attack: ${atkName} vs ${defName} ---`);
+        log(`${atkName} (${wType}, ${fireMode}): Roll ${atkRoll} + ${hitMod} = ${totalAtk} (Dist: ${dist}, RangeMod: ${rangeMod})`);
+
+        // Defense
+        const defAction = document.getElementById("rangedDefenseAction").value;
+        const defMoved = document.getElementById("rangedDefenderMoved").checked;
+        const cover = parseInt(document.getElementById("rangedCover").value) || 0;
+        let defMod = cover;
+
+        if (defAction === "Dodge") {
+            defMod += (parseInt(document.getElementById("rangedDefenderDex").value) || 0);
+            defMod += (parseInt(document.getElementById("rangedDefenderUnarmed").value) || 0);
+        }
+
+        if (defMoved) defMod += 2;
+
+        const defRoll = rollDie(20);
+        const totalDef = defRoll + defMod;
+        log(`${defName} Defense (${defAction}): ${defRoll} + ${defMod} = ${totalDef}`);
+
+        let hit = false;
+        if (atkRoll === 20) hit = true;
+        else if (atkRoll === 1) hit = false;
+        else hit = totalAtk > totalDef;
+
+        if (hit) {
+            log("RESULT: HIT!");
+            let numHits = 1;
+            if (fireMode === "Burst") numHits = rollDie(3);
+            else if (fireMode === "Auto") numHits = Math.min(rollDie(6), rollDie(6));
+
+            if (numHits > 1) log(`${numHits} shots connected!`);
+
+            const dmgDice = document.getElementById("rangedDamageDice").value || "2d6";
+            const armor = parseInt(document.getElementById("rangedDefenderArmor").value) || 0;
+
+            let totalDmg = 0;
+            let details = [];
+            for(let i=0; i<numHits; i++) {
+                const r = rollDiceNotation(dmgDice);
+                const d = Math.max(0, r - armor);
+                totalDmg += d;
+                details.push(d);
+            }
+            log(`Damage (${dmgDice}): [${details.join(', ')}] (Armor ${armor}) = Total ${totalDmg}`);
+        } else {
+            log("RESULT: MISS");
+        }
+        log("");
+    }
+
+    // --- Thrown Logic ---
+    function updateThrownFields() {
+        const type = document.getElementById("thrownType").value;
+        document.getElementById("thrownProjectileFields").style.display = type === "Projectile" ? "block" : "none";
+        document.getElementById("thrownGrenadeFields").style.display = type === "Grenade" ? "block" : "none";
+    }
+
+    function resolveThrown() {
+        const atkName = document.getElementById("thrownAttackerName").value || "Attacker";
+        const defName = document.getElementById("thrownDefenderName").value || "Defender";
+        const type = document.getElementById("thrownType").value;
+        const dist = parseFloat(document.getElementById("thrownDistance").value) || 0;
+        const atkMoved = document.getElementById("thrownAttackerMoved").checked;
+
+        let hitMod = 0;
+        if (type === "Projectile") {
+            hitMod += (parseInt(document.getElementById("thrownStrength").value) || 0);
+        } else {
+            hitMod += (parseInt(document.getElementById("thrownExplosives").value) || 0);
+        }
+
+        // Simple range logic for thrown
+        let rangeMod = 0;
+        if (dist <= 2) rangeMod = 2; // Close
+        else if (dist <= 5) rangeMod = 0; // Medium
+        else rangeMod = -2; // Long
+
+        hitMod += rangeMod;
+        if (atkMoved) hitMod -= 2;
+
+        const atkRoll = rollDie(20);
+        const totalAtk = atkRoll + hitMod;
+
+        log(`--- Thrown Attack: ${atkName} vs ${defName} ---`);
+        log(`${atkName} (${type}): Roll ${atkRoll} + ${hitMod} = ${totalAtk} (Dist: ${dist}, RangeMod: ${rangeMod})`);
+
+        // Defense
+        const defMoved = document.getElementById("thrownDefenderMoved").checked;
+        const cover = parseInt(document.getElementById("thrownCover").value) || 0;
+        let defMod = cover;
+
+        // Dodge assumed standard
+        defMod += (parseInt(document.getElementById("thrownDefenderDex").value) || 0);
+        defMod += (parseInt(document.getElementById("thrownDefenderUnarmed").value) || 0);
+
+        if (defMoved) defMod += 2;
+
+        const defRoll = rollDie(20);
+        const totalDef = defRoll + defMod;
+        log(`${defName} Defense (Dodge): ${defRoll} + ${defMod} = ${totalDef}`);
+
+        let hit = false;
+        if (atkRoll === 20) hit = true;
+        else if (atkRoll === 1) hit = false;
+        else hit = totalAtk > totalDef;
+
+        if (hit) {
+            log("RESULT: HIT!");
+            if (type === "Grenade") log("Grenade lands on target! (Explosion damage not auto-calculated)");
+            const dmgDice = document.getElementById("thrownDamageDice").value || "1d4";
+            const armor = parseInt(document.getElementById("thrownDefenderArmor").value) || 0;
+            const rawDmg = rollDiceNotation(dmgDice);
+            const finalDmg = Math.max(0, rawDmg - armor);
+            log(`Damage (${dmgDice}): ${rawDmg} - Armor ${armor} = ${finalDmg}`);
+        } else {
+            log("RESULT: MISS");
+            if (type === "Grenade") log("Grenade deviates!");
+        }
+        log("");
+    }
+</script>
+
+</body>
+</html>
