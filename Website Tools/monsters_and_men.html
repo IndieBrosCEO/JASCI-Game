@@ -1,253 +1,319 @@
 <!DOCTYPE html>
-  <html lang="en">
-  <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Monsters and Men</title>
-  <link href="/style.css" rel="stylesheet" type="text/css" media="all">
-  </head>
-  <body>
-  <p><a href="index.html"><img src="flame_dimetap.gif"></a></p>
-      <ul>
-    <li><a href="index.html">Home</a></li>
-    <li><a href="Rules_JASCI.html">JASCI TRPG Rules</a></li>
-    <li><a href="Combat_Roller.html">Combat Roller</a></li>
-    <li><a href="XP_Calculator.html">XP Calculator</a></li>
-    <li><a href="monsters_and_men.html">Monsters and Men</a></li>
-  </ul>
-  <img src="under_construction.gif">
-  <img src="monster.gif">
-    <h1>Monsters and Men</h1>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monsters and Men</title>
+<link href="/style.css" rel="stylesheet" type="text/css" media="all">
+<style>
+    .error { color: red; font-weight: bold; }
+    table { border-collapse: collapse; width: 100%; max-width: 600px; margin-bottom: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    input[type="number"] { width: 60px; }
+    .mod-display { font-weight: bold; }
+</style>
+</head>
+<body>
+<p><a href="index.html"><img src="flame_dimetap.gif"></a></p>
+<ul>
+  <li><a href="index.html">Home</a></li>
+  <li><a href="Rules_JASCI.html">JASCI TRPG Rules</a></li>
+  <li><a href="Combat_Roller.html">Combat Roller</a></li>
+  <li><a href="XP_Calculator.html">XP Calculator</a></li>
+  <li><a href="monsters_and_men.html">Monsters and Men</a></li>
+</ul>
+<img src="under_construction.gif">
+<img src="monster.gif">
+<h1>Monsters and Men - Creature Editor</h1>
 
-    <h2>Load Creatures</h2>
+<div id="controls">
+    <button onclick="document.getElementById('fileInput').click()">Load Creature JSON</button>
     <input type="file" id="fileInput" style="display: none;" onchange="loadCreature(this)">
-    <button onclick="document.getElementById('fileInput').click()">Load</button>
+    <button onclick="resetToTemplate()">Reset to Template</button>
+    <button onclick="downloadCreature()">Download JSON</button>
+    <p id="errorMessage" class="error"></p>
+</div>
 
+<hr>
 
-    <h2>Creature</h2>
-    <div>
-        <label for="creatureName">Creature Name:</label>
-        <input type="text" id="creatureName" value="Template Creature">
-        
-        <h3>Stats</h3>
-        <table>
-            <tbody id="statsBody">
-                <!-- Stats rows will be inserted here -->
-            </tbody>
-        </table>
+<div id="editor">
+    <label>Creature Name: <input type="text" id="creatureName" oninput="updateName(this.value)"></label>
 
-        <h3>Health + Armor</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Part</th>
-                    <th>HP</th>
-                    <th>Armor</th>
-                </tr>
-            </thead>
-            <tbody id="healthBody">
-                <!-- Health rows will be inserted here -->
-            </tbody>
-        </table>
+    <h3>Stats</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Stat</th>
+                <th>Score (0-10)</th>
+                <th>Modifier</th>
+            </tr>
+        </thead>
+        <tbody id="statsBody"></tbody>
+    </table>
 
-        <h3>Attributes</h3>
-        <textarea id="attributes" rows="4" cols="50">Put Attributes Here</textarea>
+    <h3>Skills</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Skill</th>
+                <th>Stat</th>
+                <th>Score</th>
+                <th>Modifier</th>
+            </tr>
+        </thead>
+        <tbody id="skillsBody"></tbody>
+    </table>
 
-        <h3>Notes</h3>
-        <textarea id="notes" rows="4" cols="50">Put Notes Here</textarea>
+    <h3>Health & Armor</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Body Part</th>
+                <th>HP</th>
+                <th>Armor Defense Bonus</th>
+            </tr>
+        </thead>
+        <tbody id="healthBody"></tbody>
+    </table>
 
-        <button onclick="downloadCreature()">Download</button>
-    </div>
+    <h3>Attributes</h3>
+    <textarea id="attributes" rows="4" cols="50" oninput="updateField('attributes', this.value)"></textarea>
 
-    <script>
-        // Default creature template
-        const defaultCreature = {
-            name: "Template Creature",
-            stats: {
-                Strength: "+2",
-                Unarmed_Skill: "+4",
-                Melee_Weapons: "+4",
-                Intelligence: "0",
-                Dexterity: "+2",
-                Constitution: "+2",
-                Perception: "+3",
-                Willpower: "+3",
-                Charisma: "0",
-                Marksmanship: "+2",
-                Guns_Skill: "+4",
-                Explosives_Skill: "+3"
-            },
-            health: [
-                { part: "Head 🗣️", HP: 5, Armor: 0 },
-                { part: "Torso 👕", HP: 8, Armor: 0 },
-                { part: "L Arm 💪", HP: 6, Armor: 0 },
-                { part: "L Hand ✋", HP: 3, Armor: 0 },
-                { part: "R Arm 💪", HP: 6, Armor: 0 },
-                { part: "R Hand 🤚", HP: 3, Armor: 0 },
-                { part: "L Leg 🦵", HP: 6, Armor: 0 },
-                { part: "L Foot 🦶", HP: 3, Armor: 0 },
-                { part: "R Leg 🦵", HP: 6, Armor: 0 },
-                { part: "R Foot 🦶", HP: 3, Armor: 0 }
-            ],
-            attributes: "Put Attributes Here",
-            notes: "Put Notes Here"
-        };
+    <h3>Notes</h3>
+    <textarea id="notes" rows="4" cols="50" oninput="updateField('notes', this.value)"></textarea>
+</div>
 
-        // Function to handle file Load
-        function loadCreature(input) {
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = function() {
-                const creatureData = JSON.parse(reader.result);
-                // Display the loaded creature
-                displayLoadedCreature(creatureData);
-            };
-            reader.readAsText(file);
-        }
+<script>
+    const STATS_LIST = ["Strength", "Intelligence", "Dexterity", "Constitution", "Perception", "Willpower", "Charisma"];
 
-        // Function to display the loaded creature
-        function displayLoadedCreature(creatureData) {
-            const creatureNameInput = document.getElementById('creatureName');
-            creatureNameInput.value = creatureData.name;
-  
-            displayStats(creatureData.stats);
-            displayHealth(creatureData.health);
-  
-            const attributesTextArea = document.getElementById('attributes');
-            attributesTextArea.value = creatureData.attributes;
-  
-            const notesTextArea = document.getElementById('notes');
-            notesTextArea.value = creatureData.notes;
-        }
+    const SKILLS_MAP = {
+        "Animal Handling": "Charisma",
+        "Electronics": "Intelligence",
+        "Explosives": "Intelligence",
+        "Guns": "Perception",
+        "Intimidation": "Charisma",
+        "Investigation": "Perception",
+        "Lockpick": "Dexterity",
+        "Medicine": "Intelligence",
+        "Melee Weapons": "Strength",
+        "Persuasion": "Charisma",
+        "Repair": "Intelligence",
+        "Sleight of Hand": "Dexterity",
+        "Stealth": "Dexterity",
+        "Survival": "Constitution",
+        "Unarmed": "Strength"
+    };
 
+    const HEALTH_TEMPLATE = [
+        { "part": "Head", "HP": 5, "armorDefense": 0 },
+        { "part": "Torso", "HP": 8, "armorDefense": 0 },
+        { "part": "Left Arm", "HP": 7, "armorDefense": 0 },
+        { "part": "Right Arm", "HP": 7, "armorDefense": 0 },
+        { "part": "Left Leg", "HP": 7, "armorDefense": 0 },
+        { "part": "Right Leg", "HP": 7, "armorDefense": 0 }
+    ];
 
+    // Deep copy helper
+    function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
-        // Function to process uploaded monsters
-        function processMonsters(monsters) {
-            // Process the monsters as needed
-            console.log(monsters);
-        }
+    const DEFAULT_CREATURE = {
+        name: "New Creature",
+        stats: STATS_LIST.reduce((acc, stat) => { acc[stat] = 2; return acc; }, {}),
+        skills: Object.keys(SKILLS_MAP).reduce((acc, skill) => { acc[skill] = 0; return acc; }, {}),
+        health: clone(HEALTH_TEMPLATE),
+        attributes: "",
+        notes: ""
+    };
 
-        // Function to display the default creature template
-        function displayDefaultCreature() {
-            const creatureNameInput = document.getElementById('creatureName');
-            creatureNameInput.value = defaultCreature.name;
+    let currentCreature = clone(DEFAULT_CREATURE);
 
-            displayStats(defaultCreature.stats);
-            displayHealth(defaultCreature.health);
+    function init() {
+        renderUI();
+    }
 
-            const attributesTextArea = document.getElementById('attributes');
-            attributesTextArea.value = defaultCreature.attributes;
+    function resetToTemplate() {
+        currentCreature = clone(DEFAULT_CREATURE);
+        document.getElementById('errorMessage').textContent = "";
+        renderUI();
+    }
 
-            const notesTextArea = document.getElementById('notes');
-            notesTextArea.value = defaultCreature.notes;
-        }
+    function updateName(val) { currentCreature.name = val; }
+    function updateField(field, val) { currentCreature[field] = val; }
 
-        // Function to display stats
-      // Function to display stats
-      function displayStats(stats) {
-          const statsBody = document.getElementById('statsBody');
-          statsBody.innerHTML = '';
-          for (const [stat, value] of Object.entries(stats)) {
-              let bgColor = '';
-              switch (stat) {
-                  case 'Strength':
-                  case 'Unarmed_Skill':
-                  case 'Melee_Weapons':
-                      bgColor = 'green';
-                      break;
-                  case 'Intelligence':
-                      bgColor = '#FFC300';
-                      break;
-                  case 'Dexterity':
-                      bgColor = 'orange';
-                      break;
-                  case 'Constitution':
-                      bgColor = 'red';
-                      break;
-                  case 'Perception':
-                      bgColor = 'turquoise';
-                      break;
-                  case 'Willpower':
-                      bgColor = 'blue';
-                      break;
-                  case 'Charisma':
-                      bgColor = 'darkred';
-                      break;
-                  case 'Marksmanship':
-                  case 'Guns_Skill':
-                  case 'Explosives_Skill':
-                      bgColor = 'purple';
-                      break;
-                  default:
-                      bgColor = 'white';
-              }
-              const row = statsBody.insertRow();
-              row.innerHTML = `
-                  <td style="background-color: ${bgColor};">${stat}</td>
-                  <td><input type="text" value="${value}" onchange="updateStat('${stat}', this.value)"></td>
-              `;
-          }
-      }
+    function updateStat(stat, val) {
+        currentCreature.stats[stat] = parseInt(val) || 0;
+        renderUI(); // Re-render to update dependent skill modifiers
+    }
 
+    function updateSkill(skill, val) {
+        currentCreature.skills[skill] = parseInt(val) || 0;
+        renderUI(); // Re-render to update modifier display
+    }
 
-        // Function to display health
-        function displayHealth(health) {
-            const healthBody = document.getElementById('healthBody');
-            healthBody.innerHTML = '';
-            health.forEach(part => {
-                const row = healthBody.insertRow();
-                row.innerHTML = `
-                    <td>${part.part}</td>
-                    <td><input type="number" value="${part.HP}" onchange="updateHealth('${part.part}', 'HP', this.value)"></td>
-                    <td><input type="number" value="${part.Armor}" onchange="updateHealth('${part.part}', 'Armor', this.value)"></td>
-                `;
-            });
-        }
+    function updateHealth(index, field, val) {
+        currentCreature.health[index][field] = parseInt(val) || 0;
+        // No full re-render needed strictly, but safer to keep UI in sync
+        // if necessary we could verify types here
+    }
 
-        // Function to update stat value
-        function updateStat(stat, value) {
-            defaultCreature.stats[stat] = value;
-        }
+    function calcStatMod(score) {
+        return Math.floor(score / 2) - 1;
+    }
 
-        // Function to update health value
-        function updateHealth(part, field, value) {
-            const health = defaultCreature.health.find(p => p.part === part);
-            health[field] = parseInt(value);
-        }
+    function calcSkillMod(skillScore, statName) {
+        const statScore = currentCreature.stats[statName];
+        const statMod = calcStatMod(statScore);
+        return Math.floor(skillScore / 10) + statMod;
+    }
 
-      // Function to download the current creature as a JSON file
-      function downloadCreature() {
-          const creatureName = document.getElementById('creatureName').value;
-          const filename = creatureName.replace(/\s/g, '_') + '.json';
-          const creatureData = JSON.stringify({
-              name: creatureName,
-              stats: defaultCreature.stats,
-              health: defaultCreature.health,
-              attributes: document.getElementById('attributes').value,
-              notes: document.getElementById('notes').value
-          }, null, 2);
+    function renderUI() {
+        document.getElementById('creatureName').value = currentCreature.name;
+        document.getElementById('attributes').value = currentCreature.attributes;
+        document.getElementById('notes').value = currentCreature.notes;
 
-          const blob = new Blob([creatureData], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-
-          const link = document.createElement('a');
-          link.href = url;
-          link.setAttribute('download', filename);
-
-          document.body.appendChild(link);
-          link.click();
-
-          // Cleanup
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-      }
-
-
-        // Display default creature template on page load
-        document.addEventListener('DOMContentLoaded', function () {
-            displayDefaultCreature();
+        // Render Stats
+        const statsBody = document.getElementById('statsBody');
+        statsBody.innerHTML = "";
+        STATS_LIST.forEach(stat => {
+            const score = currentCreature.stats[stat];
+            const mod = calcStatMod(score);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${stat}</td>
+                <td><input type="number" value="${score}" onchange="updateStat('${stat}', this.value)"></td>
+                <td class="mod-display">${mod >= 0 ? '+' : ''}${mod}</td>
+            `;
+            statsBody.appendChild(row);
         });
-    </script>
+
+        // Render Skills
+        const skillsBody = document.getElementById('skillsBody');
+        skillsBody.innerHTML = "";
+        Object.keys(SKILLS_MAP).forEach(skill => {
+            const score = currentCreature.skills[skill];
+            const statName = SKILLS_MAP[skill];
+            const mod = calcSkillMod(score, statName);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${skill}</td>
+                <td>${statName.substring(0,3)}</td>
+                <td><input type="number" value="${score}" onchange="updateSkill('${skill}', this.value)"></td>
+                <td class="mod-display">${mod >= 0 ? '+' : ''}${mod}</td>
+            `;
+            skillsBody.appendChild(row);
+        });
+
+        // Render Health
+        const healthBody = document.getElementById('healthBody');
+        healthBody.innerHTML = "";
+        currentCreature.health.forEach((partObj, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${partObj.part}</td>
+                <td><input type="number" value="${partObj.HP}" onchange="updateHealth(${index}, 'HP', this.value)"></td>
+                <td><input type="number" value="${partObj.armorDefense}" onchange="updateHealth(${index}, 'armorDefense', this.value)"></td>
+            `;
+            healthBody.appendChild(row);
+        });
+    }
+
+    function downloadCreature() {
+        const filename = (currentCreature.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() || "creature") + ".json";
+        const blob = new Blob([JSON.stringify(currentCreature, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    function loadCreature(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const json = JSON.parse(e.target.result);
+                validateAndLoad(json);
+            } catch (err) {
+                showError("Invalid JSON file: " + err.message);
+            }
+        };
+        reader.readAsText(file);
+        input.value = ''; // Reset input
+    }
+
+    function showError(msg) {
+        document.getElementById('errorMessage').textContent = msg;
+    }
+
+    function validateAndLoad(data) {
+        // Strict Schema Validation
+
+        // 1. Root keys
+        const expectedKeys = ["name", "stats", "skills", "health", "attributes", "notes"];
+        const dataKeys = Object.keys(data);
+        if (dataKeys.length !== expectedKeys.length || !dataKeys.every(k => expectedKeys.includes(k))) {
+             showError("Validation Failed: Invalid root keys. Expected: " + expectedKeys.join(", "));
+             return;
+        }
+
+        if (typeof data.name !== 'string') { showError("name must be string"); return; }
+        if (typeof data.attributes !== 'string') { showError("attributes must be string"); return; }
+        if (typeof data.notes !== 'string') { showError("notes must be string"); return; }
+
+        // 2. Stats
+        const statKeys = Object.keys(data.stats);
+        if (statKeys.length !== STATS_LIST.length || !statKeys.every(k => STATS_LIST.includes(k))) {
+             showError("Validation Failed: Invalid stats keys.");
+             return;
+        }
+        for (let k of statKeys) {
+            if (typeof data.stats[k] !== 'number') { showError(`Stat ${k} must be a number.`); return; }
+        }
+
+        // 3. Skills
+        const skillKeys = Object.keys(data.skills);
+        const expectedSkillKeys = Object.keys(SKILLS_MAP);
+        if (skillKeys.length !== expectedSkillKeys.length || !skillKeys.every(k => expectedSkillKeys.includes(k))) {
+             showError("Validation Failed: Invalid skills keys.");
+             return;
+        }
+        for (let k of skillKeys) {
+            if (typeof data.skills[k] !== 'number') { showError(`Skill ${k} must be a number.`); return; }
+        }
+
+        // 4. Health
+        if (!Array.isArray(data.health) || data.health.length !== 6) {
+            showError("Health must be an array of 6 items."); return;
+        }
+        const expectedParts = ["Head", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg"];
+        for (let i=0; i<6; i++) {
+            const h = data.health[i];
+            const hKeys = Object.keys(h);
+            if (!hKeys.includes("part") || !hKeys.includes("HP") || !hKeys.includes("armorDefense")) {
+                showError("Health items must have part, HP, armorDefense."); return;
+            }
+            if (h.part !== expectedParts[i]) {
+                showError(`Health part at index ${i} must be ${expectedParts[i]}.`); return;
+            }
+            if (typeof h.HP !== 'number' || typeof h.armorDefense !== 'number') {
+                showError("HP and armorDefense must be numbers."); return;
+            }
+        }
+
+        // If all good:
+        currentCreature = data;
+        showError(""); // clear error
+        renderUI();
+    }
+
+    // Initialize
+    init();
+</script>
 </body>
 </html>
