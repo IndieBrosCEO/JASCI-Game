@@ -284,22 +284,22 @@ button:active:not(:disabled) {
 /* === Juicy UI Updates === */
 
 /* Stat Colors */
-.stat-str { color: #FF5555; }
-.stat-dex { color: #55FF55; }
-.stat-con { color: #FF9933; }
-.stat-int { color: #5555FF; }
-.stat-per { color: #00FFFF; }
-.stat-wil { color: #AA55FF; }
-.stat-cha { color: #FFFF55; }
+.stat-str { color: #55FF55; } /* Green */
+.stat-dex { color: #FF9933; } /* Orange */
+.stat-con { color: #FF5555; } /* Red */
+.stat-int { color: #FFFF55; } /* Yellow */
+.stat-per { color: #00FFFF; } /* Cyan */
+.stat-wil { color: #AA55FF; } /* Purple (Unchanged) */
+.stat-cha { color: #FF00FF; } /* Magenta */
 
 /* Backgrounds for table rows or badges */
-.bg-str { background-color: rgba(255, 85, 85, 0.1); }
-.bg-dex { background-color: rgba(85, 255, 85, 0.1); }
-.bg-con { background-color: rgba(255, 153, 51, 0.1); }
-.bg-int { background-color: rgba(85, 85, 255, 0.1); }
+.bg-str { background-color: rgba(85, 255, 85, 0.1); }
+.bg-dex { background-color: rgba(255, 153, 51, 0.1); }
+.bg-con { background-color: rgba(255, 85, 85, 0.1); }
+.bg-int { background-color: rgba(255, 255, 85, 0.1); }
 .bg-per { background-color: rgba(0, 255, 255, 0.1); }
 .bg-wil { background-color: rgba(170, 85, 255, 0.1); }
-.bg-cha { background-color: rgba(255, 255, 85, 0.1); }
+.bg-cha { background-color: rgba(255, 0, 255, 0.1); }
 
 /* Layouts */
 .grid-2 {
