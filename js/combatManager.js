@@ -12,6 +12,31 @@
         this._onWeaponChange = this.handleWeaponSelectionChange.bind(this);
     }
 
+    calculateRangeModifier(weapon, distance, isGrapplingTarget) {
+        let modifier = 0;
+        if (distance <= 1.8) {
+            if (weapon.tags?.includes("requires_grapple_for_point_blank")) {
+                modifier = isGrapplingTarget ? 15 : 0;
+            } else {
+                modifier = 15;
+            }
+        }
+        else if (distance <= (weapon.optimalRange || 10)) modifier = 5;
+        else if (distance <= (weapon.effectiveRange || 30)) modifier = 0;
+        else if (distance <= (weapon.maxRange || 60)) modifier = -5;
+        else modifier = -10;
+
+        if (distance > (weapon.effectiveRange || 30)) {
+            let mod = 0;
+            if (weapon.type.includes("bow")) mod = -3;
+            else if (weapon.type.includes("shotgun")) mod = -5;
+            else if (weapon.type.includes("rifle") && !weapon.tags?.includes("sniper")) mod = 0;
+            else if (weapon.tags?.includes("sniper")) mod = 2;
+            modifier += mod;
+        }
+        return modifier;
+    }
+
     updateCombatLOSLine(attackerEntity, targetEntityOrPos, weaponObj) {
         if (!this.gameState.isInCombat) {
             this.gameState.rangedAttackData = null;
@@ -21,6 +46,7 @@
 
         const attackerPos = (attackerEntity === this.gameState) ? this.gameState.playerPos : attackerEntity?.mapPos;
         let targetPos = null;
+        let targetId = null;
 
         if (targetEntityOrPos) {
             // Check if targetEntityOrPos is a position object {x, y, z}
@@ -28,39 +54,36 @@
                 targetPos = targetEntityOrPos;
             } else if (targetEntityOrPos.mapPos) { // Else, assume it's an entity with a mapPos
                 targetPos = targetEntityOrPos.mapPos;
+                targetId = targetEntityOrPos.id;
             }
         }
 
         if (attackerPos && targetPos) {
             const distance = getDistance3D(attackerPos, targetPos);
-            let rangeBracketText = "";
-            let rangeModifierValue = 0; // This will store the actual modifier number
+            let rangeModifierValue = 0;
+            let hitChanceText = "";
 
             if (weaponObj) {
-                const optimalRange = weaponObj.optimalRange || (weaponObj.effectiveRange / 2) || 5;
-                const effectiveRange = weaponObj.effectiveRange || 10;
-                const maxRange = weaponObj.maxRange || (weaponObj.effectiveRange * 2) || 20;
+                // Determine if grappling target
+                const attacker = (attackerEntity === this.gameState) ? this.gameState.player : attackerEntity; // Use player object if gameState
+                // Note: isGrappled means attacker is BEING grappled.
+                // Logic in processAttack: attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === (defender ... ID)
+                // If attacker is player, grappledBy is ID of NPC.
+                // If target is that NPC, then condition met.
+                const isGrapplingTarget = attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === targetId;
 
-                if (distance <= optimalRange) {
-                    rangeBracketText = "Optimal";
-                    rangeModifierValue = 5; // Example modifier, actual values from game rules
-                } else if (distance <= effectiveRange) {
-                    rangeBracketText = "Effective";
-                    rangeModifierValue = 0;
-                } else if (distance <= maxRange) {
-                    rangeBracketText = "Max";
-                    rangeModifierValue = -5;
-                } else {
-                    rangeBracketText = "Out of Range";
-                    rangeModifierValue = -10; // Or a very large penalty
+                rangeModifierValue = this.calculateRangeModifier(weaponObj, distance, isGrapplingTarget);
+
+                if (targetId && attackerEntity === this.gameState) { // Only calc chance for player targeting entity
+                    const bodyPartSelect = document.getElementById('combatBodyPartSelect');
+                    const bodyPart = bodyPartSelect ? bodyPartSelect.value : "torso";
+                    const chance = this.calculateHitChance(attacker, targetEntityOrPos, weaponObj, bodyPart);
+                    hitChanceText = ` [${chance.toFixed(0)}%]`;
                 }
-                // This is a simplified version of range modifier calculation.
-                // The full logic is in calculateAttackRoll. We should aim to reflect that more accurately.
-                // For now, this provides a basic structure.
             }
 
             const modifierText = weaponObj ?
-                `Range: ${distance.toFixed(1)} (${rangeBracketText}, ${rangeModifierValue > 0 ? '+' : ''}${rangeModifierValue})` :
+                `Range: ${distance.toFixed(1)} (${rangeModifierValue > 0 ? '+' : ''}${rangeModifierValue})${hitChanceText}` :
                 `Dist: ${distance.toFixed(1)}`;
 
             this.gameState.rangedAttackData = {
@@ -399,6 +422,27 @@
     populateTargetBodyParts(defender) {
         const select = document.getElementById('combatBodyPartSelect');
         if (!select) return;
+
+        // Add listener to update LOS/Hit Chance on body part change
+        if (this._onBodyPartChange) {
+            select.removeEventListener('change', this._onBodyPartChange);
+        }
+        this._onBodyPartChange = () => {
+             if (this.gameState.isInCombat && this.gameState.combatCurrentAttacker) {
+                 const weaponSelect = document.getElementById('combatWeaponSelect');
+                 const selectedOption = weaponSelect ? weaponSelect.options[weaponSelect.selectedIndex] : null;
+                 let weaponForLOS = null;
+                 if (selectedOption) {
+                     if (selectedOption.value === "unarmed") weaponForLOS = null;
+                     else if (selectedOption.dataset.itemData) weaponForLOS = JSON.parse(selectedOption.dataset.itemData);
+                     else weaponForLOS = this.assetManager.getItem(selectedOption.value);
+                 }
+
+                 this.updateCombatLOSLine(this.gameState.combatCurrentAttacker, this.gameState.combatCurrentDefender || this.gameState.defenderMapPos, weaponForLOS);
+             }
+        };
+        select.addEventListener('change', this._onBodyPartChange);
+
         select.innerHTML = '';
 
         if (defender && defender.health) {
@@ -1094,23 +1138,28 @@
         else { logToConsole("Attacking tile. No defender action.", 'gold'); this.gameState.combatPhase = 'resolveRolls'; this.processAttack(); }
     }
 
-    calculateAttackRoll(attacker, weapon, targetBodyPartArg, actionContext = {}) {
-        const attackerNameForLog = (attacker === this.gameState || attacker === this.gameState.player) ? (document.getElementById('charName')?.value || "Player") : (attacker.name || attacker.id);
+    getAttackModifiers(attacker, weapon, targetBodyPartArg, actionContext = {}) {
+        // Initialize detailedModifiers if missing
+        if (!actionContext.detailedModifiers) actionContext.detailedModifiers = [];
+
         let skillName, skillBasedModifier;
         actionContext.attackerMovementPenalty = (attacker === this.gameState && this.gameState.playerMovedThisTurn) || (attacker !== this.gameState && attacker.movedThisTurn) ? -2 : 0;
         const rangeModifier = actionContext.rangeModifier || 0;
         const attackModifierForFireMode = actionContext.attackModifier || 0;
 
+        // Skill Logic
         if (actionContext.skillToUse === "Explosives") { skillName = "Explosives"; skillBasedModifier = getSkillModifier(skillName, attacker); }
         else if (!weapon || weapon === "unarmed" || !weapon.type) { skillName = "Unarmed"; skillBasedModifier = getSkillModifier(skillName, attacker); }
         else if (weapon.type.includes("melee")) { skillName = "Melee Weapons"; skillBasedModifier = getSkillModifier(skillName, attacker); }
         else if (weapon.type.includes("firearm") || weapon.type.includes("bow") || weapon.type.includes("crossbow") || weapon.tags?.includes("launcher_treated_as_rifle")) { skillName = "Guns"; skillBasedModifier = getSkillModifier(skillName, attacker); }
         else if (weapon.type.includes("thrown")) { skillName = "Strength"; skillBasedModifier = getStatModifier("Strength", attacker); }
         else { skillName = "Unarmed"; skillBasedModifier = getSkillModifier(skillName, attacker); }
-        actionContext.skillName = skillName; actionContext.skillBasedModifier = skillBasedModifier;
-        if (!actionContext.detailedModifiers) actionContext.detailedModifiers = [];
+
+        actionContext.skillName = skillName;
+        actionContext.skillBasedModifier = skillBasedModifier;
         if (skillBasedModifier !== 0) actionContext.detailedModifiers.push({ text: `Skill (${skillName}): ${skillBasedModifier > 0 ? '+' : ''}${skillBasedModifier}`, value: skillBasedModifier, type: skillBasedModifier > 0 ? 'positive' : 'negative' });
 
+        // Lighting Logic
         let targetX, targetY, targetZ;
         if (actionContext.skillToUse === "Explosives" && this.gameState.pendingCombatAction?.targetTile) {
             targetX = this.gameState.pendingCombatAction.targetTile.x; targetY = this.gameState.pendingCombatAction.targetTile.y; targetZ = this.gameState.pendingCombatAction.targetTile.z;
@@ -1148,7 +1197,7 @@
         }
         if (lightingPenalty !== 0) actionContext.detailedModifiers.push({ text: `Lighting: ${lightingPenalty}`, value: lightingPenalty, type: 'negative' });
 
-
+        // Status Effects
         let statusEffectAttackPenalty = 0;
         if (attacker.statusEffects) {
             if (attacker.statusEffects["blinded_pepper_spray"]?.visionPenalty) {
@@ -1167,33 +1216,17 @@
         }
         if (statusEffectAttackPenalty !== 0) actionContext.detailedModifiers.push({ text: `Status: ${statusEffectAttackPenalty}`, value: statusEffectAttackPenalty, type: 'negative' });
 
-
         // Advantage / Disadvantage Logic
-        let roll1 = actionContext.naturalRollOverride !== undefined ? actionContext.naturalRollOverride : rollDie(20);
-        let roll2 = actionContext.naturalRollOverride !== undefined ? actionContext.naturalRollOverride : rollDie(20);
-        let baseRoll = roll1;
-
         // Check for Aiming status (Advantage)
         if (attacker.aimingEffect) {
             actionContext.advantage = true;
         }
-
         // Check for Dual Wield Second Attack (Disadvantage)
         if (actionContext.isSecondAttack) {
             actionContext.disadvantage = true;
         }
 
-        if (actionContext.advantage && !actionContext.disadvantage) {
-            baseRoll = Math.max(roll1, roll2);
-            actionContext.detailedModifiers.push({ text: "Advantage", value: 0, type: 'positive' });
-        } else if (actionContext.disadvantage && !actionContext.advantage) {
-            baseRoll = Math.min(roll1, roll2);
-            actionContext.detailedModifiers.push({ text: "Disadvantage", value: 0, type: 'negative' });
-        } else if (actionContext.advantage && actionContext.disadvantage) {
-            baseRoll = roll1; // Cancel out
-            actionContext.detailedModifiers.push({ text: "Adv/Dis Cancel", value: 0, type: 'neutral' });
-        }
-
+        // Perks
         // Perk: Battle Focus (Wil) - +1 Aim bonus
         if (attacker.aimingEffect && window.perkManager && window.perkManager.hasPerk("Battle Focus")) {
             actionContext.detailedModifiers.push({ text: "Perk (Battle Focus): +1", value: 1, type: 'positive' });
@@ -1261,29 +1294,155 @@
             }
         }
 
-        const totalAttackRoll = baseRoll + skillBasedModifier + actionContext.bodyPartModifier + finalRangeMod + effectiveFireModeMod + actionContext.attackerMovementPenalty + lightingPenalty + statusEffectAttackPenalty + loyaltyBonus;
+        const totalModifiers = skillBasedModifier + actionContext.bodyPartModifier + finalRangeMod + effectiveFireModeMod + actionContext.attackerMovementPenalty + lightingPenalty + statusEffectAttackPenalty + loyaltyBonus;
         actionContext.statusEffectAttackPenalty = statusEffectAttackPenalty; // Keep for logging
         actionContext.lightingPenaltyApplied = lightingPenalty; // Keep for logging
 
         const canCrit = !(actionContext.isSecondAttack || actionContext.isBurst || actionContext.isAutomatic);
-        return { roll: totalAttackRoll, naturalRoll: baseRoll, isCriticalHit: canCrit && baseRoll === 20, isCriticalMiss: canCrit && baseRoll === 1, detailedModifiers: actionContext.detailedModifiers };
+
+        return {
+            totalModifiers,
+            advantage: actionContext.advantage,
+            disadvantage: actionContext.disadvantage,
+            canCrit,
+            detailedModifiers: actionContext.detailedModifiers
+        };
     }
 
-    calculateDefenseRoll(defender, defenseType, attackerWeapon, coverBonus = 0, actionContext = {}) {
-        if (!defender) return { roll: 0, naturalRoll: 0, isCriticalSuccess: false, isCriticalFailure: false, coverBonusApplied: 0, movementBonusApplied: 0, defenseSkillValue: 0, defenseSkillName: "N/A", statusEffectDefensePenalty: 0, detailedModifiers: [] };
+    calculateAttackRoll(attacker, weapon, targetBodyPartArg, actionContext = {}) {
+        // Delegate logic to getAttackModifiers
+        const attackModifiers = this.getAttackModifiers(attacker, weapon, targetBodyPartArg, actionContext);
+
+        let roll1 = actionContext.naturalRollOverride !== undefined ? actionContext.naturalRollOverride : rollDie(20);
+        let roll2 = actionContext.naturalRollOverride !== undefined ? actionContext.naturalRollOverride : rollDie(20);
+        let baseRoll = roll1;
+
+        if (attackModifiers.advantage && !attackModifiers.disadvantage) {
+            baseRoll = Math.max(roll1, roll2);
+            actionContext.detailedModifiers.push({ text: "Advantage", value: 0, type: 'positive' });
+        } else if (attackModifiers.disadvantage && !attackModifiers.advantage) {
+            baseRoll = Math.min(roll1, roll2);
+            actionContext.detailedModifiers.push({ text: "Disadvantage", value: 0, type: 'negative' });
+        } else if (attackModifiers.advantage && attackModifiers.disadvantage) {
+            baseRoll = roll1; // Cancel out
+            actionContext.detailedModifiers.push({ text: "Adv/Dis Cancel", value: 0, type: 'neutral' });
+        }
+
+        const totalAttackRoll = baseRoll + attackModifiers.totalModifiers;
+
+        return {
+            roll: totalAttackRoll,
+            naturalRoll: baseRoll,
+            isCriticalHit: attackModifiers.canCrit && baseRoll === 20,
+            isCriticalMiss: attackModifiers.canCrit && baseRoll === 1,
+            detailedModifiers: actionContext.detailedModifiers
+        };
+    }
+
+    calculateHitChance(attacker, defender, weapon, bodyPart) {
+        if (!attacker || !defender) return 0;
+
+        // 1. Attack Context
+        const actionContext = {};
+
+        if (weapon && (weapon.type.includes("firearm") || weapon.tags?.includes("launcher_treated_as_rifle"))) {
+             const fireModeSelect = document.getElementById('combatFireModeSelect');
+             const fireMode = fireModeSelect ? fireModeSelect.value : "single";
+             if (fireMode === "burst") { actionContext.attackModifier = -5; actionContext.isBurst = true; }
+             else if (fireMode === "auto") { actionContext.attackModifier = -8; actionContext.isAutomatic = true; }
+        }
+
+        const attackerPos = attacker.mapPos || this.gameState.playerPos;
+        const targetPos = defender.mapPos;
+        if (attackerPos && targetPos) {
+             const distance = getDistance3D(attackerPos, targetPos);
+             const isGrappling = attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === (defender === this.gameState.player ? 'player' : defender.id);
+             actionContext.rangeModifier = this.calculateRangeModifier(weapon, distance, isGrappling);
+        }
+
+        const attackModifiers = this.getAttackModifiers(attacker, weapon, bodyPart, actionContext);
+
+        // 2. Defense Context
+        let defenseType = "Dodge";
+        if (defender !== this.gameState && defender !== this.gameState.player) {
+             const attackType = (weapon && !weapon.type.includes("thrown") && (weapon.type.includes("firearm") || weapon.type.includes("bow") || weapon.type.includes("crossbow") || weapon.tags?.includes("launcher_treated_as_rifle"))) ? "ranged" : "melee";
+
+             if (attackType === "ranged" && weapon && !weapon.type.includes("thrown")) defenseType = "None";
+             else {
+                 const npcWeapon = defender.equippedWeaponId ? this.assetManager.getItem(defender.equippedWeaponId) : null;
+                 if (npcWeapon?.type.includes("melee")) defenseType = "BlockArmed";
+                 else if (getSkillValue("Unarmed", defender) > 0 && getSkillModifier("Unarmed", defender) >= getStatModifier("Dexterity", defender) - 2) defenseType = "BlockUnarmed";
+             }
+        }
+
+        const coverBonus = this.getDefenderCoverBonus(attackerPos, defender);
+        const defenseModifiers = this.getDefenseModifiers(defender, defenseType, weapon, coverBonus, {});
+
+        // 3. Simulation
+        let hits = 0;
+        let total = 0;
+
+        const attackDist = new Array(21).fill(0); // Index 1..20
+        if (attackModifiers.advantage && !attackModifiers.disadvantage) {
+            for (let d1=1; d1<=20; d1++) {
+                for (let d2=1; d2<=20; d2++) {
+                    attackDist[Math.max(d1,d2)]++;
+                }
+            }
+        } else if (attackModifiers.disadvantage && !attackModifiers.advantage) {
+            for (let d1=1; d1<=20; d1++) {
+                for (let d2=1; d2<=20; d2++) {
+                    attackDist[Math.min(d1,d2)]++;
+                }
+            }
+        } else {
+            for (let d=1; d<=20; d++) attackDist[d] = 1;
+        }
+
+        for (let attNat = 1; attNat <= 20; attNat++) {
+            const attCount = attackDist[attNat];
+            if (attCount === 0) continue;
+
+            const attTotal = attNat + attackModifiers.totalModifiers;
+            const isCritHit = attackModifiers.canCrit && attNat === 20;
+            const isCritMiss = attackModifiers.canCrit && attNat === 1;
+
+            for (let defNat = 1; defNat <= 20; defNat++) {
+                const defTotal = defNat + defenseModifiers.totalModifiers;
+
+                let isHit = false;
+                const isDefCritFail = (defNat === 1 && defenseType !== "None");
+                const isDefCritSuccess = (defNat === 20 && defenseType !== "None");
+
+                if (isCritHit) isHit = true;
+                else if (isCritMiss) isHit = false;
+                else if (isDefCritFail) isHit = true;
+                else if (isDefCritSuccess) isHit = false;
+                else isHit = attTotal > defTotal;
+
+                if (isHit) {
+                    hits += attCount;
+                }
+                total += attCount;
+            }
+        }
+
+        return total > 0 ? (hits / total) * 100 : 0;
+    }
+
+    getDefenseModifiers(defender, defenseType, attackerWeapon, coverBonus = 0, actionContext = {}) {
+        if (!defender) return { totalModifiers: 0, baseDefenseValue: 0, defenseSkillName: "N/A", statusEffectDefensePenalty: 0 };
 
         if (!actionContext.detailedModifiers) actionContext.detailedModifiers = [];
-        let statusEffectDefensePenalty = 0; // Example, implement actual status effect checks here
-        // if (statusEffectDefensePenalty !== 0) actionContext.detailedModifiers.push({ text: `Status: ${statusEffectDefensePenalty}`, value: statusEffectDefensePenalty, type: 'negative' });
+        let statusEffectDefensePenalty = 0;
 
-        // Perk: Catfoot (Dex) - +1 defense if ending turn in cover
+        // Perks
         let catfootBonus = 0;
         if (window.perkManager && window.perkManager.hasPerk("Catfoot") && coverBonus > 0) {
             catfootBonus = 1;
             actionContext.detailedModifiers.push({ text: "Perk (Catfoot): +1", value: 1, type: 'positive' });
         }
 
-        // Perk: Unshakable (Wil) - +1 defense if HP <= 50%
         let unshakableBonus = 0;
         if (window.perkManager && window.perkManager.hasPerk("Unshakable")) {
             const health = defender === this.gameState ? this.gameState.player.health : defender.health;
@@ -1297,14 +1456,12 @@
             }
         }
 
-        // Perk: Clinch Fighter (Str) - +2 Block (Unarmed) while grappling
         let clinchFighterBonus = 0;
         if (window.perkManager && window.perkManager.hasPerk("Clinch Fighter") && defenseType === "BlockUnarmed" && defender.statusEffects?.isGrappling) {
             clinchFighterBonus = 2;
             actionContext.detailedModifiers.push({ text: "Perk (Clinch Fighter): +2", value: 2, type: 'positive' });
         }
 
-        // Perk: Evasive Footwork (Dex) - +1 Dodge
         let evasiveFootworkBonus = 0;
         if (window.perkManager && window.perkManager.hasPerk("Evasive Footwork") && defenseType === "Dodge") {
             evasiveFootworkBonus = 1;
@@ -1315,24 +1472,48 @@
         if (defenderMovementBonus !== 0) actionContext.detailedModifiers.push({ text: `Movement: +${defenderMovementBonus}`, value: defenderMovementBonus, type: 'positive' });
         if (coverBonus !== 0) actionContext.detailedModifiers.push({ text: `Cover: +${coverBonus}`, value: coverBonus, type: 'positive' });
 
-
+        let baseDefenseValue = 0, defenseSkillName = "";
         if (defenseType === "None") {
-            const baseRoll = actionContext.naturalRollOverride !== undefined ? actionContext.naturalRollOverride : rollDie(20);
-            const totalDefenseRoll = baseRoll + coverBonus + defenderMovementBonus + statusEffectDefensePenalty + catfootBonus + unshakableBonus;
-            return { roll: totalDefenseRoll, naturalRoll: baseRoll, isCriticalSuccess: baseRoll === 20, isCriticalFailure: baseRoll === 1, coverBonusApplied: coverBonus, movementBonusApplied: defenderMovementBonus, defenseSkillValue: 0, defenseSkillName: "Passive", statusEffectDefensePenalty, detailedModifiers: actionContext.detailedModifiers };
+            defenseSkillName = "Passive";
+        } else {
+            switch (defenseType) {
+                case "Dodge": defenseSkillName = "Unarmed + Dexterity"; baseDefenseValue = getStatModifier("Dexterity", defender) + getSkillModifier("Unarmed", defender); break;
+                case "BlockUnarmed": defenseSkillName = "Unarmed"; baseDefenseValue = getSkillModifier("Unarmed", defender); break;
+                case "BlockArmed": defenseSkillName = "Melee Weapons"; baseDefenseValue = getSkillModifier("Melee Weapons", defender); break;
+            }
+            if (baseDefenseValue !== 0) actionContext.detailedModifiers.push({ text: `Skill (${defenseSkillName}): ${baseDefenseValue > 0 ? '+' : ''}${baseDefenseValue}`, value: baseDefenseValue, type: baseDefenseValue > 0 ? 'positive' : 'negative' });
         }
+
+        const totalModifiers = baseDefenseValue + coverBonus + defenderMovementBonus + statusEffectDefensePenalty + catfootBonus + unshakableBonus + clinchFighterBonus + evasiveFootworkBonus;
+
+        return {
+            totalModifiers,
+            baseDefenseValue,
+            defenseSkillName,
+            statusEffectDefensePenalty,
+            coverBonusApplied: coverBonus,
+            movementBonusApplied: defenderMovementBonus
+        };
+    }
+
+    calculateDefenseRoll(defender, defenseType, attackerWeapon, coverBonus = 0, actionContext = {}) {
+        const modifiers = this.getDefenseModifiers(defender, defenseType, attackerWeapon, coverBonus, actionContext);
 
         const baseRoll = actionContext.naturalRollOverride !== undefined ? actionContext.naturalRollOverride : rollDie(20);
-        let baseDefenseValue = 0, defenseSkillName = "";
-        switch (defenseType) {
-            case "Dodge": defenseSkillName = "Unarmed + Dexterity"; baseDefenseValue = getStatModifier("Dexterity", defender) + getSkillModifier("Unarmed", defender); break;
-            case "BlockUnarmed": defenseSkillName = "Unarmed"; baseDefenseValue = getSkillModifier("Unarmed", defender); break;
-            case "BlockArmed": defenseSkillName = "Melee Weapons"; baseDefenseValue = getSkillModifier("Melee Weapons", defender); break;
-        }
-        if (baseDefenseValue !== 0) actionContext.detailedModifiers.push({ text: `Skill (${defenseSkillName}): ${baseDefenseValue > 0 ? '+' : ''}${baseDefenseValue}`, value: baseDefenseValue, type: baseDefenseValue > 0 ? 'positive' : 'negative' });
+        const totalDefenseRoll = baseRoll + modifiers.totalModifiers;
 
-        const totalDefenseRoll = baseRoll + baseDefenseValue + coverBonus + defenderMovementBonus + statusEffectDefensePenalty + catfootBonus + unshakableBonus + clinchFighterBonus + evasiveFootworkBonus;
-        return { roll: totalDefenseRoll, naturalRoll: baseRoll, isCriticalSuccess: baseRoll === 20, isCriticalFailure: baseRoll === 1, coverBonusApplied: coverBonus, movementBonusApplied: defenderMovementBonus, defenseSkillValue: baseDefenseValue, defenseSkillName, statusEffectDefensePenalty, detailedModifiers: actionContext.detailedModifiers };
+        return {
+            roll: totalDefenseRoll,
+            naturalRoll: baseRoll,
+            isCriticalSuccess: baseRoll === 20,
+            isCriticalFailure: baseRoll === 1,
+            coverBonusApplied: modifiers.coverBonusApplied,
+            movementBonusApplied: modifiers.movementBonusApplied,
+            defenseSkillValue: modifiers.baseDefenseValue,
+            defenseSkillName: modifiers.defenseSkillName,
+            statusEffectDefensePenalty: modifiers.statusEffectDefensePenalty,
+            detailedModifiers: actionContext.detailedModifiers
+        };
     }
 
     applySpecialEffect(attacker, item, targetEntity = null, impactTile = null) {
@@ -2077,19 +2258,9 @@
             if (attackerMapPos && targetMapPos) {
                 const distance = getDistance3D(attackerMapPos, targetMapPos);
                 actionContext.isGrappling = attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === (defender === this.gameState.player ? 'player' : defender?.id);
-                if (distance <= 1.8) actionContext.rangeModifier = (weapon.tags?.includes("requires_grapple_for_point_blank") && defender && actionContext.isGrappling) ? 15 : (weapon.tags?.includes("requires_grapple_for_point_blank") ? 0 : 15);
-                else if (distance <= (weapon.optimalRange || 10)) actionContext.rangeModifier = 5;
-                else if (distance <= (weapon.effectiveRange || 30)) actionContext.rangeModifier = 0;
-                else if (distance <= (weapon.maxRange || 60)) actionContext.rangeModifier = -5;
-                else actionContext.rangeModifier = -10;
-                if (distance > (weapon.effectiveRange || 30)) {
-                    let mod = 0;
-                    if (weapon.type.includes("bow")) mod = -3;
-                    else if (weapon.type.includes("shotgun")) mod = -5;
-                    else if (weapon.type.includes("rifle") && !weapon.tags?.includes("sniper")) mod = 0;
-                    else if (weapon.tags?.includes("sniper")) mod = 2;
-                    actionContext.rangeModifier += mod;
-                }
+
+                actionContext.rangeModifier = this.calculateRangeModifier(weapon, distance, actionContext.isGrappling);
+
                 logToConsole(`Ranged attack: Dist3D=${distance.toFixed(1)}, RangeMod=${actionContext.rangeModifier}`, 'grey');
             }
             if (weapon.type.includes("firearm") || weapon.tags?.includes("launcher_treated_as_rifle")) {
@@ -2531,10 +2702,11 @@
                     const attackerMPos = attacker.mapPos || this.gameState.playerPos;
                     const defenderMPosOff = defender?.mapPos;
                     if (attackerMPos && defenderMPosOff) {
-                        const distOff = Math.sqrt(Math.pow(defenderMPosOff.x - attackerMPos.x, 2) + Math.pow(defenderMPosOff.y - attackerMPos.y, 2));
-                        if (distOff <= 1) offHandActionCtx.rangeModifier = 15; else if (distOff <= 3) offHandActionCtx.rangeModifier = 5;
-                        else if (distOff <= 6) offHandActionCtx.rangeModifier = 0; else if (distOff <= 20) offHandActionCtx.rangeModifier = -5;
-                        else if (distOff <= 60) offHandActionCtx.rangeModifier = -10; else offHandActionCtx.rangeModifier = -15;
+                        // Use getDistance3D for consistency if available, otherwise simple 3D distance
+                        const distOff = (typeof getDistance3D === 'function') ? getDistance3D(attackerMPos, defenderMPosOff) : Math.sqrt(Math.pow(defenderMPosOff.x - attackerMPos.x, 2) + Math.pow(defenderMPosOff.y - attackerMPos.y, 2) + Math.pow((defenderMPosOff.z || 0) - (attackerMPos.z || 0), 2));
+
+                        const isGrapplingOff = attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === (defender === this.gameState.player ? 'player' : defender?.id);
+                        offHandActionCtx.rangeModifier = this.calculateRangeModifier(offHandWeapon, distOff, isGrapplingOff);
                     }
                     const offHandAtkRes = this.calculateAttackRoll(attacker, offHandWeapon, intendedBodyPart, offHandActionCtx);
                     logToConsole(`DUAL WIELD ATTACK (Off-hand): Roll ${offHandAtkRes.roll} (Nat ${offHandAtkRes.naturalRoll})`, 'lightblue');
