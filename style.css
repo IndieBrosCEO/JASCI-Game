@@ -898,3 +898,44 @@ progress::-webkit-progress-value {
     font-weight: bold;
     text-transform: uppercase;
 }
+
+/* Ranged Info Tooltip on Map Tiles */
+.tile[data-ranged-info] {
+    position: relative;
+    cursor: crosshair;
+}
+
+.tile[data-ranged-info]:hover::after {
+    content: attr(data-ranged-info);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(20, 20, 20, 0.95);
+    color: #fff;
+    padding: 6px 10px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 9999;
+    pointer-events: none;
+    font-family: 'DwarfFortress', monospace;
+    font-size: 0.9em;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+    margin-bottom: 8px;
+    text-shadow: 1px 1px 0 #000;
+}
+
+/* Arrow indicator for tooltip */
+.tile[data-ranged-info]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: #aaa transparent transparent transparent;
+    z-index: 9999;
+    margin-bottom: -4px; /* Overlap border */
+}
