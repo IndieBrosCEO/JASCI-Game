@@ -63,36 +63,37 @@
             let rangeModifierValue = 0;
             let hitChanceText = "";
 
-            if (weaponObj) {
-                // Determine if grappling target
-                const attacker = (attackerEntity === this.gameState) ? this.gameState.player : attackerEntity; // Use player object if gameState
-                // Note: isGrappled means attacker is BEING grappled.
-                // Logic in processAttack: attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === (defender ... ID)
-                // If attacker is player, grappledBy is ID of NPC.
-                // If target is that NPC, then condition met.
-                const isGrapplingTarget = attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === targetId;
+            // Determine if grappling target
+            const attacker = (attackerEntity === this.gameState) ? this.gameState.player : attackerEntity;
+            const isGrapplingTarget = attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === targetId;
 
+            // Calculate range modifier if ranged weapon
+            const isRanged = weaponObj && (weaponObj.type.includes("firearm") || weaponObj.type.includes("bow") || weaponObj.type.includes("crossbow") || weaponObj.tags?.includes("launcher_treated_as_rifle") || weaponObj.type.includes("thrown"));
+            if (isRanged) {
                 rangeModifierValue = this.calculateRangeModifier(weaponObj, distance, isGrapplingTarget);
-
-                if (targetId && attackerEntity === this.gameState) { // Only calc chance for player targeting entity
-                    const bodyPartSelect = document.getElementById('combatBodyPartSelect');
-                    const bodyPart = bodyPartSelect ? bodyPartSelect.value : "torso";
-                    const chance = this.calculateHitChance(attacker, targetEntityOrPos, weaponObj, bodyPart);
-                    hitChanceText = ` [${chance.toFixed(0)}%]`;
-                }
             }
 
-            const modifierText = weaponObj ?
-                `Range: ${distance.toFixed(1)} (${rangeModifierValue > 0 ? '+' : ''}${rangeModifierValue})${hitChanceText}` :
-                `Dist: ${distance.toFixed(1)}`;
+            // Calculate Hit Chance for player targeting entity (Weapon or Unarmed)
+            if (targetId && attackerEntity === this.gameState) {
+                const bodyPartSelect = document.getElementById('combatBodyPartSelect');
+                const bodyPart = bodyPartSelect ? bodyPartSelect.value : "torso";
+                const chance = this.calculateHitChance(attacker, targetEntityOrPos, weaponObj, bodyPart);
+                hitChanceText = ` [${chance.toFixed(0)}%]`;
+            }
+
+            let modifierText = "";
+            if (weaponObj) {
+                modifierText = `Range: ${distance.toFixed(1)}${isRanged ? ` (${rangeModifierValue > 0 ? '+' : ''}${rangeModifierValue})` : ''}${hitChanceText}`;
+            } else {
+                modifierText = `Dist: ${distance.toFixed(1)}${hitChanceText} (Unarmed)`;
+            }
 
             this.gameState.rangedAttackData = {
                 start: { ...attackerPos },
                 end: { ...targetPos },
-                distance: distance.toFixed(1), // Keep raw distance for other uses
-                modifierText: modifierText     // This now contains the detailed string
+                distance: distance.toFixed(1),
+                modifierText: modifierText
             };
-            // logToConsole(`LOS line updated: ${modifierText}. Weapon: ${weaponObj ? weaponObj.name : 'None'}`, 'grey');
         } else {
             this.gameState.rangedAttackData = null; // Clear if no valid attacker/target
         }
@@ -1357,7 +1358,12 @@
         if (attackerPos && targetPos) {
              const distance = getDistance3D(attackerPos, targetPos);
              const isGrappling = attacker.statusEffects?.isGrappled && attacker.statusEffects.grappledBy === (defender === this.gameState.player ? 'player' : defender.id);
-             actionContext.rangeModifier = this.calculateRangeModifier(weapon, distance, isGrappling);
+
+             // Only calculate range modifier for ranged weapons
+             const isRanged = weapon && (weapon.type.includes("firearm") || weapon.type.includes("bow") || weapon.type.includes("crossbow") || weapon.tags?.includes("launcher_treated_as_rifle") || weapon.type.includes("thrown"));
+             if (isRanged) {
+                 actionContext.rangeModifier = this.calculateRangeModifier(weapon, distance, isGrappling);
+             }
         }
 
         const attackModifiers = this.getAttackModifiers(attacker, weapon, bodyPart, actionContext);
