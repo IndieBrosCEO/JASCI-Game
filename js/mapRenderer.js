@@ -2,26 +2,13 @@
 // Helper functions for FOW and LOS
 
 // Color Helpers
-function hexToRgb(hex) {
-    if (typeof hex !== 'string' || !hex.startsWith('#')) return null;
-    let r = parseInt(hex.substring(1, 3), 16);
-    let g = parseInt(hex.substring(3, 5), 16);
-    let b = parseInt(hex.substring(5, 7), 16);
-    if (isNaN(r) || isNaN(g) || isNaN(b)) return null;
-    return { r, g, b };
-}
-
-function rgbToHex(r, g, b) {
-    return `#${Math.round(Math.max(0, Math.min(255, r))).toString(16).padStart(2, '0')}${Math.round(Math.max(0, Math.min(255, g))).toString(16).padStart(2, '0')}${Math.round(Math.max(0, Math.min(255, b))).toString(16).padStart(2, '0')}`;
-}
-
-function multiplyColors(hex1, hex2) {
-    const c1 = hexToRgb(hex1) || { r: 255, g: 255, b: 255 }; // Treat invalid/missing as white (no tint)
-    const c2 = hexToRgb(hex2) || { r: 255, g: 255, b: 255 };
+function multiplyColors(c1, c2) {
+    const r1 = (c1 && typeof c1 === 'object') ? c1 : (hexToRgb(c1) || { r: 255, g: 255, b: 255 });
+    const r2 = (c2 && typeof c2 === 'object') ? c2 : (hexToRgb(c2) || { r: 255, g: 255, b: 255 });
     return rgbToHex(
-        (c1.r * c2.r) / 255,
-        (c1.g * c2.g) / 255,
-        (c1.b * c2.b) / 255
+        (r1.r * r2.r) / 255,
+        (r1.g * r2.g) / 255,
+        (r1.b * r2.b) / 255
     );
 }
 
@@ -35,46 +22,19 @@ function addColors(hex1, hex2) {
     );
 }
 
-function darkenColor(hexColor, factor) {
-    if (typeof hexColor !== 'string' || !hexColor.startsWith('#') || typeof factor !== 'number') {
-        return hexColor || '#000000'; // Return original or black if invalid input
-    }
-    try {
-        let r = parseInt(hexColor.substring(1, 3), 16);
-        let g = parseInt(hexColor.substring(3, 5), 16);
-        let b = parseInt(hexColor.substring(5, 7), 16);
-
-        if (isNaN(r) || isNaN(g) || isNaN(b)) return hexColor || '#000000';
-
-        factor = Math.max(0, Math.min(1, factor)); // Clamp factor to 0-1
-
-        r = Math.round(r * (1 - factor));
-        g = Math.round(g * (1 - factor));
-        b = Math.round(b * (1 - factor));
-
-        r = Math.max(0, Math.min(255, r));
-        g = Math.max(0, Math.min(255, g));
-        b = Math.max(0, Math.min(255, b));
-
-        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-    } catch (e) {
-        // console.warn("Error darkening color:", e, hexColor, factor);
-        return hexColor || '#000000'; // Fallback on error
-    }
-}
-
 // Add this new helper function at the top of js/mapRenderer.js
-function blendColors(baseColorHex, tintColorHex, tintFactor) {
+// Optimized: Accepts hex or RGB objects
+function blendColors(c1, c2, tintFactor) {
     try {
         // Ensure tintFactor is within bounds
         const factor = Math.max(0, Math.min(1, tintFactor));
 
-        const baseRgb = hexToRgb(baseColorHex);
-        const tintRgb = hexToRgb(tintColorHex);
+        const baseRgb = (c1 && typeof c1 === 'object') ? c1 : hexToRgb(c1);
+        const tintRgb = (c2 && typeof c2 === 'object') ? c2 : hexToRgb(c2);
 
         // If colors are invalid or not parsable, return the original base color or a default
-        if (!baseRgb) return baseColorHex || '#808080'; // Fallback if base is bad
-        if (!tintRgb) return baseColorHex; // If tint is bad, don't change base
+        if (!baseRgb) return c1 || '#808080'; // Fallback if base is bad
+        if (!tintRgb) return c1; // If tint is bad, don't change base
 
         const r = baseRgb.r * (1 - factor) + tintRgb.r * factor;
         const g = baseRgb.g * (1 - factor) + tintRgb.g * factor;
@@ -82,8 +42,8 @@ function blendColors(baseColorHex, tintColorHex, tintFactor) {
 
         return rgbToHex(r, g, b);
     } catch (e) {
-        // console.warn("Error blending colors:", e, baseColorHex, tintColorHex);
-        return baseColorHex; // Fallback to base color on any error
+        // console.warn("Error blending colors:", e, c1, c2);
+        return c1; // Fallback to base color on any error
     }
 }
 
@@ -287,13 +247,22 @@ function getTileLightLevel(x, y, z) {
     const currentSunColor = getSunLightColor(currentHour);
     const currentSunVector = getSunShadowOffset(currentHour);
 
-    const lightHex = calculateTileLighting(x, y, z, currentAmbientColor, currentSunColor, currentSunVector);
-    return getLuminance(lightHex);
+    const ambientRGB = hexToRgb(currentAmbientColor) || { r: 50, g: 50, b: 60 };
+    const isDaytime = (currentHour >= 6 && currentHour < 18);
+    const sunRGB = hexToRgb(isDaytime ? currentSunColor : '#000000') || { r: 0, g: 0, b: 0 };
+    const isSunBlack = !isDaytime || currentSunColor === '#000000';
+
+    const lightRGB = calculateTileLighting(x, y, z, ambientRGB, sunRGB, currentSunVector, isSunBlack);
+    // getLuminance expects hex, so we'll pass it hex for now or update it too
+    return getLuminance(rgbToHex(lightRGB.r, lightRGB.g, lightRGB.b));
 }
 
 // New Advanced Lighting Calculation
-function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
+// Optimized: Accepts RGB objects for ambient and sun colors, and uses pre-calculated light.colorRGB
+function calculateTileLighting(x, y, z, baseAmbientRGB, sunRGB, sunVector, isSunBlack = false) {
     const lightsOnCurrentZ = gameState.lightSources.filter(ls => ls.z === z);
+
+    let effectiveAmbientRGB = baseAmbientRGB;
 
     // Check for opaque roof on current level to block ambient
     const mapData = window.mapRenderer.getCurrentMapData();
@@ -309,7 +278,7 @@ function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
                      const tileDef = currentAssetManager.tilesets[effectiveTileOnRoof];
                      // If roof exists and is NOT transparent to light, it blocks ambient sky light
                      if (tileDef && !tileDef.tags.includes('transparent') && !tileDef.tags.includes('transparent_to_light')) {
-                         baseAmbientColor = '#000000'; // Block ambient
+                         effectiveAmbientRGB = { r: 0, g: 0, b: 0 }; // Block ambient
                      }
                  }
              }
@@ -320,15 +289,13 @@ function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
     let totalR = 0, totalG = 0, totalB = 0;
 
     // 1. Base Ambient
-    const ambientRGB = hexToRgb(baseAmbientColor) || { r: 50, g: 50, b: 60 }; // Fallback
-    totalR += ambientRGB.r;
-    totalG += ambientRGB.g;
-    totalB += ambientRGB.b;
+    totalR += effectiveAmbientRGB.r;
+    totalG += effectiveAmbientRGB.g;
+    totalB += effectiveAmbientRGB.b;
 
     // 2. Sunlight
     // Only check sunlight if sunColor contributes light (not black)
-    if (sunColor !== '#000000' && isTileSunlit(x, y, z, sunVector)) {
-         const sunRGB = hexToRgb(sunColor) || { r: 0, g: 0, b: 0 };
+    if (!isSunBlack && isTileSunlit(x, y, z, sunVector)) {
          // Sunlight intensity scaling? Assume 1.0 for now, or implicit in sunColor brightness.
          totalR = Math.max(totalR, sunRGB.r); // Sunlight usually overrides ambient rather than adding?
          totalG = Math.max(totalG, sunRGB.g); // Or adds? Let's try adding but clamping to ambient+sun logic.
@@ -367,7 +334,7 @@ function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
 
         // LOS Check
         if (isTileIlluminated(x, y, z, light)) {
-            const lightRGB = hexToRgb(light.color || '#FFFFFF') || { r: 255, g: 255, b: 255 };
+            const lightRGB = light.colorRGB || { r: 255, g: 255, b: 255 };
 
             // Additive Lighting
             totalR += lightRGB.r * finalIntensity;
@@ -377,11 +344,11 @@ function calculateTileLighting(x, y, z, baseAmbientColor, sunColor, sunVector) {
     }
 
     // Clamp
-    totalR = Math.min(255, Math.round(totalR));
-    totalG = Math.min(255, Math.round(totalG));
-    totalB = Math.min(255, Math.round(totalB));
-
-    return rgbToHex(totalR, totalG, totalB);
+    return {
+        r: Math.min(255, Math.round(totalR)),
+        g: Math.min(255, Math.round(totalG)),
+        b: Math.min(255, Math.round(totalB))
+    };
 }
 
 // Updated isTileBlockingLight to be 3D
@@ -979,7 +946,8 @@ window.mapRenderer = {
                                                 z: z, // Add Z coordinate to light source
                                                 radius: tileDef.lightRadius,
                                                 intensity: typeof tileDef.lightIntensity === 'number' ? tileDef.lightIntensity : 1.0,
-                                                color: typeof tileDef.lightColor === 'string' ? tileDef.lightColor : null
+                                                color: typeof tileDef.lightColor === 'string' ? tileDef.lightColor : null,
+                                                colorRGB: hexToRgb(tileDef.lightColor || '#FFFFFF') || { r: 255, g: 255, b: 255 }
                                             };
                                             gameState.lightSources.push(lightSource);
                                         }
@@ -1109,6 +1077,12 @@ window.mapRenderer = {
 
     updateLightSources: function (newLightSources) {
         if (Array.isArray(newLightSources)) {
+            // Ensure all light sources have colorRGB pre-calculated
+            newLightSources.forEach(ls => {
+                if (!ls.colorRGB) {
+                    ls.colorRGB = hexToRgb(ls.color || '#FFFFFF') || { r: 255, g: 255, b: 255 };
+                }
+            });
             gameState.lightSources = newLightSources;
             logToConsole(`Light sources updated (dynamic). Count: ${gameState.lightSources.length}`);
             this.scheduleRender();
@@ -1356,9 +1330,12 @@ window.mapRenderer = {
         const LIGHT_SOURCE_BRIGHTNESS_BOOST = 0.1;
         const currentHour = gameState.currentTime && typeof gameState.currentTime.hours === 'number' ? gameState.currentTime.hours : 12;
         const currentAmbientColor = getAmbientLightColor(currentHour);
+        const ambientRGB = hexToRgb(currentAmbientColor) || { r: 50, g: 50, b: 60 };
         const currentSunColor = getSunLightColor(currentHour);
-        const currentSunVector = getSunShadowOffset(currentHour);
         const isDaytime = (currentHour >= 6 && currentHour < 18);
+        const sunRGB = hexToRgb(isDaytime ? currentSunColor : '#000000') || { r: 0, g: 0, b: 0 };
+        const isSunBlack = !isDaytime || currentSunColor === '#000000';
+        const currentSunVector = getSunShadowOffset(currentHour);
 
         const AMBIENT_STRENGTH_VISIBLE = 0.3; // Base ambient strength
         const currentFowData = gameState.fowData[currentZStr]; // Ensure currentFowData is sourced for the current Z level
@@ -1471,11 +1448,14 @@ window.mapRenderer = {
 
                 let originalSprite = displaySprite;
                 let originalColor = displayColor;
+                let originalColorRGB = finalTileDefForLightingAndFow?.colorRGB || hexToRgb(originalColor) || { r: 255, g: 255, b: 255 };
                 finalTileId = originalDisplayIdForTitle;
 
                 let tileDefinedBackgroundColor = "";
+                let tileDefinedBackgroundColorRGB = null;
                 if (originalColor && originalColor !== '#000000') {
-                    tileDefinedBackgroundColor = darkenColor(originalColor, 0.8);
+                    tileDefinedBackgroundColorRGB = darkenColor(originalColorRGB, 0.8);
+                    tileDefinedBackgroundColor = rgbToHex(tileDefinedBackgroundColorRGB.r, tileDefinedBackgroundColorRGB.g, tileDefinedBackgroundColorRGB.b);
                 }
 
                 let fowStatus = 'hidden';
@@ -1499,56 +1479,35 @@ window.mapRenderer = {
                     displayColor = '#1a1a1a';
                     displayId = 'FOW_HIDDEN';
                 } else if (fowStatus === 'visited') {
-                    const visitedColorStyle = (c) => {
-                        if (typeof c !== 'string' || !c.startsWith('#')) return '#505050';
-                        try {
-                            let r = parseInt(c.substring(1, 3), 16) || 0;
-                            let g = parseInt(c.substring(3, 5), 16) || 0;
-                            let b = parseInt(c.substring(5, 7), 16) || 0;
-                            r = Math.max(0, Math.floor(r * 0.6));
-                            g = Math.max(0, Math.floor(g * 0.6));
-                            b = Math.max(0, Math.floor(b * 0.6));
-                            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-                        } catch (e) { return '#505050'; }
-                    };
-                    displayColor = visitedColorStyle(originalColor);
+                    displayColor = darkenColor(originalColorRGB, 0.4);
                 }
 
                 if (fowStatus === 'visible' || fowStatus === 'visited') {
-                    // --- New Advanced Lighting Integration ---
-                    const baseColorForLighting = originalColor;
-
-                    // We only do complex lighting for Visible tiles.
-                    // Visited tiles get a simplified/dimmed version.
-
+                    // We only do complex lighting for Visible and Visited tiles.
                     if (fowStatus === 'visible') {
                         // Calculate total light falling on this tile (Ambient + Sun + Point)
-                        const lightColor = calculateTileLighting(x, y, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
+                        const lightRGB = calculateTileLighting(x, y, currentZ, ambientRGB, sunRGB, currentSunVector, isSunBlack);
 
                         // Multiply Surface Color * Light Color
-                        displayColor = multiplyColors(baseColorForLighting, lightColor);
+                        displayColor = multiplyColors(originalColorRGB, lightRGB);
 
                         // Apply Lighting to Background as well
-                        if (tileDefinedBackgroundColor && tileDefinedBackgroundColor !== '#000000' && tileDefinedBackgroundColor !== 'rgba(0,0,0,0)') {
-                            tileDefinedBackgroundColor = multiplyColors(tileDefinedBackgroundColor, lightColor);
+                        if (tileDefinedBackgroundColorRGB) {
+                            tileDefinedBackgroundColor = multiplyColors(tileDefinedBackgroundColorRGB, lightRGB);
                         }
-
-                        // Optionally add emission if the tile itself glows (from definition)
-                        // (Not yet in tileDef, but could be added later. For now, assume baseColor is Albedo)
-
                     } else if (fowStatus === 'visited') {
                         // Visited tiles now use the full lighting calculation to respect environmental lighting (e.g. shadows)
-                        const lightColor = calculateTileLighting(x, y, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
+                        const lightRGB = calculateTileLighting(x, y, currentZ, ambientRGB, sunRGB, currentSunVector, isSunBlack);
 
                         // Multiply base color with light
-                        displayColor = multiplyColors(displayColor, lightColor);
+                        displayColor = multiplyColors(originalColorRGB, lightRGB);
 
                         // Apply visited dimming (memory effect)
                         displayColor = darkenColor(displayColor, 0.4);
 
                         // Apply to background
-                        if (tileDefinedBackgroundColor && tileDefinedBackgroundColor !== '#000000' && tileDefinedBackgroundColor !== 'rgba(0,0,0,0)') {
-                             tileDefinedBackgroundColor = multiplyColors(tileDefinedBackgroundColor, lightColor);
+                        if (tileDefinedBackgroundColorRGB) {
+                             tileDefinedBackgroundColor = multiplyColors(tileDefinedBackgroundColorRGB, lightRGB);
                              tileDefinedBackgroundColor = darkenColor(tileDefinedBackgroundColor, 0.4);
                         }
                     }
@@ -1726,8 +1685,8 @@ window.mapRenderer = {
                             // However, calculateTileLighting might be expensive to call again if we didn't store it?
                             // But for the player (single tile), it's negligible.
 
-                            const lightColor = calculateTileLighting(x, y, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
-                            playerColor = multiplyColors(playerColor, lightColor);
+                            const lightRGB = calculateTileLighting(x, y, currentZ, ambientRGB, sunRGB, currentSunVector, isSunBlack);
+                            playerColor = multiplyColors({ r: 0, g: 255, b: 0 }, lightRGB);
 
                             finalColorForTile = playerColor;
                             finalDisplayIdForTile = "PLAYER_STATIC";
@@ -1740,8 +1699,8 @@ window.mapRenderer = {
                     finalSpriteForTile = "☻";
 
                     let playerColor = "#00FF00"; // Pure Green
-                    const lightColor = calculateTileLighting(x, y, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
-                    playerColor = multiplyColors(playerColor, lightColor);
+                    const lightRGB = calculateTileLighting(x, y, currentZ, ambientRGB, sunRGB, currentSunVector, isSunBlack);
+                    playerColor = multiplyColors({ r: 0, g: 255, b: 0 }, lightRGB);
 
                     finalColorForTile = playerColor;
                     finalDisplayIdForTile = "PLAYER_FALLING";
@@ -2151,9 +2110,10 @@ window.mapRenderer = {
                                 } else if (npcTileFowStatus === 'visible') {
                                     if (cachedCell && cachedCell.span) {
                                         let npcColor = npc.color;
+                                        let npcColorRGB = npc.colorRGB || hexToRgb(npcColor) || { r: 255, g: 255, b: 255 };
                                         // Apply Lighting to NPC
-                                        const lightColor = calculateTileLighting(npcX, npcY, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
-                                        npcColor = multiplyColors(npcColor, lightColor);
+                                        const lightRGB = calculateTileLighting(npcX, npcY, currentZ, ambientRGB, sunRGB, currentSunVector, isSunBlack);
+                                        npcColor = multiplyColors(npcColorRGB, lightRGB);
 
                                         cachedCell.span.textContent = npc.sprite;
                                         cachedCell.span.style.color = npcColor;
@@ -2362,8 +2322,8 @@ window.mapRenderer = {
                                 if (playerInThisVehicle || !playerIsOnThisTile) {
                                     let displayColor = vehicleColor;
                                     if (fowStatus === 'visible') {
-                                        const lightColor = calculateTileLighting(vX, vY, currentZ, currentAmbientColor, isDaytime ? currentSunColor : '#000000', currentSunVector);
-                                        displayColor = multiplyColors(vehicleColor, lightColor);
+                                        const lightRGB = calculateTileLighting(vX, vY, currentZ, ambientRGB, sunRGB, currentSunVector, isSunBlack);
+                                        displayColor = multiplyColors(hexToRgb(vehicleColor) || { r: 128, g: 128, b: 128 }, lightRGB);
                                     } else if (fowStatus === 'visited') {
                                         displayColor = this.darkenColor(vehicleColor, 0.6);
                                         displayColor = blendColors(displayColor, currentAmbientColor, AMBIENT_STRENGTH_VISITED);

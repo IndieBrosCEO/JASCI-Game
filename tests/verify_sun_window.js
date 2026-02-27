@@ -33,7 +33,8 @@ const assetManagerInstance = {
     }
 };
 
-// Load mapRenderer.js
+// Load utils.js and mapRenderer.js
+const utilsCode = fs.readFileSync(path.join(__dirname, '../js/utils.js'), 'utf8');
 const mapRendererCode = fs.readFileSync(path.join(__dirname, '../js/mapRenderer.js'), 'utf8');
 
 const sandbox = {
@@ -48,6 +49,7 @@ const sandbox = {
 };
 
 vm.createContext(sandbox);
+vm.runInContext(utilsCode, sandbox);
 vm.runInContext(mapRendererCode, sandbox);
 
 sandbox.window.mapRenderer.initMapRenderer(assetManagerInstance);

@@ -160,6 +160,22 @@ class AssetManager {
             }
         }
 
+        // Pre-calculate RGB for all tilesets
+        for (const tileId in this.tilesets) {
+            const tile = this.tilesets[tileId];
+            if (tile.color && !tile.colorRGB) {
+                tile.colorRGB = hexToRgb(tile.color) || { r: 255, g: 255, b: 255 };
+            }
+        }
+
+        // Pre-calculate RGB for NPCs
+        for (const npcId in this.npcDefinitions) {
+            const npc = this.npcDefinitions[npcId];
+            if (npc.color && !npc.colorRGB) {
+                npc.colorRGB = hexToRgb(npc.color) || { r: 255, g: 255, b: 255 };
+            }
+        }
+
         // Populate familyItems
         for (const itemId in this.itemsById) {
             const item = this.itemsById[itemId];
