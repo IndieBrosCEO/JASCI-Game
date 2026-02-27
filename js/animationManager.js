@@ -1262,7 +1262,11 @@ class DiceRollAnimation extends Animation {
                 const modifier = this.modifiers[this.modifierAnimationStep];
                 this.currentTotalValue += modifier.value;
 
-                this.modifiersAppliedElement.innerHTML += `<span style="color: ${modifier.type === 'positive' ? 'lightgreen' : 'salmon'}; margin-right: 5px;">${modifier.text}</span>`;
+                const span = document.createElement('span');
+                span.style.color = modifier.type === 'positive' ? 'lightgreen' : 'salmon';
+                span.style.marginRight = '5px';
+                span.textContent = modifier.text;
+                this.modifiersAppliedElement.appendChild(span);
                 this.runningTotalElement.textContent = `Total: ${this.currentTotalValue}`;
 
                 this.runningTotalElement.style.transition = 'none';
