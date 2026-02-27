@@ -1419,15 +1419,16 @@ async function handleKeyDown(event) {
             event.preventDefault(); return;
         }
         if (event.key.toLowerCase() === 'p') { // Prone
+            let soundToPlay = 'move_posture_prone_01.wav';
             if (gameState.playerPosture === 'prone') {
                 gameState.playerPosture = 'standing';
                 logToConsole("Player stands up.", "info");
+                soundToPlay = 'move_posture_stand_01.wav';
             } else {
                 gameState.playerPosture = 'prone';
                 logToConsole("Player goes prone.", "info");
             }
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-            // TODO: Add specific sound for posture change move_posture_prone_01.wav / move_posture_stand_01.wav
+            if (window.audioManager) window.audioManager.playUiSound(soundToPlay);
             // Player posture change might cost some fraction of movement or an action in some systems.
             // For now, it's free. If it costs MP/AP, deduct here and updateTurnUI().
             // Ensure map re-render if posture affects display or cover.
@@ -1646,15 +1647,16 @@ async function handleKeyDown(event) {
         }
         // Removed duplicate block for 'c' and 'b' that was here
         if (event.key.toLowerCase() === 'k') { // Crouch (using 'k' as 'c' is for melee targeting)
+            let soundToPlay = 'move_posture_crouch_01.wav';
             if (gameState.playerPosture === 'crouching') {
                 gameState.playerPosture = 'standing';
                 logToConsole("Player stands up from crouch.", "info");
+                soundToPlay = 'move_posture_stand_01.wav';
             } else {
                 gameState.playerPosture = 'crouching';
                 logToConsole("Player crouches.", "info");
             }
-            if (window.audioManager) window.audioManager.playUiSound('ui_click_01.wav');
-            // TODO: Add specific sound for posture change move_posture_crouch_01.wav / move_posture_stand_01.wav
+            if (window.audioManager) window.audioManager.playUiSound(soundToPlay);
             // Player posture change might cost some fraction of movement or an action in some systems.
             // For now, it's free. If it costs MP/AP, deduct here and updateTurnUI().
             // Ensure map re-render if posture affects display or cover.
