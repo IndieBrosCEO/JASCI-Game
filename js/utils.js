@@ -390,6 +390,24 @@ function getDistance3D(pos1, pos2) {
 window.getDistance3D = getDistance3D;
 
 /**
+ * Color Helpers
+ */
+function hexToRgb(hex) {
+    if (typeof hex !== 'string' || !hex.startsWith('#')) return null;
+    let r = parseInt(hex.substring(1, 3), 16);
+    let g = parseInt(hex.substring(3, 5), 16);
+    let b = parseInt(hex.substring(5, 7), 16);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return null;
+    return { r, g, b };
+}
+window.hexToRgb = hexToRgb;
+
+function rgbToHex(r, g, b) {
+    return `#${Math.round(Math.max(0, Math.min(255, r))).toString(16).padStart(2, '0')}${Math.round(Math.max(0, Math.min(255, g))).toString(16).padStart(2, '0')}${Math.round(Math.max(0, Math.min(255, b))).toString(16).padStart(2, '0')}`;
+}
+window.rgbToHex = rgbToHex;
+
+/**
  * Placeholder for a 3D A* pathfinding algorithm.
  * 
  * @param {object} startPos - The starting position {x, y, z}.
@@ -635,47 +653,40 @@ window.hasLineOfSight3D = hasLineOfSight3D;
 
 
 /**
- * Darkens a HEX color by a given percentage.
- * @param {string} hexColor - The hex color string (e.g., "#RRGGBB" or "#RGB").
+ * Darkens a color by a given percentage.
+ * @param {string|object} c - The hex color string or RGB object.
  * @param {number} amount - The percentage to darken (0.0 to 1.0). E.g., 0.2 for 20%.
- * @returns {string} The new darkened hex color string. Returns input if invalid.
+ * @returns {string|object} The new darkened color. Returns object if input was object.
  */
-function darkenColor(hexColor, amount) {
-    if (typeof hexColor !== 'string' || !hexColor.startsWith('#') || typeof amount !== 'number' || amount < 0 || amount > 1) {
-        // console.warn(`darkenColor: Invalid input hexColor: ${hexColor}, amount: ${amount}. Returning original or black.`);
-        return hexColor || '#000000';
-    }
-
-    let hex = hexColor.slice(1); // Remove #
-
-    // Handle shorthand hex (e.g., "#03F" -> "#0033FF")
-    if (hex.length === 3) {
-        hex = hex.split('').map(char => char + char).join('');
-    }
-
-    if (hex.length !== 6) {
-        // console.warn(`darkenColor: Invalid hex length after processing: ${hex}. Returning original or black.`);
-        return hexColor || '#000000';
+function darkenColor(c, amount) {
+    if (typeof amount !== 'number' || amount < 0 || amount > 1) {
+        return c || '#000000';
     }
 
     try {
-        let r = parseInt(hex.substring(0, 2), 16);
-        let g = parseInt(hex.substring(2, 4), 16);
-        let b = parseInt(hex.substring(4, 6), 16);
+        let r, g, b;
+        let isObject = false;
+        if (c && typeof c === 'object') {
+            r = c.r; g = c.g; b = c.b;
+            isObject = true;
+        } else {
+            if (typeof c !== 'string' || !c.startsWith('#')) return c || '#000000';
+            let hex = c.slice(1);
+            if (hex.length === 3) hex = hex.split('').map(char => char + char).join('');
+            if (hex.length !== 6) return c || '#000000';
+            r = parseInt(hex.substring(0, 2), 16);
+            g = parseInt(hex.substring(2, 4), 16);
+            b = parseInt(hex.substring(4, 6), 16);
+        }
 
         r = Math.max(0, Math.floor(r * (1 - amount)));
         g = Math.max(0, Math.floor(g * (1 - amount)));
         b = Math.max(0, Math.floor(b * (1 - amount)));
 
-        const toHex = (c) => {
-            const hexVal = c.toString(16);
-            return hexVal.length === 1 ? '0' + hexVal : hexVal;
-        };
-
-        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+        if (isObject) return { r, g, b };
+        return rgbToHex(r, g, b);
     } catch (e) {
-        // console.error(`darkenColor: Error parsing hex string: ${hexColor}`, e);
-        return hexColor || '#000000'; // Return original on error
+        return c || '#000000';
     }
 }
 window.darkenColor = darkenColor;

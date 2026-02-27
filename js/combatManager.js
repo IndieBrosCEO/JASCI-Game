@@ -1962,6 +1962,7 @@
                     radius: 4, // Short burst of light
                     intensity: 2.0, // Very bright
                     color: muzzleFlashColor,
+                    colorRGB: hexToRgb(muzzleFlashColor) || { r: 255, g: 255, b: 255 },
                     temporary: true,
                     duration: 150 // ms
                 };
@@ -3376,6 +3377,7 @@
                 radius: radius + 2,
                 intensity: 3.0,
                 color: "#FF8800", // Orange/Red explosion
+                colorRGB: { r: 255, g: 136, b: 0 },
                 temporary: true,
                 duration: 300
             };
