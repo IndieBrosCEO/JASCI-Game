@@ -1,9 +1,10 @@
 // js/vehicleManager.js
 
 class VehicleManager {
-    constructor(gameState, assetManager) {
+    constructor(gameState, assetManager, mapRenderer = null) {
         this.gameState = gameState;
         this.assetManager = assetManager;
+        this.mapRenderer = mapRenderer;
         this.vehicleParts = {};
         this.vehicleTemplates = {};
     }
@@ -405,9 +406,27 @@ class VehicleManager {
             return false;
         }
 
-        // TODO: Consume materials from player inventory
-        // Example: materials = [{itemId: "metal_scraps", quantity: 2}]
-        // if (!window.inventoryManager.removeItems(materials)) { logToConsole("Not enough materials for repair."); return false; }
+        if (!window.inventoryManager) {
+            logToConsole("VehicleManager: Inventory Manager not available to consume materials.", "error");
+            return false;
+        }
+
+        const repairMaterials = materials || partDef.repairMaterials;
+
+        if (repairMaterials && repairMaterials.length > 0) {
+            // First check if player has all materials
+            for (const mat of repairMaterials) {
+                if (!window.inventoryManager.hasItem(mat.itemId, mat.quantity)) {
+                    logToConsole(`Repair failed: Not enough materials. Missing ${mat.itemId} x${mat.quantity}.`, "warn");
+                    return false;
+                }
+            }
+
+            // If all materials are present, consume them
+            for (const mat of repairMaterials) {
+                window.inventoryManager.removeItem(mat.itemId, mat.quantity, this.gameState.inventory.container.items);
+            }
+        }
 
         const maxDurability = partDef.durability;
         const amountToHeal = Math.floor(maxDurability * (repairAmountPercentage / 100));

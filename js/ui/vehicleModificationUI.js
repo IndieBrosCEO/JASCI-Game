@@ -337,7 +337,7 @@ class VehicleModificationUIManager {
                             if (window.audioManager) window.audioManager.playUiSound('ui_error_01.wav');
                             return;
                         }
-                        if (!this.inventoryManager.removeItemsFromInventory(partDefinitionIdFromInventory, 1, this.gameState.inventory.container.items)) {
+                        if (!this.inventoryManager.removeItem(partDefinitionIdFromInventory, 1, this.gameState.inventory.container.items)) {
                             logToConsole(`Failed to remove item ${partDefinitionIdFromInventory} from inventory for install.`, "error");
                             // if (window.uiManager) window.uiManager.showToastNotification("Could not find part in inventory to install.", "error");
                             return;
