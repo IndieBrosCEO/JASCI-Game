@@ -2680,8 +2680,16 @@
             // Check for victory condition: No hostile NPCs left who are alive OR in crisis (if we consider crisis as defeated, we might end combat, but if they can act/heal, we shouldn't)
             // If they are in crisis, they are still in initiativeTracker. So checking initiativeTracker length/contents is key.
             // If we want them to act (heal), they must count as "active".
-            const activeHostiles = this.initiativeTracker.filter(e => !e.isPlayer && ((e.entity.health?.torso?.current > 0 || e.entity.health?.torso?.crisisTimer > 0) && (e.entity.health?.head?.current > 0 || e.entity.health?.head?.crisisTimer > 0)));
-            const activePlayers = this.initiativeTracker.filter(e => e.isPlayer && ((e.entity.health?.torso?.current > 0 || e.entity.health?.torso?.crisisTimer > 0) && (e.entity.health?.head?.current > 0 || e.entity.health?.head?.crisisTimer > 0)));
+            const activeHostiles = [];
+            const activePlayers = [];
+            for (const entry of this.initiativeTracker) {
+                const health = entry.entity.health;
+                const isAlive = (health?.torso?.current > 0 || health?.torso?.crisisTimer > 0) && (health?.head?.current > 0 || health?.head?.crisisTimer > 0);
+                if (isAlive) {
+                    if (entry.isPlayer) activePlayers.push(entry);
+                    else activeHostiles.push(entry);
+                }
+            }
 
             if (activeHostiles.length === 0 && activePlayers.length > 0) {
                 logToConsole("All hostile NPCs defeated. Ending combat.", 'fuchsia'); this.endCombat(); return;
