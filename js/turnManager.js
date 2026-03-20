@@ -167,9 +167,18 @@ async function endTurn_internal() { // Make async
     // --- NPC Out-of-Combat Actions ---
     if (gameState.npcs && gameState.npcs.length > 0) {
         logToConsole("Processing NPC out-of-combat turns...", "darkgrey");
+
+        // Build a Set of entities currently in combat for O(1) lookup
+        const combatantEntities = new Set();
+        if (window.combatManager && window.combatManager.initiativeTracker) {
+            for (const entry of window.combatManager.initiativeTracker) {
+                if (entry.entity) combatantEntities.add(entry.entity);
+            }
+        }
+
         for (const npc of gameState.npcs) {
             // Check if NPC is in combat
-            const isInCombat = window.combatManager && window.combatManager.initiativeTracker && window.combatManager.initiativeTracker.some(entry => entry.entity === npc);
+            const isInCombat = combatantEntities.has(npc);
 
             // Ensure NPC is alive and NOT in combat before processing their OOC turn
             if (!isInCombat && npc && npc.health && typeof npc.health.torso?.current === 'number' && typeof npc.health.head?.current === 'number' && npc.health.torso.current > 0 && npc.health.head.current > 0) {
