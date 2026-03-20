@@ -1382,21 +1382,13 @@
         let hits = 0;
         let total = 0;
 
-        const attackDist = new Array(21).fill(0); // Index 1..20
+        let attackDist;
         if (attackModifiers.advantage && !attackModifiers.disadvantage) {
-            for (let d1=1; d1<=20; d1++) {
-                for (let d2=1; d2<=20; d2++) {
-                    attackDist[Math.max(d1,d2)]++;
-                }
-            }
+            attackDist = [0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39];
         } else if (attackModifiers.disadvantage && !attackModifiers.advantage) {
-            for (let d1=1; d1<=20; d1++) {
-                for (let d2=1; d2<=20; d2++) {
-                    attackDist[Math.min(d1,d2)]++;
-                }
-            }
+            attackDist = [0, 39, 37, 35, 33, 31, 29, 27, 25, 23, 21, 19, 17, 15, 13, 11, 9, 7, 5, 3, 1];
         } else {
-            for (let d=1; d<=20; d++) attackDist[d] = 1;
+            attackDist = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
         }
 
         for (let attNat = 1; attNat <= 20; attNat++) {
