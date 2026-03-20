@@ -1341,6 +1341,23 @@ window.mapRenderer = {
         const currentFowData = gameState.fowData[currentZStr]; // Ensure currentFowData is sourced for the current Z level
         const AMBIENT_STRENGTH_VISITED = 0.2;
 
+        // Pre-compute floor items map for O(1) lookup during rendering
+        const floorItemsMap = new Map();
+        if (window.gameState && window.gameState.floorItems) {
+            for (let i = 0; i < window.gameState.floorItems.length; i++) {
+                const fi = window.gameState.floorItems[i];
+                if (fi.z === currentZ) {
+                    const key = `${fi.x},${fi.y}`;
+                    let itemsAtLoc = floorItemsMap.get(key);
+                    if (!itemsAtLoc) {
+                        itemsAtLoc = [];
+                        floorItemsMap.set(key, itemsAtLoc);
+                    }
+                    itemsAtLoc.push(fi);
+                }
+            }
+        }
+
         // --- Render current Z-level (gameState.currentViewZ) ---
         // Iterate only over the visible viewport tiles
         // 'y' and 'x' here are ABSOLUTE map coordinates.
@@ -1718,9 +1735,9 @@ window.mapRenderer = {
                     span.style.color = finalColorForTile;
                     span.style.backgroundColor = tileDefinedBackgroundColor;
 
-                    if (fowStatus === 'visible' && window.gameState && window.gameState.floorItems) {
-                        const itemsOnThisTileAndZ = window.gameState.floorItems.filter(fi => fi.x === x && fi.y === y && fi.z === currentZ);
-                        if (itemsOnThisTileAndZ.length > 0) {
+                    if (fowStatus === 'visible') {
+                        const itemsOnThisTileAndZ = floorItemsMap.get(`${x},${y}`);
+                        if (itemsOnThisTileAndZ && itemsOnThisTileAndZ.length > 0) {
                             const currentTileDefForHighlight = assetManagerInstance.tilesets[finalTileId];
                             let impassableTileBlockingItemHighlight = false;
                             if (currentTileDefForHighlight && currentTileDefForHighlight.tags && currentTileDefForHighlight.tags.includes("impassable")) {
@@ -1758,9 +1775,9 @@ window.mapRenderer = {
                     cachedCell.displayedId = finalDisplayIdForTile;
 
                     let newBackgroundColor = tileDefinedBackgroundColor;
-                    if (fowStatus === 'visible' && window.gameState && window.gameState.floorItems) {
-                        const itemsOnThisTileAndZ = window.gameState.floorItems.filter(fi => fi.x === x && fi.y === y && fi.z === currentZ);
-                        if (itemsOnThisTileAndZ.length > 0) {
+                    if (fowStatus === 'visible') {
+                        const itemsOnThisTileAndZ = floorItemsMap.get(`${x},${y}`);
+                        if (itemsOnThisTileAndZ && itemsOnThisTileAndZ.length > 0) {
                             const currentTileDefForHighlight = assetManagerInstance.tilesets[finalTileId];
                             let impassableTileBlockingItemHighlight = false;
                             if (currentTileDefForHighlight && currentTileDefForHighlight.tags && currentTileDefForHighlight.tags.includes("impassable")) {
