@@ -2527,10 +2527,14 @@ window.mapRenderer = {
             return false;
         }
 
-        // TODO: Handle if newTileId is an object {tileId: "...", ...} vs a string ID.
-        // For now, assuming newTileId is a string ID.
-        level[layerName][y][x] = newTileId;
-        logToConsole(`[mapRenderer.updateTileOnLayer] Tile at (${x},${y},${z}) on layer '${layerName}' updated to '${newTileId}'.`, "dev");
+        // Handle if newTileId is an object {tileId: "...", ...} vs a string ID.
+        let effectiveTileId = newTileId;
+        if (typeof newTileId === 'object' && newTileId !== null && newTileId.tileId !== undefined) {
+            effectiveTileId = newTileId.tileId;
+        }
+
+        level[layerName][y][x] = effectiveTileId;
+        logToConsole(`[mapRenderer.updateTileOnLayer] Tile at (${x},${y},${z}) on layer '${layerName}' updated to '${effectiveTileId}'.`, "dev");
 
         // Important: Invalidate tile cache for this specific tile or re-render if changes are significant
         // For simplicity, just schedule a full re-render. More optimized would be targeted cache invalidation.
