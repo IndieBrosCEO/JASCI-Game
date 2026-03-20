@@ -1,0 +1,575 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "Construction" [level=2] [ref=e5]
+      - generic [ref=e6]:
+        - button "Crafting Station" [ref=e7] [cursor=pointer]
+        - button "Crafting Station Advanced" [ref=e8] [cursor=pointer]
+        - button "Defensive" [ref=e9] [cursor=pointer]
+        - button "Defensive Trap" [ref=e10] [cursor=pointer]
+        - button "Furniture" [ref=e11] [cursor=pointer]
+        - button "Resource Production" [ref=e12] [cursor=pointer]
+        - button "Storage" [ref=e13] [cursor=pointer]
+        - button "Structure" [ref=e14] [cursor=pointer]
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - heading "Buildable Items" [level=3] [ref=e17]
+          - list [ref=e18]:
+            - listitem "Missing required components." [ref=e19] [cursor=pointer]: Basic Workbench
+            - listitem "Missing required components." [ref=e20] [cursor=pointer]: Simple Forge
+            - listitem "Missing required components." [ref=e21] [cursor=pointer]: Chemistry Set
+            - listitem "Missing required components." [ref=e22] [cursor=pointer]: Reloading Bench
+            - listitem "Missing required components." [ref=e23] [cursor=pointer]: Munitions Crafting Bench
+            - listitem "Missing required components." [ref=e24] [cursor=pointer]: Armor Crafting Jig
+            - listitem "Missing required components." [ref=e25] [cursor=pointer]: Simple Loom
+            - listitem "Missing required components." [ref=e26] [cursor=pointer]: Simple Tanning Rack
+            - listitem "Missing required components." [ref=e27] [cursor=pointer]: Basic Campfire
+        - generic [ref=e28]:
+          - heading "Construction Details" [level=3] [ref=e29]
+          - generic [ref=e30]:
+            - paragraph [ref=e31]:
+              - strong [ref=e32]: "Name:"
+              - text: "-"
+            - paragraph [ref=e33]:
+              - strong [ref=e34]: "Description:"
+              - text: "-"
+            - paragraph [ref=e35]:
+              - strong [ref=e36]: "Size:"
+              - text: "-"
+            - paragraph [ref=e37]:
+              - strong [ref=e38]: "Skill:"
+              - listitem [ref=e40]: "Skill: -"
+              - text: "(Level: -)"
+            - heading "Components:" [level=4] [ref=e41]
+            - list [ref=e42]:
+              - listitem [ref=e43]: "Components: -"
+            - paragraph [ref=e44]:
+              - strong [ref=e45]: "Time to Build:"
+              - text: "- turns"
+          - button "Select for Placement" [disabled] [ref=e46]
+      - button "Close Construction" [ref=e47] [cursor=pointer]
+    - generic [ref=e48]:
+      - heading "Character Info" [level=2] [ref=e49]
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - generic [ref=e52]: "Name: Name Here"
+          - generic [ref=e53]: "Level: 1"
+          - generic [ref=e54]: "XP: 0 / 300"
+          - generic [ref=e55]:
+            - generic "Press 'U' to spend" [ref=e56]: "Unspent Skill Points: 30"
+            - generic "Press 'U' to spend" [ref=e57]: "Unspent Stat Points: 0"
+            - generic "Press 'U' to spend" [ref=e58]: "Unspent Perk Picks: 0"
+        - generic [ref=e59]:
+          - heading "Appearance" [level=3] [ref=e60]
+          - generic [ref=e61]:
+            - text: "---------"
+            - text: "---------"
+            - text: /-------\
+            - text: "|#\\###-#|"
+            - text: "|#O##(O)|"
+            - text: "|#(J~J-,|"
+            - text: "|###-###'"
+            - text: "|#######|"
+            - text: "|#######|"
+            - text: \-------/
+        - generic [ref=e62]:
+          - heading "Companions" [level=3] [ref=e63]
+          - list [ref=e64]:
+            - listitem [ref=e65]: None
+        - generic [ref=e66]:
+          - heading "Player" [level=3] [ref=e67]
+          - generic [ref=e68]: "Level: 1"
+          - generic [ref=e69]: "XP: 0 / 300"
+          - heading "Stats" [level=3] [ref=e70]
+          - generic [ref=e71]:
+            - generic [ref=e74]: Strength
+            - generic [ref=e75]: "3"
+          - generic [ref=e76]:
+            - generic [ref=e79]: Intelligence
+            - generic [ref=e80]: "3"
+          - generic [ref=e81]:
+            - generic [ref=e84]: Dexterity
+            - generic [ref=e85]: "3"
+          - generic [ref=e86]:
+            - generic [ref=e89]: Constitution
+            - generic [ref=e90]: "3"
+          - generic [ref=e91]:
+            - generic [ref=e94]: Perception
+            - generic [ref=e95]: "3"
+          - generic [ref=e96]:
+            - generic [ref=e99]: Charisma
+            - generic [ref=e100]: "3"
+          - heading "Skills" [level=3] [ref=e101]
+          - generic [ref=e102]:
+            - generic [ref=e105]: Animal Handling
+            - generic [ref=e106]: "0"
+          - generic [ref=e107]:
+            - generic [ref=e110]: Electronics
+            - generic [ref=e111]: "0"
+          - generic [ref=e112]:
+            - generic [ref=e115]: Explosives
+            - generic [ref=e116]: "0"
+          - generic [ref=e117]:
+            - generic [ref=e120]: Guns
+            - generic [ref=e121]: "0"
+          - generic [ref=e122]:
+            - generic [ref=e125]: Intimidation
+            - generic [ref=e126]: "0"
+          - generic [ref=e127]:
+            - generic [ref=e130]: Investigation
+            - generic [ref=e131]: "0"
+          - generic [ref=e132]:
+            - generic [ref=e135]: Lockpick
+            - generic [ref=e136]: "0"
+          - generic [ref=e137]:
+            - generic [ref=e140]: Medicine
+            - generic [ref=e141]: "0"
+          - generic [ref=e142]:
+            - generic [ref=e145]: Melee Weapons
+            - generic [ref=e146]: "0"
+          - generic [ref=e147]:
+            - generic [ref=e150]: Persuasion
+            - generic [ref=e151]: "0"
+          - generic [ref=e152]:
+            - generic [ref=e155]: Repair
+            - generic [ref=e156]: "0"
+          - generic [ref=e157]:
+            - generic [ref=e160]: Sleight of Hand
+            - generic [ref=e161]: "0"
+          - generic [ref=e162]:
+            - generic [ref=e165]: Stealth
+            - generic [ref=e166]: "0"
+          - generic [ref=e167]:
+            - generic [ref=e170]: Survival
+            - generic [ref=e171]: "0"
+          - generic [ref=e172]:
+            - generic [ref=e175]: Unarmed
+            - generic [ref=e176]: "0"
+  - generic [ref=e177]:
+    - generic [ref=e178]:
+      - generic [ref=e182]: .
+      - generic [ref=e183]: .
+      - generic [ref=e184]: .
+      - generic [ref=e185]: .
+      - generic [ref=e186]: .
+      - generic [ref=e187]: .
+      - generic [ref=e188]: .
+      - generic [ref=e189]: .
+      - generic [ref=e190]: .
+      - generic [ref=e191]: .
+      - generic [ref=e192]: .
+      - generic [ref=e193]: .
+      - generic [ref=e194]: .
+      - generic [ref=e195]: .
+      - generic [ref=e196]: .
+      - generic [ref=e202]: .
+      - generic [ref=e203]: .
+      - generic [ref=e204]: .
+      - generic [ref=e205]: .
+      - generic [ref=e206]: .
+      - generic [ref=e207]: .
+      - generic [ref=e208]: .
+      - generic [ref=e209]: .
+      - generic [ref=e210]: .
+      - generic [ref=e211]: .
+      - generic [ref=e212]: .
+      - generic [ref=e213]: .
+      - generic [ref=e214]: .
+      - generic [ref=e215]: .
+      - generic [ref=e216]: .
+      - generic [ref=e221]: .
+      - generic [ref=e222]: .
+      - generic [ref=e223]: .
+      - generic [ref=e224]: .
+      - generic [ref=e225]: .
+      - generic [ref=e226]: .
+      - generic [ref=e227]: .
+      - generic [ref=e228]: .
+      - generic [ref=e229]: .
+      - generic [ref=e230]: .
+      - generic [ref=e231]: .
+      - generic [ref=e232]: .
+      - generic [ref=e233]: .
+      - generic [ref=e234]: .
+      - generic [ref=e235]: .
+      - generic [ref=e236]: .
+      - generic [ref=e237]: .
+      - generic [ref=e240]: .
+      - generic [ref=e241]: .
+      - generic [ref=e242]: .
+      - generic [ref=e243]: .
+      - generic [ref=e244]: .
+      - generic [ref=e245]: .
+      - generic [ref=e246]: .
+      - generic [ref=e247]: .
+      - generic [ref=e248]: .
+      - generic [ref=e249]: .
+      - generic [ref=e250]: .
+      - generic [ref=e251]: .
+      - generic [ref=e252]: .
+      - generic [ref=e253]: .
+      - generic [ref=e254]: .
+      - generic [ref=e255]: .
+      - generic [ref=e256]: .
+      - generic [ref=e257]: .
+      - generic [ref=e258]: .
+      - generic [ref=e260]: .
+      - generic [ref=e261]: .
+      - generic [ref=e262]: .
+      - generic [ref=e263]: .
+      - generic [ref=e264]: .
+      - generic [ref=e265]: .
+      - generic [ref=e266]: .
+      - generic [ref=e267]: .
+      - generic [ref=e268]: .
+      - generic [ref=e269]: .
+      - generic [ref=e270]: D
+      - generic [ref=e271]: D
+      - generic [ref=e272]: D
+      - generic [ref=e273]: .
+      - generic [ref=e274]: .
+      - generic [ref=e275]: .
+      - generic [ref=e276]: .
+      - generic [ref=e277]: .
+      - generic [ref=e278]: .
+      - generic [ref=e280]: .
+      - generic [ref=e281]: .
+      - generic [ref=e282]: .
+      - generic [ref=e283]: .
+      - generic [ref=e284]: .
+      - generic [ref=e285]: .
+      - generic [ref=e286]: .
+      - generic [ref=e287]: .
+      - generic [ref=e288]: .
+      - generic [ref=e289]: .
+      - generic [ref=e290]: D
+      - generic [ref=e291]: D
+      - generic [ref=e292]: D
+      - generic [ref=e293]: .
+      - generic [ref=e294]: .
+      - generic [ref=e295]: .
+      - generic [ref=e296]: .
+      - generic [ref=e297]: .
+      - generic [ref=e298]: .
+      - generic [ref=e300]: .
+      - generic [ref=e301]: .
+      - generic [ref=e302]: .
+      - generic [ref=e303]: ▓
+      - generic [ref=e304]: .
+      - generic [ref=e305]: .
+      - generic [ref=e306]: .
+      - generic [ref=e307]: .
+      - generic [ref=e308]: .
+      - generic [ref=e309]: .
+      - generic [ref=e310]: D
+      - generic [ref=e311]: D
+      - generic [ref=e312]: D
+      - generic [ref=e313]: .
+      - generic [ref=e314]: .
+      - generic [ref=e315]: .
+      - generic [ref=e316]: .
+      - generic [ref=e317]: .
+      - generic [ref=e318]: .
+      - generic [ref=e320]: .
+      - generic [ref=e321]: .
+      - generic [ref=e322]: .
+      - generic [ref=e323]: .
+      - generic [ref=e324]: .
+      - generic [ref=e325]: .
+      - generic [ref=e326]: .
+      - generic [ref=e327]: .
+      - generic [ref=e328]: .
+      - generic [ref=e329]: ☻
+      - generic [ref=e330]: .
+      - generic [ref=e331]: .
+      - generic [ref=e332]: .
+      - generic [ref=e333]: .
+      - generic [ref=e334]: .
+      - generic [ref=e335]: .
+      - generic [ref=e336]: .
+      - generic [ref=e337]: .
+      - generic [ref=e338]: .
+      - generic [ref=e340]: .
+      - generic [ref=e341]: .
+      - generic [ref=e342]: .
+      - generic [ref=e343]: .
+      - generic [ref=e344]: .
+      - generic [ref=e345]: .
+      - generic [ref=e346]: .
+      - generic [ref=e347]: .
+      - generic [ref=e348]: .
+      - generic [ref=e349]: .
+      - generic [ref=e350]: .
+      - generic [ref=e351]: .
+      - generic [ref=e352]: .
+      - generic [ref=e353]: .
+      - generic [ref=e354]: .
+      - generic [ref=e355]: .
+      - generic [ref=e356]: .
+      - generic [ref=e357]: .
+      - generic [ref=e358]: .
+      - generic [ref=e360]: .
+      - generic [ref=e361]: .
+      - generic [ref=e362]: .
+      - generic [ref=e363]: .
+      - generic [ref=e364]: .
+      - generic [ref=e365]: .
+      - generic [ref=e366]: .
+      - generic [ref=e367]: .
+      - generic [ref=e368]: .
+      - generic [ref=e369]: .
+      - generic [ref=e370]: .
+      - generic [ref=e371]: .
+      - generic [ref=e372]: .
+      - generic [ref=e373]: .
+      - generic [ref=e374]: .
+      - generic [ref=e375]: .
+      - generic [ref=e376]: .
+      - generic [ref=e377]: .
+      - generic [ref=e378]: .
+      - generic [ref=e380]: .
+      - generic [ref=e381]: .
+      - generic [ref=e382]: .
+      - generic [ref=e383]: .
+      - generic [ref=e384]: .
+      - generic [ref=e385]: .
+      - generic [ref=e386]: .
+      - generic [ref=e387]: .
+      - generic [ref=e388]: .
+      - generic [ref=e389]: .
+      - generic [ref=e390]: .
+      - generic [ref=e391]: .
+      - generic [ref=e392]: .
+      - generic [ref=e393]: .
+      - generic [ref=e394]: .
+      - generic [ref=e395]: .
+      - generic [ref=e396]: .
+      - generic [ref=e397]: .
+      - generic [ref=e398]: .
+      - generic [ref=e400]: .
+      - generic [ref=e401]: .
+      - generic [ref=e402]: .
+      - generic [ref=e403]: .
+      - generic [ref=e404]: .
+      - generic [ref=e405]: .
+      - generic [ref=e406]: .
+      - generic [ref=e407]: .
+      - generic [ref=e408]: .
+      - generic [ref=e409]: .
+      - generic [ref=e410]: .
+      - generic [ref=e411]: .
+      - generic [ref=e412]: .
+      - generic [ref=e413]: .
+      - generic [ref=e414]: .
+      - generic [ref=e415]: .
+      - generic [ref=e416]: .
+      - generic [ref=e417]: .
+      - generic [ref=e418]: .
+      - generic [ref=e421]: .
+      - generic [ref=e422]: .
+      - generic [ref=e423]: .
+      - generic [ref=e424]: .
+      - generic [ref=e425]: .
+      - generic [ref=e426]: .
+      - generic [ref=e427]: .
+      - generic [ref=e428]: .
+      - generic [ref=e429]: .
+      - generic [ref=e430]: .
+      - generic [ref=e431]: .
+      - generic [ref=e432]: .
+      - generic [ref=e433]: .
+      - generic [ref=e434]: .
+      - generic [ref=e435]: .
+      - generic [ref=e436]: .
+      - generic [ref=e437]: .
+      - generic [ref=e442]: .
+      - generic [ref=e443]: .
+      - generic [ref=e444]: .
+      - generic [ref=e445]: .
+      - generic [ref=e446]: .
+      - generic [ref=e447]: .
+      - generic [ref=e448]: .
+      - generic [ref=e449]: .
+      - generic [ref=e450]: .
+      - generic [ref=e451]: .
+      - generic [ref=e452]: .
+      - generic [ref=e453]: .
+      - generic [ref=e454]: .
+      - generic [ref=e455]: .
+      - generic [ref=e456]: .
+      - generic [ref=e462]: .
+      - generic [ref=e463]: .
+      - generic [ref=e464]: .
+      - generic [ref=e465]: .
+      - generic [ref=e466]: .
+      - generic [ref=e467]: .
+      - generic [ref=e468]: .
+      - generic [ref=e469]: .
+      - generic [ref=e470]: .
+      - generic [ref=e471]: .
+      - generic [ref=e472]: .
+      - generic [ref=e473]: .
+      - generic [ref=e474]: .
+      - generic [ref=e475]: .
+      - generic [ref=e476]: .
+    - generic [ref=e479]:
+      - generic [ref=e481]:
+        - paragraph [ref=e482]: TimeManager initialized.
+        - paragraph [ref=e483]: Extended runAllBasicConnectionTests with testCombatInitiationWithGenericNpc.
+        - paragraph [ref=e484]: Extended runAllBasicConnectionTests with testPlayerTakesDamageWithArmor.
+        - paragraph [ref=e485]: XpManager instance created and assigned to window.
+        - paragraph [ref=e486]: PerkManager instance created and assigned to window.
+        - paragraph [ref=e487]: LevelUpUI instance created and assigned to window.
+        - paragraph [ref=e488]: "[CraftingManager] Initialized with 120 crafting recipes from item definitions."
+        - paragraph [ref=e489]: CraftingManager instance created, assigned to window, and initialized.
+        - paragraph [ref=e490]: "[ConstructionManager] Successfully referenced 68 construction definitions from AssetManager."
+        - paragraph [ref=e491]: ConstructionManager instance created, assigned to window, and initialized.
+        - paragraph [ref=e492]: FireManager instance created and initialized.
+        - paragraph [ref=e493]: GasManager instance created and initialized.
+        - paragraph [ref=e494]: WaterManager instance created and initialized.
+        - paragraph [ref=e495]: "SCRIPT.JS: window.mapManager assigned to window.mapRenderer."
+        - paragraph [ref=e496]: FOW data initialized for Z-level 0.
+        - paragraph [ref=e497]: Bootstrapping water for map dragon.
+        - paragraph [ref=e498]: "Spawning NPCs from map data for map: dragon"
+        - paragraph [ref=e499]: NPC npc_0 stats overridden from map data.
+        - paragraph [ref=e500]: NPC npc_0 health specifics overridden from map data.
+        - paragraph [ref=e501]: "Spawned NPC: Dragon (ID: npc_0, Team: 99) at (X:11, Y:4, Z:0) - Face Initialized."
+        - paragraph [ref=e502]: "No vehicle data found in map data for map: dragon."
+        - paragraph [ref=e503]: Entity tooltip event listeners will be set up with other mapContainer listeners.
+        - paragraph [ref=e504]: InventoryManager initialized (or re-confirmed).
+        - paragraph [ref=e505]: "[CraftingManager] Initialized with 120 crafting recipes from item definitions."
+        - paragraph [ref=e506]: CraftingManager instance created, assigned to window, and initialized.
+        - paragraph [ref=e507]: "[ConstructionManager] Successfully referenced 68 construction definitions from AssetManager."
+        - paragraph [ref=e508]: ConstructionManager instance created, assigned to window, and initialized.
+        - paragraph [ref=e509]: "[TrapManager] Initialized with 3 trap definitions."
+        - paragraph [ref=e510]: TrapManager instance created and initialized.
+        - paragraph [ref=e511]: HarvestManager instance created.
+        - paragraph [ref=e512]: "[CraftingUIManager] Initialized."
+        - paragraph [ref=e513]: CraftingUI instance created and initialized.
+        - paragraph [ref=e514]: "[ConstructionUIManager] Initialized."
+        - paragraph [ref=e515]: ConstructionUI instance created and initialized.
+        - paragraph [ref=e516]: "VehicleManager: Accessed 21 vehicle parts from AssetManager."
+        - paragraph [ref=e517]: "VehicleManager: Accessed 7 vehicle templates from AssetManager."
+        - paragraph [ref=e518]: VehicleManager initialized successfully.
+        - paragraph [ref=e519]: "[VehicleModificationUIManager] Initialized."
+        - paragraph [ref=e520]: QuestLogUI initialized.
+        - paragraph [ref=e521]: ToastUIManager instance created and assigned to window.uiManager.
+        - paragraph [ref=e522]: CompanionManager initialized.
+        - paragraph [ref=e523]: "DynamicEventManager: Loaded 3 event templates."
+        - paragraph [ref=e524]: DynamicEventManager initialized successfully.
+        - paragraph [ref=e525]: "[MapUtils] Initialized."
+        - paragraph [ref=e526]: MapUtils initialized.
+        - paragraph [ref=e527]: "ProceduralQuestManager: Accessed 4 quest templates from AssetManager."
+        - paragraph [ref=e528]: ProceduralQuestManager initialized successfully.
+        - paragraph [ref=e529]: "Map zoom controls initialized. Current map font size: 16px"
+        - paragraph [ref=e530]: Player stats and skills initialized from character creator.
+        - paragraph [ref=e531]: "Initial 'Body Pockets' capacity set to: 3 (from Strength: 3)."
+        - paragraph [ref=e532]: "Processing 2 starting items. Player inventory capacity: 3 slots."
+        - paragraph [ref=e533]: Added 1x Small Backpack.
+        - paragraph [ref=e534]: "Added starting item: Small Backpack to inventory."
+        - paragraph [ref=e535]: Added 1x Basic Vest.
+        - paragraph [ref=e536]: "Added starting item: Basic Vest to inventory."
+        - paragraph [ref=e537]: "Turn 1 started. Moves: 6, Actions: 1"
+        - paragraph [ref=e538]: "[ConstructionUIManager] Opened."
+      - generic [ref=e539]:
+        - generic [ref=e541]: Below:.:Dirt
+        - generic [ref=e543]: Below:.:Dirt
+        - generic [ref=e545]: Below:.:Dirt
+        - generic [ref=e547]: Below:.:Dirt
+        - generic [ref=e548]:
+          - generic [ref=e549]: Entity:☻:You
+          - generic [ref=e550]: Below:.:Dirt
+        - generic [ref=e552]: Below:.:Dirt
+        - generic [ref=e554]: Below:.:Dirt
+        - generic [ref=e556]: Below:.:Dirt
+        - generic [ref=e558]: Below:.:Dirt
+  - generic [ref=e559]:
+    - heading "Game Controls" [level=2] [ref=e560]
+    - button "Settings" [ref=e561] [cursor=pointer]
+    - button "Toggle Roof" [ref=e562] [cursor=pointer]
+    - generic [ref=e563]:
+      - button "Zoom In (+)" [ref=e564] [cursor=pointer]
+      - button "Zoom Out (-)" [ref=e565] [cursor=pointer]
+    - generic [ref=e566]:
+      - text: "Select Map:"
+      - combobox "Select Map:" [ref=e567]:
+        - option "dragon" [selected]
+        - option "Cave"
+        - option "Sunrise Project Biomass Reactor"
+        - option "Water Test 2"
+        - option "Water Test 1"
+        - option "Clearing"
+        - option "Small Race Track"
+        - option "3 Building Test Map"
+        - option "npcTestMap"
+        - option "Fishing Island"
+        - option "Fallbrook Police Department"
+        - option "Tall Building"
+        - option "Mine"
+        - option "Valley"
+    - generic [ref=e568]:
+      - generic [ref=e569]: "Moves Left: 6"
+      - generic [ref=e570]: "Actions Left: 1"
+    - generic [ref=e571]:
+      - text: "XP:"
+      - progressbar "0 / 100" [ref=e572]
+    - generic [ref=e573]:
+      - heading "Time & Needs" [level=3] [ref=e574]
+      - generic [ref=e575]: Day 1 - 00:00
+      - generic [ref=e576]: "Hunger: [##########]"
+      - generic [ref=e577]: "Thirst: [##########]"
+      - generic [ref=e578]: "Player Z: 0"
+      - generic [ref=e579]: "View Z: 0"
+    - generic [ref=e580]:
+      - heading "Health Status" [level=3] [ref=e581]
+      - table [ref=e582]:
+        - rowgroup [ref=e583]:
+          - row "Body Part HP Armor Crisis Timer" [ref=e584]:
+            - columnheader "Body Part" [ref=e585]
+            - columnheader "HP" [ref=e586]
+            - columnheader "Armor" [ref=e587]
+            - columnheader "Crisis Timer" [ref=e588]
+        - rowgroup [ref=e589]:
+          - row "Head 5/5 0 —" [ref=e590]:
+            - cell "Head" [ref=e591]
+            - cell "5/5" [ref=e592]
+            - cell "0" [ref=e593]
+            - cell "—" [ref=e594]
+          - row "Torso 8/8 0 —" [ref=e595]:
+            - cell "Torso" [ref=e596]
+            - cell "8/8" [ref=e597]
+            - cell "0" [ref=e598]
+            - cell "—" [ref=e599]
+          - row "Left Arm 7/7 0 —" [ref=e600]:
+            - cell "Left Arm" [ref=e601]
+            - cell "7/7" [ref=e602]
+            - cell "0" [ref=e603]
+            - cell "—" [ref=e604]
+          - row "Right Arm 7/7 0 —" [ref=e605]:
+            - cell "Right Arm" [ref=e606]
+            - cell "7/7" [ref=e607]
+            - cell "0" [ref=e608]
+            - cell "—" [ref=e609]
+          - row "Left Leg 7/7 0 —" [ref=e610]:
+            - cell "Left Leg" [ref=e611]
+            - cell "7/7" [ref=e612]
+            - cell "0" [ref=e613]
+            - cell "—" [ref=e614]
+          - row "Right Leg 7/7 0 —" [ref=e615]:
+            - cell "Right Leg" [ref=e616]
+            - cell "7/7" [ref=e617]
+            - cell "0" [ref=e618]
+            - cell "—" [ref=e619]
+      - heading "Interactions" [level=3] [ref=e620]
+      - heading "Actions" [level=3] [ref=e621]
+      - heading "Equipped Hand Items" [level=3] [ref=e622]
+      - generic [ref=e623]:
+        - generic [ref=e624]: "Left Hand: Empty"
+        - generic [ref=e625]: "Right Hand: Empty"
+      - heading "Hand Slots" [level=3] [ref=e626]
+      - heading "Equipped Containers" [level=3] [ref=e627]
+      - generic [ref=e628]: No capacity-providing clothing equipped.
+```

@@ -1,3 +1,104 @@
+// Min-Priority Queue Implementation (Min-Heap)
+class PriorityQueue {
+    constructor(comparator = (a, b) => a.f < b.f) { // Expects nodes to have an 'f' property for A*
+        this._heap = [];
+        this._comparator = comparator;
+    }
+
+    size() {
+        return this._heap.length;
+    }
+
+    isEmpty() {
+        return this.size() === 0;
+    }
+
+    peek() {
+        return this._heap[0];
+    }
+
+    push(...values) {
+        values.forEach(value => {
+            this._heap.push(value);
+            this._siftUp();
+        });
+        return this.size();
+    }
+
+    pop() {
+        const poppedValue = this.peek();
+        const bottom = this.size() - 1;
+        if (bottom > 0) {
+            this._swap(0, bottom);
+        }
+        this._heap.pop();
+        this._siftDown();
+        return poppedValue;
+    }
+
+    replace(value) {
+        const replacedValue = this.peek();
+        this._heap[0] = value;
+        this._siftDown();
+        return replacedValue;
+    }
+
+    _parent(i) {
+        return ((i + 1) >>> 1) - 1;
+    }
+
+    _left(i) {
+        return (i << 1) + 1;
+    }
+
+    _right(i) {
+        return (i + 1) << 1;
+    }
+
+    _greater(i, j) {
+        return this._comparator(this._heap[i], this._heap[j]);
+    }
+
+    _swap(i, j) {
+        [this._heap[i], this._heap[j]] = [this._heap[j], this._heap[i]];
+    }
+
+    _siftUp() {
+        let node = this.size() - 1;
+        while (node > 0 && this._greater(node, this._parent(node))) {
+            this._swap(node, this._parent(node));
+            node = this._parent(node);
+        }
+    }
+
+    _siftDown() {
+        let node = 0;
+        while (
+            (this._left(node) < this.size() && this._greater(this._left(node), node)) ||
+            (this._right(node) < this.size() && this._greater(this._right(node), node))
+        ) {
+            let maxChild = (this._right(node) < this.size() && this._greater(this._right(node), this._left(node))) ? this._right(node) : this._left(node);
+            this._swap(node, maxChild);
+            node = maxChild;
+        }
+    }
+
+    // Method to update a node's position if its priority changes (needed for A*)
+    // This is a simplified version; a more robust heap would allow efficient updates.
+    // For A*, if a shorter path to an existing node in openSet is found, its 'f' value changes.
+    // The heap needs to be re-heapified or the node needs to be removed and re-inserted.
+    // A common approach is to allow duplicates with different priorities and let the pop() find the best one,
+    // or to use a more complex heap that supports decrease-key.
+    // For this implementation, we'll rely on potentially adding a better path as a new entry,
+    // and the closedSet will prevent reprocessing the same coordinates if a worse path was already expanded.
+    // A find and update method could be:
+    // updateNode(node) { /* find node, update priority, then sift up/down */ }
+    // However, for simplicity, we'll just push new nodes if a better path is found,
+    // and the closedSet will handle not reprocessing.
+}
+
+
+
 // Palette for distinct faction/team colors
 const FACTION_COLORS = [
     'orange',        // A common, distinct color
@@ -439,8 +540,9 @@ function findPath3D(startPos, endPos, entity, mapData, tileset) {
             return null;
         }
 
-        const openSet = [];
+        const openSet = new PriorityQueue((a, b) => a.f < b.f);
         const closedSet = new Set();
+        const openSetMap = new Map();
 
         const startNode = {
             x: _startPos.x, y: _startPos.y, z: _startPos.z,
@@ -450,6 +552,7 @@ function findPath3D(startPos, endPos, entity, mapData, tileset) {
             parent: null
         };
         openSet.push(startNode);
+        openSetMap.set(getNodeKey(startNode), startNode);
 
         function heuristic(posA, posB) {
             return Math.abs(posA.x - posB.x) + Math.abs(posA.y - posB.y) + Math.abs(posA.z - posB.z);
@@ -475,10 +578,15 @@ function findPath3D(startPos, endPos, entity, mapData, tileset) {
             return null;
         }
 
-        while (openSet.length > 0) {
-            openSet.sort((a, b) => a.f - b.f);
-            const currentNode = openSet.shift();
+        while (!openSet.isEmpty()) {
+            const currentNode = openSet.pop();
             const currentKey = getNodeKey(currentNode);
+
+            // Lazy deletion: if this node is obsolete (we pushed a better one), skip it.
+            const mappedNode = openSetMap.get(currentKey);
+            if (mappedNode !== currentNode) continue;
+
+            openSetMap.delete(currentKey);
 
             if (currentNode.x === _endPos.x && currentNode.y === _endPos.y && currentNode.z === _endPos.z) {
                 const path = [];
@@ -567,17 +675,25 @@ function findPath3D(startPos, endPos, entity, mapData, tileset) {
                 const neighborKey = getNodeKey(neighborPos);
                 if (closedSet.has(neighborKey)) continue;
                 const gCost = currentNode.g + neighborPos.cost;
-                let existingNeighbor = openSet.find(node => node.x === neighborPos.x && node.y === neighborPos.y && node.z === neighborPos.z);
+                let existingNeighbor = openSetMap.get(neighborKey);
                 if (!existingNeighbor) {
-                    openSet.push({
+                    const newNode = {
                         x: neighborPos.x, y: neighborPos.y, z: neighborPos.z,
                         g: gCost, h: heuristic(neighborPos, _endPos),
                         f: gCost + heuristic(neighborPos, _endPos), parent: currentNode
-                    });
+                    };
+                    openSet.push(newNode);
+                    openSetMap.set(neighborKey, newNode);
                 } else if (gCost < existingNeighbor.g) {
-                    existingNeighbor.g = gCost;
-                    existingNeighbor.f = gCost + existingNeighbor.h;
-                    existingNeighbor.parent = currentNode;
+                    // Do not mutate existing objects in the heap as it breaks the heap invariant
+                    // Instead, push a new updated node and map it (the old one becomes obsolete and will be skipped via lazy deletion)
+                    const updatedNode = {
+                        x: existingNeighbor.x, y: existingNeighbor.y, z: existingNeighbor.z,
+                        g: gCost, h: existingNeighbor.h,
+                        f: gCost + existingNeighbor.h, parent: currentNode
+                    };
+                    openSet.push(updatedNode);
+                    openSetMap.set(neighborKey, updatedNode);
                 }
             }
         }
@@ -786,106 +902,6 @@ function mapToScreenCoordinates(mapX, mapY, mapZ) {
     return { x: screenX, y: screenY };
 }
 window.mapToScreenCoordinates = mapToScreenCoordinates;
-
-// Min-Priority Queue Implementation (Min-Heap)
-class PriorityQueue {
-    constructor(comparator = (a, b) => a.f < b.f) { // Expects nodes to have an 'f' property for A*
-        this._heap = [];
-        this._comparator = comparator;
-    }
-
-    size() {
-        return this._heap.length;
-    }
-
-    isEmpty() {
-        return this.size() === 0;
-    }
-
-    peek() {
-        return this._heap[0];
-    }
-
-    push(...values) {
-        values.forEach(value => {
-            this._heap.push(value);
-            this._siftUp();
-        });
-        return this.size();
-    }
-
-    pop() {
-        const poppedValue = this.peek();
-        const bottom = this.size() - 1;
-        if (bottom > 0) {
-            this._swap(0, bottom);
-        }
-        this._heap.pop();
-        this._siftDown();
-        return poppedValue;
-    }
-
-    replace(value) {
-        const replacedValue = this.peek();
-        this._heap[0] = value;
-        this._siftDown();
-        return replacedValue;
-    }
-
-    _parent(i) {
-        return ((i + 1) >>> 1) - 1;
-    }
-
-    _left(i) {
-        return (i << 1) + 1;
-    }
-
-    _right(i) {
-        return (i + 1) << 1;
-    }
-
-    _greater(i, j) {
-        return this._comparator(this._heap[i], this._heap[j]);
-    }
-
-    _swap(i, j) {
-        [this._heap[i], this._heap[j]] = [this._heap[j], this._heap[i]];
-    }
-
-    _siftUp() {
-        let node = this.size() - 1;
-        while (node > 0 && this._greater(node, this._parent(node))) {
-            this._swap(node, this._parent(node));
-            node = this._parent(node);
-        }
-    }
-
-    _siftDown() {
-        let node = 0;
-        while (
-            (this._left(node) < this.size() && this._greater(this._left(node), node)) ||
-            (this._right(node) < this.size() && this._greater(this._right(node), node))
-        ) {
-            let maxChild = (this._right(node) < this.size() && this._greater(this._right(node), this._left(node))) ? this._right(node) : this._left(node);
-            this._swap(node, maxChild);
-            node = maxChild;
-        }
-    }
-
-    // Method to update a node's position if its priority changes (needed for A*)
-    // This is a simplified version; a more robust heap would allow efficient updates.
-    // For A*, if a shorter path to an existing node in openSet is found, its 'f' value changes.
-    // The heap needs to be re-heapified or the node needs to be removed and re-inserted.
-    // A common approach is to allow duplicates with different priorities and let the pop() find the best one,
-    // or to use a more complex heap that supports decrease-key.
-    // For this implementation, we'll rely on potentially adding a better path as a new entry,
-    // and the closedSet will prevent reprocessing the same coordinates if a worse path was already expanded.
-    // A find and update method could be:
-    // updateNode(node) { /* find node, update priority, then sift up/down */ }
-    // However, for simplicity, we'll just push new nodes if a better path is found,
-    // and the closedSet will handle not reprocessing.
-}
-
 
 // Performance Profiling
 window.dev_profiler = {}; // Store timings

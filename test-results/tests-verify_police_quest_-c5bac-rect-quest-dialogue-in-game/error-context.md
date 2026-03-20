@@ -1,0 +1,156 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - heading "Character Creator" [level=2] [ref=e5]
+  - generic [ref=e6]:
+    - button "Character" [ref=e7] [cursor=pointer]
+    - button "Appearance" [ref=e8] [cursor=pointer]
+  - generic [ref=e9]:
+    - text: "Character Name:"
+    - textbox [ref=e10]: Name Here
+    - text: "Level: 1"
+    - text: "XP: 0"
+    - 'heading "Stats (Stat Points: 17)" [level=3] [ref=e11]'
+    - generic [ref=e12]:
+      - generic "Physical power." [ref=e13]:
+        - generic [ref=e16]: Strength
+        - generic [ref=e17]:
+          - button "-" [ref=e18] [cursor=pointer]
+          - spinbutton [ref=e19]: "3"
+          - button "+" [ref=e20] [cursor=pointer]
+      - generic "Reasoning, memory, and knowledge." [ref=e21]:
+        - generic [ref=e24]: Intelligence
+        - generic [ref=e25]:
+          - button "-" [ref=e26] [cursor=pointer]
+          - spinbutton [ref=e27]: "3"
+          - button "+" [ref=e28] [cursor=pointer]
+      - generic "Agility, speed, and nimbleness." [ref=e29]:
+        - generic [ref=e32]: Dexterity
+        - generic [ref=e33]:
+          - button "-" [ref=e34] [cursor=pointer]
+          - spinbutton [ref=e35]: "3"
+          - button "+" [ref=e36] [cursor=pointer]
+      - generic "Toughness and health." [ref=e37]:
+        - generic [ref=e40]: Constitution
+        - generic [ref=e41]:
+          - button "-" [ref=e42] [cursor=pointer]
+          - spinbutton [ref=e43]: "3"
+          - button "+" [ref=e44] [cursor=pointer]
+      - generic "Awareness and ability to spot hidden things." [ref=e45]:
+        - generic [ref=e48]: Perception
+        - generic [ref=e49]:
+          - button "-" [ref=e50] [cursor=pointer]
+          - spinbutton [ref=e51]: "3"
+          - button "+" [ref=e52] [cursor=pointer]
+      - generic "Force of personality, persuasiveness, and social influence" [ref=e53]:
+        - generic [ref=e56]: Charisma
+        - generic [ref=e57]:
+          - button "-" [ref=e58] [cursor=pointer]
+          - spinbutton [ref=e59]: "3"
+          - button "+" [ref=e60] [cursor=pointer]
+    - 'heading "Skills (Skill Points: 30)" [level=3] [ref=e61]'
+    - generic [ref=e62]:
+      - generic "Governs the ability to interact with and control animals." [ref=e63]:
+        - generic [ref=e66]: Animal Handling
+        - generic [ref=e67]:
+          - button "-" [disabled] [ref=e68]
+          - spinbutton [ref=e69]: "0"
+          - button "+" [ref=e70] [cursor=pointer]
+      - generic "The ability to use, repair, and modify electronic devices." [ref=e71]:
+        - generic [ref=e74]: Electronics
+        - generic [ref=e75]:
+          - button "-" [disabled] [ref=e76]
+          - spinbutton [ref=e77]: "0"
+          - button "+" [ref=e78] [cursor=pointer]
+      - generic "Skill in handling, identifying, and disarming explosive devices." [ref=e79]:
+        - generic [ref=e82]: Explosives
+        - generic [ref=e83]:
+          - button "-" [disabled] [ref=e84]
+          - spinbutton [ref=e85]: "0"
+          - button "+" [ref=e86] [cursor=pointer]
+      - generic "Proficiency with all types of firearms." [ref=e87]:
+        - generic [ref=e90]: Guns
+        - generic [ref=e91]:
+          - button "-" [disabled] [ref=e92]
+          - spinbutton [ref=e93]: "0"
+          - button "+" [ref=e94] [cursor=pointer]
+      - generic "The ability to influence others through fear and threats." [ref=e95]:
+        - generic [ref=e98]: Intimidation
+        - generic [ref=e99]:
+          - button "-" [disabled] [ref=e100]
+          - spinbutton [ref=e101]: "0"
+          - button "+" [ref=e102] [cursor=pointer]
+      - generic "The skill of uncovering clues and solving mysteries." [ref=e103]:
+        - generic [ref=e106]: Investigation
+        - generic [ref=e107]:
+          - button "-" [disabled] [ref=e108]
+          - spinbutton [ref=e109]: "0"
+          - button "+" [ref=e110] [cursor=pointer]
+      - generic "The ability to open locks without a key." [ref=e111]:
+        - generic [ref=e114]: Lockpick
+        - generic [ref=e115]:
+          - button "-" [disabled] [ref=e116]
+          - spinbutton [ref=e117]: "0"
+          - button "+" [ref=e118] [cursor=pointer]
+      - generic "The skill of healing wounds and treating illnesses." [ref=e119]:
+        - generic [ref=e122]: Medicine
+        - generic [ref=e123]:
+          - button "-" [disabled] [ref=e124]
+          - spinbutton [ref=e125]: "0"
+          - button "+" [ref=e126] [cursor=pointer]
+      - generic "Proficiency with all types of melee weapons." [ref=e127]:
+        - generic [ref=e130]: Melee Weapons
+        - generic [ref=e131]:
+          - button "-" [disabled] [ref=e132]
+          - spinbutton [ref=e133]: "0"
+          - button "+" [ref=e134] [cursor=pointer]
+      - generic "The ability to influence others through diplomacy and reason." [ref=e135]:
+        - generic [ref=e138]: Persuasion
+        - generic [ref=e139]:
+          - button "-" [disabled] [ref=e140]
+          - spinbutton [ref=e141]: "0"
+          - button "+" [ref=e142] [cursor=pointer]
+      - generic "The skill of fixing broken items and machinery." [ref=e143]:
+        - generic [ref=e146]: Repair
+        - generic [ref=e147]:
+          - button "-" [disabled] [ref=e148]
+          - spinbutton [ref=e149]: "0"
+          - button "+" [ref=e150] [cursor=pointer]
+      - generic "The ability to perform feats of manual dexterity, such as picking pockets." [ref=e151]:
+        - generic [ref=e154]: Sleight of Hand
+        - generic [ref=e155]:
+          - button "-" [disabled] [ref=e156]
+          - spinbutton [ref=e157]: "0"
+          - button "+" [ref=e158] [cursor=pointer]
+      - generic "The skill of moving quietly and avoiding detection." [ref=e159]:
+        - generic [ref=e162]: Stealth
+        - generic [ref=e163]:
+          - button "-" [disabled] [ref=e164]
+          - spinbutton [ref=e165]: "0"
+          - button "+" [ref=e166] [cursor=pointer]
+      - generic "The ability to survive in the wilderness." [ref=e167]:
+        - generic [ref=e170]: Survival
+        - generic [ref=e171]:
+          - button "-" [disabled] [ref=e172]
+          - spinbutton [ref=e173]: "0"
+          - button "+" [ref=e174] [cursor=pointer]
+      - generic "Proficiency in hand-to-hand combat." [ref=e175]:
+        - generic [ref=e178]: Unarmed
+        - generic [ref=e179]:
+          - button "-" [disabled] [ref=e180]
+          - spinbutton [ref=e181]: "0"
+          - button "+" [ref=e182] [cursor=pointer]
+    - generic [ref=e183]:
+      - heading "Derived Stats" [level=3] [ref=e184]
+      - generic [ref=e185]: "Hit Points: 16"
+      - generic [ref=e186]: "Movement Speed: 30"
+      - generic [ref=e187]: "Carry Weight: 80"
+      - generic [ref=e188]: "Action Points: 1"
+  - generic [ref=e189]:
+    - button "Start Game" [ref=e190] [cursor=pointer]
+    - button "Save Game" [ref=e191] [cursor=pointer]
+    - button "Load Game" [ref=e192] [cursor=pointer]
+    - button "Export Save" [ref=e193] [cursor=pointer]
+    - button "Import Save" [ref=e194] [cursor=pointer]
+```
