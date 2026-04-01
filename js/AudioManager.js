@@ -51,7 +51,10 @@ class AudioManager {
             'melee_armed_swing_01.wav',
             'ui_start_game_01.wav',
             'ui_start_game_02.wav',
-            'fire_loop.wav'
+            'fire_loop.wav',
+            'move_posture_crouch_01.wav',
+            'move_posture_prone_01.wav',
+            'move_posture_stand_01.wav'
         ];
 
         // Pre-load existing sounds
