@@ -1391,32 +1391,44 @@
             attackDist = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
         }
 
+        const attMod = attackModifiers.totalModifiers;
+        const defMod = defenseModifiers.totalModifiers;
+        const canCrit = attackModifiers.canCrit;
+
         for (let attNat = 1; attNat <= 20; attNat++) {
             const attCount = attackDist[attNat];
             if (attCount === 0) continue;
 
-            const attTotal = attNat + attackModifiers.totalModifiers;
-            const isCritHit = attackModifiers.canCrit && attNat === 20;
-            const isCritMiss = attackModifiers.canCrit && attNat === 1;
+            const isCritHit = canCrit && attNat === 20;
+            const isCritMiss = canCrit && attNat === 1;
 
-            for (let defNat = 1; defNat <= 20; defNat++) {
-                const defTotal = defNat + defenseModifiers.totalModifiers;
-
-                let isHit = false;
-                const isDefCritFail = (defNat === 1 && defenseType !== "None");
-                const isDefCritSuccess = (defNat === 20 && defenseType !== "None");
-
-                if (isCritHit) isHit = true;
-                else if (isCritMiss) isHit = false;
-                else if (isDefCritFail) isHit = true;
-                else if (isDefCritSuccess) isHit = false;
-                else isHit = attTotal > defTotal;
-
-                if (isHit) {
-                    hits += attCount;
+            let scenarioHits = 0;
+            if (isCritHit) {
+                scenarioHits = 20;
+            } else if (isCritMiss) {
+                // If canCrit is false, isCritMiss is always false, but it's good to be explicit
+                scenarioHits = 0;
+            } else {
+                const attTotal = attNat + attMod;
+                if (defenseType === "None") {
+                    // Count defNat from 1..20 where attTotal > defNat + defMod
+                    // defNat < attTotal - defMod
+                    // Range: [1, 20]
+                    const maxDefNat = Math.floor(attTotal - defMod - 1e-7);
+                    scenarioHits = Math.max(0, Math.min(20, maxDefNat));
+                } else {
+                    // defNat = 1: Hit (Critical Fail)
+                    // defNat = 20: Miss (Critical Success)
+                    // defNat = 2..19: attTotal > defNat + defMod
+                    // Count defNat in [2, 19] where defNat < attTotal - defMod
+                    const maxDefNatInRange = Math.floor(attTotal - defMod - 1e-7);
+                    const hitsInRange = Math.max(0, Math.min(19, maxDefNatInRange) - 2 + 1);
+                    scenarioHits = 1 + hitsInRange;
                 }
-                total += attCount;
             }
+
+            hits += attCount * scenarioHits;
+            total += attCount * 20;
         }
 
         return total > 0 ? (hits / total) * 100 : 0;
