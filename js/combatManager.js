@@ -1845,8 +1845,8 @@
                 let reloadSound = 'ui_click_01.wav'; // Generic placeholder
                 if (weapon?.type?.includes("pistol")) {
                     reloadSound = 'ui_click_01.wav'; // TODO: Play reload_pistol_01.wav when available
-                } else if (weapon?.type?.includes("rifle")) {
-                    reloadSound = 'ui_click_01.wav'; // TODO: Play reload_rifle_01.wav when available (also for SMG if no specific sound)
+                } else if (weapon?.type?.includes("rifle") || weapon?.type?.includes("submachine_gun") || weapon?.tags?.includes("rifle") || weapon?.tags?.includes("smg") || weapon?.tags?.includes("submachine_gun")) {
+                    reloadSound = 'reload_rifle_01.wav';
                 } else if (weapon?.type?.includes("shotgun")) {
                     reloadSound = 'ui_click_01.wav'; // TODO: Play reload_shotgun_01.wav when available
                 } else if (weapon?.type?.includes("bow")) {

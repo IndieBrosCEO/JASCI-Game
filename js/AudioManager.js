@@ -51,7 +51,8 @@ class AudioManager {
             'melee_armed_swing_01.wav',
             'ui_start_game_01.wav',
             'ui_start_game_02.wav',
-            'fire_loop.wav'
+            'fire_loop.wav',
+            'reload_rifle_01.wav'
         ];
 
         // Pre-load existing sounds
