@@ -1843,15 +1843,15 @@
             if (window.audioManager && (attacker.mapPos || attacker === this.gameState)) {
                 const reloadSoundPos = attacker === this.gameState ? this.gameState.playerPos : attacker.mapPos;
                 let reloadSound = 'ui_click_01.wav'; // Generic placeholder
-                if (weapon?.type?.includes("pistol")) {
+                if (weapon?.type?.includes("pistol") || weapon?.tags?.includes("pistol")) {
                     reloadSound = 'ui_click_01.wav'; // TODO: Play reload_pistol_01.wav when available
-                } else if (weapon?.type?.includes("rifle")) {
+                } else if (weapon?.type?.includes("rifle") || weapon?.tags?.includes("rifle")) {
                     reloadSound = 'ui_click_01.wav'; // TODO: Play reload_rifle_01.wav when available (also for SMG if no specific sound)
-                } else if (weapon?.type?.includes("shotgun")) {
-                    reloadSound = 'ui_click_01.wav'; // TODO: Play reload_shotgun_01.wav when available
-                } else if (weapon?.type?.includes("bow")) {
+                } else if (weapon?.type?.includes("shotgun") || weapon?.tags?.includes("shotgun")) {
+                    reloadSound = 'reload_shotgun_01.wav';
+                } else if (weapon?.type?.includes("bow") || weapon?.tags?.includes("bow")) {
                     reloadSound = 'ui_click_01.wav'; // TODO: Play reload_bow_01.wav or arrow_nock_01.wav when available
-                } else if (weapon?.type?.includes("crossbow")) {
+                } else if (weapon?.type?.includes("crossbow") || weapon?.tags?.includes("crossbow")) {
                     reloadSound = 'ui_click_01.wav'; // TODO: Play reload_crossbow_01.wav when available
                 }
                 window.audioManager.playSoundAtLocation(reloadSound, reloadSoundPos, {}, { volume: 0.6 });
