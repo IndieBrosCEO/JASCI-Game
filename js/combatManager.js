@@ -3198,7 +3198,7 @@
                 window.gameOver(entity);
                 if (!isPlayerVictim && entity.cr !== undefined && window.xpManager) {
                     logToConsole(`CombatManager: NPC ${entityName} killed by re-hit during crisis. Awarding XP.`, 'lime');
-                    window.xpManager.awardXp(window.xpManager.calculateXpForKill(entity.cr), this.gameState);
+                    window.xpManager.awardXp(`kill:${entity.id}`, window.xpManager.calculateXpForKill(entity.cr));
                     // Notify Quest System about NPC kill
                     if (window.proceduralQuestManager && typeof window.proceduralQuestManager.checkObjectiveCompletion === 'function') {
                         window.proceduralQuestManager.checkObjectiveCompletion({ type: "npc_killed", npcId: entity.id, npcTags: entity.tags || [], definitionId: entity.definitionId });
@@ -3237,7 +3237,7 @@
                     window.gameOver(entity); // gameOver should handle removing from initiative, etc.
                     if (!isPlayerVictim && entity.cr !== undefined && window.xpManager) {
                         logToConsole(`CombatManager: NPC ${entityName} killed by explosion to vital part. Awarding XP.`, 'lime');
-                        window.xpManager.awardXp(window.xpManager.calculateXpForKill(entity.cr), this.gameState);
+                        window.xpManager.awardXp(`kill:${entity.id}`, window.xpManager.calculateXpForKill(entity.cr));
                         // Notify Quest System about NPC kill
                         if (window.proceduralQuestManager && typeof window.proceduralQuestManager.checkObjectiveCompletion === 'function') {
                             window.proceduralQuestManager.checkObjectiveCompletion({ type: "npc_killed", npcId: entity.id, npcTags: entity.tags || [], definitionId: entity.definitionId });
@@ -3265,7 +3265,7 @@
 
                 if (entity.cr !== undefined && window.xpManager) {
                     logToConsole(`CombatManager: NPC ${entityName} confirmed dead (vital part 0 HP, no crisis). Awarding XP.`, 'lime');
-                    window.xpManager.awardXp(window.xpManager.calculateXpForKill(entity.cr), this.gameState);
+                    window.xpManager.awardXp(`kill:${entity.id}`, window.xpManager.calculateXpForKill(entity.cr));
                     entity.xpAwardedThisDamageEvent = true;
                     // Notify Quest System
                     if (window.proceduralQuestManager && typeof window.proceduralQuestManager.checkObjectiveCompletion === 'function') {

@@ -184,7 +184,7 @@ class HarvestManager {
                 else xpAmount = 75;
 
                 if (this.xpManager && typeof this.xpManager.awardXp === 'function') {
-                    this.xpManager.awardXp(xpAmount, gameState);
+                    this.xpManager.awardXp(`harvest:${lootTableId}`, xpAmount);
                 }
 
                 if (window.audioManager) {
@@ -326,9 +326,14 @@ class HarvestManager {
         }
 
         if (removed) {
-            // Award XP for break action (Easy)
+            // Award XP for break action
+            let xpAmount = 10; // Default Easy (Chop Wood, Dig Dirt)
+            if (action === "Mine") xpAmount = 25; // Medium (Mining Stone/Metal)
+            // If mining high-tier stuff, could be 75, but tags check needed.
+            // For now, Mine is Medium (25), others Easy (10).
+
             if (this.xpManager && typeof this.xpManager.awardXp === 'function') {
-                this.xpManager.awardXp(10, gameState);
+                this.xpManager.awardXp(`break:${action.toLowerCase()}`, xpAmount);
             }
 
             // Play Sound
