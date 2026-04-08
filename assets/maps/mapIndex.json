@@ -1,4 +1,8 @@
-﻿[
+[
+  {
+    "id": "Epic_Map",
+    "name": "Epic City Map"
+  },
   {
     "id": "dragon",
     "name": "dragon"
