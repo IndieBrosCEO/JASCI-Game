@@ -1889,7 +1889,6 @@
             { volume: 0.6 }
         );
     }
-}
 
             // Actual ammo replenishment logic
             if (weapon && (weapon.type.includes("firearm") || weapon.type.includes("bow") || weapon.type.includes("crossbow"))) {
