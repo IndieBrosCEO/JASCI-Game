@@ -1128,7 +1128,7 @@ window.mapRenderer = {
             return;
         }
 
-        const baseMapIndexUrl = `/assets/maps/mapIndex.json?t=${Date.now()}`;
+        const baseMapIndexUrl = `${ASSET_BASE}maps/mapIndex.json?t=${Date.now()}`;
         let baseMapIndex = [];
         try {
             const response = await fetch(baseMapIndexUrl);

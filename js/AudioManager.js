@@ -3,7 +3,7 @@ class AudioManager {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         this.soundBuffers = new Map(); // To store pre-loaded sound data
         this.musicBuffers = new Map(); // To store decoded music tracks
-        this.soundPath = 'assets/sounds/'; // Base path for sound files
+        this.soundPath = ASSET_BASE + 'sounds/'; // Base path for sound files
         this.isLoading = false;
         this.loadQueue = []; // Used for simple checks, but loadingPromises is better
         this.loadingPromises = new Map(); // Dedupe loading promises

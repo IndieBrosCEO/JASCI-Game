@@ -12,14 +12,14 @@ class WorldMapManager {
             if (assetManager.worldGraph) {
                 this.worldGraph = assetManager.worldGraph;
             } else {
-                const graphResponse = await fetch('assets/definitions/world_graph.json');
+                const graphResponse = await fetch(ASSET_BASE + 'definitions/world_graph.json');
                 this.worldGraph = await graphResponse.json();
             }
 
             if (assetManager.areas) {
                 this.areas = assetManager.areas;
             } else {
-                const areasResponse = await fetch('assets/definitions/areas.json');
+                const areasResponse = await fetch(ASSET_BASE + 'definitions/areas.json');
                 this.areas = await areasResponse.json();
             }
 

@@ -22,7 +22,7 @@ class WeatherManager {
 
     async initialize() {
         try {
-            this.weatherDefinitions = await this.assetManager.loadData('assets/definitions/weather_types.json');
+            this.weatherDefinitions = await this.assetManager.loadData(ASSET_BASE + 'definitions/weather_types.json');
             if (Object.keys(this.weatherDefinitions).length === 0) {
                 logToConsole(`${this.logPrefix} No weather definitions found or loaded.`, 'orange');
             } else {
