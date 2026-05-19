@@ -1,3 +1,4 @@
+const ASSET_BASE = location.pathname.includes("/mapMaker/") || location.pathname.includes("/Website%20Tools/") ? "../assets/" : "assets/";
 // js/assetManager.js
 
 class AssetManager {
@@ -69,7 +70,7 @@ class AssetManager {
 
         // Parallel fetch
         const fetchPromises = definitionFiles.map(async filename => {
-            const url = `/assets/definitions/${filename}`;
+            const url = `${ASSET_BASE}definitions/${filename}`;
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status} for ${filename}`);
@@ -186,7 +187,7 @@ class AssetManager {
         }
 
         // Load static quests
-        const questsDir = '/assets/definitions/quests/';
+        const questsDir = ASSET_BASE + 'definitions/quests/';
         try {
             const indexRes = await fetch(questsDir + 'index.json');
             if (indexRes.ok) {
@@ -217,7 +218,7 @@ class AssetManager {
 
         const dialoguePromises = Array.from(dialogueFilesToLoad).map(async filename => {
             try {
-                const res = await fetch(`/assets/dialogue/${filename}`);
+                const res = await fetch(`${ASSET_BASE}dialogue/${filename}`);
                 if (res.ok) {
                     this.dialogues[filename] = await res.json();
                 }
@@ -268,7 +269,7 @@ class AssetManager {
         }
 
         let mapJsonData;
-        const baseMapPath = `/assets/maps/${mapId}.json`;
+        const baseMapPath = `${ASSET_BASE}maps/${mapId}.json`;
         try {
             const response = await fetch(baseMapPath);
             if (!response.ok) throw new Error(response.status);
