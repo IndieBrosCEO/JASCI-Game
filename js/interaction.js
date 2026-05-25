@@ -103,6 +103,7 @@ function _getActionsForItem(it) {
     if (tags.includes("harvest:sand")) actions.push("Harvest Sand");
     if (tags.includes("harvest:mud")) actions.push("Harvest Mud");
     if (tags.includes("harvest:gravel")) actions.push("Harvest Gravel");
+    if (tags.includes("harvest:corn") || tags.includes("harvest:carrot") || tags.includes("harvest:tomato")) actions.push("Harvest");
 
     // Scavenging
     if (tags.includes("scavenge:generic") || tags.includes("scavenge:junk")) actions.push("Scavenge");

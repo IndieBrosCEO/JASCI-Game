@@ -72,6 +72,18 @@ class HarvestManager {
                  requiredSkill = "Investigation";
                  skillDifficulty = 5;
              }
+        } else if (tags.includes("harvest:corn")) {
+            lootTableId = "harvest:corn";
+            requiredSkill = "Survival";
+            skillDifficulty = 3;
+        } else if (tags.includes("harvest:carrot")) {
+            lootTableId = "harvest:carrot";
+            requiredSkill = "Survival";
+            skillDifficulty = 3;
+        } else if (tags.includes("harvest:tomato")) {
+            lootTableId = "harvest:tomato";
+            requiredSkill = "Survival";
+            skillDifficulty = 3;
         } else if (tags.includes("scavenge:junk")) {
             lootTableId = "scavenge:junk";
             requiredSkill = "Investigation";

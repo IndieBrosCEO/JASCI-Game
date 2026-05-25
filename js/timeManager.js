@@ -73,7 +73,7 @@ const TimeManager = {
      * @param {object} gameState - The global game state.
      */
     processHourlyNeeds: function (gameState) {
-        // Hunger decrement (example: 1 point per hour)
+        // Hunger decrement (playerHunger acts as a satiety meter: 24 is full, 0 is starving)
         if (gameState.playerHunger > 0) {
             gameState.playerHunger--;
         } else {

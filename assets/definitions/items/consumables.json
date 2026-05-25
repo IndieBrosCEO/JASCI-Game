@@ -307,7 +307,7 @@
       "modern"
     ],
     "effects": {
-      "hunger": -12
+      "hunger": 12
     },
     "family": "food",
     "properties": {
@@ -332,7 +332,7 @@
       "modern"
     ],
     "effects": {
-      "hunger": -8,
+      "hunger": 8,
       "stamina": 20
     },
     "family": "food",
@@ -359,7 +359,7 @@
       "military"
     ],
     "effects": {
-      "hunger": -24,
+      "hunger": 24,
       "thirst": -10
     },
     "family": "food",
@@ -779,7 +779,7 @@
       "survivor"
     ],
     "effects": {
-      "hunger": -24,
+      "hunger": 24,
       "thirst": -20
     },
     "family": "food",
@@ -1137,12 +1137,83 @@
     "type": "consumable_medical",
     "size": 0,
     "weightLbs": 0.5,
-    "tags": ["consumable", "medical", "radiation", "radaway"],
+    "tags": [
+      "consumable",
+      "medical",
+      "radiation",
+      "radaway"
+    ],
     "effects": {
       "radiation_reduction": 100
     },
     "doses": 1,
     "sprite": "!",
     "color": "#ffa500"
+  },
+  {
+    "id": "corn_cob",
+    "name": "Corn Cob",
+    "description": "A freshly harvested ear of corn.",
+    "size": 1,
+    "type": "food",
+    "isConsumable": true,
+    "effects": {
+      "hunger": 6
+    },
+    "sprite": "o",
+    "color": "#ffff00",
+    "canEquip": false,
+    "isClothing": false,
+    "weightLbs": 0.5,
+    "tags": [
+      "consumable",
+      "food",
+      "raw"
+    ],
+    "family": "food"
+  },
+  {
+    "id": "carrot",
+    "name": "Carrot",
+    "description": "A crunchy, orange root vegetable.",
+    "size": 1,
+    "type": "food",
+    "isConsumable": true,
+    "effects": {
+      "hunger": 4
+    },
+    "sprite": "v",
+    "color": "#ffa500",
+    "canEquip": false,
+    "isClothing": false,
+    "weightLbs": 0.2,
+    "tags": [
+      "consumable",
+      "food",
+      "raw"
+    ],
+    "family": "food"
+  },
+  {
+    "id": "tomato",
+    "name": "Tomato",
+    "description": "A juicy, red tomato.",
+    "size": 1,
+    "type": "food",
+    "isConsumable": true,
+    "effects": {
+      "hunger": 5
+    },
+    "sprite": "o",
+    "color": "#ff0000",
+    "canEquip": false,
+    "isClothing": false,
+    "weightLbs": 0.3,
+    "tags": [
+      "consumable",
+      "food",
+      "raw"
+    ],
+    "family": "food"
   }
 ]
