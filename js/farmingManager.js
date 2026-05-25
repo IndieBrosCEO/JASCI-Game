@@ -64,19 +64,33 @@ class FarmingManager {
         }
 
         // Determine crop type from seed
-        const cropTileId = seedItem.cropTileId; // Defined in consumables.json
+        const cropTileId = seedItem.cropTileId || (seedItem.effects && seedItem.effects.growsInto); // Check both formats
         if (!cropTileId) {
             window.logToConsole("These seeds don't seem to grow into anything known.", "red");
             return;
         }
 
+        let stage1TileId = cropTileId;
+        // Check variety map or default logic
+        const varietyName = seedItem.name.replace(" Seeds", "").trim();
+        let prefix = "";
+        if (varietyName.includes("Corn")) prefix = "PL_C";
+        else if (varietyName.includes("Carrot")) prefix = "PL_R";
+        else if (varietyName.includes("Tomato")) prefix = "PL_T";
+
+        if (prefix && window.assetManager && window.assetManager.tilesets[prefix + "1"]) {
+             stage1TileId = prefix + "1";
+        } else if (prefix && !window.assetManager) {
+             stage1TileId = prefix + "1"; // Fallback if assetManager not fully loaded
+        }
+
         // Place Plant Tile
-        window.mapRenderer.updateTileOnLayer(x, y, z, 'middle', cropTileId);
+        window.mapRenderer.updateTileOnLayer(x, y, z, 'middle', stage1TileId);
 
         // Track Plot
         this.plots.push({
             x: x, y: y, z: z, mapId: mapId,
-            plantId: cropTileId,
+            plantId: stage1TileId,
             growthStage: 1,
             growthProgress: 0,
             isWatered: false,
@@ -157,6 +171,7 @@ class FarmingManager {
                 let prefix = "";
                 if (variety.includes("Corn")) prefix = "PL_C";
                 else if (variety.includes("Carrot")) prefix = "PL_R";
+                else if (variety.includes("Tomato")) prefix = "PL_T";
 
                 if (prefix) {
                     if (plot.growthStage === 1 && plot.growthProgress >= 50) {
@@ -208,9 +223,22 @@ class FarmingManager {
         const r = 4;
         const mapData = window.mapRenderer.getCurrentMapData();
 
-        // If map not loaded, assume no irrigation update? Or keep old state?
-        // If player is far away, we can't check static tiles easily without loading map data.
-        if (!mapData || mapData.id !== plot.mapId) return false;
+        // If map not loaded, we can't check easily. Fallback:
+        // Try to load the map or read from its data if it's cached in memory.
+        let targetMap = null;
+        if (mapData && mapData.id === plot.mapId) {
+            targetMap = mapData;
+        } else if (window.mapRenderer.loadedMaps && window.mapRenderer.loadedMaps[plot.mapId]) {
+            targetMap = window.mapRenderer.loadedMaps[plot.mapId];
+        } else if (window.worldData && window.worldData.maps) {
+            targetMap = window.worldData.maps.find(m => m.id === plot.mapId);
+        }
+
+        if (!targetMap) {
+            // If the map isn't loaded and we don't have its data, use a fallback:
+            // return plot.wasIrrigated (we need to track this).
+            return plot.wasIrrigated || false;
+        }
 
         // Check WaterManager first
         // Simple bounding box loop
@@ -227,18 +255,25 @@ class FarmingManager {
                 // (Max bounds check requires width/height)
 
                 // 1. Dynamic Water
-                if (window.waterManager.getWaterAt(nx, ny, plot.z)) return true;
+                if (window.waterManager.getWaterAt(nx, ny, plot.z)) {
+                    plot.wasIrrigated = true;
+                    return true;
+                }
 
                 // 2. Static Water Tile
-                const level = mapData.levels[plot.z];
+                const level = targetMap.levels[plot.z];
                 if (level && level.bottom && level.bottom[ny] && level.bottom[ny][nx]) {
                     const tile = level.bottom[ny][nx];
                     const tId = (typeof tile === 'object' && tile !== null) ? tile.tileId : tile;
-                    if (tId === "WS" || tId === "WD" || tId === "RB") return true; // Shallow, Deep, Riverbed(maybe wet?)
+                    if (tId === "WS" || tId === "WD" || tId === "RB") {
+                        plot.wasIrrigated = true;
+                        return true; // Shallow, Deep, Riverbed(maybe wet?)
+                    }
                 }
             }
         }
 
+        plot.wasIrrigated = false;
         return false;
     }
 

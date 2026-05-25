@@ -1517,24 +1517,15 @@ class InventoryManager {
         if (item.effects.hunger) {
             if (isPlayer) {
                 if (typeof this.gameState.playerHunger === 'undefined') this.gameState.playerHunger = maxNeeds;
+                // playerHunger acts as a satiety meter. Positive item.effects.hunger values increase satiety.
                 this.gameState.playerHunger = Math.min(this.gameState.playerHunger + item.effects.hunger, maxNeeds);
+                // Also clamp to 0 just in case
+                this.gameState.playerHunger = Math.max(0, this.gameState.playerHunger);
             } else {
                 if (typeof targetEntity.hunger === 'undefined') targetEntity.hunger = 0;
-                // NPC hunger: higher is hungrier? In player, hunger is satiety (max 24 is full)?
-                // Wait, logic says playerHunger + effect. Effect is positive?
-                // Let's check player logic: `applyHungerThirstDamage`: hunger--. If 0 -> starve.
-                // So hunger 24 = Full. hunger 0 = Starving.
-                // NPC logic `handleNpcOutOfCombatTurn`: npc.hunger += 1. Threshold 50.
-                // So NPC hunger is "Hunger Level" (0 = full, high = hungry).
-                // Player hunger is "Satiety" (24 = full, 0 = hungry).
-                // This is an inconsistency.
-                // Let's stick to player logic for now as this function serves player primarily,
-                // but we need to handle NPC correctly if they use it.
-                // If Item effect is positive (e.g. +5), it adds Satiety.
-                // For NPC, we should DECREASE hunger level.
                 if (targetEntity.hunger !== undefined) {
-                    targetEntity.hunger = Math.max(0, targetEntity.hunger - (item.effects.hunger * 10)); // Scale up? 1 food = ?
-                    // Let's just subtract raw value for now.
+                    // For NPC, higher hunger = hungrier. Positive effect means it restores satiety, so decrease NPC hunger.
+                    targetEntity.hunger = Math.max(0, targetEntity.hunger - (item.effects.hunger * 10));
                 }
             }
             consumed = true;

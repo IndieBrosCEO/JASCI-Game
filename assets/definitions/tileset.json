@@ -2660,5 +2660,42 @@
       "vegetation",
       "harvest:carrot"
     ]
+  },
+  "PL_T1": {
+    "sprite": "i",
+    "name": "Tomato (Seedling)",
+    "color": "#90EE90",
+    "tags": [
+      "plant",
+      "middle",
+      "tomato",
+      "stage1",
+      "vegetation"
+    ]
+  },
+  "PL_T2": {
+    "sprite": "l",
+    "name": "Tomato (Growing)",
+    "color": "#32CD32",
+    "tags": [
+      "plant",
+      "middle",
+      "tomato",
+      "stage2",
+      "vegetation"
+    ]
+  },
+  "PL_T3": {
+    "sprite": "Y",
+    "name": "Tomato (Ripe)",
+    "color": "#FF6347",
+    "tags": [
+      "plant",
+      "middle",
+      "tomato",
+      "stage3",
+      "vegetation",
+      "harvest:tomato"
+    ]
   }
 }
