@@ -170,7 +170,9 @@ function processNextConsoleMessage() {
     }
 
     // Schedule the next message processing after the defined delay
-    setTimeout(processNextConsoleMessage, CONSOLE_MESSAGE_DELAY);
+    // Process without delay if waiting to keep up with fast world simulation
+    const delay = (window.gameState && window.gameState.isWaiting) ? 0 : CONSOLE_MESSAGE_DELAY;
+    setTimeout(processNextConsoleMessage, delay);
 }
 
 /**************************************************************

@@ -1062,7 +1062,7 @@ async function handleKeyDown(event) {
                 break;
             }
             await window.turnManager.endTurn();
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise(resolve => setTimeout(resolve, 0));
         }
         gameState.isWaiting = false;
         logToConsole(`Finished waiting for ${hoursToWait} hour(s).`, "info");
