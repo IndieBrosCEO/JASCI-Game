@@ -1,987 +1,987 @@
 [
-  {
-    "id": "chassis_small_buggy",
-    "name": "Small Buggy Chassis",
-    "type": "chassis",
-    "durability": 100,
-    "weight": 150,
-    "recipe": {
-      "description": "Weld and bolt together a small buggy chassis.",
-      "components": [
-        {
-          "quantity": 50,
-          "family": "metal",
-          "require": {
-            "type": "scrap"
-          }
+    {
+        "id": "chassis_small_buggy",
+        "name": "Small Buggy Chassis",
+        "type": "chassis",
+        "durability": 100,
+        "weight": 150,
+        "recipe": {
+            "description": "Weld and bolt together a small buggy chassis.",
+            "components": [
+                {
+                    "quantity": 50,
+                    "family": "raw_metal_scrap",
+                    "require": {
+                        "type": "scrap"
+                    }
+                },
+                {
+                    "quantity": 10,
+                    "family": "component",
+                    "require": {
+                        "type": "mechanical_parts",
+                        "grade": "vehicle"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 20
+                }
+            ],
+            "tools_required": [
+                "welding_torch_oxyacetylene",
+                "wrench_set",
+                "rivet_gun_manual"
+            ],
+            "station_required": "vehicle_assembly_station",
+            "time_to_craft": 1200,
+            "batch_size": 1
         },
-        {
-          "quantity": 10,
-          "family": "component",
-          "require": {
-            "type": "mechanical_parts",
-            "grade": "vehicle"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 20
-        }
-      ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "wrench_set",
-        "rivet_gun_manual"
-      ],
-      "station_required": "vehicle_assembly_station",
-      "time_to_craft": 1200,
-      "batch_size": 1
-    },
-    "slotPoints": {
-      "engine": 1,
-      "wheel": 4,
-      "armor_light": 2,
-      "utility_small": 2,
-      "storage_small": 1
-    },
-    "sprite": "#",
-    "color": "#4682b4"
-  },
-  {
-    "id": "chassis_scooter",
-    "name": "Scooter Chassis",
-    "type": "chassis",
-    "durability": 60,
-    "weight": 40,
-    "recipe": {
-      "description": "A lightweight chassis for a two-wheeled scooter.",
-      "components": [
-        {
-          "quantity": 15,
-          "family": "metal",
-          "require": {
-            "type": "scrap"
-          }
+        "slotPoints": {
+            "engine": 1,
+            "wheel": 4,
+            "armor_light": 2,
+            "utility_small": 2,
+            "storage_small": 1
         },
-        {
-          "quantity": 5,
-          "family": "component",
-          "require": {
-            "type": "mechanical_parts"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 10
-        }
-      ],
-      "tools_required": [
-        "wrench_set",
-        "welding_torch_oxyacetylene"
-      ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 400,
-      "batch_size": 1
+        "sprite": "#",
+        "color": "#4682b4"
     },
-    "slotPoints": {
-      "engine": 1,
-      "wheel": 2,
-      "utility_small": 1,
-      "storage_small": 1
-    },
-    "sprite": "#",
-    "color": "#4682b4"
-  },
-  {
-    "id": "engine_basic_v4",
-    "name": "Basic V4 Engine",
-    "type": "engine",
-    "durability": 50,
-    "weight": 80,
-    "recipe": {
-      "description": "Assemble a basic V4 engine from a parts kit.",
-      "components": [
-        {
-          "quantity": 1,
-          "family": "engine_kit",
-          "require": {
-            "type": "v4"
-          }
+    {
+        "id": "chassis_scooter",
+        "name": "Scooter Chassis",
+        "type": "chassis",
+        "durability": 60,
+        "weight": 40,
+        "recipe": {
+            "description": "A lightweight chassis for a two-wheeled scooter.",
+            "components": [
+                {
+                    "quantity": 15,
+                    "family": "raw_metal_scrap",
+                    "require": {
+                        "type": "scrap"
+                    }
+                },
+                {
+                    "quantity": 5,
+                    "family": "component",
+                    "require": {
+                        "type": "mechanical_parts"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 10
+                }
+            ],
+            "tools_required": [
+                "wrench_set",
+                "welding_torch_oxyacetylene"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 400,
+            "batch_size": 1
         },
-        {
-          "quantity": 10,
-          "family": "metal",
-          "require": {
-            "type": "scrap"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 15
+        "slotPoints": {
+            "engine": 1,
+            "wheel": 2,
+            "utility_small": 1,
+            "storage_small": 1
         },
-        {
-          "skill": "Electronics",
-          "level": 10
-        }
-      ],
-      "tools_required": [
-        "wrench_set",
-        "screwdriver_set_multi",
-        "precision_oil_can"
-      ],
-      "station_required": "engine_assembly_jig",
-      "time_to_craft": 900,
-      "batch_size": 1
+        "sprite": "#",
+        "color": "#4682b4"
     },
-    "effects": {
-      "power": 150,
-      "fuelEfficiency": 0.1
-    },
-    "maxFuel": 200,
-    "sprite": "#",
-    "color": "#708090"
-  },
-  {
-    "id": "engine_v6",
-    "name": "V6 Engine",
-    "type": "engine",
-    "durability": 120,
-    "weight": 120,
-    "recipe": {
-      "description": "A powerful V6 engine.",
-      "components": [
-        {
-          "quantity": 1,
-          "family": "engine_kit",
-          "require": {
-            "type": "v6"
-          }
+    {
+        "id": "engine_basic_v4",
+        "name": "Basic V4 Engine",
+        "type": "engine",
+        "durability": 50,
+        "weight": 80,
+        "recipe": {
+            "description": "Assemble a basic V4 engine from a parts kit.",
+            "components": [
+                {
+                    "quantity": 1,
+                    "family": "engine_kit",
+                    "require": {
+                        "type": "v4"
+                    }
+                },
+                {
+                    "quantity": 10,
+                    "family": "raw_metal_scrap",
+                    "require": {
+                        "type": "scrap"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 15
+                },
+                {
+                    "skill": "Electronics",
+                    "level": 10
+                }
+            ],
+            "tools_required": [
+                "wrench_set",
+                "screwdriver_set_multi",
+                "precision_oil_can"
+            ],
+            "station_required": "engine_assembly_jig",
+            "time_to_craft": 900,
+            "batch_size": 1
         },
-        {
-          "quantity": 15,
-          "family": "metal",
-          "require": {
-            "type": "scrap"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 25
-        }
-      ],
-      "tools_required": [
-        "wrench_set",
-        "hoist"
-      ],
-      "station_required": "engine_assembly_jig",
-      "time_to_craft": 1200,
-      "batch_size": 1
-    },
-    "effects": {
-      "power": 280,
-      "fuelEfficiency": 0.08
-    },
-    "maxFuel": 300,
-    "sprite": "#",
-    "color": "#708090"
-  },
-  {
-    "id": "engine_scooter_small",
-    "name": "Small Scooter Engine",
-    "type": "engine",
-    "durability": 40,
-    "weight": 20,
-    "recipe": {
-      "description": "A small engine suitable for scooters or light equipment.",
-      "components": [
-        {
-          "quantity": 1,
-          "family": "engine_kit",
-          "require": {
-            "type": "small_engine"
-          }
+        "effects": {
+            "power": 150,
+            "fuelEfficiency": 0.1
         },
-        {
-          "quantity": 5,
-          "family": "metal",
-          "require": {
-            "type": "scrap"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 10
-        }
-      ],
-      "tools_required": [
-        "wrench_set"
-      ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 300,
-      "batch_size": 1
+        "maxFuel": 200,
+        "sprite": "#",
+        "color": "#708090"
     },
-    "effects": {
-      "power": 30,
-      "fuelEfficiency": 0.3
-    },
-    "maxFuel": 50,
-    "sprite": "#",
-    "color": "#708090"
-  },
-  {
-    "id": "wheel_standard",
-    "name": "Standard Wheel",
-    "type": "wheel",
-    "durability": 30,
-    "weight": 15,
-    "recipe": {
-      "description": "Assemble a standard wheel from rubber and a metal rim.",
-      "components": [
-        {
-          "quantity": 5,
-          "family": "rubber",
-          "require": {
-            "form": "strips_chunks"
-          }
+    {
+        "id": "engine_v6",
+        "name": "V6 Engine",
+        "type": "engine",
+        "durability": 120,
+        "weight": 120,
+        "recipe": {
+            "description": "A powerful V6 engine.",
+            "components": [
+                {
+                    "quantity": 1,
+                    "family": "engine_kit",
+                    "require": {
+                        "type": "v6"
+                    }
+                },
+                {
+                    "quantity": 15,
+                    "family": "raw_metal_scrap",
+                    "require": {
+                        "type": "scrap"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 25
+                }
+            ],
+            "tools_required": [
+                "wrench_set",
+                "hoist"
+            ],
+            "station_required": "engine_assembly_jig",
+            "time_to_craft": 1200,
+            "batch_size": 1
         },
-        {
-          "quantity": 2,
-          "family": "metal",
-          "require": {
-            "type": "scrap"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 5
-        }
-      ],
-      "tools_required": [
-        "wrench_set",
-        "tire_iron"
-      ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 40,
-      "batch_size": 1
-    },
-    "effects": {
-      "traction": 0.8
-    },
-    "sprite": "O",
-    "color": "#000000"
-  },
-  {
-    "id": "wheel_scooter",
-    "name": "Scooter Wheel",
-    "type": "wheel",
-    "durability": 20,
-    "weight": 5,
-    "recipe": {
-      "description": "A small wheel for scooters.",
-      "components": [
-        {
-          "quantity": 2,
-          "family": "rubber",
-          "require": {
-            "form": "strips_chunks"
-          }
+        "effects": {
+            "power": 280,
+            "fuelEfficiency": 0.08
         },
-        {
-          "quantity": 1,
-          "family": "metal",
-          "require": {
-            "type": "scrap"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 5
-        }
-      ],
-      "tools_required": [
-        "wrench_set",
-        "tire_iron"
-      ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 25,
-      "batch_size": 1
+        "maxFuel": 300,
+        "sprite": "#",
+        "color": "#708090"
     },
-    "effects": {
-      "traction": 0.7
-    },
-    "sprite": "O",
-    "color": "#000000"
-  },
-  {
-    "id": "armor_plate_steel",
-    "name": "Steel Armor Plate",
-    "type": "armor_light",
-    "durability": 80,
-    "weight": 40,
-    "recipe": {
-      "description": "Forge and shape heavy steel armor plates for vehicles.",
-      "components": [
-        {
-          "quantity": 5,
-          "family": "armor_plate",
-          "require": {
-            "grade": "vehicle",
-            "material": "steel"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 25
-        }
-      ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "blacksmith_hammer"
-      ],
-      "station_required": "forge_advanced",
-      "time_to_craft": 300,
-      "batch_size": 1
-    },
-    "effects": {
-      "armorValue": 10
-    },
-    "sprite": "#",
-    "color": "#2f4f4f"
-  },
-  {
-    "id": "storage_box_small",
-    "name": "Small Storage Box",
-    "type": "storage_small",
-    "durability": 25,
-    "weight": 10,
-    "recipe": {
-      "description": "Construct a small wooden storage box, reinforced with metal.",
-      "components": [
-        {
-          "quantity": 10,
-          "family": "wood",
-          "require": {
-            "type": "plank"
-          }
+    {
+        "id": "engine_scooter_small",
+        "name": "Small Scooter Engine",
+        "type": "engine",
+        "durability": 40,
+        "weight": 20,
+        "recipe": {
+            "description": "A small engine suitable for scooters or light equipment.",
+            "components": [
+                {
+                    "quantity": 1,
+                    "family": "engine_kit",
+                    "require": {
+                        "type": "small_engine"
+                    }
+                },
+                {
+                    "quantity": 5,
+                    "family": "raw_metal_scrap",
+                    "require": {
+                        "type": "scrap"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 10
+                }
+            ],
+            "tools_required": [
+                "wrench_set"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 300,
+            "batch_size": 1
         },
-        {
-          "quantity": 2,
-          "family": "metal",
-          "require": {
-            "type": "scrap"
-          }
+        "effects": {
+            "power": 30,
+            "fuelEfficiency": 0.3
         },
-        {
-          "quantity": 20,
-          "family": "fastener",
-          "require": {
-            "type": "nail"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 10
-        }
-      ],
-      "tools_required": [
-        "hand_saw_wood",
-        "hammer_peen",
-        "metal_snips_heavy"
-      ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 90,
-      "batch_size": 1
+        "maxFuel": 50,
+        "sprite": "#",
+        "color": "#708090"
     },
-    "effects": {
-      "cargoCapacity": 10
-    },
-    "sprite": "#",
-    "color": "#8b4513"
-  },
-  {
-    "id": "turret_mount_light",
-    "name": "Light Turret Mount",
-    "type": "utility_small",
-    "durability": 40,
-    "weight": 25,
-    "recipe": {
-      "description": "Fabricate a light turret mount for vehicles.",
-      "components": [
-        {
-          "quantity": 3,
-          "family": "metal",
-          "require": {
-            "type": "ingot",
-            "material": "steel"
-          }
+    {
+        "id": "wheel_standard",
+        "name": "Standard Wheel",
+        "type": "wheel",
+        "durability": 30,
+        "weight": 15,
+        "recipe": {
+            "description": "Assemble a standard wheel from rubber and a metal rim.",
+            "components": [
+                {
+                    "quantity": 5,
+                    "family": "rubber",
+                    "require": {
+                        "form": "strips_chunks"
+                    }
+                },
+                {
+                    "quantity": 2,
+                    "family": "raw_metal_scrap",
+                    "require": {
+                        "type": "scrap"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 5
+                }
+            ],
+            "tools_required": [
+                "wrench_set",
+                "tire_iron"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 40,
+            "batch_size": 1
         },
-        {
-          "quantity": 3,
-          "family": "component",
-          "require": {
-            "type": "mechanical_parts",
-            "grade": "vehicle"
-          }
+        "effects": {
+            "traction": 0.8
         },
-        {
-          "quantity": 5,
-          "family": "component",
-          "require": {
-            "type": "gears"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 30
-        }
-      ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "wrench_set",
-        "hand_drill"
-      ],
-      "station_required": "machine_shop_lathe",
-      "time_to_craft": 400,
-      "batch_size": 1
+        "sprite": "O",
+        "color": "#000000"
     },
-    "effects": {
-      "allowsWeaponMount": "light_ranged"
-    },
-    "sprite": "]",
-    "color": "#708090"
-  },
-  {
-    "id": "headlights_basic",
-    "name": "Basic Headlights",
-    "type": "utility_small",
-    "durability": 15,
-    "weight": 5,
-    "recipe": {
-      "description": "Assemble a pair of basic vehicle headlights.",
-      "components": [
-        {
-          "quantity": 5,
-          "family": "component",
-          "require": {
-            "type": "circuit_board"
-          }
+    {
+        "id": "wheel_scooter",
+        "name": "Scooter Wheel",
+        "type": "wheel",
+        "durability": 20,
+        "weight": 5,
+        "recipe": {
+            "description": "A small wheel for scooters.",
+            "components": [
+                {
+                    "quantity": 2,
+                    "family": "rubber",
+                    "require": {
+                        "form": "strips_chunks"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "raw_metal_scrap",
+                    "require": {
+                        "type": "scrap"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 5
+                }
+            ],
+            "tools_required": [
+                "wrench_set",
+                "tire_iron"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 25,
+            "batch_size": 1
         },
-        {
-          "quantity": 2,
-          "family": "lens",
-          "require": {
-            "material": "glass",
-            "grade": 1
-          }
+        "effects": {
+            "traction": 0.7
         },
-        {
-          "quantity": 2,
-          "family": "casing",
-          "require": {
-            "material": "plastic",
-            "size": "small"
-          }
+        "sprite": "O",
+        "color": "#000000"
+    },
+    {
+        "id": "armor_plate_steel",
+        "name": "Steel Armor Plate",
+        "type": "armor_light",
+        "durability": 80,
+        "weight": 40,
+        "recipe": {
+            "description": "Forge and shape heavy steel armor plates for vehicles.",
+            "components": [
+                {
+                    "quantity": 5,
+                    "family": "armor_plate",
+                    "require": {
+                        "grade": "vehicle",
+                        "material": "steel"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 25
+                }
+            ],
+            "tools_required": [
+                "welding_torch_oxyacetylene",
+                "blacksmith_hammer"
+            ],
+            "station_required": "forge_advanced",
+            "time_to_craft": 300,
+            "batch_size": 1
         },
-        {
-          "quantity": 4,
-          "family": "wire",
-          "require": {
-            "size": "thin",
-            "insulated": true
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Electronics",
-          "level": 10
-        }
-      ],
-      "tools_required": [
-        "soldering_iron_kit",
-        "screwdriver_set_multi"
-      ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 60,
-      "batch_size": 1
-    },
-    "effects": {
-      "providesLight": true
-    },
-    "sprite": "]",
-    "color": "#708090"
-  },
-  {
-    "id": "chassis_bicycle",
-    "name": "Bicycle Frame",
-    "type": "chassis",
-    "durability": 30,
-    "weight": 12,
-    "recipe": {
-      "description": "Weld together a lightweight bicycle frame.",
-      "components": [
-        {
-          "quantity": 5,
-          "family": "metal",
-          "require": {
-            "type": "tube",
-            "material": "steel"
-          }
+        "effects": {
+            "armorValue": 10
         },
-        {
-          "quantity": 2,
-          "family": "component",
-          "require": {
-            "type": "mechanical_parts"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 5
-        }
-      ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "hacksaw"
-      ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 200,
-      "batch_size": 1
+        "sprite": "#",
+        "color": "#2f4f4f"
     },
-    "slotPoints": {
-      "engine": 1,
-      "wheel": 2,
-      "utility_small": 1,
-      "storage_small": 1
-    },
-    "sprite": "#",
-    "color": "#4682b4"
-  },
-  {
-    "id": "chassis_motorcycle",
-    "name": "Motorcycle Chassis",
-    "type": "chassis",
-    "durability": 150,
-    "weight": 90,
-    "recipe": {
-      "description": "A sturdy frame for a motorcycle.",
-      "components": [
-        {
-          "quantity": 20,
-          "family": "metal",
-          "require": {
-            "type": "tube",
-            "material": "steel"
-          }
+    {
+        "id": "storage_box_small",
+        "name": "Small Storage Box",
+        "type": "storage_small",
+        "durability": 25,
+        "weight": 10,
+        "recipe": {
+            "description": "Construct a small wooden storage box, reinforced with metal.",
+            "components": [
+                {
+                    "quantity": 10,
+                    "family": "wood_lumber",
+                    "require": {
+                        "type": "plank"
+                    }
+                },
+                {
+                    "quantity": 2,
+                    "family": "raw_metal_scrap",
+                    "require": {
+                        "type": "scrap"
+                    }
+                },
+                {
+                    "quantity": 20,
+                    "family": "fastener",
+                    "require": {
+                        "type": "nail"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 10
+                }
+            ],
+            "tools_required": [
+                "hand_saw_wood",
+                "hammer_peen",
+                "metal_snips_heavy"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 90,
+            "batch_size": 1
         },
-        {
-          "quantity": 8,
-          "family": "component",
-          "require": {
-            "type": "mechanical_parts"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 15
-        }
-      ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "pipe_bender"
-      ],
-      "station_required": "garage_bay",
-      "time_to_craft": 600,
-      "batch_size": 1
-    },
-    "slotPoints": {
-      "engine": 1,
-      "wheel": 2,
-      "utility_small": 2,
-      "storage_small": 2,
-      "armor_light": 1
-    },
-    "sprite": "#",
-    "color": "#708090"
-  },
-  {
-    "id": "pedal_crankset",
-    "name": "Pedal Crankset",
-    "type": "engine",
-    "durability": 50,
-    "weight": 3,
-    "recipe": {
-      "description": "A set of pedals, cranks, and a chainring.",
-      "components": [
-        {
-          "quantity": 3,
-          "family": "metal",
-          "require": {
-            "type": "scrap"
-          }
+        "effects": {
+            "cargoCapacity": 10
         },
-        {
-          "quantity": 1,
-          "family": "component",
-          "require": {
-            "type": "mechanical_parts"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 1
-        }
-      ],
-      "tools_required": [
-        "wrench_set"
-      ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 60,
-      "batch_size": 1
+        "sprite": "#",
+        "color": "#8b4513"
     },
-    "effects": {
-      "power": 5,
-      "fuelEfficiency": 0
-    },
-    "maxFuel": 0,
-    "sprite": "]",
-    "color": "#708090"
-  },
-  {
-    "id": "engine_motorcycle_twin",
-    "name": "V-Twin Motorcycle Engine",
-    "type": "engine",
-    "durability": 80,
-    "weight": 45,
-    "recipe": {
-      "description": "A powerful V-Twin engine.",
-      "components": [
-        {
-          "quantity": 1,
-          "family": "engine_kit",
-          "require": {
-            "type": "motorcycle"
-          }
+    {
+        "id": "turret_mount_light",
+        "name": "Light Turret Mount",
+        "type": "utility_small",
+        "durability": 40,
+        "weight": 25,
+        "recipe": {
+            "description": "Fabricate a light turret mount for vehicles.",
+            "components": [
+                {
+                    "quantity": 3,
+                    "family": "processed_metal",
+                    "require": {
+                        "type": "ingot",
+                        "material": "steel"
+                    }
+                },
+                {
+                    "quantity": 3,
+                    "family": "component",
+                    "require": {
+                        "type": "mechanical_parts",
+                        "grade": "vehicle"
+                    }
+                },
+                {
+                    "quantity": 5,
+                    "family": "component",
+                    "require": {
+                        "type": "gears"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 30
+                }
+            ],
+            "tools_required": [
+                "welding_torch_oxyacetylene",
+                "wrench_set",
+                "hand_drill"
+            ],
+            "station_required": "machine_shop_lathe",
+            "time_to_craft": 400,
+            "batch_size": 1
         },
-        {
-          "quantity": 8,
-          "family": "metal",
-          "require": {
-            "type": "scrap"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 20
-        }
-      ],
-      "tools_required": [
-        "wrench_set",
-        "screwdriver_set_multi"
-      ],
-      "station_required": "engine_assembly_jig",
-      "time_to_craft": 500,
-      "batch_size": 1
-    },
-    "effects": {
-      "power": 100,
-      "fuelEfficiency": 0.15
-    },
-    "maxFuel": 100,
-    "sprite": "#",
-    "color": "#708090"
-  },
-  {
-    "id": "wheel_bicycle",
-    "name": "Bicycle Wheel",
-    "type": "wheel",
-    "durability": 15,
-    "weight": 2,
-    "recipe": {
-      "description": "A light wheel with thin tires.",
-      "components": [
-        {
-          "quantity": 1,
-          "family": "rubber",
-          "require": {
-            "form": "strips_chunks"
-          }
+        "effects": {
+            "allowsWeaponMount": "light_ranged"
         },
-        {
-          "quantity": 1,
-          "family": "metal",
-          "require": {
-            "type": "scrap"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 1
-        }
-      ],
-      "tools_required": [
-        "wrench_set"
-      ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 30,
-      "batch_size": 1
+        "sprite": "]",
+        "color": "#708090"
     },
-    "effects": {
-      "traction": 0.6
-    },
-    "sprite": "O",
-    "color": "#000000"
-  },
-  {
-    "id": "wheel_motorcycle",
-    "name": "Motorcycle Wheel",
-    "type": "wheel",
-    "durability": 45,
-    "weight": 12,
-    "recipe": {
-      "description": "A robust wheel for motorcycles.",
-      "components": [
-        {
-          "quantity": 4,
-          "family": "rubber",
-          "require": {
-            "form": "strips_chunks"
-          }
+    {
+        "id": "headlights_basic",
+        "name": "Basic Headlights",
+        "type": "utility_small",
+        "durability": 15,
+        "weight": 5,
+        "recipe": {
+            "description": "Assemble a pair of basic vehicle headlights.",
+            "components": [
+                {
+                    "quantity": 5,
+                    "family": "component",
+                    "require": {
+                        "type": "circuit_board"
+                    }
+                },
+                {
+                    "quantity": 2,
+                    "family": "lens",
+                    "require": {
+                        "material": "glass",
+                        "grade": 1
+                    }
+                },
+                {
+                    "quantity": 2,
+                    "family": "casing",
+                    "require": {
+                        "material": "plastic",
+                        "size": "small"
+                    }
+                },
+                {
+                    "quantity": 4,
+                    "family": "wire",
+                    "require": {
+                        "size": "thin",
+                        "insulated": true
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Electronics",
+                    "level": 10
+                }
+            ],
+            "tools_required": [
+                "soldering_iron_kit",
+                "screwdriver_set_multi"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 60,
+            "batch_size": 1
         },
-        {
-          "quantity": 3,
-          "family": "metal",
-          "require": {
-            "type": "scrap"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 10
-        }
-      ],
-      "tools_required": [
-        "wrench_set",
-        "tire_iron"
-      ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 60,
-      "batch_size": 1
-    },
-    "effects": {
-      "traction": 0.85
-    },
-    "sprite": "O",
-    "color": "#000000"
-  },
-  {
-    "id": "wheel_car",
-    "name": "Car Wheel",
-    "type": "wheel",
-    "durability": 50,
-    "weight": 20,
-    "recipe": {
-      "description": "A standard car tire on a rim.",
-      "components": [
-        {
-          "quantity": 8,
-          "family": "rubber",
-          "require": {
-            "form": "strips_chunks"
-          }
+        "effects": {
+            "providesLight": true
         },
-        {
-          "quantity": 5,
-          "family": "metal",
-          "require": {
-            "type": "scrap"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 10
-        }
-      ],
-      "tools_required": [
-        "wrench_set",
-        "tire_iron"
-      ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 80,
-      "batch_size": 1
+        "sprite": "]",
+        "color": "#708090"
     },
-    "effects": {
-      "traction": 0.9
-    },
-    "sprite": "O",
-    "color": "#000000"
-  },
-  {
-    "id": "chassis_hatchback",
-    "name": "Hatchback Chassis",
-    "type": "chassis",
-    "durability": 200,
-    "weight": 300,
-    "recipe": {
-      "description": "The frame of a compact hatchback car.",
-      "components": [
-        {
-          "quantity": 40,
-          "family": "metal_sheet",
-          "require": {
-            "material": "steel"
-          }
+    {
+        "id": "chassis_bicycle",
+        "name": "Bicycle Frame",
+        "type": "chassis",
+        "durability": 30,
+        "weight": 12,
+        "recipe": {
+            "description": "Weld together a lightweight bicycle frame.",
+            "components": [
+                {
+                    "quantity": 5,
+                    "family": "processed_metal",
+                    "require": {
+                        "type": "tube",
+                        "material": "steel"
+                    }
+                },
+                {
+                    "quantity": 2,
+                    "family": "component",
+                    "require": {
+                        "type": "mechanical_parts"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 5
+                }
+            ],
+            "tools_required": [
+                "welding_torch_oxyacetylene",
+                "hacksaw"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 200,
+            "batch_size": 1
         },
-        {
-          "quantity": 10,
-          "family": "component",
-          "require": {
-            "type": "mechanical_parts"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 20
-        }
-      ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "hoist"
-      ],
-      "station_required": "garage_bay",
-      "time_to_craft": 1500,
-      "batch_size": 1
-    },
-    "slotPoints": {
-      "engine": 1,
-      "wheel": 4,
-      "utility_small": 4,
-      "storage_small": 2,
-      "armor_light": 2,
-      "seat": 4
-    },
-    "sprite": "#",
-    "color": "#4682b4"
-  },
-  {
-    "id": "chassis_sedan",
-    "name": "Sedan Chassis",
-    "type": "chassis",
-    "durability": 300,
-    "weight": 450,
-    "recipe": {
-      "description": "The frame of a standard sedan.",
-      "components": [
-        {
-          "quantity": 60,
-          "family": "metal_sheet",
-          "require": {
-            "material": "steel"
-          }
+        "slotPoints": {
+            "engine": 1,
+            "wheel": 2,
+            "utility_small": 1,
+            "storage_small": 1
         },
-        {
-          "quantity": 15,
-          "family": "component",
-          "require": {
-            "type": "mechanical_parts"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 25
-        }
-      ],
-      "tools_required": [
-        "welding_torch_oxyacetylene",
-        "hoist"
-      ],
-      "station_required": "garage_bay",
-      "time_to_craft": 2000,
-      "batch_size": 1
+        "sprite": "#",
+        "color": "#4682b4"
     },
-    "slotPoints": {
-      "engine": 1,
-      "wheel": 4,
-      "utility_small": 4,
-      "storage_small": 3,
-      "armor_light": 4,
-      "seat": 5
+    {
+        "id": "chassis_motorcycle",
+        "name": "Motorcycle Chassis",
+        "type": "chassis",
+        "durability": 150,
+        "weight": 90,
+        "recipe": {
+            "description": "A sturdy frame for a motorcycle.",
+            "components": [
+                {
+                    "quantity": 20,
+                    "family": "processed_metal",
+                    "require": {
+                        "type": "tube",
+                        "material": "steel"
+                    }
+                },
+                {
+                    "quantity": 8,
+                    "family": "component",
+                    "require": {
+                        "type": "mechanical_parts"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 15
+                }
+            ],
+            "tools_required": [
+                "welding_torch_oxyacetylene",
+                "pipe_bender"
+            ],
+            "station_required": "garage_bay",
+            "time_to_craft": 600,
+            "batch_size": 1
+        },
+        "slotPoints": {
+            "engine": 1,
+            "wheel": 2,
+            "utility_small": 2,
+            "storage_small": 2,
+            "armor_light": 1
+        },
+        "sprite": "#",
+        "color": "#708090"
     },
-    "sprite": "#",
-    "color": "#4682b4"
-  },
-  {
-    "id": "storage_trunk",
-    "name": "Car Trunk",
-    "type": "storage_small",
-    "durability": 50,
-    "weight": 20,
-    "recipe": {
-      "description": "A spacious trunk compartment.",
-      "components": [
-        {
-          "quantity": 10,
-          "family": "metal_sheet",
-          "require": {
-            "thickness": "sturdy"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 15
-        }
-      ],
-      "tools_required": [
-        "welding_torch_oxyacetylene"
-      ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 200,
-      "batch_size": 1
+    {
+        "id": "pedal_crankset",
+        "name": "Pedal Crankset",
+        "type": "engine",
+        "durability": 50,
+        "weight": 3,
+        "recipe": {
+            "description": "A set of pedals, cranks, and a chainring.",
+            "components": [
+                {
+                    "quantity": 3,
+                    "family": "raw_metal_scrap",
+                    "require": {
+                        "type": "scrap"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "component",
+                    "require": {
+                        "type": "mechanical_parts"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 1
+                }
+            ],
+            "tools_required": [
+                "wrench_set"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 60,
+            "batch_size": 1
+        },
+        "effects": {
+            "power": 5,
+            "fuelEfficiency": 0
+        },
+        "maxFuel": 0,
+        "sprite": "]",
+        "color": "#708090"
     },
-    "effects": {
-      "cargoCapacity": 50
+    {
+        "id": "engine_motorcycle_twin",
+        "name": "V-Twin Motorcycle Engine",
+        "type": "engine",
+        "durability": 80,
+        "weight": 45,
+        "recipe": {
+            "description": "A powerful V-Twin engine.",
+            "components": [
+                {
+                    "quantity": 1,
+                    "family": "engine_kit",
+                    "require": {
+                        "type": "motorcycle"
+                    }
+                },
+                {
+                    "quantity": 8,
+                    "family": "raw_metal_scrap",
+                    "require": {
+                        "type": "scrap"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 20
+                }
+            ],
+            "tools_required": [
+                "wrench_set",
+                "screwdriver_set_multi"
+            ],
+            "station_required": "engine_assembly_jig",
+            "time_to_craft": 500,
+            "batch_size": 1
+        },
+        "effects": {
+            "power": 100,
+            "fuelEfficiency": 0.15
+        },
+        "maxFuel": 100,
+        "sprite": "#",
+        "color": "#708090"
     },
-    "sprite": "#",
-    "color": "#8b4513"
-  }
+    {
+        "id": "wheel_bicycle",
+        "name": "Bicycle Wheel",
+        "type": "wheel",
+        "durability": 15,
+        "weight": 2,
+        "recipe": {
+            "description": "A light wheel with thin tires.",
+            "components": [
+                {
+                    "quantity": 1,
+                    "family": "rubber",
+                    "require": {
+                        "form": "strips_chunks"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "raw_metal_scrap",
+                    "require": {
+                        "type": "scrap"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 1
+                }
+            ],
+            "tools_required": [
+                "wrench_set"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 30,
+            "batch_size": 1
+        },
+        "effects": {
+            "traction": 0.6
+        },
+        "sprite": "O",
+        "color": "#000000"
+    },
+    {
+        "id": "wheel_motorcycle",
+        "name": "Motorcycle Wheel",
+        "type": "wheel",
+        "durability": 45,
+        "weight": 12,
+        "recipe": {
+            "description": "A robust wheel for motorcycles.",
+            "components": [
+                {
+                    "quantity": 4,
+                    "family": "rubber",
+                    "require": {
+                        "form": "strips_chunks"
+                    }
+                },
+                {
+                    "quantity": 3,
+                    "family": "raw_metal_scrap",
+                    "require": {
+                        "type": "scrap"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 10
+                }
+            ],
+            "tools_required": [
+                "wrench_set",
+                "tire_iron"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 60,
+            "batch_size": 1
+        },
+        "effects": {
+            "traction": 0.85
+        },
+        "sprite": "O",
+        "color": "#000000"
+    },
+    {
+        "id": "wheel_car",
+        "name": "Car Wheel",
+        "type": "wheel",
+        "durability": 50,
+        "weight": 20,
+        "recipe": {
+            "description": "A standard car tire on a rim.",
+            "components": [
+                {
+                    "quantity": 8,
+                    "family": "rubber",
+                    "require": {
+                        "form": "strips_chunks"
+                    }
+                },
+                {
+                    "quantity": 5,
+                    "family": "raw_metal_scrap",
+                    "require": {
+                        "type": "scrap"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 10
+                }
+            ],
+            "tools_required": [
+                "wrench_set",
+                "tire_iron"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 80,
+            "batch_size": 1
+        },
+        "effects": {
+            "traction": 0.9
+        },
+        "sprite": "O",
+        "color": "#000000"
+    },
+    {
+        "id": "chassis_hatchback",
+        "name": "Hatchback Chassis",
+        "type": "chassis",
+        "durability": 200,
+        "weight": 300,
+        "recipe": {
+            "description": "The frame of a compact hatchback car.",
+            "components": [
+                {
+                    "quantity": 40,
+                    "family": "metal_sheet",
+                    "require": {
+                        "material": "steel"
+                    }
+                },
+                {
+                    "quantity": 10,
+                    "family": "component",
+                    "require": {
+                        "type": "mechanical_parts"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 20
+                }
+            ],
+            "tools_required": [
+                "welding_torch_oxyacetylene",
+                "hoist"
+            ],
+            "station_required": "garage_bay",
+            "time_to_craft": 1500,
+            "batch_size": 1
+        },
+        "slotPoints": {
+            "engine": 1,
+            "wheel": 4,
+            "utility_small": 4,
+            "storage_small": 2,
+            "armor_light": 2,
+            "seat": 4
+        },
+        "sprite": "#",
+        "color": "#4682b4"
+    },
+    {
+        "id": "chassis_sedan",
+        "name": "Sedan Chassis",
+        "type": "chassis",
+        "durability": 300,
+        "weight": 450,
+        "recipe": {
+            "description": "The frame of a standard sedan.",
+            "components": [
+                {
+                    "quantity": 60,
+                    "family": "metal_sheet",
+                    "require": {
+                        "material": "steel"
+                    }
+                },
+                {
+                    "quantity": 15,
+                    "family": "component",
+                    "require": {
+                        "type": "mechanical_parts"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 25
+                }
+            ],
+            "tools_required": [
+                "welding_torch_oxyacetylene",
+                "hoist"
+            ],
+            "station_required": "garage_bay",
+            "time_to_craft": 2000,
+            "batch_size": 1
+        },
+        "slotPoints": {
+            "engine": 1,
+            "wheel": 4,
+            "utility_small": 4,
+            "storage_small": 3,
+            "armor_light": 4,
+            "seat": 5
+        },
+        "sprite": "#",
+        "color": "#4682b4"
+    },
+    {
+        "id": "storage_trunk",
+        "name": "Car Trunk",
+        "type": "storage_small",
+        "durability": 50,
+        "weight": 20,
+        "recipe": {
+            "description": "A spacious trunk compartment.",
+            "components": [
+                {
+                    "quantity": 10,
+                    "family": "metal_sheet",
+                    "require": {
+                        "thickness": "sturdy"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 15
+                }
+            ],
+            "tools_required": [
+                "welding_torch_oxyacetylene"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 200,
+            "batch_size": 1
+        },
+        "effects": {
+            "cargoCapacity": 50
+        },
+        "sprite": "#",
+        "color": "#8b4513"
+    }
 ]

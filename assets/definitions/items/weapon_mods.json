@@ -1,151 +1,178 @@
 [
-  {
-    "id": "scope_crude",
-    "name": "Crude Scope",
-    "description": "A couple of lenses taped to a tube. Might improve accuracy at range.",
-    "type": "weapon_mod",
-    "modType": "scope",
-    "appliesToWeaponCategory": [ "rifle", "crossbow" ],
-    "effects": {
-      "accuracyBonus": 1,
-      "optimalRangeBonus": 5,
-      "effectiveRangeBonus": 10,
-      "aimActionPointCostModifier": 0
+    {
+        "id": "scope_crude",
+        "name": "Crude Scope",
+        "description": "A couple of lenses taped to a tube. Might improve accuracy at range.",
+        "type": "weapon_mod",
+        "modType": "scope",
+        "appliesToWeaponCategory": [
+            "rifle",
+            "crossbow"
+        ],
+        "effects": {
+            "accuracyBonus": 1,
+            "optimalRangeBonus": 5,
+            "effectiveRangeBonus": 10,
+            "aimActionPointCostModifier": 0
+        },
+        "weightLbs": 0.5,
+        "size": 1,
+        "value": 20,
+        "sprite": "\u00a4",
+        "color": "#e480de",
+        "tags": [
+            "weapon_mod",
+            "scope",
+            "ranged_enhancement",
+            "makeshift"
+        ],
+        "recipe": {
+            "description": "Assemble a crude scope from basic lenses and a tube.",
+            "components": [
+                {
+                    "quantity": 1,
+                    "family": "processed_metal",
+                    "require": {
+                        "type": "rod",
+                        "size": "thin"
+                    }
+                },
+                {
+                    "quantity": 2,
+                    "family": "lens",
+                    "require": {
+                        "material": "glass",
+                        "grade": 1
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "adhesive",
+                    "require": {
+                        "type": "tape"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 2
+                },
+                {
+                    "skill": "Intelligence",
+                    "level": 1
+                }
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 20,
+            "batch_size": 1
+        }
     },
-    "weightLbs": 0.5,
-    "size": 1,
-    "value": 20,
-    "sprite": "¤",
-    "color": "#e480de",
-    "tags": [ "weapon_mod", "scope", "ranged_enhancement", "makeshift" ],
-    "recipe": {
-      "description": "Assemble a crude scope from basic lenses and a tube.",
-      "components": [
-        {
-          "quantity": 1,
-          "family": "metal",
-          "require": {
-            "type": "rod",
-            "size": "thin"
-          }
+    {
+        "id": "compensator_pistol",
+        "name": "Pistol Compensator",
+        "description": "A muzzle device that redirects propellant gases to counter recoil and muzzle rise.",
+        "type": "weapon_mod",
+        "modType": "muzzle",
+        "appliesToWeaponCategory": [
+            "pistol"
+        ],
+        "effects": {
+            "accuracyBonus": 1
         },
-        {
-          "quantity": 2,
-          "family": "lens",
-          "require": {
-            "material": "glass",
-            "grade": 1
-          }
-        },
-        {
-          "quantity": 1,
-          "family": "adhesive",
-          "require": {
-            "type": "tape"
-          }
+        "weightLbs": 0.3,
+        "size": 1,
+        "value": 40,
+        "sprite": ">",
+        "color": "#f9a9c1",
+        "tags": [
+            "weapon_mod",
+            "muzzle",
+            "pistol_enhancement"
+        ],
+        "recipe": {
+            "description": "Machine a simple pistol compensator.",
+            "components": [
+                {
+                    "quantity": 1,
+                    "family": "processed_metal",
+                    "require": {
+                        "type": "rod",
+                        "size": "thin"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 4
+                }
+            ],
+            "tools_required": [
+                "tap_and_die_set",
+                "file_small_metal"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 30,
+            "batch_size": 1
         }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 2
-        },
-        {
-          "skill": "Intelligence",
-          "level": 1
-        }
-      ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 20,
-      "batch_size": 1
-    }
-  },
-  {
-    "id": "compensator_pistol",
-    "name": "Pistol Compensator",
-    "description": "A muzzle device that redirects propellant gases to counter recoil and muzzle rise.",
-    "type": "weapon_mod",
-    "modType": "muzzle",
-    "appliesToWeaponCategory": [ "pistol" ],
-    "effects": {
-      "accuracyBonus": 1
     },
-    "weightLbs": 0.3,
-    "size": 1,
-    "value": 40,
-    "sprite": ">",
-    "color": "#f9a9c1",
-    "tags": [ "weapon_mod", "muzzle", "pistol_enhancement" ],
-    "recipe": {
-      "description": "Machine a simple pistol compensator.",
-      "components": [
-        {
-          "quantity": 1,
-          "family": "metal",
-          "require": {
-            "type": "rod",
-            "size": "thin"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 4
-        }
-      ],
-      "tools_required": [ "tap_and_die_set", "file_small_metal" ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 30,
-      "batch_size": 1
-    }
-  },
-  {
-    "id": "extended_mag_pistol_9mm",
-    "name": "Extended Pistol Magazine (9mm)",
-    "description": "A larger capacity magazine for 9mm pistols.",
-    "type": "weapon_mod",
-    "modType": "magazine",
-    "appliesToWeaponCategory": [ "pistol" ],
-    "appliesToAmmoType": "9mm",
-    "effects": {
-      "magazineSizeBonus": 5
-    },
-    "weightLbs": 0.4,
-    "size": 1,
-    "value": 30,
-    "sprite": "M",
-    "color": "#9169f5",
-    "tags": [ "weapon_mod", "magazine", "pistol_enhancement", "ammo_capacity" ],
-    "recipe": {
-      "description": "Fabricate a simple extended magazine for 9mm pistols.",
-      "components": [
-        {
-          "quantity": 1,
-          "family": "metal_sheet",
-          "require": {
-            "thickness": "thin"
-          }
+    {
+        "id": "extended_mag_pistol_9mm",
+        "name": "Extended Pistol Magazine (9mm)",
+        "description": "A larger capacity magazine for 9mm pistols.",
+        "type": "weapon_mod",
+        "modType": "magazine",
+        "appliesToWeaponCategory": [
+            "pistol"
+        ],
+        "appliesToAmmoType": "9mm",
+        "effects": {
+            "magazineSizeBonus": 5
         },
-        {
-          "quantity": 1,
-          "family": "component",
-          "require": {
-            "type": "spring",
-            "size": "small"
-          }
+        "weightLbs": 0.4,
+        "size": 1,
+        "value": 30,
+        "sprite": "M",
+        "color": "#9169f5",
+        "tags": [
+            "weapon_mod",
+            "magazine",
+            "pistol_enhancement",
+            "ammo_capacity"
+        ],
+        "recipe": {
+            "description": "Fabricate a simple extended magazine for 9mm pistols.",
+            "components": [
+                {
+                    "quantity": 1,
+                    "family": "metal_sheet",
+                    "require": {
+                        "thickness": "thin"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "component",
+                    "require": {
+                        "type": "spring",
+                        "size": "small"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 3
+                }
+            ],
+            "tools_required": [
+                "tin_snips",
+                "pliers_set"
+            ],
+            "station_required": "workbench_basic_tile",
+            "time_to_craft": 25,
+            "batch_size": 1
         }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 3
-        }
-      ],
-      "tools_required": [ "tin_snips", "pliers_set" ],
-      "station_required": "workbench_basic_tile",
-      "time_to_craft": 25,
-      "batch_size": 1
     }
-  }
 ]
