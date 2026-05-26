@@ -1,1219 +1,1218 @@
 [
-  {
-    "id": "c4_semtex_explosive",
-    "name": "C4/Semtex",
-    "description": "A block of plastic explosive. Requires a detonator for controlled explosion.",
-    "type": "consumable_explosive",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 2,
-    "weightLbs": 1,
-    "tags": [
-      "explosive",
-      "demolition",
-      "modern",
-      "consumable"
-    ],
-    "damage": "2d10",
-    "damageType": "Concussion",
-    "burstRadiusFt": 10,
-    "recipe": {
-      "id": "c4_semtex_explosive",
-      "description": "Synthesize and form a block of C4/Semtex plastic explosive. Extremely dangerous.",
-      "components": [
-        {
-          "quantity": 3,
-          "family": "explosive",
-          "require": {
-            "type": "generic_b"
-          }
+    {
+        "id": "c4_semtex_explosive",
+        "name": "C4/Semtex",
+        "description": "A block of plastic explosive. Requires a detonator for controlled explosion.",
+        "type": "consumable_explosive",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 2,
+        "weightLbs": 1,
+        "tags": [
+            "explosive",
+            "demolition",
+            "modern",
+            "consumable"
+        ],
+        "damage": "2d10",
+        "damageType": "Concussion",
+        "burstRadiusFt": 10,
+        "recipe": {
+            "id": "c4_semtex_explosive",
+            "description": "Synthesize and form a block of C4/Semtex plastic explosive. Extremely dangerous.",
+            "components": [
+                {
+                    "quantity": 3,
+                    "family": "explosive_compound",
+                    "require": {
+                        "type": "generic_b"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "plastic",
+                    "require": {
+                        "type": "scrap",
+                        "processed": true
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "wire",
+                    "require": {
+                        "insulated": true,
+                        "size": "thin"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Explosives",
+                    "level": 8
+                },
+                {
+                    "skill": "Electronics",
+                    "level": 4
+                }
+            ],
+            "station_required": "munitions_bench",
+            "time_to_craft": 60,
+            "batch_size": 1
         },
-        {
-          "quantity": 1,
-          "family": "plastic",
-          "require": {
-            "type": "scrap",
-            "processed": true
-          }
+        "family": "finished_explosive_device",
+        "properties": {
+            "type": "plastic",
+            "grade": 3
         },
-        {
-          "quantity": 1,
-          "family": "wire",
-          "require": {
-            "insulated": true,
-            "size": "thin"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Explosives",
-          "level": 8
+        "splashDamage": "2d6",
+        "sprite": "%",
+        "color": "#ff0000"
+    },
+    {
+        "id": "det_cord_explosive",
+        "name": "Det cord",
+        "description": "Detonating cord, a thin, flexible tube with a core of high explosive. Used for linear charges or to link explosives.",
+        "type": "consumable_explosive",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 3,
+        "weightLbs": 2,
+        "tags": [
+            "explosive",
+            "demolition",
+            "modern",
+            "consumable"
+        ],
+        "damage": "2d6",
+        "damageType": "Fire",
+        "burstRadiusFt": 5,
+        "family": "explosive",
+        "properties": {
+            "type": "det_cord"
         },
-        {
-          "skill": "Electronics",
-          "level": 4
-        }
-      ],
-      "station_required": "munitions_bench",
-      "time_to_craft": 60,
-      "batch_size": 1
+        "sprite": "%",
+        "color": "#ff0000"
     },
-    "family": "explosive",
-    "properties": {
-      "type": "plastic",
-      "grade": 3
-    },
-    "splashDamage": "2d6",
-    "sprite": "%",
-    "color": "#ff0000"
-  },
-  {
-    "id": "det_cord_explosive",
-    "name": "Det cord",
-    "description": "Detonating cord, a thin, flexible tube with a core of high explosive. Used for linear charges or to link explosives.",
-    "type": "consumable_explosive",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 3,
-    "weightLbs": 2,
-    "tags": [
-      "explosive",
-      "demolition",
-      "modern",
-      "consumable"
-    ],
-    "damage": "2d6",
-    "damageType": "Fire",
-    "burstRadiusFt": 5,
-    "family": "explosive",
-    "properties": {
-      "type": "det_cord"
-    },
-    "sprite": "%",
-    "color": "#ff0000"
-  },
-  {
-    "id": "dynamite_explosive",
-    "name": "Dynamite",
-    "description": "A stick of dynamite, a common industrial explosive.",
-    "type": "consumable_explosive",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 1,
-    "tags": [
-      "explosive",
-      "demolition",
-      "modern",
-      "consumable"
-    ],
-    "damage": "1d10",
-    "damageType": "Concussion",
-    "burstRadiusFt": 5,
-    "recipe": {
-      "id": "dynamite_explosive",
-      "description": "Craft sticks of dynamite.",
-      "components": [
-        {
-          "quantity": 5,
-          "family": "explosive",
-          "require": {
-            "type": "gunpowder",
-            "grade": 1
-          }
+    {
+        "id": "dynamite_explosive",
+        "name": "Dynamite",
+        "description": "A stick of dynamite, a common industrial explosive.",
+        "type": "consumable_explosive",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 1,
+        "tags": [
+            "explosive",
+            "demolition",
+            "modern",
+            "consumable"
+        ],
+        "damage": "1d10",
+        "damageType": "Concussion",
+        "burstRadiusFt": 5,
+        "recipe": {
+            "id": "dynamite_explosive",
+            "description": "Craft sticks of dynamite.",
+            "components": [
+                {
+                    "quantity": 5,
+                    "family": "explosive",
+                    "require": {
+                        "type": "gunpowder",
+                        "grade": 1
+                    }
+                },
+                {
+                    "quantity": 2,
+                    "family": "chemical",
+                    "require": {
+                        "type": "saltpeter"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "fabric",
+                    "require": {
+                        "material": "plant_fiber",
+                        "grade": 1
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "thread",
+                    "require": {
+                        "material": "plant_fiber"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Explosives",
+                    "level": 5
+                }
+            ],
+            "station_required": "munitions_bench",
+            "time_to_craft": 30,
+            "batch_size": 1
         },
-        {
-          "quantity": 2,
-          "family": "chemical",
-          "require": {
-            "type": "saltpeter"
-          }
+        "family": "finished_explosive_device",
+        "properties": {
+            "type": "dynamite"
         },
-        {
-          "quantity": 1,
-          "family": "fabric",
-          "require": {
-            "material": "plant_fiber",
-            "grade": 1
-          }
+        "splashDamage": "1d8",
+        "sprite": "%",
+        "color": "#ff0000"
+    },
+    {
+        "id": "bandage",
+        "name": "Bandage",
+        "description": "A sterile bandage to dress wounds and stop minor bleeding.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.1,
+        "tags": [
+            "consumable",
+            "medical",
+            "modern"
+        ],
+        "isConsumable": true,
+        "quantity": 1,
+        "effects": {
+            "health": 10,
+            "stopBleeding": true
         },
-        {
-          "quantity": 1,
-          "family": "thread",
-          "require": {
-            "material": "plant_fiber"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Explosives",
-          "level": 5
-        }
-      ],
-      "station_required": "munitions_bench",
-      "time_to_craft": 30,
-      "batch_size": 1
-    },
-    "family": "explosive",
-    "properties": {
-      "type": "dynamite"
-    },
-    "splashDamage": "1d8",
-    "sprite": "%",
-    "color": "#ff0000"
-  },
-  {
-    "id": "bandage",
-    "name": "Bandage",
-    "description": "A sterile bandage to dress wounds and stop minor bleeding.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.1,
-    "tags": [
-      "consumable",
-      "medical",
-      "modern"
-    ],
-    "isConsumable": true,
-    "quantity": 1,
-    "effects": {
-      "health": 10,
-      "stopBleeding": true
-    },
-    "recipe": {
-      "id": "bandage",
-      "description": "Craft a more effective bandage with some antiseptic properties.",
-      "components": [
-        {
-          "quantity": 3,
-          "family": "fabric",
-          "require": {
-            "type": "scrap"
-          }
+        "recipe": {
+            "id": "bandage",
+            "description": "Craft a more effective bandage with some antiseptic properties.",
+            "components": [
+                {
+                    "quantity": 3,
+                    "family": "fabric",
+                    "require": {
+                        "type": "scrap"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "medicinal",
+                    "require": {
+                        "type": "antiseptic_pulp"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Medicine",
+                    "level": 2
+                }
+            ],
+            "time_to_craft": 8,
+            "batch_size": 1
         },
-        {
-          "quantity": 1,
-          "family": "medicinal",
-          "require": {
-            "type": "antiseptic_pulp"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Medicine",
-          "level": 2
-        }
-      ],
-      "time_to_craft": 8,
-      "batch_size": 1
-    },
-    "family": "medical",
-    "properties": {
-      "type": "bandage",
-      "grade": 2
-    },
-    "sprite": "+",
-    "color": "#f5f5f5"
-  },
-  {
-    "id": "first_aid_kit",
-    "name": "First-Aid Kit",
-    "description": "Contains various medical supplies for treating injuries.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 2,
-    "weightLbs": 1,
-    "tags": [
-      "consumable",
-      "medical",
-      "modern"
-    ],
-    "effects": {
-      "health": 50,
-      "stopBleeding": true
-    },
-    "recipe": {
-      "id": "first_aid_kit",
-      "description": "Assemble a first-aid kit with various medical supplies.",
-      "components": [
-        {
-          "quantity": 2,
-          "family": "medical",
-          "require": {
+        "family": "medical",
+        "properties": {
             "type": "bandage",
             "grade": 2
-          }
         },
-        {
-          "quantity": 2,
-          "family": "medicinal",
-          "require": {
-            "type": "antiseptic_pulp"
-          }
+        "sprite": "+",
+        "color": "#f5f5f5"
+    },
+    {
+        "id": "first_aid_kit",
+        "name": "First-Aid Kit",
+        "description": "Contains various medical supplies for treating injuries.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 2,
+        "weightLbs": 1,
+        "tags": [
+            "consumable",
+            "medical",
+            "modern"
+        ],
+        "effects": {
+            "health": 50,
+            "stopBleeding": true
         },
-        {
-          "quantity": 1,
-          "family": "medical",
-          "require": {
-            "type": "splint"
-          }
+        "recipe": {
+            "id": "first_aid_kit",
+            "description": "Assemble a first-aid kit with various medical supplies.",
+            "components": [
+                {
+                    "quantity": 3,
+                    "family": "fabric",
+                    "require": {
+                        "type": "scrap"
+                    }
+                },
+                {
+                    "quantity": 2,
+                    "family": "medical",
+                    "require": {
+                        "type": "bandage"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "medical",
+                    "require": {
+                        "effect": "painkiller"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "medical",
+                    "require": {
+                        "effect": "antibiotic"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Medicine",
+                    "level": 4
+                }
+            ],
+            "tools_required": [
+                "sewing_kit_basic"
+            ],
+            "time_to_craft": 40,
+            "batch_size": 1
         },
-        {
-          "quantity": 3,
-          "family": "fabric",
-          "require": {
-            "type": "scrap"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Medicine",
-          "level": 4
-        }
-      ],
-      "tools_required": [
-        "sewing_kit_basic"
-      ],
-      "time_to_craft": 40,
-      "batch_size": 1
-    },
-    "family": "medical",
-    "properties": {
-      "type": "kit",
-      "grade": 1
-    },
-    "sprite": "+",
-    "color": "#f5f5f5"
-  },
-  {
-    "id": "canned_beans",
-    "name": "Canned Beans",
-    "description": "A can of beans. Provides basic sustenance. Needs a can opener or knife.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "consumable",
-      "food",
-      "modern"
-    ],
-    "effects": {
-      "hunger": 12
-    },
-    "family": "food",
-    "properties": {
-      "type": "canned",
-      "content": "beans"
-    },
-    "sprite": "o",
-    "color": "#c0c0c0"
-  },
-  {
-    "id": "energy_bar",
-    "name": "Energy Bar",
-    "description": "A compact, high-energy food bar for quick nourishment.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "consumable",
-      "food",
-      "modern"
-    ],
-    "effects": {
-      "hunger": 8,
-      "stamina": 20
-    },
-    "family": "food",
-    "properties": {
-      "type": "bar",
-      "effect": "energy"
-    },
-    "sprite": "%",
-    "color": "#8b4513"
-  },
-  {
-    "id": "mre",
-    "name": "MRE",
-    "description": "Meal, Ready-to-Eat. A self-contained field ration providing substantial nourishment.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 2,
-    "weightLbs": 1.5,
-    "tags": [
-      "consumable",
-      "food",
-      "modern",
-      "military"
-    ],
-    "effects": {
-      "hunger": 24,
-      "thirst": -10
-    },
-    "family": "food",
-    "properties": {
-      "type": "mre"
-    },
-    "sprite": "%",
-    "color": "#8b4513"
-  },
-  {
-    "id": "bottled_water",
-    "name": "Bottled Water",
-    "description": "A sealed bottle of clean drinking water.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "consumable",
-      "drink",
-      "modern"
-    ],
-    "effects": {
-      "thirst": -15
-    },
-    "family": "drink",
-    "properties": {
-      "type": "water",
-      "container": "bottle"
-    },
-    "sprite": "!",
-    "color": "#0000ff"
-  },
-  {
-    "id": "canteen_water",
-    "name": "Canteen (Full)",
-    "description": "A canteen filled with water. Can be refilled.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 2,
-    "weightLbs": 1,
-    "tags": [
-      "consumable",
-      "drink",
-      "modern",
-      "reusable_container"
-    ],
-    "effects": {
-      "thirst": -24
-    },
-    "family": "drink",
-    "properties": {
-      "type": "water",
-      "container": "canteen"
-    },
-    "sprite": "o",
-    "color": "#c0c0c0"
-  },
-  {
-    "id": "water_purification_tablets",
-    "name": "Water Purification Tablets",
-    "description": "Tablets to make unsafe water drinkable. Typically treats 1 liter per tablet.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.1,
-    "tags": [
-      "consumable",
-      "utility",
-      "modern"
-    ],
-    "effects": {
-      "purifyWater": 1
-    },
-    "recipe": {
-      "id": "water_purification_tablets",
-      "description": "Create water purification tablets from iodine and a filler.",
-      "components": [
-        {
-          "quantity": 1,
-          "family": "chemical",
-          "require": {
-            "type": "iodine"
-          }
-        },
-        {
-          "quantity": 1,
-          "family": "fuel",
-          "require": {
-            "type": "charcoal"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Survival",
-          "level": 4
-        }
-      ],
-      "tools_required": [
-        "mortar_pestle"
-      ],
-      "station_required": "chemistry_set_tile",
-      "time_to_craft": 15,
-      "batch_size": 10
-    },
-    "family": "medical",
-    "properties": {
-      "type": "purification_tablets"
-    },
-    "sprite": "!",
-    "color": "#ffffff"
-  },
-  {
-    "id": "canned_beans_food",
-    "name": "Canned Beans",
-    "description": "A can of beans. Provides some sustenance.",
-    "size": 1,
-    "type": "food",
-    "isConsumable": true,
-    "effects": {
-      "hunger": 8
-    },
-    "sprite": "o",
-    "color": "#c0c0c0",
-    "canEquip": false,
-    "isClothing": false,
-    "weightLbs": 0.5,
-    "tags": [
-      "consumable",
-      "food",
-      "modern"
-    ],
-    "family": "food",
-    "properties": {
-      "type": "canned",
-      "content": "beans"
-    }
-  },
-  {
-    "id": "bottled_water_drink",
-    "name": "Bottled Water",
-    "description": "A bottle of clean drinking water. Very refreshing.",
-    "size": 1,
-    "type": "drink",
-    "isConsumable": true,
-    "effects": {
-      "thirst": 10
-    },
-    "sprite": "!",
-    "color": "#0000ff",
-    "canEquip": false,
-    "isClothing": false,
-    "weightLbs": 0.5,
-    "tags": [
-      "consumable",
-      "drink",
-      "modern"
-    ],
-    "family": "drink",
-    "properties": {
-      "type": "water",
-      "container": "bottle"
-    }
-  },
-  {
-    "id": "antibiotics_course",
-    "name": "Course of Antibiotics",
-    "description": "A course of broad-spectrum antibiotics to treat bacterial infections.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "consumable",
-      "medical",
-      "pharmaceutical",
-      "doctor",
-      "nurse",
-      "pharmacist"
-    ],
-    "effects": {
-      "cureInfection_bacterial": true,
-      "durationDays": 7
-    },
-    "doses": 14,
-    "family": "medical",
-    "properties": {
-      "type": "pharmaceutical",
-      "effect": "antibiotic"
-    },
-    "sprite": "!",
-    "color": "#ffffff"
-  },
-  {
-    "id": "painkillers_strong",
-    "name": "Strong Painkillers",
-    "description": "Potent analgesic for severe pain relief. May cause drowsiness.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.1,
-    "tags": [
-      "consumable",
-      "medical",
-      "pharmaceutical",
-      "doctor",
-      "paramedic",
-      "surgeon"
-    ],
-    "effects": {
-      "painRelief": 80,
-      "durationHours": 4,
-      "drowsiness": 25
-    },
-    "doses": 10,
-    "family": "medical",
-    "properties": {
-      "type": "pharmaceutical",
-      "effect": "painkiller",
-      "strength": "strong"
-    },
-    "sprite": "!",
-    "color": "#ffffff"
-  },
-  {
-    "id": "stimulant_combat",
-    "name": "Combat Stimulant Injector",
-    "description": "A military-grade stimulant for increased alertness, reduced fatigue, and enhanced reflexes for a short period.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 0,
-    "weightLbs": 0.1,
-    "tags": [
-      "consumable",
-      "medical",
-      "military",
-      "stimulant",
-      "soldier",
-      "mercenary"
-    ],
-    "effects": {
-      "stamina": 50,
-      "alertness": 30,
-      "reflexBonus": 10,
-      "durationMinutes": 30,
-      "sideEffect_jittery": 15
-    },
-    "doses": 1,
-    "administration": "injector",
-    "family": "medical",
-    "properties": {
-      "type": "stimulant",
-      "grade": "combat"
-    },
-    "sprite": "!",
-    "color": "#ff69b4"
-  },
-  {
-    "id": "antidote_universal_basic",
-    "name": "Basic Universal Antidote",
-    "description": "A broad-spectrum antidote for common toxins. May not be effective against all poisons.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "consumable",
-      "medical",
-      "antidote",
-      "doctor",
-      "paramedic",
-      "chemist",
-      "alchemist"
-    ],
-    "effects": {
-      "curePoison_common": true
-    },
-    "doses": 1,
-    "family": "medical",
-    "properties": {
-      "type": "antidote",
-      "grade": "basic"
-    },
-    "sprite": "!",
-    "color": "#ffffff"
-  },
-  {
-    "id": "herbal_salve_healing",
-    "name": "Healing Herbal Salve",
-    "description": "A salve made from medicinal herbs to promote wound healing and soothe burns.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.3,
-    "tags": [
-      "consumable",
-      "medical",
-      "herbal",
-      "apothecary",
-      "herbalist",
-      "shaman",
-      "healer"
-    ],
-    "effects": {
-      "health_regen_slow": 5,
-      "durationHours": 2,
-      "sootheBurn": true
-    },
-    "doses": 5,
-    "recipe": {
-      "id": "herbal_salve_healing",
-      "description": "Create a healing salve from medicinal herbs and a base.",
-      "components": [
-        {
-          "quantity": 3,
-          "family": "medicinal",
-          "require": {
-            "name": "comfrey"
-          }
-        },
-        {
-          "quantity": 1,
-          "family": "organic",
-          "require": {
-            "type": "fat"
-          }
-        },
-        {
-          "quantity": 1,
-          "family": "fabric",
-          "require": {
-            "type": "scrap"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Survival",
-          "level": 3
-        },
-        {
-          "skill": "Medicine",
-          "level": 2
-        }
-      ],
-      "tools_required": [
-        "mortar_pestle"
-      ],
-      "station_required": "campfire_basic_tile",
-      "time_to_craft": 20,
-      "batch_size": 1
-    },
-    "family": "medical",
-    "properties": {
-      "type": "salve",
-      "source": "herbal",
-      "effect": "healing"
-    },
-    "sprite": "~",
-    "color": "#98fb98"
-  },
-  {
-    "id": "chemical_reagent_generic",
-    "name": "Generic Chemical Reagent (Labeled Bottle)",
-    "description": "A bottle containing a common chemical reagent for laboratory work.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "consumable",
-      "science",
-      "laboratory",
-      "chemical",
-      "chemist",
-      "alchemist",
-      "biochemist"
-    ],
-    "effects": {
-      "lab_component": true
-    },
-    "substanceName": "e.g., Sulfuric Acid (dilute)",
-    "family": "chemical",
-    "properties": {
-      "type": "reagent",
-      "grade": "generic"
-    },
-    "sprite": "!",
-    "color": "#0000ff"
-  },
-  {
-    "id": "nutrient_paste_tube",
-    "name": "Nutrient Paste Tube",
-    "description": "A tube of concentrated, easily digestible nutrient paste for sustenance in emergencies or for invalids.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.3,
-    "tags": [
-      "consumable",
-      "food",
-      "medical",
-      "emergency",
-      "doctor",
-      "paramedic",
-      "survivor"
-    ],
-    "effects": {
-      "hunger": 24,
-      "thirst": -20
-    },
-    "family": "food",
-    "properties": {
-      "type": "paste",
-      "container": "tube"
-    },
-    "sprite": "~",
-    "color": "#98fb98"
-  },
-  {
-    "id": "ink_pot_black",
-    "name": "Black Ink Pot",
-    "description": "A pot of black ink for writing or printing.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 0,
-    "weightLbs": 0.3,
-    "tags": [
-      "consumable",
-      "crafting",
-      "ink",
-      "scribe",
-      "archivist",
-      "cartographer",
-      "writer"
-    ],
-    "effects": {
-      "resource_ink": 100
-    },
-    "color": "#c0c0c0",
-    "recipe": {
-      "id": "ink_pot_black",
-      "description": "Mix soot and a binder to create black ink.",
-      "components": [
-        {
-          "quantity": 5,
-          "family": "fuel",
-          "require": {
-            "type": "charcoal"
-          }
-        },
-        {
-          "quantity": 1,
-          "family": "liquid",
-          "require": {
-            "type": "water",
-            "quality": "clean"
-          }
-        },
-        {
-          "quantity": 1,
-          "family": "adhesive",
-          "require": {
-            "type": "paste",
+        "family": "medical",
+        "properties": {
+            "type": "kit",
             "grade": 1
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Survival",
-          "level": 1
-        }
-      ],
-      "tools_required": [
-        "mortar_pestle"
-      ],
-      "time_to_craft": 10,
-      "batch_size": 1
-    },
-    "family": "ink",
-    "properties": {
-      "color": "#000000"
-    },
-    "sprite": "o"
-  },
-  {
-    "id": "parchment_roll_blank",
-    "name": "Blank Parchment Roll",
-    "description": "A roll of clean parchment, suitable for writing, scrolls, or maps.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "consumable",
-      "crafting",
-      "paper",
-      "scribe",
-      "archivist",
-      "cartographer",
-      "historian"
-    ],
-    "effects": {
-      "resource_writing_surface": 50
-    },
-    "recipe": {
-      "id": "parchment_roll_blank",
-      "description": "Prepare animal hides to create a roll of parchment.",
-      "components": [
-        {
-          "quantity": 2,
-          "family": "leather",
-          "require": {
-            "type": "raw",
-            "size": "fine"
-          }
         },
-        {
-          "quantity": 1,
-          "family": "chemical",
-          "require": {
-            "type": "lime_solution"
-          }
+        "sprite": "+",
+        "color": "#f5f5f5"
+    },
+    {
+        "id": "canned_beans",
+        "name": "Canned Beans",
+        "description": "A can of beans. Provides basic sustenance. Needs a can opener or knife.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.5,
+        "tags": [
+            "consumable",
+            "food",
+            "modern"
+        ],
+        "effects": {
+            "hunger": 12
         },
-        {
-          "quantity": 2,
-          "family": "liquid",
-          "require": {
+        "family": "food",
+        "properties": {
+            "type": "canned",
+            "content": "beans"
+        },
+        "sprite": "o",
+        "color": "#c0c0c0"
+    },
+    {
+        "id": "energy_bar",
+        "name": "Energy Bar",
+        "description": "A compact, high-energy food bar for quick nourishment.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.2,
+        "tags": [
+            "consumable",
+            "food",
+            "modern"
+        ],
+        "effects": {
+            "hunger": 8,
+            "stamina": 20
+        },
+        "family": "food",
+        "properties": {
+            "type": "bar",
+            "effect": "energy"
+        },
+        "sprite": "%",
+        "color": "#8b4513"
+    },
+    {
+        "id": "mre",
+        "name": "MRE",
+        "description": "Meal, Ready-to-Eat. A self-contained field ration providing substantial nourishment.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 2,
+        "weightLbs": 1.5,
+        "tags": [
+            "consumable",
+            "food",
+            "modern",
+            "military"
+        ],
+        "effects": {
+            "hunger": 24,
+            "thirst": -10
+        },
+        "family": "food",
+        "properties": {
+            "type": "mre"
+        },
+        "sprite": "%",
+        "color": "#8b4513"
+    },
+    {
+        "id": "bottled_water",
+        "name": "Bottled Water",
+        "description": "A sealed bottle of clean drinking water.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.5,
+        "tags": [
+            "consumable",
+            "drink",
+            "modern"
+        ],
+        "effects": {
+            "thirst": -15
+        },
+        "family": "drink",
+        "properties": {
             "type": "water",
-            "quality": "clean"
-          }
+            "container": "bottle"
+        },
+        "sprite": "!",
+        "color": "#0000ff"
+    },
+    {
+        "id": "canteen_water",
+        "name": "Canteen (Full)",
+        "description": "A canteen filled with water. Can be refilled.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 2,
+        "weightLbs": 1,
+        "tags": [
+            "consumable",
+            "drink",
+            "modern",
+            "reusable_container"
+        ],
+        "effects": {
+            "thirst": -24
+        },
+        "family": "drink",
+        "properties": {
+            "type": "water",
+            "container": "canteen"
+        },
+        "sprite": "o",
+        "color": "#c0c0c0"
+    },
+    {
+        "id": "water_purification_tablets",
+        "name": "Water Purification Tablets",
+        "description": "Tablets to make unsafe water drinkable. Typically treats 1 liter per tablet.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.1,
+        "tags": [
+            "consumable",
+            "utility",
+            "modern"
+        ],
+        "effects": {
+            "purifyWater": 1
+        },
+        "recipe": {
+            "id": "water_purification_tablets",
+            "description": "Create water purification tablets from iodine and a filler.",
+            "components": [
+                {
+                    "quantity": 1,
+                    "family": "chemical",
+                    "require": {
+                        "type": "iodine"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "fuel",
+                    "require": {
+                        "type": "charcoal"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Survival",
+                    "level": 4
+                }
+            ],
+            "tools_required": [
+                "mortar_pestle"
+            ],
+            "station_required": "chemistry_set_tile",
+            "time_to_craft": 15,
+            "batch_size": 10
+        },
+        "family": "medical",
+        "properties": {
+            "type": "purification_tablets"
+        },
+        "sprite": "!",
+        "color": "#ffffff"
+    },
+    {
+        "id": "canned_beans_food",
+        "name": "Canned Beans",
+        "description": "A can of beans. Provides some sustenance.",
+        "size": 1,
+        "type": "food",
+        "isConsumable": true,
+        "effects": {
+            "hunger": 8
+        },
+        "sprite": "o",
+        "color": "#c0c0c0",
+        "canEquip": false,
+        "isClothing": false,
+        "weightLbs": 0.5,
+        "tags": [
+            "consumable",
+            "food",
+            "modern"
+        ],
+        "family": "food",
+        "properties": {
+            "type": "canned",
+            "content": "beans"
         }
-      ],
-      "skills_required": [
-        {
-          "skill": "Survival",
-          "level": 4
+    },
+    {
+        "id": "bottled_water_drink",
+        "name": "Bottled Water",
+        "description": "A bottle of clean drinking water. Very refreshing.",
+        "size": 1,
+        "type": "drink",
+        "isConsumable": true,
+        "effects": {
+            "thirst": 10
+        },
+        "sprite": "!",
+        "color": "#0000ff",
+        "canEquip": false,
+        "isClothing": false,
+        "weightLbs": 0.5,
+        "tags": [
+            "consumable",
+            "drink",
+            "modern"
+        ],
+        "family": "drink",
+        "properties": {
+            "type": "water",
+            "container": "bottle"
         }
-      ],
-      "tools_required": [
-        "tanning_knife",
-        "scraper_tool_blunt"
-      ],
-      "station_required": "tanning_rack_simple",
-      "time_to_craft": 240,
-      "batch_size": 1
     },
-    "family": "writing_surface",
-    "properties": {
-      "type": "parchment"
+    {
+        "id": "antibiotics_course",
+        "name": "Course of Antibiotics",
+        "description": "A course of broad-spectrum antibiotics to treat bacterial infections.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.2,
+        "tags": [
+            "consumable",
+            "medical",
+            "pharmaceutical",
+            "doctor",
+            "nurse",
+            "pharmacist"
+        ],
+        "effects": {
+            "cureInfection_bacterial": true,
+            "durationDays": 7
+        },
+        "doses": 14,
+        "family": "medical",
+        "properties": {
+            "type": "pharmaceutical",
+            "effect": "antibiotic"
+        },
+        "sprite": "!",
+        "color": "#ffffff"
     },
-    "sprite": "o",
-    "color": "#c0c0c0"
-  },
-  {
-    "id": "incense_sticks_sandalwood",
-    "name": "Sandalwood Incense Sticks",
-    "description": "Sticks of sandalwood incense, used for fragrance or in rituals.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "consumable",
-      "ritual",
-      "fragrance",
-      "priest",
-      "shaman",
-      "medium",
-      "cultist"
-    ],
-    "effects": {
-      "ritual_component_air": true,
-      "durationMinutes": 60
+    {
+        "id": "painkillers_strong",
+        "name": "Strong Painkillers",
+        "description": "Potent analgesic for severe pain relief. May cause drowsiness.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.1,
+        "tags": [
+            "consumable",
+            "medical",
+            "pharmaceutical",
+            "doctor",
+            "paramedic",
+            "surgeon"
+        ],
+        "effects": {
+            "painRelief": 80,
+            "durationHours": 4,
+            "drowsiness": 25
+        },
+        "doses": 10,
+        "family": "medical",
+        "properties": {
+            "type": "pharmaceutical",
+            "effect": "painkiller",
+            "strength": "strong"
+        },
+        "sprite": "!",
+        "color": "#ffffff"
     },
-    "quantity": 20,
-    "family": "ritual",
-    "properties": {
-      "type": "incense",
-      "scent": "sandalwood"
+    {
+        "id": "stimulant_combat",
+        "name": "Combat Stimulant Injector",
+        "description": "A military-grade stimulant for increased alertness, reduced fatigue, and enhanced reflexes for a short period.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 0,
+        "weightLbs": 0.1,
+        "tags": [
+            "consumable",
+            "medical",
+            "military",
+            "stimulant",
+            "soldier",
+            "mercenary"
+        ],
+        "effects": {
+            "stamina": 50,
+            "alertness": 30,
+            "reflexBonus": 10,
+            "durationMinutes": 30,
+            "sideEffect_jittery": 15
+        },
+        "doses": 1,
+        "administration": "injector",
+        "family": "medical",
+        "properties": {
+            "type": "stimulant",
+            "grade": "combat"
+        },
+        "sprite": "!",
+        "color": "#ff69b4"
     },
-    "sprite": "~",
-    "color": "#228b22"
-  },
-  {
-    "id": "sacred_herbs_bundle",
-    "name": "Bundle of Sacred Herbs",
-    "description": "A bundle of specific herbs considered sacred or potent for rituals and spiritual practices.",
-    "type": "consumable",
-    "canEquip": false,
-    "isClothing": false,
-    "size": 1,
-    "weightLbs": 0.3,
-    "tags": [
-      "consumable",
-      "ritual",
-      "herbal",
-      "shaman",
-      "priest",
-      "cultist",
-      "healer"
-    ],
-    "effects": {
-      "ritual_component_earth": true,
-      "spiritual_focus": 10
+    {
+        "id": "antidote_universal_basic",
+        "name": "Basic Universal Antidote",
+        "description": "A broad-spectrum antidote for common toxins. May not be effective against all poisons.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.2,
+        "tags": [
+            "consumable",
+            "medical",
+            "antidote",
+            "doctor",
+            "paramedic",
+            "chemist",
+            "alchemist"
+        ],
+        "effects": {
+            "curePoison_common": true
+        },
+        "doses": 1,
+        "family": "medical",
+        "properties": {
+            "type": "antidote",
+            "grade": "basic"
+        },
+        "sprite": "!",
+        "color": "#ffffff"
     },
-    "family": "ritual",
-    "properties": {
-      "type": "herbs",
-      "grade": "sacred"
+    {
+        "id": "herbal_salve_healing",
+        "name": "Healing Herbal Salve",
+        "description": "A salve made from medicinal herbs to promote wound healing and soothe burns.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.3,
+        "tags": [
+            "consumable",
+            "medical",
+            "herbal",
+            "apothecary",
+            "herbalist",
+            "shaman",
+            "healer"
+        ],
+        "effects": {
+            "health_regen_slow": 5,
+            "durationHours": 2,
+            "sootheBurn": true
+        },
+        "doses": 5,
+        "recipe": {
+            "id": "herbal_salve_healing",
+            "description": "Create a healing salve from medicinal herbs and a base.",
+            "components": [
+                {
+                    "quantity": 3,
+                    "family": "medicinal",
+                    "require": {
+                        "name": "comfrey"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "organic",
+                    "require": {
+                        "type": "fat"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "fabric",
+                    "require": {
+                        "type": "scrap"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Survival",
+                    "level": 3
+                },
+                {
+                    "skill": "Medicine",
+                    "level": 2
+                }
+            ],
+            "tools_required": [
+                "mortar_pestle"
+            ],
+            "station_required": "campfire_basic_tile",
+            "time_to_craft": 20,
+            "batch_size": 1
+        },
+        "family": "medical",
+        "properties": {
+            "type": "salve",
+            "source": "herbal",
+            "effect": "healing"
+        },
+        "sprite": "~",
+        "color": "#98fb98"
     },
-    "sprite": "~",
-    "color": "#228b22"
-  },
-  {
-    "id": "bandage_simple",
-    "name": "Simple Bandage",
-    "description": "A few strips of clean cloth, good for minor wounds.",
-    "type": "consumable_medical",
-    "effects": {
-      "heal_limbs": 5,
-      "stop_bleeding_chance": 0.75,
-      "crisis_stabilize_bonus": 1
+    {
+        "id": "chemical_reagent_generic",
+        "name": "Generic Chemical Reagent (Labeled Bottle)",
+        "description": "A bottle containing a common chemical reagent for laboratory work.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.5,
+        "tags": [
+            "consumable",
+            "science",
+            "laboratory",
+            "chemical",
+            "chemist",
+            "alchemist",
+            "biochemist"
+        ],
+        "effects": {
+            "lab_component": true
+        },
+        "substanceName": "e.g., Sulfuric Acid (dilute)",
+        "family": "chemical",
+        "properties": {
+            "type": "reagent",
+            "grade": "generic"
+        },
+        "sprite": "!",
+        "color": "#0000ff"
     },
-    "actionPointCost": 1,
-    "animation": "apply_bandage",
-    "soundOnUse": "medical_bandage_apply_01.wav",
-    "weightLbs": 0.1,
-    "size": 1,
-    "value": 5,
-    "stackable": true,
-    "maxStack": 10,
-    "sprite": "+",
-    "color": "#f5f5f5",
-    "tags": [
-      "medical",
-      "healing",
-      "consumable",
-      "first_aid"
-    ],
-    "recipe": {
-      "id": "bandage_simple",
-      "description": "Craft a simple bandage from cloth scraps.",
-      "components": [
-        {
-          "quantity": 2,
-          "family": "fabric",
-          "require": {
-            "type": "scrap"
-          }
+    {
+        "id": "nutrient_paste_tube",
+        "name": "Nutrient Paste Tube",
+        "description": "A tube of concentrated, easily digestible nutrient paste for sustenance in emergencies or for invalids.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.3,
+        "tags": [
+            "consumable",
+            "food",
+            "medical",
+            "emergency",
+            "doctor",
+            "paramedic",
+            "survivor"
+        ],
+        "effects": {
+            "hunger": 24,
+            "thirst": -20
+        },
+        "family": "food",
+        "properties": {
+            "type": "paste",
+            "container": "tube"
+        },
+        "sprite": "~",
+        "color": "#98fb98"
+    },
+    {
+        "id": "ink_pot_black",
+        "name": "Black Ink Pot",
+        "description": "A pot of black ink for writing or printing.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 0,
+        "weightLbs": 0.3,
+        "tags": [
+            "consumable",
+            "crafting",
+            "ink",
+            "scribe",
+            "archivist",
+            "cartographer",
+            "writer"
+        ],
+        "effects": {
+            "resource_ink": 100
+        },
+        "color": "#c0c0c0",
+        "recipe": {
+            "id": "ink_pot_black",
+            "description": "Mix soot and a binder to create black ink.",
+            "components": [
+                {
+                    "quantity": 5,
+                    "family": "fuel",
+                    "require": {
+                        "type": "charcoal"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "liquid",
+                    "require": {
+                        "type": "water",
+                        "quality": "clean"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "adhesive",
+                    "require": {
+                        "type": "paste",
+                        "grade": 1
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Survival",
+                    "level": 1
+                }
+            ],
+            "tools_required": [
+                "mortar_pestle"
+            ],
+            "time_to_craft": 10,
+            "batch_size": 1
+        },
+        "family": "ink",
+        "properties": {
+            "color": "#000000"
+        },
+        "sprite": "o"
+    },
+    {
+        "id": "parchment_roll_blank",
+        "name": "Blank Parchment Roll",
+        "description": "A roll of clean parchment, suitable for writing, scrolls, or maps.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.5,
+        "tags": [
+            "consumable",
+            "crafting",
+            "paper",
+            "scribe",
+            "archivist",
+            "cartographer",
+            "historian"
+        ],
+        "effects": {
+            "resource_writing_surface": 50
+        },
+        "recipe": {
+            "id": "parchment_roll_blank",
+            "description": "Prepare animal hides to create a roll of parchment.",
+            "components": [
+                {
+                    "quantity": 2,
+                    "family": "raw_hide",
+                    "require": {
+                        "type": "raw",
+                        "size": "fine"
+                    }
+                },
+                {
+                    "quantity": 1,
+                    "family": "chemical",
+                    "require": {
+                        "type": "lime_solution"
+                    }
+                },
+                {
+                    "quantity": 2,
+                    "family": "liquid",
+                    "require": {
+                        "type": "water",
+                        "quality": "clean"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Survival",
+                    "level": 4
+                }
+            ],
+            "tools_required": [
+                "tanning_knife",
+                "scraper_tool_blunt"
+            ],
+            "station_required": "tanning_rack_simple",
+            "time_to_craft": 240,
+            "batch_size": 1
+        },
+        "family": "writing_surface",
+        "properties": {
+            "type": "parchment"
+        },
+        "sprite": "o",
+        "color": "#c0c0c0"
+    },
+    {
+        "id": "incense_sticks_sandalwood",
+        "name": "Sandalwood Incense Sticks",
+        "description": "Sticks of sandalwood incense, used for fragrance or in rituals.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.2,
+        "tags": [
+            "consumable",
+            "ritual",
+            "fragrance",
+            "priest",
+            "shaman",
+            "medium",
+            "cultist"
+        ],
+        "effects": {
+            "ritual_component_air": true,
+            "durationMinutes": 60
+        },
+        "quantity": 20,
+        "family": "ritual",
+        "properties": {
+            "type": "incense",
+            "scent": "sandalwood"
+        },
+        "sprite": "~",
+        "color": "#228b22"
+    },
+    {
+        "id": "sacred_herbs_bundle",
+        "name": "Bundle of Sacred Herbs",
+        "description": "A bundle of specific herbs considered sacred or potent for rituals and spiritual practices.",
+        "type": "consumable",
+        "canEquip": false,
+        "isClothing": false,
+        "size": 1,
+        "weightLbs": 0.3,
+        "tags": [
+            "consumable",
+            "ritual",
+            "herbal",
+            "shaman",
+            "priest",
+            "cultist",
+            "healer"
+        ],
+        "effects": {
+            "ritual_component_earth": true,
+            "spiritual_focus": 10
+        },
+        "family": "ritual",
+        "properties": {
+            "type": "herbs",
+            "grade": "sacred"
+        },
+        "sprite": "~",
+        "color": "#228b22"
+    },
+    {
+        "id": "bandage_simple",
+        "name": "Simple Bandage",
+        "description": "A few strips of clean cloth, good for minor wounds.",
+        "type": "consumable_medical",
+        "effects": {
+            "heal_limbs": 5,
+            "stop_bleeding_chance": 0.75,
+            "crisis_stabilize_bonus": 1
+        },
+        "actionPointCost": 1,
+        "animation": "apply_bandage",
+        "soundOnUse": "medical_bandage_apply_01.wav",
+        "weightLbs": 0.1,
+        "size": 1,
+        "value": 5,
+        "stackable": true,
+        "maxStack": 10,
+        "sprite": "+",
+        "color": "#f5f5f5",
+        "tags": [
+            "medical",
+            "healing",
+            "consumable",
+            "first_aid"
+        ],
+        "recipe": {
+            "id": "bandage_simple",
+            "description": "Craft a simple bandage from cloth scraps.",
+            "components": [
+                {
+                    "quantity": 2,
+                    "family": "fabric",
+                    "require": {
+                        "type": "scrap"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Medicine",
+                    "level": 1
+                }
+            ],
+            "time_to_craft": 5,
+            "batch_size": 1
+        },
+        "family": "medical",
+        "properties": {
+            "type": "bandage",
+            "grade": 1
         }
-      ],
-      "skills_required": [
-        {
-          "skill": "Medicine",
-          "level": 1
-        }
-      ],
-      "time_to_craft": 5,
-      "batch_size": 1
     },
-    "family": "medical",
-    "properties": {
-      "type": "bandage",
-      "grade": 1
+    {
+        "id": "molotov_cocktail",
+        "name": "Molotov Cocktail",
+        "description": "A bottle filled with flammable liquid and a rag fuse. Incendiary.",
+        "type": "weapon_thrown_explosive",
+        "canEquip": true,
+        "isClothing": false,
+        "size": 2,
+        "weightLbs": 1,
+        "tags": [
+            "weapon",
+            "thrown",
+            "incendiary",
+            "fire_source"
+        ],
+        "damage": "1d6",
+        "damageType": "Fire",
+        "burstRadiusFt": 10,
+        "range": 5,
+        "family": "explosive",
+        "properties": {
+            "type": "incendiary"
+        },
+        "recipe": {
+            "description": "Craft a molotov cocktail.",
+            "components": [
+                {
+                    "family": "bottle_container",
+                    "quantity": 1,
+                    "require": {
+                        "type": "bottle"
+                    }
+                },
+                {
+                    "family": "fuel",
+                    "quantity": 1,
+                    "require": {
+                        "type": "gasoline"
+                    }
+                },
+                {
+                    "family": "fabric",
+                    "quantity": 1,
+                    "require": {
+                        "type": "scrap"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Explosives",
+                    "level": 2
+                }
+            ],
+            "time_to_craft": 10,
+            "batch_size": 1
+        },
+        "sprite": "!",
+        "color": "#0000ff"
+    },
+    {
+        "id": "water_bucket",
+        "name": "Bucket of Water",
+        "description": "A bucket filled with water. Good for extinguishing fires.",
+        "type": "weapon_thrown_utility",
+        "canEquip": true,
+        "isClothing": false,
+        "size": 2,
+        "weightLbs": 8,
+        "tags": [
+            "tool",
+            "water_source",
+            "extinguish_source",
+            "thrown"
+        ],
+        "effects": {
+            "extinguish": true
+        },
+        "family": "tool",
+        "properties": {
+            "type": "bucket"
+        },
+        "range": 5,
+        "damage": "0",
+        "damageType": "Physical",
+        "sprite": "o",
+        "color": "#c0c0c0"
+    },
+    {
+        "id": "radiation_meds",
+        "name": "RadAway",
+        "description": "Intravenous chemical solution that bonds with radiation particles and passes them through your system.",
+        "type": "consumable_medical",
+        "size": 0,
+        "weightLbs": 0.5,
+        "tags": [
+            "consumable",
+            "medical",
+            "radiation",
+            "radaway"
+        ],
+        "effects": {
+            "radiation_reduction": 100
+        },
+        "doses": 1,
+        "sprite": "!",
+        "color": "#ffa500"
+    },
+    {
+        "id": "corn_cob",
+        "name": "Corn Cob",
+        "description": "A freshly harvested ear of corn.",
+        "size": 1,
+        "type": "food",
+        "isConsumable": true,
+        "effects": {
+            "hunger": 6
+        },
+        "sprite": "o",
+        "color": "#ffff00",
+        "canEquip": false,
+        "isClothing": false,
+        "weightLbs": 0.5,
+        "tags": [
+            "consumable",
+            "food",
+            "raw"
+        ],
+        "family": "food"
+    },
+    {
+        "id": "carrot",
+        "name": "Carrot",
+        "description": "A crunchy, orange root vegetable.",
+        "size": 1,
+        "type": "food",
+        "isConsumable": true,
+        "effects": {
+            "hunger": 4
+        },
+        "sprite": "v",
+        "color": "#ffa500",
+        "canEquip": false,
+        "isClothing": false,
+        "weightLbs": 0.2,
+        "tags": [
+            "consumable",
+            "food",
+            "raw"
+        ],
+        "family": "food"
+    },
+    {
+        "id": "tomato",
+        "name": "Tomato",
+        "description": "A juicy, red tomato.",
+        "size": 1,
+        "type": "food",
+        "isConsumable": true,
+        "effects": {
+            "hunger": 5
+        },
+        "sprite": "o",
+        "color": "#ff0000",
+        "canEquip": false,
+        "isClothing": false,
+        "weightLbs": 0.3,
+        "tags": [
+            "consumable",
+            "food",
+            "raw"
+        ],
+        "family": "food"
     }
-  },
-  {
-    "id": "molotov_cocktail",
-    "name": "Molotov Cocktail",
-    "description": "A bottle filled with flammable liquid and a rag fuse. Incendiary.",
-    "type": "weapon_thrown_explosive",
-    "canEquip": true,
-    "isClothing": false,
-    "size": 2,
-    "weightLbs": 1,
-    "tags": [
-      "weapon",
-      "thrown",
-      "incendiary",
-      "fire_source"
-    ],
-    "damage": "1d6",
-    "damageType": "Fire",
-    "burstRadiusFt": 10,
-    "range": 5,
-    "family": "explosive",
-    "properties": {
-      "type": "incendiary"
-    },
-    "recipe": {
-      "description": "Craft a molotov cocktail.",
-      "components": [
-        {
-          "family": "container",
-          "quantity": 1,
-          "require": {
-            "type": "bottle"
-          }
-        },
-        {
-          "family": "fuel",
-          "quantity": 1,
-          "require": {
-            "type": "gasoline"
-          }
-        },
-        {
-          "family": "fabric",
-          "quantity": 1,
-          "require": {
-            "type": "scrap"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Explosives",
-          "level": 2
-        }
-      ],
-      "time_to_craft": 10,
-      "batch_size": 1
-    },
-    "sprite": "!",
-    "color": "#0000ff"
-  },
-  {
-    "id": "water_bucket",
-    "name": "Bucket of Water",
-    "description": "A bucket filled with water. Good for extinguishing fires.",
-    "type": "weapon_thrown_utility",
-    "canEquip": true,
-    "isClothing": false,
-    "size": 2,
-    "weightLbs": 8,
-    "tags": [
-      "tool",
-      "water_source",
-      "extinguish_source",
-      "thrown"
-    ],
-    "effects": {
-      "extinguish": true
-    },
-    "family": "tool",
-    "properties": {
-      "type": "bucket"
-    },
-    "range": 5,
-    "damage": "0",
-    "damageType": "Physical",
-    "sprite": "o",
-    "color": "#c0c0c0"
-  },
-  {
-    "id": "radiation_meds",
-    "name": "RadAway",
-    "description": "Intravenous chemical solution that bonds with radiation particles and passes them through your system.",
-    "type": "consumable_medical",
-    "size": 0,
-    "weightLbs": 0.5,
-    "tags": [
-      "consumable",
-      "medical",
-      "radiation",
-      "radaway"
-    ],
-    "effects": {
-      "radiation_reduction": 100
-    },
-    "doses": 1,
-    "sprite": "!",
-    "color": "#ffa500"
-  },
-  {
-    "id": "corn_cob",
-    "name": "Corn Cob",
-    "description": "A freshly harvested ear of corn.",
-    "size": 1,
-    "type": "food",
-    "isConsumable": true,
-    "effects": {
-      "hunger": 6
-    },
-    "sprite": "o",
-    "color": "#ffff00",
-    "canEquip": false,
-    "isClothing": false,
-    "weightLbs": 0.5,
-    "tags": [
-      "consumable",
-      "food",
-      "raw"
-    ],
-    "family": "food"
-  },
-  {
-    "id": "carrot",
-    "name": "Carrot",
-    "description": "A crunchy, orange root vegetable.",
-    "size": 1,
-    "type": "food",
-    "isConsumable": true,
-    "effects": {
-      "hunger": 4
-    },
-    "sprite": "v",
-    "color": "#ffa500",
-    "canEquip": false,
-    "isClothing": false,
-    "weightLbs": 0.2,
-    "tags": [
-      "consumable",
-      "food",
-      "raw"
-    ],
-    "family": "food"
-  },
-  {
-    "id": "tomato",
-    "name": "Tomato",
-    "description": "A juicy, red tomato.",
-    "size": 1,
-    "type": "food",
-    "isConsumable": true,
-    "effects": {
-      "hunger": 5
-    },
-    "sprite": "o",
-    "color": "#ff0000",
-    "canEquip": false,
-    "isClothing": false,
-    "weightLbs": 0.3,
-    "tags": [
-      "consumable",
-      "food",
-      "raw"
-    ],
-    "family": "food"
-  }
 ]

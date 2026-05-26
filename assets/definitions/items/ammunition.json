@@ -1,861 +1,861 @@
 [
-  {
-    "id": "ammo_556mm",
-    "name": "5.56mm Rounds",
-    "description": "A box of 5.56mm rifle ammunition.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": "5.56mm"
-    },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.6,
-    "tags": [
-      "ammo",
-      "modern",
-      "rifle"
-    ],
-    "ammoType": "5.56mm",
-    "quantity": 30,
-    "recipe": {
-      "description": "Reload 5.56mm rifle cartridges.",
-      "components": [
-        {
-          "family": "casing",
-          "quantity": 10,
-          "require": {
-            "caliber": "5.56mm",
-            "type": "rifle"
-          }
+    {
+        "id": "ammo_556mm",
+        "name": "5.56mm Rounds",
+        "description": "A box of 5.56mm rifle ammunition.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": "5.56mm"
         },
-        {
-          "family": "primer",
-          "quantity": 10,
-          "require": {
-            "type": "rifle",
-            "size": "small"
-          }
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.6,
+        "tags": [
+            "ammo",
+            "modern",
+            "rifle"
+        ],
+        "ammoType": "5.56mm",
+        "quantity": 30,
+        "recipe": {
+            "description": "Reload 5.56mm rifle cartridges.",
+            "components": [
+                {
+                    "family": "556_casing",
+                    "quantity": 10,
+                    "require": {
+                        "caliber": "5.56mm",
+                        "type": "rifle"
+                    }
+                },
+                {
+                    "family": "556_primer",
+                    "quantity": 10,
+                    "require": {
+                        "type": "rifle",
+                        "size": "small"
+                    }
+                },
+                {
+                    "family": "propellant",
+                    "quantity": 3,
+                    "require": {
+                        "type": "gunpowder"
+                    }
+                },
+                {
+                    "family": "556_projectile",
+                    "quantity": 10,
+                    "require": {
+                        "caliber": "5.56mm",
+                        "type": "bullet"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Guns",
+                    "level": 3
+                }
+            ],
+            "station_required": "reloading_bench",
+            "time_to_craft": 20,
+            "batch_size": 10
         },
-        {
-          "family": "explosive",
-          "quantity": 3,
-          "require": {
-            "type": "gunpowder"
-          }
+        "sprite": "=",
+        "color": "#ffd700"
+    },
+    {
+        "id": "ammo_762mm",
+        "name": "7.62mm Rounds",
+        "description": "A box of 7.62mm rifle ammunition (e.g. for NATO spec rifles).",
+        "family": "ammunition",
+        "properties": {
+            "caliber": "7.62mm"
         },
-        {
-          "family": "projectile",
-          "quantity": 10,
-          "require": {
-            "caliber": "5.56mm",
-            "type": "bullet"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Guns",
-          "level": 3
-        }
-      ],
-      "station_required": "reloading_bench",
-      "time_to_craft": 20,
-      "batch_size": 10
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.7,
+        "tags": [
+            "ammo",
+            "modern",
+            "rifle"
+        ],
+        "ammoType": "7.62mm",
+        "quantity": 20,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_762mm",
-    "name": "7.62mm Rounds",
-    "description": "A box of 7.62mm rifle ammunition (e.g. for NATO spec rifles).",
-    "family": "ammunition",
-    "properties": {
-      "caliber": "7.62mm"
-    },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.7,
-    "tags": [
-      "ammo",
-      "modern",
-      "rifle"
-    ],
-    "ammoType": "7.62mm",
-    "quantity": 20,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_9mm",
-    "name": "9mm Rounds",
-    "description": "A box of 9mm pistol ammunition.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": "9mm"
-    },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "ammo",
-      "modern",
-      "pistol",
-      "smg"
-    ],
-    "ammoType": "9mm",
-    "quantity": 50,
-    "recipe": {
-      "description": "Reload 9mm pistol cartridges.",
-      "components": [
-        {
-          "family": "casing",
-          "quantity": 10,
-          "require": {
-            "caliber": "9mm",
-            "type": "pistol"
-          }
+    {
+        "id": "ammo_9mm",
+        "name": "9mm Rounds",
+        "description": "A box of 9mm pistol ammunition.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": "9mm"
         },
-        {
-          "family": "primer",
-          "quantity": 10,
-          "require": {
-            "type": "pistol",
-            "size": "small"
-          }
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.5,
+        "tags": [
+            "ammo",
+            "modern",
+            "pistol",
+            "smg"
+        ],
+        "ammoType": "9mm",
+        "quantity": 50,
+        "recipe": {
+            "description": "Reload 9mm pistol cartridges.",
+            "components": [
+                {
+                    "family": "9mm_casing",
+                    "quantity": 10,
+                    "require": {
+                        "caliber": "9mm",
+                        "type": "pistol"
+                    }
+                },
+                {
+                    "family": "9mm_primer",
+                    "quantity": 10,
+                    "require": {
+                        "type": "pistol",
+                        "size": "small"
+                    }
+                },
+                {
+                    "family": "propellant",
+                    "quantity": 2,
+                    "require": {
+                        "type": "gunpowder"
+                    }
+                },
+                {
+                    "family": "9mm_projectile",
+                    "quantity": 10,
+                    "require": {
+                        "caliber": "9mm",
+                        "type": "bullet"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Guns",
+                    "level": 2
+                }
+            ],
+            "tools_required": [
+                "hand_reloader_tool"
+            ],
+            "station_required": "reloading_bench",
+            "time_to_craft": 15,
+            "batch_size": 10
         },
-        {
-          "family": "explosive",
-          "quantity": 2,
-          "require": {
-            "type": "gunpowder"
-          }
-        },
-        {
-          "family": "projectile",
-          "quantity": 10,
-          "require": {
-            "caliber": "9mm",
-            "type": "bullet"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Guns",
-          "level": 2
-        }
-      ],
-      "tools_required": [
-        "hand_reloader_tool"
-      ],
-      "station_required": "reloading_bench",
-      "time_to_craft": 15,
-      "batch_size": 10
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_12gauge_buckshot",
-    "name": "12-Gauge Buckshot Shells",
-    "description": "A box of 12-gauge shotgun shells (buckshot).",
-    "family": "ammunition",
-    "properties": {
-      "caliber": "12gauge",
-      "type": "buckshot"
-    },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.9,
-    "tags": [
-      "ammo",
-      "modern",
-      "shotgun"
-    ],
-    "ammoType": "12gauge_buckshot",
-    "quantity": 10,
-    "recipe": {
-      "description": "Reload 12-gauge buckshot shells.",
-      "components": [
-        {
-          "family": "casing",
-          "quantity": 5,
-          "require": {
+    {
+        "id": "ammo_12gauge_buckshot",
+        "name": "12-Gauge Buckshot Shells",
+        "description": "A box of 12-gauge shotgun shells (buckshot).",
+        "family": "ammunition",
+        "properties": {
             "caliber": "12gauge",
-            "type": "shotshell"
-          }
+            "type": "buckshot"
         },
-        {
-          "family": "primer",
-          "quantity": 5,
-          "require": {
-            "type": "shotgun"
-          }
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.9,
+        "tags": [
+            "ammo",
+            "modern",
+            "shotgun"
+        ],
+        "ammoType": "12gauge_buckshot",
+        "quantity": 10,
+        "recipe": {
+            "description": "Reload 12-gauge buckshot shells.",
+            "components": [
+                {
+                    "family": "12g_hull",
+                    "quantity": 5,
+                    "require": {
+                        "caliber": "12gauge",
+                        "type": "shotshell"
+                    }
+                },
+                {
+                    "family": "shotgun_primer",
+                    "quantity": 5,
+                    "require": {
+                        "type": "shotgun"
+                    }
+                },
+                {
+                    "family": "propellant",
+                    "quantity": 2,
+                    "require": {
+                        "type": "gunpowder"
+                    }
+                },
+                {
+                    "family": "buckshot_pellets",
+                    "quantity": 5,
+                    "require": {
+                        "caliber": "12gauge",
+                        "type": "shot"
+                    }
+                },
+                {
+                    "family": "component",
+                    "quantity": 5,
+                    "require": {
+                        "type": "wad"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Guns",
+                    "level": 1
+                }
+            ],
+            "tools_required": [
+                "shotshell_press_basic"
+            ],
+            "station_required": "reloading_bench",
+            "time_to_craft": 10,
+            "batch_size": 5
         },
-        {
-          "family": "explosive",
-          "quantity": 2,
-          "require": {
-            "type": "gunpowder"
-          }
+        "sprite": "=",
+        "color": "#b22222"
+    },
+    {
+        "id": "ammo_45acp",
+        "name": ".45 ACP Rounds",
+        "description": "A box of .45 ACP ammunition. Common in heavy pistols and SMGs.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".45ACP"
         },
-        {
-          "family": "projectile",
-          "quantity": 5,
-          "require": {
-            "caliber": "12gauge",
-            "type": "shot"
-          }
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.6,
+        "tags": [
+            "ammo",
+            "modern",
+            "pistol"
+        ],
+        "ammoType": ".45ACP",
+        "quantity": 50,
+        "sprite": "=",
+        "color": "#ffd700"
+    },
+    {
+        "id": "ammo_22lr",
+        "name": ".22 LR Rounds",
+        "description": "A box of .22 Long Rifle ammunition. Small and light.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".22LR"
         },
-        {
-          "family": "component",
-          "quantity": 5,
-          "require": {
-            "type": "wad"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Guns",
-          "level": 1
-        }
-      ],
-      "tools_required": [
-        "shotshell_press_basic"
-      ],
-      "station_required": "reloading_bench",
-      "time_to_craft": 10,
-      "batch_size": 5
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.3,
+        "tags": [
+            "ammo",
+            "modern",
+            "pistol",
+            "rifle"
+        ],
+        "ammoType": ".22LR",
+        "quantity": 100,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "sprite": "=",
-    "color": "#b22222"
-  },
-  {
-    "id": "ammo_45acp",
-    "name": ".45 ACP Rounds",
-    "description": "A box of .45 ACP ammunition. Common in heavy pistols and SMGs.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".45ACP"
+    {
+        "id": "ammo_38spl",
+        "name": ".38 Special Rounds",
+        "description": "A box of .38 Special ammunition. Common for revolvers.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".38SPL"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.5,
+        "tags": [
+            "ammo",
+            "modern",
+            "revolver"
+        ],
+        "ammoType": ".38SPL",
+        "quantity": 50,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.6,
-    "tags": [
-      "ammo",
-      "modern",
-      "pistol"
-    ],
-    "ammoType": ".45ACP",
-    "quantity": 50,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_22lr",
-    "name": ".22 LR Rounds",
-    "description": "A box of .22 Long Rifle ammunition. Small and light.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".22LR"
+    {
+        "id": "ammo_357mag",
+        "name": ".357 Magnum Rounds",
+        "description": "A box of .357 Magnum ammunition. Powerful revolver rounds.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".357MAG"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.6,
+        "tags": [
+            "ammo",
+            "modern",
+            "revolver"
+        ],
+        "ammoType": ".357MAG",
+        "quantity": 50,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.3,
-    "tags": [
-      "ammo",
-      "modern",
-      "pistol",
-      "rifle"
-    ],
-    "ammoType": ".22LR",
-    "quantity": 100,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_38spl",
-    "name": ".38 Special Rounds",
-    "description": "A box of .38 Special ammunition. Common for revolvers.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".38SPL"
+    {
+        "id": "ammo_50bmg",
+        "name": ".50 BMG Rounds",
+        "description": "A box of .50 Browning Machine Gun ammunition. Extremely powerful.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".50BMG"
+        },
+        "type": "ammunition",
+        "size": 2,
+        "weightLbs": 3,
+        "tags": [
+            "ammo",
+            "modern",
+            "rifle",
+            "heavy"
+        ],
+        "ammoType": ".50BMG",
+        "quantity": 10,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "ammo",
-      "modern",
-      "revolver"
-    ],
-    "ammoType": ".38SPL",
-    "quantity": 50,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_357mag",
-    "name": ".357 Magnum Rounds",
-    "description": "A box of .357 Magnum ammunition. Powerful revolver rounds.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".357MAG"
+    {
+        "id": "ammo_32acp",
+        "name": ".32 ACP Rounds",
+        "description": "A box of .32 ACP ammunition. For small pistols.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".32ACP"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.4,
+        "tags": [
+            "ammo",
+            "modern",
+            "pistol"
+        ],
+        "ammoType": ".32ACP",
+        "quantity": 50,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.6,
-    "tags": [
-      "ammo",
-      "modern",
-      "revolver"
-    ],
-    "ammoType": ".357MAG",
-    "quantity": 50,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_50bmg",
-    "name": ".50 BMG Rounds",
-    "description": "A box of .50 Browning Machine Gun ammunition. Extremely powerful.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".50BMG"
+    {
+        "id": "ammo_10mm",
+        "name": "10mm Auto Rounds",
+        "description": "A box of 10mm Auto ammunition. Powerful pistol rounds.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": "10mm"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.6,
+        "tags": [
+            "ammo",
+            "modern",
+            "pistol"
+        ],
+        "ammoType": "10mm",
+        "quantity": 50,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 2,
-    "weightLbs": 3,
-    "tags": [
-      "ammo",
-      "modern",
-      "rifle",
-      "heavy"
-    ],
-    "ammoType": ".50BMG",
-    "quantity": 10,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_32acp",
-    "name": ".32 ACP Rounds",
-    "description": "A box of .32 ACP ammunition. For small pistols.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".32ACP"
+    {
+        "id": "ammo_50ae",
+        "name": ".50 AE Rounds",
+        "description": "A box of .50 Action Express ammunition. For massive handguns.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".50AE"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.8,
+        "tags": [
+            "ammo",
+            "modern",
+            "pistol"
+        ],
+        "ammoType": ".50AE",
+        "quantity": 20,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.4,
-    "tags": [
-      "ammo",
-      "modern",
-      "pistol"
-    ],
-    "ammoType": ".32ACP",
-    "quantity": 50,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_10mm",
-    "name": "10mm Auto Rounds",
-    "description": "A box of 10mm Auto ammunition. Powerful pistol rounds.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": "10mm"
+    {
+        "id": "ammo_44mag",
+        "name": ".44 Magnum Rounds",
+        "description": "A box of .44 Magnum ammunition. For heavy revolvers.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".44mag"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.7,
+        "tags": [
+            "ammo",
+            "modern",
+            "revolver"
+        ],
+        "ammoType": ".44mag",
+        "quantity": 50,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.6,
-    "tags": [
-      "ammo",
-      "modern",
-      "pistol"
-    ],
-    "ammoType": "10mm",
-    "quantity": 50,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_50ae",
-    "name": ".50 AE Rounds",
-    "description": "A box of .50 Action Express ammunition. For massive handguns.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".50AE"
+    {
+        "id": "ammo_flamethrower_fuel",
+        "name": "Flamethrower Fuel",
+        "description": "A tank of pressurized napalm fuel for flamethrowers.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": "fuel"
+        },
+        "type": "ammunition",
+        "size": 3,
+        "weightLbs": 10,
+        "tags": [
+            "ammo",
+            "fuel",
+            "flammable"
+        ],
+        "ammoType": "flamethrower_fuel",
+        "quantity": 5,
+        "sprite": "U",
+        "color": "#ff4500"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.8,
-    "tags": [
-      "ammo",
-      "modern",
-      "pistol"
-    ],
-    "ammoType": ".50AE",
-    "quantity": 20,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_44mag",
-    "name": ".44 Magnum Rounds",
-    "description": "A box of .44 Magnum ammunition. For heavy revolvers.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".44mag"
+    {
+        "id": "ammo_20mm",
+        "name": "20mm Rounds",
+        "description": "Massive 20mm anti-tank rounds.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": "20mm"
+        },
+        "type": "ammunition",
+        "size": 2,
+        "weightLbs": 1,
+        "tags": [
+            "ammo",
+            "heavy",
+            "anti_tank"
+        ],
+        "ammoType": "20mm",
+        "quantity": 5,
+        "sprite": "U",
+        "color": "#ff4500"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.7,
-    "tags": [
-      "ammo",
-      "modern",
-      "revolver"
-    ],
-    "ammoType": ".44mag",
-    "quantity": 50,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_flamethrower_fuel",
-    "name": "Flamethrower Fuel",
-    "description": "A tank of pressurized napalm fuel for flamethrowers.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": "fuel"
+    {
+        "id": "ammo_950jdj",
+        "name": ".950 JDJ Rounds",
+        "description": "Enormous .950 JDJ cartridges.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".950JDJ"
+        },
+        "type": "ammunition",
+        "size": 2,
+        "weightLbs": 0.8,
+        "tags": [
+            "ammo",
+            "heavy"
+        ],
+        "ammoType": ".950JDJ",
+        "quantity": 1,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 3,
-    "weightLbs": 10,
-    "tags": [
-      "ammo",
-      "fuel",
-      "flammable"
-    ],
-    "ammoType": "flamethrower_fuel",
-    "quantity": 5,
-    "sprite": "U",
-    "color": "#ff4500"
-  },
-  {
-    "id": "ammo_20mm",
-    "name": "20mm Rounds",
-    "description": "Massive 20mm anti-tank rounds.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": "20mm"
+    {
+        "id": "ammo_55boys",
+        "name": ".55 Boys Rounds",
+        "description": ".55 caliber anti-tank rifle rounds.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".55Boys"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.4,
+        "tags": [
+            "ammo",
+            "heavy",
+            "anti_tank"
+        ],
+        "ammoType": ".55Boys",
+        "quantity": 5,
+        "sprite": "U",
+        "color": "#ff4500"
     },
-    "type": "ammunition",
-    "size": 2,
-    "weightLbs": 1,
-    "tags": [
-      "ammo",
-      "heavy",
-      "anti_tank"
-    ],
-    "ammoType": "20mm",
-    "quantity": 5,
-    "sprite": "U",
-    "color": "#ff4500"
-  },
-  {
-    "id": "ammo_950jdj",
-    "name": ".950 JDJ Rounds",
-    "description": "Enormous .950 JDJ cartridges.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".950JDJ"
+    {
+        "id": "ammo_700ne",
+        "name": ".700 Nitro Express Rounds",
+        "description": "Powerful big game hunting cartridges.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".700NE"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.3,
+        "tags": [
+            "ammo",
+            "hunting"
+        ],
+        "ammoType": ".700NE",
+        "quantity": 2,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 2,
-    "weightLbs": 0.8,
-    "tags": [
-      "ammo",
-      "heavy"
-    ],
-    "ammoType": ".950JDJ",
-    "quantity": 1,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_55boys",
-    "name": ".55 Boys Rounds",
-    "description": ".55 caliber anti-tank rifle rounds.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".55Boys"
+    {
+        "id": "ammo_577tyr",
+        "name": ".577 Tyrannosaur Rounds",
+        "description": "Heavy stopping rifle cartridges.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".577Tyr"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.3,
+        "tags": [
+            "ammo",
+            "hunting"
+        ],
+        "ammoType": ".577Tyr",
+        "quantity": 3,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.4,
-    "tags": [
-      "ammo",
-      "heavy",
-      "anti_tank"
-    ],
-    "ammoType": ".55Boys",
-    "quantity": 5,
-    "sprite": "U",
-    "color": "#ff4500"
-  },
-  {
-    "id": "ammo_700ne",
-    "name": ".700 Nitro Express Rounds",
-    "description": "Powerful big game hunting cartridges.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".700NE"
+    {
+        "id": "ammo_4bore",
+        "name": "4-Bore Rounds",
+        "description": "Massive black powder era cartridges.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": "4bore"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.5,
+        "tags": [
+            "ammo",
+            "antique",
+            "heavy"
+        ],
+        "ammoType": "4bore",
+        "quantity": 2,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.3,
-    "tags": [
-      "ammo",
-      "hunting"
-    ],
-    "ammoType": ".700NE",
-    "quantity": 2,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_577tyr",
-    "name": ".577 Tyrannosaur Rounds",
-    "description": "Heavy stopping rifle cartridges.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".577Tyr"
+    {
+        "id": "ammo_blunderbuss_shot",
+        "name": "Blunderbuss Shot",
+        "description": "A bag of scrap and lead shot for a blunderbuss.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": "blunderbuss"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.5,
+        "tags": [
+            "ammo",
+            "antique",
+            "shot"
+        ],
+        "ammoType": "blunderbuss_shot",
+        "quantity": 5,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.3,
-    "tags": [
-      "ammo",
-      "hunting"
-    ],
-    "ammoType": ".577Tyr",
-    "quantity": 3,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_4bore",
-    "name": "4-Bore Rounds",
-    "description": "Massive black powder era cartridges.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": "4bore"
+    {
+        "id": "ammo_punt_gun_shot",
+        "name": "Punt Gun Shot",
+        "description": "A massive charge of shot for a punt gun.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": "punt_gun"
+        },
+        "type": "ammunition",
+        "size": 2,
+        "weightLbs": 2,
+        "tags": [
+            "ammo",
+            "antique",
+            "heavy"
+        ],
+        "ammoType": "punt_gun_shot",
+        "quantity": 1,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "ammo",
-      "antique",
-      "heavy"
-    ],
-    "ammoType": "4bore",
-    "quantity": 2,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_blunderbuss_shot",
-    "name": "Blunderbuss Shot",
-    "description": "A bag of scrap and lead shot for a blunderbuss.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": "blunderbuss"
+    {
+        "id": "ammo_500automax",
+        "name": ".500 Auto Max Rounds",
+        "description": "Big bore semi-auto rifle cartridges.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".500AutoMax"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.2,
+        "tags": [
+            "ammo",
+            "modern"
+        ],
+        "ammoType": ".500AutoMax",
+        "quantity": 10,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "ammo",
-      "antique",
-      "shot"
-    ],
-    "ammoType": "blunderbuss_shot",
-    "quantity": 5,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_punt_gun_shot",
-    "name": "Punt Gun Shot",
-    "description": "A massive charge of shot for a punt gun.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": "punt_gun"
+    {
+        "id": "ammo_454casull",
+        "name": ".454 Casull Rounds",
+        "description": "High pressure magnum revolver cartridges.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".454Casull"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.1,
+        "tags": [
+            "ammo",
+            "modern",
+            "revolver"
+        ],
+        "ammoType": ".454Casull",
+        "quantity": 6,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 2,
-    "weightLbs": 2,
-    "tags": [
-      "ammo",
-      "antique",
-      "heavy"
-    ],
-    "ammoType": "punt_gun_shot",
-    "quantity": 1,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_500automax",
-    "name": ".500 Auto Max Rounds",
-    "description": "Big bore semi-auto rifle cartridges.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".500AutoMax"
+    {
+        "id": "ammo_500sw",
+        "name": ".500 S&W Rounds",
+        "description": "The most powerful production revolver cartridge.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".500SW"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.2,
+        "tags": [
+            "ammo",
+            "modern",
+            "revolver"
+        ],
+        "ammoType": ".500SW",
+        "quantity": 5,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "ammo",
-      "modern"
-    ],
-    "ammoType": ".500AutoMax",
-    "quantity": 10,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_454casull",
-    "name": ".454 Casull Rounds",
-    "description": "High pressure magnum revolver cartridges.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".454Casull"
+    {
+        "id": "ammo_460sw",
+        "name": ".460 S&W Magnum Rounds",
+        "description": "High velocity magnum revolver cartridges.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".460SW"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.2,
+        "tags": [
+            "ammo",
+            "modern",
+            "revolver"
+        ],
+        "ammoType": ".460SW",
+        "quantity": 5,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.1,
-    "tags": [
-      "ammo",
-      "modern",
-      "revolver"
-    ],
-    "ammoType": ".454Casull",
-    "quantity": 6,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_500sw",
-    "name": ".500 S&W Rounds",
-    "description": "The most powerful production revolver cartridge.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".500SW"
+    {
+        "id": "ammo_3030",
+        "name": ".30-30 Winchester Rounds",
+        "description": "Classic lever-action rifle cartridges.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".30-30"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.1,
+        "tags": [
+            "ammo",
+            "classic",
+            "rifle"
+        ],
+        "ammoType": ".30-30",
+        "quantity": 20,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "ammo",
-      "modern",
-      "revolver"
-    ],
-    "ammoType": ".500SW",
-    "quantity": 5,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_460sw",
-    "name": ".460 S&W Magnum Rounds",
-    "description": "High velocity magnum revolver cartridges.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".460SW"
+    {
+        "id": "ammo_4570",
+        "name": ".45-70 Government Rounds",
+        "description": "Heavy hitting rifle cartridges.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".45-70"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.2,
+        "tags": [
+            "ammo",
+            "classic",
+            "rifle"
+        ],
+        "ammoType": ".45-70",
+        "quantity": 10,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "ammo",
-      "modern",
-      "revolver"
-    ],
-    "ammoType": ".460SW",
-    "quantity": 5,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_3030",
-    "name": ".30-30 Winchester Rounds",
-    "description": "Classic lever-action rifle cartridges.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".30-30"
+    {
+        "id": "ammo_450marlin",
+        "name": ".450 Marlin Rounds",
+        "description": "Modern heavy rifle cartridges.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".450Marlin"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.2,
+        "tags": [
+            "ammo",
+            "modern",
+            "rifle"
+        ],
+        "ammoType": ".450Marlin",
+        "quantity": 10,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.1,
-    "tags": [
-      "ammo",
-      "classic",
-      "rifle"
-    ],
-    "ammoType": ".30-30",
-    "quantity": 20,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_4570",
-    "name": ".45-70 Government Rounds",
-    "description": "Heavy hitting rifle cartridges.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".45-70"
+    {
+        "id": "ammo_338lapua",
+        "name": ".338 Lapua Magnum Rounds",
+        "description": "Long range sniper cartridges.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".338Lapua"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.3,
+        "tags": [
+            "ammo",
+            "modern",
+            "sniper"
+        ],
+        "ammoType": ".338Lapua",
+        "quantity": 5,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "ammo",
-      "classic",
-      "rifle"
-    ],
-    "ammoType": ".45-70",
-    "quantity": 10,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_450marlin",
-    "name": ".450 Marlin Rounds",
-    "description": "Modern heavy rifle cartridges.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".450Marlin"
+    {
+        "id": "ammo_458socom",
+        "name": ".458 SOCOM Rounds",
+        "description": "Heavy rounds designed for AR platforms.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": ".458SOCOM"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.2,
+        "tags": [
+            "ammo",
+            "modern",
+            "rifle"
+        ],
+        "ammoType": ".458SOCOM",
+        "quantity": 10,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "ammo",
-      "modern",
-      "rifle"
-    ],
-    "ammoType": ".450Marlin",
-    "quantity": 10,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_338lapua",
-    "name": ".338 Lapua Magnum Rounds",
-    "description": "Long range sniper cartridges.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".338Lapua"
+    {
+        "id": "ammo_4gauge",
+        "name": "4-Gauge Shells",
+        "description": "Massive shotgun shells.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": "4gauge"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.4,
+        "tags": [
+            "ammo",
+            "heavy",
+            "shotgun"
+        ],
+        "ammoType": "4gauge",
+        "quantity": 1,
+        "sprite": "=",
+        "color": "#b22222"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.3,
-    "tags": [
-      "ammo",
-      "modern",
-      "sniper"
-    ],
-    "ammoType": ".338Lapua",
-    "quantity": 5,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_458socom",
-    "name": ".458 SOCOM Rounds",
-    "description": "Heavy rounds designed for AR platforms.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": ".458SOCOM"
+    {
+        "id": "ammo_soda_can",
+        "name": "Soda Cans (Ammo)",
+        "description": "Full soda cans, used as heavy projectiles.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": "soda_can"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.8,
+        "tags": [
+            "ammo",
+            "improvised"
+        ],
+        "ammoType": "soda_can",
+        "quantity": 6,
+        "sprite": "=",
+        "color": "#ffd700"
     },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "ammo",
-      "modern",
-      "rifle"
-    ],
-    "ammoType": ".458SOCOM",
-    "quantity": 10,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "ammo_4gauge",
-    "name": "4-Gauge Shells",
-    "description": "Massive shotgun shells.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": "4gauge"
-    },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.4,
-    "tags": [
-      "ammo",
-      "heavy",
-      "shotgun"
-    ],
-    "ammoType": "4gauge",
-    "quantity": 1,
-    "sprite": "=",
-    "color": "#b22222"
-  },
-  {
-    "id": "ammo_soda_can",
-    "name": "Soda Cans (Ammo)",
-    "description": "Full soda cans, used as heavy projectiles.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": "soda_can"
-    },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.8,
-    "tags": [
-      "ammo",
-      "improvised"
-    ],
-    "ammoType": "soda_can",
-    "quantity": 6,
-    "sprite": "=",
-    "color": "#ffd700"
-  },
-  {
-    "id": "generic_ammo",
-    "name": "Generic Ammo Box",
-    "description": "A mix of assorted ammunition for various weapons.",
-    "family": "ammunition",
-    "properties": {
-      "caliber": "generic"
-    },
-    "type": "ammunition",
-    "size": 1,
-    "weightLbs": 0.1,
-    "tags": [
-      "ammo",
-      "generic"
-    ],
-    "ammoType": "generic_ammo",
-    "quantity": 100,
-    "sprite": "=",
-    "color": "#ffd700"
-  }
+    {
+        "id": "generic_ammo",
+        "name": "Generic Ammo Box",
+        "description": "A mix of assorted ammunition for various weapons.",
+        "family": "ammunition",
+        "properties": {
+            "caliber": "generic"
+        },
+        "type": "ammunition",
+        "size": 1,
+        "weightLbs": 0.1,
+        "tags": [
+            "ammo",
+            "generic"
+        ],
+        "ammoType": "generic_ammo",
+        "quantity": 100,
+        "sprite": "=",
+        "color": "#ffd700"
+    }
 ]

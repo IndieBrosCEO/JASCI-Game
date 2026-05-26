@@ -1,504 +1,511 @@
 [
-  {
-    "id": "simple_shirt",
-    "name": "Simple Shirt",
-    "description": "A basic, everyday shirt.",
-    "family": "clothing",
-    "properties": {
-      "type": "shirt",
-      "material": "cotton"
-    },
-    "type": "clothing",
-    "size": 1,
-    "weightLbs": 0.5,
-    "tags": [
-      "clothing",
-      "torso_top"
-    ],
-    "layer": "torso_top",
-    "coverage": [
-      "torso",
-      "leftArm",
-      "rightArm"
-    ],
-    "insulation": 5,
-    "armorValue": 0,
-    "isClothing": true,
-    "recipe": {
-      "description": "Sew a basic, everyday shirt from simple fabric.",
-      "components": [
-        {
-          "family": "fabric",
-          "quantity": 1,
-          "require": {
-            "material": "cotton",
-            "grade": "fine"
-          }
+    {
+        "id": "simple_shirt",
+        "name": "Simple Shirt",
+        "description": "A basic, everyday shirt.",
+        "family": "clothing",
+        "properties": {
+            "type": "shirt",
+            "material": "cotton"
         },
-        {
-          "family": "thread",
-          "quantity": 3
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 1
-        }
-      ],
-      "tools_required": [
-        "sewing_kit_basic"
-      ],
-      "time_to_craft": 20,
-      "batch_size": 1
-    },
-    "sprite": "[",
-    "color": "#d2b48c"
-  },
-  {
-    "id": "baseball_cap",
-    "name": "Baseball Cap",
-    "description": "A common cap with a rounded crown and a stiff peak projecting in front.",
-    "family": "clothing",
-    "properties": {
-      "type": "hat",
-      "style": "baseball_cap"
-    },
-    "type": "clothing",
-    "size": 1,
-    "weightLbs": 0.2,
-    "tags": [
-      "clothing",
-      "head_top"
-    ],
-    "layer": "head_top",
-    "coverage": [
-      "head"
-    ],
-    "insulation": 2,
-    "armorValue": 0,
-    "isClothing": true,
-    "recipe": {
-      "description": "Craft a baseball cap.",
-      "components": [
-        {
-          "family": "fabric",
-          "quantity": 2,
-          "require": {
-            "grade": "rough"
-          }
+        "type": "clothing",
+        "size": 1,
+        "weightLbs": 0.5,
+        "tags": [
+            "clothing",
+            "torso_top"
+        ],
+        "layer": "torso_top",
+        "coverage": [
+            "torso",
+            "leftArm",
+            "rightArm"
+        ],
+        "insulation": 5,
+        "armorValue": 0,
+        "isClothing": true,
+        "recipe": {
+            "description": "Sew a basic, everyday shirt from simple fabric.",
+            "components": [
+                {
+                    "family": "fabric",
+                    "quantity": 1,
+                    "require": {
+                        "material": "cotton",
+                        "grade": "fine"
+                    }
+                },
+                {
+                    "family": "thread",
+                    "quantity": 3
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 1
+                }
+            ],
+            "tools_required": [
+                "sewing_kit_basic"
+            ],
+            "time_to_craft": 20,
+            "batch_size": 1
         },
-        {
-          "family": "thread",
-          "quantity": 1
+        "sprite": "[",
+        "color": "#d2b48c"
+    },
+    {
+        "id": "baseball_cap",
+        "name": "Baseball Cap",
+        "description": "A common cap with a rounded crown and a stiff peak projecting in front.",
+        "family": "clothing",
+        "properties": {
+            "type": "hat",
+            "style": "baseball_cap"
         },
-        {
-          "family": "plastic",
-          "quantity": 1,
-          "require": {
-            "type": "scrap"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 2
-        }
-      ],
-      "tools_required": [
-        "sewing_kit_basic"
-      ],
-      "time_to_craft": 15,
-      "batch_size": 1
-    },
-    "sprite": "^",
-    "color": "#556b2f"
-  },
-  {
-    "id": "basic_vest",
-    "name": "Basic Vest",
-    "description": "A simple vest, offering minimal protection.",
-    "family": "clothing",
-    "properties": {
-      "type": "vest"
-    },
-    "type": "clothing",
-    "size": 1,
-    "weightLbs": 1,
-    "tags": [
-      "clothing",
-      "torso_top"
-    ],
-    "layer": "torso_top",
-    "coverage": [
-      "torso"
-    ],
-    "insulation": 3,
-    "armorValue": 1,
-    "isClothing": true,
-    "recipe": {
-      "description": "Sew a basic vest from rough cloth or simple leather.",
-      "components": [
-        {
-          "family": "fabric",
-          "quantity": 3,
-          "require": {
-            "grade": "rough"
-          }
+        "type": "clothing",
+        "size": 1,
+        "weightLbs": 0.2,
+        "tags": [
+            "clothing",
+            "head_top"
+        ],
+        "layer": "head_top",
+        "coverage": [
+            "head"
+        ],
+        "insulation": 2,
+        "armorValue": 0,
+        "isClothing": true,
+        "recipe": {
+            "description": "Craft a baseball cap.",
+            "components": [
+                {
+                    "family": "fabric",
+                    "quantity": 2,
+                    "require": {
+                        "grade": "rough"
+                    }
+                },
+                {
+                    "family": "thread",
+                    "quantity": 1
+                },
+                {
+                    "family": "plastic",
+                    "quantity": 1,
+                    "require": {
+                        "type": "scrap"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 2
+                }
+            ],
+            "tools_required": [
+                "sewing_kit_basic"
+            ],
+            "time_to_craft": 15,
+            "batch_size": 1
         },
-        {
-          "family": "thread",
-          "quantity": 4
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 2
-        }
-      ],
-      "tools_required": [
-        "sewing_kit_basic"
-      ],
-      "time_to_craft": 30,
-      "batch_size": 1
+        "sprite": "^",
+        "color": "#556b2f"
     },
-    "sprite": "[",
-    "color": "#d2b48c"
-  },
-  {
-    "id": "durable_pants",
-    "name": "Durable Pants",
-    "description": "Sturdy pants made from a tough material.",
-    "family": "clothing",
-    "properties": {
-      "type": "pants",
-      "material": "canvas"
-    },
-    "type": "clothing",
-    "size": 2,
-    "weightLbs": 1.5,
-    "tags": [
-      "clothing",
-      "legs_bottom"
-    ],
-    "layer": "legs_bottom",
-    "coverage": [
-      "leftLeg",
-      "rightLeg"
-    ],
-    "insulation": 8,
-    "armorValue": 1,
-    "isClothing": true,
-    "recipe": {
-      "description": "Craft a pair of durable pants from sturdy canvas.",
-      "components": [
-        {
-          "family": "fabric",
-          "quantity": 2,
-          "require": {
-            "material": "canvas",
-            "grade": "sturdy"
-          }
+    {
+        "id": "basic_vest",
+        "name": "Basic Vest",
+        "description": "A simple vest, offering minimal protection.",
+        "family": "clothing",
+        "properties": {
+            "type": "vest"
         },
-        {
-          "family": "thread",
-          "quantity": 5
+        "type": "clothing",
+        "size": 1,
+        "weightLbs": 1,
+        "tags": [
+            "clothing",
+            "torso_top"
+        ],
+        "layer": "torso_top",
+        "coverage": [
+            "torso"
+        ],
+        "insulation": 3,
+        "armorValue": 1,
+        "isClothing": true,
+        "recipe": {
+            "description": "Sew a basic vest from rough cloth or simple leather.",
+            "components": [
+                {
+                    "family": "fabric",
+                    "quantity": 3,
+                    "require": {
+                        "grade": "rough"
+                    }
+                },
+                {
+                    "family": "thread",
+                    "quantity": 4
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 2
+                }
+            ],
+            "tools_required": [
+                "sewing_kit_basic"
+            ],
+            "time_to_craft": 30,
+            "batch_size": 1
         },
-        {
-          "family": "fastener",
-          "quantity": 4,
-          "require": {
-            "type": "rivet"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 3
-        }
-      ],
-      "tools_required": [
-        "sewing_kit_heavy"
-      ],
-      "time_to_craft": 45,
-      "batch_size": 1
+        "sprite": "[",
+        "color": "#d2b48c"
     },
-    "sprite": "n",
-    "color": "#000080"
-  },
-  {
-    "id": "jacket_leather",
-    "name": "Leather Jacket",
-    "description": "A tough leather jacket offering good protection against scratches and bites.",
-    "family": "clothing",
-    "properties": {
-      "type": "jacket",
-      "material": "leather"
-    },
-    "type": "clothing",
-    "size": 2,
-    "weightLbs": 3,
-    "tags": [
-      "clothing",
-      "torso_outer",
-      "leather"
-    ],
-    "layer": "torso_outer",
-    "coverage": [
-      "torso",
-      "leftArm",
-      "rightArm"
-    ],
-    "insulation": 15,
-    "armorValue": 3,
-    "isClothing": true,
-    "recipe": {
-      "description": "Sew a tough jacket from tanned leather.",
-      "components": [
-        {
-          "family": "leather",
-          "quantity": 4,
-          "require": {
-            "type": "tanned"
-          }
+    {
+        "id": "durable_pants",
+        "name": "Durable Pants",
+        "description": "Sturdy pants made from a tough material.",
+        "family": "clothing",
+        "properties": {
+            "type": "pants",
+            "material": "canvas"
         },
-        {
-          "family": "thread",
-          "quantity": 5
+        "type": "clothing",
+        "size": 2,
+        "weightLbs": 1.5,
+        "tags": [
+            "clothing",
+            "legs_bottom"
+        ],
+        "layer": "legs_bottom",
+        "coverage": [
+            "leftLeg",
+            "rightLeg"
+        ],
+        "insulation": 8,
+        "armorValue": 1,
+        "isClothing": true,
+        "recipe": {
+            "description": "Craft a pair of durable pants from sturdy canvas.",
+            "components": [
+                {
+                    "family": "fabric",
+                    "quantity": 2,
+                    "require": {
+                        "material": "canvas",
+                        "grade": "sturdy"
+                    }
+                },
+                {
+                    "family": "thread",
+                    "quantity": 5
+                },
+                {
+                    "family": "fastener",
+                    "quantity": 4,
+                    "require": {
+                        "type": "rivet"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 3
+                }
+            ],
+            "tools_required": [
+                "sewing_kit_heavy"
+            ],
+            "time_to_craft": 45,
+            "batch_size": 1
         },
-        {
-          "family": "fastener",
-          "quantity": 5,
-          "require": {
-            "type": "rivet"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 3
-        }
-      ],
-      "tools_required": [
-        "sewing_kit_heavy"
-      ],
-      "time_to_craft": 120,
-      "batch_size": 1
+        "sprite": "n",
+        "color": "#000080"
     },
-    "sprite": "M",
-    "color": "#8b4513"
-  },
-  {
-    "id": "coat_wool",
-    "name": "Wool Coat",
-    "description": "A warm coat made of thick wool. Excellent insulation.",
-    "family": "clothing",
-    "properties": {
-      "type": "coat",
-      "material": "wool"
-    },
-    "type": "clothing",
-    "size": 3,
-    "weightLbs": 4,
-    "tags": [
-      "clothing",
-      "torso_outer",
-      "wool",
-      "warm"
-    ],
-    "layer": "torso_outer",
-    "coverage": [
-      "torso",
-      "leftArm",
-      "rightArm"
-    ],
-    "insulation": 25,
-    "armorValue": 1,
-    "isClothing": true,
-    "recipe": {
-      "description": "Tailor a warm coat from wool bolts.",
-      "components": [
-        {
-          "family": "fabric",
-          "quantity": 3,
-          "require": {
-            "material": "wool",
-            "type": "bolt"
-          }
+    {
+        "id": "jacket_leather",
+        "name": "Leather Jacket",
+        "description": "A tough leather jacket offering good protection against scratches and bites.",
+        "family": "clothing",
+        "properties": {
+            "type": "jacket",
+            "material": "leather"
         },
-        {
-          "family": "thread",
-          "quantity": 6
+        "type": "clothing",
+        "size": 2,
+        "weightLbs": 3,
+        "tags": [
+            "clothing",
+            "torso_outer",
+            "leather"
+        ],
+        "layer": "torso_outer",
+        "coverage": [
+            "torso",
+            "leftArm",
+            "rightArm"
+        ],
+        "insulation": 15,
+        "armorValue": 3,
+        "isClothing": true,
+        "recipe": {
+            "description": "Sew a tough jacket from tanned leather.",
+            "components": [
+                {
+                    "family": "tanned_leather",
+                    "quantity": 4,
+                    "require": {
+                        "type": "tanned"
+                    }
+                },
+                {
+                    "family": "thread",
+                    "quantity": 5
+                },
+                {
+                    "family": "fastener",
+                    "quantity": 5,
+                    "require": {
+                        "type": "rivet"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 3
+                }
+            ],
+            "tools_required": [
+                "sewing_kit_heavy"
+            ],
+            "time_to_craft": 120,
+            "batch_size": 1
         },
-        {
-          "family": "fastener",
-          "quantity": 4,
-          "require": {
-            "type": "rivet"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 3
-        }
-      ],
-      "tools_required": [
-        "sewing_kit_basic"
-      ],
-      "time_to_craft": 150,
-      "batch_size": 1
+        "sprite": "M",
+        "color": "#8b4513"
     },
-    "sprite": "M",
-    "color": "#708090"
-  },
-  {
-    "id": "vest_ballistic_composite",
-    "name": "Composite Ballistic Vest",
-    "description": "High-tech body armor made from composite plates and ballistic fabric.",
-    "family": "clothing",
-    "properties": {
-      "type": "vest",
-      "material": "composite"
+    {
+        "id": "coat_wool",
+        "name": "Wool Coat",
+        "description": "A warm coat made of thick wool. Excellent insulation.",
+        "family": "clothing",
+        "properties": {
+            "type": "coat",
+            "material": "wool"
+        },
+        "type": "clothing",
+        "size": 3,
+        "weightLbs": 4,
+        "tags": [
+            "clothing",
+            "torso_outer",
+            "wool",
+            "warm"
+        ],
+        "layer": "torso_outer",
+        "coverage": [
+            "torso",
+            "leftArm",
+            "rightArm"
+        ],
+        "insulation": 25,
+        "armorValue": 1,
+        "isClothing": true,
+        "recipe": {
+            "description": "Tailor a warm coat from wool bolts.",
+            "components": [
+                {
+                    "family": "fabric",
+                    "quantity": 3,
+                    "require": {
+                        "material": "wool",
+                        "type": "bolt"
+                    }
+                },
+                {
+                    "family": "thread",
+                    "quantity": 6
+                },
+                {
+                    "family": "fastener",
+                    "quantity": 4,
+                    "require": {
+                        "type": "rivet"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 3
+                }
+            ],
+            "tools_required": [
+                "sewing_kit_basic"
+            ],
+            "time_to_craft": 150,
+            "batch_size": 1
+        },
+        "sprite": "M",
+        "color": "#708090"
     },
-    "type": "clothing",
-    "size": 2,
-    "weightLbs": 8,
-    "tags": [
-      "clothing",
-      "torso_top",
-      "armor",
-      "ballistic"
-    ],
-    "layer": "torso_top",
-    "coverage": [
-      "torso"
-    ],
-    "insulation": 5,
-    "armorValue": 8,
-    "isClothing": true,
-    "recipe": {
-      "description": "Assemble a ballistic vest from composite plates.",
-      "components": [
-        {
-          "family": "armor_plate",
-          "quantity": 2,
-          "require": {
+    {
+        "id": "vest_ballistic_composite",
+        "name": "Composite Ballistic Vest",
+        "description": "High-tech body armor made from composite plates and ballistic fabric.",
+        "family": "clothing",
+        "properties": {
+            "type": "vest",
             "material": "composite"
-          }
         },
-        {
-          "family": "fabric",
-          "quantity": 1,
-          "require": {
-            "material": "nylon",
-            "grade": "tough"
-          }
+        "type": "clothing",
+        "size": 2,
+        "weightLbs": 8,
+        "tags": [
+            "clothing",
+            "torso_top",
+            "armor",
+            "ballistic"
+        ],
+        "layer": "torso_top",
+        "coverage": [
+            "torso"
+        ],
+        "insulation": 5,
+        "armorValue": 8,
+        "isClothing": true,
+        "recipe": {
+            "description": "Assemble a ballistic vest from composite plates.",
+            "components": [
+                {
+                    "family": "armor_plate",
+                    "quantity": 2,
+                    "require": {
+                        "material": "composite"
+                    }
+                },
+                {
+                    "family": "fabric",
+                    "quantity": 1,
+                    "require": {
+                        "material": "nylon",
+                        "grade": "tough"
+                    }
+                },
+                {
+                    "family": "fastener",
+                    "quantity": 4,
+                    "require": {
+                        "type": "buckle"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 6
+                }
+            ],
+            "tools_required": [
+                "sewing_kit_heavy"
+            ],
+            "station_required": "workbench",
+            "time_to_craft": 180,
+            "batch_size": 1
         },
-        {
-          "family": "fastener",
-          "quantity": 4,
-          "require": {
-            "type": "buckle"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 6
-        }
-      ],
-      "tools_required": [
-        "sewing_kit_heavy"
-      ],
-      "station_required": "workbench",
-      "time_to_craft": 180,
-      "batch_size": 1
+        "sprite": "[",
+        "color": "#2f4f4f"
     },
-    "sprite": "[",
-    "color": "#2f4f4f"
-  },
-  {
-    "id": "backpack_leather",
-    "name": "Leather Backpack",
-    "description": "A durable backpack made of tanned leather.",
-    "family": "clothing",
-    "properties": {
-      "type": "backpack",
-      "material": "leather"
-    },
-    "type": "clothing",
-    "size": 2,
-    "weightLbs": 3,
-    "tags": [
-      "clothing",
-      "back",
-      "container",
-      "storage"
-    ],
-    "layer": "back",
-    "coverage": [],
-    "insulation": 0,
-    "armorValue": 0,
-    "isClothing": true,
-    "capacity": 40,
-    "recipe": {
-      "description": "Stitch a durable backpack from tanned leather.",
-      "components": [
-        {
-          "family": "leather",
-          "quantity": 3,
-          "require": {
-            "type": "tanned"
-          }
+    {
+        "id": "backpack_leather",
+        "name": "Leather Backpack",
+        "description": "A durable backpack made of tanned leather.",
+        "family": "clothing",
+        "properties": {
+            "type": "backpack",
+            "material": "leather"
         },
-        {
-          "family": "thread",
-          "quantity": 4
+        "type": "clothing",
+        "size": 2,
+        "weightLbs": 3,
+        "tags": [
+            "clothing",
+            "back",
+            "container",
+            "storage"
+        ],
+        "layer": "back",
+        "coverage": [],
+        "insulation": 0,
+        "armorValue": 0,
+        "isClothing": true,
+        "capacity": 40,
+        "recipe": {
+            "description": "Stitch a durable backpack from tanned leather.",
+            "components": [
+                {
+                    "family": "tanned_leather",
+                    "quantity": 3,
+                    "require": {
+                        "type": "tanned"
+                    }
+                },
+                {
+                    "family": "thread",
+                    "quantity": 4
+                },
+                {
+                    "family": "fastener",
+                    "quantity": 2,
+                    "require": {
+                        "type": "buckle"
+                    }
+                }
+            ],
+            "skills_required": [
+                {
+                    "skill": "Repair",
+                    "level": 2
+                }
+            ],
+            "tools_required": [
+                "sewing_kit_heavy"
+            ],
+            "time_to_craft": 90,
+            "batch_size": 1
         },
-        {
-          "family": "fastener",
-          "quantity": 2,
-          "require": {
-            "type": "buckle"
-          }
-        }
-      ],
-      "skills_required": [
-        {
-          "skill": "Repair",
-          "level": 2
-        }
-      ],
-      "tools_required": [
-        "sewing_kit_heavy"
-      ],
-      "time_to_craft": 90,
-      "batch_size": 1
+        "sprite": "p",
+        "color": "#8b4513"
     },
-    "sprite": "p",
-    "color": "#8b4513"
-  },
-  {
-    "id": "gas_mask",
-    "name": "Gas Mask",
-    "description": "A protective mask that filters out harmful airborne particulates.",
-    "type": "clothing",
-    "size": 1,
-    "weightLbs": 2,
-    "tags": ["clothing", "head_face", "gas_mask", "protective"],
-    "layer": "head_face",
-    "coverage": ["head"],
-    "insulation": 1,
-    "armorValue": 0,
-    "isClothing": true,
-    "sprite": "m",
-    "color": "#556b2f"
-  }
+    {
+        "id": "gas_mask",
+        "name": "Gas Mask",
+        "description": "A protective mask that filters out harmful airborne particulates.",
+        "type": "clothing",
+        "size": 1,
+        "weightLbs": 2,
+        "tags": [
+            "clothing",
+            "head_face",
+            "gas_mask",
+            "protective"
+        ],
+        "layer": "head_face",
+        "coverage": [
+            "head"
+        ],
+        "insulation": 1,
+        "armorValue": 0,
+        "isClothing": true,
+        "sprite": "m",
+        "color": "#556b2f"
+    }
 ]
