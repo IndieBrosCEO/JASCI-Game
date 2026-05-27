@@ -2229,7 +2229,7 @@
             "components": [
                 {
                     "quantity": 1,
-                    "family": "salvage",
+                    "family": "raw_salvage",
                     "require": {
                         "type": "electronic_scrap"
                     }
@@ -2740,7 +2740,7 @@
                 },
                 {
                     "quantity": 1,
-                    "family": "salvage",
+                    "family": "raw_salvage",
                     "require": {
                         "type": "electronic_scrap"
                     }

@@ -22,34 +22,19 @@
             "components": [
                 {
                     "family": "556_casing",
-                    "quantity": 10,
-                    "require": {
-                        "caliber": "5.56mm",
-                        "type": "rifle"
-                    }
+                    "quantity": 10
                 },
                 {
-                    "family": "556_primer",
-                    "quantity": 10,
-                    "require": {
-                        "type": "rifle",
-                        "size": "small"
-                    }
-                },
-                {
-                    "family": "propellant",
-                    "quantity": 3,
-                    "require": {
-                        "type": "gunpowder"
-                    }
+                    "family": "small_rifle_primer",
+                    "quantity": 10
                 },
                 {
                     "family": "556_projectile",
-                    "quantity": 10,
-                    "require": {
-                        "caliber": "5.56mm",
-                        "type": "bullet"
-                    }
+                    "quantity": 10
+                },
+                {
+                    "family": "propellant",
+                    "quantity": 1
                 }
             ],
             "skills_required": [
@@ -110,34 +95,19 @@
             "components": [
                 {
                     "family": "9mm_casing",
-                    "quantity": 10,
-                    "require": {
-                        "caliber": "9mm",
-                        "type": "pistol"
-                    }
+                    "quantity": 10
                 },
                 {
-                    "family": "9mm_primer",
-                    "quantity": 10,
-                    "require": {
-                        "type": "pistol",
-                        "size": "small"
-                    }
-                },
-                {
-                    "family": "propellant",
-                    "quantity": 2,
-                    "require": {
-                        "type": "gunpowder"
-                    }
+                    "family": "small_pistol_primer",
+                    "quantity": 10
                 },
                 {
                     "family": "9mm_projectile",
-                    "quantity": 10,
-                    "require": {
-                        "caliber": "9mm",
-                        "type": "bullet"
-                    }
+                    "quantity": 10
+                },
+                {
+                    "family": "propellant",
+                    "quantity": 1
                 }
             ],
             "skills_required": [
