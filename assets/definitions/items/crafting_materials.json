@@ -2350,7 +2350,7 @@
             "ammunition_component",
             "primer"
         ],
-        "family": "9mm_primer",
+        "family": "small_pistol_primer",
         "properties": {
             "size": "small",
             "type": "pistol"
@@ -2398,7 +2398,7 @@
             "ammunition_component",
             "primer"
         ],
-        "family": "556_primer",
+        "family": "small_rifle_primer",
         "properties": {
             "size": "small",
             "type": "rifle"
