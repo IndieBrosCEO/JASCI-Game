@@ -29,6 +29,12 @@
       "chance": 0.15,
       "min": 1,
       "max": 3
+    },
+    {
+      "itemId": "tannin_simple_bark",
+      "chance": 0.1,
+      "min": 1,
+      "max": 2
     }
   ],
   "harvest:stone": [
@@ -175,6 +181,12 @@
       "chance": 0.1,
       "min": 1,
       "max": 2
+    },
+    {
+      "itemId": "spindle_simple",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
     }
   ],
   "scavenge:machinery": [
@@ -210,6 +222,144 @@
     },
     {
       "itemId": "scrap_brass",
+      "chance": 0.1,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "itemId": "tongs_blacksmith",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "crucible_basic",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "pliers_set",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "hammer_peen",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "file_small_metal",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "heat_gun_tool",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "screwdriver_set_multi",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "tin_snips",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "tap_and_die_set",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "soldering_iron_kit",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "wrench_set",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "multimeter_digital",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "welding_torch_oxyacetylene",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "rivet_gun_manual",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "precision_oil_can",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "hoist",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "tire_iron",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "metal_snips_heavy",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "hand_drill",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "hacksaw",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "pipe_bender",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "concrete_mixer_small",
+      "chance": 0.01,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "rubber_sheet_tire_tread",
       "chance": 0.1,
       "min": 1,
       "max": 2
@@ -279,6 +429,36 @@
       "chance": 0.1,
       "min": 1,
       "max": 1
+    },
+    {
+      "itemId": "electronics_board_populated_simple",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "plastic_casing_small_device",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "plastic_casing_medium_device",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "metal_casing_small_device",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "metal_casing_medium_device",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
     }
   ],
   "scavenge:appliance": [
@@ -319,6 +499,18 @@
       "chance": 0.8,
       "min": 1,
       "max": 3
+    },
+    {
+      "itemId": "glassblowers_pipe",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "glass_lens_optical_grade_small",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
     }
   ],
   "scavenge:generic": [
@@ -354,6 +546,84 @@
     },
     {
       "itemId": "duct_tape",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "sewing_kit_basic",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "tanning_knife",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "scraper_tool_blunt",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "knife_melee",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "bottled_water",
+      "chance": 0.1,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "itemId": "chisel_stone",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "padding_foam_sheet",
+      "chance": 0.2,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "itemId": "splintered_wood",
+      "chance": 0.2,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "itemId": "steel_ingot_small_tool_grade",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "rivet_small_metal",
+      "chance": 0.1,
+      "min": 1,
+      "max": 5
+    },
+    {
+      "itemId": "armor_plate_makeshift",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "steel_plate_vehicle_grade",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "iodine_crystals",
       "chance": 0.05,
       "min": 1,
       "max": 1
@@ -451,6 +721,36 @@
       "chance": 0.2,
       "min": 1,
       "max": 2
+    },
+    {
+      "itemId": "animal_fat_rendered",
+      "chance": 0.5,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "itemId": "animal_hide_fine",
+      "chance": 0.2,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "tanned_leather_roll",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "leather_hide_thick_cured",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "leather_hide_medium_tanned",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
     }
   ],
   "container:generic": [
@@ -529,6 +829,18 @@
       "chance": 0.2,
       "min": 1,
       "max": 2
+    },
+    {
+      "itemId": "water_clean_item",
+      "chance": 0.3,
+      "min": 1,
+      "max": 3
+    },
+    {
+      "itemId": "dirty_water",
+      "chance": 0.2,
+      "min": 1,
+      "max": 3
     }
   ],
   "container:medical": [
@@ -555,6 +867,36 @@
       "chance": 0.05,
       "min": 1,
       "max": 1
+    },
+    {
+      "itemId": "antiseptic_herbal_pulp",
+      "chance": 0.2,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "itemId": "painkillers_strong",
+      "chance": 0.2,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "itemId": "mortar_pestle",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "raw_chemicals",
+      "chance": 0.2,
+      "min": 1,
+      "max": 3
+    },
+    {
+      "itemId": "chemical_reagent_generic",
+      "chance": 0.1,
+      "min": 1,
+      "max": 2
     }
   ],
   "container:desk": [
@@ -607,6 +949,78 @@
       "chance": 0.05,
       "min": 1,
       "max": 1
+    },
+    {
+      "itemId": "sewing_kit_heavy",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "knife_heavy_duty",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "shovel",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "hatchet",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "bolt_of_cloth_cotton",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "bolt_of_cloth_wool",
+      "chance": 0.1,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "fabric_sheet_wool_fine",
+      "chance": 0.1,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "itemId": "fabric_sheet_canvas_sturdy",
+      "chance": 0.1,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "itemId": "fabric_sheet_nylon_tough",
+      "chance": 0.1,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "itemId": "fabric_sheet_kevlar_ballistic",
+      "chance": 0.05,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "fabric_sheet_burlap_rough",
+      "chance": 0.1,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "itemId": "wick_basic_cloth_or_fiber",
+      "chance": 0.1,
+      "min": 1,
+      "max": 5
     }
   ],
   "container:gun_safe": [
@@ -693,6 +1107,72 @@
       "chance": 0.1,
       "min": 1,
       "max": 5
+    },
+    {
+      "itemId": "hand_reloader_tool",
+      "chance": 0.2,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "shotshell_press_basic",
+      "chance": 0.2,
+      "min": 1,
+      "max": 1
+    },
+    {
+      "itemId": "556_casing",
+      "chance": 0.3,
+      "min": 10,
+      "max": 30
+    },
+    {
+      "itemId": "556_projectile",
+      "chance": 0.3,
+      "min": 10,
+      "max": 30
+    },
+    {
+      "itemId": "9mm_casing",
+      "chance": 0.3,
+      "min": 10,
+      "max": 30
+    },
+    {
+      "itemId": "9mm_projectile",
+      "chance": 0.3,
+      "min": 10,
+      "max": 30
+    },
+    {
+      "itemId": "12g_hull",
+      "chance": 0.3,
+      "min": 5,
+      "max": 20
+    },
+    {
+      "itemId": "shotgun_primer",
+      "chance": 0.3,
+      "min": 10,
+      "max": 30
+    },
+    {
+      "itemId": "buckshot_pellets",
+      "chance": 0.3,
+      "min": 10,
+      "max": 50
+    },
+    {
+      "itemId": "small_rifle_primer",
+      "chance": 0.3,
+      "min": 10,
+      "max": 30
+    },
+    {
+      "itemId": "small_pistol_primer",
+      "chance": 0.3,
+      "min": 10,
+      "max": 30
     }
   ],
   "harvest:corn": [

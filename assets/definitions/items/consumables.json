@@ -362,7 +362,7 @@
         "effects": {
             "thirst": -15
         },
-        "family": "drink",
+        "family": "liquid",
         "properties": {
             "type": "water",
             "container": "bottle"
@@ -498,7 +498,7 @@
             "drink",
             "modern"
         ],
-        "family": "drink",
+        "family": "liquid",
         "properties": {
             "type": "water",
             "container": "bottle"
