@@ -2,6 +2,7 @@
 - 1x 5.56mm Rounds
   [Components Required]:
     - 10x [Family: 556_casing] (Requires one of the following):
+      - 5.56mm Casing (Un-craftable Base Material - Chain ends here)
       - Small Rifle Brass Casing (Example Craftable Member):
         - 1x Small Rifle Brass Casing
           [Tools Required]:
@@ -18,67 +19,10 @@
               - Copper Scrap (Un-craftable Base Material - Chain ends here)
               - Lead Scrap (Un-craftable Base Material - Chain ends here)
               - Scrap Brass (Un-craftable Base Material - Chain ends here)
-    - 10x [Family: 556_primer] (Requires one of the following):
+    - 10x [Family: small_rifle_primer] (Requires one of the following):
       - Small Rifle Primer (Un-craftable Base Material - Chain ends here)
-    - 3x [Family: propellant] (Requires one of the following):
-      - Basic Gunpowder (Example Craftable Member):
-        - 1x Basic Gunpowder
-          [Tools Required]:
-            - 1x Mortar and Pestle
-              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-          [Components Required]:
-            - 2x [Family: fuel] (Requires one of the following):
-              - Gasoline (Partial Canister) (Un-craftable Base Material - Chain ends here)
-              - Charcoal Bits (Example Craftable Member):
-                - 1x Charcoal Bits
-                  [Components Required]:
-                    - 3x [Family: raw_wood] (Requires one of the following):
-                      - Splintered Wood (Un-craftable Base Material - Chain ends here)
-                      - Wood Stick (Un-craftable Base Material - Chain ends here)
-                      - Wood Log (Un-craftable Base Material - Chain ends here)
-            - 1x [Family: chemical] (Requires one of the following):
-              - Generic Chemical Reagent (Labeled Bottle) (Un-craftable Base Material - Chain ends here)
-              - Sulfur Powder (Un-craftable Base Material - Chain ends here)
-              - Saltpeter (Potassium Nitrate) (Un-craftable Base Material - Chain ends here)
-              - Iodine Crystals (Un-craftable Base Material - Chain ends here)
-              - Lye Powder (Example Craftable Member):
-                - 1x Lye Powder
-                  [Components Required]:
-                    - 5x [Family: fuel] (Requires one of the following):
-                      - Gasoline (Partial Canister) (Un-craftable Base Material - Chain ends here)
-                      - Charcoal Bits (Example Craftable Member):
-                        - 1x Charcoal Bits
-                          [Components Required]:
-                            - 3x [Family: raw_wood] (Requires one of the following):
-                              - Splintered Wood (Un-craftable Base Material - Chain ends here)
-                              - Wood Stick (Un-craftable Base Material - Chain ends here)
-                              - Wood Log (Un-craftable Base Material - Chain ends here)
-                    - 1x [Family: liquid] (Requires one of the following):
-                      - Clean Water (Unit) (Un-craftable Base Material - Chain ends here)
-                      - Dirty Water (Un-craftable Base Material - Chain ends here)
-              - ... and 2 other craftable alternatives.
-            - 1x [Family: chemical] (Requires one of the following):
-              - Generic Chemical Reagent (Labeled Bottle) (Un-craftable Base Material - Chain ends here)
-              - Sulfur Powder (Un-craftable Base Material - Chain ends here)
-              - Saltpeter (Potassium Nitrate) (Un-craftable Base Material - Chain ends here)
-              - Iodine Crystals (Un-craftable Base Material - Chain ends here)
-              - Lye Powder (Example Craftable Member):
-                - 1x Lye Powder
-                  [Components Required]:
-                    - 5x [Family: fuel] (Requires one of the following):
-                      - Gasoline (Partial Canister) (Un-craftable Base Material - Chain ends here)
-                      - Charcoal Bits (Example Craftable Member):
-                        - 1x Charcoal Bits
-                          [Components Required]:
-                            - 3x [Family: raw_wood] (Requires one of the following):
-                              - Splintered Wood (Un-craftable Base Material - Chain ends here)
-                              - Wood Stick (Un-craftable Base Material - Chain ends here)
-                              - Wood Log (Un-craftable Base Material - Chain ends here)
-                    - 1x [Family: liquid] (Requires one of the following):
-                      - Clean Water (Unit) (Un-craftable Base Material - Chain ends here)
-                      - Dirty Water (Un-craftable Base Material - Chain ends here)
-              - ... and 2 other craftable alternatives.
     - 10x [Family: 556_projectile] (Requires one of the following):
+      - 5.56mm Projectile (Un-craftable Base Material - Chain ends here)
       - 5.56mm Bullet Projectile (Example Craftable Member):
         - 1x 5.56mm Bullet Projectile
           [Tools Required]:
@@ -112,35 +56,7 @@
                       - Lead Scrap (Un-craftable Base Material - Chain ends here)
                       - Scrap Brass (Un-craftable Base Material - Chain ends here)
               - ... and 6 other craftable alternatives.
-
---------------------------------------------------
-
-### Roadmap for: 9mm Rounds (ammo_9mm)
-- 1x 9mm Rounds
-  [Tools Required]:
-    - 1x Hand Reloader Tool
-      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-  [Components Required]:
-    - 10x [Family: 9mm_casing] (Requires one of the following):
-      - Small Pistol Brass Casing (Example Craftable Member):
-        - 1x Small Pistol Brass Casing
-          [Tools Required]:
-            - 1x Peen Hammer
-              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-            - 1x Small Metal File
-              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-          [Components Required]:
-            - 1x [Family: raw_metal_scrap] (Requires one of the following):
-              - Scrap Metal (Un-craftable Base Material - Chain ends here)
-              - Pouch of Gold Dust (Un-craftable Base Material - Chain ends here)
-              - Silver Nugget (Un-craftable Base Material - Chain ends here)
-              - Small Metal Bits (Un-craftable Base Material - Chain ends here)
-              - Copper Scrap (Un-craftable Base Material - Chain ends here)
-              - Lead Scrap (Un-craftable Base Material - Chain ends here)
-              - Scrap Brass (Un-craftable Base Material - Chain ends here)
-    - 10x [Family: 9mm_primer] (Requires one of the following):
-      - Small Pistol Primer (Un-craftable Base Material - Chain ends here)
-    - 2x [Family: propellant] (Requires one of the following):
+    - 1x [Family: propellant] (Requires one of the following):
       - Basic Gunpowder (Example Craftable Member):
         - 1x Basic Gunpowder
           [Tools Required]:
@@ -198,7 +114,37 @@
                       - Clean Water (Unit) (Un-craftable Base Material - Chain ends here)
                       - Dirty Water (Un-craftable Base Material - Chain ends here)
               - ... and 2 other craftable alternatives.
+
+--------------------------------------------------
+
+### Roadmap for: 9mm Rounds (ammo_9mm)
+- 1x 9mm Rounds
+  [Tools Required]:
+    - 1x Hand Reloader Tool
+      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+  [Components Required]:
+    - 10x [Family: 9mm_casing] (Requires one of the following):
+      - 9mm Casing (Un-craftable Base Material - Chain ends here)
+      - Small Pistol Brass Casing (Example Craftable Member):
+        - 1x Small Pistol Brass Casing
+          [Tools Required]:
+            - 1x Peen Hammer
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+            - 1x Small Metal File
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+          [Components Required]:
+            - 1x [Family: raw_metal_scrap] (Requires one of the following):
+              - Scrap Metal (Un-craftable Base Material - Chain ends here)
+              - Pouch of Gold Dust (Un-craftable Base Material - Chain ends here)
+              - Silver Nugget (Un-craftable Base Material - Chain ends here)
+              - Small Metal Bits (Un-craftable Base Material - Chain ends here)
+              - Copper Scrap (Un-craftable Base Material - Chain ends here)
+              - Lead Scrap (Un-craftable Base Material - Chain ends here)
+              - Scrap Brass (Un-craftable Base Material - Chain ends here)
+    - 10x [Family: small_pistol_primer] (Requires one of the following):
+      - Small Pistol Primer (Un-craftable Base Material - Chain ends here)
     - 10x [Family: 9mm_projectile] (Requires one of the following):
+      - 9mm Projectile (Un-craftable Base Material - Chain ends here)
       - 9mm Bullet Projectile (Example Craftable Member):
         - 1x 9mm Bullet Projectile
           [Tools Required]:
@@ -213,6 +159,64 @@
               - Copper Scrap (Un-craftable Base Material - Chain ends here)
               - Lead Scrap (Un-craftable Base Material - Chain ends here)
               - Scrap Brass (Un-craftable Base Material - Chain ends here)
+    - 1x [Family: propellant] (Requires one of the following):
+      - Basic Gunpowder (Example Craftable Member):
+        - 1x Basic Gunpowder
+          [Tools Required]:
+            - 1x Mortar and Pestle
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+          [Components Required]:
+            - 2x [Family: fuel] (Requires one of the following):
+              - Gasoline (Partial Canister) (Un-craftable Base Material - Chain ends here)
+              - Charcoal Bits (Example Craftable Member):
+                - 1x Charcoal Bits
+                  [Components Required]:
+                    - 3x [Family: raw_wood] (Requires one of the following):
+                      - Splintered Wood (Un-craftable Base Material - Chain ends here)
+                      - Wood Stick (Un-craftable Base Material - Chain ends here)
+                      - Wood Log (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: chemical] (Requires one of the following):
+              - Generic Chemical Reagent (Labeled Bottle) (Un-craftable Base Material - Chain ends here)
+              - Sulfur Powder (Un-craftable Base Material - Chain ends here)
+              - Saltpeter (Potassium Nitrate) (Un-craftable Base Material - Chain ends here)
+              - Iodine Crystals (Un-craftable Base Material - Chain ends here)
+              - Lye Powder (Example Craftable Member):
+                - 1x Lye Powder
+                  [Components Required]:
+                    - 5x [Family: fuel] (Requires one of the following):
+                      - Gasoline (Partial Canister) (Un-craftable Base Material - Chain ends here)
+                      - Charcoal Bits (Example Craftable Member):
+                        - 1x Charcoal Bits
+                          [Components Required]:
+                            - 3x [Family: raw_wood] (Requires one of the following):
+                              - Splintered Wood (Un-craftable Base Material - Chain ends here)
+                              - Wood Stick (Un-craftable Base Material - Chain ends here)
+                              - Wood Log (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: liquid] (Requires one of the following):
+                      - Clean Water (Unit) (Un-craftable Base Material - Chain ends here)
+                      - Dirty Water (Un-craftable Base Material - Chain ends here)
+              - ... and 2 other craftable alternatives.
+            - 1x [Family: chemical] (Requires one of the following):
+              - Generic Chemical Reagent (Labeled Bottle) (Un-craftable Base Material - Chain ends here)
+              - Sulfur Powder (Un-craftable Base Material - Chain ends here)
+              - Saltpeter (Potassium Nitrate) (Un-craftable Base Material - Chain ends here)
+              - Iodine Crystals (Un-craftable Base Material - Chain ends here)
+              - Lye Powder (Example Craftable Member):
+                - 1x Lye Powder
+                  [Components Required]:
+                    - 5x [Family: fuel] (Requires one of the following):
+                      - Gasoline (Partial Canister) (Un-craftable Base Material - Chain ends here)
+                      - Charcoal Bits (Example Craftable Member):
+                        - 1x Charcoal Bits
+                          [Components Required]:
+                            - 3x [Family: raw_wood] (Requires one of the following):
+                              - Splintered Wood (Un-craftable Base Material - Chain ends here)
+                              - Wood Stick (Un-craftable Base Material - Chain ends here)
+                              - Wood Log (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: liquid] (Requires one of the following):
+                      - Clean Water (Unit) (Un-craftable Base Material - Chain ends here)
+                      - Dirty Water (Un-craftable Base Material - Chain ends here)
+              - ... and 2 other craftable alternatives.
 
 --------------------------------------------------
 
@@ -224,7 +228,9 @@
   [Components Required]:
     - 5x [Family: 12g_hull] (Requires one of the following):
       - 12-Gauge Shotshell Hull (Un-craftable Base Material - Chain ends here)
+      - 12-Gauge Hull (Un-craftable Base Material - Chain ends here)
     - 5x [Family: shotgun_primer] (Requires one of the following):
+      - Shotgun Primer (Un-craftable Base Material - Chain ends here)
       - Shotgun Primer (Un-craftable Base Material - Chain ends here)
     - 2x [Family: propellant] (Requires one of the following):
       - Basic Gunpowder (Example Craftable Member):
@@ -285,6 +291,7 @@
                       - Dirty Water (Un-craftable Base Material - Chain ends here)
               - ... and 2 other craftable alternatives.
     - 5x [Family: buckshot_pellets] (Requires one of the following):
+      - Buckshot Pellets (Un-craftable Base Material - Chain ends here)
       - Lead Buckshot Pellets (Example Craftable Member):
         - 1x Lead Buckshot Pellets
           [Tools Required]:
@@ -419,16 +426,9 @@
             - 1x Heat Gun
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
       - ... and 1 other craftable alternatives.
 
 --------------------------------------------------
@@ -795,61 +795,8 @@
 ### Roadmap for: C4/Semtex (c4_semtex_explosive)
 - 1x C4/Semtex
   [Components Required]:
-    - 3x [Family: explosive_compound] (Requires one of the following):
-      - Generic Explosive Compound (Type B) (Example Craftable Member):
-        - 1x Generic Explosive Compound (Type B)
-          [Components Required]:
-            - 3x [Family: chemical] (Requires one of the following):
-              - Generic Chemical Reagent (Labeled Bottle) (Un-craftable Base Material - Chain ends here)
-              - Sulfur Powder (Un-craftable Base Material - Chain ends here)
-              - Saltpeter (Potassium Nitrate) (Un-craftable Base Material - Chain ends here)
-              - Iodine Crystals (Un-craftable Base Material - Chain ends here)
-              - Lye Powder (Example Craftable Member):
-                - 1x Lye Powder
-                  [Components Required]:
-                    - 5x [Family: fuel] (Requires one of the following):
-                      - Gasoline (Partial Canister) (Un-craftable Base Material - Chain ends here)
-                      - Charcoal Bits (Example Craftable Member):
-                        - 1x Charcoal Bits
-                          [Components Required]:
-                            - 3x [Family: raw_wood] (Requires one of the following):
-                              - Splintered Wood (Un-craftable Base Material - Chain ends here)
-                              - Wood Stick (Un-craftable Base Material - Chain ends here)
-                              - Wood Log (Un-craftable Base Material - Chain ends here)
-                    - 1x [Family: liquid] (Requires one of the following):
-                      - Clean Water (Unit) (Un-craftable Base Material - Chain ends here)
-                      - Dirty Water (Un-craftable Base Material - Chain ends here)
-              - ... and 2 other craftable alternatives.
-            - 1x [Family: chemical] (Requires one of the following):
-              - Generic Chemical Reagent (Labeled Bottle) (Un-craftable Base Material - Chain ends here)
-              - Sulfur Powder (Un-craftable Base Material - Chain ends here)
-              - Saltpeter (Potassium Nitrate) (Un-craftable Base Material - Chain ends here)
-              - Iodine Crystals (Un-craftable Base Material - Chain ends here)
-              - Lye Powder (Example Craftable Member):
-                - 1x Lye Powder
-                  [Components Required]:
-                    - 5x [Family: fuel] (Requires one of the following):
-                      - Gasoline (Partial Canister) (Un-craftable Base Material - Chain ends here)
-                      - Charcoal Bits (Example Craftable Member):
-                        - 1x Charcoal Bits
-                          [Components Required]:
-                            - 3x [Family: raw_wood] (Requires one of the following):
-                              - Splintered Wood (Un-craftable Base Material - Chain ends here)
-                              - Wood Stick (Un-craftable Base Material - Chain ends here)
-                              - Wood Log (Un-craftable Base Material - Chain ends here)
-                    - 1x [Family: liquid] (Requires one of the following):
-                      - Clean Water (Unit) (Un-craftable Base Material - Chain ends here)
-                      - Dirty Water (Un-craftable Base Material - Chain ends here)
-              - ... and 2 other craftable alternatives.
-            - 1x [Family: fuel] (Requires one of the following):
-              - Gasoline (Partial Canister) (Un-craftable Base Material - Chain ends here)
-              - Charcoal Bits (Example Craftable Member):
-                - 1x Charcoal Bits
-                  [Components Required]:
-                    - 3x [Family: raw_wood] (Requires one of the following):
-                      - Splintered Wood (Un-craftable Base Material - Chain ends here)
-                      - Wood Stick (Un-craftable Base Material - Chain ends here)
-                      - Wood Log (Un-craftable Base Material - Chain ends here)
+    - 3x [Family: raw_chemicals] (Requires one of the following):
+      - Raw Chemicals (Un-craftable Base Material - Chain ends here)
     - 1x [Family: plastic] (Requires one of the following):
       - Processed Plastic Scrap (Example Craftable Member):
         - 1x Processed Plastic Scrap
@@ -857,16 +804,9 @@
             - 1x Heat Gun
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
       - ... and 1 other craftable alternatives.
     - 1x [Family: wire] (Requires one of the following):
       - Thin Insulated Wire (Un-craftable Base Material - Chain ends here)
@@ -902,16 +842,9 @@
                     - 1x Heat Gun
                       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 1x [Family: salvage] (Requires one of the following):
-                      - Electronic Scrap (Example Craftable Member):
-                        - 1x Electronic Scrap
-                          [Tools Required]:
-                            - 1x Set of Pliers
-                              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                          [Components Required]:
-                            - 1x [Family: raw_salvage] (Requires one of the following):
-                              - Old Tire (Un-craftable Base Material - Chain ends here)
-                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: raw_salvage] (Requires one of the following):
+                      - Old Tire (Un-craftable Base Material - Chain ends here)
+                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
               - ... and 1 other craftable alternatives.
       - ... and 1 other craftable alternatives.
 
@@ -920,47 +853,8 @@
 ### Roadmap for: Dynamite (dynamite_explosive)
 - 1x Dynamite
   [Components Required]:
-    - 5x [Family: explosive] (Requires one of the following):
-      - Det cord (Un-craftable Base Material - Chain ends here)
-      - 40mm fragmentation grenade (Un-craftable Base Material - Chain ends here)
-      - Fragmentation grenade (Un-craftable Base Material - Chain ends here)
-      - Tear gas grenade (Un-craftable Base Material - Chain ends here)
-      - Thermite grenade (Un-craftable Base Material - Chain ends here)
-      - White phosphorus grenade (Un-craftable Base Material - Chain ends here)
-      - Acid, mild (Un-craftable Base Material - Chain ends here)
-      - Molotov Cocktail (Example Craftable Member):
-        - 1x Molotov Cocktail
-          [Components Required]:
-            - 1x [Family: bottle_container] (Requires one of the following):
-              - Empty Glass Bottle (Un-craftable Base Material - Chain ends here)
-            - 1x [Family: fuel] (Requires one of the following):
-              - Gasoline (Partial Canister) (Un-craftable Base Material - Chain ends here)
-              - Charcoal Bits (Example Craftable Member):
-                - 1x Charcoal Bits
-                  [Components Required]:
-                    - 3x [Family: raw_wood] (Requires one of the following):
-                      - Splintered Wood (Un-craftable Base Material - Chain ends here)
-                      - Wood Stick (Un-craftable Base Material - Chain ends here)
-                      - Wood Log (Un-craftable Base Material - Chain ends here)
-            - 1x [Family: fabric] (Requires one of the following):
-              - Cloth Scrap (Un-craftable Base Material - Chain ends here)
-              - Bolt of Cotton Cloth (Un-craftable Base Material - Chain ends here)
-              - Bolt of Wool Cloth (Un-craftable Base Material - Chain ends here)
-              - Fine Wool Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Sturdy Canvas Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Tough Nylon Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Kevlar Ballistic Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Rough Burlap Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Roll of Fiberglass Cloth (Example Craftable Member):
-                - 1x Roll of Fiberglass Cloth
-                  [Tools Required]:
-                    - 1x Heat Gun
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 5x [Family: blade] (Requires one of the following):
-                      - Sharp Glass Shard (Un-craftable Base Material - Chain ends here)
-                      - Sharp Stone Fragment (Un-craftable Base Material - Chain ends here)
-              - ... and 2 other craftable alternatives.
+    - 5x [Family: raw_chemicals] (Requires one of the following):
+      - Raw Chemicals (Un-craftable Base Material - Chain ends here)
     - 2x [Family: chemical] (Requires one of the following):
       - Generic Chemical Reagent (Labeled Bottle) (Un-craftable Base Material - Chain ends here)
       - Sulfur Powder (Un-craftable Base Material - Chain ends here)
@@ -1049,118 +943,34 @@
     - 1x Basic Sewing Kit
       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
   [Components Required]:
-    - 3x [Family: fabric] (Requires one of the following):
-      - Cloth Scrap (Un-craftable Base Material - Chain ends here)
-      - Bolt of Cotton Cloth (Un-craftable Base Material - Chain ends here)
-      - Bolt of Wool Cloth (Un-craftable Base Material - Chain ends here)
-      - Fine Wool Fabric Sheet (Un-craftable Base Material - Chain ends here)
-      - Sturdy Canvas Fabric Sheet (Un-craftable Base Material - Chain ends here)
-      - Tough Nylon Fabric Sheet (Un-craftable Base Material - Chain ends here)
-      - Kevlar Ballistic Fabric Sheet (Un-craftable Base Material - Chain ends here)
-      - Rough Burlap Fabric Sheet (Un-craftable Base Material - Chain ends here)
-      - Roll of Fiberglass Cloth (Example Craftable Member):
-        - 1x Roll of Fiberglass Cloth
-          [Tools Required]:
-            - 1x Heat Gun
-              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-          [Components Required]:
-            - 5x [Family: blade] (Requires one of the following):
-              - Sharp Glass Shard (Un-craftable Base Material - Chain ends here)
-              - Sharp Stone Fragment (Un-craftable Base Material - Chain ends here)
-      - ... and 2 other craftable alternatives.
-    - 2x [Family: medical] (Requires one of the following):
-      - Course of Antibiotics (Un-craftable Base Material - Chain ends here)
-      - Strong Painkillers (Un-craftable Base Material - Chain ends here)
-      - Combat Stimulant Injector (Un-craftable Base Material - Chain ends here)
-      - Basic Universal Antidote (Un-craftable Base Material - Chain ends here)
-      - Bandage (Example Craftable Member):
-        - 1x Bandage
-          [Components Required]:
-            - 3x [Family: fabric] (Requires one of the following):
-              - Cloth Scrap (Un-craftable Base Material - Chain ends here)
-              - Bolt of Cotton Cloth (Un-craftable Base Material - Chain ends here)
-              - Bolt of Wool Cloth (Un-craftable Base Material - Chain ends here)
-              - Fine Wool Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Sturdy Canvas Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Tough Nylon Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Kevlar Ballistic Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Rough Burlap Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Roll of Fiberglass Cloth (Example Craftable Member):
-                - 1x Roll of Fiberglass Cloth
-                  [Tools Required]:
-                    - 1x Heat Gun
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 5x [Family: blade] (Requires one of the following):
-                      - Sharp Glass Shard (Un-craftable Base Material - Chain ends here)
-                      - Sharp Stone Fragment (Un-craftable Base Material - Chain ends here)
-              - ... and 2 other craftable alternatives.
-            - 1x [Family: medicinal] (Requires one of the following):
-              - Herbal Antiseptic Pulp (Un-craftable Base Material - Chain ends here)
-              - Comfrey Leaves (Un-craftable Base Material - Chain ends here)
-      - ... and 5 other craftable alternatives.
-    - 1x [Family: medical] (Requires one of the following):
-      - Course of Antibiotics (Un-craftable Base Material - Chain ends here)
-      - Strong Painkillers (Un-craftable Base Material - Chain ends here)
-      - Combat Stimulant Injector (Un-craftable Base Material - Chain ends here)
-      - Basic Universal Antidote (Un-craftable Base Material - Chain ends here)
-      - Bandage (Example Craftable Member):
-        - 1x Bandage
-          [Components Required]:
-            - 3x [Family: fabric] (Requires one of the following):
-              - Cloth Scrap (Un-craftable Base Material - Chain ends here)
-              - Bolt of Cotton Cloth (Un-craftable Base Material - Chain ends here)
-              - Bolt of Wool Cloth (Un-craftable Base Material - Chain ends here)
-              - Fine Wool Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Sturdy Canvas Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Tough Nylon Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Kevlar Ballistic Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Rough Burlap Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Roll of Fiberglass Cloth (Example Craftable Member):
-                - 1x Roll of Fiberglass Cloth
-                  [Tools Required]:
-                    - 1x Heat Gun
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 5x [Family: blade] (Requires one of the following):
-                      - Sharp Glass Shard (Un-craftable Base Material - Chain ends here)
-                      - Sharp Stone Fragment (Un-craftable Base Material - Chain ends here)
-              - ... and 2 other craftable alternatives.
-            - 1x [Family: medicinal] (Requires one of the following):
-              - Herbal Antiseptic Pulp (Un-craftable Base Material - Chain ends here)
-              - Comfrey Leaves (Un-craftable Base Material - Chain ends here)
-      - ... and 5 other craftable alternatives.
-    - 1x [Family: medical] (Requires one of the following):
-      - Course of Antibiotics (Un-craftable Base Material - Chain ends here)
-      - Strong Painkillers (Un-craftable Base Material - Chain ends here)
-      - Combat Stimulant Injector (Un-craftable Base Material - Chain ends here)
-      - Basic Universal Antidote (Un-craftable Base Material - Chain ends here)
-      - Bandage (Example Craftable Member):
-        - 1x Bandage
-          [Components Required]:
-            - 3x [Family: fabric] (Requires one of the following):
-              - Cloth Scrap (Un-craftable Base Material - Chain ends here)
-              - Bolt of Cotton Cloth (Un-craftable Base Material - Chain ends here)
-              - Bolt of Wool Cloth (Un-craftable Base Material - Chain ends here)
-              - Fine Wool Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Sturdy Canvas Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Tough Nylon Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Kevlar Ballistic Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Rough Burlap Fabric Sheet (Un-craftable Base Material - Chain ends here)
-              - Roll of Fiberglass Cloth (Example Craftable Member):
-                - 1x Roll of Fiberglass Cloth
-                  [Tools Required]:
-                    - 1x Heat Gun
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 5x [Family: blade] (Requires one of the following):
-                      - Sharp Glass Shard (Un-craftable Base Material - Chain ends here)
-                      - Sharp Stone Fragment (Un-craftable Base Material - Chain ends here)
-              - ... and 2 other craftable alternatives.
-            - 1x [Family: medicinal] (Requires one of the following):
-              - Herbal Antiseptic Pulp (Un-craftable Base Material - Chain ends here)
-              - Comfrey Leaves (Un-craftable Base Material - Chain ends here)
-      - ... and 5 other craftable alternatives.
+    - 2x Bandage
+      [Components Required]:
+        - 6x [Family: fabric] (Requires one of the following):
+          - Cloth Scrap (Un-craftable Base Material - Chain ends here)
+          - Bolt of Cotton Cloth (Un-craftable Base Material - Chain ends here)
+          - Bolt of Wool Cloth (Un-craftable Base Material - Chain ends here)
+          - Fine Wool Fabric Sheet (Un-craftable Base Material - Chain ends here)
+          - Sturdy Canvas Fabric Sheet (Un-craftable Base Material - Chain ends here)
+          - Tough Nylon Fabric Sheet (Un-craftable Base Material - Chain ends here)
+          - Kevlar Ballistic Fabric Sheet (Un-craftable Base Material - Chain ends here)
+          - Rough Burlap Fabric Sheet (Un-craftable Base Material - Chain ends here)
+          - Roll of Fiberglass Cloth (Example Craftable Member):
+            - 1x Roll of Fiberglass Cloth
+              [Tools Required]:
+                - 1x Heat Gun
+                  * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+              [Components Required]:
+                - 5x [Family: blade] (Requires one of the following):
+                  - Sharp Glass Shard (Un-craftable Base Material - Chain ends here)
+                  - Sharp Stone Fragment (Un-craftable Base Material - Chain ends here)
+          - ... and 2 other craftable alternatives.
+        - 2x [Family: medicinal] (Requires one of the following):
+          - Herbal Antiseptic Pulp (Un-craftable Base Material - Chain ends here)
+          - Comfrey Leaves (Un-craftable Base Material - Chain ends here)
+    - 1x Herbal Antiseptic Pulp
+      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+    - 1x Strong Painkillers
+      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
 
 --------------------------------------------------
 
@@ -1651,16 +1461,9 @@
             - 1x Heat Gun
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
       - ... and 1 other craftable alternatives.
 
 --------------------------------------------------
@@ -1668,12 +1471,12 @@
 ### Roadmap for: Bag of Concrete Mix (concrete_mix_bag)
 - 1x Bag of Concrete Mix
   [Components Required]:
-    - 2x [Family: stone] (Requires one of the following):
-      - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
-      - Stone Chunk (Un-craftable Base Material - Chain ends here)
-    - 1x [Family: stone] (Requires one of the following):
-      - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
-      - Stone Chunk (Un-craftable Base Material - Chain ends here)
+    - 2x Pile of Sand
+      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+    - 2x Stone Chunk
+      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+    - 1x Bottled Water
+      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
 
 --------------------------------------------------
 
@@ -2524,16 +2327,9 @@
     - 1x Heat Gun
       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
   [Components Required]:
-    - 1x [Family: salvage] (Requires one of the following):
-      - Electronic Scrap (Example Craftable Member):
-        - 1x Electronic Scrap
-          [Tools Required]:
-            - 1x Set of Pliers
-              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-          [Components Required]:
-            - 1x [Family: raw_salvage] (Requires one of the following):
-              - Old Tire (Un-craftable Base Material - Chain ends here)
-              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+    - 1x [Family: raw_salvage] (Requires one of the following):
+      - Old Tire (Un-craftable Base Material - Chain ends here)
+      - Plastic Junk (Un-craftable Base Material - Chain ends here)
 
 --------------------------------------------------
 
@@ -2550,16 +2346,9 @@
             - 1x Heat Gun
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
       - ... and 1 other craftable alternatives.
 
 --------------------------------------------------
@@ -2572,16 +2361,17 @@
       - Sharp Stone Fragment (Un-craftable Base Material - Chain ends here)
     - 1x [Family: construction_material] (Requires one of the following):
       - Pile of Sand (Un-craftable Base Material - Chain ends here)
-      - Bag of Concrete Mix (Example Craftable Member):
-        - 1x Bag of Concrete Mix
+      - Hewn Stone Block (Example Craftable Member):
+        - 1x Hewn Stone Block
+          [Tools Required]:
+            - 1x Stone Chisel
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+            - 1x Peen Hammer
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 2x [Family: stone] (Requires one of the following):
-              - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
-              - Stone Chunk (Un-craftable Base Material - Chain ends here)
             - 1x [Family: stone] (Requires one of the following):
               - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
               - Stone Chunk (Un-craftable Base Material - Chain ends here)
-      - ... and 1 other craftable alternatives.
 
 --------------------------------------------------
 
@@ -2633,16 +2423,9 @@
     - 1x Heavy Duty Knife
       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
   [Components Required]:
-    - 1x [Family: salvage] (Requires one of the following):
-      - Electronic Scrap (Example Craftable Member):
-        - 1x Electronic Scrap
-          [Tools Required]:
-            - 1x Set of Pliers
-              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-          [Components Required]:
-            - 1x [Family: raw_salvage] (Requires one of the following):
-              - Old Tire (Un-craftable Base Material - Chain ends here)
-              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+    - 1x [Family: raw_salvage] (Requires one of the following):
+      - Old Tire (Un-craftable Base Material - Chain ends here)
+      - Plastic Junk (Un-craftable Base Material - Chain ends here)
 
 --------------------------------------------------
 
@@ -2741,16 +2524,9 @@
                     - 1x Heat Gun
                       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 1x [Family: salvage] (Requires one of the following):
-                      - Electronic Scrap (Example Craftable Member):
-                        - 1x Electronic Scrap
-                          [Tools Required]:
-                            - 1x Set of Pliers
-                              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                          [Components Required]:
-                            - 1x [Family: raw_salvage] (Requires one of the following):
-                              - Old Tire (Un-craftable Base Material - Chain ends here)
-                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: raw_salvage] (Requires one of the following):
+                      - Old Tire (Un-craftable Base Material - Chain ends here)
+                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
               - ... and 1 other craftable alternatives.
       - ... and 1 other craftable alternatives.
 
@@ -2946,16 +2722,9 @@
                     - 1x Heat Gun
                       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 1x [Family: salvage] (Requires one of the following):
-                      - Electronic Scrap (Example Craftable Member):
-                        - 1x Electronic Scrap
-                          [Tools Required]:
-                            - 1x Set of Pliers
-                              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                          [Components Required]:
-                            - 1x [Family: raw_salvage] (Requires one of the following):
-                              - Old Tire (Un-craftable Base Material - Chain ends here)
-                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: raw_salvage] (Requires one of the following):
+                      - Old Tire (Un-craftable Base Material - Chain ends here)
+                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
               - ... and 1 other craftable alternatives.
       - ... and 1 other craftable alternatives.
 
@@ -3001,16 +2770,9 @@
                     - 1x Heat Gun
                       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 1x [Family: salvage] (Requires one of the following):
-                      - Electronic Scrap (Example Craftable Member):
-                        - 1x Electronic Scrap
-                          [Tools Required]:
-                            - 1x Set of Pliers
-                              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                          [Components Required]:
-                            - 1x [Family: raw_salvage] (Requires one of the following):
-                              - Old Tire (Un-craftable Base Material - Chain ends here)
-                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: raw_salvage] (Requires one of the following):
+                      - Old Tire (Un-craftable Base Material - Chain ends here)
+                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
               - ... and 1 other craftable alternatives.
       - ... and 1 other craftable alternatives.
 
@@ -3059,16 +2821,9 @@
             - 1x Heat Gun
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
       - ... and 1 other craftable alternatives.
 
 --------------------------------------------------
@@ -3347,16 +3102,9 @@
                     - 1x Heat Gun
                       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 1x [Family: salvage] (Requires one of the following):
-                      - Electronic Scrap (Example Craftable Member):
-                        - 1x Electronic Scrap
-                          [Tools Required]:
-                            - 1x Set of Pliers
-                              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                          [Components Required]:
-                            - 1x [Family: raw_salvage] (Requires one of the following):
-                              - Old Tire (Un-craftable Base Material - Chain ends here)
-                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: raw_salvage] (Requires one of the following):
+                      - Old Tire (Un-craftable Base Material - Chain ends here)
+                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
               - ... and 1 other craftable alternatives.
       - ... and 1 other craftable alternatives.
 
@@ -3740,16 +3488,9 @@
                     - 1x Heat Gun
                       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 1x [Family: salvage] (Requires one of the following):
-                      - Electronic Scrap (Example Craftable Member):
-                        - 1x Electronic Scrap
-                          [Tools Required]:
-                            - 1x Set of Pliers
-                              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                          [Components Required]:
-                            - 1x [Family: raw_salvage] (Requires one of the following):
-                              - Old Tire (Un-craftable Base Material - Chain ends here)
-                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: raw_salvage] (Requires one of the following):
+                      - Old Tire (Un-craftable Base Material - Chain ends here)
+                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
               - ... and 1 other craftable alternatives.
       - ... and 1 other craftable alternatives.
 
@@ -3936,16 +3677,9 @@
                     - 1x Heat Gun
                       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 1x [Family: salvage] (Requires one of the following):
-                      - Electronic Scrap (Example Craftable Member):
-                        - 1x Electronic Scrap
-                          [Tools Required]:
-                            - 1x Set of Pliers
-                              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                          [Components Required]:
-                            - 1x [Family: raw_salvage] (Requires one of the following):
-                              - Old Tire (Un-craftable Base Material - Chain ends here)
-                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: raw_salvage] (Requires one of the following):
+                      - Old Tire (Un-craftable Base Material - Chain ends here)
+                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
               - ... and 1 other craftable alternatives.
       - ... and 1 other craftable alternatives.
     - 2x [Family: component] (Requires one of the following):
@@ -4407,16 +4141,9 @@
                     - 1x Heat Gun
                       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 1x [Family: salvage] (Requires one of the following):
-                      - Electronic Scrap (Example Craftable Member):
-                        - 1x Electronic Scrap
-                          [Tools Required]:
-                            - 1x Set of Pliers
-                              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                          [Components Required]:
-                            - 1x [Family: raw_salvage] (Requires one of the following):
-                              - Old Tire (Un-craftable Base Material - Chain ends here)
-                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: raw_salvage] (Requires one of the following):
+                      - Old Tire (Un-craftable Base Material - Chain ends here)
+                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
               - ... and 1 other craftable alternatives.
       - ... and 1 other craftable alternatives.
     - 1x [Family: power_source] (Requires one of the following):
@@ -4431,16 +4158,17 @@
               - Sharp Stone Fragment (Un-craftable Base Material - Chain ends here)
             - 1x [Family: construction_material] (Requires one of the following):
               - Pile of Sand (Un-craftable Base Material - Chain ends here)
-              - Bag of Concrete Mix (Example Craftable Member):
-                - 1x Bag of Concrete Mix
+              - Hewn Stone Block (Example Craftable Member):
+                - 1x Hewn Stone Block
+                  [Tools Required]:
+                    - 1x Stone Chisel
+                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+                    - 1x Peen Hammer
+                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 2x [Family: stone] (Requires one of the following):
-                      - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
-                      - Stone Chunk (Un-craftable Base Material - Chain ends here)
                     - 1x [Family: stone] (Requires one of the following):
                       - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
                       - Stone Chunk (Un-craftable Base Material - Chain ends here)
-              - ... and 1 other craftable alternatives.
 
 --------------------------------------------------
 
@@ -4529,16 +4257,9 @@
                     - 1x Heat Gun
                       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 1x [Family: salvage] (Requires one of the following):
-                      - Electronic Scrap (Example Craftable Member):
-                        - 1x Electronic Scrap
-                          [Tools Required]:
-                            - 1x Set of Pliers
-                              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                          [Components Required]:
-                            - 1x [Family: raw_salvage] (Requires one of the following):
-                              - Old Tire (Un-craftable Base Material - Chain ends here)
-                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: raw_salvage] (Requires one of the following):
+                      - Old Tire (Un-craftable Base Material - Chain ends here)
+                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
               - ... and 1 other craftable alternatives.
       - ... and 1 other craftable alternatives.
     - 1x [Family: processed_metal] (Requires one of the following):
@@ -4773,16 +4494,9 @@
             - 1x Heat Gun
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
       - ... and 1 other craftable alternatives.
 
 --------------------------------------------------
@@ -4868,16 +4582,9 @@
                     - 1x Heat Gun
                       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 1x [Family: salvage] (Requires one of the following):
-                      - Electronic Scrap (Example Craftable Member):
-                        - 1x Electronic Scrap
-                          [Tools Required]:
-                            - 1x Set of Pliers
-                              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                          [Components Required]:
-                            - 1x [Family: raw_salvage] (Requires one of the following):
-                              - Old Tire (Un-craftable Base Material - Chain ends here)
-                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: raw_salvage] (Requires one of the following):
+                      - Old Tire (Un-craftable Base Material - Chain ends here)
+                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
               - ... and 1 other craftable alternatives.
       - ... and 1 other craftable alternatives.
     - 2x [Family: raw_metal_scrap] (Requires one of the following):
@@ -5218,16 +4925,9 @@
             - 1x Heavy Duty Knife
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
     - 2x [Family: raw_metal_scrap] (Requires one of the following):
       - Scrap Metal (Un-craftable Base Material - Chain ends here)
       - Pouch of Gold Dust (Un-craftable Base Material - Chain ends here)
@@ -5255,16 +4955,9 @@
             - 1x Heavy Duty Knife
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
     - 1x [Family: raw_metal_scrap] (Requires one of the following):
       - Scrap Metal (Un-craftable Base Material - Chain ends here)
       - Pouch of Gold Dust (Un-craftable Base Material - Chain ends here)
@@ -5613,16 +5306,17 @@
               - Sharp Stone Fragment (Un-craftable Base Material - Chain ends here)
             - 1x [Family: construction_material] (Requires one of the following):
               - Pile of Sand (Un-craftable Base Material - Chain ends here)
-              - Bag of Concrete Mix (Example Craftable Member):
-                - 1x Bag of Concrete Mix
+              - Hewn Stone Block (Example Craftable Member):
+                - 1x Hewn Stone Block
+                  [Tools Required]:
+                    - 1x Stone Chisel
+                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+                    - 1x Peen Hammer
+                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 2x [Family: stone] (Requires one of the following):
-                      - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
-                      - Stone Chunk (Un-craftable Base Material - Chain ends here)
                     - 1x [Family: stone] (Requires one of the following):
                       - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
                       - Stone Chunk (Un-craftable Base Material - Chain ends here)
-              - ... and 1 other craftable alternatives.
     - 2x [Family: casing] (Requires one of the following):
       - 10-Gauge Shotshell Hull (Un-craftable Base Material - Chain ends here)
       - 40mm Grenade Casing (Metal) (Un-craftable Base Material - Chain ends here)
@@ -5681,16 +5375,9 @@
                     - 1x Heat Gun
                       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 1x [Family: salvage] (Requires one of the following):
-                      - Electronic Scrap (Example Craftable Member):
-                        - 1x Electronic Scrap
-                          [Tools Required]:
-                            - 1x Set of Pliers
-                              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                          [Components Required]:
-                            - 1x [Family: raw_salvage] (Requires one of the following):
-                              - Old Tire (Un-craftable Base Material - Chain ends here)
-                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: raw_salvage] (Requires one of the following):
+                      - Old Tire (Un-craftable Base Material - Chain ends here)
+                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
               - ... and 1 other craftable alternatives.
       - ... and 1 other craftable alternatives.
 
@@ -5959,16 +5646,9 @@
             - 1x Heavy Duty Knife
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
     - 1x [Family: raw_metal_scrap] (Requires one of the following):
       - Scrap Metal (Un-craftable Base Material - Chain ends here)
       - Pouch of Gold Dust (Un-craftable Base Material - Chain ends here)
@@ -5996,16 +5676,9 @@
             - 1x Heavy Duty Knife
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
     - 3x [Family: raw_metal_scrap] (Requires one of the following):
       - Scrap Metal (Un-craftable Base Material - Chain ends here)
       - Pouch of Gold Dust (Un-craftable Base Material - Chain ends here)
@@ -6033,16 +5706,9 @@
             - 1x Heavy Duty Knife
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
     - 5x [Family: raw_metal_scrap] (Requires one of the following):
       - Scrap Metal (Un-craftable Base Material - Chain ends here)
       - Pouch of Gold Dust (Un-craftable Base Material - Chain ends here)
@@ -6241,16 +5907,17 @@
               - Sharp Stone Fragment (Un-craftable Base Material - Chain ends here)
             - 1x [Family: construction_material] (Requires one of the following):
               - Pile of Sand (Un-craftable Base Material - Chain ends here)
-              - Bag of Concrete Mix (Example Craftable Member):
-                - 1x Bag of Concrete Mix
+              - Hewn Stone Block (Example Craftable Member):
+                - 1x Hewn Stone Block
+                  [Tools Required]:
+                    - 1x Stone Chisel
+                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+                    - 1x Peen Hammer
+                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 2x [Family: stone] (Requires one of the following):
-                      - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
-                      - Stone Chunk (Un-craftable Base Material - Chain ends here)
                     - 1x [Family: stone] (Requires one of the following):
                       - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
                       - Stone Chunk (Un-craftable Base Material - Chain ends here)
-              - ... and 1 other craftable alternatives.
     - 1x [Family: adhesive] (Requires one of the following):
       - Duct Tape (Un-craftable Base Material - Chain ends here)
       - Basic Adhesive Paste (Example Craftable Member):
@@ -6771,16 +6438,17 @@
   [Components Required]:
     - 10x [Family: construction_material] (Requires one of the following):
       - Pile of Sand (Un-craftable Base Material - Chain ends here)
-      - Bag of Concrete Mix (Example Craftable Member):
-        - 1x Bag of Concrete Mix
+      - Hewn Stone Block (Example Craftable Member):
+        - 1x Hewn Stone Block
+          [Tools Required]:
+            - 1x Stone Chisel
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+            - 1x Peen Hammer
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 2x [Family: stone] (Requires one of the following):
-              - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
-              - Stone Chunk (Un-craftable Base Material - Chain ends here)
             - 1x [Family: stone] (Requires one of the following):
               - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
               - Stone Chunk (Un-craftable Base Material - Chain ends here)
-      - ... and 1 other craftable alternatives.
     - 5x [Family: raw_metal_scrap] (Requires one of the following):
       - Scrap Metal (Un-craftable Base Material - Chain ends here)
       - Pouch of Gold Dust (Un-craftable Base Material - Chain ends here)
@@ -6824,16 +6492,9 @@
             - 1x Heat Gun
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
       - ... and 1 other craftable alternatives.
 
 --------------------------------------------------
@@ -6900,16 +6561,9 @@
             - 1x Heat Gun
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
       - ... and 1 other craftable alternatives.
     - 1x [Family: shelter] (Requires one of the following):
       - Basic Tarp (Example Craftable Member):
@@ -7229,16 +6883,9 @@
             - 1x Heat Gun
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
       - ... and 1 other craftable alternatives.
     - 2x [Family: fastener] (Requires one of the following):
       - Nails (Un-craftable Base Material - Chain ends here)
@@ -7564,16 +7211,9 @@
                             - 1x Heat Gun
                               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                           [Components Required]:
-                            - 1x [Family: salvage] (Requires one of the following):
-                              - Electronic Scrap (Example Craftable Member):
-                                - 1x Electronic Scrap
-                                  [Tools Required]:
-                                    - 1x Set of Pliers
-                                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                                  [Components Required]:
-                                    - 1x [Family: raw_salvage] (Requires one of the following):
-                                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                            - 1x [Family: raw_salvage] (Requires one of the following):
+                              - Old Tire (Un-craftable Base Material - Chain ends here)
+                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
                       - ... and 1 other craftable alternatives.
               - ... and 1 other craftable alternatives.
             - 2x [Family: component] (Requires one of the following):
@@ -7645,16 +7285,9 @@
                     - 1x Heat Gun
                       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 1x [Family: salvage] (Requires one of the following):
-                      - Electronic Scrap (Example Craftable Member):
-                        - 1x Electronic Scrap
-                          [Tools Required]:
-                            - 1x Set of Pliers
-                              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                          [Components Required]:
-                            - 1x [Family: raw_salvage] (Requires one of the following):
-                              - Old Tire (Un-craftable Base Material - Chain ends here)
-                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: raw_salvage] (Requires one of the following):
+                      - Old Tire (Un-craftable Base Material - Chain ends here)
+                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
               - ... and 1 other craftable alternatives.
       - ... and 1 other craftable alternatives.
     - 4x [Family: fastener] (Requires one of the following):
@@ -7711,16 +7344,17 @@
       - ... and 6 other craftable alternatives.
     - 4x [Family: construction_material] (Requires one of the following):
       - Pile of Sand (Un-craftable Base Material - Chain ends here)
-      - Bag of Concrete Mix (Example Craftable Member):
-        - 1x Bag of Concrete Mix
+      - Hewn Stone Block (Example Craftable Member):
+        - 1x Hewn Stone Block
+          [Tools Required]:
+            - 1x Stone Chisel
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+            - 1x Peen Hammer
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 2x [Family: stone] (Requires one of the following):
-              - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
-              - Stone Chunk (Un-craftable Base Material - Chain ends here)
             - 1x [Family: stone] (Requires one of the following):
               - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
               - Stone Chunk (Un-craftable Base Material - Chain ends here)
-      - ... and 1 other craftable alternatives.
     - 8x [Family: component] (Requires one of the following):
       - Section of Rubber Hose (Un-craftable Base Material - Chain ends here)
       - Assorted Gears (Un-craftable Base Material - Chain ends here)
@@ -7814,16 +7448,9 @@
                             - 1x Heat Gun
                               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                           [Components Required]:
-                            - 1x [Family: salvage] (Requires one of the following):
-                              - Electronic Scrap (Example Craftable Member):
-                                - 1x Electronic Scrap
-                                  [Tools Required]:
-                                    - 1x Set of Pliers
-                                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                                  [Components Required]:
-                                    - 1x [Family: raw_salvage] (Requires one of the following):
-                                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                            - 1x [Family: raw_salvage] (Requires one of the following):
+                              - Old Tire (Un-craftable Base Material - Chain ends here)
+                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
                       - ... and 1 other craftable alternatives.
               - ... and 1 other craftable alternatives.
             - 2x [Family: component] (Requires one of the following):
@@ -9392,16 +9019,9 @@
                     - 1x Heat Gun
                       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                   [Components Required]:
-                    - 1x [Family: salvage] (Requires one of the following):
-                      - Electronic Scrap (Example Craftable Member):
-                        - 1x Electronic Scrap
-                          [Tools Required]:
-                            - 1x Set of Pliers
-                              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                          [Components Required]:
-                            - 1x [Family: raw_salvage] (Requires one of the following):
-                              - Old Tire (Un-craftable Base Material - Chain ends here)
-                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                    - 1x [Family: raw_salvage] (Requires one of the following):
+                      - Old Tire (Un-craftable Base Material - Chain ends here)
+                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
               - ... and 1 other craftable alternatives.
       - ... and 1 other craftable alternatives.
 
@@ -9683,16 +9303,17 @@
               - Dirty Water (Un-craftable Base Material - Chain ends here)
     - 1x [Family: construction_material] (Requires one of the following):
       - Pile of Sand (Un-craftable Base Material - Chain ends here)
-      - Bag of Concrete Mix (Example Craftable Member):
-        - 1x Bag of Concrete Mix
+      - Hewn Stone Block (Example Craftable Member):
+        - 1x Hewn Stone Block
+          [Tools Required]:
+            - 1x Stone Chisel
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+            - 1x Peen Hammer
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 2x [Family: stone] (Requires one of the following):
-              - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
-              - Stone Chunk (Un-craftable Base Material - Chain ends here)
             - 1x [Family: stone] (Requires one of the following):
               - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
               - Stone Chunk (Un-craftable Base Material - Chain ends here)
-      - ... and 1 other craftable alternatives.
 
 --------------------------------------------------
 
@@ -9952,16 +9573,9 @@
                         - 1x Heat Gun
                           * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                       [Components Required]:
-                        - 1x [Family: salvage] (Requires one of the following):
-                          - Electronic Scrap (Example Craftable Member):
-                            - 1x Electronic Scrap
-                              [Tools Required]:
-                                - 1x Set of Pliers
-                                  * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                              [Components Required]:
-                                - 1x [Family: raw_salvage] (Requires one of the following):
-                                  - Old Tire (Un-craftable Base Material - Chain ends here)
-                                  - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                        - 1x [Family: raw_salvage] (Requires one of the following):
+                          - Old Tire (Un-craftable Base Material - Chain ends here)
+                          - Plastic Junk (Un-craftable Base Material - Chain ends here)
                   - ... and 1 other craftable alternatives.
           - ... and 1 other craftable alternatives.
   [Components Required]:
@@ -10069,16 +9683,9 @@
                         - 1x Heat Gun
                           * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                       [Components Required]:
-                        - 1x [Family: salvage] (Requires one of the following):
-                          - Electronic Scrap (Example Craftable Member):
-                            - 1x Electronic Scrap
-                              [Tools Required]:
-                                - 1x Set of Pliers
-                                  * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                              [Components Required]:
-                                - 1x [Family: raw_salvage] (Requires one of the following):
-                                  - Old Tire (Un-craftable Base Material - Chain ends here)
-                                  - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                        - 1x [Family: raw_salvage] (Requires one of the following):
+                          - Old Tire (Un-craftable Base Material - Chain ends here)
+                          - Plastic Junk (Un-craftable Base Material - Chain ends here)
                   - ... and 1 other craftable alternatives.
           - ... and 1 other craftable alternatives.
   [Components Required]:
@@ -10150,16 +9757,9 @@
     - 1x Soldering Iron Kit
       * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
   [Components Required]:
-    - 1x [Family: salvage] (Requires one of the following):
-      - Electronic Scrap (Example Craftable Member):
-        - 1x Electronic Scrap
-          [Tools Required]:
-            - 1x Set of Pliers
-              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-          [Components Required]:
-            - 1x [Family: raw_salvage] (Requires one of the following):
-              - Old Tire (Un-craftable Base Material - Chain ends here)
-              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+    - 1x [Family: raw_salvage] (Requires one of the following):
+      - Old Tire (Un-craftable Base Material - Chain ends here)
+      - Plastic Junk (Un-craftable Base Material - Chain ends here)
     - 2x [Family: casing] (Requires one of the following):
       - 10-Gauge Shotshell Hull (Un-craftable Base Material - Chain ends here)
       - 40mm Grenade Casing (Metal) (Un-craftable Base Material - Chain ends here)
@@ -10216,16 +9816,9 @@
             - 1x Heat Gun
               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 1x [Family: salvage] (Requires one of the following):
-              - Electronic Scrap (Example Craftable Member):
-                - 1x Electronic Scrap
-                  [Tools Required]:
-                    - 1x Set of Pliers
-                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                  [Components Required]:
-                    - 1x [Family: raw_salvage] (Requires one of the following):
-                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+            - 1x [Family: raw_salvage] (Requires one of the following):
+              - Old Tire (Un-craftable Base Material - Chain ends here)
+              - Plastic Junk (Un-craftable Base Material - Chain ends here)
       - ... and 1 other craftable alternatives.
 
 --------------------------------------------------
@@ -10524,16 +10117,17 @@
   [Components Required]:
     - 10x [Family: construction_material] (Requires one of the following):
       - Pile of Sand (Un-craftable Base Material - Chain ends here)
-      - Bag of Concrete Mix (Example Craftable Member):
-        - 1x Bag of Concrete Mix
+      - Hewn Stone Block (Example Craftable Member):
+        - 1x Hewn Stone Block
+          [Tools Required]:
+            - 1x Stone Chisel
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+            - 1x Peen Hammer
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 2x [Family: stone] (Requires one of the following):
-              - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
-              - Stone Chunk (Un-craftable Base Material - Chain ends here)
             - 1x [Family: stone] (Requires one of the following):
               - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
               - Stone Chunk (Un-craftable Base Material - Chain ends here)
-      - ... and 1 other craftable alternatives.
 
 --------------------------------------------------
 
@@ -10545,16 +10139,17 @@
   [Components Required]:
     - 10x [Family: construction_material] (Requires one of the following):
       - Pile of Sand (Un-craftable Base Material - Chain ends here)
-      - Bag of Concrete Mix (Example Craftable Member):
-        - 1x Bag of Concrete Mix
+      - Hewn Stone Block (Example Craftable Member):
+        - 1x Hewn Stone Block
+          [Tools Required]:
+            - 1x Stone Chisel
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+            - 1x Peen Hammer
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 2x [Family: stone] (Requires one of the following):
-              - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
-              - Stone Chunk (Un-craftable Base Material - Chain ends here)
             - 1x [Family: stone] (Requires one of the following):
               - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
               - Stone Chunk (Un-craftable Base Material - Chain ends here)
-      - ... and 1 other craftable alternatives.
 
 --------------------------------------------------
 
@@ -10704,16 +10299,9 @@
                             - 1x Heat Gun
                               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                           [Components Required]:
-                            - 1x [Family: salvage] (Requires one of the following):
-                              - Electronic Scrap (Example Craftable Member):
-                                - 1x Electronic Scrap
-                                  [Tools Required]:
-                                    - 1x Set of Pliers
-                                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                                  [Components Required]:
-                                    - 1x [Family: raw_salvage] (Requires one of the following):
-                                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                            - 1x [Family: raw_salvage] (Requires one of the following):
+                              - Old Tire (Un-craftable Base Material - Chain ends here)
+                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
                       - ... and 1 other craftable alternatives.
               - ... and 1 other craftable alternatives.
             - 2x [Family: component] (Requires one of the following):
@@ -10877,16 +10465,9 @@
               - Lead Scrap (Un-craftable Base Material - Chain ends here)
               - Scrap Brass (Un-craftable Base Material - Chain ends here)
       - ... and 1 other craftable alternatives.
-    - 1x [Family: salvage] (Requires one of the following):
-      - Electronic Scrap (Example Craftable Member):
-        - 1x Electronic Scrap
-          [Tools Required]:
-            - 1x Set of Pliers
-              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-          [Components Required]:
-            - 1x [Family: raw_salvage] (Requires one of the following):
-              - Old Tire (Un-craftable Base Material - Chain ends here)
-              - Plastic Junk (Un-craftable Base Material - Chain ends here)
+    - 1x [Family: raw_salvage] (Requires one of the following):
+      - Old Tire (Un-craftable Base Material - Chain ends here)
+      - Plastic Junk (Un-craftable Base Material - Chain ends here)
 
 --------------------------------------------------
 
@@ -11083,16 +10664,9 @@
                             - 1x Heat Gun
                               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                           [Components Required]:
-                            - 1x [Family: salvage] (Requires one of the following):
-                              - Electronic Scrap (Example Craftable Member):
-                                - 1x Electronic Scrap
-                                  [Tools Required]:
-                                    - 1x Set of Pliers
-                                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                                  [Components Required]:
-                                    - 1x [Family: raw_salvage] (Requires one of the following):
-                                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                            - 1x [Family: raw_salvage] (Requires one of the following):
+                              - Old Tire (Un-craftable Base Material - Chain ends here)
+                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
                       - ... and 1 other craftable alternatives.
               - ... and 1 other craftable alternatives.
             - 2x [Family: component] (Requires one of the following):
@@ -11252,16 +10826,9 @@
                             - 1x Heat Gun
                               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                           [Components Required]:
-                            - 1x [Family: salvage] (Requires one of the following):
-                              - Electronic Scrap (Example Craftable Member):
-                                - 1x Electronic Scrap
-                                  [Tools Required]:
-                                    - 1x Set of Pliers
-                                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                                  [Components Required]:
-                                    - 1x [Family: raw_salvage] (Requires one of the following):
-                                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                            - 1x [Family: raw_salvage] (Requires one of the following):
+                              - Old Tire (Un-craftable Base Material - Chain ends here)
+                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
                       - ... and 1 other craftable alternatives.
               - ... and 1 other craftable alternatives.
             - 2x [Family: component] (Requires one of the following):
@@ -11386,16 +10953,9 @@
                             - 1x Heat Gun
                               * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
                           [Components Required]:
-                            - 1x [Family: salvage] (Requires one of the following):
-                              - Electronic Scrap (Example Craftable Member):
-                                - 1x Electronic Scrap
-                                  [Tools Required]:
-                                    - 1x Set of Pliers
-                                      * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
-                                  [Components Required]:
-                                    - 1x [Family: raw_salvage] (Requires one of the following):
-                                      - Old Tire (Un-craftable Base Material - Chain ends here)
-                                      - Plastic Junk (Un-craftable Base Material - Chain ends here)
+                            - 1x [Family: raw_salvage] (Requires one of the following):
+                              - Old Tire (Un-craftable Base Material - Chain ends here)
+                              - Plastic Junk (Un-craftable Base Material - Chain ends here)
                       - ... and 1 other craftable alternatives.
               - ... and 1 other craftable alternatives.
             - 2x [Family: component] (Requires one of the following):
@@ -11481,16 +11041,17 @@
   [Components Required]:
     - 15x [Family: construction_material] (Requires one of the following):
       - Pile of Sand (Un-craftable Base Material - Chain ends here)
-      - Bag of Concrete Mix (Example Craftable Member):
-        - 1x Bag of Concrete Mix
+      - Hewn Stone Block (Example Craftable Member):
+        - 1x Hewn Stone Block
+          [Tools Required]:
+            - 1x Stone Chisel
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
+            - 1x Peen Hammer
+              * [UN-CRAFTABLE BASE MATERIAL] Chain ends here.
           [Components Required]:
-            - 2x [Family: stone] (Requires one of the following):
-              - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
-              - Stone Chunk (Un-craftable Base Material - Chain ends here)
             - 1x [Family: stone] (Requires one of the following):
               - Large Suitable Rock (Un-craftable Base Material - Chain ends here)
               - Stone Chunk (Un-craftable Base Material - Chain ends here)
-      - ... and 1 other craftable alternatives.
 
 --------------------------------------------------
 

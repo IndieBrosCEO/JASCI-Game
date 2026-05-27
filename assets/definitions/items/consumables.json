@@ -23,10 +23,7 @@
             "components": [
                 {
                     "quantity": 3,
-                    "family": "explosive_compound",
-                    "require": {
-                        "type": "generic_b"
-                    }
+                    "family": "raw_chemicals"
                 },
                 {
                     "quantity": 1,
@@ -117,11 +114,7 @@
             "components": [
                 {
                     "quantity": 5,
-                    "family": "explosive",
-                    "require": {
-                        "type": "gunpowder",
-                        "grade": 1
-                    }
+                    "family": "raw_chemicals"
                 },
                 {
                     "quantity": 2,
@@ -243,32 +236,16 @@
             "description": "Assemble a first-aid kit with various medical supplies.",
             "components": [
                 {
-                    "quantity": 3,
-                    "family": "fabric",
-                    "require": {
-                        "type": "scrap"
-                    }
+                    "itemId": "bandage",
+                    "quantity": 2
                 },
                 {
-                    "quantity": 2,
-                    "family": "medical",
-                    "require": {
-                        "type": "bandage"
-                    }
+                    "itemId": "antiseptic_herbal_pulp",
+                    "quantity": 1
                 },
                 {
-                    "quantity": 1,
-                    "family": "medical",
-                    "require": {
-                        "effect": "painkiller"
-                    }
-                },
-                {
-                    "quantity": 1,
-                    "family": "medical",
-                    "require": {
-                        "effect": "antibiotic"
-                    }
+                    "itemId": "painkillers_strong",
+                    "quantity": 1
                 }
             ],
             "skills_required": [

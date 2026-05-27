@@ -1102,18 +1102,16 @@
             "description": "Mix sand and crushed stone binder to make concrete mix.",
             "components": [
                 {
-                    "quantity": 2,
-                    "family": "stone",
-                    "require": {
-                        "type": "sand"
-                    }
+                    "itemId": "sand_pile",
+                    "quantity": 2
                 },
                 {
-                    "quantity": 1,
-                    "family": "stone",
-                    "require": {
-                        "type": "chunk"
-                    }
+                    "itemId": "stone_chunk",
+                    "quantity": 2
+                },
+                {
+                    "itemId": "bottled_water",
+                    "quantity": 1
                 }
             ],
             "skills_required": [
@@ -1125,7 +1123,7 @@
             "time_to_craft": 10,
             "batch_size": 1
         },
-        "family": "construction_material",
+        "family": "concrete_mix",
         "properties": {
             "type": "concrete_mix"
         }
@@ -3545,7 +3543,7 @@
             "components": [
                 {
                     "quantity": 1,
-                    "family": "salvage",
+                    "family": "raw_salvage",
                     "require": {
                         "type": "plastic_junk"
                     }
@@ -4048,7 +4046,7 @@
             "components": [
                 {
                     "quantity": 1,
-                    "family": "salvage",
+                    "family": "raw_salvage",
                     "require": {
                         "type": "tire"
                     }
@@ -6463,7 +6461,7 @@
             "time_to_craft": 5,
             "batch_size": 1
         },
-        "family": "salvage",
+        "family": "electronic_parts",
         "properties": {
             "type": "electronic_scrap"
         }
@@ -6805,5 +6803,93 @@
             "type": "scrap",
             "material": "brass"
         }
+    },
+    {
+        "id": "raw_chemicals",
+        "name": "Raw Chemicals",
+        "family": "raw_chemicals",
+        "type": "crafting_material",
+        "size": 1,
+        "weightLbs": 0.5
+    },
+    {
+        "id": "small_pistol_primer",
+        "name": "Small Pistol Primer",
+        "family": "small_pistol_primer",
+        "type": "crafting_material",
+        "size": 1,
+        "weightLbs": 0.1
+    },
+    {
+        "id": "small_rifle_primer",
+        "name": "Small Rifle Primer",
+        "family": "small_rifle_primer",
+        "type": "crafting_material",
+        "size": 1,
+        "weightLbs": 0.1
+    },
+    {
+        "id": "shotgun_primer",
+        "name": "Shotgun Primer",
+        "family": "shotgun_primer",
+        "type": "crafting_material",
+        "size": 1,
+        "weightLbs": 0.1
+    },
+    {
+        "id": "9mm_projectile",
+        "name": "9mm Projectile",
+        "family": "9mm_projectile",
+        "type": "crafting_material",
+        "size": 1,
+        "weightLbs": 0.1
+    },
+    {
+        "id": "556_projectile",
+        "name": "5.56mm Projectile",
+        "family": "556_projectile",
+        "type": "crafting_material",
+        "size": 1,
+        "weightLbs": 0.1
+    },
+    {
+        "id": "buckshot_pellets",
+        "name": "Buckshot Pellets",
+        "family": "buckshot_pellets",
+        "type": "crafting_material",
+        "size": 1,
+        "weightLbs": 0.1
+    },
+    {
+        "id": "shotgun_wad",
+        "name": "Shotgun Wad",
+        "family": "shotgun_wad",
+        "type": "crafting_material",
+        "size": 1,
+        "weightLbs": 0.1
+    },
+    {
+        "id": "9mm_casing",
+        "name": "9mm Casing",
+        "family": "9mm_casing",
+        "type": "crafting_material",
+        "size": 1,
+        "weightLbs": 0.1
+    },
+    {
+        "id": "556_casing",
+        "name": "5.56mm Casing",
+        "family": "556_casing",
+        "type": "crafting_material",
+        "size": 1,
+        "weightLbs": 0.1
+    },
+    {
+        "id": "12g_hull",
+        "name": "12-Gauge Hull",
+        "family": "12g_hull",
+        "type": "crafting_material",
+        "size": 1,
+        "weightLbs": 0.1
     }
 ]

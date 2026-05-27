@@ -61,7 +61,7 @@
             "time_to_craft": 15,
             "batch_size": 1
         },
-        "family": "food",
+        "family": "cooked_food",
         "properties": {
             "type": "cooked_meat"
         }
