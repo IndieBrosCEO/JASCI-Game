@@ -14,7 +14,7 @@
     ]
   },
   "teach_movement": {
-    "text": "You can use WASD or the arrow keys to move. Movement takes Movement Points (MP). You can also change your posture: press 'k' to Crouch (harder to see, costs more MP to move) and 'p' to go Prone. Try them out.",
+    "text": "You can use WASD or the arrow keys to move. Movement takes Movement Points (MP). You can also change your posture: press 'k' to Crouch (harder to see, costs more MP to move) and 'p' to go Prone. Press 't' to end your turn or pass time out of combat. Try them out.",
     "choices": [
       { "text": "Let's learn something else.", "goTo": "start" }
     ]
@@ -26,7 +26,7 @@
     ]
   },
   "teach_combat": {
-    "text": "Combat is turn-based. If an enemy spots you, initiative is rolled. During your turn, attack with Action Points (AP). If you take damage, use medical items from your inventory to heal. Watch your head and torso health; if either hits 0, you die. Give the training dummy a whack.",
+    "text": "Combat is turn-based. If an enemy spots you, initiative is rolled. During your turn, attack with Action Points (AP), which you can also spend to 'dash' for more MP (x key). If you take damage, use medical items from your inventory to heal. Watch your head and torso health; if either hits 0, you die. Give the training dummy a whack.",
     "choices": [
       { "text": "Understood. Back to the menu.", "goTo": "start" }
     ]
@@ -50,13 +50,13 @@
     ]
   },
   "teach_quests": {
-    "text": "Talk to people to get Quests. You can check your active quests in the UI. Some people might even join you as a Companion if you ask them nicely or pay them.",
+    "text": "Talk to people to get Quests. You can check your active quests in the UI (Q). Some people might even join you as a Companion if you ask them nicely or pay them.",
     "choices": [
       { "text": "Back to the menu.", "goTo": "start" }
     ]
   },
   "teach_vehicles": {
-    "text": "If you find a broken vehicle, you can repair its parts (Engine, Tires, Battery, Fuel Tank) using tools and materials. Once repaired and fueled, you can use it to travel the World Map much faster.",
+    "text": "If you find a broken vehicle, you can repair its parts (Engine, Tires, Battery, Fuel Tank) using tools and materials. Once repaired and fueled, you can use it to travel the World Map (M) much faster.",
     "choices": [
       { "text": "Vehicles are great. Back to the menu.", "goTo": "start" }
     ]
