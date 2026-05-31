@@ -1,4 +1,8 @@
-﻿[
+[
+  {
+    "id": "Tutorial",
+    "name": "Tutorial"
+  },
   {
     "id": "dragon",
     "name": "dragon"

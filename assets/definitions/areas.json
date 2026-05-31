@@ -12,5 +12,12 @@
     "worldNodeId": "outskirts",
     "type": "camp",
     "defaultMapId": "Small_Race_Track"
+  },
+  {
+    "areaId": "tutorial_area",
+    "displayName": "Tutorial Area",
+    "worldNodeId": "tutorial_node",
+    "type": "camp",
+    "defaultMapId": "Tutorial"
   }
 ]
