@@ -1074,8 +1074,7 @@ function processConsoleCommand(commandText) {
             }
             let hostileNpcCount = 0;
             gameState.npcs.forEach(npc => {
-                if (npc.health && npc.health.torso && npc.health.torso.current > 0 &&
-                    npc.teamId !== gameState.player.teamId) {
+                if (window.isEntityAlive(npc) && npc.teamId !== gameState.player.teamId) {
                     if (!npc.aggroList) {
                         npc.aggroList = [];
                     }

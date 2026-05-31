@@ -345,7 +345,7 @@ class MapUtils {
 
         // Check NPCs
         for (const npc of this.gameState.npcs) {
-            if (npc.health && npc.health.torso && npc.health.torso.current <= 0) continue; // Ignore dead bodies for collision? Usually yes.
+            if (!window.isEntityAlive(npc)) continue; // Ignore dead bodies for collision
             if (checkEntity(npc)) return true;
         }
 

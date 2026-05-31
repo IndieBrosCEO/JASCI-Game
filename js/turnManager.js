@@ -181,7 +181,7 @@ async function endTurn_internal() { // Make async
             const isInCombat = combatantEntities.has(npc);
 
             // Ensure NPC is alive and NOT in combat before processing their OOC turn
-            if (!isInCombat && npc && npc.health && typeof npc.health.torso?.current === 'number' && typeof npc.health.head?.current === 'number' && npc.health.torso.current > 0 && npc.health.head.current > 0) {
+            if (!isInCombat && window.isEntityAlive(npc)) {
                 // Ensure combatManager and localAssetManager (assetManager) are available
                 if (window.combatManager && localAssetManager && typeof window.executeNpcTurn === 'function') {
                     // NPC OOC turns are also async if they involve movement animations

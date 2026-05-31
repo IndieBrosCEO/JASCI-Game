@@ -92,7 +92,7 @@ function showLookTooltip(event, gameState, mapRenderer, assetManager) {
     if (gameState.playerPos.x === mapX && gameState.playerPos.y === mapY && gameState.playerPos.z === mapZ) {
         entityObject = gameState; // Special case for player
     } else {
-        entityObject = gameState.npcs.find(n => n.mapPos?.x === mapX && n.mapPos?.y === mapY && n.mapPos?.z === mapZ && n.health?.torso?.current > 0 && n.health?.head?.current > 0);
+        entityObject = gameState.npcs.find(n => n.mapPos?.x === mapX && n.mapPos?.y === mapY && n.mapPos?.z === mapZ && window.isEntityAlive(n));
     }
 
     if (entityObject) {
