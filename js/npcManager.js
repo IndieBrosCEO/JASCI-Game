@@ -206,7 +206,7 @@ class NpcManager {
         // Then, search by tag
         let candidates = this.gameState.npcs.filter(npc =>
             npc.tags && npc.tags.includes(tagOrId) &&
-            npc.health && npc.health.torso && npc.health.torso.current > 0 // Alive
+            window.isEntityAlive(npc) // Alive
         );
 
         if (areaKey && this.mapUtils) {

@@ -253,7 +253,7 @@
             // Auto-target logic needs to be 3D LOS aware for the player as well.
             // For now, this auto-targets the first live NPC, which might not have LOS.
             // This part is less critical for "player targeting" feature but good to note.
-            const liveNpcs = this.initiativeTracker.filter(e => !e.isPlayer && e.entity.health?.torso?.current > 0 && e.entity.health?.head?.current > 0);
+            const liveNpcs = this.initiativeTracker.filter(e => !e.isPlayer && window.isEntityAlive(e.entity));
             if (liveNpcs.length > 0) {
                 this.gameState.combatCurrentDefender = liveNpcs[0].entity;
                 this.gameState.defenderMapPos = liveNpcs[0].entity.mapPos ? { ...liveNpcs[0].entity.mapPos } : null;
@@ -575,7 +575,7 @@
                     }
 
                     window.mapRenderer.scheduleRender();
-                    if (!this.initiativeTracker.some(e => !e.isPlayer && e.entity.health?.torso?.current > 0)) {
+                    if (!this.initiativeTracker.some(e => !e.isPlayer && window.isEntityAlive(e.entity))) {
                         this.endCombat();
                         return;
                     }
@@ -717,7 +717,7 @@
                                 }
                                 this.initiativeTracker = this.initiativeTracker.filter(e => e.entity !== attacker);
                                 this.gameState.npcs = this.gameState.npcs.filter(npc => npc !== attacker);
-                                if (!this.initiativeTracker.some(e => !e.isPlayer && e.entity.health?.torso?.current > 0 && e.entity.health?.head?.current > 0)) {
+                                if (!this.initiativeTracker.some(e => !e.isPlayer && window.isEntityAlive(e.entity))) {
                                     this.endCombat();
                                     this.isProcessingTurn = false;
                                     return;
@@ -776,13 +776,13 @@
                 this.gameState.targetConfirmed = false;
             } else if (!this.gameState.retargetingJustHappened) {
                 this.gameState.combatCurrentDefender = null; this.gameState.defenderMapPos = null;
-                const aggroTarget = this.gameState.player?.aggroList?.find(a => a.entityRef && a.entityRef !== this.gameState && a.entityRef.health?.torso?.current > 0 && a.entityRef.health?.head?.current > 0 && a.entityRef.teamId !== this.gameState.player.teamId && this.initiativeTracker.find(e => e.entity === a.entityRef));
+                const aggroTarget = this.gameState.player?.aggroList?.find(a => a.entityRef && a.entityRef !== this.gameState && window.isEntityAlive(a.entityRef) && a.entityRef.teamId !== this.gameState.player.teamId && this.initiativeTracker.find(e => e.entity === a.entityRef));
                 if (aggroTarget) { this.gameState.combatCurrentDefender = aggroTarget.entityRef; this.gameState.defenderMapPos = { ...aggroTarget.entityRef.mapPos }; logToConsole(`Player auto-targets ${aggroTarget.entityRef.name} from aggro.`, 'lightblue'); }
                 else {
                     let closest = null, minDist = Infinity;
                     this.initiativeTracker.forEach(e => {
                         const cand = e.entity;
-                        if (cand !== this.gameState && cand.health?.torso?.current > 0 && cand.health?.head?.current > 0 && cand.teamId !== this.gameState.player.teamId && cand.mapPos && this.gameState.playerPos) {
+                        if (cand !== this.gameState && window.isEntityAlive(cand) && cand.teamId !== this.gameState.player.teamId && cand.mapPos && this.gameState.playerPos) {
                             const d = Math.abs(this.gameState.playerPos.x - cand.mapPos.x) + Math.abs(this.gameState.playerPos.y - cand.mapPos.y);
                             if (d < minDist) { minDist = d; closest = cand; }
                         }
@@ -2709,7 +2709,7 @@
             const activePlayers = [];
             for (const entry of this.initiativeTracker) {
                 const health = entry.entity.health;
-                const isAlive = (health?.torso?.current > 0 || health?.torso?.crisisTimer > 0) && (health?.head?.current > 0 || health?.head?.crisisTimer > 0);
+                const isAlive = window.isEntityAlive(entry.entity);
                 if (isAlive) {
                     if (entry.isPlayer) activePlayers.push(entry);
                     else activeHostiles.push(entry);
@@ -3040,7 +3040,7 @@
         const checkEntity = (entity, entityPos) => {
             if (!entity || !entityPos || entityPos.x === undefined || entityPos.y === undefined || entityPos.z === undefined) return;
             const distance = getDistance3D(impactTile, entityPos);
-            if (distance <= burstRadiusTiles && entity.health?.torso?.current > 0 && entity.health?.head?.current > 0) {
+            if (distance <= burstRadiusTiles && window.isEntityAlive(entity)) {
                 affected.push(entity);
             }
         };
@@ -3320,10 +3320,7 @@
     async executeNpcCombatTurn(npc) {
         const npcName = npc.name || npc.id || "NPC";
         // Allow turn if in crisis (crisisTimer > 0)
-        const isTorsoOk = npc.health?.torso?.current > 0 || npc.health?.torso?.crisisTimer > 0;
-        const isHeadOk = npc.health?.head?.current > 0 || npc.health?.head?.crisisTimer > 0;
-
-        if (!npc || !isTorsoOk || !isHeadOk) {
+        if (!window.isEntityAlive(npc)) {
             logToConsole(`INFO: ${npcName} incapacitated (Dead/Destroyed). Skipping turn.`, 'orange');
             setTimeout(() => this.nextTurn(npc), 0);
             return;

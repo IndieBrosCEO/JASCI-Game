@@ -956,3 +956,26 @@ window.profileFunction = profileFunction;
 // console.log(window.dev_profiler);
 // To reset stats:
 // window.dev_profiler = {};
+
+/**
+ * Checks if an entity is alive based on its health data.
+ * Supports torso/head (humanoids), body (animals/monsters), and simple current health.
+ * @param {object} entity - The entity object to check.
+ * @returns {boolean} True if the entity is alive, false otherwise.
+ */
+function isEntityAlive(entity) {
+    if (!entity || !entity.health) return false;
+
+    if (entity.health.torso && entity.health.head) {
+        return (entity.health.torso.current > 0 || entity.health.torso.crisisTimer > 0) &&
+               (entity.health.head.current > 0 || entity.health.head.crisisTimer > 0);
+    } else if (entity.health.body) {
+        return (entity.health.body.current > 0 || entity.health.body.crisisTimer > 0);
+    } else if (entity.health.current !== undefined) {
+        return entity.health.current > 0;
+    }
+
+    return false; // Default to dead if health structure is unrecognized
+}
+
+window.isEntityAlive = isEntityAlive;

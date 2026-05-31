@@ -84,7 +84,7 @@ function _isTileOccupied(x, y, z, gameState, currentNpcId = null) {
         return npc.mapPos?.x === x &&
             npc.mapPos?.y === y &&
             npc.mapPos?.z === z &&
-            npc.health?.torso?.current > 0;
+            window.isEntityAlive(npc);
     });
 }
 window._isTileOccupied = _isTileOccupied; // Make global if needed by other modules, or keep local
@@ -1024,7 +1024,7 @@ function selectNpcCombatTarget(npc, gameState, initiativeTracker, assetManager) 
             // Let's assume isolation is lack of nearby friends.
             if (initiativeTracker) {
                 initiativeTracker.forEach(e => {
-                    if (e.entity !== realEntity && e.entity.teamId === theirTeam && e.entity.health?.torso?.current > 0) {
+                    if (e.entity !== realEntity && e.entity.teamId === theirTeam && window.isEntityAlive(e.entity)) {
                         const d = getDistance3D(pt.pos, e.entity === gameState ? gameState.playerPos : e.entity.mapPos);
                         if (d < 5) neighborAllies++;
                     }
@@ -1636,10 +1636,7 @@ window.handleNpcCombatTurn = handleNpcCombatTurn;
  */
 async function executeNpcTurn(npc, gameState, combatManager, assetManager) {
     // Check if alive OR in crisis (HP > 0 or CrisisTimer > 0)
-    const isTorsoOk = npc.health?.torso?.current > 0 || (npc.health?.torso?.crisisTimer > 0);
-    const isHeadOk = npc.health?.head?.current > 0 || (npc.health?.head?.crisisTimer > 0);
-
-    if (!npc || !isTorsoOk || !isHeadOk) {
+    if (!window.isEntityAlive(npc)) {
         // logToConsole(`NPC ${npc?.id || 'Unknown'} is incapacitated. Skipping turn.`);
         return;
     }

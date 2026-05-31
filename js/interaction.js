@@ -868,10 +868,7 @@ window.interaction = {
         // Detect NPCs
         if (window.gameState && window.gameState.npcs) {
             window.gameState.npcs.forEach(npc => {
-                const isAlive = npc.health && (
-                    (npc.health.torso && npc.health.torso.current > 0) ||
-                    (npc.health.current && npc.health.current > 0) // Fallback for simple health
-                );
+                const isAlive = window.isEntityAlive(npc);
                 if (npc.mapPos && npc.mapPos.z === currentZ && isAlive) { // Check if NPC is alive
                     const dist = Math.max(Math.abs(npc.mapPos.x - px), Math.abs(npc.mapPos.y - py));
                     if (dist <= R) {
