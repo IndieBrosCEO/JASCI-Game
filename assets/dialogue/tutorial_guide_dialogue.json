@@ -1,0 +1,68 @@
+{
+  "start": {
+    "text": "Welcome to the Wasteland, survivor. I'm Guide. There's a lot to learn if you want to survive. What do you want to learn about?",
+    "choices": [
+      { "text": "Movement and Postures", "goTo": "teach_movement" },
+      { "text": "Interaction and Inventory", "goTo": "teach_interaction" },
+      { "text": "Combat and Healing", "goTo": "teach_combat" },
+      { "text": "Survival, Time, and Weather", "goTo": "teach_survival" },
+      { "text": "Crafting and Construction", "goTo": "teach_crafting" },
+      { "text": "Farming and Fishing", "goTo": "teach_farming" },
+      { "text": "Quests and Companions", "goTo": "teach_quests" },
+      { "text": "Vehicles and Travel", "goTo": "teach_vehicles" },
+      { "text": "I think I know enough for now.", "goTo": "end" }
+    ]
+  },
+  "teach_movement": {
+    "text": "You can use WASD or the arrow keys to move. Movement takes Movement Points (MP). You can also change your posture: press 'k' to Crouch (harder to see, costs more MP to move) and 'p' to go Prone. Press 't' to end your turn or pass time out of combat. Try them out.",
+    "choices": [
+      { "text": "Let's learn something else.", "goTo": "start" }
+    ]
+  },
+  "teach_interaction": {
+    "text": "Stand next to objects and click them, or right-click them to interact. If it's a container, you can loot it. Let me give you a weapon. Open your inventory (I) to see it.",
+    "choices": [
+      { "text": "Got the club. Back to the menu.", "goTo": "start", "actions": ["giveItem:club_melee:1"] }
+    ]
+  },
+  "teach_combat": {
+    "text": "Combat is turn-based. If an enemy spots you, initiative is rolled. During your turn, attack with Action Points (AP), which you can also spend to 'dash' for more MP (x key). If you take damage, use medical items from your inventory to heal. Watch your head and torso health; if either hits 0, you die. Give the training dummy a whack.",
+    "choices": [
+      { "text": "Understood. Back to the menu.", "goTo": "start" }
+    ]
+  },
+  "teach_survival": {
+    "text": "You must manage Hunger and Thirst. Drink clean water (or boil dirty water) and eat food to stay healthy. Press Shift+T to wait and fast-forward time. Be careful of extreme weather or hazardous mist—wear a gas mask if the mist rolls in.",
+    "choices": [
+      { "text": "Survival sounds tough. Back to the menu.", "goTo": "start" }
+    ]
+  },
+  "teach_crafting": {
+    "text": "Press (C) to open the Crafting menu. You need raw materials and specific tools. Construction (B) lets you build structures. Gather some wood and scrap metal, and try crafting something simple.",
+    "choices": [
+      { "text": "I'll try that. Back to the menu.", "goTo": "start" }
+    ]
+  },
+  "teach_farming": {
+    "text": "Find some dirt. Equip a hoe, use it on the dirt to till it, then plant seeds. Make sure to water the crops! Fishing requires a Fishing Rod; stand near water and use the rod from your inventory to catch fish.",
+    "choices": [
+      { "text": "Farming and fishing. Got it. Back to the menu.", "goTo": "start" }
+    ]
+  },
+  "teach_quests": {
+    "text": "Talk to people to get Quests. You can check your active quests in the UI (Q). Some people might even join you as a Companion if you ask them nicely or pay them.",
+    "choices": [
+      { "text": "Back to the menu.", "goTo": "start" }
+    ]
+  },
+  "teach_vehicles": {
+    "text": "If you find a broken vehicle, you can repair its parts (Engine, Tires, Battery, Fuel Tank) using tools and materials. Once repaired and fueled, you can use it to travel the World Map (M) much faster.",
+    "choices": [
+      { "text": "Vehicles are great. Back to the menu.", "goTo": "start" }
+    ]
+  },
+  "end": {
+    "text": "Good luck out there.",
+    "choices": []
+  }
+}
