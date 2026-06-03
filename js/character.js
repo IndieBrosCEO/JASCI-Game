@@ -576,7 +576,15 @@ function updateHealthCrisis(characterOrGameState) {
     }
     // Re-render health table to show updated crisis timers or destroyed states
     if (window.renderHealthTable) {
-        window.renderHealthTable(character);
+        const isPlayer = (characterOrGameState === window.gameState || characterOrGameState === window.gameState.player);
+        if (isPlayer) {
+            window.renderHealthTable(character);
+        } else {
+            // Usually, there isn't a dedicated UI for NPC health in this phase,
+            // unless they are companions and have a specific targetElementId.
+            // Companion updates would typically pass an explicit target.
+            // By doing this, we avoid spamming the logs from the protection we added in renderHealthTable
+        }
     }
 }
 
@@ -683,7 +691,10 @@ function applyTreatment(bodyPart, treatmentType, restType, medicineBonus, charac
 
     if (window.renderHealthTable) {
         const characterToRender = (character === window.gameState) ? window.gameState.player : character;
-        window.renderHealthTable(characterToRender);
+        const isPlayer = (characterToRender === window.gameState.player);
+        if (isPlayer) {
+            window.renderHealthTable(characterToRender);
+        }
     }
 }
 
@@ -741,7 +752,10 @@ function applyRestHealing(character, restType) {
 
     if (window.renderHealthTable) {
         const characterToRender = (character === window.gameState) ? window.gameState.player : character;
-        window.renderHealthTable(characterToRender);
+        const isPlayer = (characterToRender === window.gameState.player);
+        if (isPlayer) {
+            window.renderHealthTable(characterToRender);
+        }
     }
 }
 
@@ -749,19 +763,27 @@ function applyRestHealing(character, restType) {
 // Render the health table UI for a character
 // If targetElementId is provided, renders there instead of the default sidebar table
 function renderHealthTable(character, targetElementId = null) {
+    const isPlayer = (character === window.gameState || character === window.gameState.player);
+    const normalizedCharacter = isPlayer ? window.gameState.player : character;
+
+    if (!targetElementId && !isPlayer) {
+        logToConsole(`Warning: Attempted to render health for NPC ${normalizedCharacter.name || normalizedCharacter.id} to main health table.`, 'warn');
+        return;
+    }
+
     const selector = targetElementId ? `#${targetElementId} tbody` : "#healthTable tbody";
     const healthTableBody = document.querySelector(selector);
     if (!healthTableBody) return;
     healthTableBody.innerHTML = "";
 
-    if (!character.health) return;
+    if (!normalizedCharacter.health) return;
 
     // Identify character for openMedicalTreatmentModal call
-    const charId = (character === window.gameState || character === window.gameState.player) ? 'player' : character.id;
+    const charId = isPlayer ? 'player' : normalizedCharacter.id;
 
-    for (let partNameKey in character.health) {
-        let { current, max, crisisTimer } = character.health[partNameKey];
-        let effectiveArmor = getArmorForBodyPart(partNameKey, character);
+    for (let partNameKey in normalizedCharacter.health) {
+        let { current, max, crisisTimer } = normalizedCharacter.health[partNameKey];
+        let effectiveArmor = getArmorForBodyPart(partNameKey, normalizedCharacter);
 
         let row = document.createElement("tr");
 
@@ -1690,7 +1712,10 @@ function calculateAndApplyFallDamage(characterOrGameState, levelsFallen) {
 
     if (typeof window.renderHealthTable === 'function') {
         // Fix: Pass player object if gameState
-        window.renderHealthTable(characterOrGameState === window.gameState ? window.gameState.player : characterOrGameState);
+        const characterToRender = characterOrGameState === window.gameState ? window.gameState.player : characterOrGameState;
+        if (characterToRender === window.gameState.player) {
+            window.renderHealthTable(characterToRender);
+        }
     }
 }
 window.calculateAndApplyFallDamage = calculateAndApplyFallDamage;
