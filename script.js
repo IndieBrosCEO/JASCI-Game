@@ -925,15 +925,11 @@ async function handleKeyDown(event) {
             // For other keys (alphanumeric, space, backspace, etc.),
             // allow default behavior so user can type in the input field.
             // No event.preventDefault() for these.
-            // TODO: Play ui_type_01.wav on keydown/keypress for typing in console
-            // This might be too noisy if played for every char, consider on first char of a word or debounced.
-            // if (audioManager && event.key.length === 1) audioManager.playUiSound('ui_click_01.wav', { volume: 0.2 }); // Placeholder for ui_type_01.wav
-
             // NEW SOUND IMPLEMENTATION:
-            if (audioManager && event.key.length === 1 && event.target === consoleInputElement) { // Play for single character inputs in console
+            if (audioManager && (event.key.length === 1 || event.key === 'Backspace') && event.target === consoleInputElement) { // Play for single character inputs or backspace in console
                 gameState.uiTypeSoundIndex = (gameState.uiTypeSoundIndex % 5) + 1; // Cycle from 1 to 5
                 const soundToPlay = `ui_type_0${gameState.uiTypeSoundIndex}.wav`;
-                audioManager.playUiSound(soundToPlay, { volume: 0.7 });
+                audioManager.playUiSound(soundToPlay, { volume: 0.4 });
             }
 
         } else {

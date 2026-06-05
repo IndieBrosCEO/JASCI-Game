@@ -52,8 +52,13 @@ class AudioManager {
             'ui_start_game_01.wav',
             'ui_start_game_02.wav',
             'fire_loop.wav',
-            'reload_rifle_01.wav'
-            'reload_shotgun_01.wav'
+            'reload_rifle_01.wav',
+            'reload_shotgun_01.wav',
+            'ui_type_01.wav',
+            'ui_type_02.wav',
+            'ui_type_03.wav',
+            'ui_type_04.wav',
+            'ui_type_05.wav'
         ];
 
         // Pre-load existing sounds
