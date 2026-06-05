@@ -12,6 +12,7 @@ class DynamicEventManager {
         this.EVENT_CHECK_INTERVAL = 600; // Check for new events every ~20 minutes (600 ticks * 2s/tick = 1200s = 20m)
         // Or, based on game hours: e.g. 30 ticks/hour * 4 hours = 120 ticks. For now, fixed ticks.
         this.spawnedNpcGroups = {}; // Tracks NPCs spawned by events: { eventInstanceId: { npcGroupId: [npcInstanceId1, ...] } }
+        this.logPrefix = "[DynamicEventManager]";
     }
 
     initialize() {
@@ -51,18 +52,15 @@ class DynamicEventManager {
 
     checkForNewEvents(currentTick) {
         logToConsole("DynamicEventManager: Checking for new events...", "debug");
+        const eligibleTemplates = [];
+        const frequencyWeights = {
+            "common": 10,
+            "uncommon": 3,
+            "rare": 1
+        };
+
         for (const templateId in this.eventTemplates) {
             const template = this.eventTemplates[templateId];
-
-            // Basic frequency check (simplified)
-            // TODO: Implement proper weighted random chance based on frequency ("common", "uncommon", "rare")
-            let roll = Math.random();
-            let chance = 0.1; // Base chance for any event per check cycle
-            if (template.frequency === "common") chance = 0.25;
-            else if (template.frequency === "uncommon") chance = 0.1;
-            else if (template.frequency === "rare") chance = 0.05;
-
-            if (roll > chance) continue;
 
             // Check player level
             if (template.minPlayerLevel && this.gameState.level < template.minPlayerLevel) {
@@ -71,7 +69,6 @@ class DynamicEventManager {
 
             // Check if a similar event is already active (e.g., don't stack multiple raids of same type)
             if (this.gameState.activeDynamicEvents.some(ev => ev.templateId === templateId)) {
-                // logToConsole(`Event ${templateId} skipped, an instance is already active.`, "debug");
                 continue;
             }
 
@@ -94,12 +91,42 @@ class DynamicEventManager {
                 }
             }
 
-            if (!allGlobalConditionsMet) {
-                // logToConsole(`${this.logPrefix} Event ${template.id} skipped, global conditions not met.`, "debug");
-                continue;
+            if (allGlobalConditionsMet) {
+                eligibleTemplates.push(template);
             }
+        }
 
-            this.triggerEvent(template, currentTick);
+        if (eligibleTemplates.length === 0) {
+            logToConsole("DynamicEventManager: No eligible events to trigger.", "debug");
+            return;
+        }
+
+        // Weighted random selection
+        const noEventWeight = 20; // Fixed weight for "no event" to control overall frequency
+        let totalWeight = noEventWeight;
+
+        const weightedPool = eligibleTemplates.map(template => {
+            const weight = frequencyWeights[template.frequency] || 1;
+            totalWeight += weight;
+            return { template, weight };
+        });
+
+        let roll = Math.random() * totalWeight;
+
+        // If roll is in the noEventWeight range, no event triggers this cycle
+        if (roll < noEventWeight) {
+            logToConsole("DynamicEventManager: No event triggered this cycle (none roll).", "debug");
+            return;
+        }
+
+        roll -= noEventWeight;
+
+        for (const entry of weightedPool) {
+            roll -= entry.weight;
+            if (roll <= 0) {
+                this.triggerEvent(entry.template, currentTick);
+                break;
+            }
         }
     }
 
