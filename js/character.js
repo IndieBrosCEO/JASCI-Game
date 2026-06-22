@@ -14,12 +14,12 @@ function updateSkill(name, value, character) {
     // Let's assume a hard cap of 30 total points spent across all skills if not defined,
     // or use a "points remaining" logic.
     // If character.MAX_SKILL_POINTS is undefined, we'll assume the intended total is 30.
-    const maxPoints = character.MAX_SKILL_POINTS || 30;
+    const maxPoints = character.MAX_SKILL_POINTS !== undefined ? character.MAX_SKILL_POINTS : 30;
 
     const oldPoints = character.skills[index].points; // Get old points BEFORE parsing new value
 
     // Fix: Handle 0 correctly by checking isNaN
-    let newValue = parseInt(value);
+    let newValue = parseInt(value, 10);
     if (isNaN(newValue)) newValue = 0; // Default to 0 if invalid input for skills
 
     if (newValue < 0 || newValue > 100) {
@@ -70,15 +70,15 @@ function updateStat(name, value, character) {
 
     // Use default min/max if not defined on character. Allow minVal to be 0.
     const minVal = (character.MIN_STAT_VALUE !== undefined) ? character.MIN_STAT_VALUE : 1;
-    const maxVal = character.MAX_STAT_VALUE || 20;
+    const maxVal = character.MAX_STAT_VALUE !== undefined ? character.MAX_STAT_VALUE : 20;
 
     // Fix: Use configurable max total points instead of hardcoded 35
-    const maxTotalPoints = character.MAX_TOTAL_STAT_POINTS || 35;
+    const maxTotalPoints = character.MAX_TOTAL_STAT_POINTS !== undefined ? character.MAX_TOTAL_STAT_POINTS : 35;
 
     const oldPoints = character.stats[index].points; // Get old points BEFORE parsing new value
 
     // Fix: Handle 0 correctly. Do not treat 0 as falsey to fallback to minVal.
-    let parsedVal = parseInt(value);
+    let parsedVal = parseInt(value, 10);
     const newValue = isNaN(parsedVal) ? minVal : parsedVal;
 
     if (newValue < minVal || newValue > maxVal) {
