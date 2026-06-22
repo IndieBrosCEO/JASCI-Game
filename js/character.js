@@ -172,7 +172,8 @@ function renderTables(character) {
         const isMin = stat.points <= character.MIN_STAT_VALUE;
         const isMax = stat.points >= character.MAX_STAT_VALUE;
         // Fix: Use safe onclick with escaped name and data attribute for selector robustness
-        const safeName = stat.name.replace(/'/g, "\\'");
+        const safeName = stat.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeData = stat.name.replace(/"/g, '&quot;');
         return `
         <div class="stat-row" style="--accent-color: ${stat.bgColor || '#ccc'};" title="${statDescriptions[stat.name] || ''}">
             <div class="stat-label">
@@ -181,7 +182,7 @@ function renderTables(character) {
             </div>
             <div class="stat-controls">
                 <button class="stat-btn minus" onclick="updateStat('${safeName}', ${stat.points - 1}, window.gameState)" ${isMin ? 'disabled' : ''}>-</button>
-                <input type="number" value="${stat.points}" min="${character.MIN_STAT_VALUE}" max="${character.MAX_STAT_VALUE}" class="stat-input" data-stat-name="${stat.name}" onchange="updateStat('${safeName}', this.value, window.gameState)">
+                <input type="number" value="${stat.points}" min="${character.MIN_STAT_VALUE}" max="${character.MAX_STAT_VALUE}" class="stat-input" data-stat-name="${safeData}" onchange="updateStat('${safeName}', this.value, window.gameState)">
                 <button class="stat-btn plus" onclick="updateStat('${safeName}', ${stat.points + 1}, window.gameState)" ${isMax ? 'disabled' : ''}>+</button>
             </div>
         </div>`;
@@ -190,7 +191,8 @@ function renderTables(character) {
     const skillsHtml = character.skills.map(skill => {
         const isMin = skill.points <= 0;
         const isMax = skill.points >= 100;
-        const safeName = skill.name.replace(/'/g, "\\'");
+        const safeName = skill.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeData = skill.name.replace(/"/g, '&quot;');
         return `
         <div class="skill-row" style="--accent-color: ${skill.bgColor || '#ccc'};" title="${skillDescriptions[skill.name] || ''}">
             <div class="stat-label">
@@ -199,7 +201,7 @@ function renderTables(character) {
             </div>
             <div class="stat-controls">
                 <button class="stat-btn minus" onclick="updateSkill('${safeName}', ${skill.points - 1}, window.gameState)" ${isMin ? 'disabled' : ''}>-</button>
-                <input type="number" value="${skill.points}" min="0" max="100" class="stat-input" data-stat-name="${skill.name}" onchange="updateSkill('${safeName}', this.value, window.gameState)">
+                <input type="number" value="${skill.points}" min="0" max="100" class="stat-input" data-stat-name="${safeData}" onchange="updateSkill('${safeName}', this.value, window.gameState)">
                 <button class="stat-btn plus" onclick="updateSkill('${safeName}', ${skill.points + 1}, window.gameState)" ${isMax ? 'disabled' : ''}>+</button>
             </div>
         </div>`;
@@ -1209,7 +1211,8 @@ function refreshStatsUI(character) {
 
     character.stats.forEach(stat => {
         // Fix: Use robustness selector via data-stat-name
-        const input = statsBody.querySelector(`.stat-input[data-stat-name="${stat.name}"]`);
+        const safeQuery = stat.name.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        const input = statsBody.querySelector(`.stat-input[data-stat-name="${safeQuery}"]`);
 
         if (input) {
             const row = input.closest('.stat-row');
@@ -1253,7 +1256,8 @@ function refreshSkillsUI(character) {
     if (!skillsBody) return;
 
     character.skills.forEach(skill => {
-        const input = skillsBody.querySelector(`.stat-input[data-stat-name="${skill.name}"]`);
+        const safeQuery = skill.name.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        const input = skillsBody.querySelector(`.stat-input[data-stat-name="${safeQuery}"]`);
 
         if (input) {
             const row = input.closest('.skill-row');
