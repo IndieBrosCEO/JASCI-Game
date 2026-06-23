@@ -1842,7 +1842,11 @@ window.mapRenderer = {
 
         // Highlight for hovered entity
         if (gameState.highlightedEntityId && tileCacheData) {
-            const highlightedNpc = gameState.npcs.find(npc => npc.id === gameState.highlightedEntityId);
+            if (this._cachedHighlightedEntityId !== gameState.highlightedEntityId) {
+                this._cachedHighlightedNpc = gameState.npcs.find(npc => npc.id === gameState.highlightedEntityId);
+                this._cachedHighlightedEntityId = gameState.highlightedEntityId;
+            }
+            const highlightedNpc = this._cachedHighlightedNpc;
             if (highlightedNpc && highlightedNpc.mapPos && highlightedNpc.mapPos.z === currentZ) {
                 const hx = highlightedNpc.mapPos.x;
                 const hy = highlightedNpc.mapPos.y;
