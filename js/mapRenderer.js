@@ -1358,10 +1358,21 @@ window.mapRenderer = {
             }
         }
 
+        let waterPrefix = null;
+        let waterCells = null;
+        if (window.waterManager) {
+            const mapId = window.waterManager._getMapId();
+            if (mapId) {
+                waterPrefix = `${mapId},`;
+                waterCells = window.waterManager.waterCells;
+            }
+        }
+
         // --- Render current Z-level (gameState.currentViewZ) ---
         // Iterate only over the visible viewport tiles
         // 'y' and 'x' here are ABSOLUTE map coordinates.
         for (let y = startRow; y <= endRow; y++) {
+            const yWaterSuffix = waterPrefix ? `,${y},${currentZStr}` : null;
             for (let x = startCol; x <= endCol; x++) {
                 // Determine the base tile from the current Z-level's layers using absolute y, x
                 let baseTileId = currentLevelData.landscape?.[y]?.[x] || "";
@@ -1387,8 +1398,8 @@ window.mapRenderer = {
                 let effectiveTileOnMiddleCurrentZ = (typeof tileOnMiddleRawCurrentZ === 'object' && tileOnMiddleRawCurrentZ !== null && tileOnMiddleRawCurrentZ.tileId !== undefined) ? tileOnMiddleRawCurrentZ.tileId : tileOnMiddleRawCurrentZ;
 
                 // Dynamic Water Layering Visualization
-                if (window.waterManager) {
-                    const water = window.waterManager.getWaterAt(x, y, currentZ);
+                if (waterPrefix) {
+                    const water = waterCells[`${waterPrefix}${x}${yWaterSuffix}`];
                     if (water && water.depth > 0) {
                         if (water.depth === 1) {
                             // Shallow water: visualizes as Bottom Layer
