@@ -1358,13 +1358,26 @@ window.mapRenderer = {
             }
         }
 
-        let waterPrefix = null;
-        let waterCells = null;
-        if (window.waterManager) {
-            const mapId = window.waterManager._getMapId();
-            if (mapId) {
-                waterPrefix = `${mapId},`;
-                waterCells = window.waterManager.waterCells;
+        // Pre-compute active animations for O(1) lookup during rendering
+        const playerCombatAnimsMap = new Map();
+        const npcMoveAnimsMap = new Map();
+        if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
+            for (let i = 0; i < gameState.activeAnimations.length; i++) {
+                const anim = gameState.activeAnimations[i];
+                if (!anim.visible) continue;
+
+                const animZ = anim.z === undefined ? currentZ : anim.z;
+                if (animZ !== currentZ) continue;
+
+                if ((anim.type === 'meleeSwing' || anim.type === 'rangedBullet' || anim.type === 'throwing') &&
+                    anim.data && anim.data.attacker === gameState) {
+                    const key = `${Math.floor(anim.x)},${Math.floor(anim.y)}`;
+                    playerCombatAnimsMap.set(key, anim);
+                }
+
+                if (anim.type === 'movement' && anim.data && anim.data.entity) {
+                    npcMoveAnimsMap.set(anim.data.entity, anim);
+                }
             }
         }
 
@@ -1693,13 +1706,7 @@ window.mapRenderer = {
                     if (playerFowStatus === 'visible' && !roofIsObscuringPlayer) {
                         let drawStaticPlayer = true;
                         if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
-                            const playerCombatAnim = gameState.activeAnimations.find(anim =>
-                                anim.visible &&
-                                (anim.type === 'meleeSwing' || anim.type === 'rangedBullet' || anim.type === 'throwing') &&
-                                anim.data.attacker === gameState &&
-                                Math.floor(anim.x) === x && Math.floor(anim.y) === y &&
-                                (anim.z === undefined || anim.z === currentZ)
-                            );
+                            const playerCombatAnim = playerCombatAnimsMap.get(`${x},${y}`);
                             if (playerCombatAnim) drawStaticPlayer = false;
                         }
                         if (drawStaticPlayer) {
@@ -2122,8 +2129,9 @@ window.mapRenderer = {
                     // Check Viewport
                     if (npcX >= startCol && npcX <= endCol && npcY >= startRow && npcY <= endRow) {
                         let isBeingAnimated = false;
-                        if (activeEntityAnimations && activeEntityAnimations.has(npc)) {
-                            isBeingAnimated = true;
+                        if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
+                            const npcMoveAnim = npcMoveAnimsMap.get(npc);
+                            if (npcMoveAnim) isBeingAnimated = true;
                         }
 
                         if (!isBeingAnimated) {
