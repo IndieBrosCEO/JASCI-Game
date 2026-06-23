@@ -10,6 +10,10 @@
         this.backgroundRoundResolve = null;
         this.isBackgroundSimulation = false;
         this._onWeaponChange = this.handleWeaponSelectionChange.bind(this);
+
+        // Cache for fallback lighting calculation
+        this._litTilesCache = new Map();
+        this._lastLightSourcesCount = -1;
     }
 
     calculateRangeModifier(weapon, distance, isGrapplingTarget) {
@@ -1183,10 +1187,33 @@
                 // Fallback for tests or missing renderer
                 let isLitBySource = false;
                 if (this.gameState.lightSources && typeof isTileIlluminated === 'function') {
-                    for (const source of this.gameState.lightSources) {
-                        // Ensure 3D check compatibility
-                        const sZ = source.z !== undefined ? source.z : targetZ;
-                        if (isTileIlluminated(targetX, targetY, targetZ, { ...source, z: sZ })) { isLitBySource = true; break; }
+                    const cacheKey = `${targetX},${targetY},${targetZ}`;
+
+                    // We need a more robust cache invalidation mechanism because light sources might move
+                    // computing a simple hash or stringified version of lightSources to detect changes
+                    let currentLightSourcesHash = "";
+                    for(let i=0; i<this.gameState.lightSources.length; i++) {
+                        const ls = this.gameState.lightSources[i];
+                        currentLightSourcesHash += `${ls.x},${ls.y},${ls.z},${ls.radius}|`;
+                    }
+
+                    if (this._lastLightSourcesHash !== currentLightSourcesHash) {
+                        this._litTilesCache.clear();
+                        this._lastLightSourcesHash = currentLightSourcesHash;
+                    }
+
+                    if (this._litTilesCache.has(cacheKey)) {
+                        isLitBySource = this._litTilesCache.get(cacheKey);
+                    } else {
+                        for (const source of this.gameState.lightSources) {
+                            // Ensure 3D check compatibility
+                            const sZ = source.z !== undefined ? source.z : targetZ;
+                            if (isTileIlluminated(targetX, targetY, targetZ, { ...source, z: sZ })) {
+                                isLitBySource = true;
+                                break;
+                            }
+                        }
+                        this._litTilesCache.set(cacheKey, isLitBySource);
                     }
                 }
                 const ambientColorHex = (typeof getAmbientLightColor === 'function' && this.gameState.currentTime?.hours !== undefined) ? getAmbientLightColor(this.gameState.currentTime.hours) : '#FFFFFF';
