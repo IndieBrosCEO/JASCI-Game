@@ -2091,6 +2091,17 @@ window.mapRenderer = {
 
         // NPC Rendering (Viewport Aware)
         if (gameState.npcs && gameState.npcs.length > 0 && tileCacheData) {
+            let activeEntityAnimations = null;
+            if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
+                activeEntityAnimations = new Set();
+                for (let i = 0; i < gameState.activeAnimations.length; i++) {
+                    const anim = gameState.activeAnimations[i];
+                    if (anim.type === 'movement' && anim.visible && (anim.z === undefined || anim.z === currentZ) && anim.data && anim.data.entity) {
+                        activeEntityAnimations.add(anim.data.entity);
+                    }
+                }
+            }
+
             gameState.npcs.forEach(npc => {
                 if (!npc.mapPos) return;
 
@@ -2111,12 +2122,8 @@ window.mapRenderer = {
                     // Check Viewport
                     if (npcX >= startCol && npcX <= endCol && npcY >= startRow && npcY <= endRow) {
                         let isBeingAnimated = false;
-                        if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
-                            const npcMoveAnim = gameState.activeAnimations.find(anim =>
-                                anim.type === 'movement' && anim.data.entity === npc && anim.visible &&
-                                (anim.z === undefined || anim.z === currentZ)
-                            );
-                            if (npcMoveAnim) isBeingAnimated = true;
+                        if (activeEntityAnimations && activeEntityAnimations.has(npc)) {
+                            isBeingAnimated = true;
                         }
 
                         if (!isBeingAnimated) {
