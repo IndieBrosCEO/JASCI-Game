@@ -169,11 +169,6 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
          window.mapRenderer.ensureLevelExists(originalPos.z - 1);
     }
 
-    if (targetX < 0 || targetX >= width || targetY < 0 || targetY >= height) {
-        logToConsole(`${logPrefix} Can't move that way (map boundary).`);
-        return false;
-    }
-
     // --- Determine Character's Current Tile Properties (moved before collision check) ---
     // CRITICAL FIX: This block must occur BEFORE the collision check below.
     // We need to know if the character is on a slope/z-transition to grant exceptions
@@ -201,6 +196,11 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
             let charBaseIdBottom = (typeof charTileOnBottomRaw === 'object' && charTileOnBottomRaw?.tileId !== undefined) ? charTileOnBottomRaw.tileId : charTileOnBottomRaw;
             checkTileForZTransition(charBaseIdBottom);
         }
+    }
+
+    if (targetX < 0 || targetX >= width || targetY < 0 || targetY >= height) {
+        logToConsole(`${logPrefix} Can't move that way (map boundary).`);
+        return false;
     }
 
     // --- Multi-tile Rotation/Collision Check ---
