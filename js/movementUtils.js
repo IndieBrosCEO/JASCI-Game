@@ -117,6 +117,22 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
     const width = currentMap.dimensions.width;
     const height = currentMap.dimensions.height;
     const originalPos = isPlayer ? { ...window.gameState.playerPos } : { ...character.mapPos };
+
+    // Performance Optimization: Pre-filter nearby living NPCs to avoid multiple O(N) gameState.npcs.some() checks
+    const nearbyLivingNpcs = [];
+    if (window.gameState && window.gameState.npcs) {
+        const npcs = window.gameState.npcs;
+        for (let i = 0; i < npcs.length; i++) {
+            const npc = npcs[i];
+            if (npc.mapPos &&
+                Math.abs(npc.mapPos.x - originalPos.x) <= 3 &&
+                Math.abs(npc.mapPos.y - originalPos.y) <= 3 &&
+                window.isEntityAlive(npc)) {
+                nearbyLivingNpcs.push(npc);
+            }
+        }
+    }
+
     let targetX = originalPos.x;
     let targetY = originalPos.y;
     // Get current facing, default to 'down' if missing
@@ -282,7 +298,7 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
             let entityAtDest = false;
             // NPCs checking against player and other NPCs (Flying is currently NPC only in this implementation)
             if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === targetZ) entityAtDest = true;
-            if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZ && window.isEntityAlive(otherNpc));
+            if (!entityAtDest) entityAtDest = nearbyLivingNpcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZ);
 
             if (!entityAtDest) {
                 character.mapPos = { x: targetX, y: targetY, z: targetZ };
@@ -309,10 +325,10 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                 // Check entity collision at destination
                 let entityAtDest = false;
                 if (isPlayer) {
-                    entityAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === targetZ && window.isEntityAlive(npc));
+                    entityAtDest = nearbyLivingNpcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === targetZ);
                 } else {
                     if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === targetZ) entityAtDest = true;
-                    if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZ && window.isEntityAlive(otherNpc));
+                    if (!entityAtDest) entityAtDest = nearbyLivingNpcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZ);
                 }
 
                 if (!entityAtDest) {
@@ -379,10 +395,10 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                     if (adjTileDefSlope && window.mapRenderer.isWalkable(targetX, targetY, finalDestZSlope)) {
                         let npcAtDest = false;
                         if (isPlayer) { // Player checking against NPCs
-                            npcAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === finalDestZSlope && window.isEntityAlive(npc));
+                            npcAtDest = nearbyLivingNpcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === finalDestZSlope);
                         } else { // NPC checking against player and other NPCs
                             if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === finalDestZSlope) npcAtDest = true;
-                            if (!npcAtDest) npcAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === finalDestZSlope && window.isEntityAlive(otherNpc));
+                            if (!npcAtDest) npcAtDest = nearbyLivingNpcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === finalDestZSlope);
                         }
 
                         if (!npcAtDest) {
@@ -457,10 +473,10 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
 
                         let entityAtDest = false;
                         if (isPlayer) {
-                            entityAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === targetZUp && window.isEntityAlive(npc));
+                            entityAtDest = nearbyLivingNpcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === targetZUp);
                         } else {
                             if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === targetZUp) entityAtDest = true;
-                            if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZUp && window.isEntityAlive(otherNpc));
+                            if (!entityAtDest) entityAtDest = nearbyLivingNpcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZUp);
                         }
 
                         if (!entityAtDest) {
@@ -512,10 +528,10 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
 
                         let entityAtDest = false;
                         if (isPlayer) {
-                            entityAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === targetZDown && window.isEntityAlive(npc));
+                            entityAtDest = nearbyLivingNpcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === targetZDown);
                         } else {
                             if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === targetZDown) entityAtDest = true;
-                            if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZDown && window.isEntityAlive(otherNpc));
+                            if (!entityAtDest) entityAtDest = nearbyLivingNpcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === targetZDown);
                         }
 
                         if (!entityAtDest) {
@@ -619,10 +635,10 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                 if (window.mapRenderer.isWalkable(targetX, targetY, finalDestZ)) {
                     let entityAtDest = false;
                     if (isPlayer) {
-                        entityAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === finalDestZ && window.isEntityAlive(npc));
+                        entityAtDest = nearbyLivingNpcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === finalDestZ);
                     } else {
                         if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === finalDestZ) entityAtDest = true;
-                        if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === finalDestZ && window.isEntityAlive(otherNpc));
+                        if (!entityAtDest) entityAtDest = nearbyLivingNpcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === finalDestZ);
                     }
 
                     if (!entityAtDest) {
@@ -676,11 +692,11 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
         // Check occupation at the target (targetX, targetY, originalPos.z)
         let entityBlockingHorizontalTarget = false;
         if (isPlayer) {
-            entityBlockingHorizontalTarget = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === originalPos.z && window.isEntityAlive(npc));
+            entityBlockingHorizontalTarget = nearbyLivingNpcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === originalPos.z);
         } else {
             if (window.gameState.playerPos && window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === originalPos.z) entityBlockingHorizontalTarget = true;
             if (!entityBlockingHorizontalTarget) {
-                entityBlockingHorizontalTarget = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === originalPos.z && window.isEntityAlive(otherNpc));
+                entityBlockingHorizontalTarget = nearbyLivingNpcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === originalPos.z);
             }
         }
 
@@ -802,10 +818,10 @@ async function attemptCharacterMove(character, direction, assetManagerInstance, 
                 // Check blocking entities at destination Z-1
                 let entityAtDest = false;
                 if (isPlayer) {
-                    entityAtDest = window.gameState.npcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === potentialSlopeZ && window.isEntityAlive(npc));
+                    entityAtDest = nearbyLivingNpcs.some(npc => npc.mapPos?.x === targetX && npc.mapPos?.y === targetY && npc.mapPos?.z === potentialSlopeZ);
                 } else {
                     if (window.gameState.playerPos.x === targetX && window.gameState.playerPos.y === targetY && window.gameState.playerPos.z === potentialSlopeZ) entityAtDest = true;
-                    if (!entityAtDest) entityAtDest = window.gameState.npcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === potentialSlopeZ && window.isEntityAlive(otherNpc));
+                    if (!entityAtDest) entityAtDest = nearbyLivingNpcs.some(otherNpc => otherNpc !== character && otherNpc.mapPos?.x === targetX && otherNpc.mapPos?.y === targetY && otherNpc.mapPos?.z === potentialSlopeZ);
                 }
 
                 if (!entityAtDest) {

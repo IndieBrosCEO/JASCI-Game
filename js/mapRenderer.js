@@ -1385,6 +1385,7 @@ window.mapRenderer = {
         // Iterate only over the visible viewport tiles
         // 'y' and 'x' here are ABSOLUTE map coordinates.
         for (let y = startRow; y <= endRow; y++) {
+            const yWaterSuffix = waterPrefix ? `,${y},${currentZStr}` : null;
             for (let x = startCol; x <= endCol; x++) {
                 // Determine the base tile from the current Z-level's layers using absolute y, x
                 let baseTileId = currentLevelData.landscape?.[y]?.[x] || "";
@@ -1410,8 +1411,8 @@ window.mapRenderer = {
                 let effectiveTileOnMiddleCurrentZ = (typeof tileOnMiddleRawCurrentZ === 'object' && tileOnMiddleRawCurrentZ !== null && tileOnMiddleRawCurrentZ.tileId !== undefined) ? tileOnMiddleRawCurrentZ.tileId : tileOnMiddleRawCurrentZ;
 
                 // Dynamic Water Layering Visualization
-                if (window.waterManager) {
-                    const water = window.waterManager.getWaterAt(x, y, currentZ);
+                if (waterPrefix) {
+                    const water = waterCells[`${waterPrefix}${x}${yWaterSuffix}`];
                     if (water && water.depth > 0) {
                         if (water.depth === 1) {
                             // Shallow water: visualizes as Bottom Layer
@@ -2097,6 +2098,17 @@ window.mapRenderer = {
 
         // NPC Rendering (Viewport Aware)
         if (gameState.npcs && gameState.npcs.length > 0 && tileCacheData) {
+            let activeEntityAnimations = null;
+            if (gameState.activeAnimations && gameState.activeAnimations.length > 0) {
+                activeEntityAnimations = new Set();
+                for (let i = 0; i < gameState.activeAnimations.length; i++) {
+                    const anim = gameState.activeAnimations[i];
+                    if (anim.type === 'movement' && anim.visible && (anim.z === undefined || anim.z === currentZ) && anim.data && anim.data.entity) {
+                        activeEntityAnimations.add(anim.data.entity);
+                    }
+                }
+            }
+
             gameState.npcs.forEach(npc => {
                 if (!npc.mapPos) return;
 
