@@ -179,11 +179,8 @@
                     }
                 },
                 {
-                    "family": "component",
-                    "quantity": 5,
-                    "require": {
-                        "type": "wad"
-                    }
+                    "family": "shotgun_wad",
+                    "quantity": 5
                 }
             ],
             "skills_required": [

@@ -36,7 +36,7 @@
                     }
                 },
                 {
-                    "family": "tanned_leather",
+                    "family": "leather_parts",
                     "quantity": 2,
                     "require": {
                         "type": "strip"
